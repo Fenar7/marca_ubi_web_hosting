@@ -55,6 +55,7 @@
  * z-index via nth-child ensures later cards render ON TOP of earlier ones.
  */
 .work-item-wrapper {
+  height: 150vh;
   height: 150svh;
   position: sticky;
   top: clamp(1rem, 2vw, 2rem);
@@ -62,6 +63,7 @@
 
   /* Last card: no dwell tail, no trailing black space */
   &:last-child {
+    height: 100vh;
     height: 100svh;
   }
 
@@ -92,6 +94,7 @@
 
 /* Card — fills viewport minus the sticky offset */
 .work-item {
+  height: calc(100vh - clamp(1rem, 2vw, 2rem));
   height: calc(100svh - clamp(1rem, 2vw, 2rem));
   overflow: hidden;
   position: relative;
@@ -219,28 +222,33 @@
 }
 
 @media (max-width: 56.1875rem) {
-
   /* Mobile header ~4.8rem — sticky offset updated; wrapper keeps its 150svh scroll height */
   .work-item-wrapper {
     top: 4.8rem;
 
     &:last-child {
+      height: 100vh;
       height: 100svh;
     }
   }
 
   /* Card must match visible area = viewport minus mobile header (not desktop clamp) */
   .work-item {
+    height: calc(100vh - 4.8rem);
     height: calc(100svh - 4.8rem);
   }
 
   .title-section-container {
-    min-height: clamp(20rem, 72vw, 30rem);
+    min-height: calc(100vh - 4.8rem);
+    min-height: calc(100svh - 4.8rem);
+    height: calc(100vh - 4.8rem);
+    height: calc(100svh - 4.8rem);
   }
 
   .title-section-container h2 {
     font-size: clamp(1.95rem, 10vw, 3.1rem);
     line-height: 1.06;
+    transform: translateY(-2.4rem);
   }
 
   .work-card-links {

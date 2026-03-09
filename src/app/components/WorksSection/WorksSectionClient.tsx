@@ -31,56 +31,81 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
 
     useGSAP(
         () => {
-            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+            const container = containerRef.current;
+
+            if (!container) {
+                return;
+            }
+
             const mobileMotion = shouldUseMobileMotion();
+            const mobileHeaderOffsetPx = 4.8 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize || "16");
+            const mobilePinDistance = Math.max(window.innerHeight * 0.92, 520);
+            const titleFill = container.querySelector<HTMLElement>(".works-title-fill");
+            const titleSection = container.querySelector<HTMLElement>(".title-section-container");
+            const wrappers = gsap.utils.toArray<HTMLElement>(".work-item-wrapper", container);
+            const setSafeState = (filled: boolean) => {
+                if (titleFill) {
+                    gsap.set(titleFill, { "--title-fill": filled ? "100%" : "0%" });
+                }
+
+                wrappers.forEach((wrapper) => {
+                    const card = wrapper.querySelector<HTMLElement>(".work-item");
+                    const image = card?.querySelector<HTMLElement>(".work-item-image img");
+
+                    if (card) {
+                        gsap.set(card, { clearProps: "transform" });
+                    }
+
+                    if (image) {
+                        gsap.set(image, { scale: 1 });
+                    }
+                });
+            };
+
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                setSafeState(true);
+                return;
+            }
 
             // ─── Title: pin + orange fill ─────────────────────────────────────────────
-            const titleFill =
-                containerRef.current?.querySelector<HTMLElement>(".works-title-fill");
-
-            if (titleFill) {
-                if (mobileMotion) {
-                    // On real mobile: immediately show title fully — the CSS default is 0%
-                    // which leaves text invisible if ScrollTrigger misfires (iOS height changes).
-                    // Card animations are sufficient for mobile impact.
-                    gsap.set(titleFill, { "--title-fill": "100%" });
-                } else {
-                    gsap
-                        .timeline({
-                            scrollTrigger: {
-                                trigger: ".title-section-container",
-                                start: "center center",
-                                end: "+=60%",
-                                pin: true,
-                                scrub: true,
-                                pinSpacing: true,
-                            },
-                        })
-                        .fromTo(
-                            titleFill,
-                            { "--title-fill": "0%" },
-                            { "--title-fill": "100%", ease: "none" },
-                        );
-                }
+            if (titleFill && titleSection) {
+                gsap
+                    .timeline({
+                        scrollTrigger: {
+                            trigger: titleSection,
+                            start: mobileMotion ? `top top+=${mobileHeaderOffsetPx}` : "center center",
+                            end: mobileMotion ? `+=${mobilePinDistance}` : "+=60%",
+                            pin: true,
+                            scrub: mobileMotion ? 0.85 : true,
+                            pinSpacing: true,
+                            anticipatePin: 1,
+                            invalidateOnRefresh: true,
+                        },
+                    })
+                    .fromTo(
+                        titleFill,
+                        { "--title-fill": "0%" },
+                        { "--title-fill": "100%", ease: "none" },
+                    );
+            } else {
+                setSafeState(true);
             }
 
             // ─── Cards ────────────────────────────────────────────────────────────────
-            const wrappers = gsap.utils.toArray<HTMLElement>(".work-item-wrapper");
-
             wrappers.forEach((wrapper) => {
                 const card = wrapper.querySelector<HTMLElement>(".work-item");
                 const image = card?.querySelector<HTMLElement>(".work-item-image img");
 
                 if (!card) return;
 
-                // ── Entrance: card rotates in from below ──────────────────────────────
+                // Keep mobile behavior visually aligned with desktop: scrub-based entrance.
                 gsap.fromTo(
                     card,
                     {
-                        rotateZ: mobileMotion ? 0 : 18,
-                        rotateX: mobileMotion ? 0 : 6,
-                        y: mobileMotion ? 48 : 0,
-                        scale: mobileMotion ? 0.94 : 0.72,
+                        rotateZ: mobileMotion ? 8 : 18,
+                        rotateX: mobileMotion ? 3 : 6,
+                        y: mobileMotion ? 34 : 0,
+                        scale: mobileMotion ? 0.88 : 0.72,
                         transformOrigin: "center bottom",
                         transformPerspective: 1400,
                     },
@@ -89,21 +114,15 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
                         rotateZ: 0,
                         rotateX: 0,
                         scale: 1,
-                        ease: mobileMotion ? "power3.out" : "power2.out",
+                        ease: "power2.out",
                         force3D: true,
-                        scrollTrigger: mobileMotion
-                            ? {
-                                trigger: wrapper,
-                                start: "top 88%",
-                                toggleActions: "play none none reverse",
-                            }
-                            : {
-                                trigger: wrapper,
-                                start: "top bottom",
-                                end: "top 20%",
-                                scrub: true,
-                                invalidateOnRefresh: true,
-                            },
+                        scrollTrigger: {
+                            trigger: wrapper,
+                            start: "top bottom",
+                            end: mobileMotion ? "top 24%" : "top 20%",
+                            scrub: mobileMotion ? 0.9 : true,
+                            invalidateOnRefresh: true,
+                        },
                     },
                 );
 
@@ -111,28 +130,40 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
                 if (image) {
                     gsap.fromTo(
                         image,
-                        { scale: mobileMotion ? 1.08 : 1.28 },
+                        { scale: mobileMotion ? 1.16 : 1.28 },
                         {
                             scale: 1,
-                            ease: mobileMotion ? "power2.out" : "power2.out",
+                            ease: "power2.out",
                             force3D: true,
-                            scrollTrigger: mobileMotion
-                                ? {
-                                    trigger: wrapper,
-                                    start: "top 88%",
-                                    toggleActions: "play none none reverse",
-                                }
-                                : {
-                                    trigger: wrapper,
-                                    start: "top bottom",
-                                    end: "top 20%",
-                                    scrub: true,
-                                    invalidateOnRefresh: true,
-                                },
+                            scrollTrigger: {
+                                trigger: wrapper,
+                                start: "top bottom",
+                                end: mobileMotion ? "top 24%" : "top 20%",
+                                scrub: mobileMotion ? 0.9 : true,
+                                invalidateOnRefresh: true,
+                            },
                         },
                     );
                 }
             });
+
+            const handleLoaderComplete = () => {
+                ScrollTrigger.refresh();
+            };
+            window.addEventListener("initial-loader:complete", handleLoaderComplete);
+
+            const refreshFrameId = window.requestAnimationFrame(() => {
+                ScrollTrigger.refresh();
+            });
+            const refreshTimerId = window.setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 450);
+
+            return () => {
+                window.removeEventListener("initial-loader:complete", handleLoaderComplete);
+                window.cancelAnimationFrame(refreshFrameId);
+                window.clearTimeout(refreshTimerId);
+            };
         },
         { scope: containerRef },
     );

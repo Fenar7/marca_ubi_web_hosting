@@ -19,69 +19,125 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     if (pathname?.startsWith("/studio")) return;
 
     gsap.registerPlugin(ScrollTrigger);
+    let lenis: Lenis | null = null;
+    let resizeTimerId: number | null = null;
+    const burstTimerIds: number[] = [];
 
     const handleScrollRefresh = () => {
+      lenis?.resize();
       ScrollTrigger.refresh();
     };
 
-    window.addEventListener("initial-loader:complete", handleScrollRefresh);
-    requestAnimationFrame(handleScrollRefresh);
+    const clearBurstTimers = () => {
+      while (burstTimerIds.length > 0) {
+        const timerId = burstTimerIds.pop();
+        if (timerId !== undefined) {
+          window.clearTimeout(timerId);
+        }
+      }
+    };
+
+    const scheduleRefreshBurst = () => {
+      clearBurstTimers();
+      handleScrollRefresh();
+      window.requestAnimationFrame(handleScrollRefresh);
+
+      [180, 600, 1200].forEach((delay) => {
+        const timerId = window.setTimeout(handleScrollRefresh, delay);
+        burstTimerIds.push(timerId);
+      });
+    };
+
+    const handleInitialLoaderComplete = () => {
+      scheduleRefreshBurst();
+    };
+
+    const handleWindowLoad = () => {
+      scheduleRefreshBurst();
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        scheduleRefreshBurst();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        scheduleRefreshBurst();
+      }
+    };
+
+    const handleResize = () => {
+      if (resizeTimerId !== null) {
+        window.clearTimeout(resizeTimerId);
+      }
+      resizeTimerId = window.setTimeout(() => {
+        scheduleRefreshBurst();
+      }, 160);
+    };
+
+    window.addEventListener("initial-loader:complete", handleInitialLoaderComplete);
+    window.addEventListener("load", handleWindowLoad);
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("orientationchange", scheduleRefreshBurst);
+    window.addEventListener("resize", handleResize, { passive: true });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    scheduleRefreshBurst();
+
+    const cleanupRefreshListeners = () => {
+      if (resizeTimerId !== null) {
+        window.clearTimeout(resizeTimerId);
+      }
+      clearBurstTimers();
+      window.removeEventListener("initial-loader:complete", handleInitialLoaderComplete);
+      window.removeEventListener("load", handleWindowLoad);
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("orientationchange", scheduleRefreshBurst);
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return () => {
-        window.removeEventListener("initial-loader:complete", handleScrollRefresh);
+        cleanupRefreshListeners();
       };
     }
 
     if (shouldUseMobileMotion()) {
-      // On real mobile: iOS shrinks the viewport when address bar hides / shows.
-      // The initial rAF refresh fires before layout settles → trigger positions are wrong.
-      // Add a 600ms delayed refresh so everything recalibrates after fonts + images load.
-      const mobileRefreshTimer = window.setTimeout(() => {
-        ScrollTrigger.refresh();
-      }, 600);
-
       return () => {
-        window.clearTimeout(mobileRefreshTimer);
-        window.removeEventListener("initial-loader:complete", handleScrollRefresh);
+        cleanupRefreshListeners();
       };
     }
 
     // Prevent GSAP from catching up missed frames — biggest single fix for scroll jank
     gsap.ticker.lagSmoothing(0);
 
-    const lenis = new Lenis({
+    const lenisInstance = new Lenis({
       duration: 1.1,
       lerp: 0.1,
       smoothWheel: true,
       wheelMultiplier: 0.9,
       touchMultiplier: 1.2,
     });
+    lenis = lenisInstance;
 
     // Official Lenis + GSAP ScrollTrigger integration pattern
-    lenis.on("scroll", ScrollTrigger.update);
+    lenisInstance.on("scroll", ScrollTrigger.update);
 
     const onTick = (time: number) => {
-      lenis.raf(time * 1000);
+      lenisInstance.raf(time * 1000);
     };
 
     gsap.ticker.add(onTick);
     gsap.ticker.fps(120);
-
-    const handleLoaderComplete = () => {
-      lenis.resize();
-      ScrollTrigger.refresh();
-    };
-
-    window.addEventListener("initial-loader:complete", handleLoaderComplete);
-    requestAnimationFrame(handleLoaderComplete);
+    scheduleRefreshBurst();
 
     return () => {
-      window.removeEventListener("initial-loader:complete", handleScrollRefresh);
-      window.removeEventListener("initial-loader:complete", handleLoaderComplete);
+      cleanupRefreshListeners();
       gsap.ticker.remove(onTick);
-      lenis.off("scroll", ScrollTrigger.update);
-      lenis.destroy();
+      lenisInstance.off("scroll", ScrollTrigger.update);
+      lenisInstance.destroy();
     };
   }, [pathname]);
 

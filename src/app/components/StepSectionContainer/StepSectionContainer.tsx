@@ -241,9 +241,9 @@ export default function StepSectionContainer() {
 
       if (width <= 899) {
         return {
-          startScale: 0.42,
-          midScale: 2.4,
-          endScale: 6.5,
+          startScale: 0.5,
+          midScale: 2.55,
+          endScale: 6.8,
           startY: 0,
           midY: h * 0.42,
           endY: h * 0.92,
@@ -297,56 +297,33 @@ export default function StepSectionContainer() {
       return;
     }
 
-    const context = gsap.context(() => {
+    const getTriggerRange = () => {
       if (mobileMotion) {
-        // On mobile: simple fade-in/out entrance — scrub requires Lenis which is off on phones
-        gsap.set(monogram, {
-          autoAlpha: 0,
-          scale: 0.5,
-          y: 0,
-          transformOrigin: "50% 50%",
-        });
-
-        const monogramTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: stepsList,
-            start: "top 90%",
-            end: "bottom 10%",
-            toggleActions: "play none none reverse",
-            invalidateOnRefresh: true,
-          },
-        });
-
-        monogramTimeline
-          .to(monogram, {
-            autoAlpha: 0.88,
-            scale: 1.6,
-            duration: 0.9,
-            ease: "expo.out",
-          })
-          .to(
-            monogram,
-            {
-              autoAlpha: 0,
-              scale: 3.2,
-              duration: 0.6,
-              ease: "power2.in",
-            },
-            ">0.4",
-          );
-
-        return;
+        return {
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.95,
+        };
       }
 
+      return {
+        start: "top 92%",
+        end: "bottom 2%",
+        scrub: 1.05,
+      };
+    };
+
+    const context = gsap.context(() => {
       setInitialValues();
+      const triggerRange = getTriggerRange();
 
       const monogramTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: stepsList,
-          start: "top 92%",
+          start: triggerRange.start,
           endTrigger: stepsList,
-          end: "bottom 2%",
-          scrub: 1.05,
+          end: triggerRange.end,
+          scrub: triggerRange.scrub,
           invalidateOnRefresh: true,
           onRefresh: setInitialValues,
         },
@@ -379,7 +356,16 @@ export default function StepSectionContainer() {
         );
     }, section);
 
+    const refreshFrameId = window.requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+    });
+    const refreshTimerId = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 450);
+
     return () => {
+      window.cancelAnimationFrame(refreshFrameId);
+      window.clearTimeout(refreshTimerId);
       context.revert();
     };
   }, []);
