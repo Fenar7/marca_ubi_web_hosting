@@ -1,0 +1,336 @@
+.aboutSectionContainerMain {
+  background: $black;
+  display: flex;
+  justify-content: center;
+  padding: clamp(3.5rem, 6.1vw, 7.1875rem) 0 clamp(3rem, 5.4vw, 6rem);
+}
+
+.aboutSectionContainer {
+  max-width: 120rem;
+  width: 100%;
+  padding: 0 clamp(1rem, 5.2vw, 6.25rem);
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2vw, 1.875rem);
+}
+
+.aboutTag {
+  align-items: center;
+  display: flex;
+  gap: clamp(0.42rem, 0.8vw, 0.6875rem);
+}
+
+.aboutStar {
+  display: block;
+  flex: 0 0 auto;
+  height: auto;
+  transform-origin: center;
+  width: clamp(0.95rem, 1.08vw, 1.3rem);
+  will-change: transform, opacity;
+}
+
+.asterisk {
+  color: $cta-orange;
+  display: inline-block;
+  font-family: $font-movatif;
+  font-size: clamp(1.2rem, 1.35vw, 1.625rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.aboutTagText {
+  color: $hash-grey;
+  font-family: $font-movatif;
+  font-size: clamp(1.6rem, 2vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1;
+  margin: 0;
+}
+
+.mainTitle {
+  color: transparent;
+  font-family: $font-movatif;
+  font-size: clamp(2rem, 4vw, 4.0625rem);
+  font-weight: 400;
+  line-height: 1.12;
+  margin: 0;
+  max-width: 106.5rem;
+  -webkit-text-fill-color: transparent;
+  will-change: transform;
+  word-break: break-word;
+}
+
+.mainTitleLine {
+  --line-fill: 0%;
+  background: linear-gradient(90deg,
+      $white 0%,
+      $white var(--line-fill),
+      #676767 var(--line-fill),
+      #676767 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  display: block;
+}
+
+.servicesContainer {
+  display: grid;
+  gap: clamp(1.75rem, 2.6vw, 3rem);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: clamp(2.7rem, 5vw, 7rem);
+}
+
+.serviceItem {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  will-change: transform, opacity;
+}
+
+.serviceTopRow {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.serviceHashIcon {
+  display: block;
+  flex: 0 0 auto;
+  height: auto;
+  transform-origin: center;
+  width: clamp(0.95rem, 1.08vw, 1.28rem);
+  will-change: transform, opacity;
+}
+
+.serviceNumber {
+  color: $hash-grey;
+  font-family: $font-sf-pro;
+  font-size: clamp(1.9rem, 2.1vw, 2.25rem);
+  font-weight: 300;
+  line-height: 1;
+  will-change: transform, opacity;
+}
+
+.serviceTitle {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(1.8rem, 2.2vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.13;
+  margin: 0;
+  will-change: transform, opacity;
+}
+
+.textAndMetricsSection {
+  display: grid;
+  gap: clamp(1.75rem, 3.2vw, 4.5rem);
+  grid-template-columns: minmax(16rem, 46%) minmax(20rem, 54%);
+  margin-top: clamp(2.8rem, 4vw, 3.25rem);
+}
+
+.leftSection {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+}
+
+.aboutDescription {
+  color: #e8e8e8;
+  font-family: $font-sf-pro;
+  font-size: clamp(1rem, 1.5vw, 2rem);
+  font-weight: 400;
+  line-height: 1.58;
+  margin: 0;
+  max-width: 46.9375rem;
+  will-change: transform, opacity;
+}
+
+.verticalLine {
+  background: rgba($white, 0.62);
+  display: block;
+  height: clamp(11rem, 24vw, 23rem);
+  margin-top: clamp(1.6rem, 2.2vw, 2rem);
+  transform-origin: 50% 0%;
+  will-change: transform;
+  width: 0.0625rem;
+}
+
+.aboutButton {
+  margin-top: clamp(1.8rem, 3vw, 2.875rem);
+  will-change: transform, opacity;
+}
+
+.aboutButtonWrap {
+  will-change: transform, opacity;
+}
+
+.buttonIcon {
+  display: block;
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.rightSection {
+  width: 100%;
+}
+
+.metricsCards {
+  display: grid;
+  gap: clamp(1rem, 2vw, 2.5rem) clamp(1rem, 2.1vw, 2.875rem);
+  grid-template-columns: repeat(2, minmax(15rem, 1fr));
+}
+
+.metricItemCard {
+  align-items: flex-start;
+  background: $light-grey;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: clamp(18rem, 19vw, 20.375rem);
+  padding: clamp(1rem, 1.25vw, 1.5rem);
+  will-change: transform, opacity;
+}
+
+.metricTopRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6875rem;
+  will-change: transform, opacity;
+}
+
+.metricCountWrap {
+  color: $white;
+  display: inline-flex;
+  align-items: flex-end;
+  font-family: $font-sf-pro;
+  font-weight: 300;
+  gap: 0.1rem;
+  line-height: 0.95;
+  margin: 0;
+}
+
+.metricCountViewport {
+  color: $white;
+  display: inline-flex;
+  font-size: clamp(3rem, 3.5vw, 4.0625rem);
+  height: 1em;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.metricCountTrack {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.metricCountStep {
+  display: block;
+  flex: 0 0 1em;
+  height: 1em;
+  line-height: 1;
+}
+
+.metricCountPlus {
+  color: $cta-orange;
+  display: inline-block;
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(1.6rem, 1.9vw, 2.25rem);
+  line-height: 1;
+  margin-left: 0.0625rem;
+  transform: translateY(0.24em);
+  will-change: transform, opacity;
+}
+
+.metricTitle {
+  color: $hash-grey;
+  font-family: $font-movatif;
+  font-size: clamp(1.45rem, 2vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.08;
+  margin: 0;
+  will-change: transform, opacity;
+}
+
+.metricDescription {
+  color: #e8e8e8;
+  font-family: $font-sf-pro;
+  font-size: clamp(0.78rem, 0.85vw, 0.9375rem);
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0;
+  max-width: 20.375rem;
+  will-change: transform, opacity;
+}
+
+@media (max-width: 85.9375rem) {
+  .servicesContainer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .textAndMetricsSection {
+    grid-template-columns: minmax(16rem, 1fr);
+  }
+
+  .leftSection {
+    max-width: 52rem;
+  }
+
+  .verticalLine {
+    height: 12rem;
+  }
+}
+
+@media (max-width: 56.1875rem) {
+  .aboutSectionContainer {
+    padding-inline: 1.5rem;
+  }
+
+  .aboutTagText {
+    font-size: clamp(1.25rem, 5.4vw, 1.7rem);
+  }
+
+  .mainTitle {
+    font-size: clamp(1.6rem, 8vw, 2.35rem);
+    line-height: 1.16;
+  }
+
+  .servicesContainer {
+    gap: 1.35rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .serviceNumber,
+  .serviceTitle {
+    font-size: clamp(1.35rem, 5.2vw, 1.85rem);
+  }
+
+  .serviceHashIcon {
+    width: clamp(0.88rem, 4.1vw, 1.1rem);
+  }
+
+  .aboutDescription {
+    font-size: clamp(0.95rem, 3.8vw, 1.2rem);
+    line-height: 1.5;
+  }
+
+  .metricsCards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .metricItemCard {
+    min-height: 15.625rem;
+  }
+
+  .metricCountViewport {
+    font-size: clamp(2.35rem, 10vw, 3.25rem);
+  }
+
+  .metricTitle {
+    font-size: clamp(1.2rem, 6vw, 1.8rem);
+  }
+}

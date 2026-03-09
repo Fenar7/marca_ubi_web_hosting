@@ -1,0 +1,85 @@
+.button {
+  align-items: center;
+  border: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 1.0625rem;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.375rem 0.5rem;
+  text-decoration: none;
+  transition: background-color 0.22s ease, transform 0.22s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.label {
+  display: block;
+  font-family: $font-sf-pro;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1;
+  min-width: 6.25rem;
+  text-align: center;
+}
+
+.iconWrap {
+  align-items: center;
+  border-radius: 9999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 2.5rem;
+  justify-content: center;
+  overflow: hidden;
+  width: 2.5rem;
+}
+
+.fallbackIcon {
+  font-family: $font-sf-pro;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.light {
+  background: rgba($white, 0.7);
+}
+
+.light:hover {
+  background: rgba($white, 0.82);
+}
+
+.light .label {
+  color: $black;
+}
+
+.light .iconWrap {
+  background: $black;
+}
+
+.light .fallbackIcon {
+  color: $cta-orange;
+}
+
+.brand {
+  background: $cta-orange;
+}
+
+.brand:hover {
+  background: #ff7d2f;
+}
+
+.brand .label {
+  color: $white;
+}
+
+.brand .iconWrap {
+  background: $white;
+}
+
+.brand .fallbackIcon {
+  color: $cta-orange;
+}

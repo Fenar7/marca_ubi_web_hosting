@@ -1,0 +1,230 @@
+.testimonialSectionContainerMain {
+  background: $black;
+  padding: clamp(6rem, 8vw, 7.5rem) 0 clamp(2.8rem, 5vw, 6rem);
+  scroll-margin-top: clamp(5rem, 9vw, 6.2rem);
+}
+
+.testimonialSectionContainer {
+  margin: 0 auto;
+  max-width: 120rem;
+  padding: 0 clamp(1rem, 5.2vw, 6.25rem);
+  width: 100%;
+}
+
+.headerBlock {
+  perspective: 76rem;
+}
+
+.headerLeft {
+  perspective: 74rem;
+}
+
+.headerTag {
+  align-items: center;
+  gap: clamp(0.45rem, 0.85vw, 0.7rem);
+}
+
+.headerTagIcon {
+  display: block;
+  flex: 0 0 auto;
+  height: auto;
+  transform-origin: 50% 50%;
+  width: clamp(0.95rem, 1.08vw, 1.3rem);
+  will-change: transform, opacity;
+}
+
+.headerTagText {
+  line-height: 1;
+}
+
+.headerTagTextInner {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.headerTitle {
+  line-height: 1.09;
+}
+
+.headerTitleInner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0rem, 0.2vw, 0.18rem);
+}
+
+.headerTitleLineMask {
+  display: block;
+  margin-bottom: -0.12em;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+
+.headerTitleLine {
+  display: block;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+.headerRight {
+  max-width: min(42.5rem, 100%);
+}
+
+.headerDescription {
+  will-change: transform, opacity;
+}
+
+.headerDescriptionInner {
+  display: block;
+}
+
+.headerAction {
+  will-change: transform, opacity;
+}
+
+.headerActionInner {
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+.contactButton {
+  min-height: 3.375rem;
+}
+
+.buttonIcon {
+  display: block;
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.itemsContainer {
+  align-items: end;
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  margin-top: clamp(2rem, 3.2vw, 3rem);
+  overflow: hidden;
+  width: 100%;
+}
+
+.itemCard {
+  background: #d9d9d9;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.itemCard img {
+  display: block;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  width: 100%;
+}
+
+.itemLeft,
+.itemRight {
+  aspect-ratio: 598 / 634;
+  width: 34.8%;
+  z-index: 3;
+}
+
+.itemCenter {
+  aspect-ratio: 676 / 717;
+  margin-left: -4.45%;
+  margin-right: -4.45%;
+  width: 39.3%;
+  z-index: 1;
+}
+
+.itemLeft {
+  border-right: 0.625rem solid $black;
+}
+
+.itemRight {
+  border-left: 0.9375rem solid $black;
+}
+
+.itemLeft img {
+  object-position: center 14%;
+}
+
+.itemCenter img {
+  object-position: center 28%;
+}
+
+.itemRight img {
+  object-position: center 16%;
+}
+
+@media (max-width: 85.9375rem) {
+  .headerRight {
+    max-width: min(40rem, 100%);
+  }
+
+  .itemsContainer {
+    align-items: stretch;
+    display: grid;
+    gap: 0.625rem;
+    grid-template-columns: 1fr;
+  }
+
+  .itemCenter {
+    margin-left: 0;
+    margin-right: 0;
+    order: 1;
+    width: 100%;
+  }
+
+  .itemLeft {
+    border-right: 0;
+    order: 2;
+    width: 100%;
+  }
+
+  .itemRight {
+    border-left: 0;
+    order: 3;
+    width: 100%;
+  }
+
+  .itemLeft img,
+  .itemRight img,
+  .itemCenter img {
+    object-position: center;
+    transform: none;
+  }
+}
+
+@media (max-width: 56.1875rem) {
+  .testimonialSectionContainerMain {
+    padding-top: clamp(5.25rem, 16vw, 6rem);
+  }
+
+  .testimonialSectionContainer {
+    padding-inline: 1.5rem;
+  }
+
+  .headerTagIcon {
+    width: clamp(0.88rem, 4.1vw, 1.1rem);
+  }
+
+  .headerTitleInner {
+    gap: 0.02em;
+  }
+
+  .headerActionInner {
+    width: 100%;
+  }
+
+  .itemsContainer {
+    margin-top: 1.35rem;
+  }
+
+  .itemCard {
+    aspect-ratio: 16 / 12;
+  }
+
+  .itemCard img {
+    object-position: center;
+  }
+}

@@ -1,0 +1,271 @@
+.works-section-container-main {
+  background: $black;
+  padding: 0;
+}
+
+/* Title container — full-width centered, takes up its own height for the pin */
+.works-title-wrap {
+  margin-inline: auto;
+  width: min(1720px, 100%);
+}
+
+.title-section-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: clamp(26rem, 56vw, 67.5rem);
+  width: 100%;
+}
+
+.title-section-container h2 {
+  color: transparent;
+  font-family: $font-movatif;
+  font-size: clamp(2.3rem, 4.75vw, 5.6875rem);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Title scroll-fill: white → orange while pinned */
+.works-title-fill {
+  --title-fill: 0%;
+  background: linear-gradient(90deg,
+      $cta-orange 0%,
+      $cta-orange var(--title-fill),
+      $white var(--title-fill),
+      $white 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  display: inline-block;
+}
+
+/* Cards list */
+.works-item-container-wrap {
+  position: relative;
+}
+
+/*
+ * Each wrapper is both the scroll spacer (150svh) and sticky container.
+ * No outer element needed. 150svh = 100svh entrance travel + 50svh dwell.
+ * z-index via nth-child ensures later cards render ON TOP of earlier ones.
+ */
+.work-item-wrapper {
+  height: 150svh;
+  position: sticky;
+  top: clamp(1rem, 2vw, 2rem);
+  will-change: transform;
+
+  /* Last card: no dwell tail, no trailing black space */
+  &:last-child {
+    height: 100svh;
+  }
+
+  &:nth-child(1) {
+    z-index: 1;
+  }
+
+  &:nth-child(2) {
+    z-index: 2;
+  }
+
+  &:nth-child(3) {
+    z-index: 3;
+  }
+
+  &:nth-child(4) {
+    z-index: 4;
+  }
+
+  &:nth-child(5) {
+    z-index: 5;
+  }
+
+  &:nth-child(6) {
+    z-index: 6;
+  }
+}
+
+/* Card — fills viewport minus the sticky offset */
+.work-item {
+  height: calc(100svh - clamp(1rem, 2vw, 2rem));
+  overflow: hidden;
+  position: relative;
+  transform-origin: center bottom;
+  width: 100%;
+  will-change: transform;
+
+  &--clickable {
+    cursor: pointer;
+
+    &:hover .work-item-image img {
+      transform: scale(1.05) !important;
+      /* subtle zoom on hover */
+    }
+
+    &:hover .work-item-overlay {
+      opacity: 0.38;
+      /* slightly more dark on hover */
+    }
+  }
+}
+
+/* next/image renders a div wrapper — make it fill the card */
+.work-item-image {
+  inset: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: center center;
+    width: 100%;
+    will-change: transform;
+  }
+}
+
+.work-item-overlay {
+  background: rgba($black, 0.62);
+  inset: 0;
+  opacity: 0.2;
+  position: absolute;
+  z-index: 1;
+}
+
+.top-right-section {
+  position: absolute;
+  right: clamp(1rem, 3.2vw, 4.5rem);
+  top: clamp(1.25rem, 5.2vw, 5rem);
+  z-index: 2;
+}
+
+.work-card-links {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.45rem, 1.15vw, 1rem);
+}
+
+.work-card-links a {
+  color: #e8e8e8;
+  font-family: $font-sf-pro;
+  font-size: clamp(0.95rem, 1.45vw, 2rem);
+  font-weight: 400;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.work-card-links a:hover {
+  color: $white;
+}
+
+.work-card-bottom {
+  align-items: center;
+  bottom: clamp(2rem, 7.2vw, 10rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.35rem, 0.7vw, 0.625rem);
+  left: 50%;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  width: min(100%, 47.8125rem);
+  z-index: 2;
+}
+
+.work-card-bottom h4 {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(2.1rem, 6.6vw, 5.25rem);
+  font-weight: 400;
+  line-height: 1;
+  margin: 0;
+}
+
+.work-card-bottom p {
+  color: #e8e8e8;
+  font-family: $font-sf-pro;
+  font-size: clamp(0.95rem, 1.7vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.58;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+@media (max-width: 75rem) {
+  .title-section-container {
+    min-height: clamp(18rem, 40vw, 28rem);
+  }
+
+  .top-right-section {
+    right: 1rem;
+    top: 1rem;
+  }
+
+  .work-card-bottom {
+    bottom: clamp(1.2rem, 5vw, 2.5rem);
+    width: min(100%, 40rem);
+  }
+}
+
+@media (max-width: 56.1875rem) {
+
+  /* Mobile header ~4.8rem — sticky offset updated; wrapper keeps its 150svh scroll height */
+  .work-item-wrapper {
+    top: 4.8rem;
+
+    &:last-child {
+      height: 100svh;
+    }
+  }
+
+  /* Card must match visible area = viewport minus mobile header (not desktop clamp) */
+  .work-item {
+    height: calc(100svh - 4.8rem);
+  }
+
+  .title-section-container {
+    min-height: clamp(20rem, 72vw, 30rem);
+  }
+
+  .title-section-container h2 {
+    font-size: clamp(1.95rem, 10vw, 3.1rem);
+    line-height: 1.06;
+  }
+
+  .work-card-links {
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .work-card-links a {
+    font-size: clamp(0.82rem, 3.3vw, 1.02rem);
+    line-height: 1.35;
+  }
+
+  .work-card-bottom {
+    bottom: 9rem;
+    /* clear the floating "Back to top" button */
+    padding: 0 1rem;
+    width: 100%;
+  }
+
+  .work-card-bottom h4 {
+    font-size: clamp(1.8rem, 10.5vw, 2.9rem);
+  }
+
+  .work-card-bottom p {
+    font-size: clamp(0.82rem, 3.7vw, 1rem);
+    line-height: 1.35;
+  }
+}

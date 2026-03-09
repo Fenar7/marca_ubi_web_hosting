@@ -1,0 +1,194 @@
+.contact-section-container-main {
+  background: $black;
+  padding: 0;
+}
+
+.contact-section-container {
+  margin-inline: auto;
+  max-width: none;
+  min-height: clamp(30rem, 46.9vw, 56.25rem);
+  overflow: hidden;
+  position: relative;
+  width: min(1920px, 100%);
+}
+
+/* ─── Black card overlay at top ──────────────────────────────────────────── */
+.top-black-container {
+  background: $black;
+  border-bottom-left-radius: clamp(2.8rem, 4.7vw, 5.625rem);
+  border-bottom-right-radius: clamp(2.8rem, 4.7vw, 5.625rem);
+  height: clamp(7.5rem, 10.1vw, 12.125rem);
+  inset: 0 0 auto;
+  position: absolute;
+  width: 100%;
+  will-change: transform;
+  z-index: 3;
+}
+
+/* ─── Background image — clean zoom-out (no blur, no brightness filter) ─── */
+.contact-bg-image {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  position: absolute;
+  transform-origin: center center;
+  width: 100%;
+  will-change: transform;
+}
+
+/* ─── Image gradient overlay ─────────────────────────────────────────────── */
+.contact-image-overlay {
+  background: linear-gradient(180.945deg,
+      rgba($black, 0) 40.219%,
+      rgba($black, 0.7) 70.265%);
+  inset: 0;
+  position: absolute;
+}
+
+/* ─── Bottom content section ─────────────────────────────────────────────── */
+.contact-bottom-section {
+  align-items: center;
+  bottom: clamp(3.3rem, 6.9vw, 6.4375rem);
+  display: flex;
+  flex-direction: column;
+  left: 50%;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  width: min(44.3125rem, calc(100% - 2rem));
+  z-index: 2;
+}
+
+.contact-bottom-section h2 {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(2.2rem, 3.65vw, 4.0625rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0 0 clamp(0.4rem, 0.7vw, 0.5rem);
+  will-change: transform, opacity;
+}
+
+.contact-bottom-section p {
+  color: #e8e8e8;
+  font-family: $font-sf-pro;
+  font-size: clamp(1rem, 1.35vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.58;
+  margin: 0 0 clamp(1rem, 1.45vw, 1.4375rem);
+  will-change: transform, opacity;
+}
+
+/* ─── Responsive: tablet ─────────────────────────────────────────────────── */
+@media (max-width: 75rem) {
+  .top-black-container {
+    border-bottom-left-radius: clamp(2rem, 7vw, 4rem);
+    border-bottom-right-radius: clamp(2rem, 7vw, 4rem);
+    height: clamp(6.75rem, 13vw, 9.5rem);
+  }
+
+  .contact-section-container {
+    min-height: clamp(27rem, 56vw, 40rem);
+  }
+}
+
+/* ─── Responsive: mobile ─────────────────────────────────────────────────── */
+@media (max-width: 56.1875rem) {
+  .top-black-container {
+    border-bottom-left-radius: 2.2rem;
+    border-bottom-right-radius: 2.2rem;
+    height: 6.1rem;
+  }
+
+  .contact-section-container {
+    min-height: clamp(27rem, 122vw, 38rem);
+  }
+
+  .contact-bottom-section {
+    bottom: 1.6rem;
+    width: min(26rem, calc(100% - 1.5rem));
+  }
+
+  .contact-bottom-section h2 {
+    font-size: clamp(2rem, 10vw, 2.85rem);
+    line-height: 1.12;
+    margin-bottom: 0.3rem;
+  }
+
+  .contact-bottom-section p {
+    font-size: clamp(0.95rem, 3.95vw, 1.125rem);
+    line-height: 1.45;
+    margin-bottom: 0.85rem;
+  }
+}
+
+/* ─── Contact info row ────────────────────────────────────────────────────── */
+.contact-info-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0;
+  justify-content: center;
+  margin-top: clamp(1.1rem, 1.8vw, 1.6rem);
+  opacity: 0;
+  /* GSAP sets to 1 on entrance */
+  will-change: transform, opacity;
+}
+
+.contact-info-item {
+  align-items: center;
+  color: $white;
+  display: flex;
+  font-family: $font-sf-pro;
+  font-size: clamp(0.82rem, 1.1vw, 1rem);
+  font-weight: 400;
+  gap: 0.42rem;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.75;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.contact-info-icon {
+  color: $cta-orange;
+  display: flex;
+  flex-shrink: 0;
+
+  svg {
+    display: block;
+  }
+}
+
+.contact-info-divider {
+  background: $cta-orange;
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+  height: 4px;
+  margin: 0 clamp(0.6rem, 1.2vw, 1.1rem);
+  opacity: 0.7;
+  width: 4px;
+}
+
+@media (max-width: 56.1875rem) {
+  .contact-info-row {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .contact-info-divider {
+    display: none;
+  }
+
+  .contact-info-item {
+    font-size: clamp(0.88rem, 3.8vw, 1rem);
+  }
+}

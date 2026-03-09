@@ -1,0 +1,93 @@
+.sectionTitleBlock {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  grid-template-columns: minmax(17rem, 44.8%) minmax(16rem, 42.5rem);
+  justify-content: space-between;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2vw, 1.875rem);
+}
+
+.tag {
+  align-items: center;
+  display: flex;
+  gap: 0.6875rem;
+}
+
+.tagAsterisk {
+  color: $cta-orange;
+  display: inline-block;
+  font-family: $font-movatif;
+  font-size: clamp(1.2rem, 1.35vw, 1.625rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.tagText {
+  color: $hash-grey;
+  font-family: $font-movatif;
+  font-size: clamp(1.6rem, 2vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1;
+  margin: 0;
+}
+
+.title {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(2rem, 4vw, 4.0625rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  margin: 0;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.4rem, 4vw, 5.5625rem);
+}
+
+.description {
+  color: #e8e8e8;
+  font-family: $font-sf-pro;
+  font-size: clamp(1rem, 1.5vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.58;
+  margin: 0;
+}
+
+.actionWrap {
+  align-items: flex-start;
+  display: flex;
+}
+
+@media (max-width: 71.875rem) {
+  .sectionTitleBlock {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rightColumn {
+    gap: 1.8rem;
+    max-width: 40rem;
+  }
+}
+
+@media (max-width: 56.1875rem) {
+  .tagText {
+    font-size: clamp(1.25rem, 5.4vw, 1.7rem);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 8vw, 2.85rem);
+    line-height: 1.15;
+  }
+
+  .description {
+    font-size: clamp(0.95rem, 3.8vw, 1.2rem);
+    line-height: 1.48;
+  }
+}

@@ -1,0 +1,228 @@
+.heroSection {
+  background: linear-gradient(122.459deg, #53595d 2.5892%, #0b0d11 86.828%);
+  color: $white;
+  isolation: isolate;
+  min-height: max(47.5rem, 100svh);
+  overflow: hidden;
+  padding: clamp(1.25rem, 5.2vw, 6.25rem);
+  position: relative;
+  z-index: 8;
+}
+
+.backgroundLayer {
+  inset: 0;
+  position: absolute;
+  z-index: -1;
+}
+
+.heroImage {
+  backface-visibility: hidden;
+  height: 100%;
+  left: 50%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  transform-style: preserve-3d;
+  will-change: transform;
+  width: max(100%, 75rem);
+}
+
+.gradientOverlay {
+  background: linear-gradient(70.096deg, rgba(68, 15, 20, 0.8) 6.4947%, rgba(220, 66, 22, 0) 49.856%);
+  inset: 0;
+  position: absolute;
+}
+
+.contentContainer {
+  margin-top: clamp(3.5rem, 11.5vh, 11.3125rem);
+  max-width: 39.8125rem;
+  perspective: 75rem;
+  position: relative;
+  z-index: 2;
+}
+
+.title {
+  color: $white;
+  display: grid;
+  font-family: $font-movatif;
+  font-size: clamp(2.3rem, 5vw, 4.0625rem);
+  font-weight: 400;
+  gap: 0.02em;
+  letter-spacing: -0.01em;
+  line-height: 1.04;
+  margin: 0;
+}
+
+.titleLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.titleLine {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.divider {
+  background: rgba($white, 0.55);
+  display: block;
+  height: 0.1875rem;
+  margin-top: clamp(1.1rem, 1.8vw, 1.875rem);
+  width: min(19.25rem, 56vw);
+}
+
+.subtitle {
+  color: #e8e8e8;
+  font-family: $font-sf-pro;
+  font-size: clamp(1rem, 1.55vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.16;
+  margin: clamp(1.25rem, 1.9vw, 2.1875rem) 0 0;
+  max-width: 33.8125rem;
+}
+
+.heroButtonWrap {
+  margin-top: clamp(1.1rem, 1.4vw, 1.5rem);
+}
+
+.heroButton {
+  will-change: transform, opacity;
+}
+
+.buttonIcon {
+  display: block;
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.bottomRow {
+  align-items: flex-end;
+  bottom: clamp(1.25rem, 6.8vh, 6.8125rem);
+  display: flex;
+  justify-content: flex-start;
+  left: clamp(1.25rem, 5.2vw, 6.25rem);
+  pointer-events: none;
+  position: absolute;
+  right: clamp(1.25rem, 5.2vw, 6.25rem);
+  z-index: 2;
+}
+
+.logoSwitcher {
+  aspect-ratio: 399 / 128;
+  max-width: min(14.875rem, 31vw);
+  overflow: hidden;
+  pointer-events: auto;
+  position: relative;
+  width: min(14.875rem, 31vw);
+}
+
+.switchLogo {
+  display: block;
+  height: 100%;
+  inset: 0;
+  object-fit: contain;
+  object-position: left center;
+  position: absolute;
+  width: 100%;
+  will-change: transform;
+}
+
+.ubiLogo,
+.marcaLogo {
+  transform: translateY(0);
+}
+
+@media (max-width: 74.9375rem) {
+  .contentContainer {
+    max-width: 34.5rem;
+  }
+
+  .title {
+    font-size: clamp(2.1rem, 4.7vw, 3.55rem);
+  }
+
+  .subtitle {
+    font-size: clamp(1rem, 1.75vw, 1.3rem);
+    max-width: 30rem;
+  }
+
+  .bottomRow {
+    bottom: 2.5rem;
+  }
+
+}
+
+@media (max-width: 61.9375rem) {
+  .heroSection {
+    min-height: 51.25rem;
+    padding-inline: 1.5rem;
+    /* consistent 1.5rem mobile padding */
+  }
+
+  .gradientOverlay {
+    background: linear-gradient(70.096deg, rgba(68, 15, 20, 0.85) 18%, rgba(220, 66, 22, 0.1) 62%);
+  }
+
+  .contentContainer {
+    margin-top: 3.4rem;
+    max-width: min(34rem, 100%);
+  }
+
+  .title {
+    font-size: clamp(2rem, 7vw, 3.15rem);
+    line-height: 1.06;
+  }
+
+  .divider {
+    width: min(14rem, 54vw);
+  }
+
+  .subtitle {
+    font-size: clamp(0.96rem, 3vw, 1.2rem);
+    line-height: 1.24;
+    max-width: 24rem;
+  }
+
+  .bottomRow {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .logoSwitcher {
+    max-width: 9.25rem;
+    width: 9.25rem;
+  }
+
+}
+
+@media (max-width: 35.9375rem) {
+  .heroSection {
+    min-height: 45.5rem;
+    padding: 1rem 1.5rem;
+    /* consistent 1.5rem inline on mobile */
+  }
+
+  .contentContainer {
+    margin-top: 5rem;
+  }
+
+  .title {
+    font-size: clamp(1.95rem, 9vw, 2.65rem);
+  }
+
+  .subtitle {
+    max-width: 20.5rem;
+  }
+
+  .bottomRow {
+    bottom: 1.5rem;
+    left: 1rem;
+    right: 1rem;
+  }
+}
