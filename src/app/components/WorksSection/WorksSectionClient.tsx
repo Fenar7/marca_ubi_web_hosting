@@ -195,6 +195,7 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
                             <article
                                 className={`work-item${work.viewWorkLink ? " work-item--clickable" : ""}`}
                                 data-node-id="553:1148"
+                                data-work-cursor={work.viewWorkLink ? "VIEW PROJECT" : undefined}
                                 onClick={() => {
                                     if (work.viewWorkLink) window.open(work.viewWorkLink, "_blank", "noopener,noreferrer");
                                 }}

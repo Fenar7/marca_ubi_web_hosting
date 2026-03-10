@@ -6,7 +6,7 @@ import { shouldUseMobileMotion } from "@/app/lib/motion";
 import PillButton from "../ui/PillButton/PillButton";
 import styles from "./Hero.module.scss";
 
-const heroBackgroundImage = "/images/hero-image.png";
+const heroBackgroundImage = "/images/bg-cover-image-3.png";
 const ubiLogoImage = "/images/ubi.png";
 const marcaLogoImage = "/images/marca.png";
 const primaryArrowImage = "/hero/primary-arrow.png";

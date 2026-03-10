@@ -19,12 +19,49 @@
     0 0 2.4rem rgba(255, 106, 0, 0.2);
   height: 2.6rem;
   opacity: 1;
+  position: relative;
   transition:
     background 0.24s ease,
     box-shadow 0.28s ease,
     opacity 0.24s ease;
   transform: translate3d(0, 0, 0);
+  transition:
+    width 0.28s ease,
+    height 0.28s ease,
+    background 0.24s ease,
+    box-shadow 0.28s ease,
+    opacity 0.24s ease;
   width: 2.6rem;
+}
+
+.orb::after {
+  background: radial-gradient(circle, rgba(255, 133, 31, 0.48) 0%, rgba(255, 106, 0, 0) 68%);
+  border-radius: inherit;
+  content: "";
+  inset: -22%;
+  opacity: 0;
+  position: absolute;
+  transform: scale(0.62);
+  transition: opacity 0.28s ease, transform 0.32s ease;
+}
+
+.workLabel {
+  color: #0d0d0d;
+  font-family: $font-sf-pro;
+  font-size: 0.68rem;
+  font-weight: 700;
+  left: 50%;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  max-width: 70%;
+  position: absolute;
+  text-align: center;
+  text-transform: uppercase;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  will-change: transform, opacity;
+  z-index: 1;
 }
 
 .liquidHover .orb {
@@ -34,6 +71,38 @@
     0 0.38rem 0.9rem rgba(255, 106, 0, 0.12),
     0 0 1.35rem rgba(255, 106, 0, 0.09);
   opacity: 0.38;
+}
+
+.workHover .orb {
+  animation: workCursorMorph 1.4s ease-in-out infinite alternate;
+  background: #ff6a00;
+  box-shadow:
+    0 0 0 0.08rem rgba(255, 166, 105, 0.34),
+    0 1rem 2.6rem rgba(255, 106, 0, 0.34),
+    0 0 3.2rem rgba(255, 106, 0, 0.24);
+  height: 8rem;
+  opacity: 1;
+  width: 8rem;
+}
+
+.workHover .orb::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.workHover .workLabel {
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+}
+
+@keyframes workCursorMorph {
+  0% {
+    border-radius: 48% 52% 45% 55% / 51% 47% 53% 49%;
+  }
+
+  100% {
+    border-radius: 57% 43% 58% 42% / 44% 56% 46% 54%;
+  }
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -47,11 +116,21 @@
     height: 2.3rem;
     width: 2.3rem;
   }
+
+  .workHover .orb {
+    height: 7.2rem;
+    width: 7.2rem;
+  }
 }
 
 @media (min-width: 120rem) {
   .orb {
     height: 3rem;
     width: 3rem;
+  }
+
+  .workHover .orb {
+    height: 8.6rem;
+    width: 8.6rem;
   }
 }

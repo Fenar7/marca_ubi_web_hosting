@@ -12,13 +12,15 @@ const LIQUID_CARD_SELECTOR = "[data-liquid-card]";
 export default function CustomCursor() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const orbRef = useRef<HTMLSpanElement | null>(null);
+  const labelRef = useRef<HTMLSpanElement | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
     const root = rootRef.current;
     const orb = orbRef.current;
+    const label = labelRef.current;
 
-    if (!root || !orb) {
+    if (!root || !orb || !label) {
       return;
     }
 
@@ -42,8 +44,11 @@ export default function CustomCursor() {
     let settleTween: gsap.core.Tween | null = null;
     let activeLiquidCard: HTMLElement | null = null;
     let activeLiquidBlob: HTMLElement | null = null;
+    let activeWorkCard: HTMLElement | null = null;
     let liquidXTo: ((value: number) => gsap.core.Tween) | null = null;
     let liquidYTo: ((value: number) => gsap.core.Tween) | null = null;
+    const WORK_CARD_SELECTOR = "[data-work-cursor]";
+    const WORK_HOVER_SCALE = 1.06;
 
     gsap.set(root, {
       autoAlpha: 0,
@@ -61,6 +66,11 @@ export default function CustomCursor() {
       rotate: 0,
       force3D: true,
       transformOrigin: "50% 50%",
+    });
+    gsap.set(label, {
+      autoAlpha: 0,
+      y: 4,
+      scale: 0.92,
     });
 
     const moveX = gsap.quickTo(root, "x", { duration: 0.28, ease: "power3.out" });
@@ -112,6 +122,45 @@ export default function CustomCursor() {
       liquidXTo = null;
       liquidYTo = null;
       orbScale(1);
+    };
+
+    const deactivateWorkCard = () => {
+      root.classList.remove(styles.workHover);
+      activeWorkCard = null;
+
+      gsap.to(label, {
+        autoAlpha: 0,
+        y: 4,
+        scale: 0.92,
+        duration: 0.18,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+
+      if (!activeLiquidCard) {
+        orbScale(1);
+      }
+    };
+
+    const activateWorkCard = (card: HTMLElement) => {
+      if (activeWorkCard === card) {
+        return;
+      }
+
+      activeWorkCard = card;
+      root.classList.add(styles.workHover);
+      label.textContent = card.dataset.workCursor?.trim() || "VIEW PROJECT";
+
+      gsap.to(label, {
+        autoAlpha: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.26,
+        ease: "expo.out",
+        overwrite: "auto",
+      });
+
+      orbScale(WORK_HOVER_SCALE);
     };
 
     const activateLiquidCard = (card: HTMLElement, event?: PointerEvent) => {
@@ -166,14 +215,14 @@ export default function CustomCursor() {
       const deltaX = nextX - lastX;
       const deltaY = nextY - lastY;
       const speed = Math.hypot(deltaX, deltaY);
-      const stretch = Math.min(speed / 42, 0.28);
+      const stretch = activeWorkCard ? 0 : Math.min(speed / 42, 0.28);
       const angle = (Math.atan2(deltaY, deltaX) * 180) / Math.PI;
 
       moveX(nextX);
       moveY(nextY);
       orbScaleX(1 + stretch);
       orbScaleY(1 - stretch * 0.58);
-      orbRotate(angle);
+      orbRotate(activeWorkCard ? 0 : angle);
 
       lastX = nextX;
       lastY = nextY;
@@ -191,11 +240,11 @@ export default function CustomCursor() {
 
     const handlePointerDown = () => {
       reveal();
-      orbScale(0.86);
+      orbScale(activeWorkCard ? WORK_HOVER_SCALE * 0.92 : 0.86);
     };
 
     const handlePointerUp = () => {
-      orbScale(1);
+      orbScale(activeWorkCard ? WORK_HOVER_SCALE : 1);
     };
 
     const handlePointerLeaveWindow = () => {
@@ -216,6 +265,12 @@ export default function CustomCursor() {
         orbScale(1.28);
       }
 
+      const workCard = target.closest<HTMLElement>(WORK_CARD_SELECTOR);
+
+      if (workCard) {
+        activateWorkCard(workCard);
+      }
+
       const liquidCard = target.closest<HTMLElement>(LIQUID_CARD_SELECTOR);
 
       if (liquidCard) {
@@ -231,7 +286,18 @@ export default function CustomCursor() {
       }
 
       if (target.closest(INTERACTIVE_SELECTOR)) {
-        orbScale(1);
+        orbScale(activeWorkCard ? WORK_HOVER_SCALE : 1);
+      }
+
+      const fromWorkCard = target.closest<HTMLElement>(WORK_CARD_SELECTOR);
+
+      if (fromWorkCard) {
+        const related = event.relatedTarget;
+        const stillInsideWorkCard = related instanceof Element && fromWorkCard.contains(related);
+
+        if (!stillInsideWorkCard) {
+          deactivateWorkCard();
+        }
       }
 
       const fromLiquidCard = target.closest<HTMLElement>(LIQUID_CARD_SELECTOR);
@@ -264,6 +330,7 @@ export default function CustomCursor() {
       document.removeEventListener("mouseleave", handlePointerLeaveWindow);
       document.removeEventListener("pointerover", handlePointerOver);
       document.removeEventListener("pointerout", handlePointerOut);
+      deactivateWorkCard();
       deactivateLiquidCard();
       document.documentElement.classList.remove("custom-cursor-enabled");
       document.body.classList.remove("custom-cursor-enabled");
@@ -276,6 +343,9 @@ export default function CustomCursor() {
   return (
     <div className={styles.cursorRoot} ref={rootRef} aria-hidden="true">
       <span className={styles.orb} ref={orbRef} />
+      <span className={styles.workLabel} ref={labelRef}>
+        VIEW PROJECT
+      </span>
     </div>
   );
 }
