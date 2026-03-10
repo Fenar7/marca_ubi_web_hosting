@@ -64,6 +64,27 @@ const getMetricCountStops = (value: number) => {
   return [...new Set(stops)];
 };
 
+const renderMetricTitle = (title: string) => {
+  const segments = title.split("&");
+
+  if (segments.length === 1) {
+    return title;
+  }
+
+  return segments.flatMap((segment, index) => {
+    if (index === segments.length - 1) {
+      return [segment];
+    }
+
+    return [
+      segment,
+      <span className="tag-separator" key={`ampersand-${title}-${index}`}>
+        &
+      </span>,
+    ];
+  });
+};
+
 export default function AboutSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const aboutStarRef = useRef<HTMLImageElement | null>(null);
@@ -849,6 +870,12 @@ export default function AboutSection() {
                 variant="brand"
                 icon={<img className={styles.buttonIcon} src="/hero/primary-arrow.png" alt="" />}
               />
+              <PillButton
+                className={styles.aboutButtonSecondary}
+                href="#works"
+                label="Explore Our Work"
+                icon={<img className={styles.buttonIcon} src="/hero/primary-arrow.png" alt="" />}
+              />
             </div>
           </div>
 
@@ -904,7 +931,7 @@ export default function AboutSection() {
                           metricTitleRefs.current[index] = element;
                         }}
                       >
-                        {metric.title}
+                        {renderMetricTitle(metric.title)}
                       </h4>
                     </div>
 

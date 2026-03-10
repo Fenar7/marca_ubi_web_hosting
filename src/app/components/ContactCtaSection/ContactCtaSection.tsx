@@ -146,13 +146,14 @@ const ContactCtaSection = () => {
         <div className="contact-image-overlay" aria-hidden="true" />
 
         <div className="contact-bottom-section" data-node-id="555:1244">
-          <h2 ref={titleRef}>Get in Touch</h2>
+          <h2 ref={titleRef}>Let&apos;s Build Something That Holds</h2>
           <p ref={subtitleRef}>
-            Share your requirements and timeline. We&apos;ll respond with a
-            clear plan and next steps.
+            If you&apos;re building a brand, refining an identity, or shaping a
+            digital experience, we&apos;d like to hear what you&apos;re working on.
+            Share the context, and we&apos;ll come back with clear next steps.
           </p>
           <div ref={buttonRef}>
-            <PillButton label="Get Started" variant="brand" href="#" />
+            <PillButton label="Start a Project" variant="brand" href="#contact" />
           </div>
 
           {/* Contact info: phone · email · location */}

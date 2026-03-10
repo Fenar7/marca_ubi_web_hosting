@@ -11,28 +11,28 @@ const steps = [
     number: "01",
     title: "Discovery",
     description:
-      "We understand your brand, audience, goals, constraints, and success metrics. Communication is tight and everything important gets documented.",
+      "We begin by understanding the business, the audience, the market context, and the outcomes the work needs to achieve. This stage gives us the clarity required to make better strategic and creative decisions from the start.",
   },
   {
     number: "02",
     title: "Strategy and System",
     description:
-      "We translate insight into a system: positioning, messaging structure, visual direction, and reusable templates or UI that keep everything consistent.",
+      "We turn insight into structure by defining positioning, messaging, visual direction, and the systems that will keep the brand consistent across content, design, and digital experience.",
   },
   {
     number: "03",
     title: "Design and Build",
     description:
-      "We execute in focused cycles with internal checkpoints. Craft, hierarchy, and usability are reviewed before anything reaches you.",
+      "We shape the brand through identity, interfaces, content, and development, moving through focused execution cycles where craft, usability, and precision are reviewed before anything moves forward.",
   },
   {
     number: "04",
     title: "Deliver and Launch",
     description:
-      "We package production-ready deliverables with clean handoff for launch and long-term use, so the work holds up after day one.",
+      "We prepare the work for real-world use with clean delivery, practical handoff, and launch-ready assets, so the brand is not just presented well, but built to hold up over time.",
   },
 ] as const;
-const titleLines = ["How We Work, From", "Direction to Delivery"];
+const titleLines = ["How We Build, From Strategic", "Clarity to Real-World Rollout"];
 
 export default function StepSectionContainer() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -476,8 +476,8 @@ export default function StepSectionContainer() {
           descriptionClassName="step-title-description"
           description={
             <span className="step-title-description-inner" ref={descriptionRef}>
-              From first brief to final release, Marca Ubi runs a structured process designed to keep
-              quality high, timelines clean, and the brand consistent
+              From first conversation to final delivery, Marca Ubi follows a structured process that
+              keeps thinking sharp, execution aligned, and every touchpoint true to the brand.
             </span>
           }
           leftColumnClassName="step-title-left-column"

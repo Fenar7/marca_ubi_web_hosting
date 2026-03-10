@@ -10,24 +10,24 @@ gsap.registerPlugin(ScrollTrigger);
 
 const valueItems = [
   {
-    title: "Purpose",
-    text: "Build brands and experiences that stay consistent everywhere.",
+    title: "Thought Before Form",
+    text: "We do not begin with style. We begin with what the brand means and what it needs to become.",
   },
   {
-    title: "Where We\u2019re Going",
-    text: "Set a higher standard for how modern brands are built and shipped.",
+    title: "Art With Intention",
+    text: "Color, motion, imagery, and language are chosen to create emotion, not just decoration.",
   },
   {
-    title: "Values",
-    text: "Clarity over noise. Craft over shortcuts. Consistency over trends.",
+    title: "Experiences That Pull People In",
+    text: "We design for emotional, participatory, and immersive connection, not passive viewing.",
   },
   {
-    title: "Operating Philosophy",
-    text: "Communicate early. Systemize. Execute with control.",
+    title: "Built, Not Improvised",
+    text: "Strong work comes from structure, discipline, and systems that hold beyond launch.",
   },
 ];
 
-const titleLines = ["What We Stand For"];
+const titleLines = ["What Shapes The Way", "We Build"];
 
 const OurValuesSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -394,10 +394,10 @@ const OurValuesSection = () => {
 
           <p className="title-description">
             <span className="title-description-inner" ref={descriptionRef}>
-              Marca Ubi is built on a simple belief: strong brands are
-              engineered, not improvised. These principles guide how we
-              communicate, design, build, and deliver work that stays consistent
-              long after launch.
+              Marca Ubi is guided by a clear belief: strong brands are built
+              with intent, not assembled through disconnected decisions. These
+              principles shape how we think, create, and deliver work that stays
+              coherent long after launch.
             </span>
           </p>
         </div>

@@ -12,7 +12,7 @@ const testimonialsImages = {
   center: "/testimonials/center-item.png",
   right: "/testimonials/right-item.png",
 };
-const titleLines = ["What Clients Say After", "Working With Us"];
+const titleLines = ["What Clients Value After", "Working With Marca Ubi"];
 
 export default function TestimonialsSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -192,15 +192,16 @@ export default function TestimonialsSection() {
               <PillButton
                 className={styles.contactButton}
                 icon={<img className={styles.buttonIcon} src="/hero/primary-arrow.png" alt="" />}
-                label="Contact us"
+                href="#contact"
+                label="Start a Conversation"
                 variant="brand"
               />
             </div>
           }
           description={
             <span className={styles.headerDescriptionInner} ref={descriptionRef}>
-              Honest feedback from teams we’ve supported across branding, content, design, and product
-              delivery.
+              Real feedback from teams and businesses we&apos;ve partnered with across brand
+              engineering, art, digital experiences, and communication systems.
             </span>
           }
           descriptionClassName={styles.headerDescription}

@@ -10,9 +10,9 @@ import styles from "./HowWeWork.module.scss";
 const cards = [
   {
     id: "direction-locked",
-    title: "Direction Locked",
+    title: "Strategy Before Expression",
     description:
-      "Every project starts by locking positioning, audience, tone, and success metrics. Clear inputs avoid wasted cycles.",
+      "Every project begins by defining the brand core, audience, positioning, and direction, so every creative and digital decision has a clear foundation.",
     icon: "/images/icons/direction-locked.png",
     className: styles.cardDirection,
     type: "image",
@@ -20,34 +20,34 @@ const cards = [
   },
   {
     id: "systems-not-one-offs",
-    title: "Systems, Not One-Offs",
+    title: "Systems Over Isolated Outputs",
     description:
-      "Identity, messaging, content, and UI are built as reusable systems so the brand stays consistent.",
+      "Identity, messaging, content, and digital touchpoints are built as connected systems, not standalone pieces, so the brand stays coherent as it grows.",
     icon: "/images/icons/systems-icon.png",
     className: styles.cardSystems,
     type: "solid",
   },
   {
     id: "craft-with-quality-gates",
-    title: "Craft With Quality Gates",
+    title: "Craft With Deliberate Precision",
     description:
-      "Work moves through internal review before it reaches the client. Details, hierarchy, and polish are non-negotiable.",
+      "Every element is shaped with care, from hierarchy and storytelling to motion and interaction, so the work feels refined, meaningful, and considered.",
     icon: "/images/icons/craft-icon.png",
     className: styles.cardCraft,
     type: "gradient",
   },
   {
     id: "ship-iterate-scale",
-    title: "Ship, Iterate, Scale",
+    title: "Build, Refine, Evolve",
     description:
-      "Deliverables are packaged for real-world use, then improved through feedback and performance data so the brand keeps getting stronger.",
+      "We create for real-world use, then strengthen the work through feedback, iteration, and performance insight so the brand continues to improve over time.",
     icon: "/images/icons/ship-iterate-icon.png",
     className: styles.cardShip,
     type: "image",
     image: "/images/how-we-work2.png",
   },
 ] as const;
-const titleLines = ["How We Approach Every", "Project"];
+const titleLines = ["How We Build Brands With", "Clarity, Structure, and Intent"];
 
 export default function HowWeWork() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -588,8 +588,9 @@ export default function HowWeWork() {
           descriptionClassName={styles.titleDescription}
           description={
             <span className={styles.titleDescriptionInner} ref={descriptionRef}>
-              Marca Ubi blends strategy, design, content, and product execution to build brands that
-              stay sharp everywhere they show up.
+              Our process brings together brand engineering, art, and experience design to create
+              work that is strategically grounded, creatively distinct, and built to perform in the
+              real world.
             </span>
           }
           leftColumnClassName={styles.titleLeftColumn}
@@ -599,7 +600,7 @@ export default function HowWeWork() {
           rightColumnClassName={styles.titleRightColumn}
           label={
             <span className={styles.titleTagTextInner} ref={tagTextRef}>
-              How we work
+              How We Work
             </span>
           }
           titleClassName={styles.sectionTitle}
