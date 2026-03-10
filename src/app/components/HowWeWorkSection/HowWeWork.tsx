@@ -44,7 +44,7 @@ const cards = [
     icon: "/images/icons/ship-iterate-icon.png",
     className: styles.cardShip,
     type: "image",
-    image: "/images/how-we-work2.png",
+    image: "/images/how-we-wk2.png",
   },
 ] as const;
 const titleLines = ["How We Build Brands With", "Clarity, Structure, and Intent"];
