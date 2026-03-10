@@ -756,7 +756,7 @@ export default function AboutSection() {
   }, [titleLines]);
 
   return (
-    <section className={styles.aboutSectionContainerMain} ref={sectionRef} data-node-id="496:920">
+    <section className={styles.aboutSectionContainerMain} id="about" ref={sectionRef} data-node-id="496:920">
       <div className={styles.aboutSectionContainer}>
         <div className={styles.titleContainer}>
           <div className={styles.aboutTag}>

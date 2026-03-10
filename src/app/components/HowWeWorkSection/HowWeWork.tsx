@@ -581,7 +581,7 @@ export default function HowWeWork() {
   }, []);
 
   return (
-    <section className={styles.howWeWorkContainerSection} data-node-id="545:1145" ref={sectionRef}>
+    <section className={styles.howWeWorkContainerSection} data-node-id="545:1145" id="services" ref={sectionRef}>
       <div className={styles.howWeWorkContainer}>
         <SectionTitleBlock
           className={styles.titleSection}

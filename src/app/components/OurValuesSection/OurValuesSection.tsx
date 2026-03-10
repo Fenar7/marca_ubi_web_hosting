@@ -344,6 +344,7 @@ const OurValuesSection = () => {
     <section
       className="our-values-section-container"
       data-node-id="553:1162"
+      id="values"
       ref={sectionRef}
     >
       {/* Parallax background layer */}
