@@ -8,36 +8,40 @@ import PillButton from "../ui/PillButton/PillButton";
 import styles from "./AboutSection.module.scss";
 
 const services = [
-  { number: "01", title: "Brand Strategy" },
-  { number: "02", title: "Brand Identity Design" },
-  { number: "03", title: "Packaging Design" },
-  { number: "04", title: "Creative Direction" },
+  { number: "01", title: "Brand Engineering" },
+  { number: "02", title: "Identity & Art Systems" },
+  { number: "03", title: "Digital Experience Design" },
+  { number: "04", title: "Communication & Growth" },
 ];
 
 const metrics = [
   {
     value: 100,
-    title: "Successful Project",
+    suffix: "+",
+    title: "Brands & Businesses Served",
     description:
-      "Marca Ubi designs identities, content systems, and digital experiences that stay consi",
+      "Across strategy, identity, digital platforms, and communication systems.",
   },
   {
-    value: 100,
-    title: "Successful Project",
+    value: 12,
+    suffix: "+",
+    title: "Brand Engineering Services",
     description:
-      "Marca Ubi designs identities, content systems, and digital experiences that stay consi",
+      "From positioning and messaging to identity systems and market direction.",
   },
   {
-    value: 100,
-    title: "Successful Project",
+    value: 3,
+    suffix: "",
+    title: "Integrated Disciplines",
     description:
-      "Marca Ubi designs identities, content systems, and digital experiences that stay consi",
+      "Brand engineering, art, and experience design working as one system.",
   },
   {
-    value: 100,
-    title: "Successful Project",
+    value: 360,
+    suffix: "\u00b0",
+    title: "Brand Application Scope",
     description:
-      "Marca Ubi designs identities, content systems, and digital experiences that stay consi",
+      "Built across strategy, visuals, digital platforms, and communication touchpoints.",
   },
 ];
 
@@ -82,7 +86,7 @@ export default function AboutSection() {
   const metricTitleRefs = useRef<Array<HTMLHeadingElement | null>>([]);
   const metricDescriptionRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const countTrackRefs = useRef<Array<HTMLSpanElement | null>>([]);
-  const countPlusRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const countSuffixRefs = useRef<Array<HTMLSpanElement | null>>([]);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -105,7 +109,9 @@ export default function AboutSection() {
     const metricTitles = metricTitleRefs.current.filter((element): element is HTMLHeadingElement => element !== null);
     const metricDescriptions = metricDescriptionRefs.current.filter((element): element is HTMLParagraphElement => element !== null);
     const countTracks = countTrackRefs.current.filter((element): element is HTMLSpanElement => element !== null);
-    const countPluses = countPlusRefs.current.filter((element): element is HTMLSpanElement => element !== null);
+    const countSuffixes = countSuffixRefs.current.filter(
+      (element): element is HTMLSpanElement => element !== null,
+    );
 
     if (!section) {
       return;
@@ -130,7 +136,7 @@ export default function AboutSection() {
       gsap.set(metricTopRows, { autoAlpha: 1, y: 0, clipPath: "inset(0% 0% 0% 0%)" });
       gsap.set(metricTitles, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
       gsap.set(metricDescriptions, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
-      gsap.set(countPluses, { autoAlpha: 1, y: 0, scale: 1 });
+      gsap.set(countSuffixes, { autoAlpha: 1, y: 0, scale: 1 });
       if (aboutDescription) {
         gsap.set(aboutDescription, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
       }
@@ -504,7 +510,11 @@ export default function AboutSection() {
           filter: mobileMotion ? "none" : "blur(6px)",
         });
         gsap.set(countTracks, { yPercent: 0 });
-        gsap.set(countPluses, { autoAlpha: mobileMotion ? 0 : 0.28, y: mobileMotion ? 4 : 9, scale: mobileMotion ? 0.96 : 0.82 });
+        gsap.set(countSuffixes, {
+          autoAlpha: mobileMotion ? 0 : 0.28,
+          y: mobileMotion ? 4 : 9,
+          scale: mobileMotion ? 0.96 : 0.82,
+        });
 
         const metricsTimeline = gsap.timeline({
           scrollTrigger: mobileMotion
@@ -590,7 +600,7 @@ export default function AboutSection() {
             mobileMotion ? 0.34 : 1.04,
           )
           .to(
-            countPluses,
+            countSuffixes,
             {
               autoAlpha: 1,
               y: 0,
@@ -609,7 +619,8 @@ export default function AboutSection() {
     };
   }, []);
 
-  const titleText = "We Engineer Brands and Design Digital Experiences That Stay Consistent Everywhere Your Customers See You";
+  const titleText =
+    "We build brands that are clear in strategy, distinct in expression, and consistent in experience.";
 
   useEffect(() => {
     const calculateLines = () => {
@@ -730,7 +741,7 @@ export default function AboutSection() {
           <div className={styles.aboutTag}>
             <img className={styles.aboutStar} src="/images/asterisk.png" alt="" aria-hidden="true" ref={aboutStarRef} />
             <p className={styles.aboutTagText} ref={aboutTagTextRef}>
-              About <span className="tag-separator">/</span>Marca Ubi
+              About <span className="tag-separator">/</span> Marca Ubi
             </p>
           </div>
           <h2 className={styles.mainTitle} style={{ position: "relative" }}>
@@ -820,15 +831,21 @@ export default function AboutSection() {
         <div className={styles.textAndMetricsSection} ref={textAndMetricsRef}>
           <div className={styles.leftSection}>
             <p className={styles.aboutDescription} ref={aboutDescriptionRef}>
-              Marca Ubi designs identities, content systems, and digital experiences that stay
-              consistent everywhere your brand shows up. Marca Ubi designs identities, content systems,
-              and digital experiences that stay consistent everywhere your brand shows up.
+              Marca Ubi brings together brand engineering, artistic direction, and experience design
+              to build brands as complete systems rather than disconnected outputs. We define the
+              strategic core, shape the visual and emotional language, and translate it into digital
+              environments people can understand, engage with, and remember.
+              <br />
+              <br />
+              Every layer is designed to work with the next, so the brand is not only well designed,
+              but well built.
             </p>
             <span className={styles.verticalLine} aria-hidden="true" ref={aboutLineRef} />
             <div ref={aboutButtonRef} className={styles.aboutButtonWrap}>
               <PillButton
                 className={styles.aboutButton}
-                label="Get Started"
+                href="#contact"
+                label="Start a Project"
                 variant="brand"
                 icon={<img className={styles.buttonIcon} src="/hero/primary-arrow.png" alt="" />}
               />
@@ -870,14 +887,16 @@ export default function AboutSection() {
                             ))}
                           </span>
                         </span>
-                        <span
-                          className={styles.metricCountPlus}
-                          ref={(element) => {
-                            countPlusRefs.current[index] = element;
-                          }}
-                        >
-                          +
-                        </span>
+                        {metric.suffix ? (
+                          <span
+                            className={styles.metricCountPlus}
+                            ref={(element) => {
+                              countSuffixRefs.current[index] = element;
+                            }}
+                          >
+                            {metric.suffix}
+                          </span>
+                        ) : null}
                       </p>
                       <h4
                         className={styles.metricTitle}
