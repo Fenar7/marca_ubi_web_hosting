@@ -16,7 +16,7 @@ const cards = [
     icon: "/images/icons/direction-locked.png",
     className: styles.cardDirection,
     type: "image",
-    image: "/images/how-we-work1.png",
+    image: "/images/how-we-wk1.png",
   },
   {
     id: "systems-not-one-offs",
