@@ -85,6 +85,30 @@ const renderMetricTitle = (title: string) => {
   });
 };
 
+const renderServiceTitle = (title: string) => {
+  const segments = title.split("&");
+
+  if (segments.length === 1) {
+    return title;
+  }
+
+  return segments.flatMap((segment, index) => {
+    if (index === segments.length - 1) {
+      return [segment];
+    }
+
+    return [
+      segment,
+      <span
+        className={`tag-separator ${styles.serviceSeparator}`}
+        key={`service-ampersand-${title}-${index}`}
+      >
+        &
+      </span>,
+    ];
+  });
+};
+
 export default function AboutSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const aboutStarRef = useRef<HTMLImageElement | null>(null);
@@ -843,7 +867,7 @@ export default function AboutSection() {
                   serviceTitleRefs.current[index] = element;
                 }}
               >
-                {service.title}
+                {renderServiceTitle(service.title)}
               </h3>
             </article>
           ))}

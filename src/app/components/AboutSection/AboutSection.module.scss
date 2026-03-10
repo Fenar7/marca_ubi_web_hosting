@@ -124,6 +124,15 @@
   will-change: transform, opacity;
 }
 
+.serviceSeparator {
+  display: inline-block;
+  font-size: 0.84em;
+  font-weight: 300;
+  margin: 0 0.08em;
+  transform: scaleX(0.84);
+  transform-origin: center;
+}
+
 .textAndMetricsSection {
   display: grid;
   gap: clamp(1.75rem, 3.2vw, 4.5rem);

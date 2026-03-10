@@ -22,9 +22,9 @@ const Footer = () => {
           <address className="footer-address" data-node-id="558:1268">
             Hilite Business Park
             <br />
-            State Highway 28, Palazhi, Kozhikode, Pantheeramkavu,
+            Hilite City
             <br />
-            Kerala 673014
+            Calicut, Kerala 673014
           </address>
         </div>
 
