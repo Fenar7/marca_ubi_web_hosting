@@ -131,10 +131,29 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
 
     gsap.ticker.add(onTick);
     gsap.ticker.fps(120);
+
+    const handleMenuOpen = () => {
+      lenisInstance.stop();
+    };
+
+    const handleMenuClose = () => {
+      lenisInstance.start();
+      scheduleRefreshBurst();
+    };
+
+    window.addEventListener("menu:open", handleMenuOpen);
+    window.addEventListener("menu:close", handleMenuClose);
+
+    if (document.body.classList.contains("menu-open")) {
+      handleMenuOpen();
+    }
+
     scheduleRefreshBurst();
 
     return () => {
       cleanupRefreshListeners();
+      window.removeEventListener("menu:open", handleMenuOpen);
+      window.removeEventListener("menu:close", handleMenuClose);
       gsap.ticker.remove(onTick);
       lenisInstance.off("scroll", ScrollTrigger.update);
       lenisInstance.destroy();

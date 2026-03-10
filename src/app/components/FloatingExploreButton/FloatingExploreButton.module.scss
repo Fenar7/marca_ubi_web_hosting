@@ -17,9 +17,16 @@
   text-align: left;
   transform: translate3d(0, 0, 0) scale(1);
   transition: bottom 0.52s cubic-bezier(0.19, 1, 0.22, 1), right 0.52s cubic-bezier(0.19, 1, 0.22, 1),
-    border-color 0.35s ease, background-color 0.35s ease, box-shadow 0.35s ease;
+    border-color 0.35s ease, background-color 0.35s ease, box-shadow 0.35s ease, opacity 0.28s ease,
+    transform 0.42s cubic-bezier(0.19, 1, 0.22, 1);
   width: 15.9375rem;
   z-index: 30000;
+}
+
+:global(body.menu-open) .exploreCard {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 1rem, 0) scale(0.96);
 }
 
 .isDocked {

@@ -6,120 +6,112 @@ import { gsap } from "gsap";
 import styles from "./Header.module.scss";
 
 const menuItems = [
-  { label: "Work", href: "#works", hint: "Selected brand and digital launches" },
-  { label: "Services", href: "#services", hint: "How strategy, art, and systems connect" },
-  { label: "About", href: "#about", hint: "What Marca Ubi builds and how it thinks" },
-  { label: "Insights", href: "#values", hint: "Principles shaping every engagement" },
+  { label: "Work", href: "#works", hint: "Selected launches and digital experiences" },
+  { label: "Services", href: "#services", hint: "Strategy, art direction, systems, and build" },
+  { label: "About", href: "#about", hint: "How Marca Ubi thinks and operates" },
+  { label: "Values", href: "#values", hint: "Principles shaping every engagement" },
   { label: "Contact", href: "#contact", hint: "Start a project conversation" },
 ] as const;
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
-  const menuPanelRef = useRef<HTMLDivElement | null>(null);
-  const menuShellRef = useRef<HTMLDivElement | null>(null);
-  const menuGlowRefs = useRef<Array<HTMLSpanElement | null>>([]);
-  const menuItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
-  const menuHintRefs = useRef<Array<HTMLSpanElement | null>>([]);
-  const menuArrowRefs = useRef<Array<HTMLSpanElement | null>>([]);
-  const menuStrokeRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const introRef = useRef<HTMLDivElement | null>(null);
+  const metaRef = useRef<HTMLDivElement | null>(null);
   const footerRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const hintRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const arrowRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const strokeRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const burgerLineRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const menuTimelineRef = useRef<gsap.core.Timeline | null>(null);
 
   useLayoutEffect(() => {
-    const panel = menuPanelRef.current;
-    const shell = menuShellRef.current;
+    const overlay = overlayRef.current;
+    const panel = panelRef.current;
+    const intro = introRef.current;
+    const meta = metaRef.current;
     const footer = footerRef.current;
-    const glows = menuGlowRefs.current.filter((item): item is HTMLSpanElement => item !== null);
-    const items = menuItemRefs.current.filter((item): item is HTMLAnchorElement => item !== null);
-    const hints = menuHintRefs.current.filter((item): item is HTMLSpanElement => item !== null);
-    const arrows = menuArrowRefs.current.filter((item): item is HTMLSpanElement => item !== null);
-    const strokes = menuStrokeRefs.current.filter((item): item is HTMLSpanElement => item !== null);
+    const items = itemRefs.current.filter((item): item is HTMLAnchorElement => item !== null);
+    const hints = hintRefs.current.filter((item): item is HTMLSpanElement => item !== null);
+    const arrows = arrowRefs.current.filter((item): item is HTMLSpanElement => item !== null);
+    const strokes = strokeRefs.current.filter((item): item is HTMLSpanElement => item !== null);
+    const [lineTop, lineMid, lineBottom] = burgerLineRefs.current;
 
-    if (!panel || !shell) {
+    if (!overlay || !panel || !intro || !meta || !footer || !lineTop || !lineMid || !lineBottom) {
       return;
     }
 
     const context = gsap.context(() => {
-      gsap.set(panel, { autoAlpha: 0, pointerEvents: "none" });
-      gsap.set(shell, {
-        autoAlpha: 0,
-        clipPath: "inset(0 0 100% 0 round 0 0 2rem 2rem)",
-        yPercent: -6,
-      });
+      const dispatchMenuEvent = (eventName: string) => {
+        window.dispatchEvent(new Event(eventName));
+      };
+
+      gsap.set(overlay, { autoAlpha: 0, pointerEvents: "none" });
+      gsap.set(panel, { y: -28, scale: 0.985, autoAlpha: 0 });
+      gsap.set([intro, meta, footer], { autoAlpha: 0, y: 24, filter: "blur(10px)" });
       gsap.set(items, {
         autoAlpha: 0,
-        yPercent: 118,
-        rotateX: -26,
+        yPercent: 110,
+        rotateX: -18,
         transformPerspective: 1200,
         transformOrigin: "50% 100%",
         filter: "blur(10px)",
       });
       gsap.set(hints, { autoAlpha: 0, y: 12 });
-      gsap.set(arrows, { autoAlpha: 0, x: -16, rotate: -24 });
+      gsap.set(arrows, { autoAlpha: 0, x: -14, rotate: -18 });
       gsap.set(strokes, { scaleX: 0, transformOrigin: "left center" });
-      gsap.set(glows, { autoAlpha: 0, scale: 0.84 });
-      if (footer) {
-        gsap.set(footer, { autoAlpha: 0, y: 24, filter: "blur(8px)" });
-      }
-    }, headerRef);
 
-    return () => {
-      context.revert();
-    };
-  }, []);
+      const timeline = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out" },
+        onStart: () => {
+          document.body.classList.add("menu-open");
+          document.documentElement.classList.add("menu-open");
+          dispatchMenuEvent("menu:open");
+          overlay.style.pointerEvents = "auto";
+        },
+        onReverseComplete: () => {
+          document.body.classList.remove("menu-open");
+          document.documentElement.classList.remove("menu-open");
+          dispatchMenuEvent("menu:close");
+          gsap.set(overlay, { pointerEvents: "none" });
+        },
+      });
 
-  useEffect(() => {
-    const [lineTop, lineMid, lineBottom] = burgerLineRefs.current;
-    const panel = menuPanelRef.current;
-    const shell = menuShellRef.current;
-    const footer = footerRef.current;
-    const glows = menuGlowRefs.current.filter((item): item is HTMLSpanElement => item !== null);
-    const items = menuItemRefs.current.filter((item): item is HTMLAnchorElement => item !== null);
-    const hints = menuHintRefs.current.filter((item): item is HTMLSpanElement => item !== null);
-    const arrows = menuArrowRefs.current.filter((item): item is HTMLSpanElement => item !== null);
-    const strokes = menuStrokeRefs.current.filter((item): item is HTMLSpanElement => item !== null);
-
-    if (!lineTop || !lineMid || !lineBottom || !panel || !shell) {
-      return;
-    }
-
-    const timeline = gsap.timeline({
-      defaults: { ease: "power3.inOut" },
-    });
-
-    if (isMenuOpen) {
       timeline
+        .to(
+          overlay,
+          {
+            autoAlpha: 1,
+            duration: 0.2,
+            ease: "power1.out",
+          },
+          0,
+        )
         .to(
           panel,
           {
             autoAlpha: 1,
-            pointerEvents: "auto",
-            duration: 0.16,
-          },
-          0,
-        )
-        .to(
-          shell,
-          {
-            autoAlpha: 1,
-            yPercent: 0,
-            clipPath: "inset(0 0 0% 0 round 0 0 2rem 2rem)",
-            duration: 0.88,
-            ease: "expo.inOut",
-          },
-          0,
-        )
-        .to(
-          glows,
-          {
-            autoAlpha: 1,
+            y: 0,
             scale: 1,
-            duration: 1.1,
-            stagger: 0.08,
+            duration: 0.72,
             ease: "expo.out",
           },
-          0.08,
+          0,
+        )
+        .to(
+          [intro, meta],
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.56,
+            stagger: 0.08,
+          },
+          0.1,
         )
         .to(
           items,
@@ -128,22 +120,22 @@ export default function Header() {
             yPercent: 0,
             rotateX: 0,
             filter: "blur(0px)",
-            duration: 1,
-            stagger: 0.09,
+            duration: 0.82,
+            stagger: 0.08,
             ease: "expo.out",
           },
-          0.18,
+          0.16,
         )
         .to(
           hints,
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.54,
-            stagger: 0.06,
+            duration: 0.42,
+            stagger: 0.05,
             ease: "power2.out",
           },
-          0.38,
+          0.28,
         )
         .to(
           arrows,
@@ -151,21 +143,21 @@ export default function Header() {
             autoAlpha: 1,
             x: 0,
             rotate: 0,
-            duration: 0.56,
-            stagger: 0.06,
+            duration: 0.46,
+            stagger: 0.05,
             ease: "expo.out",
           },
-          0.36,
+          0.3,
         )
         .to(
           strokes,
           {
             scaleX: 1,
-            duration: 0.72,
-            stagger: 0.07,
+            duration: 0.54,
+            stagger: 0.05,
             ease: "expo.out",
           },
-          0.34,
+          0.28,
         )
         .to(
           footer,
@@ -173,26 +165,27 @@ export default function Header() {
             autoAlpha: 1,
             y: 0,
             filter: "blur(0px)",
-            duration: 0.62,
-            ease: "power3.out",
+            duration: 0.5,
           },
-          0.48,
+          0.42,
         )
         .to(
           lineTop,
           {
             y: 10,
-            rotate: 42,
-            duration: 0.46,
+            rotate: 45,
+            duration: 0.34,
+            ease: "power2.inOut",
           },
           0,
         )
         .to(
           lineMid,
           {
-            scaleX: 0.16,
             autoAlpha: 0,
-            duration: 0.3,
+            scaleX: 0.2,
+            duration: 0.22,
+            ease: "power2.inOut",
           },
           0,
         )
@@ -200,124 +193,38 @@ export default function Header() {
           lineBottom,
           {
             y: -10,
-            rotate: -42,
-            duration: 0.46,
+            rotate: -45,
+            duration: 0.34,
+            ease: "power2.inOut",
           },
           0,
         );
-      document.body.classList.add("menu-open");
-    } else {
-      timeline
-        .to(
-          footer,
-          {
-            autoAlpha: 0,
-            y: 18,
-            filter: "blur(8px)",
-            duration: 0.22,
-            ease: "power2.in",
-          },
-          0,
-        )
-        .to(
-          [...hints, ...arrows],
-          {
-            autoAlpha: 0,
-            y: 8,
-            x: 0,
-            duration: 0.2,
-            stagger: { each: 0.02, from: "end" },
-            ease: "power2.in",
-          },
-          0,
-        )
-        .to(
-          strokes,
-          {
-            scaleX: 0,
-            duration: 0.24,
-            stagger: { each: 0.03, from: "end" },
-            ease: "power2.in",
-          },
-          0.02,
-        )
-        .to(
-          items,
-          {
-            autoAlpha: 0,
-            yPercent: 108,
-            rotateX: -18,
-            filter: "blur(8px)",
-            duration: 0.42,
-            stagger: { each: 0.05, from: "end" },
-            ease: "power3.in",
-          },
-          0.04,
-        )
-        .to(
-          glows,
-          {
-            autoAlpha: 0,
-            scale: 0.88,
-            duration: 0.22,
-            stagger: { each: 0.04, from: "end" },
-            ease: "power2.in",
-          },
-          0.04,
-        )
-        .to(
-          shell,
-          {
-            autoAlpha: 0,
-            yPercent: -6,
-            clipPath: "inset(0 0 100% 0 round 0 0 2rem 2rem)",
-            duration: 0.54,
-            ease: "expo.inOut",
-          },
-          0.12,
-        )
-        .to(
-          panel,
-          {
-            autoAlpha: 0,
-            pointerEvents: "none",
-            duration: 0.16,
-          },
-          0.54,
-        )
-        .to(
-          lineTop,
-          {
-            y: 0,
-            rotate: 0,
-            duration: 0.38,
-          },
-          0,
-        )
-        .to(
-          lineMid,
-          {
-            scaleX: 1,
-            autoAlpha: 1,
-            duration: 0.26,
-          },
-          0.04,
-        )
-        .to(
-          lineBottom,
-          {
-            y: 0,
-            rotate: 0,
-            duration: 0.38,
-          },
-          0,
-        );
-      document.body.classList.remove("menu-open");
-    }
+
+      menuTimelineRef.current = timeline;
+    }, headerRef);
 
     return () => {
-      timeline.kill();
+      menuTimelineRef.current?.kill();
+      menuTimelineRef.current = null;
+      document.body.classList.remove("menu-open");
+      document.documentElement.classList.remove("menu-open");
+      window.dispatchEvent(new Event("menu:close"));
+      context.revert();
     };
+  }, []);
+
+  useEffect(() => {
+    const timeline = menuTimelineRef.current;
+
+    if (!timeline) {
+      return;
+    }
+
+    if (isMenuOpen) {
+      timeline.play();
+    } else {
+      timeline.reverse();
+    }
   }, [isMenuOpen]);
 
   useEffect(() => {
@@ -334,8 +241,8 @@ export default function Header() {
       if (isScrolled === previousScrolledState) {
         return;
       }
-      previousScrolledState = isScrolled;
 
+      previousScrolledState = isScrolled;
       header.classList.toggle(styles.isPinned, isScrolled);
       header.classList.toggle(styles.isScrolled, isScrolled);
       gsap.to(header, {
@@ -343,7 +250,7 @@ export default function Header() {
         backgroundColor: isScrolled ? "rgba(8, 9, 12, 0.62)" : "rgba(8, 9, 12, 0)",
         borderColor: isScrolled ? "rgba(255, 255, 255, 0.16)" : "rgba(255, 255, 255, 0)",
         backdropFilter: isScrolled ? "blur(26px)" : "blur(0px)",
-        duration: 0.62,
+        duration: 0.48,
         ease: "power3.out",
       });
     };
@@ -353,51 +260,6 @@ export default function Header() {
 
     return () => {
       window.removeEventListener("scroll", syncHeader);
-    };
-  }, []);
-
-  useEffect(() => {
-    const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-    if (!supportsHover) {
-      return;
-    }
-
-    const cleanups: Array<() => void> = [];
-
-    menuItemRefs.current.forEach((item, index) => {
-      const hint = menuHintRefs.current[index];
-      const arrow = menuArrowRefs.current[index];
-      const stroke = menuStrokeRefs.current[index];
-
-      if (!item || !hint || !arrow || !stroke) {
-        return;
-      }
-
-      const onEnter = () => {
-        gsap.to(item, { x: 16, duration: 0.42, ease: "expo.out" });
-        gsap.to(hint, { x: 10, autoAlpha: 1, duration: 0.4, ease: "power2.out" });
-        gsap.to(arrow, { x: 10, rotate: 8, duration: 0.42, ease: "expo.out" });
-        gsap.to(stroke, { scaleX: 1, transformOrigin: "left center", duration: 0.42, ease: "expo.out" });
-      };
-
-      const onLeave = () => {
-        gsap.to(item, { x: 0, duration: 0.34, ease: "power3.out" });
-        gsap.to(hint, { x: 0, duration: 0.28, ease: "power2.out" });
-        gsap.to(arrow, { x: 0, rotate: 0, duration: 0.34, ease: "power3.out" });
-      };
-
-      item.addEventListener("pointerenter", onEnter);
-      item.addEventListener("pointerleave", onLeave);
-
-      cleanups.push(() => {
-        item.removeEventListener("pointerenter", onEnter);
-        item.removeEventListener("pointerleave", onLeave);
-      });
-    });
-
-    return () => {
-      cleanups.forEach((cleanup) => cleanup());
     };
   }, []);
 
@@ -412,7 +274,51 @@ export default function Header() {
 
     return () => {
       window.removeEventListener("keydown", onEscapePress);
-      document.body.classList.remove("menu-open");
+    };
+  }, []);
+
+  useEffect(() => {
+    const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    if (!supportsHover) {
+      return;
+    }
+
+    const cleanups: Array<() => void> = [];
+
+    itemRefs.current.forEach((item, index) => {
+      const hint = hintRefs.current[index];
+      const arrow = arrowRefs.current[index];
+      const stroke = strokeRefs.current[index];
+
+      if (!item || !hint || !arrow || !stroke) {
+        return;
+      }
+
+      const onEnter = () => {
+        gsap.to(item, { x: 14, duration: 0.38, ease: "expo.out" });
+        gsap.to(hint, { x: 10, autoAlpha: 1, duration: 0.34, ease: "power2.out" });
+        gsap.to(arrow, { x: 10, rotate: 8, duration: 0.36, ease: "expo.out" });
+        gsap.to(stroke, { scaleX: 1, duration: 0.38, ease: "expo.out" });
+      };
+
+      const onLeave = () => {
+        gsap.to(item, { x: 0, duration: 0.28, ease: "power2.out" });
+        gsap.to(hint, { x: 0, duration: 0.24, ease: "power2.out" });
+        gsap.to(arrow, { x: 0, rotate: 0, duration: 0.28, ease: "power2.out" });
+      };
+
+      item.addEventListener("pointerenter", onEnter);
+      item.addEventListener("pointerleave", onLeave);
+
+      cleanups.push(() => {
+        item.removeEventListener("pointerenter", onEnter);
+        item.removeEventListener("pointerleave", onLeave);
+      });
+    });
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup());
     };
   }, []);
 
@@ -444,7 +350,7 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className={styles.menuPanel} id="site-menu" ref={menuPanelRef}>
+      <div className={styles.menuOverlay} id="site-menu" ref={overlayRef}>
         <button
           aria-label="Close navigation menu"
           className={styles.menuBackdrop}
@@ -452,82 +358,79 @@ export default function Header() {
           type="button"
         />
 
-        <div className={styles.menuShell} ref={menuShellRef}>
-          <span
-            aria-hidden="true"
-            className={`${styles.menuGlow} ${styles.menuGlowPrimary}`}
-            ref={(element) => {
-              menuGlowRefs.current[0] = element;
-            }}
-          />
-          <span
-            aria-hidden="true"
-            className={`${styles.menuGlow} ${styles.menuGlowSecondary}`}
-            ref={(element) => {
-              menuGlowRefs.current[1] = element;
-            }}
-          />
+        <div className={styles.menuPanel} ref={panelRef}>
+          <span aria-hidden="true" className={`${styles.menuGlow} ${styles.menuGlowPrimary}`} />
+          <span aria-hidden="true" className={`${styles.menuGlow} ${styles.menuGlowSecondary}`} />
 
-          <div className={styles.menuIntro}>
-            <p className={styles.menuEyebrow}>Navigate the studio</p>
-            <p className={styles.menuLead}>
-              Strategy, art direction, identity systems, and digital experiences shaped into one
-              coherent brand language.
-            </p>
-          </div>
+          <div className={styles.menuGrid}>
+            <div className={styles.menuMain}>
+              <div className={styles.menuIntro} ref={introRef}>
+                <p className={styles.menuEyebrow}>Navigate the studio</p>
+                <p className={styles.menuLead}>
+                  Strategy, art direction, identity systems, and digital experiences shaped into one
+                  coherent brand language.
+                </p>
+              </div>
 
-          <nav aria-label="Primary">
-            <ul className={styles.menuList}>
-              {menuItems.map((item, index) => (
-                <li className={styles.menuItem} key={item.label}>
-                  <a
-                    className={styles.menuLink}
-                    href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    ref={(element) => {
-                      menuItemRefs.current[index] = element;
-                    }}
-                  >
-                    <span className={styles.menuIndex}>{`0${index + 1}`}</span>
-                    <span className={styles.menuLabelWrap}>
-                      <span className={styles.menuLabel}>{item.label}</span>
-                      <span
-                        className={styles.menuHint}
+              <nav aria-label="Primary">
+                <ul className={styles.menuList}>
+                  {menuItems.map((item, index) => (
+                    <li className={styles.menuItem} key={item.label}>
+                      <a
+                        className={styles.menuLink}
+                        href={item.href}
+                        onClick={() => setIsMenuOpen(false)}
                         ref={(element) => {
-                          menuHintRefs.current[index] = element;
+                          itemRefs.current[index] = element;
                         }}
                       >
-                        {item.hint}
-                      </span>
-                      <span
-                        aria-hidden="true"
-                        className={styles.menuStroke}
-                        ref={(element) => {
-                          menuStrokeRefs.current[index] = element;
-                        }}
-                      />
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className={styles.menuArrow}
-                      ref={(element) => {
-                        menuArrowRefs.current[index] = element;
-                      }}
-                    >
-                      ↗
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+                        <span className={styles.menuIndex}>{`0${index + 1}`}</span>
+                        <span className={styles.menuLabelWrap}>
+                          <span className={styles.menuLabel}>{item.label}</span>
+                          <span
+                            className={styles.menuHint}
+                            ref={(element) => {
+                              hintRefs.current[index] = element;
+                            }}
+                          >
+                            {item.hint}
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            className={styles.menuStroke}
+                            ref={(element) => {
+                              strokeRefs.current[index] = element;
+                            }}
+                          />
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className={styles.menuArrow}
+                          ref={(element) => {
+                            arrowRefs.current[index] = element;
+                          }}
+                        >
+                          ↗
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+
+            <aside className={styles.menuMeta} ref={metaRef}>
+              <p className={styles.menuMetaLabel}>Collaborating globally</p>
+              <p className={styles.menuMetaLocations}>Dubai, Qatar, Bahrain, India</p>
+              <a className={styles.menuMetaLink} href="mailto:hello@marcaubi.com">
+                hello@marcaubi.com
+              </a>
+            </aside>
+          </div>
 
           <div className={styles.menuFooter} ref={footerRef}>
-            <p className={styles.menuFooterKicker}>Collaborating globally</p>
-            <p className={styles.menuFooterBody}>Dubai, Qatar, Bahrain, India</p>
-            <a className={styles.menuFooterLink} href="mailto:hello@marcaubi.com">
-              hello@marcaubi.com
-            </a>
+            <span className={styles.menuFooterLine} aria-hidden="true" />
+            <p className={styles.menuFooterText}>Brand engineering, art, and digital experience working as one system.</p>
           </div>
         </div>
       </div>
