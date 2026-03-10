@@ -172,6 +172,7 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
         <section
             className="works-section-container-main"
             data-node-id="484:1124"
+            id="works"
             ref={containerRef}
         >
             <div className="works-title-wrap">

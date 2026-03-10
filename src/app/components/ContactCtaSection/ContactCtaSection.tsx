@@ -124,6 +124,7 @@ const ContactCtaSection = () => {
     <section
       className="contact-section-container-main"
       data-node-id="555:1241"
+      id="contact"
       ref={sectionRef}
     >
       <div className="contact-section-container container">

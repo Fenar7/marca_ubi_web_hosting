@@ -10,7 +10,7 @@ const heroBackgroundImage = "/images/hero-image.png";
 const ubiLogoImage = "/images/ubi.png";
 const marcaLogoImage = "/images/marca.png";
 const primaryArrowImage = "/hero/primary-arrow.png";
-const titleLines = ["Building Brands Through", "Thoughtful Product", "Designs"];
+const titleLines = ["Engineering Brands", "That Are Meant", "to Be Felt."];
 
 export default function Hero() {
   const heroSectionRef = useRef<HTMLElement | null>(null);
@@ -416,13 +416,22 @@ export default function Hero() {
         </h1>
         <span className={styles.divider} ref={dividerRef} />
         <p className={styles.subtitle} ref={subtitleRef}>
-          Marca Ubi designs identities, content systems, and digital experiences that stay consistent
-          everywhere your brand shows up.
+          Through strategy, art, and experience design, Marca Ubi builds brands with clear
+          foundations, distinct expression, and digital presence that stays coherent everywhere it
+          lives.
         </p>
         <div className={styles.heroButtonWrap} ref={buttonWrapRef}>
           <PillButton
             className={styles.heroButton}
-            label="Get Started"
+            href="#contact"
+            label="Start a Project"
+            variant="brand"
+            icon={<img className={styles.buttonIcon} src={primaryArrowImage} alt="" />}
+          />
+          <PillButton
+            className={styles.heroButtonSecondary}
+            href="#works"
+            label="Explore Our Work"
             icon={<img className={styles.buttonIcon} src={primaryArrowImage} alt="" />}
           />
         </div>
