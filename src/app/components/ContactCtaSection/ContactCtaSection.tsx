@@ -158,34 +158,39 @@ const ContactCtaSection = () => {
             <PillButton label="Start a Project" variant="brand" href="#contact" />
           </div>
 
-          {/* Contact info: phone · email · location */}
+          {/* Contact info: phone + email on the first line, global collaboration on the second */}
           <div className="contact-info-row" ref={contactInfoRef}>
-            <a className="contact-info-item" href="tel:+971501234567">
-              <span className="contact-info-icon" aria-hidden="true">
-                {/* Phone */}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
-                </svg>
-              </span>
-              <span>+971 50 123 4567</span>
-            </a>
+            <div className="contact-info-primary">
+              <a className="contact-info-item" href="tel:+971501234567">
+                <span className="contact-info-icon" aria-hidden="true">
+                  {/* Phone */}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                  </svg>
+                </span>
+                <span>+971 50 123 4567</span>
+              </a>
 
-            <span className="contact-info-divider" aria-hidden="true" />
+              <span className="contact-info-divider" aria-hidden="true" />
 
-            <a className="contact-info-item" href="mailto:hello@marcaubi.com">
-              <span className="contact-info-icon" aria-hidden="true">
-                {/* Email */}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="M22 7l-10 7L2 7" />
-                </svg>
-              </span>
-              <span>hello@marcaubi.com</span>
-            </a>
+              <a className="contact-info-item" href="mailto:hello@marcaubi.com">
+                <span className="contact-info-icon" aria-hidden="true">
+                  {/* Email */}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M22 7l-10 7L2 7" />
+                  </svg>
+                </span>
+                <span>hello@marcaubi.com</span>
+              </a>
+            </div>
 
-            <span className="contact-info-divider" aria-hidden="true" />
-
-            <a className="contact-info-item" href="https://maps.google.com/?q=Dubai,UAE" target="_blank" rel="noopener noreferrer">
+            <a
+              className="contact-info-item contact-info-location-line"
+              href="https://maps.google.com/?q=Dubai,UAE"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <span className="contact-info-icon" aria-hidden="true">
                 {/* Location */}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -193,7 +198,7 @@ const ContactCtaSection = () => {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
               </span>
-              <span>Dubai, UAE</span>
+              <span>collobrating globally across Dubai, Qatar, Bahrain, India</span>
             </a>
           </div>
         </div>

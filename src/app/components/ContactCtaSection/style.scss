@@ -128,13 +128,21 @@
 .contact-info-row {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0;
+  flex-direction: column;
+  gap: 0.7rem;
   justify-content: center;
   margin-top: clamp(1.1rem, 1.8vw, 1.6rem);
   opacity: 0;
   /* GSAP sets to 1 on entrance */
   will-change: transform, opacity;
+}
+
+.contact-info-primary {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0;
+  justify-content: center;
 }
 
 .contact-info-item {
@@ -178,8 +186,12 @@
   width: 4px;
 }
 
+.contact-info-location-line {
+  justify-content: center;
+}
+
 @media (max-width: 56.1875rem) {
-  .contact-info-row {
+  .contact-info-primary {
     flex-direction: column;
     gap: 0.7rem;
   }
@@ -190,5 +202,10 @@
 
   .contact-info-item {
     font-size: clamp(0.88rem, 3.8vw, 1rem);
+  }
+
+  .contact-info-location-line {
+    max-width: 24rem;
+    text-align: center;
   }
 }
