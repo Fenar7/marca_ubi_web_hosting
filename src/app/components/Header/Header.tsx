@@ -324,7 +324,7 @@ export default function Header() {
 
   return (
     <header className={styles.headerContainerMain} ref={headerRef} data-node-id="484:900">
-      <div className={styles.headerContainer}>
+      <div className={`${styles.headerContainer} ${isMenuOpen ? styles.headerContainerHidden : ""}`}>
         <button
           aria-controls="site-menu"
           aria-expanded={isMenuOpen}
@@ -361,6 +361,25 @@ export default function Header() {
         <div className={styles.menuPanel} ref={panelRef}>
           <span aria-hidden="true" className={`${styles.menuGlow} ${styles.menuGlowPrimary}`} />
           <span aria-hidden="true" className={`${styles.menuGlow} ${styles.menuGlowSecondary}`} />
+
+          <div className={styles.menuTopbar}>
+            <button
+              aria-label="Close navigation menu"
+              className={styles.menuCloseButton}
+              onClick={() => setIsMenuOpen(false)}
+              type="button"
+            >
+              <span aria-hidden="true" className={styles.menuCloseIcon}>
+                <span className={styles.menuCloseLine} />
+                <span className={styles.menuCloseLine} />
+              </span>
+              <span className={styles.menuCloseLabel}>Close</span>
+            </button>
+
+            <Link className={styles.menuLogoLink} href="/" onClick={() => setIsMenuOpen(false)}>
+              <img alt="Marca Ubi." className={styles.menuLogo} src="/hero/marca-ubi-logo.png" />
+            </Link>
+          </div>
 
           <div className={styles.menuGrid}>
             <div className={styles.menuMain}>
@@ -421,7 +440,9 @@ export default function Header() {
 
             <aside className={styles.menuMeta} ref={metaRef}>
               <p className={styles.menuMetaLabel}>Collaborating globally</p>
-              <p className={styles.menuMetaLocations}>Dubai, Qatar, Bahrain, India</p>
+              <p className={styles.menuMetaLocations}>
+                Bangalore, Kochi, Trivandrum, Dubai, Saudi, Qatar, Bahrain, UK
+              </p>
               <a className={styles.menuMetaLink} href="mailto:hello@marcaubi.com">
                 hello@marcaubi.com
               </a>

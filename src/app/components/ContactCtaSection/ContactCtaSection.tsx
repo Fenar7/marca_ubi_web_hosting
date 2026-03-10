@@ -198,7 +198,10 @@ const ContactCtaSection = () => {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
               </span>
-              <span>Serving globally, Collabrating from United Kingdom | Dubai | Qatar | Bahrain | India</span>
+              <span>
+                Serving globally, collaborating from Bangalore | Kochi | Trivandrum | Dubai |
+                Saudi | Qatar | Bahrain | UK
+              </span>
             </a>
           </div>
         </div>
