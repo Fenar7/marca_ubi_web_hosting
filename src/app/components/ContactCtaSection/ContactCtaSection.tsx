@@ -146,7 +146,9 @@ const ContactCtaSection = () => {
         <div className="contact-image-overlay" aria-hidden="true" />
 
         <div className="contact-bottom-section" data-node-id="555:1244">
-          <h2 ref={titleRef}>Let&apos;s Build Something That Holds</h2>
+          <h2 ref={titleRef}>
+            Let<span className="tag-separator">&apos;</span>s Build Something That Holds
+          </h2>
           <p ref={subtitleRef}>
             If you&apos;re building a brand, refining an identity, or shaping a
             digital experience, we&apos;d like to hear what you&apos;re working on.

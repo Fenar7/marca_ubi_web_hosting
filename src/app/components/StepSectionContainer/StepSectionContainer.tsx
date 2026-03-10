@@ -32,7 +32,32 @@ const steps = [
       "We prepare the work for real-world use with clean delivery, practical handoff, and launch-ready assets, so the brand is not just presented well, but built to hold up over time.",
   },
 ] as const;
-const titleLines = ["How We Build, From Strategic", "Clarity to Real-World Rollout"];
+const titleLines = [
+  "How We Build, From",
+  "Strategic Clarity to",
+  "Real-World Rollout",
+];
+
+const renderTitleLine = (line: string) => {
+  const segments = line.split("-");
+
+  if (segments.length === 1) {
+    return line;
+  }
+
+  return segments.flatMap((segment, index) => {
+    if (index === segments.length - 1) {
+      return [segment];
+    }
+
+    return [
+      segment,
+      <span className="tag-separator" key={`title-hyphen-${line}-${index}`}>
+        -
+      </span>,
+    ];
+  });
+};
 
 export default function StepSectionContainer() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -501,7 +526,7 @@ export default function StepSectionContainer() {
                       titleLineRefs.current[index] = element;
                     }}
                   >
-                    {line}
+                    {renderTitleLine(line)}
                   </span>
                 </span>
               ))}
