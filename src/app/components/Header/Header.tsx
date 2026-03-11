@@ -50,18 +50,15 @@ export default function Header() {
       };
 
       gsap.set(overlay, { autoAlpha: 0, pointerEvents: "none" });
-      gsap.set(panel, { y: -28, scale: 0.985, autoAlpha: 0 });
-      gsap.set([intro, meta, footer], { autoAlpha: 0, y: 24, filter: "blur(10px)" });
+      gsap.set(panel, { autoAlpha: 0 });
+      gsap.set([intro, meta, footer], { autoAlpha: 0, y: 16, force3D: true });
       gsap.set(items, {
         autoAlpha: 0,
-        yPercent: 110,
-        rotateX: -18,
-        transformPerspective: 1200,
-        transformOrigin: "50% 100%",
-        filter: "blur(10px)",
+        yPercent: 42,
+        force3D: true,
       });
-      gsap.set(hints, { autoAlpha: 0, y: 12 });
-      gsap.set(arrows, { autoAlpha: 0, x: -14, rotate: -18 });
+      gsap.set(hints, { autoAlpha: 0, y: 10, force3D: true });
+      gsap.set(arrows, { autoAlpha: 0, x: -12, force3D: true });
       gsap.set(strokes, { scaleX: 0, transformOrigin: "left center" });
 
       const timeline = gsap.timeline({
@@ -95,10 +92,8 @@ export default function Header() {
           panel,
           {
             autoAlpha: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.72,
-            ease: "expo.out",
+            duration: 0.24,
+            ease: "power1.out",
           },
           0,
         )
@@ -107,67 +102,62 @@ export default function Header() {
           {
             autoAlpha: 1,
             y: 0,
-            filter: "blur(0px)",
-            duration: 0.56,
-            stagger: 0.08,
+            duration: 0.32,
+            stagger: 0.04,
           },
-          0.1,
+          0.04,
         )
         .to(
           items,
           {
             autoAlpha: 1,
             yPercent: 0,
-            rotateX: 0,
-            filter: "blur(0px)",
-            duration: 0.82,
-            stagger: 0.08,
-            ease: "expo.out",
+            duration: 0.4,
+            stagger: 0.035,
+            ease: "power3.out",
           },
-          0.16,
+          0.08,
         )
         .to(
           hints,
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.42,
-            stagger: 0.05,
+            duration: 0.2,
+            stagger: 0.025,
             ease: "power2.out",
           },
-          0.28,
+          0.14,
         )
         .to(
           arrows,
           {
             autoAlpha: 1,
             x: 0,
-            rotate: 0,
-            duration: 0.46,
-            stagger: 0.05,
-            ease: "expo.out",
+            duration: 0.22,
+            stagger: 0.025,
+            ease: "power3.out",
           },
-          0.3,
+          0.14,
         )
         .to(
           strokes,
           {
             scaleX: 1,
-            duration: 0.54,
-            stagger: 0.05,
-            ease: "expo.out",
+            duration: 0.24,
+            stagger: 0.025,
+            ease: "power3.out",
           },
-          0.28,
+          0.14,
         )
         .to(
           footer,
           {
             autoAlpha: 1,
             y: 0,
-            filter: "blur(0px)",
-            duration: 0.5,
+            duration: 0.26,
           },
-          0.42,
+          0.18,
         )
         .to(
           lineTop,
@@ -296,16 +286,16 @@ export default function Header() {
       }
 
       const onEnter = () => {
-        gsap.to(item, { x: 14, duration: 0.38, ease: "expo.out" });
-        gsap.to(hint, { x: 10, autoAlpha: 1, duration: 0.34, ease: "power2.out" });
-        gsap.to(arrow, { x: 10, rotate: 8, duration: 0.36, ease: "expo.out" });
-        gsap.to(stroke, { scaleX: 1, duration: 0.38, ease: "expo.out" });
+        gsap.to(item, { x: 10, duration: 0.24, ease: "power3.out", overwrite: "auto" });
+        gsap.to(hint, { x: 8, autoAlpha: 1, duration: 0.22, ease: "power2.out", overwrite: "auto" });
+        gsap.to(arrow, { x: 8, duration: 0.22, ease: "power3.out", overwrite: "auto" });
+        gsap.to(stroke, { scaleX: 1, duration: 0.24, ease: "power3.out", overwrite: "auto" });
       };
 
       const onLeave = () => {
-        gsap.to(item, { x: 0, duration: 0.28, ease: "power2.out" });
-        gsap.to(hint, { x: 0, duration: 0.24, ease: "power2.out" });
-        gsap.to(arrow, { x: 0, rotate: 0, duration: 0.28, ease: "power2.out" });
+        gsap.to(item, { x: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+        gsap.to(hint, { x: 0, duration: 0.18, ease: "power2.out", overwrite: "auto" });
+        gsap.to(arrow, { x: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
       };
 
       item.addEventListener("pointerenter", onEnter);

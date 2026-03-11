@@ -73,6 +73,7 @@
 .menuOverlay {
   inset: 0;
   position: fixed;
+  will-change: opacity;
   z-index: 40010;
 }
 
@@ -90,6 +91,8 @@
     radial-gradient(circle at 12% 14%, rgba(255, 109, 34, 0.24) 0%, rgba(255, 109, 34, 0) 28%),
     radial-gradient(circle at 88% 16%, rgba(104, 116, 255, 0.12) 0%, rgba(104, 116, 255, 0) 18%),
     linear-gradient(180deg, rgba(8, 9, 13, 0.96) 0%, rgba(4, 5, 8, 0.99) 100%);
+  backface-visibility: hidden;
+  contain: layout paint;
   border-bottom-left-radius: 2rem;
   border-bottom-right-radius: 2rem;
   display: flex;
@@ -100,6 +103,8 @@
   overscroll-behavior: contain;
   padding: clamp(1rem, 1.8vw, 1.5rem) clamp(1.25rem, 5vw, 6.25rem) clamp(1.15rem, 2vw, 1.7rem);
   position: relative;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
 .menuPanel::before {
@@ -247,6 +252,7 @@
   gap: 0.75rem;
   margin-bottom: clamp(0.7rem, 1.4vw, 1rem);
   max-width: 29rem;
+  will-change: transform, opacity;
 }
 
 .menuEyebrow {
@@ -289,6 +295,7 @@
 
 .menuItem {
   border-bottom: 0.0625rem solid rgba($white, 0.08);
+  contain: layout paint;
   overflow: hidden;
   padding-bottom: 0.7rem;
 }
@@ -310,6 +317,7 @@
 }
 
 .menuLabelWrap {
+  contain: layout paint;
   display: grid;
   gap: 0.16rem;
   overflow: hidden;
@@ -358,6 +366,7 @@
   display: grid;
   gap: 0.7rem;
   padding: 1rem 1.1rem;
+  will-change: transform, opacity;
 }
 
 .menuMetaLabel {
@@ -399,6 +408,7 @@
   gap: 1rem;
   margin-top: clamp(0.6rem, 1.2vw, 1rem);
   padding-top: clamp(0.8rem, 1.3vw, 1.05rem);
+  will-change: transform, opacity;
 }
 
 .menuFooterLine {

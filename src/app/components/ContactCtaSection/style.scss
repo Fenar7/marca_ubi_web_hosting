@@ -195,7 +195,29 @@
 }
 
 .contact-info-location-line {
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.contact-info-location-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.contact-info-location-prefix {
+  display: block;
+}
+
+.contact-info-location-list {
+  display: block;
+  line-height: 1.45;
+}
+
+.contact-info-location-separator {
+  display: inline-block;
+  margin: 0 0.5rem;
 }
 
 @media (max-width: 56.1875rem) {
@@ -214,7 +236,7 @@
 
   .contact-info-location-line {
     max-width: 24rem;
-    text-align: center;
+    text-align: left;
   }
 
   .contact-info-row {

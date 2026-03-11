@@ -68,6 +68,7 @@
   line-height: 1;
   margin: 0;
   max-width: 32rem;
+  text-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.28), 0 0 1.1rem rgba(255, 255, 255, 0.12);
   text-align: right;
   will-change: transform, opacity;
 }
@@ -86,6 +87,7 @@
 
 .topRightLine {
   background: rgba($white, 0.92);
+  box-shadow: 0 0 0.7rem rgba(255, 255, 255, 0.34), 0 0 1.4rem rgba(255, 255, 255, 0.14);
   display: block;
   flex: 0 0 auto;
   height: clamp(8.5rem, 18vw, 13rem);
