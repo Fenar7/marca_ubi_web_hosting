@@ -441,7 +441,7 @@ export default function Header() {
             <aside className={styles.menuMeta} ref={metaRef}>
               <p className={styles.menuMetaLabel}>Collaborating globally</p>
               <p className={styles.menuMetaLocations}>
-                Bangalore, Kochi, Trivandrum, Dubai, Saudi, Qatar, Bahrain, UK
+                Bangalore, Kochi, Trivandrum, Dubai, Saudi Arabia, Qatar, Bahrain, UK
               </p>
               <a className={styles.menuMetaLink} href="mailto:hello@marcaubi.com">
                 hello@marcaubi.com

@@ -200,7 +200,7 @@ const ContactCtaSection = () => {
               </span>
               <span>
                 Serving globally, collaborating from Bangalore | Kochi | Trivandrum | Dubai |
-                Saudi | Qatar | Bahrain | UK
+                Saudi Arabia | Qatar | Bahrain | UK
               </span>
             </a>
           </div>
