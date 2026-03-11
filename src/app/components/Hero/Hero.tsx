@@ -11,6 +11,7 @@ const ubiLogoImage = "/images/ubi.png";
 const marcaLogoImage = "/images/marca.png";
 const primaryArrowImage = "/hero/primary-arrow.png";
 const titleLines = ["Engineering Brands", "That Are Meant", "to Be Felt."];
+const topRightCalloutWords = ["The", "Brand", "Engineering", "Company"];
 
 export default function Hero() {
   const heroSectionRef = useRef<HTMLElement | null>(null);
@@ -18,6 +19,9 @@ export default function Hero() {
   const dividerRef = useRef<HTMLSpanElement | null>(null);
   const subtitleRef = useRef<HTMLParagraphElement | null>(null);
   const buttonWrapRef = useRef<HTMLDivElement | null>(null);
+  const topRightRef = useRef<HTMLDivElement | null>(null);
+  const topRightLineRef = useRef<HTMLSpanElement | null>(null);
+  const topRightWordRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const titleLineRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const logoSwitcherRef = useRef<HTMLDivElement | null>(null);
   const ubiLogoRef = useRef<HTMLImageElement | null>(null);
@@ -31,9 +35,14 @@ export default function Hero() {
     const divider = dividerRef.current;
     const subtitle = subtitleRef.current;
     const buttonWrap = buttonWrapRef.current;
+    const topRight = topRightRef.current;
+    const topRightLine = topRightLineRef.current;
+    const topRightWords = topRightWordRefs.current.filter(
+      (word): word is HTMLSpanElement => word !== null,
+    );
     const lines = titleLineRefs.current.filter((line): line is HTMLSpanElement => line !== null);
 
-    if (!content || !divider || !subtitle || !buttonWrap || lines.length === 0) {
+    if (!content || !divider || !subtitle || !buttonWrap || !topRight || !topRightLine || lines.length === 0) {
       return;
     }
 
@@ -58,6 +67,21 @@ export default function Hero() {
       gsap.set(divider, { autoAlpha: 0, scaleX: 0, transformOrigin: "left center" });
       gsap.set(subtitle, { autoAlpha: 0, y: 26, filter: "blur(7px)" });
       gsap.set(buttonWrap, { autoAlpha: 0, y: 28, scale: 0.96 });
+      gsap.set(topRight, { autoAlpha: 1 });
+      gsap.set(topRightWords, {
+        autoAlpha: 0,
+        yPercent: 120,
+        rotateX: -28,
+        filter: "blur(8px)",
+        transformOrigin: "50% 100%",
+      });
+      gsap.set(topRightLine, {
+        autoAlpha: 0,
+        scaleY: 0,
+        yPercent: -8,
+        transformOrigin: "center top",
+        boxShadow: "0 0 0 rgba(255, 255, 255, 0)",
+      });
     }, content);
 
     const timeline = gsap.timeline({ paused: true });
@@ -107,6 +131,31 @@ export default function Hero() {
           ease: "back.out(1.26)",
         },
         0.78,
+      )
+      .to(
+        topRightWords,
+        {
+          autoAlpha: 1,
+          yPercent: 0,
+          rotateX: 0,
+          filter: "blur(0px)",
+          duration: 0.92,
+          ease: "expo.out",
+          stagger: 0.08,
+        },
+        0.24,
+      )
+      .to(
+        topRightLine,
+        {
+          autoAlpha: 1,
+          scaleY: 1,
+          yPercent: 0,
+          boxShadow: "0 0 22px rgba(255, 255, 255, 0.18)",
+          duration: 1.02,
+          ease: "expo.out",
+        },
+        0.32,
       );
 
     const playIntro = () => {
@@ -435,6 +484,24 @@ export default function Hero() {
             icon={<img className={styles.buttonIcon} src={primaryArrowImage} alt="" />}
           />
         </div>
+      </div>
+
+      <div className={styles.topRightCallout} ref={topRightRef}>
+        <p className={styles.topRightText}>
+          {topRightCalloutWords.map((word, index) => (
+            <span className={styles.topRightWordMask} key={word}>
+              <span
+                className={styles.topRightWord}
+                ref={(element) => {
+                  topRightWordRefs.current[index] = element;
+                }}
+              >
+                {word}
+              </span>
+            </span>
+          ))}
+        </p>
+        <span className={styles.topRightLine} ref={topRightLineRef} aria-hidden="true" />
       </div>
 
       <div className={styles.bottomRow}>
