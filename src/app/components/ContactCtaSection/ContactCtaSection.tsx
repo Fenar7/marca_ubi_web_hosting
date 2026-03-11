@@ -198,19 +198,14 @@ const ContactCtaSection = () => {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
               </span>
-              <span className="contact-info-location-copy">
-                <span className="contact-info-location-prefix">
-                  Serving globally, collaborating from
-                </span>
-                <span className="contact-info-location-list">
-                  Bangalore <span className="contact-info-location-separator">|</span> Kochi{" "}
-                  <span className="contact-info-location-separator">|</span> Trivandrum{" "}
-                  <span className="contact-info-location-separator">|</span> Dubai{" "}
-                  <span className="contact-info-location-separator">|</span> Saudi Arabia{" "}
-                  <span className="contact-info-location-separator">|</span> Qatar{" "}
-                  <span className="contact-info-location-separator">|</span> Bahrain{" "}
-                  <span className="contact-info-location-separator">|</span> UK
-                </span>
+              <span className="contact-info-location-list">
+                Bangalore <span className="contact-info-location-separator">|</span> Kochi{" "}
+                <span className="contact-info-location-separator">|</span> Trivandrum{" "}
+                <span className="contact-info-location-separator">|</span> Dubai{" "}
+                <span className="contact-info-location-separator">|</span> Saudi Arabia{" "}
+                <span className="contact-info-location-separator">|</span> Qatar{" "}
+                <span className="contact-info-location-separator">|</span> Bahrain{" "}
+                <span className="contact-info-location-separator">|</span> UK
               </span>
             </a>
           </div>
