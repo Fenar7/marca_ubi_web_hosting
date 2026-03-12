@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import styles from "./CompanyProfileModal.module.scss";
@@ -113,7 +113,6 @@ function triggerProfileDownload() {
 }
 
 export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileModalProps) {
-  const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState<FormState>(INITIAL_FORM_STATE);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,13 +126,40 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
   const wasOpenRef = useRef(false);
   const submitTimerRef = useRef<number | null>(null);
   const focusTimerRef = useRef<number | null>(null);
+  const resetTimerRef = useRef<number | null>(null);
+  const isBrowser = typeof document !== "undefined";
 
-  useEffect(() => {
-    setIsMounted(true);
+  const resetFormState = useCallback(() => {
+    setFormData(INITIAL_FORM_STATE);
+    setFormErrors({});
+    setIsSubmitted(false);
+    setIsSubmitting(false);
   }, []);
 
+  const handleClose = useCallback(() => {
+    if (submitTimerRef.current !== null) {
+      window.clearTimeout(submitTimerRef.current);
+      submitTimerRef.current = null;
+    }
+
+    if (isSubmitted) {
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current);
+      }
+
+      resetTimerRef.current = window.setTimeout(() => {
+        resetFormState();
+        resetTimerRef.current = null;
+      }, 260);
+    } else {
+      setIsSubmitting(false);
+    }
+
+    onClose();
+  }, [isSubmitted, onClose, resetFormState]);
+
   useLayoutEffect(() => {
-    if (!isMounted) {
+    if (!isBrowser) {
       return;
     }
 
@@ -206,14 +232,11 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       timelineRef.current = null;
       context.revert();
     };
-  }, [isMounted]);
+  }, [isBrowser]);
 
   useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-
     const timeline = timelineRef.current;
+    const isOpening = isOpen && !wasOpenRef.current;
 
     if (timeline) {
       if (isOpen) {
@@ -227,26 +250,19 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       document.body.classList.add("profile-modal-open");
       document.documentElement.classList.add("profile-modal-open");
 
-      if (!wasOpenRef.current) {
+      if (isOpening) {
         window.dispatchEvent(new Event("profile-modal:open"));
+
+        if (focusTimerRef.current !== null) {
+          window.clearTimeout(focusTimerRef.current);
+        }
+
+        focusTimerRef.current = window.setTimeout(() => {
+          nameInputRef.current?.focus();
+        }, 220);
       }
 
       wasOpenRef.current = true;
-
-      if (focusTimerRef.current !== null) {
-        window.clearTimeout(focusTimerRef.current);
-      }
-
-      focusTimerRef.current = window.setTimeout(() => {
-        nameInputRef.current?.focus();
-      }, 220);
-
-      if (isSubmitted) {
-        setFormData(INITIAL_FORM_STATE);
-        setFormErrors({});
-        setIsSubmitted(false);
-        setIsSubmitting(false);
-      }
 
       return;
     }
@@ -269,14 +285,12 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       window.clearTimeout(focusTimerRef.current);
       focusTimerRef.current = null;
     }
-
-    setIsSubmitting(false);
-  }, [isMounted, isOpen, isSubmitted]);
+  }, [isOpen]);
 
   useEffect(() => {
     const onEscapePress = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isOpen) {
-        onClose();
+        handleClose();
       }
     };
 
@@ -285,7 +299,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
     return () => {
       window.removeEventListener("keydown", onEscapePress);
     };
-  }, [isOpen, onClose]);
+  }, [handleClose, isOpen]);
 
   useEffect(() => {
     return () => {
@@ -302,6 +316,10 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
       if (focusTimerRef.current !== null) {
         window.clearTimeout(focusTimerRef.current);
+      }
+
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current);
       }
     };
   }, []);
@@ -363,7 +381,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
     }, 720);
   };
 
-  if (!isMounted) {
+  if (!isBrowser) {
     return null;
   }
 
@@ -376,7 +394,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       <button
         aria-label="Close company profile form"
         className={styles.backdrop}
-        onClick={onClose}
+        onClick={handleClose}
         type="button"
       />
 
@@ -407,7 +425,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
             <button
               aria-label="Close company profile form"
               className={styles.closeButton}
-              onClick={onClose}
+              onClick={handleClose}
               type="button"
             >
               <span aria-hidden="true" className={styles.closeIcon}>
@@ -444,7 +462,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
                   >
                     Download the profile manually
                   </a>
-                  <button className={styles.secondaryButton} onClick={onClose} type="button">
+                  <button className={styles.secondaryButton} onClick={handleClose} type="button">
                     Close
                   </button>
                 </div>

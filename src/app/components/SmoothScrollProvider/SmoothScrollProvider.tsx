@@ -295,19 +295,45 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     gsap.ticker.add(onTick);
     gsap.ticker.fps(120);
 
+    const syncOverlayScrollState = () => {
+      const isAnyOverlayOpen =
+        document.body.classList.contains("menu-open") ||
+        document.body.classList.contains("profile-modal-open");
+
+      if (isAnyOverlayOpen) {
+        lenisInstance.stop();
+        return;
+      }
+
+      lenisInstance.start();
+      scheduleRefreshBurst();
+    };
+
     const handleMenuOpen = () => {
       lenisInstance.stop();
     };
 
     const handleMenuClose = () => {
-      lenisInstance.start();
-      scheduleRefreshBurst();
+      syncOverlayScrollState();
+    };
+
+    const handleProfileModalOpen = () => {
+      lenisInstance.stop();
+    };
+
+    const handleProfileModalClose = () => {
+      syncOverlayScrollState();
     };
 
     window.addEventListener("menu:open", handleMenuOpen);
     window.addEventListener("menu:close", handleMenuClose);
+    window.addEventListener("profile-modal:open", handleProfileModalOpen);
+    window.addEventListener("profile-modal:close", handleProfileModalClose);
 
-    if (document.body.classList.contains("menu-open")) {
+    if (
+      document.body.classList.contains("menu-open") ||
+      document.body.classList.contains("profile-modal-open")
+    ) {
       handleMenuOpen();
     }
 
@@ -317,6 +343,8 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       cleanupRefreshListeners();
       window.removeEventListener("menu:open", handleMenuOpen);
       window.removeEventListener("menu:close", handleMenuClose);
+      window.removeEventListener("profile-modal:open", handleProfileModalOpen);
+      window.removeEventListener("profile-modal:close", handleProfileModalClose);
       gsap.ticker.remove(onTick);
       lenisInstance.off("scroll", ScrollTrigger.update);
       lenisInstance.destroy();
