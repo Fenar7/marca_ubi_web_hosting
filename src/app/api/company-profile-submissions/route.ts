@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { appendCompanyProfileSubmissionToGoogleSheet } from "@/app/lib/googleSheets";
 import {
   sanitizeCompanyProfileSubmission,
   validateCompanyProfileSubmission,
@@ -10,7 +11,9 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const payload = (await request.json()) as Partial<CompanyProfileSubmissionInput>;
+    const payload = (await request.json()) as Partial<CompanyProfileSubmissionInput> & {
+      submissionId?: string;
+    };
 
     const input: CompanyProfileSubmissionInput = {
       name: payload.name ?? "",
@@ -36,23 +39,51 @@ export async function POST(request: Request) {
     }
 
     const sanitizedInput = sanitizeCompanyProfileSubmission(input);
+    const submissionId = payload.submissionId?.trim() || crypto.randomUUID();
+    const submittedAt = new Date().toISOString();
+    const source = "hero-company-profile-modal";
 
     const document = {
+      _id: `company-profile-submission-${submissionId}`,
       _type: "companyProfileSubmission",
+      submissionId,
       name: sanitizedInput.name,
       businessType: sanitizedInput.businessType,
       phone: sanitizedInput.phone,
       email: sanitizedInput.email,
-      submittedAt: new Date().toISOString(),
-      source: "hero-company-profile-modal",
+      submittedAt,
+      source,
       ...(sanitizedInput.instagramId ? { instagramId: sanitizedInput.instagramId } : {}),
       ...(sanitizedInput.website ? { website: sanitizedInput.website } : {}),
       ...(sanitizedInput.message ? { message: sanitizedInput.message } : {}),
     };
 
-    await writeClient.create(document);
+    await writeClient.createIfNotExists(document);
 
-    return NextResponse.json({ ok: true });
+    const googleSheetsResult = await appendCompanyProfileSubmissionToGoogleSheet({
+      submissionId,
+      submittedAt,
+      source,
+      name: sanitizedInput.name,
+      businessType: sanitizedInput.businessType,
+      phone: sanitizedInput.phone,
+      email: sanitizedInput.email,
+      instagramId: sanitizedInput.instagramId,
+      website: sanitizedInput.website,
+      message: sanitizedInput.message,
+    });
+
+    if (!googleSheetsResult.enabled) {
+      console.warn(
+        "Google Sheets sync is not enabled. Submission was saved to Sanity only. Configure GOOGLE_SHEETS_* environment variables to activate sheet syncing.",
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      submissionId,
+      googleSheetsEnabled: googleSheetsResult.enabled,
+    });
   } catch (error) {
     console.error("Company profile submission failed", error);
 

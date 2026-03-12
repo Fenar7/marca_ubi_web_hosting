@@ -50,6 +50,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
   const wasOpenRef = useRef(false);
   const focusTimerRef = useRef<number | null>(null);
   const resetTimerRef = useRef<number | null>(null);
+  const submissionIdRef = useRef("");
   const isBrowser = typeof document !== "undefined";
 
   const resetFormState = useCallback(() => {
@@ -58,6 +59,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
     setIsSubmitted(false);
     setIsSubmitting(false);
     setSubmitError(null);
+    submissionIdRef.current = "";
   }, []);
 
   const handleClose = useCallback(() => {
@@ -71,6 +73,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
         resetTimerRef.current = null;
       }, 260);
     } else {
+      submissionIdRef.current = "";
       setIsSubmitting(false);
       setSubmitError(null);
     }
@@ -172,6 +175,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
       if (isOpening) {
         window.dispatchEvent(new Event("profile-modal:open"));
+        submissionIdRef.current = crypto.randomUUID();
 
         if (focusTimerRef.current !== null) {
           window.clearTimeout(focusTimerRef.current);
@@ -294,7 +298,10 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(sanitizeCompanyProfileSubmission(formData)),
+        body: JSON.stringify({
+          ...sanitizeCompanyProfileSubmission(formData),
+          submissionId: submissionIdRef.current || crypto.randomUUID(),
+        }),
       });
 
       const responseBody = (await response.json()) as {

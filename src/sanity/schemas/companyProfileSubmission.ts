@@ -6,6 +6,13 @@ export const companyProfileSubmissionSchema = defineType({
   type: "document",
   fields: [
     defineField({
+      name: "submissionId",
+      title: "Submission ID",
+      type: "string",
+      validation: (rule) => rule.required(),
+      readOnly: true,
+    }),
+    defineField({
       name: "name",
       title: "Name",
       type: "string",
