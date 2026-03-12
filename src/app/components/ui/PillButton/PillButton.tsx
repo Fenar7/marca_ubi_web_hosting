@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 import styles from "./PillButton.module.scss";
 
 type PillButtonVariant = "light" | "brand";
@@ -9,6 +9,9 @@ type PillButtonProps = {
   className?: string;
   icon?: ReactNode;
   variant?: PillButtonVariant;
+  onClick?: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement>;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 };
 
 function PillButtonContent({ label, icon }: Pick<PillButtonProps, "label" | "icon">) {
@@ -22,19 +25,33 @@ function PillButtonContent({ label, icon }: Pick<PillButtonProps, "label" | "ico
   );
 }
 
-export default function PillButton({ label, href, className, icon, variant = "light" }: PillButtonProps) {
+export default function PillButton({
+  label,
+  href,
+  className,
+  icon,
+  variant = "light",
+  onClick,
+  type = "button",
+  disabled = false,
+}: PillButtonProps) {
   const rootClassName = [styles.button, styles[variant], className].filter(Boolean).join(" ");
 
   if (href) {
     return (
-      <a className={rootClassName} href={href}>
+      <a
+        aria-disabled={disabled || undefined}
+        className={rootClassName}
+        href={disabled ? undefined : href}
+        onClick={onClick}
+      >
         <PillButtonContent label={label} icon={icon} />
       </a>
     );
   }
 
   return (
-    <button className={rootClassName} type="button">
+    <button className={rootClassName} disabled={disabled} onClick={onClick} type={type}>
       <PillButtonContent label={label} icon={icon} />
     </button>
   );

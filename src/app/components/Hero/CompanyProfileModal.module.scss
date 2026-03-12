@@ -1,0 +1,537 @@
+:global(html.profile-modal-open),
+:global(body.profile-modal-open) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.overlay {
+  inset: 0;
+  isolation: isolate;
+  position: fixed;
+  z-index: 190;
+}
+
+.backdrop {
+  background: rgba(2, 5, 10, 0.74);
+  backdrop-filter: blur(14px);
+  border: 0;
+  cursor: pointer;
+  inset: 0;
+  position: absolute;
+}
+
+.viewport {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  position: relative;
+}
+
+.panel {
+  background:
+    linear-gradient(145deg, rgba(11, 14, 20, 0.96), rgba(5, 8, 14, 0.94)),
+    linear-gradient(124deg, rgba(255, 121, 31, 0.12), rgba(255, 121, 31, 0) 42%);
+  border: 1px solid rgba($white, 0.12);
+  border-radius: clamp(1.25rem, 2.8vw, 1.8rem);
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.45);
+  color: $white;
+  max-height: min(46rem, calc(100svh - 2rem));
+  max-width: min(54rem, 100%);
+  overflow: auto;
+  padding: clamp(1.15rem, 2.6vw, 1.75rem);
+  position: relative;
+  width: 100%;
+}
+
+.panelGlow {
+  border-radius: 999px;
+  display: block;
+  filter: blur(54px);
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.panelGlowPrimary {
+  background: rgba($cta-orange, 0.16);
+  height: 11rem;
+  left: -2rem;
+  top: -2rem;
+  width: 12rem;
+}
+
+.panelGlowSecondary {
+  background: rgba(69, 113, 255, 0.16);
+  height: 13rem;
+  right: -2rem;
+  top: 15%;
+  width: 13rem;
+}
+
+.header {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.headerCopy {
+  max-width: 38rem;
+}
+
+.eyebrow {
+  color: rgba($white, 0.54);
+  font-family: $font-sf-pro;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  line-height: 1;
+  margin: 0 0 0.9rem;
+  text-transform: uppercase;
+}
+
+.title {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(1.85rem, 4vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  margin: 0;
+  max-width: 34rem;
+}
+
+.description {
+  color: rgba($white, 0.78);
+  font-family: $font-sf-pro;
+  font-size: clamp(1rem, 1.5vw, 1.08rem);
+  line-height: 1.45;
+  margin: 1rem 0 0;
+  max-width: 34rem;
+}
+
+.closeButton {
+  align-items: center;
+  background: rgba($white, 0.06);
+  border: 1px solid rgba($white, 0.12);
+  border-radius: 999px;
+  color: $white;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 3rem;
+  justify-content: center;
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    transform 0.22s ease;
+  width: 3rem;
+}
+
+.closeButton:hover {
+  background: rgba($white, 0.1);
+  border-color: rgba($white, 0.2);
+  transform: translateY(-1px);
+}
+
+.closeIcon {
+  display: block;
+  height: 1rem;
+  position: relative;
+  width: 1rem;
+}
+
+.closeLine {
+  background: $white;
+  border-radius: 999px;
+  height: 0.125rem;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform-origin: center;
+  width: 100%;
+}
+
+.closeLine:first-child {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.closeLine:last-child {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.body {
+  min-height: 0;
+}
+
+.form {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.formGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  color: rgba($white, 0.92);
+  font-family: $font-sf-pro;
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.requiredMark {
+  color: $cta-orange;
+}
+
+.fieldNote {
+  color: rgba($white, 0.58);
+  font-family: $font-sf-pro;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin-top: -0.18rem;
+}
+
+.fieldControl {
+  appearance: none;
+  background: rgba($white, 0.05);
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 1rem;
+  color: $white;
+  font-family: $font-sf-pro;
+  font-size: 0.99rem;
+  line-height: 1.4;
+  min-height: 3.4rem;
+  outline: none;
+  padding: 0.98rem 1rem;
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background-color 0.22s ease,
+    transform 0.22s ease;
+  width: 100%;
+}
+
+.fieldControl::placeholder {
+  color: rgba($white, 0.35);
+}
+
+.fieldControl:focus {
+  background: rgba($white, 0.07);
+  border-color: rgba($cta-orange, 0.75);
+  box-shadow:
+    0 0 0 0.125rem rgba($cta-orange, 0.16),
+    0 0 1.2rem rgba($cta-orange, 0.12);
+}
+
+.fieldTextarea {
+  min-height: 8.6rem;
+  resize: vertical;
+}
+
+.fieldError {
+  color: #ffb39b;
+  font-family: $font-sf-pro;
+  font-size: 0.83rem;
+  line-height: 1.4;
+}
+
+.formFooter {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.footerNote {
+  color: rgba($white, 0.58);
+  font-family: $font-sf-pro;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 27rem;
+}
+
+.submitButton,
+.secondaryButton {
+  align-items: center;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: $font-sf-pro;
+  font-size: 1rem;
+  font-weight: 600;
+  justify-content: center;
+  min-height: 3.35rem;
+  padding: 0.9rem 1.45rem;
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease,
+    opacity 0.22s ease;
+}
+
+.submitButton {
+  background: $cta-orange;
+  border: 1px solid transparent;
+  color: $white;
+  min-width: 15.75rem;
+}
+
+.submitButton:hover:not(:disabled),
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #ff7d2f;
+}
+
+.submitButton:disabled {
+  cursor: progress;
+  opacity: 0.78;
+}
+
+.secondaryButton {
+  background: transparent;
+  border: 1px solid rgba($white, 0.16);
+  color: rgba($white, 0.84);
+}
+
+.secondaryButton:hover {
+  background: rgba($white, 0.06);
+  border-color: rgba($white, 0.24);
+}
+
+.successState {
+  align-items: center;
+  animation: successEntrance 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  display: grid;
+  justify-items: center;
+  min-height: 25rem;
+  padding: clamp(1rem, 3vw, 2rem) 0.25rem 0.5rem;
+  text-align: center;
+}
+
+.successIconWrap {
+  align-items: center;
+  background: radial-gradient(circle at 50% 45%, rgba($cta-orange, 0.24), rgba($cta-orange, 0.04) 72%);
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 999px;
+  display: inline-flex;
+  height: 6rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+  width: 6rem;
+}
+
+.successIcon {
+  height: 3.25rem;
+  width: 3.25rem;
+}
+
+.successCircle,
+.successCheck {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.successCircle {
+  animation: drawCircle 0.64s 0.08s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  stroke: rgba($white, 0.82);
+  stroke-dasharray: 145;
+  stroke-dashoffset: 145;
+  stroke-width: 2.4;
+}
+
+.successCheck {
+  animation: drawCheck 0.42s 0.54s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  stroke: $cta-orange;
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  stroke-width: 3;
+}
+
+.successEyebrow {
+  color: rgba($white, 0.56);
+  font-family: $font-sf-pro;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  margin: 0 0 0.7rem;
+  text-transform: uppercase;
+}
+
+.successTitle {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(1.85rem, 4vw, 2.55rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0;
+}
+
+.successCopy {
+  color: rgba($white, 0.76);
+  font-family: $font-sf-pro;
+  font-size: clamp(1rem, 1.6vw, 1.08rem);
+  line-height: 1.55;
+  margin: 1rem auto 0;
+  max-width: 28rem;
+}
+
+.successActions {
+  align-items: center;
+  display: flex;
+  gap: 0.85rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.manualDownloadLink {
+  color: $cta-orange;
+  font-family: $font-sf-pro;
+  font-size: 0.96rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: color 0.22s ease, opacity 0.22s ease;
+}
+
+.manualDownloadLink:hover {
+  color: #ff9a5f;
+}
+
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes successEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 61.9375rem) {
+  .panel {
+    max-height: calc(100svh - 1.5rem);
+    padding: 1.15rem;
+  }
+
+  .header {
+    margin-bottom: 1.2rem;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .footerNote {
+    max-width: none;
+  }
+
+  .submitButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 35.9375rem) {
+  .viewport {
+    padding: 0.75rem;
+  }
+
+  .panel {
+    border-radius: 1.25rem;
+    max-height: calc(100svh - 1rem);
+    padding: 1rem;
+  }
+
+  .header {
+    gap: 0.75rem;
+  }
+
+  .title {
+    font-size: clamp(1.55rem, 9vw, 2rem);
+  }
+
+  .description {
+    font-size: 0.96rem;
+  }
+
+  .closeButton {
+    height: 2.7rem;
+    width: 2.7rem;
+  }
+
+  .fieldControl {
+    font-size: 0.96rem;
+    min-height: 3.2rem;
+    padding-inline: 0.92rem;
+  }
+
+  .fieldTextarea {
+    min-height: 7.4rem;
+  }
+
+  .successState {
+    min-height: 22rem;
+    padding-inline: 0;
+  }
+
+  .successIconWrap {
+    height: 5rem;
+    width: 5rem;
+  }
+
+  .successIcon {
+    height: 2.8rem;
+    width: 2.8rem;
+  }
+
+  .successActions {
+    flex-direction: column;
+  }
+
+  .secondaryButton {
+    width: 100%;
+  }
+}

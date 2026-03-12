@@ -1,9 +1,10 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { shouldUseMobileMotion } from "@/app/lib/motion";
 import PillButton from "../ui/PillButton/PillButton";
+import CompanyProfileModal from "./CompanyProfileModal";
 import styles from "./Hero.module.scss";
 
 const heroBackgroundImage = "/images/bg-cover-image-3.png";
@@ -14,6 +15,7 @@ const titleLines = ["Engineering Brands", "That Are Meant", "to Be Felt."];
 const topRightCalloutWords = ["The", "Brand", "Engineering", "Company"];
 
 export default function Hero() {
+  const [isCompanyProfileOpen, setIsCompanyProfileOpen] = useState(false);
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const dividerRef = useRef<HTMLSpanElement | null>(null);
@@ -479,8 +481,8 @@ export default function Hero() {
           />
           <PillButton
             className={styles.heroButtonSecondary}
-            href="#works"
-            label="Explore Our Work"
+            label="Download Company Profile"
+            onClick={() => setIsCompanyProfileOpen(true)}
             icon={<img className={styles.buttonIcon} src={primaryArrowImage} alt="" />}
           />
         </div>
@@ -516,6 +518,11 @@ export default function Hero() {
           />
         </div>
       </div>
+
+      <CompanyProfileModal
+        isOpen={isCompanyProfileOpen}
+        onClose={() => setIsCompanyProfileOpen(false)}
+      />
     </section>
   );
 }
