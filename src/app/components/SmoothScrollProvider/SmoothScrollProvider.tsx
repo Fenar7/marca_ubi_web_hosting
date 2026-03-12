@@ -22,6 +22,9 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     let lenis: Lenis | null = null;
     let resizeTimerId: number | null = null;
     const burstTimerIds: number[] = [];
+    const deferredTimerIds: number[] = [];
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const useNativeSmoothScroll = prefersReducedMotion || shouldUseMobileMotion();
 
     const handleScrollRefresh = () => {
       lenis?.resize();
@@ -31,6 +34,15 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     const clearBurstTimers = () => {
       while (burstTimerIds.length > 0) {
         const timerId = burstTimerIds.pop();
+        if (timerId !== undefined) {
+          window.clearTimeout(timerId);
+        }
+      }
+    };
+
+    const clearDeferredTimers = () => {
+      while (deferredTimerIds.length > 0) {
+        const timerId = deferredTimerIds.pop();
         if (timerId !== undefined) {
           window.clearTimeout(timerId);
         }
@@ -77,11 +89,166 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       }, 160);
     };
 
+    const getHeaderOffset = () => {
+      const header = document.querySelector("header");
+
+      if (!(header instanceof HTMLElement)) {
+        return 96;
+      }
+
+      return Math.round(header.getBoundingClientRect().height + 20);
+    };
+
+    const getTargetOffset = (target: HTMLElement) => {
+      const styles = window.getComputedStyle(target);
+      const scrollMarginTop = Number.parseFloat(styles.scrollMarginTop || "0");
+      const scrollMarginBlockStart = Number.parseFloat(styles.scrollMarginBlockStart || "0");
+      const explicitOffset = Math.max(
+        Number.isFinite(scrollMarginTop) ? scrollMarginTop : 0,
+        Number.isFinite(scrollMarginBlockStart) ? scrollMarginBlockStart : 0,
+      );
+
+      return explicitOffset > 0 ? explicitOffset : getHeaderOffset();
+    };
+
+    const resolveHashTarget = (hash: string) => {
+      const targetId = decodeURIComponent(hash.replace(/^#/, "").trim());
+
+      if (!targetId) {
+        return null;
+      }
+
+      const byId = document.getElementById(targetId);
+
+      if (byId) {
+        return byId;
+      }
+
+      const escapedId = typeof CSS !== "undefined" && "escape" in CSS ? CSS.escape(targetId) : targetId;
+
+      return document.querySelector<HTMLElement>(`[name="${escapedId}"]`);
+    };
+
+    const updateAddressBar = (url: URL, isTopLink: boolean) => {
+      const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const nextUrl = isTopLink
+        ? `${window.location.pathname}${window.location.search}`
+        : `${window.location.pathname}${window.location.search}${url.hash}`;
+
+      if (nextUrl === currentUrl) {
+        return;
+      }
+
+      if (isTopLink) {
+        window.history.replaceState(null, "", nextUrl);
+        return;
+      }
+
+      window.history.pushState(null, "", nextUrl);
+    };
+
+    const performSmoothScroll = (target: HTMLElement | null, url: URL, isTopLink: boolean) => {
+      const offset = target ? -getTargetOffset(target) : 0;
+
+      if (lenis) {
+        lenis.scrollTo(target ?? 0, {
+          offset,
+          duration: 1.08,
+          easing: (value: number) => 1 - Math.pow(1 - value, 3),
+        });
+      } else {
+        const top = target ? window.scrollY + target.getBoundingClientRect().top + offset : 0;
+        window.scrollTo({
+          top: Math.max(0, top),
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+        });
+      }
+
+      updateAddressBar(url, isTopLink);
+    };
+
+    const queueScrollAfterMenuClose = (callback: () => void) => {
+      if (!document.body.classList.contains("menu-open")) {
+        callback();
+        return;
+      }
+
+      let hasRun = false;
+
+      const run = () => {
+        if (hasRun) {
+          return;
+        }
+
+        hasRun = true;
+        window.removeEventListener("menu:close", run);
+        callback();
+      };
+
+      window.addEventListener("menu:close", run, { once: true });
+
+      const timerId = window.setTimeout(run, 520);
+      deferredTimerIds.push(timerId);
+    };
+
+    const handleAnchorClick = (event: MouseEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const clickTarget = event.target;
+
+      if (!(clickTarget instanceof Element)) {
+        return;
+      }
+
+      const anchor = clickTarget.closest("a[href]");
+
+      if (!(anchor instanceof HTMLAnchorElement)) {
+        return;
+      }
+
+      const rawHref = anchor.getAttribute("href")?.trim();
+
+      if (!rawHref || anchor.target === "_blank" || anchor.hasAttribute("download")) {
+        return;
+      }
+
+      const url = new URL(anchor.href, window.location.href);
+      const isSamePageLink = url.origin === window.location.origin && url.pathname === window.location.pathname;
+      const isHashTopLink = rawHref === "#" || (rawHref.startsWith("#") && url.hash.length === 0);
+      const isHashLink = rawHref.startsWith("#") || (isSamePageLink && url.hash.length > 0);
+
+      if (!isSamePageLink || !isHashLink) {
+        return;
+      }
+
+      const target = isHashTopLink ? null : resolveHashTarget(url.hash);
+
+      if (!isHashTopLink && !target) {
+        return;
+      }
+
+      event.preventDefault();
+
+      queueScrollAfterMenuClose(() => {
+        performSmoothScroll(target, url, isHashTopLink);
+      });
+    };
+
     window.addEventListener("initial-loader:complete", handleInitialLoaderComplete);
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("orientationchange", scheduleRefreshBurst);
     window.addEventListener("resize", handleResize, { passive: true });
+    document.addEventListener("click", handleAnchorClick, true);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     scheduleRefreshBurst();
 
@@ -90,21 +257,17 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
         window.clearTimeout(resizeTimerId);
       }
       clearBurstTimers();
+      clearDeferredTimers();
       window.removeEventListener("initial-loader:complete", handleInitialLoaderComplete);
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("orientationchange", scheduleRefreshBurst);
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("click", handleAnchorClick, true);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return () => {
-        cleanupRefreshListeners();
-      };
-    }
-
-    if (shouldUseMobileMotion()) {
+    if (useNativeSmoothScroll) {
       return () => {
         cleanupRefreshListeners();
       };
