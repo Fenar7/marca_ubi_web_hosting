@@ -37,12 +37,20 @@ export async function POST(request: Request) {
 
     const sanitizedInput = sanitizeCompanyProfileSubmission(input);
 
-    await writeClient.create({
+    const document = {
       _type: "companyProfileSubmission",
-      ...sanitizedInput,
+      name: sanitizedInput.name,
+      businessType: sanitizedInput.businessType,
+      phone: sanitizedInput.phone,
+      email: sanitizedInput.email,
       submittedAt: new Date().toISOString(),
       source: "hero-company-profile-modal",
-    });
+      ...(sanitizedInput.instagramId ? { instagramId: sanitizedInput.instagramId } : {}),
+      ...(sanitizedInput.website ? { website: sanitizedInput.website } : {}),
+      ...(sanitizedInput.message ? { message: sanitizedInput.message } : {}),
+    };
+
+    await writeClient.create(document);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

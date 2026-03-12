@@ -4,6 +4,14 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
+import {
+  COMPANY_PROFILE_SUBMISSION_FIELD_ORDER,
+  EMPTY_COMPANY_PROFILE_SUBMISSION,
+  sanitizeCompanyProfileSubmission,
+  validateCompanyProfileSubmission,
+  type CompanyProfileSubmissionErrors,
+  type CompanyProfileSubmissionInput,
+} from "@/app/lib/companyProfileSubmission";
 import styles from "./CompanyProfileModal.module.scss";
 
 const COMPANY_PROFILE_URL = "/pdf/Marca_Ubi_Company_Profile.pdf";
@@ -13,93 +21,6 @@ type CompanyProfileModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
-
-type FormState = {
-  name: string;
-  businessType: string;
-  phone: string;
-  email: string;
-  instagramId: string;
-  website: string;
-  message: string;
-};
-
-type FormErrors = Partial<Record<keyof FormState, string>>;
-
-const INITIAL_FORM_STATE: FormState = {
-  name: "",
-  businessType: "",
-  phone: "",
-  email: "",
-  instagramId: "",
-  website: "",
-  message: "",
-};
-
-const FIELD_ORDER: Array<keyof FormState> = [
-  "name",
-  "businessType",
-  "phone",
-  "email",
-  "instagramId",
-  "website",
-  "message",
-];
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-function isValidPhone(value: string) {
-  const digits = value.replace(/\D/g, "");
-  return digits.length >= 7;
-}
-
-function isValidWebsite(value: string) {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return true;
-  }
-
-  try {
-    const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-    const parsed = new URL(candidate);
-    return parsed.hostname.includes(".");
-  } catch {
-    return false;
-  }
-}
-
-function validateForm(formData: FormState) {
-  const errors: FormErrors = {};
-
-  if (!formData.name.trim()) {
-    errors.name = "Please enter your name.";
-  }
-
-  if (!formData.businessType.trim()) {
-    errors.businessType = "Please enter your business type.";
-  }
-
-  if (!formData.phone.trim()) {
-    errors.phone = "Please enter your phone number.";
-  } else if (!isValidPhone(formData.phone)) {
-    errors.phone = "Please enter a valid phone number.";
-  }
-
-  if (!formData.email.trim()) {
-    errors.email = "Please enter your email address.";
-  } else if (!isValidEmail(formData.email)) {
-    errors.email = "Please enter a valid email address.";
-  }
-
-  if (formData.website.trim() && !isValidWebsite(formData.website)) {
-    errors.website = "Please enter a valid website URL.";
-  }
-
-  return errors;
-}
 
 function triggerProfileDownload() {
   const anchor = document.createElement("a");
@@ -113,10 +34,13 @@ function triggerProfileDownload() {
 }
 
 export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileModalProps) {
-  const [formData, setFormData] = useState<FormState>(INITIAL_FORM_STATE);
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [formData, setFormData] = useState<CompanyProfileSubmissionInput>(
+    EMPTY_COMPANY_PROFILE_SUBMISSION,
+  );
+  const [formErrors, setFormErrors] = useState<CompanyProfileSubmissionErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -124,24 +48,19 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const wasOpenRef = useRef(false);
-  const submitTimerRef = useRef<number | null>(null);
   const focusTimerRef = useRef<number | null>(null);
   const resetTimerRef = useRef<number | null>(null);
   const isBrowser = typeof document !== "undefined";
 
   const resetFormState = useCallback(() => {
-    setFormData(INITIAL_FORM_STATE);
+    setFormData(EMPTY_COMPANY_PROFILE_SUBMISSION);
     setFormErrors({});
     setIsSubmitted(false);
     setIsSubmitting(false);
+    setSubmitError(null);
   }, []);
 
   const handleClose = useCallback(() => {
-    if (submitTimerRef.current !== null) {
-      window.clearTimeout(submitTimerRef.current);
-      submitTimerRef.current = null;
-    }
-
     if (isSubmitted) {
       if (resetTimerRef.current !== null) {
         window.clearTimeout(resetTimerRef.current);
@@ -153,6 +72,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       }, 260);
     } else {
       setIsSubmitting(false);
+      setSubmitError(null);
     }
 
     onClose();
@@ -276,11 +196,6 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
     wasOpenRef.current = false;
 
-    if (submitTimerRef.current !== null) {
-      window.clearTimeout(submitTimerRef.current);
-      submitTimerRef.current = null;
-    }
-
     if (focusTimerRef.current !== null) {
       window.clearTimeout(focusTimerRef.current);
       focusTimerRef.current = null;
@@ -310,10 +225,6 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
         window.dispatchEvent(new Event("profile-modal:close"));
       }
 
-      if (submitTimerRef.current !== null) {
-        window.clearTimeout(submitTimerRef.current);
-      }
-
       if (focusTimerRef.current !== null) {
         window.clearTimeout(focusTimerRef.current);
       }
@@ -325,7 +236,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
   }, []);
 
   const handleInputChange =
-    (field: keyof FormState) =>
+    (field: keyof CompanyProfileSubmissionInput) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const nextValue = event.target.value;
 
@@ -343,17 +254,24 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
         delete nextErrors[field];
         return nextErrors;
       });
+
+      if (submitError) {
+        setSubmitError(null);
+      }
     };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const nextErrors = validateForm(formData);
+    const nextErrors = validateCompanyProfileSubmission(formData);
 
     if (Object.keys(nextErrors).length > 0) {
       setFormErrors(nextErrors);
+      setSubmitError(null);
 
-      const firstInvalidField = FIELD_ORDER.find((field) => nextErrors[field]);
+      const firstInvalidField = COMPANY_PROFILE_SUBMISSION_FIELD_ORDER.find(
+        (field) => nextErrors[field],
+      );
       if (firstInvalidField) {
         window.requestAnimationFrame(() => {
           const firstInvalidElement = document.getElementById(`company-profile-${firstInvalidField}`);
@@ -368,17 +286,58 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
     setFormErrors({});
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    if (submitTimerRef.current !== null) {
-      window.clearTimeout(submitTimerRef.current);
-    }
+    try {
+      const response = await fetch("/api/company-profile-submissions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(sanitizeCompanyProfileSubmission(formData)),
+      });
 
-    submitTimerRef.current = window.setTimeout(() => {
+      const responseBody = (await response.json()) as {
+        ok?: boolean;
+        message?: string;
+        errors?: CompanyProfileSubmissionErrors;
+      };
+
+      if (!response.ok || !responseBody.ok) {
+        if (response.status === 400 && responseBody.errors) {
+          setFormErrors(responseBody.errors);
+
+          const firstInvalidField = COMPANY_PROFILE_SUBMISSION_FIELD_ORDER.find(
+            (field) => responseBody.errors?.[field],
+          );
+
+          if (firstInvalidField) {
+            window.requestAnimationFrame(() => {
+              const firstInvalidElement = document.getElementById(
+                `company-profile-${firstInvalidField}`,
+              );
+              if (firstInvalidElement instanceof HTMLElement) {
+                firstInvalidElement.focus();
+              }
+            });
+          }
+        }
+
+        setSubmitError(
+          responseBody.message ||
+            "We could not save your details right now. Please try again in a moment.",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
       setIsSubmitting(false);
       setIsSubmitted(true);
       triggerProfileDownload();
-      submitTimerRef.current = null;
-    }, 720);
+    } catch {
+      setIsSubmitting(false);
+      setSubmitError("We could not save your details right now. Please try again in a moment.");
+    }
   };
 
   if (!isBrowser) {
@@ -590,16 +549,19 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
                 </div>
 
                 <div className={styles.formFooter}>
-                  <p className={styles.footerNote}>
-                    Required fields help us understand who is requesting the profile before it is
-                    downloaded.
-                  </p>
+                  <div className={styles.footerMeta}>
+                    <p className={styles.footerNote}>
+                      Required fields help us understand who is requesting the profile before it is
+                      downloaded.
+                    </p>
+                    {submitError ? <p className={styles.submitError}>{submitError}</p> : null}
+                  </div>
                   <button
                     className={styles.submitButton}
                     disabled={isSubmitting}
                     type="submit"
                   >
-                    {isSubmitting ? "Preparing your profile..." : "Submit and Download Profile"}
+                    {isSubmitting ? "Saving details and preparing profile..." : "Submit and Download Profile"}
                   </button>
                 </div>
               </form>

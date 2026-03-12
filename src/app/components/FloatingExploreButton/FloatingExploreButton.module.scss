@@ -29,6 +29,12 @@
   transform: translate3d(0, 1rem, 0) scale(0.96);
 }
 
+:global(body.profile-modal-open) .exploreCard {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 1rem, 0) scale(0.96);
+}
+
 .isDocked {
   background: rgba($black, 0.72);
   border-color: rgba($white, 0.38);
