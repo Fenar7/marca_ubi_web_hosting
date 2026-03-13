@@ -99,19 +99,24 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       gsap.set(overlay, { autoAlpha: 0, pointerEvents: "none" });
       gsap.set(panel, {
         autoAlpha: 0,
-        y: 30,
-        scale: 0.965,
+        y: 18,
         transformOrigin: "50% 50%",
+        force3D: true,
       });
-      gsap.set([header, body], { autoAlpha: 0, y: 20 });
+      gsap.set([header, body], { autoAlpha: 1, y: 0, force3D: true });
 
       const timeline = gsap.timeline({
         paused: true,
-        defaults: { ease: "power3.out" },
+        defaults: { ease: "power2.out" },
         onStart: () => {
           overlay.style.pointerEvents = "auto";
+          overlay.classList.add(styles.isTransitioning);
+        },
+        onComplete: () => {
+          overlay.classList.remove(styles.isTransitioning);
         },
         onReverseComplete: () => {
+          overlay.classList.remove(styles.isTransitioning);
           gsap.set(overlay, { pointerEvents: "none" });
         },
       });
@@ -121,7 +126,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
           overlay,
           {
             autoAlpha: 1,
-            duration: 0.22,
+            duration: 0.16,
             ease: "power1.out",
           },
           0,
@@ -131,20 +136,10 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
           {
             autoAlpha: 1,
             y: 0,
-            scale: 1,
-            duration: 0.44,
+            duration: 0.3,
+            ease: "power3.out",
           },
-          0.02,
-        )
-        .to(
-          [header, body],
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.34,
-            stagger: 0.05,
-          },
-          0.12,
+          0,
         );
 
       timelineRef.current = timeline;
@@ -165,6 +160,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       if (isOpen) {
         timeline.play();
       } else {
+        overlayRef.current?.classList.add(styles.isTransitioning);
         timeline.reverse();
       }
     }
