@@ -51,26 +51,34 @@ export default function Header() {
 
       gsap.set(overlay, { autoAlpha: 0, pointerEvents: "none" });
       gsap.set(panel, { autoAlpha: 0 });
-      gsap.set([intro, meta, footer], { autoAlpha: 0, y: 16, force3D: true });
+      gsap.set([intro, meta, footer], { autoAlpha: 0, y: 10, force3D: true });
       gsap.set(items, {
         autoAlpha: 0,
-        yPercent: 42,
+        y: 20,
         force3D: true,
       });
-      gsap.set(hints, { autoAlpha: 0, y: 10, force3D: true });
-      gsap.set(arrows, { autoAlpha: 0, x: -12, force3D: true });
-      gsap.set(strokes, { scaleX: 0, transformOrigin: "left center" });
+      gsap.set(hints, { autoAlpha: 1, y: 0, x: 0, force3D: true });
+      gsap.set(arrows, { autoAlpha: 1, x: 0, force3D: true });
+      gsap.set(strokes, { scaleX: 1, transformOrigin: "left center" });
 
       const timeline = gsap.timeline({
         paused: true,
         defaults: { ease: "power3.out" },
         onStart: () => {
+          overlay.classList.add(styles.menuOverlayAnimating);
+          panel.classList.add(styles.menuPanelAnimating);
           document.body.classList.add("menu-open");
           document.documentElement.classList.add("menu-open");
           dispatchMenuEvent("menu:open");
           overlay.style.pointerEvents = "auto";
         },
+        onComplete: () => {
+          overlay.classList.remove(styles.menuOverlayAnimating);
+          panel.classList.remove(styles.menuPanelAnimating);
+        },
         onReverseComplete: () => {
+          overlay.classList.remove(styles.menuOverlayAnimating);
+          panel.classList.remove(styles.menuPanelAnimating);
           document.body.classList.remove("menu-open");
           document.documentElement.classList.remove("menu-open");
           dispatchMenuEvent("menu:close");
@@ -102,69 +110,37 @@ export default function Header() {
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.32,
-            stagger: 0.04,
+            duration: 0.22,
+            stagger: 0.03,
           },
-          0.04,
+          0.03,
         )
         .to(
           items,
           {
             autoAlpha: 1,
-            yPercent: 0,
-            duration: 0.4,
-            stagger: 0.035,
-            ease: "power3.out",
-          },
-          0.08,
-        )
-        .to(
-          hints,
-          {
-            autoAlpha: 1,
             y: 0,
-            duration: 0.2,
-            stagger: 0.025,
-            ease: "power2.out",
-          },
-          0.14,
-        )
-        .to(
-          arrows,
-          {
-            autoAlpha: 1,
-            x: 0,
-            duration: 0.22,
-            stagger: 0.025,
+            duration: 0.28,
+            stagger: 0.022,
             ease: "power3.out",
           },
-          0.14,
-        )
-        .to(
-          strokes,
-          {
-            scaleX: 1,
-            duration: 0.24,
-            stagger: 0.025,
-            ease: "power3.out",
-          },
-          0.14,
+          0.06,
         )
         .to(
           footer,
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.26,
+            duration: 0.2,
           },
-          0.18,
+          0.12,
         )
         .to(
           lineTop,
           {
             y: 10,
             rotate: 45,
-            duration: 0.34,
+            duration: 0.26,
             ease: "power2.inOut",
           },
           0,
@@ -174,7 +150,7 @@ export default function Header() {
           {
             autoAlpha: 0,
             scaleX: 0.2,
-            duration: 0.22,
+            duration: 0.18,
             ease: "power2.inOut",
           },
           0,
@@ -184,7 +160,7 @@ export default function Header() {
           {
             y: -10,
             rotate: -45,
-            duration: 0.34,
+            duration: 0.26,
             ease: "power2.inOut",
           },
           0,
