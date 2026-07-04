@@ -940,7 +940,7 @@ export default function AboutSection() {
                         </span>
                         {metric.suffix ? (
                           <span
-                            className={styles.metricCountPlus}
+                            className={`${styles.metricCountPlus} ${metric.suffix === "\u00b0" ? styles.degreeSuffix : ""}`}
                             ref={(element) => {
                               countSuffixRefs.current[index] = element;
                             }}

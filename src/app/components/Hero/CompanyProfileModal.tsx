@@ -479,7 +479,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
                       id="company-profile-phone"
                       name="phone"
                       onChange={handleInputChange("phone")}
-                      placeholder="+971 50 123 4567"
+                      placeholder="+91 7012 052 472"
                       type="tel"
                       value={formData.phone}
                     />
