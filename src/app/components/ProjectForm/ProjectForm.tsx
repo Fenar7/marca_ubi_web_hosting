@@ -40,6 +40,7 @@ export default function ProjectForm() {
       }
 
       setSubmitSuccess(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       setSubmitError(err.message || "An error occurred.");
     } finally {
