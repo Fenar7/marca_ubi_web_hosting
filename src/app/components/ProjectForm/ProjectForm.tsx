@@ -64,8 +64,8 @@ export default function ProjectForm() {
           <div className={styles.contactCard}>
             <p>Need immediate assistance?</p>
             <div className={styles.contactDetails}>
-              <a href="tel:+18001234567" className={styles.contactLink}>
-                <MobileDeviceIcon /> +1 (800) 123-4567
+              <a href="tel:+917012052472" className={styles.contactLink}>
+                <MobileDeviceIcon /> +91 7012 052472
               </a>
               <a href="mailto:hello@marcaubi.com" className={styles.contactLink}>
                 <EnvelopeIcon /> hello@marcaubi.com
