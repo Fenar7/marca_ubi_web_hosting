@@ -3,6 +3,7 @@
 import React from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
+import { EditIcon } from "@sanity/icons";
 
 interface Step4Props {
   formData: ProjectFormData;
@@ -14,25 +15,25 @@ interface Step4Props {
 
 export default function Step4Summary({ formData, goToStep, handleSubmit, isSubmitting, submitError }: Step4Props) {
   
+  const SummaryItem = ({ label, value }: { label: string, value: string }) => (
+    <div className={styles.summaryItem}>
+      <div className={styles.summaryLabel}>{label}</div>
+      <div className={styles.summaryValue}>{value}</div>
+    </div>
+  );
+
   const SummarySection = ({ title, step, children }: { title: string, step: number, children: React.ReactNode }) => (
-    <div style={{ marginBottom: "2rem", paddingBottom: "1.5rem", borderBottom: "1px solid var(--color-light-grey)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ fontSize: "1.25rem", margin: 0 }}>{title}</h3>
+    <div className={styles.summaryCard}>
+      <div className={styles.summaryHeader}>
+        <h3>{title}</h3>
         <button 
           onClick={() => goToStep(step)}
-          style={{ 
-            background: "transparent", 
-            border: "none", 
-            color: "var(--color-cta-orange)", 
-            fontWeight: 600, 
-            cursor: "pointer",
-            textDecoration: "underline"
-          }}
+          className={styles.editButton}
         >
-          Edit
+          <EditIcon /> Edit
         </button>
       </div>
-      <div style={{ color: "var(--color-hash-grey)", lineHeight: 1.6 }}>
+      <div className={styles.summaryContent}>
         {children}
       </div>
     </div>
@@ -43,25 +44,25 @@ export default function Step4Summary({ formData, goToStep, handleSubmit, isSubmi
       <h2 className={styles.stepTitle}>Review your project brief</h2>
       
       <SummarySection title="1. Design Needs" step={1}>
-        <p><strong>Category:</strong> {formData.category || "Not selected"}</p>
-        <p><strong>Service:</strong> {formData.service || "Not selected"}</p>
+        <SummaryItem label="Category" value={formData.category || "Not selected"} />
+        <SummaryItem label="Service" value={formData.service || "Not selected"} />
       </SummarySection>
 
       <SummarySection title="2. Business Details" step={2}>
-        <p><strong>Language:</strong> {formData.language || "Not provided"}</p>
-        <p><strong>Project Name:</strong> {formData.projectName || "Not provided"}</p>
-        <p><strong>Description:</strong> {formData.projectDescription || "Not provided"}</p>
-        <p><strong>Industry:</strong> {formData.industry || "Not provided"}</p>
-        <p><strong>Website:</strong> {formData.website || "Not provided"}</p>
-        <p><strong>Agency Status:</strong> {formData.agencyStatus || "Not provided"}</p>
-        <p><strong>Source:</strong> {formData.referral || "Not provided"}</p>
+        <SummaryItem label="Language" value={formData.language || "Not provided"} />
+        <SummaryItem label="Project Name" value={formData.projectName || "Not provided"} />
+        <SummaryItem label="Description" value={formData.projectDescription || "Not provided"} />
+        <SummaryItem label="Industry" value={formData.industry || "Not provided"} />
+        <SummaryItem label="Website" value={formData.website || "Not provided"} />
+        <SummaryItem label="Agency Status" value={formData.agencyStatus || "Not provided"} />
+        <SummaryItem label="Source" value={formData.referral || "Not provided"} />
       </SummarySection>
 
       <SummarySection title="3. Details & Timeline" step={3}>
-        <p><strong>Inspiration Links:</strong> {formData.inspirationLinks || "None provided"}</p>
-        <p><strong>Timeline:</strong> {formData.timeline || "Not selected"}</p>
-        <p><strong>Showcase Permission:</strong> {formData.showcasePermission || "Not selected"}</p>
-        <p><strong>Extra Notes:</strong> {formData.extraNotes || "None"}</p>
+        <SummaryItem label="Inspiration Links" value={formData.inspirationLinks || "None provided"} />
+        <SummaryItem label="Timeline" value={formData.timeline || "Not selected"} />
+        <SummaryItem label="Showcase Permission" value={formData.showcasePermission || "Not selected"} />
+        <SummaryItem label="Extra Notes" value={formData.extraNotes || "None"} />
       </SummarySection>
 
       {submitError && (
