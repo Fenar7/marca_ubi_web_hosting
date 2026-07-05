@@ -3,6 +3,14 @@
 import React from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
+import {
+  ClockIcon,
+  CalendarIcon,
+  ControlsIcon,
+  CommentIcon,
+  OlistIcon,
+  RocketIcon
+} from "@sanity/icons";
 
 interface Step3Props {
   formData: ProjectFormData;
@@ -19,6 +27,15 @@ const timelines = [
   "Choose a start & end date",
   "Not sure. I'd like to chat with my designer",
 ];
+
+const timelineIcons: Record<string, React.ReactNode> = {
+  "48 hours (Quick turnaround fees typically apply)": <RocketIcon />,
+  "1 week": <ClockIcon />,
+  "2 weeks": <CalendarIcon />,
+  "1 month": <CalendarIcon />,
+  "Choose a start & end date": <OlistIcon />,
+  "Not sure. I'd like to chat with my designer": <CommentIcon />,
+};
 
 export default function Step3Details({ formData, updateFormData, nextStep, prevStep }: Step3Props) {
   const handleTimelineSelect = (timeline: string) => {
@@ -52,9 +69,14 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
               className={`${styles.timelineCard} ${formData.timeline === tl ? styles.active : ""}`}
               onClick={() => handleTimelineSelect(tl)}
             >
-              <h3>{tl.split(" (")[0]}</h3>
-              {tl.includes("(") && <p style={{fontSize: "0.75rem", marginTop: "0.5rem", color: "var(--color-hash-grey)"}}>{tl.substring(tl.indexOf("("))}</p>}
-              {tl.includes("Not sure") && <p style={{fontSize: "0.75rem", marginTop: "0.5rem", color: "var(--color-hash-grey)"}}>I'd like to chat with my designer</p>}
+              <div className={styles.cardIcon}>
+                {timelineIcons[tl]}
+              </div>
+              <div className={styles.textContent}>
+                <h3>{tl.split(" (")[0]}</h3>
+                {tl.includes("(") && <p>{tl.substring(tl.indexOf("("))}</p>}
+                {tl.includes("Not sure") && <p>I'd like to chat with my designer</p>}
+              </div>
             </button>
           ))}
         </div>
