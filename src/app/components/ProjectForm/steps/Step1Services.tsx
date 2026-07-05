@@ -3,6 +3,16 @@
 import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
+import { 
+  ImagesIcon, 
+  DesktopIcon, 
+  SparkleIcon, 
+  TagIcon, 
+  BlockElementIcon, 
+  PackageIcon, 
+  BookIcon, 
+  DocumentIcon 
+} from "@sanity/icons";
 
 interface Step1Props {
   formData: ProjectFormData;
@@ -20,6 +30,17 @@ const categories = [
   "Book & magazine",
   "Other",
 ];
+
+const categoryIcons: Record<string, React.ReactNode> = {
+  "Logo & identity": <SparkleIcon />,
+  "Web & app design": <DesktopIcon />,
+  "Business & advertising": <ImagesIcon />,
+  "Clothing & merchandise": <TagIcon />,
+  "Art & illustration": <BlockElementIcon />,
+  "Packaging & label": <PackageIcon />,
+  "Book & magazine": <BookIcon />,
+  "Other": <DocumentIcon />,
+};
 
 const servicesByCategory: Record<string, string[]> = {
   "Logo & identity": [
@@ -118,6 +139,9 @@ export default function Step1Services({ formData, updateFormData, nextStep }: St
             className={`${styles.serviceCard} ${formData.service === service ? styles.active : ""}`}
             onClick={() => handleServiceSelect(service)}
           >
+            <div className={styles.cardIcon}>
+              {categoryIcons[selectedCategory]}
+            </div>
             <h3>{service}</h3>
           </button>
         ))}
