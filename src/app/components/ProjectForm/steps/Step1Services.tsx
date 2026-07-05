@@ -186,6 +186,9 @@ export default function Step1Services({ formData, updateFormData, nextStep }: St
   };
 
   const handleServiceSelect = (service: string) => {
+    if (!formData.category) {
+      updateFormData("category", selectedCategory);
+    }
     updateFormData("service", service);
   };
 
