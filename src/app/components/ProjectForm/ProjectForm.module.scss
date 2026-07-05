@@ -1,25 +1,59 @@
 .formContainer {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 0;
+  padding: 4rem 1rem;
   color: $white;
   width: 100%;
 }
 
-.stepIndicator {
-  font-size: 0.75rem;
-  color: rgba($white, 0.5);
-  margin-bottom: 1.5rem;
-  text-align: left;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.stepIndicatorContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4rem;
+}
+
+.stepIndicatorText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: rgba($white, 0.6);
+}
+
+.progressBarContainer {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.progressPill {
+  width: 48px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba($white, 0.1);
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  &.active {
+    background: $cta-orange;
+    box-shadow: 0 0 12px rgba($cta-orange, 0.4);
+  }
 }
 
 .stepContent {
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  animation: fadeIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .successContainer {

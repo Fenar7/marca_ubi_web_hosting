@@ -81,11 +81,21 @@ export default function ProjectForm() {
 
   return (
     <div className={styles.formContainer}>
-      <div className={styles.stepIndicator}>
-        Step {currentStep} of 4
+      <div className={styles.stepIndicatorContainer}>
+        <div className={styles.stepIndicatorText}>
+          Step {currentStep} of 4
+        </div>
+        <div className={styles.progressBarContainer}>
+          {[1, 2, 3, 4].map((step) => (
+            <div 
+              key={step} 
+              className={`${styles.progressPill} ${currentStep >= step ? styles.active : ""}`} 
+            />
+          ))}
+        </div>
       </div>
       
-      <div className={styles.stepContent}>
+      <div className={styles.stepContent} key={currentStep}>
         {currentStep === 1 && (
           <Step1Services 
             formData={formData} 
