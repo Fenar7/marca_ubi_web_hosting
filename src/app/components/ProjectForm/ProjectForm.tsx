@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import styles from "./ProjectForm.module.scss";
 import { ProjectFormData, initialFormData } from "./types";
+import { MobileDeviceIcon, EnvelopeIcon } from "@sanity/icons";
 import Step1Services from "./steps/Step1Services";
 import Step2Business from "./steps/Step2Business";
 import Step3Details from "./steps/Step3Details";
@@ -49,9 +50,31 @@ export default function ProjectForm() {
   if (submitSuccess) {
     return (
       <div className={styles.successContainer}>
-        <h2>Thank you!</h2>
-        <p>Your project brief has been submitted successfully. We will be in touch soon.</p>
-        <button className={styles.btnPrimary} onClick={() => window.location.href = "/"}>Return to Home</button>
+        <div className={styles.successCard}>
+          <svg className={styles.checkmark} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle className={styles.checkmarkCircle} cx="26" cy="26" r="25" fill="none"/>
+            <path className={styles.checkmarkCheck} fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+          
+          <h2>Project Brief Submitted!</h2>
+          <p className={styles.successMessage}>
+            Thank you for reaching out. Our team will review your requirements and get back to you within 24-48 hours.
+          </p>
+          
+          <div className={styles.contactCard}>
+            <p>Need immediate assistance?</p>
+            <div className={styles.contactDetails}>
+              <a href="tel:+18001234567" className={styles.contactLink}>
+                <MobileDeviceIcon /> +1 (800) 123-4567
+              </a>
+              <a href="mailto:hello@marcaubi.com" className={styles.contactLink}>
+                <EnvelopeIcon /> hello@marcaubi.com
+              </a>
+            </div>
+          </div>
+
+          <button className={styles.btnPrimary} onClick={() => window.location.href = "/"}>Return to Homepage</button>
+        </div>
       </div>
     );
   }
