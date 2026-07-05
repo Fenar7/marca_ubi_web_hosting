@@ -11,13 +11,17 @@ export async function POST(request: Request) {
     // If client in sanity/lib/client is read-only, you'd need to create one with a token.
     // We will attempt to use the existing client.
 
+    const writeClient = client.withConfig({
+      token: process.env.SANITY_API_EDIT_TOKEN,
+    });
+
     const newBrief = {
       _type: "projectBrief",
       ...body,
       submittedAt: new Date().toISOString(),
     };
 
-    const response = await client.create(newBrief);
+    const response = await writeClient.create(newBrief);
 
     return NextResponse.json({ success: true, id: response._id });
   } catch (error: any) {
