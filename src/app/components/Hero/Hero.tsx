@@ -474,7 +474,7 @@ export default function Hero() {
         <div className={styles.heroButtonWrap} ref={buttonWrapRef}>
           <PillButton
             className={styles.heroButton}
-            href="#contact"
+            href="/start-project"
             label="Start a Project"
             variant="brand"
             icon={<img className={styles.buttonIcon} src={primaryArrowImage} alt="" />}

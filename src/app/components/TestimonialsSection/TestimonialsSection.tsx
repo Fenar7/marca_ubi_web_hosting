@@ -192,7 +192,7 @@ export default function TestimonialsSection() {
               <PillButton
                 className={styles.contactButton}
                 icon={<img className={styles.buttonIcon} src="/hero/primary-arrow.png" alt="" />}
-                href="#contact"
+                href="/start-project"
                 label="Start a Conversation"
                 variant="brand"
               />

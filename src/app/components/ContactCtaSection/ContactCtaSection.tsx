@@ -155,7 +155,7 @@ const ContactCtaSection = () => {
             Share the context, and we&apos;ll come back with clear next steps.
           </p>
           <div ref={buttonRef}>
-            <PillButton label="Start a Project" variant="brand" href="#contact" />
+            <PillButton label="Start a Project" variant="brand" href="/start-project" />
           </div>
 
           {/* Contact info: phone + email on the first line, global collaboration on the second */}
