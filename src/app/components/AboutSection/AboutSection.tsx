@@ -31,7 +31,7 @@ const metrics = [
   },
   {
     value: 3,
-    suffix: "",
+    suffix: "*",
     title: "Integrated Disciplines",
     description:
       "Brand engineering, art, and experience design working as one system.",
@@ -889,7 +889,7 @@ export default function AboutSection() {
             <div ref={aboutButtonRef} className={styles.aboutButtonWrap}>
               <PillButton
                 className={styles.aboutButton}
-                href="#contact"
+                href="/start-project"
                 label="Start a Project"
                 variant="brand"
                 icon={<img className={styles.buttonIcon} src="/hero/primary-arrow.png" alt="" />}
@@ -940,7 +940,7 @@ export default function AboutSection() {
                         </span>
                         {metric.suffix ? (
                           <span
-                            className={`${styles.metricCountPlus} ${metric.suffix === "\u00b0" ? styles.degreeSuffix : ""}`}
+                            className={`${styles.metricCountPlus} ${metric.suffix === "\u00b0" || metric.suffix === "*" ? styles.topSuffix : ""}`}
                             ref={(element) => {
                               countSuffixRefs.current[index] = element;
                             }}

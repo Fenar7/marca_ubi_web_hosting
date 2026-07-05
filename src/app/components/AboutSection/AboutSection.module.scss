@@ -262,10 +262,9 @@
   will-change: transform, opacity;
 }
 
-.degreeSuffix {
-  align-self: flex-start;
-  margin-top: -0.2em;
-  margin-left: 0.1em;
+.topSuffix {
+  margin-bottom: 0.6em; /* Expands container upwards, preventing clipPath cutoff */
+  margin-left: 0.05em;
   font-size: clamp(1.8rem, 2.2vw, 2.6rem);
 }
 

@@ -1,0 +1,364 @@
+.stepContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stepTitle {
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 0;
+  letter-spacing: -0.02em;
+  color: $white;
+}
+
+.categoryTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.categoryTab {
+  background: rgba($white, 0.03);
+  color: rgba($white, 0.7);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  letter-spacing: -0.01em;
+
+  &:hover {
+    background: rgba($white, 0.08);
+    color: $white;
+    transform: scale(1.02);
+  }
+
+  &.active {
+    background: $white;
+    color: $black;
+    transform: scale(1.05);
+    box-shadow: 0 4px 14px rgba($white, 0.2);
+  }
+}
+
+.serviceGrid, .timelineGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.serviceCard, .timelineCard {
+  background: rgba($white, 0.02);
+  border: none;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  color: $white;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.05);
+
+  &:hover:not(.active) {
+    background: rgba($white, 0.06);
+    transform: scale(1.02);
+    box-shadow: inset 0 0 0 1px rgba($white, 0.1);
+  }
+
+  &.active {
+    background: rgba($cta-orange, 0.1);
+    transform: scale(1.02);
+    box-shadow: inset 0 0 0 1px $cta-orange, 0 8px 24px rgba($cta-orange, 0.2);
+    
+    .cardIcon {
+      color: $cta-orange;
+    }
+  }
+
+  .cardIcon {
+    width: 20px;
+    height: 20px;
+    color: rgba($white, 0.4);
+    transition: color 0.3s ease;
+    flex-shrink: 0;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+}
+
+.timelineCard .textContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  p {
+    color: rgba($white, 0.5);
+    font-size: 0.8125rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  label {
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: rgba($white, 0.9);
+    letter-spacing: -0.01em;
+  }
+}
+
+.formInput, .formSelect, .formTextarea {
+  padding: 1.25rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-family: inherit;
+  width: 100%;
+  background: rgba($white, 0.03);
+  color: $white;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.1);
+
+  &::placeholder {
+    color: rgba($white, 0.3);
+  }
+
+  &:focus {
+    outline: none;
+    background: rgba($white, 0.05);
+    box-shadow: inset 0 0 0 1px $cta-orange, 0 4px 12px rgba($cta-orange, 0.15);
+    transform: translateY(-2px);
+  }
+
+  option {
+    background-color: $black;
+    color: $white;
+  }
+}
+
+.formTextarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.05rem;
+  color: rgba($white, 0.8);
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: rgba($white, 0.02);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.05);
+
+  &:hover {
+    background: rgba($white, 0.05);
+    transform: scale(1.01);
+  }
+
+  input[type="radio"] {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba($white, 0.3);
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    
+    &:checked {
+      border-color: $cta-orange;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 12px;
+        height: 12px;
+        background: $cta-orange;
+        border-radius: 50%;
+      }
+    }
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba($white, 0.05);
+}
+
+.btnPrimary {
+  background-color: $white;
+  color: $black;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 14px rgba($white, 0.1);
+
+  &:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba($white, 0.2);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    background-color: rgba($white, 0.1);
+    color: rgba($white, 0.3);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.btnSecondary {
+  background-color: transparent;
+  color: $white;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border: 1px solid rgba($white, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  &:hover {
+    border-color: $white;
+    background: rgba($white, 0.05);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Step 4 Summary Styles */
+.summaryCard {
+  background: rgba($white, 0.02);
+  border: none;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba($white, 0.05);
+  padding-bottom: 1.5rem;
+  
+  h3 {
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: $white;
+  }
+}
+
+.editButton {
+  background: rgba($white, 0.05);
+  border: none;
+  color: $white;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: $white;
+    color: $black;
+    transform: scale(1.05);
+  }
+}
+
+.summaryContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  .summaryLabel {
+    font-size: 0.75rem;
+    color: rgba($white, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .summaryValue {
+    font-size: 1.05rem;
+    color: $white;
+    font-weight: 400;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+}
