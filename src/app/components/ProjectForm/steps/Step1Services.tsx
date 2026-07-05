@@ -4,14 +4,30 @@ import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
 import { 
-  ImagesIcon, 
-  DesktopIcon, 
-  SparkleIcon, 
-  TagIcon, 
-  BlockElementIcon, 
-  PackageIcon, 
-  BookIcon, 
-  DocumentIcon 
+  SparkleIcon,
+  HeartIcon,
+  EarthGlobeIcon,
+  UserIcon,
+  BookIcon,
+  DocumentIcon,
+  DocumentsIcon,
+  PackageIcon,
+  DesktopIcon,
+  ComponentIcon,
+  MobileDeviceIcon,
+  ImagesIcon,
+  ImageIcon,
+  EnvelopeIcon,
+  ControlsIcon,
+  TagIcon,
+  BlockElementIcon,
+  EditIcon,
+  TextIcon,
+  ColorWheelIcon,
+  StarIcon,
+  DashboardIcon,
+  BulbOutlineIcon,
+  PlayIcon
 } from "@sanity/icons";
 
 interface Step1Props {
@@ -31,15 +47,74 @@ const categories = [
   "Other",
 ];
 
-const categoryIcons: Record<string, React.ReactNode> = {
-  "Logo & identity": <SparkleIcon />,
-  "Web & app design": <DesktopIcon />,
-  "Business & advertising": <ImagesIcon />,
-  "Clothing & merchandise": <TagIcon />,
-  "Art & illustration": <BlockElementIcon />,
-  "Packaging & label": <PackageIcon />,
-  "Book & magazine": <BookIcon />,
-  "Other": <DocumentIcon />,
+const serviceIcons: Record<string, React.ReactNode> = {
+  // Logo & identity
+  "Logo design": <SparkleIcon />,
+  "Logo & brand identity pack": <StarIcon />,
+  "Logo & social media pack": <HeartIcon />,
+  "Logo & hosted website": <EarthGlobeIcon />,
+  "Logo & business card": <UserIcon />,
+  "Brand guide": <BookIcon />,
+  "Business card": <UserIcon />,
+  "Stationery": <DocumentIcon />,
+  "Logo & brand guide": <BookIcon />,
+  "Logo & product packaging": <PackageIcon />,
+  
+  // Web & app
+  "Web page design": <DesktopIcon />,
+  "WordPress theme design": <DashboardIcon />,
+  "Landing page design": <DesktopIcon />,
+  "Icon or button": <ComponentIcon />,
+  "App design": <MobileDeviceIcon />,
+  "Facebook cover": <ImagesIcon />,
+  "Social media page": <ImagesIcon />,
+  "Banner ad": <ImageIcon />,
+  "Other web or app design": <DesktopIcon />,
+
+  // Business & advertising
+  "Postcard, flyer or print": <EnvelopeIcon />,
+  "Poster": <DocumentsIcon />,
+  "Infographic": <ControlsIcon />,
+  "Brochure": <BookIcon />,
+  "Car, truck or van wrap": <ColorWheelIcon />,
+  "Signage": <BlockElementIcon />,
+  "Email": <EnvelopeIcon />,
+  "PowerPoint template": <DesktopIcon />,
+  "Menu": <TextIcon />,
+  "Other business or advertising": <BulbOutlineIcon />,
+  "Album Cover": <ImagesIcon />,
+  "Podcast": <PlayIcon />,
+
+  // Clothing
+  "T-shirt": <TagIcon />,
+  "Clothing or apparel": <TagIcon />,
+  "Merchandise": <PackageIcon />,
+  "Cup or mug": <StarIcon />,
+  "Sticker": <SparkleIcon />,
+  "Other clothing or merchandise": <TagIcon />,
+
+  // Art
+  "Illustration or graphics": <EditIcon />,
+  "Card or invitation": <EnvelopeIcon />,
+  "Character or mascot": <UserIcon />,
+  "Tattoo": <EditIcon />,
+  "3D": <BlockElementIcon />,
+  "Other art or illustration": <EditIcon />,
+
+  // Packaging
+  "Product packaging": <PackageIcon />,
+  "Product label": <TagIcon />,
+  "Other packaging or label": <PackageIcon />,
+
+  // Book
+  "Book cover": <BookIcon />,
+  "Magazine cover": <ImagesIcon />,
+  "Typesetting": <TextIcon />,
+  "Typesetting with imagery": <ImagesIcon />,
+  "Other book or magazine": <BookIcon />,
+
+  // Default fallback
+  "Other design": <BulbOutlineIcon />
 };
 
 const servicesByCategory: Record<string, string[]> = {
@@ -140,7 +215,7 @@ export default function Step1Services({ formData, updateFormData, nextStep }: St
             onClick={() => handleServiceSelect(service)}
           >
             <div className={styles.cardIcon}>
-              {categoryIcons[selectedCategory]}
+              {serviceIcons[service] || <SparkleIcon />}
             </div>
             <h3>{service}</h3>
           </button>
