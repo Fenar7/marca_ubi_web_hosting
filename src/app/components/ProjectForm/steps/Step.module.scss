@@ -1,32 +1,33 @@
 .stepContainer {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 3rem;
 }
 
 .stepTitle {
-  font-size: 2rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.02em;
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin-bottom: 0;
+  line-height: 1.2;
 }
 
 .categoryTabs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .categoryTab {
-  padding: 0.75rem 1.25rem;
-  border-radius: 50px;
-  border: 1px solid rgba($white, 0.15);
-  background: rgba($white, 0.03);
-  color: rgba($white, 0.7);
+  padding: 0.625rem 1.25rem;
+  border-radius: 100px;
+  border: 1px solid $light-grey;
+  background: transparent;
+  color: $white;
   cursor: pointer;
+  font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 
   &.active {
     background-color: $white;
@@ -35,103 +36,76 @@
   }
 
   &:hover:not(.active) {
-    background-color: rgba($white, 0.08);
-    color: $white;
-    border-color: rgba($white, 0.3);
+    border-color: $hash-grey;
   }
 }
 
 .serviceGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
 }
 
 .serviceCard {
   text-align: left;
   padding: 1.5rem;
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 16px;
-  background: rgba($white, 0.02);
+  border: 1px solid $light-grey;
+  border-radius: 8px;
+  background: transparent;
   color: $white;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 120px;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba($cta-orange, 0.1), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
 
   h3 {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 500;
     margin: 0;
-    position: relative;
-    z-index: 1;
   }
 
   &.active {
     border-color: $cta-orange;
-    background-color: rgba($cta-orange, 0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    &::before {
-      opacity: 1;
-    }
+    background-color: rgba($cta-orange, 0.05);
   }
 
   &:hover:not(.active) {
-    border-color: rgba($white, 0.3);
-    background-color: rgba($white, 0.05);
-    transform: translateY(-2px);
+    border-color: $hash-grey;
   }
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 
   label {
     font-weight: 500;
-    font-size: 1.125rem;
-    color: rgba($white, 0.9);
+    font-size: 1rem;
+    color: $white;
   }
 }
 
 .formInput, .formSelect, .formTextarea {
-  padding: 1rem 1.25rem;
-  border: 1px solid rgba($white, 0.15);
-  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  border: 1px solid $light-grey;
+  border-radius: 8px;
   font-size: 1rem;
   font-family: inherit;
   width: 100%;
-  background: rgba($black, 0.4);
+  background: transparent;
   color: $white;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease;
 
   &::placeholder {
-    color: rgba($white, 0.3);
+    color: $hash-grey;
   }
 
   &:focus {
     outline: none;
     border-color: $cta-orange;
-    background: rgba($black, 0.6);
-    box-shadow: 0 0 0 4px rgba($cta-orange, 0.1);
   }
 
   option {
@@ -156,14 +130,9 @@
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
-  color: rgba($white, 0.8);
+  color: $white;
   font-size: 1rem;
-  padding: 0.5rem 0;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: $white;
-  }
+  padding: 0.25rem 0;
 
   input[type="radio"] {
     width: 1.25rem;
@@ -175,78 +144,68 @@
 
 .timelineGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
 }
 
 .timelineCard {
   padding: 1.5rem;
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 16px;
-  text-align: center;
+  border: 1px solid $light-grey;
+  border-radius: 8px;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: rgba($white, 0.02);
+  transition: all 0.2s ease;
+  background: transparent;
   color: $white;
 
   h3 {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 500;
     margin: 0;
   }
 
   p {
-    color: rgba($white, 0.5);
+    color: $hash-grey;
   }
 
   &.active {
     border-color: $cta-orange;
-    background-color: rgba($cta-orange, 0.08);
-    transform: translateY(-2px);
-    
-    p {
-      color: rgba($white, 0.8);
-    }
+    background-color: rgba($cta-orange, 0.05);
   }
 
   &:hover:not(.active) {
-    border-color: rgba($white, 0.3);
-    background-color: rgba($white, 0.05);
-    transform: translateY(-2px);
+    border-color: $hash-grey;
   }
 }
 
 .buttonGroup {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 2.5rem;
-  border-top: 1px solid rgba($white, 0.1);
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid $light-grey;
 }
 
 .btnPrimary {
   background-color: $cta-orange;
   color: $white;
   padding: 0.875rem 2.5rem;
-  border-radius: 50px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 14px rgba($cta-orange, 0.4);
+  transition: opacity 0.2s ease;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba($cta-orange, 0.6);
+    opacity: 0.9;
   }
 
   &:disabled {
-    background-color: rgba($white, 0.1);
+    background-color: $light-grey;
     cursor: not-allowed;
-    color: rgba($white, 0.3);
-    box-shadow: none;
+    color: $hash-grey;
   }
 }
 
@@ -254,15 +213,14 @@
   background-color: transparent;
   color: $white;
   padding: 0.875rem 2.5rem;
-  border-radius: 50px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
-  border: 1px solid rgba($white, 0.2);
+  border: 1px solid $hash-grey;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease;
 
   &:hover {
-    background-color: rgba($white, 0.05);
-    border-color: rgba($white, 0.4);
+    border-color: $white;
   }
 }

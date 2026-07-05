@@ -1,33 +1,15 @@
 .formContainer {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 3rem;
-  background: rgba($white, 0.03);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 24px;
+  padding: 0;
   color: $white;
-  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba($white, 0.2), transparent);
-  }
 }
 
 .stepIndicator {
   font-size: 0.875rem;
   color: $hash-grey;
-  margin-bottom: 2.5rem;
-  text-align: right;
+  margin-bottom: 2rem;
+  text-align: left;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -40,25 +22,20 @@
 }
 
 .successContainer {
-  text-align: center;
-  padding: 5rem 3rem;
-  background: rgba($white, 0.03);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 24px;
-  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+  text-align: left;
+  padding: 4rem 0;
 
   h2 {
     font-size: 2.5rem;
     margin-bottom: 1rem;
-    color: $cta-orange;
-    font-weight: 600;
+    color: $white;
+    font-weight: 400;
   }
 
   p {
     font-size: 1.125rem;
     margin-bottom: 2.5rem;
-    color: rgba($white, 0.7);
+    color: $hash-grey;
   }
 }
 
@@ -66,16 +43,14 @@
   background-color: $cta-orange;
   color: $white;
   padding: 0.875rem 2.5rem;
-  border-radius: 50px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 14px rgba($cta-orange, 0.4);
+  transition: opacity 0.2s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba($cta-orange, 0.6);
+    opacity: 0.9;
   }
 }
