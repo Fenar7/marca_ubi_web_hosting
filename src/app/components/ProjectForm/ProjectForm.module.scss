@@ -1,81 +1,81 @@
 .formContainer {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
-  background-color: var(--color-white);
-  color: var(--color-foreground);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 3rem;
+  background: rgba($white, 0.03);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 24px;
+  color: $white;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba($white, 0.2), transparent);
+  }
 }
 
 .stepIndicator {
   font-size: 0.875rem;
-  color: var(--color-hash-grey);
-  margin-bottom: 2rem;
+  color: $hash-grey;
+  margin-bottom: 2.5rem;
   text-align: right;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .stepContent {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .successContainer {
   text-align: center;
-  padding: 4rem 2rem;
-  background-color: var(--color-white);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 5rem 3rem;
+  background: rgba($white, 0.03);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
 
   h2 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     margin-bottom: 1rem;
-    color: var(--color-cta-orange);
+    color: $cta-orange;
+    font-weight: 600;
   }
 
   p {
     font-size: 1.125rem;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    color: rgba($white, 0.7);
   }
 }
 
 .btnPrimary {
-  background-color: var(--color-cta-orange);
-  color: var(--color-white);
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
+  background-color: $cta-orange;
+  color: $white;
+  padding: 0.875rem 2.5rem;
+  border-radius: 50px;
   font-weight: 600;
+  font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba($cta-orange, 0.4);
 
   &:hover {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba($cta-orange, 0.6);
   }
-}
-
-.btnSecondary {
-  background-color: transparent;
-  color: var(--color-foreground);
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  border: 1px solid var(--color-light-grey);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-  }
-}
-
-.buttonGroup {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--color-light-grey);
 }
