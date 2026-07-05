@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import styles from "./ProjectForm.module.scss";
 import { ProjectFormData, initialFormData } from "./types";
-import { MobileDeviceIcon, EnvelopeIcon } from "@sanity/icons";
+import { MobileDeviceIcon, EnvelopeIcon, ArrowLeftIcon } from "@sanity/icons";
 import Step1Services from "./steps/Step1Services";
 import Step2Business from "./steps/Step2Business";
 import Step3Details from "./steps/Step3Details";
@@ -82,8 +82,15 @@ export default function ProjectForm() {
   return (
     <div className={styles.formContainer}>
       <div className={styles.stepIndicatorContainer}>
-        <div className={styles.stepIndicatorText}>
-          Step {currentStep} of 4
+        <div className={styles.stepIndicatorLeft}>
+          {currentStep > 1 && (
+            <button className={styles.backButton} onClick={prevStep} aria-label="Go back">
+              <ArrowLeftIcon />
+            </button>
+          )}
+          <div className={styles.stepIndicatorText}>
+            Step {currentStep} of 4
+          </div>
         </div>
         <div className={styles.progressBarContainer}>
           {[1, 2, 3, 4].map((step) => (

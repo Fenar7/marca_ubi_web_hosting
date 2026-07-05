@@ -13,6 +13,38 @@
   margin-bottom: 2rem;
 }
 
+.stepIndicatorLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backButton {
+  background: rgba($white, 0.05);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: $white;
+    color: $black;
+    transform: scale(1.05);
+  }
+}
+
 .stepIndicatorText {
   font-size: 0.875rem;
   font-weight: 500;
