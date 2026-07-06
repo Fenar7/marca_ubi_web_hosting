@@ -178,7 +178,7 @@ export default function AboutSection() {
         filter: "blur(0px)",
         boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
       });
-      gsap.set(metricTopRows, { autoAlpha: 1, y: 0, clipPath: "inset(0% 0% 0% 0%)" });
+      gsap.set(metricTopRows, { autoAlpha: 1, y: 0, clipPath: "inset(-50% 0% 0% 0%)" });
       gsap.set(metricTitles, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
       gsap.set(metricDescriptions, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
       gsap.set(countSuffixes, { autoAlpha: 1, y: 0, scale: 1 });
@@ -541,7 +541,7 @@ export default function AboutSection() {
         gsap.set(metricTopRows, {
           autoAlpha: 0,
           y: mobileMotion ? 14 : 26,
-          clipPath: "inset(0% 0% 100% 0%)",
+          clipPath: "inset(-50% 0% 100% 0%)",
           filter: mobileMotion ? "none" : "blur(3px)",
         });
         gsap.set(metricTitles, {
@@ -599,7 +599,7 @@ export default function AboutSection() {
             {
               autoAlpha: 1,
               y: 0,
-              clipPath: "inset(0% 0% 0% 0%)",
+              clipPath: "inset(-50% 0% 0% 0%)",
               filter: "blur(0px)",
               duration: mobileMotion ? 0.54 : 0.8,
               stagger: 0.1,
