@@ -234,6 +234,7 @@ export default function TestimonialsSection() {
           titleClassName={styles.headerTitle}
         />
 
+        {/* Future 3-image layout:
         <div className={styles.itemsContainer}>
           <article className={`${styles.itemCard} ${styles.itemLeft}`}>
             <img alt="Product jacket visual" src={testimonialsImages.left} />
@@ -244,6 +245,11 @@ export default function TestimonialsSection() {
           <article className={`${styles.itemCard} ${styles.itemRight}`}>
             <img alt="Product bottle visual" src={testimonialsImages.right} />
           </article>
+        </div>
+        */}
+
+        <div className={styles.singleImageContainer}>
+          <img alt="Testimonial visual" src="/images/test-image-1.png" className={styles.singleImage} />
         </div>
       </div>
     </section>
