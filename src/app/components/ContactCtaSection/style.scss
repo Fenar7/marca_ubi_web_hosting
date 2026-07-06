@@ -226,7 +226,12 @@
 
   .contact-info-location-line {
     max-width: 24rem;
-    text-align: center;
+    text-align: left;
+    align-items: flex-start;
+  }
+  
+  .contact-info-location-list {
+    text-align: left;
   }
 
   .contact-info-row {
