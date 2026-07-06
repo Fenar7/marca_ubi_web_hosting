@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import styles from "./ProjectForm.module.scss";
 import { ProjectFormData, initialFormData } from "./types";
 import { MobileDeviceIcon, EnvelopeIcon, ArrowLeftIcon } from "@sanity/icons";
@@ -84,10 +85,14 @@ export default function ProjectForm() {
     <div className={styles.formContainer}>
       <div className={styles.stepIndicatorContainer}>
         <div className={styles.stepIndicatorLeft}>
-          {currentStep > 1 && (
+          {currentStep > 1 ? (
             <button className={styles.backButton} onClick={prevStep} aria-label="Go back">
               <ArrowLeftIcon />
             </button>
+          ) : (
+            <Link href="/" className={styles.backButton} aria-label="Go to homepage">
+              <ArrowLeftIcon />
+            </Link>
           )}
           <div className={styles.stepIndicatorText}>
             Step {currentStep} of 4

@@ -76,6 +76,9 @@
   transform: translateZ(0);
   will-change: opacity;
   z-index: 40010;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .menuBackdrop {
@@ -107,6 +110,8 @@
   position: relative;
   transform: translateZ(0);
   will-change: opacity;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .menuPanel::before {
