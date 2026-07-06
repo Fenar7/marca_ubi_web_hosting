@@ -6,32 +6,36 @@
   width: 100%;
 }
 
-.stepIndicatorContainer {
+.formHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.stepIndicatorLeft {
+.stepIndicatorContainer {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
+  width: 100%;
 }
 
 .backButton {
   background: rgba($white, 0.05);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 9999px;
+  padding: 0.5rem 1rem 0.5rem 0.75rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.5rem;
   color: $white;
   cursor: pointer;
   transition: all 0.2s ease;
-  padding: 0;
+  font-family: $font-sf-pro;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
 
   svg {
     width: 20px;

@@ -83,28 +83,30 @@ export default function ProjectForm() {
 
   return (
     <div className={styles.formContainer}>
-      <div className={styles.stepIndicatorContainer}>
-        <div className={styles.stepIndicatorLeft}>
-          {currentStep > 1 ? (
-            <button className={styles.backButton} onClick={prevStep} aria-label="Go back">
-              <ArrowLeftIcon />
-            </button>
-          ) : (
-            <Link href="/" className={styles.backButton} aria-label="Go to homepage">
-              <ArrowLeftIcon />
-            </Link>
-          )}
+      <div className={styles.formHeader}>
+        {currentStep > 1 ? (
+          <button className={styles.backButton} onClick={prevStep} aria-label="Go back">
+            <ArrowLeftIcon />
+            <span>Back</span>
+          </button>
+        ) : (
+          <Link href="/" className={styles.backButton} aria-label="Go to homepage">
+            <ArrowLeftIcon />
+            <span>Back</span>
+          </Link>
+        )}
+        <div className={styles.stepIndicatorContainer}>
           <div className={styles.stepIndicatorText}>
             Step {currentStep} of 4
           </div>
-        </div>
-        <div className={styles.progressBarContainer}>
-          {[1, 2, 3, 4].map((step) => (
-            <div 
-              key={step} 
-              className={`${styles.progressPill} ${currentStep >= step ? styles.active : ""}`} 
-            />
-          ))}
+          <div className={styles.progressBarContainer}>
+            {[1, 2, 3, 4].map((step) => (
+              <div 
+                key={step} 
+                className={`${styles.progressPill} ${currentStep >= step ? styles.active : ""}`} 
+              />
+            ))}
+          </div>
         </div>
       </div>
       
