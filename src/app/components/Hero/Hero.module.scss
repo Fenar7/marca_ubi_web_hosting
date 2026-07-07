@@ -59,13 +59,14 @@
 .topRightText {
   color: rgba($white, 0.96);
   display: flex;
-  font-family: $font-sf-pro;
+  font-family: $font-movatif;
   font-size: clamp(1.3rem, 2vw, 1.9rem);
   font-weight: 400;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   gap: 0.08em 0.28em;
   letter-spacing: 0;
-  line-height: 1.2;
+  line-height: 1;
   margin: 0;
   max-width: 32rem;
   text-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.1);
