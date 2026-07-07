@@ -9,7 +9,8 @@ import {
   ControlsIcon,
   CommentIcon,
   OlistIcon,
-  RocketIcon
+  RocketIcon,
+  AddIcon
 } from "@sanity/icons";
 
 interface Step3Props {
@@ -38,6 +39,21 @@ const timelineIcons: Record<string, React.ReactNode> = {
 };
 
 export default function Step3Details({ formData, updateFormData, nextStep, prevStep }: Step3Props) {
+  const [links, setLinks] = React.useState<string[]>(
+    formData.inspirationLinks ? formData.inspirationLinks.split("\n") : [""]
+  );
+
+  const handleLinkChange = (index: number, value: string) => {
+    const newLinks = [...links];
+    newLinks[index] = value;
+    setLinks(newLinks);
+    updateFormData("inspirationLinks", newLinks.filter(l => l.trim() !== "").join("\n"));
+  };
+
+  const addLinkField = () => {
+    setLinks([...links, ""]);
+  };
+
   const handleTimelineSelect = (timeline: string) => {
     updateFormData("timeline", timeline);
   };
@@ -51,13 +67,38 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
         <p style={{fontSize: "0.875rem", color: "var(--color-hash-grey)", margin: "0 0 0.5rem 0"}}>
           Paste URLs to any designs or imagery you like so we get an idea of the style you're looking for.
         </p>
-        <input 
-          type="text" 
-          className={styles.formInput}
-          placeholder="https://pinterest.com/..."
-          value={formData.inspirationLinks}
-          onChange={(e) => updateFormData("inspirationLinks", e.target.value)}
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {links.map((link, index) => (
+            <input 
+              key={index}
+              type="text" 
+              className={styles.formInput}
+              placeholder="https://pinterest.com/..."
+              value={link}
+              onChange={(e) => handleLinkChange(index, e.target.value)}
+            />
+          ))}
+          <button 
+            type="button"
+            onClick={addLinkField}
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "0.5rem", 
+              background: "none", 
+              border: "none", 
+              color: "#dc4216", 
+              cursor: "pointer", 
+              fontWeight: 500,
+              padding: "0.5rem 0",
+              alignSelf: "flex-start",
+              fontSize: "0.95rem",
+              fontFamily: "inherit"
+            }}
+          >
+            <AddIcon /> Add another link
+          </button>
+        </div>
       </div>
 
       <div className={styles.formGroup}>
