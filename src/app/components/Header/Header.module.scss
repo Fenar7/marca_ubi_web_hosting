@@ -341,8 +341,10 @@
   justify-content: center;
   align-items: center;
   margin-top: auto;
-  padding-top: clamp(1rem, 1.5vw, 1.5rem);
-  border-top: 0.0625rem solid rgba($white, 0.08);
+  padding: clamp(0.75rem, 1.2vw, 1.25rem);
+  border: 0.0625rem solid rgba(255, 111, 35, 0.6);
+  border-radius: 1rem;
+  background: rgba(255, 111, 35, 0.03);
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: transform, opacity;
@@ -353,7 +355,7 @@
 }
 
 .menuMetaLocations {
-  color: rgba($white, 0.4);
+  color: rgba(255, 111, 35, 0.94);
   font-family: $font-sf-pro;
   font-size: clamp(0.78rem, 0.9vw, 0.9rem);
   line-height: 1.4;
