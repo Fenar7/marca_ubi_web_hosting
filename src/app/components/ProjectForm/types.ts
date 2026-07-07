@@ -1,4 +1,8 @@
 export interface ProjectFormData {
+  name: string;
+  email: string;
+  phone: string;
+  instagram: string;
   category: string;
   service: string;
   language: string;
@@ -15,6 +19,10 @@ export interface ProjectFormData {
 }
 
 export const initialFormData: ProjectFormData = {
+  name: "",
+  email: "",
+  phone: "",
+  instagram: "",
   category: "",
   service: "",
   language: "",

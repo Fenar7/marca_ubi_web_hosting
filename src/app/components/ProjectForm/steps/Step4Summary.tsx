@@ -49,6 +49,10 @@ export default function Step4Summary({ formData, goToStep, handleSubmit, isSubmi
       </SummarySection>
 
       <SummarySection title="2. Business Details" step={2}>
+        <SummaryItem label="Name" value={formData.name || "Not provided"} />
+        <SummaryItem label="Email" value={formData.email || "Not provided"} />
+        <SummaryItem label="Phone" value={formData.phone || "Not provided"} />
+        <SummaryItem label="Instagram" value={formData.instagram || "Not provided"} />
         <SummaryItem label="Language" value={formData.language || "Not provided"} />
         <SummaryItem label="Project Name" value={formData.projectName || "Not provided"} />
         <SummaryItem label="Description" value={formData.projectDescription || "Not provided"} />

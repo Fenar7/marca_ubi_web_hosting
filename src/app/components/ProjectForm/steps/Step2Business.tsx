@@ -17,12 +17,58 @@ const referralSources = ["Google", "Social Media", "Friend/Colleague", "Advertis
 
 export default function Step2Business({ formData, updateFormData, nextStep, prevStep }: Step2Props) {
   const isComplete = 
+    formData.name.trim() !== "" &&
+    formData.email.trim() !== "" &&
     formData.projectName.trim() !== "" && 
     formData.projectDescription.trim() !== "";
 
   return (
     <div className={styles.stepContainer}>
       <h2 className={styles.stepTitle}>Tell us about your business</h2>
+
+      <div className={styles.formGroup}>
+        <label>Your Name *</label>
+        <input 
+          type="text" 
+          className={styles.formInput}
+          placeholder="E.g. John Doe"
+          value={formData.name}
+          onChange={(e) => updateFormData("name", e.target.value)}
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Email Address *</label>
+        <input 
+          type="email" 
+          className={styles.formInput}
+          placeholder="E.g. john@example.com"
+          value={formData.email}
+          onChange={(e) => updateFormData("email", e.target.value)}
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Phone Number</label>
+        <input 
+          type="tel" 
+          className={styles.formInput}
+          placeholder="E.g. +1 234 567 8900"
+          value={formData.phone}
+          onChange={(e) => updateFormData("phone", e.target.value)}
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Instagram Handle</label>
+        <input 
+          type="text" 
+          className={styles.formInput}
+          placeholder="E.g. @johndoe"
+          value={formData.instagram}
+          onChange={(e) => updateFormData("instagram", e.target.value)}
+        />
+      </div>
       
       <div className={styles.formGroup}>
         <label>Choose your preferred language</label>

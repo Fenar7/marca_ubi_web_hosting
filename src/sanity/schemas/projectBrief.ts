@@ -6,6 +6,26 @@ export const projectBriefSchema = defineType({
     type: "document",
     fields: [
         defineField({
+            name: "name",
+            title: "Name",
+            type: "string",
+        }),
+        defineField({
+            name: "email",
+            title: "Email",
+            type: "string",
+        }),
+        defineField({
+            name: "phone",
+            title: "Phone",
+            type: "string",
+        }),
+        defineField({
+            name: "instagram",
+            title: "Instagram",
+            type: "string",
+        }),
+        defineField({
             name: "category",
             title: "Category",
             type: "string",
