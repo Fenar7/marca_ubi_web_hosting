@@ -360,6 +360,8 @@
   will-change: transform, opacity;
   z-index: 1;
 
+  box-shadow: 0 0 25px rgba(255, 111, 35, 0.15), inset 0 0 20px rgba(255, 111, 35, 0.05);
+
   &::before {
     content: '';
     position: absolute;
@@ -367,17 +369,17 @@
     left: 50%;
     width: 250%;
     height: 400%;
-    background: conic-gradient(from 0deg, transparent 70%, rgba(255, 111, 35, 1) 100%);
-    animation: rotateGlow 3.5s linear infinite;
+    background: conic-gradient(from 0deg, transparent 30%, rgba(255, 111, 35, 0.2) 60%, rgba(255, 111, 35, 0.8) 90%, rgba(255, 111, 35, 1) 100%);
+    animation: rotateGlow 3s linear infinite;
     z-index: -2;
   }
 
   &::after {
     content: '';
     position: absolute;
-    inset: 0.0625rem;
-    border-radius: calc(1rem - 0.0625rem);
-    background: linear-gradient(rgba(255, 111, 35, 0.03), rgba(255, 111, 35, 0.03)), #000;
+    inset: 0.1rem;
+    border-radius: calc(1rem - 0.1rem);
+    background: #040404;
     z-index: -1;
   }
 }
@@ -389,12 +391,15 @@
 .menuMetaLocations {
   position: relative;
   z-index: 1;
-  color: rgba(255, 111, 35, 0.94);
+  color: rgba(255, 111, 35, 0.96);
   font-family: $font-sf-pro;
-  font-size: clamp(0.78rem, 0.9vw, 0.9rem);
-  line-height: 1.4;
+  font-size: clamp(0.85rem, 0.95vw, 0.95rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
   margin: 0;
   text-align: center;
+  text-shadow: 0 0 12px rgba(255, 111, 35, 0.4);
 }
 
 .menuFooter {
