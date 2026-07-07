@@ -92,14 +92,11 @@
 }
 
 .menuPanel {
-  background:
-    radial-gradient(circle at 12% 14%, rgba(255, 109, 34, 0.24) 0%, rgba(255, 109, 34, 0) 28%),
-    radial-gradient(circle at 88% 16%, rgba(104, 116, 255, 0.12) 0%, rgba(104, 116, 255, 0) 18%),
-    linear-gradient(180deg, rgba(8, 9, 13, 0.96) 0%, rgba(4, 5, 8, 0.99) 100%);
+  background: #000000;
   backface-visibility: hidden;
   contain: layout paint;
-  border-bottom-left-radius: 2rem;
-  border-bottom-right-radius: 2rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -115,42 +112,19 @@
 }
 
 .menuPanel::before {
-  background-image:
-    linear-gradient(to right, rgba($white, 0.04) 0.0625rem, transparent 0.0625rem),
-    linear-gradient(to bottom, rgba($white, 0.03) 0.0625rem, transparent 0.0625rem);
-  background-size: 5rem 5rem;
-  content: "";
-  inset: 0;
-  mix-blend-mode: soft-light;
-  opacity: 0.55;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 0.16s ease;
+  display: none;
 }
 
 .menuGlow {
-  border-radius: 999px;
-  filter: blur(2.4rem);
-  opacity: 1;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 0.16s ease;
+  display: none;
 }
 
 .menuGlowPrimary {
-  background: rgba(255, 109, 34, 0.18);
-  height: 18rem;
-  left: -4rem;
-  top: 2rem;
-  width: 18rem;
+  display: none;
 }
 
 .menuGlowSecondary {
-  background: rgba(116, 131, 255, 0.12);
-  height: 14rem;
-  right: 4%;
-  top: 10%;
-  width: 14rem;
+  display: none;
 }
 
 .menuTopbar {
@@ -170,26 +144,25 @@
 
 .menuCloseButton {
   align-items: center;
-  background: rgba(255, 111, 35, 0.14);
-  border: 0.0625rem solid rgba(255, 111, 35, 0.46);
+  background: rgba($white, 0.06);
+  border: 0.0625rem solid rgba($white, 0.12);
   border-radius: 999px;
   color: rgba($white, 0.92);
   cursor: pointer;
   display: inline-flex;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
-  transition: border-color 0.28s ease, background-color 0.28s ease, transform 0.28s ease;
+  transition: border-color 0.24s ease, background-color 0.24s ease, transform 0.24s ease;
 }
 
 .menuCloseButton:hover {
-  background: rgba(255, 111, 35, 0.2);
-  border-color: rgba(255, 111, 35, 0.7);
+  background: rgba($white, 0.1);
+  border-color: rgba($white, 0.25);
   transform: translate3d(0, -0.125rem, 0);
 }
 
 .menuCloseButton:focus-visible {
-  outline: 0.125rem solid rgba(255, 111, 35, 0.72);
+  outline: 0.125rem solid rgba($white, 0.5);
   outline-offset: 0.1875rem;
 }
 
@@ -363,10 +336,10 @@
 }
 
 .menuStroke {
-  background: linear-gradient(90deg, rgba(255, 111, 35, 0.92) 0%, rgba(255, 111, 35, 0.08) 100%);
+  background: rgba($white, 0.15);
   display: block;
-  height: 0.125rem;
-  margin-top: 0.28rem;
+  height: 0.0625rem;
+  margin-top: 0.4rem;
   width: min(7.6rem, 100%);
 }
 
@@ -381,7 +354,7 @@
 
 .menuMeta {
   align-self: start;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: rgba($white, 0.03);
   backface-visibility: hidden;
   border: 0.0625rem solid rgba($white, 0.08);
   border-radius: 1.25rem;
@@ -438,10 +411,10 @@
 }
 
 .menuFooterLine {
-  background: linear-gradient(90deg, rgba(255, 111, 35, 0.92) 0%, rgba(255, 111, 35, 0) 100%);
+  background: rgba($white, 0.15);
   display: block;
   flex: 0 0 min(8.5rem, 18vw);
-  height: 0.125rem;
+  height: 0.0625rem;
 }
 
 .menuFooterText {
@@ -458,15 +431,15 @@
 }
 
 .menuPanelAnimating {
-  background: linear-gradient(180deg, rgba(8, 9, 13, 0.98) 0%, rgba(4, 5, 8, 0.995) 100%);
+  background: #000000;
 }
 
 .menuPanelAnimating::before {
-  opacity: 0.08;
+  display: none;
 }
 
 .menuPanelAnimating .menuGlow {
-  opacity: 0.12;
+  display: none;
 }
 
 .menuPanelAnimating .menuMeta {
@@ -585,8 +558,8 @@
 
 @media (max-width: 47.9375rem) {
   .menuPanel {
-    border-bottom-left-radius: 1.4rem;
-    border-bottom-right-radius: 1.4rem;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     padding: 0.9rem 1rem 1rem;
   }
 
