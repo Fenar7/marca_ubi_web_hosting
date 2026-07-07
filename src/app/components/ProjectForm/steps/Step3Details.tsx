@@ -25,7 +25,7 @@ const timelines = [
   "2 weeks",
   "1 month",
   "Choose a start & end date",
-  "Not sure. I'd like to chat with my designer",
+  "Not sure. I'd like to chat with my Brand experience consultant",
 ];
 
 const timelineIcons: Record<string, React.ReactNode> = {
@@ -34,7 +34,7 @@ const timelineIcons: Record<string, React.ReactNode> = {
   "2 weeks": <CalendarIcon />,
   "1 month": <CalendarIcon />,
   "Choose a start & end date": <OlistIcon />,
-  "Not sure. I'd like to chat with my designer": <CommentIcon />,
+  "Not sure. I'd like to chat with my Brand experience consultant": <CommentIcon />,
 };
 
 export default function Step3Details({ formData, updateFormData, nextStep, prevStep }: Step3Props) {
@@ -75,7 +75,7 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
               <div className={styles.textContent}>
                 <h3>{tl.split(" (")[0]}</h3>
                 {tl.includes("(") && <p>{tl.substring(tl.indexOf("("))}</p>}
-                {tl.includes("Not sure") && <p>I'd like to chat with my designer</p>}
+                {tl.includes("Not sure") && <p>I'd like to chat with my Brand experience consultant</p>}
               </div>
             </button>
           ))}
@@ -83,7 +83,7 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
       </div>
 
       <div className={styles.formGroup}>
-        <label>Can your designer showcase the finished designs in their portfolio?</label>
+        <label>Can your Brand experience consultant showcase the finished designs in their portfolio?</label>
         <div className={styles.radioGroup}>
           <label className={styles.radioLabel}>
             <input 
@@ -109,7 +109,7 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
       </div>
 
       <div className={styles.formGroup}>
-        <label>Anything else you'd like to share with your designer?</label>
+        <label>Anything else you'd like to share with your Brand experience consultant?</label>
         <textarea 
           className={styles.formTextarea}
           placeholder="Any extra details..."
