@@ -391,7 +391,7 @@
 .menuMetaLocations {
   position: relative;
   z-index: 1;
-  color: rgba(255, 111, 35, 0.96);
+  color: rgba($white, 0.96);
   font-family: $font-sf-pro;
   font-size: clamp(0.85rem, 0.95vw, 0.95rem);
   font-weight: 500;
@@ -399,7 +399,7 @@
   line-height: 1.5;
   margin: 0;
   text-align: center;
-  text-shadow: 0 0 12px rgba(255, 111, 35, 0.4);
+  text-shadow: none;
 }
 
 .menuFooter {
