@@ -408,9 +408,6 @@ export default function Header() {
               <p className={styles.menuMetaLocations}>
                 India &nbsp;·&nbsp; Dubai &nbsp;·&nbsp; Saudi Arabia &nbsp;·&nbsp; Qatar &nbsp;·&nbsp; Bahrain &nbsp;·&nbsp; UK
               </p>
-              <a className={styles.menuMetaLink} href="mailto:hello@marcaubi.com">
-                hello@marcaubi.com
-              </a>
             </aside>
           </div>
 
