@@ -26,7 +26,9 @@
 :global(body.menu-open) .exploreCard {
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
   transform: translate3d(0, 1rem, 0) scale(0.96);
+  transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
 }
 
 :global(body.profile-modal-open) .exploreCard {
