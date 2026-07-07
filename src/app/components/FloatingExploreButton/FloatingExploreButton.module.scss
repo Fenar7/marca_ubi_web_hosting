@@ -21,21 +21,18 @@
     transform 0.42s cubic-bezier(0.19, 1, 0.22, 1);
   width: 15.9375rem;
   z-index: 30000;
+
+  :global(body.menu-open) &,
+  :global(body.profile-modal-open) & {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transform: translate3d(0, 1rem, 0) scale(0.96) !important;
+    transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease !important;
+  }
 }
 
-:global(body.menu-open) .exploreCard {
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  transform: translate3d(0, 1rem, 0) scale(0.96);
-  transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
-}
 
-:global(body.profile-modal-open) .exploreCard {
-  opacity: 0;
-  pointer-events: none;
-  transform: translate3d(0, 1rem, 0) scale(0.96);
-}
 
 .isDocked {
   background: rgba($black, 0.72);
