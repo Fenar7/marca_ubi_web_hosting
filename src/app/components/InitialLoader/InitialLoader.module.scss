@@ -11,23 +11,13 @@
 }
 
 .backdrop {
-  background:
-    radial-gradient(circle at 22% 18%, rgba($cta-orange, 0.38) 0%, rgba($cta-orange, 0) 54%),
-    radial-gradient(circle at 82% 76%, rgba(#ff8a45, 0.22) 0%, rgba(#ff8a45, 0) 48%),
-    linear-gradient(138deg, #070709 2%, #0e1016 56%, #131721 100%);
+  background: #000;
   inset: 0;
   position: absolute;
 }
 
 .gridOverlay {
-  background-image:
-    linear-gradient(to right, rgba($white, 0.05) 0.0625rem, transparent 0.0625rem),
-    linear-gradient(to bottom, rgba($white, 0.04) 0.0625rem, transparent 0.0625rem);
-  background-size: clamp(2.4rem, 4vw, 4rem) clamp(2.4rem, 4vw, 4rem);
-  inset: 0;
-  mix-blend-mode: soft-light;
-  opacity: 0.6;
-  position: absolute;
+  display: none;
 }
 
 .contentWrap {
