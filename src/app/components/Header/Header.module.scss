@@ -213,25 +213,22 @@
 
 .menuGrid {
   backface-visibility: hidden;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
-  gap: clamp(1.5rem, 3vw, 3rem);
-  grid-template-columns: 1fr minmax(16rem, 0.42fr);
   min-height: 0;
+  justify-content: center;
   position: relative;
   transform: translateZ(0);
-  align-items: start;
-  padding-top: clamp(0.5rem, 1vw, 1.5rem);
   z-index: 1;
 }
 
 .menuMain {
   backface-visibility: hidden;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
   transform: translateZ(0);
 }
 
@@ -240,15 +237,7 @@
 }
 
 .menuIntro {
-  backface-visibility: hidden;
-  display: grid;
-  gap: 0.5rem;
-  margin-bottom: clamp(1.5rem, 2.5vw, 2.5rem);
-  max-width: 29rem;
-  transform: translateZ(0);
-  will-change: transform, opacity;
-  padding-bottom: clamp(1rem, 1.5vw, 1.5rem);
-  border-bottom: 1px solid rgba($white, 0.08);
+  display: none;
 }
 
 .menuEyebrow {
@@ -286,17 +275,7 @@
 }
 
 .menuItem {
-  border-top: 0.0625rem solid rgba($white, 0.08);
   overflow: hidden;
-  transition: border-color 0.2s ease;
-
-  &:last-child {
-    border-bottom: 0.0625rem solid rgba($white, 0.08);
-  }
-
-  &:hover {
-    border-color: rgba($white, 0.15);
-  }
 }
 
 .menuLink {
@@ -304,54 +283,43 @@
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  padding: clamp(1rem, 1.8vw, 1.6rem) 0;
+  padding: clamp(0.7rem, 1.2vw, 1.1rem) 0;
   text-decoration: none;
   transform: translate3d(0, 0, 0);
   will-change: transform, opacity;
+  border-bottom: 0.0625rem solid rgba($white, 0.07);
   transition: opacity 0.2s ease;
 
   &:hover {
-    opacity: 0.7;
+    opacity: 0.6;
 
     .menuArrow {
-      transform: translate3d(4px, -4px, 0);
+      transform: translate3d(5px, -5px, 0);
     }
   }
 }
 
 .menuIndex {
-  color: rgba($white, 0.28);
-  font-family: $font-sf-pro;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  flex-shrink: 0;
-  width: 2.5rem;
+  display: none;
 }
 
 .menuLabelWrap {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
   flex: 1;
 }
 
 .menuLabel {
   color: rgba($white, 0.92);
   font-family: $font-movatif;
-  font-size: clamp(2rem, 3.8vw, 3.6rem);
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
   font-weight: 400;
   letter-spacing: -0.03em;
-  line-height: 0.95;
+  line-height: 1;
 }
 
 .menuHint {
-  color: rgba($white, 0.4);
-  font-family: $font-sf-pro;
-  font-size: clamp(0.8rem, 0.85vw, 0.9rem);
-  line-height: 1.3;
-  margin-top: 0.35rem;
-  will-change: transform, opacity;
+  display: none;
 }
 
 .menuStroke {
@@ -359,59 +327,17 @@
 }
 
 .menuArrow {
-  color: rgba($white, 0.5);
+  color: rgba($white, 0.35);
   font-family: $font-sf-pro;
-  font-size: clamp(1rem, 1.1vw, 1.25rem);
+  font-size: clamp(1rem, 1.1vw, 1.3rem);
   line-height: 1;
   flex-shrink: 0;
-  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
   align-self: center;
 }
 
 .menuMeta {
-  align-self: end;
-  background: rgba($white, 0.04);
-  backface-visibility: hidden;
-  border: 0.0625rem solid rgba($white, 0.08);
-  border-radius: 1rem;
-  contain: layout paint;
-  display: grid;
-  gap: 0.85rem;
-  padding: 1.25rem 1.4rem;
-  transform: translateZ(0);
-  will-change: transform, opacity;
-}
-
-.menuMetaLabel {
-  color: rgba($white, 0.44);
-  font-family: $font-sf-pro;
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  line-height: 1;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.menuMetaLocations {
-  color: rgba($white, 0.94);
-  font-family: $font-movatif;
-  font-size: clamp(1.05rem, 1.55vw, 1.7rem);
-  line-height: 1.03;
-  margin: 0;
-}
-
-.menuMetaLink {
-  color: rgba(255, 111, 35, 0.94);
-  font-family: $font-sf-pro;
-  font-size: clamp(0.88rem, 0.88vw, 0.98rem);
-  font-weight: 500;
-  line-height: 1;
-  text-decoration: none;
-}
-
-.menuMetaLink:hover {
-  color: $white;
+  display: none;
 }
 
 .menuFooter {
@@ -421,8 +347,7 @@
   display: flex;
   flex: 0 0 auto;
   gap: 1.5rem;
-  margin-top: clamp(0.6rem, 1.2vw, 1rem);
-  padding-top: clamp(0.8rem, 1.3vw, 1.05rem);
+  padding-top: clamp(0.8rem, 1.3vw, 1rem);
   transform: translateZ(0);
   will-change: transform, opacity;
 }
