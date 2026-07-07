@@ -10,7 +10,8 @@ import {
   CommentIcon,
   OlistIcon,
   RocketIcon,
-  AddIcon
+  AddIcon,
+  TrashIcon
 } from "@sanity/icons";
 
 interface Step3Props {
@@ -51,7 +52,15 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
   };
 
   const addLinkField = () => {
+    if (links[links.length - 1].trim() === "") return;
     setLinks([...links, ""]);
+  };
+
+  const removeLinkField = (index: number) => {
+    const newLinks = links.filter((_, i) => i !== index);
+    if (newLinks.length === 0) newLinks.push("");
+    setLinks(newLinks);
+    updateFormData("inspirationLinks", newLinks.filter(l => l.trim() !== "").join("\n"));
   };
 
   const handleTimelineSelect = (timeline: string) => {
@@ -69,26 +78,59 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {links.map((link, index) => (
-            <input 
-              key={index}
-              type="text" 
-              className={styles.formInput}
-              placeholder="https://pinterest.com/..."
-              value={link}
-              onChange={(e) => handleLinkChange(index, e.target.value)}
-            />
+            <div key={index} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+              <input 
+                type="text" 
+                className={styles.formInput}
+                placeholder="https://pinterest.com/..."
+                value={link}
+                onChange={(e) => handleLinkChange(index, e.target.value)}
+                style={{ flex: 1 }}
+              />
+              {links.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeLinkField(index)}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.03)",
+                    border: "none",
+                    color: "rgba(255, 255, 255, 0.4)",
+                    width: "56px",
+                    height: "100%",
+                    minHeight: "56px",
+                    borderRadius: "12px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = "#ff4d4f";
+                    e.currentTarget.style.background = "rgba(255, 77, 79, 0.1)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = "rgba(255, 255, 255, 0.4)";
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
+                  }}
+                >
+                  <TrashIcon style={{ width: "24px", height: "24px" }} />
+                </button>
+              )}
+            </div>
           ))}
           <button 
             type="button"
             onClick={addLinkField}
+            disabled={links[links.length - 1].trim() === ""}
             style={{ 
               display: "flex", 
               alignItems: "center", 
               gap: "0.5rem", 
               background: "none", 
               border: "none", 
-              color: "#dc4216", 
-              cursor: "pointer", 
+              color: links[links.length - 1].trim() === "" ? "rgba(255, 255, 255, 0.2)" : "#dc4216", 
+              cursor: links[links.length - 1].trim() === "" ? "not-allowed" : "pointer", 
               fontWeight: 500,
               padding: "0.5rem 0",
               alignSelf: "flex-start",
