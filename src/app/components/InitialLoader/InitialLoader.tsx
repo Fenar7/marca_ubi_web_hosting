@@ -4,11 +4,12 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import styles from "./InitialLoader.module.scss";
 
-const conceptWords = ["Design", "Direction", "Concept"];
+const conceptWords = ["Design", "Art", "Architecture", "Brand architecture"];
 const LOADING_SECONDS = 3;
 const WORD_SHIFT_DURATION = 0.42;
-const FIRST_SHIFT_AT = 1.15;
-const SECOND_SHIFT_AT = 2.08;
+const FIRST_SHIFT_AT = 0.8;
+const SECOND_SHIFT_AT = 1.5;
+const THIRD_SHIFT_AT = 2.2;
 
 export default function InitialLoader() {
   const [isVisible, setIsVisible] = useState(true);
@@ -128,8 +129,17 @@ export default function InitialLoader() {
       .to(
         wordsTrack,
         {
+          y: -(rowStep * 3),
+          duration: WORD_SHIFT_DURATION,
+          ease: "power2.inOut",
+        },
+        THIRD_SHIFT_AT,
+      )
+      .to(
+        wordsTrack,
+        {
           autoAlpha: 0,
-          y: -(rowStep * 2.2),
+          y: -(rowStep * 3.2),
           duration: 0.18,
           ease: "power2.in",
         },
