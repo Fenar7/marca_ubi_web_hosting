@@ -76,6 +76,13 @@
   }
 }
 
+/* Mid-size laptops: 1024–1250px — prevent title from breaking to 4 lines */
+@media (min-width: 56.25rem) and (max-width: 78rem) {
+  .title {
+    font-size: clamp(2rem, 3.2vw, 3.4rem);
+  }
+}
+
 @media (max-width: 56.1875rem) {
   .tagText {
     font-size: clamp(1.25rem, 5.4vw, 1.7rem);

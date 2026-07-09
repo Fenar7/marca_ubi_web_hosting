@@ -43,7 +43,7 @@
 
 .sectionTitle {
   line-height: 1.09;
-  max-width: 44.3125rem;
+  max-width: 42rem;
 }
 
 .sectionTitleInner {
@@ -204,6 +204,14 @@
 
   .titleLine {
     width: min(16.125rem, 70%);
+  }
+}
+
+/* 14-inch laptops: keep title on 2 clean lines */
+@media (min-width: 56.25rem) and (max-width: 78rem) {
+  .sectionTitle {
+    line-height: 1.1;
+    max-width: 38rem;
   }
 }
 
