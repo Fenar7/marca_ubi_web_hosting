@@ -238,12 +238,12 @@ html.lenis {
   pointer-events: none;
 }
 
-html.custom-cursor-enabled,
-html.custom-cursor-enabled body,
-html.custom-cursor-enabled *,
-html.custom-cursor-enabled *::before,
-html.custom-cursor-enabled *::after {
-  cursor: none !important;
+body, html {
+  cursor: url('/cursor-default.svg'), auto !important;
+}
+
+a, button, [role='button'], input, textarea, select, label, summary, [data-cursor-hover] {
+  cursor: url('/cursor-pointer.svg') 10 0, pointer !important;
 }
 
 @import "./components/StepSectionContainer/style.scss";

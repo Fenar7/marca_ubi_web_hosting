@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import CustomCursor from "./components/CustomCursor/CustomCursor";
 import SmoothScrollProvider from "./components/SmoothScrollProvider/SmoothScrollProvider";
 import "./globals.scss";
 
@@ -55,7 +54,6 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <SmoothScrollProvider>
-          <CustomCursor />
           {children}
         </SmoothScrollProvider>
       </body>
