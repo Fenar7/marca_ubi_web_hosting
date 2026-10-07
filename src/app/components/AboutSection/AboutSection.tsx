@@ -676,6 +676,7 @@ export default function AboutSection() {
 
   useEffect(() => {
     let isMounted = true;
+    const words = titleText.split(" ");
 
     const calculateLines = (force = false) => {
       if (!isMounted || titleWordsRef.current.length === 0) return;
@@ -690,7 +691,8 @@ export default function AboutSection() {
       let currentLine: string[] = [];
       let currentY = -1;
 
-      titleWordsRef.current.forEach((wordSpan) => {
+      words.forEach((word, index) => {
+        const wordSpan = titleWordsRef.current[index];
         if (!wordSpan) return;
         const top = wordSpan.offsetTop;
         if (currentY !== -1 && Math.abs(top - currentY) > 5) {
@@ -698,7 +700,7 @@ export default function AboutSection() {
           currentLine = [];
         }
         currentY = top;
-        currentLine.push(wordSpan.innerText.trim());
+        currentLine.push(word);
       });
       if (currentLine.length > 0) {
         calculatedLines.push(currentLine.join(" "));
@@ -763,12 +765,11 @@ export default function AboutSection() {
       const activeLines = titleLineRefs.current.filter((el): el is HTMLSpanElement => el !== null);
       if (activeLines.length === 0) return;
 
-      const triggerElement = sectionRef.current ?? activeLines[0];
-
       if (mobileMotion) {
-        // If already scrolled into or past view, display immediately
+        // Trigger directly on the title lines so it fires accurately when title is visible
+        const triggerElement = activeLines[0];
         const rect = triggerElement.getBoundingClientRect();
-        const isInOrPastView = rect.top <= window.innerHeight * 0.75;
+        const isInOrPastView = rect.top <= window.innerHeight * 0.85;
 
         if (isInOrPastView) {
           gsap.set(activeLines, {
@@ -782,14 +783,15 @@ export default function AboutSection() {
         gsap.set(activeLines, {
           "--line-fill": "0%",
           autoAlpha: 0,
-          yPercent: 26,
+          yPercent: 20,
         });
 
         const titleTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: triggerElement,
-            start: "top 72%",
-            toggleActions: "play none none reverse",
+            start: "top 82%",
+            toggleActions: "play none none none",
+            once: true,
             fastScrollEnd: true,
             invalidateOnRefresh: true,
           },
@@ -800,7 +802,7 @@ export default function AboutSection() {
           {
             autoAlpha: 1,
             yPercent: 0,
-            duration: 0.62,
+            duration: 0.65,
             stagger: 0.12,
             ease: "power3.out",
           },
@@ -811,7 +813,7 @@ export default function AboutSection() {
           activeLines,
           {
             "--line-fill": "100%",
-            duration: 0.72,
+            duration: 0.75,
             stagger: 0.14,
             ease: "power2.out",
           },
@@ -867,12 +869,14 @@ export default function AboutSection() {
             <div
               className={styles.mainTitleLine}
               style={{
-                position: titleLines.length > 0 ? "absolute" : "relative",
+                position: "absolute",
                 top: 0,
                 left: 0,
-                visibility: titleLines.length > 0 ? "hidden" : "visible",
-                pointerEvents: "none",
                 width: "100%",
+                opacity: 0,
+                pointerEvents: "none",
+                zIndex: -1,
+                userSelect: "none",
               }}
               aria-hidden="true"
             >
@@ -889,7 +893,7 @@ export default function AboutSection() {
               ))}
             </div>
 
-            {titleLines.length > 0 && (
+            {titleLines.length > 0 ? (
               <div className={styles.animatedTitleWrapper}>
                 {titleLines.map((line: string, index: number) => (
                   <span
@@ -904,6 +908,10 @@ export default function AboutSection() {
                   </span>
                 ))}
               </div>
+            ) : (
+              <span className={styles.mainTitleLine} style={{ display: "block" }}>
+                {titleText}
+              </span>
             )}
           </h2>
         </div>

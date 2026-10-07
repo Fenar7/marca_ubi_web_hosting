@@ -446,7 +446,7 @@ export default function Hero() {
   return (
     <section className={styles.heroSection} data-node-id="491:896" ref={heroSectionRef}>
       <div className={styles.backgroundLayer} ref={backgroundLayerRef} aria-hidden="true">
-        <img className={styles.heroImage} ref={heroImageRef} src={heroBackgroundImage} alt="" />
+        <img className={styles.heroImage} ref={heroImageRef} src={heroBackgroundImage} alt="" fetchPriority="high" decoding="async" />
         <div className={styles.gradientOverlay} ref={gradientOverlayRef} />
       </div>
 
