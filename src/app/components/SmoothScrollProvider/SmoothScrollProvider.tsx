@@ -60,7 +60,26 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       });
     };
 
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    const handleInitialLoaderLift = () => {
+      const isAnyOverlayOpen =
+        document.body.classList.contains("menu-open") ||
+        document.body.classList.contains("profile-modal-open");
+      if (!isAnyOverlayOpen) {
+        lenis?.start();
+      }
+    };
+
     const handleInitialLoaderComplete = () => {
+      const isAnyOverlayOpen =
+        document.body.classList.contains("menu-open") ||
+        document.body.classList.contains("profile-modal-open");
+      if (!isAnyOverlayOpen) {
+        lenis?.start();
+      }
       scheduleRefreshBurst();
     };
 
@@ -243,6 +262,7 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       });
     };
 
+    window.addEventListener("initial-loader:lift", handleInitialLoaderLift);
     window.addEventListener("initial-loader:complete", handleInitialLoaderComplete);
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
@@ -258,6 +278,7 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       }
       clearBurstTimers();
       clearDeferredTimers();
+      window.removeEventListener("initial-loader:lift", handleInitialLoaderLift);
       window.removeEventListener("initial-loader:complete", handleInitialLoaderComplete);
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
@@ -330,7 +351,12 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     window.addEventListener("profile-modal:open", handleProfileModalOpen);
     window.addEventListener("profile-modal:close", handleProfileModalClose);
 
+    const isLoaderActive =
+      Boolean(document.querySelector("[data-initial-loader]")) &&
+      document.documentElement.getAttribute("data-loader-complete") !== "true";
+
     if (
+      isLoaderActive ||
       document.body.classList.contains("menu-open") ||
       document.body.classList.contains("profile-modal-open")
     ) {

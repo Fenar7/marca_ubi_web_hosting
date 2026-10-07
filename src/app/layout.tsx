@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
 import SmoothScrollProvider from "./components/SmoothScrollProvider/SmoothScrollProvider";
 import "./globals.scss";
-
-const poppins = Poppins({
-  weight: ["400"],
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-poppins",
-});
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -55,7 +47,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased ${poppins.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap"
+          rel="stylesheet"
+        />
+        <link rel="preload" as="image" href="/hero/marca-ubi-logo.png" />
+      </head>
+      <body className="antialiased">
         <SmoothScrollProvider>
           {children}
         </SmoothScrollProvider>
