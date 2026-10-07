@@ -75,6 +75,11 @@
   display: block;
 }
 
+.animatedTitleWrapper {
+  display: block;
+  width: 100%;
+}
+
 .servicesContainer {
   display: grid;
   gap: clamp(1.75rem, 2.6vw, 3rem);

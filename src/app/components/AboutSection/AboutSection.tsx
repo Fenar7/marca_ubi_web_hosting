@@ -116,6 +116,7 @@ export default function AboutSection() {
   const [titleLines, setTitleLines] = useState<string[]>([]);
   const titleWordsRef = useRef<Array<HTMLSpanElement | null>>([]);
   const titleLineRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const lastWidthRef = useRef<number>(0);
   const servicesContainerRef = useRef<HTMLDivElement | null>(null);
   const serviceItemRefs = useRef<Array<HTMLElement | null>>([]);
   const serviceIconRefs = useRef<Array<HTMLImageElement | null>>([]);
@@ -659,7 +660,13 @@ export default function AboutSection() {
       }
     }, section);
 
+    const handleLoaderComplete = () => {
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener("initial-loader:complete", handleLoaderComplete);
+
     return () => {
+      window.removeEventListener("initial-loader:complete", handleLoaderComplete);
       context.revert();
     };
   }, []);
@@ -668,8 +675,17 @@ export default function AboutSection() {
     "We build brands that are clear in strategy, distinct in expression, and consistent in experience.";
 
   useEffect(() => {
-    const calculateLines = () => {
-      if (titleWordsRef.current.length === 0) return;
+    let isMounted = true;
+
+    const calculateLines = (force = false) => {
+      if (!isMounted || titleWordsRef.current.length === 0) return;
+
+      const currentWidth = window.innerWidth;
+      if (!force && lastWidthRef.current > 0 && Math.abs(currentWidth - lastWidthRef.current) < 2) {
+        return; // Ignore vertical height resize (e.g. mobile address bar hiding/showing)
+      }
+      lastWidthRef.current = currentWidth;
+
       const calculatedLines: string[] = [];
       let currentLine: string[] = [];
       let currentY = -1;
@@ -688,15 +704,44 @@ export default function AboutSection() {
         calculatedLines.push(currentLine.join(" "));
       }
 
-      setTitleLines((prev: string[]) => {
-        if (prev.join("|") === calculatedLines.join("|")) return prev;
-        return calculatedLines;
-      });
+      if (calculatedLines.length > 0) {
+        setTitleLines((prev: string[]) => {
+          if (prev.length === calculatedLines.length && prev.every((l, i) => l === calculatedLines[i])) {
+            return prev;
+          }
+          return calculatedLines;
+        });
+      }
     };
 
-    calculateLines();
-    window.addEventListener("resize", calculateLines);
-    return () => window.removeEventListener("resize", calculateLines);
+    calculateLines(true);
+
+    const handleResize = () => {
+      calculateLines(false);
+    };
+
+    const handleLoaderComplete = () => {
+      calculateLines(true);
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("initial-loader:complete", handleLoaderComplete);
+
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.ready.then(() => {
+        if (isMounted) {
+          calculateLines(true);
+          ScrollTrigger.refresh();
+        }
+      });
+    }
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("initial-loader:complete", handleLoaderComplete);
+    };
   }, []);
 
   useEffect(() => {
@@ -704,8 +749,11 @@ export default function AboutSection() {
 
     gsap.registerPlugin(ScrollTrigger);
 
+    // Clean up any stale trailing refs if line count decreased
+    titleLineRefs.current = titleLineRefs.current.slice(0, titleLines.length);
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      gsap.set(titleLineRefs.current, { "--line-fill": "100%" });
+      gsap.set(titleLineRefs.current, { "--line-fill": "100%", autoAlpha: 1 });
       return;
     }
 
@@ -713,18 +761,37 @@ export default function AboutSection() {
 
     const context = gsap.context(() => {
       const activeLines = titleLineRefs.current.filter((el): el is HTMLSpanElement => el !== null);
-      gsap.set(activeLines, {
-        "--line-fill": "0%",
-        autoAlpha: mobileMotion ? 0 : 1,
-        yPercent: mobileMotion ? 26 : 0,
-      });
+      if (activeLines.length === 0) return;
+
+      const triggerElement = sectionRef.current ?? activeLines[0];
 
       if (mobileMotion) {
+        // If already scrolled into or past view, display immediately
+        const rect = triggerElement.getBoundingClientRect();
+        const isInOrPastView = rect.top <= window.innerHeight * 0.75;
+
+        if (isInOrPastView) {
+          gsap.set(activeLines, {
+            autoAlpha: 1,
+            yPercent: 0,
+            "--line-fill": "100%",
+          });
+          return;
+        }
+
+        gsap.set(activeLines, {
+          "--line-fill": "0%",
+          autoAlpha: 0,
+          yPercent: 26,
+        });
+
         const titleTimeline = gsap.timeline({
           scrollTrigger: {
-            trigger: sectionRef.current ?? activeLines[0],
+            trigger: triggerElement,
             start: "top 72%",
             toggleActions: "play none none reverse",
+            fastScrollEnd: true,
+            invalidateOnRefresh: true,
           },
         });
 
@@ -754,12 +821,19 @@ export default function AboutSection() {
         return;
       }
 
+      gsap.set(activeLines, {
+        "--line-fill": "0%",
+        autoAlpha: 1,
+        yPercent: 0,
+      });
+
       const titleFillTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: activeLines[0],
           start: "top 86%",
           end: "top 35%",
           scrub: 0.75,
+          invalidateOnRefresh: true,
         },
       });
 
@@ -794,6 +868,8 @@ export default function AboutSection() {
               className={styles.mainTitleLine}
               style={{
                 position: titleLines.length > 0 ? "absolute" : "relative",
+                top: 0,
+                left: 0,
                 visibility: titleLines.length > 0 ? "hidden" : "visible",
                 pointerEvents: "none",
                 width: "100%",
@@ -817,7 +893,7 @@ export default function AboutSection() {
               <div className={styles.animatedTitleWrapper}>
                 {titleLines.map((line: string, index: number) => (
                   <span
-                    key={index}
+                    key={`${line}-${index}`}
                     className={styles.mainTitleLine}
                     ref={(el) => {
                       titleLineRefs.current[index] = el;
