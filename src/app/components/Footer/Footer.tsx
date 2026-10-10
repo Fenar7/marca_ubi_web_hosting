@@ -59,10 +59,15 @@ const Footer = () => {
             ))}
           </div>
 
-          <Link className="footer-contact-btn" href="/start-project" data-node-id="558:1283">
+          <Link
+            className="footer-contact-btn"
+            href="/start-project"
+            aria-label="Start a project — contact Marca Ubi"
+            data-node-id="558:1283"
+          >
             <span className="footer-contact-label">Contact us</span>
             <span className="footer-contact-icon-wrap" aria-hidden="true">
-              <img src="/images/top-right-arrow.png" alt="" />
+              <img src="/images/top-right-arrow.png" alt="" width={16} height={16} />
             </span>
           </Link>
         </div>

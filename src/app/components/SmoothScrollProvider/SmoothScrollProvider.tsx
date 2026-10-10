@@ -277,7 +277,9 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
         return;
       }
 
-      const target = isHashTopLink ? null : resolveHashTarget(url.hash);
+      const target = isHashTopLink
+        ? (resolveHashTarget("#project-form") ?? resolveHashTarget("#home") ?? null)
+        : resolveHashTarget(url.hash);
 
       if (!isHashTopLink && !target) {
         return;
@@ -316,8 +318,12 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       Boolean(document.querySelector("[data-initial-loader]")) &&
       document.documentElement.getAttribute("data-loader-complete") !== "true";
 
-    if (!isLoaderActive && window.location.hash) {
-      scrollToCurrentHash(140);
+    if (!isLoaderActive) {
+      if (window.location.hash) {
+        scrollToCurrentHash(140);
+      } else {
+        window.scrollTo(0, 0);
+      }
     }
 
     const cleanupRefreshListeners = () => {
@@ -410,6 +416,10 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     }
 
     scheduleRefreshBurst();
+
+    if (!isLoaderActive && !window.location.hash) {
+      lenisInstance.scrollTo(0, { immediate: true });
+    }
 
     return () => {
       cleanupRefreshListeners();

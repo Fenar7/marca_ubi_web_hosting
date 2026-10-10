@@ -129,6 +129,11 @@
   transform: translateY(-1px);
 }
 
+.footer-contact-btn:focus-visible {
+  outline: 2px solid $white;
+  outline-offset: 3px;
+}
+
 .footer-contact-label {
   color: $black;
   display: block;
