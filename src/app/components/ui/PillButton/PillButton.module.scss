@@ -35,6 +35,20 @@
   justify-content: center;
   overflow: hidden;
   width: 2.5rem;
+
+  img {
+    display: block;
+    height: 1.25rem;
+    object-fit: contain;
+    width: 1.25rem;
+  }
+}
+
+.defaultIcon {
+  display: block;
+  height: 1.25rem;
+  object-fit: contain;
+  width: 1.25rem;
 }
 
 .fallbackIcon {

@@ -33,7 +33,7 @@
   gap: 0.5rem;
   color: $white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
   font-family: $font-sf-pro;
   font-size: 0.875rem;
   font-weight: 500;
@@ -69,7 +69,7 @@
   height: 4px;
   border-radius: 4px;
   background: rgba($white, 0.1);
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: background-color 0.28s ease, box-shadow 0.28s ease;
   
   &.active {
     background: $cta-orange;
@@ -81,7 +81,7 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
-  animation: fadeIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  animation: fadeIn 0.32s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -138,7 +138,7 @@
   stroke: $cta-orange;
   stroke-miterlimit: 10;
   box-shadow: inset 0px 0px 0px $cta-orange;
-  animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+  animation: fill .3s ease-in-out .25s forwards, scale .25s ease-in-out .5s both;
   margin-bottom: 2rem;
 }
 
@@ -149,14 +149,30 @@
   stroke-miterlimit: 10;
   stroke: $cta-orange;
   fill: none;
-  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  animation: stroke 0.38s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
 
 .checkmarkCheck {
   transform-origin: 50% 50%;
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
-  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+  animation: stroke 0.24s cubic-bezier(0.65, 0, 0.45, 1) 0.25s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepContent {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .checkmark,
+  .checkmarkCircle,
+  .checkmarkCheck {
+    animation: none;
+    stroke-dashoffset: 0;
+    box-shadow: inset 0px 0px 0px 40px rgba($cta-orange, 0.1);
+  }
 }
 
 @keyframes stroke {

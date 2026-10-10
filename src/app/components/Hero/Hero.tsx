@@ -54,6 +54,7 @@ export default function Hero() {
       return;
     }
 
+    const mobileMotion = shouldUseMobileMotion();
     let hasPlayed = false;
     let frameId: number | null = null;
     let fallbackId: number | null = null;
@@ -66,20 +67,20 @@ export default function Hero() {
       gsap.set(content, { autoAlpha: 0 });
       gsap.set(lines, {
         autoAlpha: 0,
-        yPercent: 118,
-        rotateX: -44,
+        yPercent: mobileMotion ? 25 : 118,
+        rotateX: mobileMotion ? 0 : -44,
         transformOrigin: "50% 100%",
-        filter: "blur(10px)",
+        filter: mobileMotion ? "none" : "blur(10px)",
       });
       gsap.set(divider, { autoAlpha: 0, scaleX: 0, transformOrigin: "left center" });
-      gsap.set(subtitle, { autoAlpha: 0, y: 26, filter: "blur(7px)" });
-      gsap.set(buttonWrap, { autoAlpha: 0, y: 28, scale: 0.96 });
+      gsap.set(subtitle, { autoAlpha: 0, y: mobileMotion ? 14 : 26, filter: mobileMotion ? "none" : "blur(7px)" });
+      gsap.set(buttonWrap, { autoAlpha: 0, y: mobileMotion ? 16 : 28, scale: 0.96 });
       gsap.set(topRight, { autoAlpha: 1 });
       gsap.set(topRightWords, {
         autoAlpha: 0,
-        yPercent: 120,
-        rotateX: -28,
-        filter: "blur(8px)",
+        yPercent: mobileMotion ? 25 : 120,
+        rotateX: mobileMotion ? 0 : -28,
+        filter: mobileMotion ? "none" : "blur(8px)",
         transformOrigin: "50% 100%",
       });
       gsap.set(topRightLine, {
@@ -229,6 +230,11 @@ export default function Hero() {
     const scrollRange = Math.max(window.innerHeight * 0.46, 260);
 
     const applyScrollMotion = (progress: number) => {
+      if (reduceMotion) {
+        // Completely switch off parallax for users with prefers-reduced-motion
+        return;
+      }
+
       if (mobileMotion) {
         gsap.set(backgroundLayer, {
           scale: 1 + progress * 0.035,
@@ -248,29 +254,29 @@ export default function Hero() {
       }
 
       gsap.set(backgroundLayer, {
-        scale: 1 + progress * (reduceMotion ? 0.05 : 0.18),
-        y: progress * (reduceMotion ? 10 : 46),
+        scale: 1 + progress * 0.18,
+        y: progress * 46,
         force3D: true,
       });
       gsap.set(heroMotionWrap, {
         xPercent: -50,
-        scale: 1 + progress * (reduceMotion ? 0.06 : 0.32),
-        y: progress * (reduceMotion ? 14 : 92),
-        rotationY: -progress * (reduceMotion ? 0.9 : 4.3),
-        rotationX: progress * (reduceMotion ? 0.38 : 1.95),
+        scale: 1 + progress * 0.32,
+        y: progress * 92,
+        rotationY: -progress * 4.3,
+        rotationX: progress * 1.95,
         force3D: true,
       });
-      gsap.set(overlay, { opacity: 1 - progress * (reduceMotion ? 0.05 : 0.28) });
+      gsap.set(overlay, { opacity: 1 - progress * 0.28 });
     };
 
     const handleScroll = () => {
-      if (!introFinished || scrollTicking) {
+      if (reduceMotion || !introFinished || scrollTicking) {
         return;
       }
       scrollTicking = true;
       window.requestAnimationFrame(() => {
         scrollTicking = false;
-        if (!introFinished) return;
+        if (!introFinished || reduceMotion) return;
         const progress = Math.min(window.scrollY / scrollRange, 1);
         applyScrollMotion(progress);
       });
@@ -279,19 +285,19 @@ export default function Hero() {
     const context = gsap.context(() => {
       gsap.set(heroSection, { perspective: 1200 });
       gsap.set(backgroundLayer, {
-        scale: reduceMotion ? 1.04 : mobileMotion ? 1.03 : 1.14,
-        y: reduceMotion ? -6 : mobileMotion ? -6 : -18,
+        scale: reduceMotion ? 1 : mobileMotion ? 1.03 : 1.14,
+        y: reduceMotion ? 0 : mobileMotion ? -6 : -18,
         transformOrigin: "50% 50%",
       });
       gsap.set(heroMotionWrap, {
         xPercent: -50,
-        scale: reduceMotion ? 1.06 : mobileMotion ? 1.08 : 1.22,
-        y: reduceMotion ? -8 : mobileMotion ? -10 : -24,
-        rotationX: reduceMotion ? 1.2 : mobileMotion ? 0 : 3.6,
-        rotationY: reduceMotion ? -0.8 : mobileMotion ? 0 : -2.6,
+        scale: reduceMotion ? 1 : mobileMotion ? 1.08 : 1.22,
+        y: reduceMotion ? 0 : mobileMotion ? -10 : -24,
+        rotationX: reduceMotion ? 0 : mobileMotion ? 0 : 3.6,
+        rotationY: reduceMotion ? 0 : mobileMotion ? 0 : -2.6,
         transformOrigin: "50% 50% -60px",
       });
-      gsap.set(overlay, { opacity: reduceMotion ? 0.93 : mobileMotion ? 0.94 : 0.84 });
+      gsap.set(overlay, { opacity: reduceMotion ? 0.92 : mobileMotion ? 0.94 : 0.84 });
     }, heroSection);
 
     const introTimeline = gsap.timeline({

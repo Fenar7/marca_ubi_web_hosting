@@ -7,6 +7,7 @@ export default function StartProjectPage() {
   return (
     <main id="start-project" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", backgroundColor: "var(--color-light-grey)" }}>
       <Header />
+      <h1 className="sr-only">Start a Project Brief — Marca Ubi</h1>
       <div style={{ flex: 1, padding: "clamp(5rem, 10vw, 8rem) clamp(0.85rem, 3.5vw, 2rem) 4rem clamp(0.85rem, 3.5vw, 2rem)" }}>
         <ProjectForm />
       </div>

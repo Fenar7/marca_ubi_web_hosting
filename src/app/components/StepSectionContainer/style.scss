@@ -222,21 +222,26 @@
   gap: clamp(0.4rem, 0.8vw, 0.6875rem);
 }
 
-.count-container p {
+.count-container p,
+.count-container .step-number {
   color: $hash-grey;
   font-family: $font-sf-pro;
   font-size: clamp(2rem, 2.1vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   font-weight: 300;
-  line-height: 1;
+  line-height: $lh-tight;
   margin: 0;
 }
 
+.count-container .step-item-title,
+.count-container h3,
 .count-container h5 {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(2rem, 2.6vw, 2.875rem);
+  font-size: $type-h3;
   font-weight: 300;
-  line-height: 1.06;
+  line-height: $lh-heading;
   margin: 0;
 }
 
@@ -250,7 +255,7 @@
   font-family: $font-sf-pro;
   font-size: clamp(1rem, 1.4vw, 1.5rem);
   font-weight: 400;
-  line-height: 1.58;
+  line-height: $lh-body;
   margin: 0;
   max-width: 47.8125rem;
 }
@@ -334,12 +339,16 @@
     width: 0.125rem;
   }
 
-  .count-container p {
+  .count-container p,
+  .count-container .step-number {
     font-size: clamp(1.35rem, 6.2vw, 1.85rem);
+    font-variant-numeric: tabular-nums;
   }
 
+  .count-container .step-item-title,
+  .count-container h3,
   .count-container h5 {
-    font-size: clamp(1.25rem, 5.8vw, 1.85rem);
+    line-height: $lh-heading;
   }
 
   .step-item-container .right-section {
@@ -348,6 +357,6 @@
 
   .step-item-container .right-section p {
     font-size: clamp(1rem, 3.4vw, 1.05rem);
-    line-height: 1.54;
+    line-height: $lh-body;
   }
 }

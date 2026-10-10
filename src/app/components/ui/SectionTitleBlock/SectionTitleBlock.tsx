@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import styles from "./SectionTitleBlock.module.scss";
 
 type SectionTitleBlockProps = {
+  as?: "h1" | "h2" | "h3" | "h4" | "p";
   label: ReactNode;
   title: ReactNode;
   tagIcon?: ReactNode;
@@ -18,6 +19,7 @@ type SectionTitleBlockProps = {
 };
 
 export default function SectionTitleBlock({
+  as: HeadingTag = "h2",
   label,
   title,
   tagIcon,
@@ -52,7 +54,7 @@ export default function SectionTitleBlock({
           )}
           <p className={tagTextRootClassName}>{label}</p>
         </div>
-        <h2 className={titleRootClassName}>{title}</h2>
+        <HeadingTag className={titleRootClassName}>{title}</HeadingTag>
       </div>
 
       {(description || action) && (

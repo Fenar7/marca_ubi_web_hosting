@@ -16,9 +16,9 @@
   right: clamp(1.25rem, 5.2vw, 6.25rem);
   text-align: left;
   transform: translate3d(0, 0, 0) scale(1);
-  transition: bottom 0.52s cubic-bezier(0.19, 1, 0.22, 1), right 0.52s cubic-bezier(0.19, 1, 0.22, 1),
+  transition: bottom 0.35s cubic-bezier(0.19, 1, 0.22, 1), right 0.35s cubic-bezier(0.19, 1, 0.22, 1),
     border-color 0.35s ease, background-color 0.35s ease, box-shadow 0.35s ease, opacity 0.28s ease,
-    transform 0.42s cubic-bezier(0.19, 1, 0.22, 1);
+    transform 0.35s cubic-bezier(0.19, 1, 0.22, 1);
   width: 12.75rem;
   z-index: 30000;
 

@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { shouldUseMobileMotion } from "@/app/lib/motion";
+import { prefersReducedMotion, shouldUseMobileMotion } from "@/app/lib/motion";
 import SectionTitleBlock from "../ui/SectionTitleBlock/SectionTitleBlock";
 
 const steps = [
@@ -84,8 +84,8 @@ export default function StepSectionContainer() {
     const mobileMotion = shouldUseMobileMotion();
 
     const setFinalValues = () => {
-      gsap.set(tagIcon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "blur(0px)" });
-      gsap.set(tagText, { autoAlpha: 1, x: 0, y: 0, filter: "blur(0px)" });
+      gsap.set(tagIcon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "none" });
+      gsap.set(tagText, { autoAlpha: 1, x: 0, y: 0, filter: "none" });
       gsap.set(titleLineNodes, {
         autoAlpha: 1,
         yPercent: 0,
@@ -94,18 +94,18 @@ export default function StepSectionContainer() {
         rotateX: 0,
         skewY: 0,
         letterSpacing: "-0.01em",
-        filter: "blur(0px)",
+        filter: "none",
       });
       gsap.set(description, {
         autoAlpha: 1,
         x: 0,
         y: 0,
         clipPath: "inset(0% 0% 0% 0%)",
-        filter: "blur(0px)",
+        filter: "none",
       });
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       setFinalValues();
       return;
     }
@@ -113,31 +113,31 @@ export default function StepSectionContainer() {
     const context = gsap.context(() => {
       gsap.set(tagIcon, {
         autoAlpha: 0,
-        y: 14,
-        rotate: -170,
-        scale: 0.28,
+        y: mobileMotion ? 8 : 14,
+        rotate: mobileMotion ? 0 : -170,
+        scale: mobileMotion ? 0.8 : 0.28,
         transformOrigin: "50% 50%",
-        filter: "blur(5px)",
+        filter: mobileMotion ? "none" : "blur(5px)",
       });
-      gsap.set(tagText, { autoAlpha: 0, y: 16, x: 12, filter: "blur(5px)" });
+      gsap.set(tagText, { autoAlpha: 0, y: mobileMotion ? 8 : 16, x: mobileMotion ? 0 : 12, filter: mobileMotion ? "none" : "blur(5px)" });
       gsap.set(titleLineNodes, {
         autoAlpha: 0,
-        yPercent: 112,
-        xPercent: -8,
-        rotateY: -24,
-        rotateX: 10,
-        skewY: 3,
+        yPercent: mobileMotion ? 25 : 112,
+        xPercent: mobileMotion ? 0 : -8,
+        rotateY: mobileMotion ? 0 : -24,
+        rotateX: mobileMotion ? 0 : 10,
+        skewY: mobileMotion ? 0 : 3,
         letterSpacing: "0.015em",
         transformPerspective: 1200,
         transformOrigin: "0% 100%",
-        filter: "blur(9px)",
+        filter: mobileMotion ? "none" : "blur(9px)",
       });
       gsap.set(description, {
         autoAlpha: 0,
-        x: 34,
-        y: 16,
-        clipPath: "inset(0% 100% 0% 0%)",
-        filter: "blur(7px)",
+        x: mobileMotion ? 0 : 34,
+        y: mobileMotion ? 12 : 16,
+        clipPath: mobileMotion ? "inset(0% 0% 0% 0%)" : "inset(0% 100% 0% 0%)",
+        filter: mobileMotion ? "none" : "blur(7px)",
       });
 
       const tagTimeline = gsap.timeline({
@@ -156,8 +156,8 @@ export default function StepSectionContainer() {
             y: 0,
             rotate: 0,
             scale: 1,
-            filter: "blur(0px)",
-            duration: 0.78,
+            filter: "none",
+            duration: mobileMotion ? 0.45 : 0.78,
             ease: "expo.out",
           },
           0,
@@ -168,8 +168,8 @@ export default function StepSectionContainer() {
             autoAlpha: 1,
             x: 0,
             y: 0,
-            filter: "blur(0px)",
-            duration: 0.72,
+            filter: "none",
+            duration: mobileMotion ? 0.45 : 0.72,
             ease: "power3.out",
           },
           0.14,
@@ -202,9 +202,9 @@ export default function StepSectionContainer() {
             rotateX: 0,
             skewY: 0,
             letterSpacing: "-0.01em",
-            filter: "blur(0px)",
-            duration: mobileMotion ? 0.86 : 1.06,
-            stagger: 0.14,
+            filter: "none",
+            duration: mobileMotion ? 0.52 : 1.06,
+            stagger: mobileMotion ? 0.08 : 0.14,
             ease: mobileMotion ? "expo.out" : "none",
           },
           0,
@@ -216,30 +216,32 @@ export default function StepSectionContainer() {
             x: 0,
             y: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            filter: "blur(0px)",
-            duration: mobileMotion ? 0.72 : 0.92,
+            filter: "none",
+            duration: mobileMotion ? 0.48 : 0.92,
             ease: mobileMotion ? "power3.out" : "none",
           },
           mobileMotion ? 0.12 : 0.22,
         );
 
-      const iconAmbient = gsap.to(tagIcon, {
-        y: -2,
-        rotate: 8,
-        duration: 1.8,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-        paused: true,
-      });
+      if (!mobileMotion) {
+        const iconAmbient = gsap.to(tagIcon, {
+          y: -2,
+          rotate: 8,
+          duration: 1.8,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          paused: true,
+        });
 
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top 74%",
-        onEnter: () => iconAmbient.play(),
-        onEnterBack: () => iconAmbient.play(),
-        onLeaveBack: () => iconAmbient.pause(0),
-      });
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 74%",
+          onEnter: () => iconAmbient.play(),
+          onEnterBack: () => iconAmbient.play(),
+          onLeaveBack: () => iconAmbient.pause(0),
+        });
+      }
     }, section);
 
     return () => {
@@ -552,8 +554,8 @@ export default function StepSectionContainer() {
               <div className="left-section">
                 <span className="step-line" aria-hidden="true" />
                 <div className="count-container">
-                  <p>{step.number}</p>
-                  <h5>{step.title}</h5>
+                  <p className="step-number">{step.number}</p>
+                  <h3 className="step-item-title">{step.title}</h3>
                 </div>
               </div>
 

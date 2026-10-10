@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { prefersReducedMotion, shouldUseMobileMotion } from "@/app/lib/motion";
 import PillButton from "../ui/PillButton/PillButton";
 import SectionTitleBlock from "../ui/SectionTitleBlock/SectionTitleBlock";
 import styles from "./TestimonialsSection.module.scss";
@@ -36,15 +37,17 @@ export default function TestimonialsSection() {
       return;
     }
 
+    const mobileMotion = shouldUseMobileMotion();
+
     const setFinalValues = () => {
-      gsap.set(tagIcon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "blur(0px)" });
-      gsap.set(tagText, { autoAlpha: 1, y: 0, x: 0, filter: "blur(0px)" });
-      gsap.set(titleLinesNodes, { autoAlpha: 1, yPercent: 0, rotateX: 0, filter: "blur(0px)" });
-      gsap.set(description, { autoAlpha: 1, y: 0, clipPath: "inset(0% 0% 0% 0%)", filter: "blur(0px)" });
-      gsap.set(actionWrap, { autoAlpha: 1, y: 0, scale: 1, rotateX: 0, filter: "blur(0px)" });
+      gsap.set(tagIcon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "none" });
+      gsap.set(tagText, { autoAlpha: 1, y: 0, x: 0, filter: "none" });
+      gsap.set(titleLinesNodes, { autoAlpha: 1, yPercent: 0, rotateX: 0, filter: "none" });
+      gsap.set(description, { autoAlpha: 1, y: 0, clipPath: "inset(0% 0% 0% 0%)", filter: "none" });
+      gsap.set(actionWrap, { autoAlpha: 1, y: 0, scale: 1, rotateX: 0, filter: "none" });
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       setFinalValues();
       return;
     }
@@ -52,34 +55,34 @@ export default function TestimonialsSection() {
     const context = gsap.context(() => {
       gsap.set(tagIcon, {
         autoAlpha: 0,
-        y: 14,
-        rotate: -170,
-        scale: 0.28,
+        y: mobileMotion ? 8 : 14,
+        rotate: mobileMotion ? 0 : -170,
+        scale: mobileMotion ? 0.8 : 0.28,
         transformOrigin: "50% 50%",
-        filter: "blur(5px)",
+        filter: mobileMotion ? "none" : "blur(5px)",
       });
-      gsap.set(tagText, { autoAlpha: 0, y: 16, x: 12, filter: "blur(5px)" });
+      gsap.set(tagText, { autoAlpha: 0, y: mobileMotion ? 8 : 16, x: mobileMotion ? 0 : 12, filter: mobileMotion ? "none" : "blur(5px)" });
       gsap.set(titleLinesNodes, {
         autoAlpha: 0,
-        yPercent: 116,
-        rotateX: -42,
+        yPercent: mobileMotion ? 25 : 116,
+        rotateX: mobileMotion ? 0 : -42,
         transformPerspective: 1100,
         transformOrigin: "50% 100%",
-        filter: "blur(9px)",
+        filter: mobileMotion ? "none" : "blur(9px)",
       });
       gsap.set(description, {
         autoAlpha: 0,
-        y: 26,
-        clipPath: "inset(0% 0% 100% 0%)",
-        filter: "blur(6px)",
+        y: mobileMotion ? 12 : 26,
+        clipPath: mobileMotion ? "inset(0% 0% 0% 0%)" : "inset(0% 0% 100% 0%)",
+        filter: mobileMotion ? "none" : "blur(6px)",
       });
       gsap.set(actionWrap, {
         autoAlpha: 0,
-        y: 32,
-        scale: 0.92,
-        rotateX: 16,
+        y: mobileMotion ? 14 : 32,
+        scale: mobileMotion ? 0.98 : 0.92,
+        rotateX: mobileMotion ? 0 : 16,
         transformOrigin: "50% 100%",
-        filter: "blur(7px)",
+        filter: mobileMotion ? "none" : "blur(7px)",
       });
 
       const introTimeline = gsap.timeline({
@@ -100,8 +103,8 @@ export default function TestimonialsSection() {
             y: 0,
             rotate: 0,
             scale: 1,
-            filter: "blur(0px)",
-            duration: 0.78,
+            filter: "none",
+            duration: mobileMotion ? 0.45 : 0.78,
             ease: "expo.out",
           },
           0,
@@ -112,8 +115,8 @@ export default function TestimonialsSection() {
             autoAlpha: 1,
             y: 0,
             x: 0,
-            filter: "blur(0px)",
-            duration: 0.72,
+            filter: "none",
+            duration: mobileMotion ? 0.45 : 0.72,
             ease: "power3.out",
           },
           0.14,
@@ -124,9 +127,9 @@ export default function TestimonialsSection() {
             autoAlpha: 1,
             yPercent: 0,
             rotateX: 0,
-            filter: "blur(0px)",
-            duration: 1.02,
-            stagger: 0.14,
+            filter: "none",
+            duration: mobileMotion ? 0.52 : 1.02,
+            stagger: mobileMotion ? 0.08 : 0.14,
             ease: "expo.out",
           },
           0.2,
@@ -137,11 +140,11 @@ export default function TestimonialsSection() {
             autoAlpha: 1,
             y: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            filter: "blur(0px)",
-            duration: 0.82,
+            filter: "none",
+            duration: mobileMotion ? 0.48 : 0.82,
             ease: "power3.out",
           },
-          0.44,
+          mobileMotion ? 0.28 : 0.44,
         )
         .to(
           actionWrap,
@@ -150,30 +153,32 @@ export default function TestimonialsSection() {
             y: 0,
             scale: 1,
             rotateX: 0,
-            filter: "blur(0px)",
-            duration: 0.86,
+            filter: "none",
+            duration: mobileMotion ? 0.45 : 0.86,
             ease: "back.out(1.24)",
           },
-          0.58,
+          mobileMotion ? 0.36 : 0.58,
         );
 
-      const iconAmbient = gsap.to(tagIcon, {
-        y: -2,
-        rotate: 8,
-        duration: 1.8,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-        paused: true,
-      });
+      if (!mobileMotion) {
+        const iconAmbient = gsap.to(tagIcon, {
+          y: -2,
+          rotate: 8,
+          duration: 1.8,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          paused: true,
+        });
 
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top 74%",
-        onEnter: () => iconAmbient.play(),
-        onEnterBack: () => iconAmbient.play(),
-        onLeaveBack: () => iconAmbient.pause(0),
-      });
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 74%",
+          onEnter: () => iconAmbient.play(),
+          onEnterBack: () => iconAmbient.play(),
+          onLeaveBack: () => iconAmbient.pause(0),
+        });
+      }
     }, section);
 
     return () => {

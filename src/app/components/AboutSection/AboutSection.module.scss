@@ -116,17 +116,19 @@
   color: $hash-grey;
   font-family: $font-sf-pro;
   font-size: clamp(1.9rem, 2.1vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   font-weight: 300;
-  line-height: 1;
+  line-height: $lh-tight;
   will-change: transform, opacity;
 }
 
 .serviceTitle {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(1.8rem, 2.2vw, 2.25rem);
+  font-size: $type-h3;
   font-weight: 300;
-  line-height: 1.13;
+  line-height: $lh-heading;
   margin: 0;
   will-change: transform, opacity;
 }
@@ -229,6 +231,8 @@
   display: inline-flex;
   align-items: flex-end;
   font-family: $font-sf-pro;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
   font-weight: 300;
   gap: 0.1rem;
   line-height: 0.95;
@@ -238,9 +242,12 @@
 .metricCountViewport {
   color: $white;
   display: inline-flex;
-  font-size: clamp(3rem, 3.5vw, 4.0625rem);
+  font-feature-settings: "tnum" 1;
+  font-size: $type-stat-number;
+  font-variant-numeric: tabular-nums;
   height: 1em;
   letter-spacing: -0.02em;
+  min-width: 3.2ch;
   overflow: hidden;
   will-change: transform;
 }
@@ -248,12 +255,16 @@
 .metricCountTrack {
   display: flex;
   flex-direction: column;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
   will-change: transform;
 }
 
 .metricCountStep {
   display: block;
   flex: 0 0 1em;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
   height: 1em;
   line-height: 1;
 }
@@ -278,9 +289,9 @@
 .metricTitle {
   color: rgba($white, 0.96);
   font-family: $font-movatif;
-  font-size: clamp(1.5rem, 2vw, 2.25rem);
+  font-size: $type-h3;
   font-weight: 300;
-  line-height: 1.08;
+  line-height: $lh-heading;
   margin: 0;
   will-change: transform, opacity;
 }
@@ -290,7 +301,7 @@
   font-family: $font-sf-pro;
   font-size: clamp(1rem, 1.08vw, 1.16rem);
   font-weight: 400;
-  line-height: 1.5;
+  line-height: $lh-body;
   margin: 0;
   max-width: 20.375rem;
   will-change: transform, opacity;
@@ -333,9 +344,14 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .serviceNumber,
+  .serviceNumber {
+    font-size: clamp(1.2rem, 4.8vw, 1.85rem);
+    font-variant-numeric: tabular-nums;
+  }
+
   .serviceTitle {
     font-size: clamp(1.2rem, 4.8vw, 1.85rem);
+    line-height: $lh-heading;
   }
 
   .serviceHashIcon {
@@ -344,7 +360,7 @@
 
   .aboutDescription {
     font-size: clamp(0.95rem, 3.8vw, 1.2rem);
-    line-height: 1.5;
+    line-height: $lh-body;
   }
 
   .aboutButtonWrap {
@@ -374,11 +390,12 @@
 
   .metricTitle {
     font-size: clamp(1.15rem, 4.6vw, 1.7rem);
+    line-height: $lh-heading;
   }
 
   .metricDescription {
     font-size: clamp(0.875rem, 3.2vw, 1.05rem);
-    line-height: 1.44;
+    line-height: $lh-body;
     max-width: none;
   }
 }

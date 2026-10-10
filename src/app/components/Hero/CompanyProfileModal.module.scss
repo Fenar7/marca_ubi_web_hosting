@@ -388,7 +388,7 @@
 }
 
 .successCircle {
-  animation: drawCircle 0.64s 0.08s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: drawCircle 0.38s 0.04s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   stroke: rgba($white, 0.82);
   stroke-dasharray: 145;
   stroke-dashoffset: 145;
@@ -396,11 +396,19 @@
 }
 
 .successCheck {
-  animation: drawCheck 0.42s 0.54s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: drawCheck 0.28s 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   stroke: $cta-orange;
   stroke-dasharray: 36;
   stroke-dashoffset: 36;
   stroke-width: 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .successCircle,
+  .successCheck {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
 }
 
 .successEyebrow {

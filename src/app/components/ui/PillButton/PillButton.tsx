@@ -19,7 +19,7 @@ function PillButtonContent({ label, icon }: Pick<PillButtonProps, "label" | "ico
     <>
       <span className={styles.label}>{label}</span>
       <span className={styles.iconWrap} aria-hidden="true">
-        {icon ?? <span className={styles.fallbackIcon}>↗</span>}
+        {icon ?? <img className={styles.defaultIcon} src="/images/top-right-arrow.png" alt="" width={20} height={20} />}
       </span>
     </>
   );

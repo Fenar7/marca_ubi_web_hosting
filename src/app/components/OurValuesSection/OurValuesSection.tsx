@@ -410,7 +410,7 @@ const OurValuesSection = () => {
           {valueItems.map((item) => (
             <article className="values-feature-item" key={item.title}>
               <span className="values-item-line" aria-hidden="true" />
-              <h6>{item.title}</h6>
+              <h3 className="values-item-title">{item.title}</h3>
               <p>{item.text}</p>
             </article>
           ))}
