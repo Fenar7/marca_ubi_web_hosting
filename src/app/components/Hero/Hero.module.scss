@@ -111,7 +111,7 @@
   display: grid;
   font-family: $font-movatif;
   font-size: clamp(2.3rem, 5vw, 4.0625rem);
-  font-weight: 600;
+  font-weight: 500;
   gap: 0.02em;
   letter-spacing: -0.015em;
   line-height: 1.14;
@@ -142,7 +142,7 @@
   color: #e8e8e8;
   font-family: $font-sf-pro;
   font-size: clamp(1rem, 1.4vw, 1.35rem);
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.52;
   margin: clamp(1.25rem, 1.9vw, 2.1875rem) 0 0;
   max-width: 33.8125rem;
