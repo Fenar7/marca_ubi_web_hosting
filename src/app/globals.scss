@@ -1,126 +1,16 @@
 @use "tailwindcss";
 
-@font-face {
-  font-family: "SF Pro Display";
-  src: local("SF Pro Display"), local("-apple-system"), local("BlinkMacSystemFont"), url("/fonts/SF-Pro-Display-Thin.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "SF Pro Display";
-  src: local("SF Pro Display"), local("-apple-system"), local("BlinkMacSystemFont"), url("/fonts/SF-Pro-Display-Light.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "SF Pro Display";
-  src: local("SF Pro Display"), local("-apple-system"), local("BlinkMacSystemFont"), url("/fonts/SF-Pro-Display-Regular.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "SF Pro Display";
-  src: local("SF Pro Display"), local("-apple-system"), local("BlinkMacSystemFont"), url("/fonts/SF-Pro-Display-Medium.otf") format("opentype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "SF Pro Display";
-  src: local("SF Pro Display"), local("-apple-system"), local("BlinkMacSystemFont"), url("/fonts/SF-Pro-Display-Bold.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "SF Pro Display";
-  src: local("SF Pro Display"), local("-apple-system"), local("BlinkMacSystemFont"), url("/fonts/SF-Pro-Display-Heavy.otf") format("opentype");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "SF Pro Display";
-  src: local("SF Pro Display"), local("-apple-system"), local("BlinkMacSystemFont"), url("/fonts/SF-Pro-Display-Black.otf") format("opentype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Movatif";
-  src: url("/fonts/fonnts.com-movatif_ul.otf") format("opentype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Movatif";
-  src: url("/fonts/fonnts.com-movatif_el.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Movatif";
-  src: url("/fonts/fonnts.com-movatif_lt.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Movatif";
-  src: url("/fonts/fonnts.com-movatif_rg.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Movatif";
-  src: url("/fonts/fonnts.com-movatif_bd.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Movatif";
-  src: url("/fonts/fonnts.com-movatif_hv.otf") format("opentype");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Movatif";
-  src: url("/fonts/fonnts.com-movatif_bk.otf") format("opentype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   --background: #{$white};
   --foreground: #{$black};
+  --font-graphik: #{$font-graphik};
 }
 
 @theme inline {
-  --font-sans: #{$font-sf-pro};
-  --font-sf-pro: #{$font-sf-pro};
-  --font-movatif: #{$font-movatif};
+  --font-sans: var(--font-graphik);
+  --font-graphik: var(--font-graphik);
+  --font-sf-pro: var(--font-graphik);
+  --font-movatif: var(--font-graphik);
 
   --color-white: #{$white};
   --color-black: #{$black};
@@ -146,7 +36,9 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: $font-sf-pro;
+  font-family: var(--font-graphik);
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 html.lenis,
@@ -184,8 +76,8 @@ a, button, [role='button'], input, textarea, select, label, summary, [data-curso
 @import "./components/ContactCtaSection/style";
 @import "./components/Footer/style";
 
-/* Tag separator characters (hyphen, slash) use Poppins since Movatif has no glyph */
+/* Tag separator characters use Graphik */
 .tag-separator {
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-graphik);
   font-weight: 400;
 }

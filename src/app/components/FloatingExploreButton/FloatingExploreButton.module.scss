@@ -7,7 +7,7 @@
   bottom: clamp(1.25rem, 6.8vh, 6.8125rem);
   color: $white;
   cursor: pointer;
-  height: 6.1875rem;
+  height: 4.95rem;
   margin: 0;
   opacity: 1;
   padding: 0;
@@ -19,7 +19,7 @@
   transition: bottom 0.52s cubic-bezier(0.19, 1, 0.22, 1), right 0.52s cubic-bezier(0.19, 1, 0.22, 1),
     border-color 0.35s ease, background-color 0.35s ease, box-shadow 0.35s ease, opacity 0.28s ease,
     transform 0.42s cubic-bezier(0.19, 1, 0.22, 1);
-  width: 15.9375rem;
+  width: 12.75rem;
   z-index: 30000;
 
   :global(body.menu-open) &,
@@ -39,65 +39,75 @@
   border-color: rgba($white, 0.38);
   bottom: clamp(0.9rem, 2.6vw, 1.8rem);
   right: clamp(0.9rem, 5.2vw, 6.25rem);
-  box-shadow: 0 1rem 2.8rem rgba($black, 0.4);
+  box-shadow: 0 0.8rem 2.2rem rgba($black, 0.38);
 }
 
 .isTopMode {
   background: rgba(16, 17, 22, 0.92);
   border-color: rgba($cta-orange, 0.74);
-  box-shadow: 0 1.25rem 3.2rem rgba(4, 4, 8, 0.56);
+  box-shadow: 0 0.95rem 2.5rem rgba(4, 4, 8, 0.52);
 }
 
 .exploreLabel {
   color: $white;
   font-family: $font-sf-pro;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  left: 1.625rem;
+  left: 1.3rem;
   line-height: 1;
   position: absolute;
-  top: 0.875rem;
+  top: 0.6875rem;
   white-space: nowrap;
 }
 
 .exploreLogo {
-  height: 2.1875rem;
-  left: 1.625rem;
+  height: 1.75rem;
+  left: 1.3rem;
   position: absolute;
-  top: 2.5rem;
-  width: 10.5625rem;
+  top: 2rem;
+  width: 8.4375rem;
 }
 
 .exploreArrow {
-  height: 2.0625rem;
-  left: 12.4375rem;
+  height: 1.625rem;
+  left: 9.95rem;
   position: absolute;
-  top: 2.8125rem;
+  top: 2.2rem;
   transform-origin: center;
   will-change: transform;
-  width: 2.0625rem;
+  width: 1.625rem;
 }
 
 @media (max-width: 74.9375rem) {
   .exploreCard {
     bottom: 2.5rem;
-    height: 5.5rem;
+    height: 4.4rem;
     right: 1rem;
-    width: 14.4rem;
+    width: 11.5rem;
   }
 
   .isDocked {
-    bottom: 1.2rem;
+    bottom: 1rem;
+  }
+
+  .exploreLabel {
+    font-size: 0.75rem;
+    left: 1.15rem;
+    top: 0.6rem;
   }
 
   .exploreLogo {
-    top: 2.15rem;
-    width: 9.625rem;
+    height: 1.58rem;
+    left: 1.15rem;
+    top: 1.8rem;
+    width: 7.6rem;
   }
 
   .exploreArrow {
-    left: 11.15rem;
-    top: 2.45rem;
+    height: 1.45rem;
+    left: 9rem;
+    top: 1.95rem;
+    width: 1.45rem;
   }
 }
 
@@ -170,14 +180,14 @@
 
 @media (max-width: 24.375rem) {
   .exploreCard {
-    bottom: 0.64rem;
+    bottom: calc(0.64rem + env(safe-area-inset-bottom, 0px));
     height: 3.02rem;
     right: 0.5rem;
     width: 8.65rem;
   }
 
   .isDocked {
-    bottom: 0.36rem;
+    bottom: calc(0.36rem + env(safe-area-inset-bottom, 0px));
     right: 0.5rem;
   }
 

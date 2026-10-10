@@ -1,7 +1,7 @@
 .sectionTitleBlock {
   display: grid;
   gap: clamp(1.5rem, 4vw, 4.5rem);
-  grid-template-columns: minmax(17rem, 44.8%) minmax(16rem, 42.5rem);
+  grid-template-columns: minmax(17rem, 52%) minmax(16rem, 38rem);
   justify-content: space-between;
 }
 
@@ -30,7 +30,8 @@
   color: $hash-grey;
   font-family: $font-movatif;
   font-size: clamp(1.6rem, 2vw, 2.25rem);
-  font-weight: 400;
+  font-weight: 300;
+  letter-spacing: 0.05em;
   line-height: 1;
   margin: 0;
 }
@@ -38,8 +39,8 @@
 .title {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(2rem, 4vw, 4.0625rem);
-  font-weight: 400;
+  font-size: clamp(1.9rem, 3.1vw, 3.65rem);
+  font-weight: 300;
   letter-spacing: -0.01em;
   line-height: 1.12;
   margin: 0;
@@ -55,7 +56,7 @@
   color: #e8e8e8;
   font-family: $font-sf-pro;
   font-size: clamp(1rem, 1.5vw, 1.5rem);
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.58;
   margin: 0;
 }
@@ -76,25 +77,18 @@
   }
 }
 
-/* Mid-size laptops: 1024–1250px — prevent title from breaking to 4 lines */
-@media (min-width: 56.25rem) and (max-width: 78rem) {
-  .title {
-    font-size: clamp(2rem, 3.2vw, 3.4rem);
-  }
-}
-
 @media (max-width: 56.1875rem) {
   .tagText {
     font-size: clamp(1.1rem, 4.4vw, 1.55rem);
   }
 
   .title {
-    font-size: clamp(1.35rem, 6.2vw, 2.55rem);
+    font-size: clamp(1.25rem, 5.8vw, 2.55rem);
     line-height: 1.14;
   }
 
   .description {
-    font-size: clamp(0.875rem, 3.4vw, 1.1rem);
-    line-height: 1.48;
+    font-size: clamp(1rem, 3.4vw, 1.1rem);
+    line-height: 1.54;
   }
 }

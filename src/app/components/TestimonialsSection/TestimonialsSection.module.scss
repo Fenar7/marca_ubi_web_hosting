@@ -62,6 +62,7 @@
 .headerTitleLine {
   display: block;
   transform-origin: 50% 100%;
+  white-space: nowrap;
   will-change: transform, opacity;
 }
 

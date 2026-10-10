@@ -47,7 +47,7 @@
 .our-values-title-container {
   display: grid;
   gap: clamp(1.7rem, 4vw, 5rem);
-  grid-template-columns: minmax(16rem, 44.8%) minmax(18rem, 48.4%);
+  grid-template-columns: minmax(18rem, 47%) minmax(18rem, 48%);
   justify-content: space-between;
 }
 
@@ -78,7 +78,8 @@
   color: $hash-grey;
   font-family: $font-movatif;
   font-size: clamp(1.55rem, 2vw, 2.25rem);
-  font-weight: 400;
+  font-weight: 300;
+  letter-spacing: 0.06em;
   line-height: 1;
   margin: 0;
 }
@@ -92,10 +93,10 @@
 .title-left-section h2 {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(2rem, 3.65vw, 4.0625rem);
+  font-size: clamp(2rem, 3.35vw, 3.65rem);
   font-style: normal;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: 300;
+  letter-spacing: -0.015em;
   line-height: 1.12;
   margin: 0;
 }
@@ -124,7 +125,7 @@
   color: #e8e8e8;
   font-family: $font-sf-pro;
   font-size: clamp(1rem, 1.35vw, 1.5rem);
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.58;
   margin: 0;
   max-width: 47.8125rem;
@@ -165,7 +166,7 @@
   font-family: $font-movatif;
   font-size: clamp(1.4rem, 1.8vw, 1.875rem);
   font-style: normal;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.25;
   margin: 0 0 clamp(0.5rem, 0.75vw, 0.75rem);
 }
@@ -173,10 +174,10 @@
 .values-feature-item p {
   color: #e8e8e8;
   font-family: $font-sf-pro;
-  font-size: clamp(0.95rem, 1.16vw, 1.3125rem);
+  font-size: clamp(1rem, 1.16vw, 1.3125rem);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.62;
+  line-height: 1.54;
   margin: 0;
 }
 
