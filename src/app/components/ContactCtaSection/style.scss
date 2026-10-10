@@ -90,25 +90,39 @@
   }
 
   .contact-section-container {
-    min-height: clamp(27rem, 56vw, 40rem);
+    min-height: clamp(38rem, 58vw, 48rem);
   }
 }
 
 /* ─── Responsive: mobile ─────────────────────────────────────────────────── */
 @media (max-width: 56.1875rem) {
   .top-black-container {
-    border-bottom-left-radius: 2.2rem;
-    border-bottom-right-radius: 2.2rem;
-    height: 6.1rem;
+    border-bottom-left-radius: clamp(1.8rem, 5vw, 2.2rem);
+    border-bottom-right-radius: clamp(1.8rem, 5vw, 2.2rem);
+    height: clamp(4.8rem, 12vw, 6rem);
   }
 
   .contact-section-container {
-    min-height: clamp(32rem, 138vw, 43rem);
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: clamp(48rem, 170vw, 58rem);
+    padding-bottom: clamp(2.5rem, 6vw, 3.5rem);
+    padding-inline: 0;
+    padding-top: clamp(7.5rem, 18vw, 9.5rem);
   }
 
   .contact-bottom-section {
-    bottom: 2.4rem;
+    bottom: auto;
+    box-sizing: border-box;
+    left: auto;
+    margin-top: auto;
+    position: relative;
+    transform: none;
     width: min(26rem, calc(100% - 1.5rem));
+    z-index: 2;
   }
 
   .contact-bottom-section h2 {
@@ -118,14 +132,45 @@
   }
 
   .contact-bottom-section p {
-    font-size: clamp(1rem, 3.2vw, 1.15rem);
+    font-size: clamp(0.95rem, 3.2vw, 1.15rem);
     line-height: 1.5;
     margin-bottom: 1rem;
     max-width: 100%;
   }
 
   .contact-bottom-section > div:first-of-type {
-    margin-bottom: 1.2rem;
+    margin-bottom: 0;
+  }
+}
+
+/* ─── Responsive: small mobile ───────────────────────────────────────────── */
+@media (max-width: 23.4375rem) {
+  .top-black-container {
+    border-bottom-left-radius: 1.6rem;
+    border-bottom-right-radius: 1.6rem;
+    height: 4.5rem;
+  }
+
+  .contact-section-container {
+    min-height: 46rem;
+    padding-bottom: 2rem;
+    padding-top: clamp(6.8rem, 19vw, 7.5rem);
+  }
+
+  .contact-bottom-section {
+    width: calc(100% - 1rem);
+  }
+
+  .contact-bottom-section h2 {
+    font-size: clamp(1.35rem, 6.8vw, 1.55rem);
+    line-height: 1.14;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-bottom-section p {
+    font-size: clamp(0.88rem, 3.4vw, 0.95rem);
+    line-height: 1.45;
+    margin-bottom: 0.85rem;
   }
 }
 
@@ -262,3 +307,22 @@ a.contact-info-item,
     margin-top: 1.2rem;
   }
 }
+
+@media (max-width: 23.4375rem) {
+  .contact-info-row {
+    gap: 0.85rem;
+    margin-top: 1rem;
+  }
+
+  .contact-info-item {
+    font-size: clamp(0.78rem, 3.4vw, 0.88rem);
+  }
+}
+
+/* ─── Accessibility: Reduced Motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .contact-info-row {
+    opacity: 1;
+  }
+}
+
