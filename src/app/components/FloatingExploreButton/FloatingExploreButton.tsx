@@ -252,7 +252,7 @@ export default function FloatingExploreButton() {
         .join(" ")}
       ref={cardRef}
       type="button"
-      aria-label="Explore and navigate"
+      aria-label={isTopMode ? "Scroll to top" : "Explore and navigate"}
     >
       <span className={styles.exploreLabel} ref={labelRef}>
         Explore

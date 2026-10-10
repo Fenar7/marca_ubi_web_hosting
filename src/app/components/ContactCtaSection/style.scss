@@ -112,16 +112,16 @@
   }
 
   .contact-bottom-section h2 {
-    font-size: clamp(2rem, 10vw, 2.85rem);
+    font-size: clamp(1.48rem, 7.2vw, 2.45rem);
     line-height: 1.12;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
   }
 
   .contact-bottom-section p {
-    font-size: clamp(0.95rem, 3.95vw, 1.125rem);
-    line-height: 1.45;
-    margin-bottom: 1.35rem;
-    max-width: 25rem;
+    font-size: clamp(0.85rem, 3.2vw, 1.05rem);
+    line-height: 1.42;
+    margin-bottom: 1rem;
+    max-width: 100%;
   }
 
   .contact-bottom-section > div:first-of-type {
@@ -166,7 +166,11 @@
 
 a.contact-info-item,
 .contact-info-location-link {
+  align-items: center;
   color: $white;
+  display: inline-flex;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.25rem;
   text-decoration: none;
   transition: opacity 0.2s ease;
 
@@ -236,11 +240,11 @@ a.contact-info-item,
   }
 
   .contact-info-item {
-    font-size: clamp(0.88rem, 3.8vw, 1rem);
+    font-size: clamp(0.82rem, 3.2vw, 0.96rem);
   }
 
   .contact-info-location-line {
-    max-width: 24rem;
+    max-width: 100%;
     text-align: left;
     align-items: flex-start;
 

@@ -2,6 +2,8 @@
   background: linear-gradient(122.459deg, #53595d 2.5892%, #0b0d11 86.828%);
   color: $white;
   isolation: isolate;
+  /* Fallback for browsers lacking svh support */
+  min-height: max(47.5rem, 100vh);
   min-height: max(47.5rem, 100svh);
   overflow: hidden;
   padding: clamp(1.25rem, 5.2vw, 6.25rem);
@@ -322,8 +324,11 @@
   }
 
   .topRightText {
-    font-size: clamp(0.88rem, 4.2vw, 1rem);
-    max-width: 13.5rem;
+    font-size: clamp(0.78rem, 3.4vw, 0.95rem);
+    max-width: min(15.5rem, calc(100% - 1.5rem));
+    white-space: normal;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .topRightLine {
@@ -331,11 +336,13 @@
   }
 
   .title {
-    font-size: clamp(1.95rem, 9vw, 2.65rem);
+    font-size: clamp(1.55rem, 7.8vw, 2.35rem);
   }
 
   .subtitle {
-    max-width: 20.5rem;
+    font-size: clamp(0.88rem, 3.6vw, 1.05rem);
+    line-height: 1.35;
+    max-width: 100%;
   }
 
   .heroButtonWrap {

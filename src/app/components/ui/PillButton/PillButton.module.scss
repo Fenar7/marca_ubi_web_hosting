@@ -95,3 +95,20 @@
     min-width: 0;
   }
 }
+
+@media (max-width: 23.4375rem) {
+  .button {
+    gap: 0.6rem;
+    min-height: 2.85rem;
+    padding: 0.3rem 0.4rem 0.3rem 0.85rem;
+  }
+
+  .label {
+    font-size: clamp(0.82rem, 3.4vw, 0.95rem);
+  }
+
+  .iconWrap {
+    height: 2.2rem;
+    width: 2.2rem;
+  }
+}

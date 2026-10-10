@@ -159,11 +159,15 @@
 }
 
 .work-card-links a {
+  align-items: center;
   color: #e8e8e8;
+  display: inline-flex;
   font-family: $font-sf-pro;
   font-size: clamp(0.95rem, 1.45vw, 2rem);
   font-weight: 400;
   line-height: 1.5;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.5rem;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -246,7 +250,7 @@
   }
 
   .title-section-container h2 {
-    font-size: clamp(1.95rem, 10vw, 3.1rem);
+    font-size: clamp(1.65rem, 8.2vw, 2.9rem);
     line-height: 1.06;
     transform: translateY(-2.4rem);
   }
@@ -269,11 +273,11 @@
   }
 
   .work-card-bottom h4 {
-    font-size: clamp(1.8rem, 10.5vw, 2.9rem);
+    font-size: clamp(1.45rem, 6.8vw, 2.5rem);
   }
 
   .work-card-bottom p {
-    font-size: clamp(0.82rem, 3.7vw, 1rem);
+    font-size: clamp(0.78rem, 3.2vw, 0.95rem);
     line-height: 1.35;
   }
 }

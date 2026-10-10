@@ -132,7 +132,8 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
               color: links[links.length - 1].trim() === "" ? "rgba(255, 255, 255, 0.2)" : "#dc4216", 
               cursor: links[links.length - 1].trim() === "" ? "not-allowed" : "pointer", 
               fontWeight: 500,
-              padding: "0.5rem 0",
+              minHeight: "44px",
+              padding: "0.5rem 0.25rem",
               alignSelf: "flex-start",
               fontSize: "0.95rem",
               fontFamily: "inherit"
