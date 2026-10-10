@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { shouldUseMobileMotion } from "@/app/lib/motion";
+import { prefersReducedMotion, shouldUseMobileMotion } from "@/app/lib/motion";
 import SectionTitleBlock from "../ui/SectionTitleBlock/SectionTitleBlock";
 import styles from "./HowWeWork.module.scss";
 
@@ -81,13 +81,13 @@ export default function HowWeWork() {
     const mobileMotion = shouldUseMobileMotion();
 
     const setFinalValues = () => {
-      gsap.set(tagIcon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "blur(0px)" });
-      gsap.set(tagText, { autoAlpha: 1, x: 0, y: 0, filter: "blur(0px)" });
-      gsap.set(titleLineNodes, { autoAlpha: 1, yPercent: 0, xPercent: 0, rotateX: 0, filter: "blur(0px)" });
-      gsap.set(description, { autoAlpha: 1, y: 0, x: 0, clipPath: "inset(0% 0% 0% 0%)", filter: "blur(0px)" });
+      gsap.set(tagIcon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "none" });
+      gsap.set(tagText, { autoAlpha: 1, x: 0, y: 0, filter: "none" });
+      gsap.set(titleLineNodes, { autoAlpha: 1, yPercent: 0, xPercent: 0, rotateX: 0, filter: "none" });
+      gsap.set(description, { autoAlpha: 1, y: 0, x: 0, clipPath: "inset(0% 0% 0% 0%)", filter: "none" });
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       setFinalValues();
       return;
     }
@@ -95,28 +95,28 @@ export default function HowWeWork() {
     const context = gsap.context(() => {
       gsap.set(tagIcon, {
         autoAlpha: 0,
-        y: 14,
-        rotate: -170,
-        scale: 0.28,
+        y: mobileMotion ? 8 : 14,
+        rotate: mobileMotion ? 0 : -170,
+        scale: mobileMotion ? 0.8 : 0.28,
         transformOrigin: "50% 50%",
-        filter: "blur(5px)",
+        filter: mobileMotion ? "none" : "blur(5px)",
       });
-      gsap.set(tagText, { autoAlpha: 0, y: 16, x: 12, filter: "blur(5px)" });
+      gsap.set(tagText, { autoAlpha: 0, y: mobileMotion ? 8 : 16, x: mobileMotion ? 0 : 12, filter: mobileMotion ? "none" : "blur(5px)" });
       gsap.set(titleLineNodes, {
         autoAlpha: 0,
-        yPercent: 115,
-        xPercent: -7,
-        rotateX: -36,
+        yPercent: mobileMotion ? 25 : 115,
+        xPercent: mobileMotion ? 0 : -7,
+        rotateX: mobileMotion ? 0 : -36,
         transformPerspective: 1100,
         transformOrigin: "50% 100%",
-        filter: "blur(9px)",
+        filter: mobileMotion ? "none" : "blur(9px)",
       });
       gsap.set(description, {
         autoAlpha: 0,
-        y: 24,
-        x: 22,
-        clipPath: "inset(0% 0% 100% 0%)",
-        filter: "blur(6px)",
+        y: mobileMotion ? 12 : 24,
+        x: mobileMotion ? 0 : 22,
+        clipPath: mobileMotion ? "inset(0% 0% 0% 0%)" : "inset(0% 0% 100% 0%)",
+        filter: mobileMotion ? "none" : "blur(6px)",
       });
 
       const tagTimeline = gsap.timeline({
@@ -135,8 +135,8 @@ export default function HowWeWork() {
             y: 0,
             rotate: 0,
             scale: 1,
-            filter: "blur(0px)",
-            duration: 0.78,
+            filter: "none",
+            duration: mobileMotion ? 0.45 : 0.78,
             ease: "expo.out",
           },
           0,
@@ -147,8 +147,8 @@ export default function HowWeWork() {
             autoAlpha: 1,
             x: 0,
             y: 0,
-            filter: "blur(0px)",
-            duration: 0.72,
+            filter: "none",
+            duration: mobileMotion ? 0.45 : 0.72,
             ease: "power3.out",
           },
           0.14,
@@ -178,9 +178,9 @@ export default function HowWeWork() {
             yPercent: 0,
             xPercent: 0,
             rotateX: 0,
-            filter: "blur(0px)",
-            duration: mobileMotion ? 0.86 : 1.06,
-            stagger: 0.15,
+            filter: "none",
+            duration: mobileMotion ? 0.52 : 1.06,
+            stagger: mobileMotion ? 0.08 : 0.15,
             ease: mobileMotion ? "expo.out" : "none",
           },
           0,
@@ -192,30 +192,32 @@ export default function HowWeWork() {
             y: 0,
             x: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            filter: "blur(0px)",
-            duration: mobileMotion ? 0.72 : 0.92,
+            filter: "none",
+            duration: mobileMotion ? 0.48 : 0.92,
             ease: mobileMotion ? "power3.out" : "none",
           },
           mobileMotion ? 0.12 : 0.24,
         );
 
-      const iconAmbient = gsap.to(tagIcon, {
-        y: -2,
-        rotate: 8,
-        duration: 1.8,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-        paused: true,
-      });
+      if (!mobileMotion) {
+        const iconAmbient = gsap.to(tagIcon, {
+          y: -2,
+          rotate: 8,
+          duration: 1.8,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          paused: true,
+        });
 
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top 74%",
-        onEnter: () => iconAmbient.play(),
-        onEnterBack: () => iconAmbient.play(),
-        onLeaveBack: () => iconAmbient.pause(0),
-      });
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 74%",
+          onEnter: () => iconAmbient.play(),
+          onEnterBack: () => iconAmbient.play(),
+          onLeaveBack: () => iconAmbient.pause(0),
+        });
+      }
     }, section);
 
     return () => {
@@ -320,7 +322,7 @@ export default function HowWeWork() {
           rotateZ: 0,
           scale: 1,
           clipPath: "inset(0% 0% 0% 0% round 0rem)",
-          filter: "blur(0px) saturate(1) brightness(1)",
+          filter: "none",
         });
 
         if (image) {
@@ -330,10 +332,10 @@ export default function HowWeWork() {
           gsap.set(shade, { opacity: 1 });
         }
         if (content) {
-          gsap.set(content, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+          gsap.set(content, { autoAlpha: 1, y: 0, filter: "none" });
         }
         if (icon) {
-          gsap.set(icon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "blur(0px)" });
+          gsap.set(icon, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, filter: "none" });
         }
         if (title) {
           gsap.set(title, {
@@ -341,7 +343,7 @@ export default function HowWeWork() {
             y: 0,
             x: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            filter: "blur(0px)",
+            filter: "none",
           });
         }
         if (line) {
@@ -353,13 +355,13 @@ export default function HowWeWork() {
             y: 0,
             x: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            filter: "blur(0px)",
+            filter: "none",
           });
         }
       });
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       setFinalValues();
       return;
     }
@@ -466,7 +468,7 @@ export default function HowWeWork() {
             rotateZ: 0,
             scale: 1,
             clipPath: "inset(0% 0% 0% 0% round 0rem)",
-            filter: "blur(0px) saturate(1) brightness(1)",
+            filter: mobileMotion ? "none" : "blur(0px) saturate(1) brightness(1)",
             duration: mobileMotion ? 0.74 : 1.08,
             ease: mobileMotion ? "power3.out" : "none",
           },
@@ -504,7 +506,7 @@ export default function HowWeWork() {
             {
               autoAlpha: 1,
               y: 0,
-              filter: "blur(0px)",
+              filter: mobileMotion ? "none" : "blur(0px)",
               duration: mobileMotion ? 0.56 : 0.82,
               ease: mobileMotion ? "power2.out" : "none",
             },
@@ -520,7 +522,7 @@ export default function HowWeWork() {
               y: 0,
               rotate: 0,
               scale: 1,
-              filter: "blur(0px)",
+              filter: mobileMotion ? "none" : "blur(0px)",
               duration: mobileMotion ? 0.52 : 0.72,
               ease: mobileMotion ? "back.out(1.6)" : "none",
             },
@@ -536,7 +538,7 @@ export default function HowWeWork() {
               y: 0,
               x: 0,
               clipPath: "inset(0% 0% 0% 0%)",
-              filter: "blur(0px)",
+              filter: mobileMotion ? "none" : "blur(0px)",
               duration: mobileMotion ? 0.56 : 0.86,
               ease: mobileMotion ? "power3.out" : "none",
             },
@@ -565,7 +567,7 @@ export default function HowWeWork() {
               y: 0,
               x: 0,
               clipPath: "inset(0% 0% 0% 0%)",
-              filter: "blur(0px)",
+              filter: mobileMotion ? "none" : "blur(0px)",
               duration: mobileMotion ? 0.58 : 0.9,
               ease: mobileMotion ? "power2.out" : "none",
             },

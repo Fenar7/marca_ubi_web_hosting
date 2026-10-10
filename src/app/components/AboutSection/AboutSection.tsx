@@ -563,19 +563,12 @@ export default function AboutSection() {
         });
 
         const metricsTimeline = gsap.timeline({
-          scrollTrigger: mobileMotion
-            ? {
-              trigger: metricsCards,
-              start: "top 78%",
-              toggleActions: "play none none reverse",
-            }
-            : {
-              trigger: metricsCards,
-              start: "top 86%",
-              end: "top 18%",
-              scrub: 0.92,
-              invalidateOnRefresh: true,
-            },
+          scrollTrigger: {
+            trigger: metricsCards,
+            start: mobileMotion ? "top 82%" : "top 78%",
+            toggleActions: "play none none none",
+            once: true,
+          },
         });
 
         metricsTimeline
@@ -589,9 +582,9 @@ export default function AboutSection() {
               scale: 1,
               filter: "blur(0px)",
               boxShadow: "0 2.2rem 5rem rgba(0, 0, 0, 0.34)",
-              duration: mobileMotion ? 0.72 : 1,
-              stagger: 0.1,
-              ease: mobileMotion ? "power3.out" : "expo.out",
+              duration: mobileMotion ? 0.6 : 0.75,
+              stagger: 0.08,
+              ease: "power3.out",
             },
             0,
           )
@@ -602,11 +595,11 @@ export default function AboutSection() {
               y: 0,
               clipPath: "inset(-50% 0% 0% 0%)",
               filter: "blur(0px)",
-              duration: mobileMotion ? 0.54 : 0.8,
-              stagger: 0.1,
+              duration: mobileMotion ? 0.45 : 0.6,
+              stagger: 0.08,
               ease: "power3.out",
             },
-            mobileMotion ? 0.14 : 0.28,
+            mobileMotion ? 0.1 : 0.18,
           )
           .to(
             metricTitles,
@@ -614,11 +607,11 @@ export default function AboutSection() {
               autoAlpha: 1,
               y: 0,
               filter: "blur(0px)",
-              duration: mobileMotion ? 0.48 : 0.74,
-              stagger: 0.1,
+              duration: mobileMotion ? 0.42 : 0.58,
+              stagger: 0.08,
               ease: "power2.out",
             },
-            mobileMotion ? 0.2 : 0.36,
+            mobileMotion ? 0.15 : 0.24,
           )
           .to(
             metricDescriptions,
@@ -626,11 +619,11 @@ export default function AboutSection() {
               autoAlpha: 1,
               y: 0,
               filter: "blur(0px)",
-              duration: mobileMotion ? 0.5 : 0.72,
-              stagger: 0.1,
+              duration: mobileMotion ? 0.45 : 0.58,
+              stagger: 0.08,
               ease: "power2.out",
             },
-            mobileMotion ? 0.26 : 0.54,
+            mobileMotion ? 0.2 : 0.32,
           )
           .to(
             countTracks,
@@ -639,11 +632,11 @@ export default function AboutSection() {
                 const steps = Number((element as HTMLElement).dataset.steps ?? "1");
                 return -100 * Math.max(steps - 1, 0);
               },
-              duration: mobileMotion ? 0.82 : 1.18,
+              duration: 0.85,
               stagger: 0.08,
-              ease: mobileMotion ? "power2.out" : "expo.inOut",
+              ease: "power2.out",
             },
-            mobileMotion ? 0.34 : 1.04,
+            mobileMotion ? 0.24 : 0.38,
           )
           .to(
             countSuffixes,
@@ -651,11 +644,11 @@ export default function AboutSection() {
               autoAlpha: 1,
               y: 0,
               scale: 1,
-              duration: mobileMotion ? 0.4 : 0.68,
+              duration: 0.42,
               stagger: 0.08,
-              ease: "back.out(2.6)",
+              ease: "back.out(2.2)",
             },
-            mobileMotion ? 0.42 : 1.2,
+            mobileMotion ? 0.32 : 0.5,
           );
       }
     }, section);

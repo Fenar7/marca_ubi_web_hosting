@@ -103,7 +103,7 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    transition: "all 0.2s"
+                    transition: "color 0.2s ease, background-color 0.2s ease"
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.color = "#ff4d4f";

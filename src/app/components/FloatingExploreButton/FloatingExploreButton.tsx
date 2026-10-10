@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { prefersReducedMotion, shouldUseMobileMotion } from "@/app/lib/motion";
 import styles from "./FloatingExploreButton.module.scss";
 
 const exploreLogoImage = "/hero/marca-ubi-logo.png";
@@ -78,13 +79,14 @@ export default function FloatingExploreButton() {
       return;
     }
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = prefersReducedMotion();
+    const mobileMotion = shouldUseMobileMotion();
     let docked = false;
     let topMode = false;
     let lastScrollY = window.scrollY;
     let settleTimeoutId: number | null = null;
-    const driftTo = gsap.quickTo(card, "y", { duration: 0.34, ease: "power2.out" });
-    const tiltTo = gsap.quickTo(card, "rotation", { duration: 0.34, ease: "power2.out" });
+    const driftTo = gsap.quickTo(card, "y", { duration: 0.28, ease: "power2.out" });
+    const tiltTo = gsap.quickTo(card, "rotation", { duration: 0.28, ease: "power2.out" });
 
     const animateDocked = (nextDocked: boolean) => {
       setIsDocked(nextDocked);
@@ -95,13 +97,13 @@ export default function FloatingExploreButton() {
 
       gsap.fromTo(
         card,
-        { y: nextDocked ? 15 : -9, scale: nextDocked ? 0.95 : 1.02, autoAlpha: 0.96 },
+        { y: nextDocked ? 12 : -6, scale: nextDocked ? 0.96 : 1.02, autoAlpha: 0.96 },
         {
           y: 0,
           scale: 1,
           autoAlpha: 1,
-          duration: 0.68,
-          ease: "expo.out",
+          duration: 0.38,
+          ease: "power2.out",
         },
       );
     };
@@ -118,21 +120,21 @@ export default function FloatingExploreButton() {
 
       gsap.to(arrow, {
         rotate: nextTopMode ? -90 : 90,
-        duration: 0.56,
-        ease: "expo.inOut",
+        duration: 0.36,
+        ease: "power2.inOut",
       });
 
       gsap.to(label, {
         autoAlpha: 0,
-        y: -6,
-        duration: 0.16,
+        y: -4,
+        duration: 0.14,
         ease: "power2.in",
         onComplete: () => {
           label.textContent = nextLabel;
           gsap.to(label, {
             autoAlpha: 1,
             y: 0,
-            duration: 0.24,
+            duration: 0.18,
             ease: "power2.out",
           });
         },
@@ -158,9 +160,9 @@ export default function FloatingExploreButton() {
         animateTopMode(nextTopMode);
       }
 
-      if (!reduceMotion) {
-        const drift = Math.max(-5, Math.min(5, -delta * 0.25));
-        const tilt = Math.max(-1.3, Math.min(1.3, delta * 0.08));
+      if (!reduceMotion && !mobileMotion) {
+        const drift = Math.max(-4, Math.min(4, -delta * 0.2));
+        const tilt = Math.max(-1, Math.min(1, delta * 0.06));
         driftTo(drift);
         tiltTo(tilt);
 
@@ -170,7 +172,7 @@ export default function FloatingExploreButton() {
         settleTimeoutId = window.setTimeout(() => {
           driftTo(0);
           tiltTo(0);
-        }, 95);
+        }, 80);
       }
     };
 
@@ -186,7 +188,7 @@ export default function FloatingExploreButton() {
       }
 
       if (topMode) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
         return;
       }
 
@@ -205,20 +207,25 @@ export default function FloatingExploreButton() {
       }
 
       const targetTop = nextSection.getBoundingClientRect().top + window.scrollY - 24;
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: reduceMotion ? "auto" : "smooth" });
     };
 
     gsap.set(arrow, { rotate: 90, transformOrigin: "50% 50%" });
     gsap.fromTo(
       card,
-      { autoAlpha: 0, y: 26, scale: 0.9, filter: "blur(8px)" },
+      {
+        autoAlpha: 0,
+        y: reduceMotion ? 0 : 20,
+        scale: reduceMotion ? 1 : 0.94,
+        filter: reduceMotion || mobileMotion ? "none" : "blur(8px)",
+      },
       {
         autoAlpha: 1,
         y: 0,
         scale: 1,
         filter: "blur(0px)",
-        duration: reduceMotion ? 0.24 : 0.86,
-        ease: "expo.out",
+        duration: reduceMotion ? 0.18 : 0.42,
+        ease: "power2.out",
       },
     );
     updateState();

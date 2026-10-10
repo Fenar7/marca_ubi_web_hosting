@@ -229,6 +229,8 @@
   display: inline-flex;
   align-items: flex-end;
   font-family: $font-sf-pro;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
   font-weight: 300;
   gap: 0.1rem;
   line-height: 0.95;
@@ -238,9 +240,12 @@
 .metricCountViewport {
   color: $white;
   display: inline-flex;
+  font-feature-settings: "tnum" 1;
   font-size: clamp(3rem, 3.5vw, 4.0625rem);
+  font-variant-numeric: tabular-nums;
   height: 1em;
   letter-spacing: -0.02em;
+  min-width: 3.2ch;
   overflow: hidden;
   will-change: transform;
 }
@@ -248,12 +253,16 @@
 .metricCountTrack {
   display: flex;
   flex-direction: column;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
   will-change: transform;
 }
 
 .metricCountStep {
   display: block;
   flex: 0 0 1em;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
   height: 1em;
   line-height: 1;
 }

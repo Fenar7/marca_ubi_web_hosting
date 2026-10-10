@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { prefersReducedMotion, shouldUseMobileMotion } from "@/app/lib/motion";
 import styles from "./Header.module.scss";
 
 const menuItems = [
@@ -44,6 +45,8 @@ export default function Header() {
       return;
     }
 
+    const reduceMotion = prefersReducedMotion();
+
     const context = gsap.context(() => {
       const dispatchMenuEvent = (eventName: string) => {
         window.dispatchEvent(new Event(eventName));
@@ -51,10 +54,10 @@ export default function Header() {
 
       gsap.set(overlay, { autoAlpha: 0, pointerEvents: "none" });
       gsap.set(panel, { autoAlpha: 0 });
-      gsap.set([intro, meta, footer], { autoAlpha: 0, y: 10, force3D: true });
+      gsap.set([intro, meta, footer], { autoAlpha: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 10, force3D: true });
       gsap.set(items, {
-        autoAlpha: 0,
-        y: 20,
+        autoAlpha: reduceMotion ? 1 : 0,
+        y: reduceMotion ? 0 : 20,
         force3D: true,
       });
       gsap.set(hints, { autoAlpha: 1, y: 0, x: 0, force3D: true });
@@ -63,7 +66,7 @@ export default function Header() {
 
       const timeline = gsap.timeline({
         paused: true,
-        defaults: { ease: "power3.out" },
+        defaults: { ease: reduceMotion ? "power1.out" : "power3.out" },
         onStart: () => {
           overlay.classList.add(styles.menuOverlayAnimating);
           panel.classList.add(styles.menuPanelAnimating);
@@ -86,85 +89,131 @@ export default function Header() {
         },
       });
 
-      timeline
-        .to(
-          overlay,
-          {
-            autoAlpha: 1,
-            duration: 0.2,
-            ease: "power1.out",
-          },
-          0,
-        )
-        .to(
-          panel,
-          {
-            autoAlpha: 1,
-            duration: 0.24,
-            ease: "power1.out",
-          },
-          0,
-        )
-        .to(
-          [intro, meta],
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.22,
-            stagger: 0.03,
-          },
-          0.03,
-        )
-        .to(
-          items,
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.28,
-            stagger: 0.022,
-            ease: "power3.out",
-          },
-          0.06,
-        )
-        .to(
-          footer,
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.2,
-          },
-          0.12,
-        )
-        .to(
-          lineTop,
-          {
-            y: 10,
-            rotate: 45,
-            duration: 0.26,
-            ease: "power2.inOut",
-          },
-          0,
-        )
-        .to(
-          lineMid,
-          {
-            autoAlpha: 0,
-            scaleX: 0.2,
-            duration: 0.18,
-            ease: "power2.inOut",
-          },
-          0,
-        )
-        .to(
-          lineBottom,
-          {
-            y: -10,
-            rotate: -45,
-            duration: 0.26,
-            ease: "power2.inOut",
-          },
-          0,
-        );
+      if (reduceMotion) {
+        timeline
+          .to(
+            overlay,
+            {
+              autoAlpha: 1,
+              duration: 0.15,
+            },
+            0,
+          )
+          .to(
+            panel,
+            {
+              autoAlpha: 1,
+              duration: 0.15,
+            },
+            0,
+          )
+          .to(
+            lineTop,
+            {
+              y: 10,
+              rotate: 45,
+              duration: 0.15,
+            },
+            0,
+          )
+          .to(
+            lineMid,
+            {
+              autoAlpha: 0,
+              duration: 0.1,
+            },
+            0,
+          )
+          .to(
+            lineBottom,
+            {
+              y: -10,
+              rotate: -45,
+              duration: 0.15,
+            },
+            0,
+          );
+      } else {
+        timeline
+          .to(
+            overlay,
+            {
+              autoAlpha: 1,
+              duration: 0.2,
+              ease: "power1.out",
+            },
+            0,
+          )
+          .to(
+            panel,
+            {
+              autoAlpha: 1,
+              duration: 0.24,
+              ease: "power1.out",
+            },
+            0,
+          )
+          .to(
+            [intro, meta],
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.22,
+              stagger: 0.03,
+            },
+            0.03,
+          )
+          .to(
+            items,
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.28,
+              stagger: 0.022,
+              ease: "power3.out",
+            },
+            0.06,
+          )
+          .to(
+            footer,
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.2,
+            },
+            0.12,
+          )
+          .to(
+            lineTop,
+            {
+              y: 10,
+              rotate: 45,
+              duration: 0.26,
+              ease: "power2.inOut",
+            },
+            0,
+          )
+          .to(
+            lineMid,
+            {
+              autoAlpha: 0,
+              scaleX: 0.2,
+              duration: 0.18,
+              ease: "power2.inOut",
+            },
+            0,
+          )
+          .to(
+            lineBottom,
+            {
+              y: -10,
+              rotate: -45,
+              duration: 0.26,
+              ease: "power2.inOut",
+            },
+            0,
+          );
+      }
 
       menuTimelineRef.current = timeline;
     }, headerRef);
@@ -211,13 +260,16 @@ export default function Header() {
       previousScrolledState = isScrolled;
       header.classList.toggle(styles.isPinned, isScrolled);
       header.classList.toggle(styles.isScrolled, isScrolled);
+      const reduceMotion = prefersReducedMotion();
+      const mobileMotion = shouldUseMobileMotion();
+
       gsap.to(header, {
         y: isScrolled ? 0 : -2,
         backgroundColor: isScrolled ? "rgba(8, 9, 12, 0.62)" : "rgba(8, 9, 12, 0)",
         borderColor: isScrolled ? "rgba(255, 255, 255, 0.16)" : "rgba(255, 255, 255, 0)",
-        backdropFilter: isScrolled ? "blur(26px)" : "blur(0px)",
-        duration: 0.48,
-        ease: "power3.out",
+        backdropFilter: mobileMotion ? "none" : (isScrolled ? "blur(26px)" : "blur(0px)"),
+        duration: reduceMotion ? 0.05 : 0.32,
+        ease: "power2.out",
       });
     };
 
