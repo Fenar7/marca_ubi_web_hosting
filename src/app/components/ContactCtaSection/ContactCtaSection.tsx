@@ -196,7 +196,7 @@ const ContactCtaSection = () => {
               <span className="contact-info-location-list">
                 <a
                   className="contact-info-location-link"
-                  href="https://maps.app.goo.gl/ajiuHcbjDXow9o59A"
+                  href="https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Kozhikode"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="View Kozhikode office on Google Maps"
@@ -206,7 +206,7 @@ const ContactCtaSection = () => {
                 <span className="contact-info-location-separator" aria-hidden="true">|</span>
                 <a
                   className="contact-info-location-link"
-                  href="https://maps.app.goo.gl/yRPMKhMMBxgv2UmB6"
+                  href="https://www.google.com/maps/search/?api=1&query=Trivandrum%2C+Kerala"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="View Trivandrum office on Google Maps"
