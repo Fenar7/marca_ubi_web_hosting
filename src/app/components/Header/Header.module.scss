@@ -39,11 +39,13 @@
   display: inline-flex;
   flex-direction: column;
   gap: 0.5rem;
-  height: 2.25rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
   justify-content: center;
   padding: 0;
   position: relative;
-  width: 2.5625rem;
+  width: 2.75rem;
+  min-width: 2.75rem;
   z-index: 4;
 }
 
@@ -53,12 +55,13 @@
   display: block;
   height: 0.125rem;
   transform-origin: center;
-  width: 100%;
+  width: 2.2rem;
 }
 
 .logoSection {
+  align-items: center;
   display: inline-flex;
-  height: auto;
+  min-height: 2.75rem;
   position: relative;
   text-decoration: none;
   z-index: 4;
@@ -99,11 +102,13 @@
   border-bottom-right-radius: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
   height: 100dvh;
+  min-height: 100vh;
   min-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: contain;
-  padding: clamp(1rem, 1.8vw, 1.5rem) clamp(1.25rem, 5vw, 6.25rem) clamp(1.15rem, 2vw, 1.7rem);
+  padding: calc(clamp(1rem, 1.8vw, 1.5rem) + env(safe-area-inset-top, 0px)) clamp(1.25rem, 5vw, 6.25rem) calc(clamp(1.15rem, 2vw, 1.7rem) + env(safe-area-inset-bottom, 0px));
   position: relative;
   transform: translateZ(0);
   will-change: opacity;
@@ -151,6 +156,7 @@
   cursor: pointer;
   display: inline-flex;
   gap: 0.75rem;
+  min-height: 2.75rem;
   padding: 0.75rem 1rem;
   transition: border-color 0.24s ease, background-color 0.24s ease, transform 0.24s ease;
 }
@@ -202,7 +208,9 @@
 }
 
 .menuLogoLink {
+  align-items: center;
   display: inline-flex;
+  min-height: 2.75rem;
 }
 
 .menuLogo {
@@ -489,7 +497,14 @@
 
   .hamburgerButton {
     gap: 0.4rem;
-    width: 2.15rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    width: 2.75rem;
+  }
+
+  .burgerLine {
+    width: 1.85rem;
   }
 
   .logoImage {
@@ -502,6 +517,7 @@
 
   .menuCloseButton {
     gap: 0.55rem;
+    min-height: 2.75rem;
     padding: 0.66rem 0.88rem;
   }
 
@@ -550,7 +566,7 @@
   .menuPanel {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    padding: 0.9rem 1rem 1rem;
+    padding: calc(0.9rem + env(safe-area-inset-top, 0px)) 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
   }
 
   .menuTopbar {
@@ -559,6 +575,7 @@
 
   .menuCloseButton {
     gap: 0.5rem;
+    min-height: 2.75rem;
     padding: 0.62rem 0.8rem;
   }
 
@@ -639,6 +656,7 @@
 
   .menuCloseButton {
     gap: 0.44rem;
+    min-height: 2.75rem;
     padding: 0.56rem 0.72rem;
   }
 

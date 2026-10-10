@@ -136,14 +136,14 @@
 
 @media (max-width: 47.9375rem) {
   .exploreCard {
-    bottom: 0.74rem;
+    bottom: calc(0.74rem + env(safe-area-inset-bottom, 0px));
     height: 3.2rem;
     right: 0.55rem;
     width: 9.2rem;
   }
 
   .isDocked {
-    bottom: 0.42rem;
+    bottom: calc(0.42rem + env(safe-area-inset-bottom, 0px));
     right: 0.55rem;
   }
 

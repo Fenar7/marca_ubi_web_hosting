@@ -308,6 +308,7 @@
   .step-item-container {
     border-radius: 0.7rem;
     gap: 1.15rem;
+    grid-template-columns: minmax(0, 1fr);
     min-height: auto;
     padding: 1rem;
   }
@@ -327,16 +328,18 @@
   }
 
   .step-line {
-    height: 5.25rem;
+    align-self: stretch;
+    min-height: 4.5rem;
+    height: auto;
     width: 0.125rem;
   }
 
   .count-container p {
-    font-size: clamp(1.6rem, 8vw, 1.95rem);
+    font-size: clamp(1.35rem, 6.2vw, 1.85rem);
   }
 
   .count-container h5 {
-    font-size: clamp(1.5rem, 8.2vw, 2rem);
+    font-size: clamp(1.25rem, 5.8vw, 1.85rem);
   }
 
   .step-item-container .right-section {
@@ -344,7 +347,7 @@
   }
 
   .step-item-container .right-section p {
-    font-size: clamp(0.95rem, 4.1vw, 1.12rem);
+    font-size: clamp(0.875rem, 3.4vw, 1.05rem);
     line-height: 1.46;
   }
 }
