@@ -95,7 +95,7 @@ export default function FloatingExploreButton() {
 
       gsap.fromTo(
         card,
-        { y: nextDocked ? 20 : -12, scale: nextDocked ? 0.95 : 1.02, autoAlpha: 0.96 },
+        { y: nextDocked ? 15 : -9, scale: nextDocked ? 0.95 : 1.02, autoAlpha: 0.96 },
         {
           y: 0,
           scale: 1,
@@ -211,7 +211,7 @@ export default function FloatingExploreButton() {
     gsap.set(arrow, { rotate: 90, transformOrigin: "50% 50%" });
     gsap.fromTo(
       card,
-      { autoAlpha: 0, y: 34, scale: 0.9, filter: "blur(8px)" },
+      { autoAlpha: 0, y: 26, scale: 0.9, filter: "blur(8px)" },
       {
         autoAlpha: 1,
         y: 0,
