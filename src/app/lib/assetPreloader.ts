@@ -85,6 +85,7 @@ export async function preloadCriticalAssets(timeoutMs = 3800): Promise<void> {
     "/images/ubi.png",
     "/images/marca.png",
     "/hero/primary-arrow.png",
+    "/images/top-right-arrow.png",
   ];
 
   criticalImages.forEach((src) => {
