@@ -19,8 +19,9 @@ $cta-orange: #ff6100;
 $hash-grey: #7c7c7c;
 $light-grey: #2b2b2b;
 
-$font-sf-pro: "SF Pro Display", sans-serif;
-$font-movatif: "Movatif", sans-serif;
+$font-graphik: var(--font-graphik), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-sf-pro: $font-graphik;
+$font-movatif: $font-graphik;
 `,
   },
 };

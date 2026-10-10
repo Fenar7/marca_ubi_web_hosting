@@ -30,7 +30,8 @@
   color: $hash-grey;
   font-family: $font-movatif;
   font-size: clamp(1.6rem, 2vw, 2.25rem);
-  font-weight: 400;
+  font-weight: 500;
+  letter-spacing: 0.05em;
   line-height: 1;
   margin: 0;
 }
@@ -39,7 +40,7 @@
   color: $white;
   font-family: $font-movatif;
   font-size: clamp(2rem, 4vw, 4.0625rem);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.12;
   margin: 0;
@@ -94,7 +95,7 @@
   }
 
   .description {
-    font-size: clamp(0.875rem, 3.4vw, 1.1rem);
-    line-height: 1.48;
+    font-size: clamp(1rem, 3.4vw, 1.1rem);
+    line-height: 1.54;
   }
 }

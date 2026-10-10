@@ -70,15 +70,15 @@
   color: rgba($white, 0.96);
   display: flex;
   font-family: $font-movatif;
-  font-size: clamp(1.3rem, 2vw, 1.9rem);
-  font-weight: 400;
+  font-size: clamp(1.1rem, 1.6vw, 1.65rem);
+  font-weight: 500;
   flex-wrap: nowrap;
   white-space: nowrap;
   gap: 0.08em 0.28em;
-  letter-spacing: 0;
+  letter-spacing: 0.06em;
   line-height: 1;
   margin: 0;
-  max-width: 32rem;
+  max-width: min(36rem, 100%);
   text-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.1);
   text-align: right;
   will-change: transform, opacity;
@@ -111,18 +111,18 @@
   display: grid;
   font-family: $font-movatif;
   font-size: clamp(2.3rem, 5vw, 4.0625rem);
-  font-weight: 400;
+  font-weight: 600;
   gap: 0.02em;
-  letter-spacing: -0.01em;
-  line-height: 1.04;
+  letter-spacing: -0.015em;
+  line-height: 1.14;
   margin: 0;
 }
 
 .titleLineMask {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
+  padding: 0.06em 0 0.16em 0;
+  margin: -0.06em 0 -0.16em 0;
 }
 
 .titleLine {
@@ -141,9 +141,9 @@
 .subtitle {
   color: #e8e8e8;
   font-family: $font-sf-pro;
-  font-size: clamp(1rem, 1.55vw, 1.5rem);
+  font-size: clamp(1rem, 1.4vw, 1.35rem);
   font-weight: 400;
-  line-height: 1.16;
+  line-height: 1.52;
   margin: clamp(1.25rem, 1.9vw, 2.1875rem) 0 0;
   max-width: 33.8125rem;
 }
@@ -284,7 +284,7 @@
 
   .subtitle {
     font-size: clamp(0.96rem, 3vw, 1.2rem);
-    line-height: 1.24;
+    line-height: 1.48;
     max-width: 24rem;
   }
 
@@ -341,7 +341,7 @@
 
   .subtitle {
     font-size: clamp(0.88rem, 3.6vw, 1.05rem);
-    line-height: 1.35;
+    line-height: 1.46;
     max-width: 100%;
   }
 

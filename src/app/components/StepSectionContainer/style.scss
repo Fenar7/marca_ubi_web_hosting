@@ -235,7 +235,7 @@
   color: $white;
   font-family: $font-movatif;
   font-size: clamp(2rem, 2.6vw, 2.875rem);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.06;
   margin: 0;
 }
@@ -347,7 +347,7 @@
   }
 
   .step-item-container .right-section p {
-    font-size: clamp(0.875rem, 3.4vw, 1.05rem);
-    line-height: 1.46;
+    font-size: clamp(1rem, 3.4vw, 1.05rem);
+    line-height: 1.54;
   }
 }

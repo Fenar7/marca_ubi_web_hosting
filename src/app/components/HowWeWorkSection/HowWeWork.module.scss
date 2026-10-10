@@ -160,7 +160,7 @@
   color: $white;
   font-family: $font-movatif;
   font-size: clamp(1.8rem, 2.5vw, 2.6875rem);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.03;
   margin: 0;
   will-change: transform, opacity;
@@ -253,8 +253,8 @@
   }
 
   .cardBody {
-    font-size: clamp(0.93rem, 3.7vw, 1.15rem);
-    line-height: 1.46;
+    font-size: clamp(1rem, 3.7vw, 1.15rem);
+    line-height: 1.52;
   }
 
   .titleLine {
