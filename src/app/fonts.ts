@@ -3,6 +3,16 @@ import localFont from "next/font/local";
 export const graphik = localFont({
   src: [
     {
+      path: "../../public/fonts/grphik-font-family/Graphik-Thin.ttf",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/grphik-font-family/Graphik-Extralight.ttf",
+      weight: "200",
+      style: "normal",
+    },
+    {
       path: "../../public/fonts/grphik-font-family/Graphik-Light.ttf",
       weight: "300",
       style: "normal",

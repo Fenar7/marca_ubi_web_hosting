@@ -71,7 +71,7 @@
   display: flex;
   font-family: $font-movatif;
   font-size: clamp(1.1rem, 1.6vw, 1.65rem);
-  font-weight: 500;
+  font-weight: 300;
   flex-wrap: nowrap;
   white-space: nowrap;
   gap: 0.08em 0.28em;
@@ -111,7 +111,7 @@
   display: grid;
   font-family: $font-movatif;
   font-size: clamp(2.3rem, 5vw, 4.0625rem);
-  font-weight: 500;
+  font-weight: 300;
   gap: 0.02em;
   letter-spacing: -0.015em;
   line-height: 1.14;
