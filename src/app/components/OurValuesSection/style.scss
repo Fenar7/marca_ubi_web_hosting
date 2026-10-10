@@ -93,11 +93,11 @@
 .title-left-section h2 {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(2rem, 3.35vw, 3.65rem);
+  font-size: $type-h2;
   font-style: normal;
   font-weight: 300;
   letter-spacing: -0.015em;
-  line-height: 1.12;
+  line-height: $lh-heading;
   margin: 0;
 }
 
@@ -126,7 +126,7 @@
   font-family: $font-sf-pro;
   font-size: clamp(1rem, 1.35vw, 1.5rem);
   font-weight: 300;
-  line-height: 1.58;
+  line-height: $lh-body;
   margin: 0;
   max-width: 47.8125rem;
 }
@@ -161,13 +161,15 @@
   width: min(14.3125rem, 100%);
 }
 
+.values-feature-item .values-item-title,
+.values-feature-item h3,
 .values-feature-item h6 {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(1.4rem, 1.8vw, 1.875rem);
+  font-size: $type-h3;
   font-style: normal;
   font-weight: 300;
-  line-height: 1.25;
+  line-height: $lh-subheading;
   margin: 0 0 clamp(0.5rem, 0.75vw, 0.75rem);
 }
 
@@ -177,7 +179,7 @@
   font-size: clamp(1rem, 1.16vw, 1.3125rem);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.54;
+  line-height: $lh-body;
   margin: 0;
 }
 
@@ -236,7 +238,7 @@
 
   .title-description {
     font-size: clamp(0.95rem, 3.95vw, 1.14rem);
-    line-height: 1.48;
+    line-height: $lh-body;
   }
 
   .bottom-feature-cards-container {
@@ -256,13 +258,14 @@
     width: 100%;
   }
 
+  .values-feature-item .values-item-title,
+  .values-feature-item h3,
   .values-feature-item h6 {
-    font-size: clamp(1.2rem, 5vw, 1.65rem);
     margin-bottom: 0.4rem;
   }
 
   .values-feature-item p {
     font-size: clamp(0.875rem, 3.2vw, 1.05rem);
-    line-height: 1.46;
+    line-height: $lh-body;
   }
 }

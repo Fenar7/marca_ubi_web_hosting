@@ -20,11 +20,11 @@
 .title-section-container h2 {
   color: transparent;
   font-family: $font-movatif;
-  font-size: clamp(2.3rem, 4.75vw, 5.6875rem);
+  font-size: $type-display-giant;
   font-style: normal;
   font-weight: 300;
   letter-spacing: 0.05em;
-  line-height: 1;
+  line-height: $lh-heading;
   margin: 0;
   text-align: center;
   text-transform: uppercase;
@@ -191,13 +191,15 @@
   z-index: 2;
 }
 
+.work-card-bottom .work-card-title,
+.work-card-bottom h3,
 .work-card-bottom h4 {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(2.1rem, 6.6vw, 5.25rem);
+  font-size: $type-display;
   font-weight: 300;
   letter-spacing: -0.01em;
-  line-height: 1;
+  line-height: $lh-heading;
   margin: 0;
 }
 
@@ -207,7 +209,7 @@
   font-size: clamp(0.95rem, 1.7vw, 1.5rem);
   font-weight: 400;
   letter-spacing: 0.06em;
-  line-height: 1.58;
+  line-height: $lh-body;
   margin: 0;
   text-transform: uppercase;
 }
@@ -254,7 +256,7 @@
 
   .title-section-container h2 {
     font-size: clamp(1.65rem, 8.2vw, 2.9rem);
-    line-height: 1.06;
+    line-height: $lh-heading;
     transform: translateY(-2.4rem);
   }
 
@@ -276,13 +278,16 @@
     width: 100%;
   }
 
+  .work-card-bottom .work-card-title,
+  .work-card-bottom h3,
   .work-card-bottom h4 {
     font-size: clamp(1.45rem, 6.8vw, 2.5rem);
+    line-height: $lh-heading;
   }
 
   .work-card-bottom p {
     font-size: clamp(0.92rem, 3.2vw, 1rem);
     letter-spacing: 0.05em;
-    line-height: 1.5;
+    line-height: $lh-body;
   }
 }

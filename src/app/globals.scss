@@ -4,6 +4,28 @@
   --background: #{$white};
   --foreground: #{$black};
   --font-graphik: #{$font-graphik};
+
+  /* Fluid Typography Scale */
+  --type-display-giant: clamp(2.25rem, 5.5vw + 0.9rem, 5rem);
+  --type-display: clamp(2rem, 4.5vw + 0.9rem, 4.25rem);
+  --type-h2: clamp(1.5rem, 3.8vw + 0.55rem, 3.5rem);
+  --type-h3: clamp(1.25rem, 2.2vw + 0.7rem, 2.375rem);
+  --type-h4: clamp(1.125rem, 1.4vw + 0.78rem, 1.75rem);
+  --type-tag: clamp(1.2rem, 1.8vw + 0.75rem, 2rem);
+  --type-stat-number: clamp(2.25rem, 4.2vw + 1.2rem, 4.0625rem);
+  --type-stat-symbol: clamp(1.25rem, 2vw + 0.75rem, 2.25rem);
+  --type-body-lead: clamp(1rem, 0.8vw + 0.8rem, 1.375rem);
+  --type-body: clamp(0.9375rem, 0.3vw + 0.86rem, 1rem);
+  --type-caption: clamp(0.8125rem, 0.25vw + 0.75rem, 0.875rem);
+  --type-micro: 0.75rem;
+
+  /* Standard Line-Heights */
+  --lh-tight: 1.0;
+  --lh-heading: 1.12;
+  --lh-subheading: 1.2;
+  --lh-body-lead: 1.55;
+  --lh-body: 1.5;
+  --lh-caption: 1.4;
 }
 
 @theme inline {
@@ -81,3 +103,61 @@ a, button, [role='button'], input, textarea, select, label, summary, [data-curso
   font-family: var(--font-graphik);
   font-weight: 400;
 }
+
+/* ─── Standard Typography Scale Utility Classes ──────────────────────── */
+.type-display-giant {
+  font-size: var(--type-display-giant);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+}
+
+.type-display {
+  font-size: var(--type-display);
+  line-height: var(--lh-heading);
+  letter-spacing: -0.015em;
+}
+
+.type-h2 {
+  font-size: var(--type-h2);
+  line-height: var(--lh-heading);
+  letter-spacing: -0.015em;
+}
+
+.type-h3 {
+  font-size: var(--type-h3);
+  line-height: var(--lh-subheading);
+  letter-spacing: -0.01em;
+}
+
+.type-h4 {
+  font-size: var(--type-h4);
+  line-height: var(--lh-subheading);
+}
+
+.type-tag {
+  font-size: var(--type-tag);
+  line-height: var(--lh-tight);
+  letter-spacing: 0.05em;
+}
+
+.type-stat-number {
+  font-size: var(--type-stat-number);
+  line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.type-body-lead {
+  font-size: var(--type-body-lead);
+  line-height: var(--lh-body-lead);
+}
+
+.type-body {
+  font-size: var(--type-body);
+  line-height: var(--lh-body);
+}
+
+.type-caption {
+  font-size: var(--type-caption);
+  line-height: var(--lh-caption);
+}

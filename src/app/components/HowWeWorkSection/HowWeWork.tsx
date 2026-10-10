@@ -669,14 +669,14 @@ export default function HowWeWork() {
                     cardIconRefs.current[index] = element;
                   }}
                 />
-                <h4
+                <h3
                   className={styles.cardHeading}
                   ref={(element) => {
                     cardTitleRefs.current[index] = element;
                   }}
                 >
                   {card.title}
-                </h4>
+                </h3>
                 <span
                   className={styles.titleLine}
                   aria-hidden="true"

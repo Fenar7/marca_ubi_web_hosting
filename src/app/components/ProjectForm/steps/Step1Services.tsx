@@ -220,7 +220,7 @@ export default function Step1Services({ formData, updateFormData, nextStep }: St
             <div className={styles.cardIcon}>
               {serviceIcons[service] || <SparkleIcon />}
             </div>
-            <h3>{service}</h3>
+            <span className={styles.serviceName}>{service}</span>
           </button>
         ))}
       </div>

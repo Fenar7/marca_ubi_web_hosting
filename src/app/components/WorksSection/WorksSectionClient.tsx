@@ -258,7 +258,7 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
                                 )}
 
                                 <div className="work-card-bottom">
-                                    <h4>{work.title}</h4>
+                                    <h3 className="work-card-title">{work.title}</h3>
                                     <p>{work.subtext}</p>
                                 </div>
                             </article>

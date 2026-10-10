@@ -1026,14 +1026,14 @@ export default function AboutSection() {
                           </span>
                         ) : null}
                       </p>
-                      <h4
+                      <h3
                         className={styles.metricTitle}
                         ref={(element) => {
                           metricTitleRefs.current[index] = element;
                         }}
                       >
                         {renderMetricTitle(metric.title)}
-                      </h4>
+                      </h3>
                     </div>
 
                     <p

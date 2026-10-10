@@ -157,7 +157,7 @@ export default function Step3Details({ formData, updateFormData, nextStep, prevS
                 {timelineIcons[tl]}
               </div>
               <div className={styles.textContent}>
-                <h3>{tl.split(" (")[0]}</h3>
+                <span className={styles.timelineName}>{tl.split(" (")[0]}</span>
                 {tl.includes("(") && <p>{tl.substring(tl.indexOf("("))}</p>}
                 {tl.includes("Not sure") && <p>I'd like to chat with my Brand experience consultant</p>}
               </div>

@@ -33,7 +33,7 @@ const Footer = () => {
         </div>
 
         <div className="footer-middle-section">
-          <h5 data-node-id="558:1270">Quick Links</h5>
+          <p className="footer-links-title" data-node-id="558:1270">Quick Links</p>
           <nav className="footer-links-list" aria-label="Footer quick links" data-node-id="558:1271">
             {quickLinks.map((link) => (
               <Link key={link.label} href={link.href}>

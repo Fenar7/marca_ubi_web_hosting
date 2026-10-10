@@ -554,8 +554,8 @@ export default function StepSectionContainer() {
               <div className="left-section">
                 <span className="step-line" aria-hidden="true" />
                 <div className="count-container">
-                  <p>{step.number}</p>
-                  <h5>{step.title}</h5>
+                  <p className="step-number">{step.number}</p>
+                  <h3 className="step-item-title">{step.title}</h3>
                 </div>
               </div>
 

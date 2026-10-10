@@ -275,7 +275,7 @@
 
   .title {
     font-size: clamp(2rem, 7vw, 3.15rem);
-    line-height: 1.06;
+    line-height: $lh-heading;
   }
 
   .divider {
