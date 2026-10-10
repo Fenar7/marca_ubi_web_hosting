@@ -5,7 +5,7 @@ import Footer from "@/app/components/Footer/Footer";
 
 export default function StartProjectPage() {
   return (
-    <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "var(--color-light-grey)" }}>
+    <main id="start-project" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "var(--color-light-grey)" }}>
       <Header />
       <div style={{ flex: 1, padding: "8rem 2rem 4rem 2rem" }}>
         <ProjectForm />

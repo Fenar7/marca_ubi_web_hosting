@@ -21,6 +21,12 @@
   gap: clamp(0.8rem, 1.1vw, 1.125rem);
 }
 
+.footer-logo-link {
+  display: inline-block;
+  text-decoration: none;
+  width: fit-content;
+}
+
 .footer-logo {
   display: block;
   height: auto;
@@ -121,6 +127,11 @@
 .footer-contact-btn:hover {
   background: #ff7d2f;
   transform: translateY(-1px);
+}
+
+.footer-contact-btn:focus-visible {
+  outline: 2px solid $white;
+  outline-offset: 3px;
 }
 
 .footer-contact-label {

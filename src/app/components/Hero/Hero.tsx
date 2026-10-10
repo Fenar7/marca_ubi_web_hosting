@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { gsap } from "gsap";
 import { shouldUseMobileMotion } from "@/app/lib/motion";
 import PillButton from "../ui/PillButton/PillButton";
@@ -29,9 +30,10 @@ export default function Hero() {
   const ubiLogoRef = useRef<HTMLImageElement | null>(null);
   const marcaLogoRef = useRef<HTMLImageElement | null>(null);
   const backgroundLayerRef = useRef<HTMLDivElement | null>(null);
-  const heroImageRef = useRef<HTMLImageElement | null>(null);
+  const heroMotionWrapRef = useRef<HTMLDivElement | null>(null);
   const gradientOverlayRef = useRef<HTMLDivElement | null>(null);
 
+  // Hook 1: Typography and Content entrance
   useLayoutEffect(() => {
     const content = contentRef.current;
     const divider = dividerRef.current;
@@ -56,6 +58,9 @@ export default function Hero() {
     let frameId: number | null = null;
     let fallbackId: number | null = null;
     const loaderElement = document.querySelector<HTMLElement>("[data-initial-loader]");
+    const isLoaderAlreadyDone =
+      document.documentElement.getAttribute("data-loader-complete") === "true" ||
+      Boolean((window as Window & { __initialLoaderComplete?: boolean }).__initialLoaderComplete);
 
     const context = gsap.context(() => {
       gsap.set(content, { autoAlpha: 0 });
@@ -168,18 +173,21 @@ export default function Hero() {
       timeline.play(0);
     };
 
-    const onLoaderComplete = () => {
+    const onLoaderTrigger = () => {
       playIntro();
-      window.removeEventListener("initial-loader:complete", onLoaderComplete);
+      window.removeEventListener("initial-loader:lift", onLoaderTrigger);
+      window.removeEventListener("initial-loader:complete", onLoaderTrigger);
     };
 
-    window.addEventListener("initial-loader:complete", onLoaderComplete);
+    // Trigger immediately upon curtain lift for fluid synchronization
+    window.addEventListener("initial-loader:lift", onLoaderTrigger);
+    window.addEventListener("initial-loader:complete", onLoaderTrigger);
 
-    if (!loaderElement) {
+    if (!loaderElement || isLoaderAlreadyDone) {
       frameId = window.requestAnimationFrame(playIntro);
     }
 
-    fallbackId = window.setTimeout(playIntro, 4500);
+    fallbackId = window.setTimeout(playIntro, 4000);
 
     return () => {
       if (frameId !== null) {
@@ -188,35 +196,37 @@ export default function Hero() {
       if (fallbackId !== null) {
         window.clearTimeout(fallbackId);
       }
-      window.removeEventListener("initial-loader:complete", onLoaderComplete);
+      window.removeEventListener("initial-loader:lift", onLoaderTrigger);
+      window.removeEventListener("initial-loader:complete", onLoaderTrigger);
       timeline.kill();
       context.revert();
     };
   }, []);
 
+  // Hook 2: 3D Background layer entrance and fluid scroll responsiveness
   useLayoutEffect(() => {
     const heroSection = heroSectionRef.current;
     const backgroundLayer = backgroundLayerRef.current;
-    const heroImage = heroImageRef.current;
+    const heroMotionWrap = heroMotionWrapRef.current;
     const overlay = gradientOverlayRef.current;
 
-    if (!heroSection || !backgroundLayer || !heroImage || !overlay) {
+    if (!heroSection || !backgroundLayer || !heroMotionWrap || !overlay) {
       return;
     }
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileMotion = shouldUseMobileMotion();
     const loaderElement = document.querySelector<HTMLElement>("[data-initial-loader]");
+    const isLoaderAlreadyDone =
+      document.documentElement.getAttribute("data-loader-complete") === "true" ||
+      Boolean((window as Window & { __initialLoaderComplete?: boolean }).__initialLoaderComplete);
 
     let introPlayed = false;
     let introFinished = false;
-    let scrollFrameId: number | null = null;
     let startFrameId: number | null = null;
     let fallbackId: number | null = null;
-    const scrollLerp = reduceMotion ? 0.24 : mobileMotion ? 0.18 : 0.2;
+    let scrollTicking = false;
     const scrollRange = Math.max(window.innerHeight * 0.46, 260);
-    let targetProgress = Math.min(window.scrollY / scrollRange, 1);
-    let currentProgress = targetProgress;
 
     const applyScrollMotion = (progress: number) => {
       if (mobileMotion) {
@@ -225,7 +235,7 @@ export default function Hero() {
           y: progress * 10,
           force3D: true,
         });
-        gsap.set(heroImage, {
+        gsap.set(heroMotionWrap, {
           xPercent: -50,
           scale: 1 + progress * 0.08,
           y: progress * 38,
@@ -242,7 +252,7 @@ export default function Hero() {
         y: progress * (reduceMotion ? 10 : 46),
         force3D: true,
       });
-      gsap.set(heroImage, {
+      gsap.set(heroMotionWrap, {
         xPercent: -50,
         scale: 1 + progress * (reduceMotion ? 0.06 : 0.32),
         y: progress * (reduceMotion ? 14 : 92),
@@ -253,29 +263,17 @@ export default function Hero() {
       gsap.set(overlay, { opacity: 1 - progress * (reduceMotion ? 0.05 : 0.28) });
     };
 
-    const tickScrollMotion = () => {
-      scrollFrameId = null;
-      if (!introFinished) {
+    const handleScroll = () => {
+      if (!introFinished || scrollTicking) {
         return;
       }
-
-      currentProgress += (targetProgress - currentProgress) * scrollLerp;
-      if (Math.abs(targetProgress - currentProgress) < 0.0012) {
-        currentProgress = targetProgress;
-      }
-
-      applyScrollMotion(currentProgress);
-      if (currentProgress !== targetProgress) {
-        scrollFrameId = window.requestAnimationFrame(tickScrollMotion);
-      }
-    };
-
-    const queueScrollMotion = () => {
-      targetProgress = Math.min(window.scrollY / scrollRange, 1);
-      if (!introFinished || scrollFrameId !== null) {
-        return;
-      }
-      scrollFrameId = window.requestAnimationFrame(tickScrollMotion);
+      scrollTicking = true;
+      window.requestAnimationFrame(() => {
+        scrollTicking = false;
+        if (!introFinished) return;
+        const progress = Math.min(window.scrollY / scrollRange, 1);
+        applyScrollMotion(progress);
+      });
     };
 
     const context = gsap.context(() => {
@@ -285,17 +283,13 @@ export default function Hero() {
         y: reduceMotion ? -6 : mobileMotion ? -6 : -18,
         transformOrigin: "50% 50%",
       });
-      gsap.set(heroImage, {
+      gsap.set(heroMotionWrap, {
         xPercent: -50,
         scale: reduceMotion ? 1.06 : mobileMotion ? 1.08 : 1.22,
         y: reduceMotion ? -8 : mobileMotion ? -10 : -24,
         rotationX: reduceMotion ? 1.2 : mobileMotion ? 0 : 3.6,
         rotationY: reduceMotion ? -0.8 : mobileMotion ? 0 : -2.6,
         transformOrigin: "50% 50% -60px",
-        filter:
-          reduceMotion || mobileMotion
-            ? "brightness(1.02) saturate(1.02)"
-            : "brightness(1.1) saturate(1.08)",
       });
       gsap.set(overlay, { opacity: reduceMotion ? 0.93 : mobileMotion ? 0.94 : 0.84 });
     }, heroSection);
@@ -304,8 +298,22 @@ export default function Hero() {
       paused: true,
       onComplete: () => {
         introFinished = true;
-        currentProgress = targetProgress;
-        applyScrollMotion(currentProgress);
+        const targetScrollProgress = Math.min(window.scrollY / scrollRange, 1);
+        if (targetScrollProgress > 0) {
+          gsap.to(
+            { p: 0 },
+            {
+              p: targetScrollProgress,
+              duration: 0.4,
+              ease: "power2.out",
+              onUpdate: function () {
+                applyScrollMotion(this.targets()[0].p);
+              },
+            },
+          );
+        } else {
+          applyScrollMotion(0);
+        }
       },
     });
 
@@ -315,20 +323,19 @@ export default function Hero() {
         {
           scale: 1,
           y: 0,
-          duration: reduceMotion ? 0.92 : mobileMotion ? 1.2 : 2.05,
+          duration: reduceMotion ? 0.92 : mobileMotion ? 1.2 : 1.95,
           ease: "expo.out",
         },
         0,
       )
       .to(
-        heroImage,
+        heroMotionWrap,
         {
           xPercent: -50,
           scale: 1,
           y: 0,
           rotationX: 0,
           rotationY: 0,
-          filter: mobileMotion ? "brightness(1.01) saturate(1.01)" : "brightness(1) saturate(1)",
           duration: reduceMotion ? 0.9 : mobileMotion ? 1.12 : 1.95,
           ease: "expo.out",
         },
@@ -352,39 +359,40 @@ export default function Hero() {
       introTimeline.play(0);
     };
 
-    const onLoaderComplete = () => {
+    const onLoaderTrigger = () => {
       playIntro();
-      window.removeEventListener("initial-loader:complete", onLoaderComplete);
+      window.removeEventListener("initial-loader:lift", onLoaderTrigger);
+      window.removeEventListener("initial-loader:complete", onLoaderTrigger);
     };
 
-    window.addEventListener("initial-loader:complete", onLoaderComplete);
-    window.addEventListener("scroll", queueScrollMotion, { passive: true });
-    window.addEventListener("resize", queueScrollMotion);
+    window.addEventListener("initial-loader:lift", onLoaderTrigger);
+    window.addEventListener("initial-loader:complete", onLoaderTrigger);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
 
-    if (!loaderElement) {
+    if (!loaderElement || isLoaderAlreadyDone) {
       startFrameId = window.requestAnimationFrame(playIntro);
     }
 
-    fallbackId = window.setTimeout(playIntro, 4500);
+    fallbackId = window.setTimeout(playIntro, 4000);
 
     return () => {
-      if (scrollFrameId !== null) {
-        window.cancelAnimationFrame(scrollFrameId);
-      }
       if (startFrameId !== null) {
         window.cancelAnimationFrame(startFrameId);
       }
       if (fallbackId !== null) {
         window.clearTimeout(fallbackId);
       }
-      window.removeEventListener("initial-loader:complete", onLoaderComplete);
-      window.removeEventListener("scroll", queueScrollMotion);
-      window.removeEventListener("resize", queueScrollMotion);
+      window.removeEventListener("initial-loader:lift", onLoaderTrigger);
+      window.removeEventListener("initial-loader:complete", onLoaderTrigger);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
       introTimeline.kill();
       context.revert();
     };
   }, []);
 
+  // Hook 3: Logo Switcher interactive hover
   useLayoutEffect(() => {
     const logoSwitcher = logoSwitcherRef.current;
     const ubiLogo = ubiLogoRef.current;
@@ -444,9 +452,21 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className={styles.heroSection} data-node-id="491:896" ref={heroSectionRef}>
+    <section className={styles.heroSection} data-node-id="491:896" id="home" ref={heroSectionRef}>
       <div className={styles.backgroundLayer} ref={backgroundLayerRef} aria-hidden="true">
-        <img className={styles.heroImage} ref={heroImageRef} src={heroBackgroundImage} alt="" fetchPriority="high" decoding="async" />
+        <div className={styles.heroMotionWrap} ref={heroMotionWrapRef}>
+          <Image
+            src={heroBackgroundImage}
+            alt=""
+            fill
+            priority
+            quality={82}
+            sizes="100vw"
+            className={styles.heroImageNext}
+            data-hero-bg-image=""
+            style={{ objectFit: "cover", objectPosition: "center" }}
+          />
+        </div>
         <div className={styles.gradientOverlay} ref={gradientOverlayRef} />
       </div>
 

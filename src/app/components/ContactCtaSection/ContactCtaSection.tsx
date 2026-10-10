@@ -185,12 +185,7 @@ const ContactCtaSection = () => {
               </a>
             </div>
 
-            <a
-              className="contact-info-item contact-info-location-line"
-              href="https://maps.google.com/?q=Dubai,UAE"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <div className="contact-info-item contact-info-location-line">
               <span className="contact-info-icon" aria-hidden="true">
                 {/* Location */}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -199,15 +194,27 @@ const ContactCtaSection = () => {
                 </svg>
               </span>
               <span className="contact-info-location-list">
-                Bangalore <span className="contact-info-location-separator">|</span> Kochi{" "}
-                <span className="contact-info-location-separator">|</span> Trivandrum{" "}
-                <span className="contact-info-location-separator">|</span> Dubai{" "}
-                <span className="contact-info-location-separator">|</span> Saudi Arabia{" "}
-                <span className="contact-info-location-separator">|</span> Qatar{" "}
-                <span className="contact-info-location-separator">|</span> Bahrain{" "}
-                <span className="contact-info-location-separator">|</span> UK
+                <a
+                  className="contact-info-location-link"
+                  href="https://maps.app.goo.gl/ajiuHcbjDXow9o59A"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View Kozhikode office on Google Maps"
+                >
+                  Kozhikode
+                </a>
+                <span className="contact-info-location-separator" aria-hidden="true">|</span>
+                <a
+                  className="contact-info-location-link"
+                  href="https://maps.app.goo.gl/yRPMKhMMBxgv2UmB6"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View Trivandrum office on Google Maps"
+                >
+                  Trivandrum
+                </a>
               </span>
-            </a>
+            </div>
           </div>
         </div>
       </div>

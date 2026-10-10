@@ -2,14 +2,16 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { preloadCriticalAssets } from "@/app/lib/assetPreloader";
 import styles from "./InitialLoader.module.scss";
 
 const conceptWords = ["Design", "Art", "Architecture", "Brand architecture"];
-const LOADING_SECONDS = 3;
 const WORD_SHIFT_DURATION = 0.42;
 const FIRST_SHIFT_AT = 0.8;
 const SECOND_SHIFT_AT = 1.5;
 const THIRD_SHIFT_AT = 2.2;
+const MIN_BRAND_TIME_MS = 2200;
+const SESSION_STORAGE_KEY = "marca_ubi_initial_loader_shown";
 
 export default function InitialLoader() {
   const [isVisible, setIsVisible] = useState(true);
@@ -31,12 +33,38 @@ export default function InitialLoader() {
       return;
     }
 
+    let isAlreadyShown = false;
+    try {
+      isAlreadyShown = window.sessionStorage.getItem(SESSION_STORAGE_KEY) === "true";
+    } catch {
+      isAlreadyShown = false;
+    }
+
+    if (isAlreadyShown) {
+      loader.style.display = "none";
+      document.documentElement.setAttribute("data-loader-complete", "true");
+      (window as Window & { __initialLoaderComplete?: boolean }).__initialLoaderComplete = true;
+      gsap.set(appShell, { clearProps: "opacity,visibility" });
+      document.body.classList.remove(styles.loadingLocked);
+      window.dispatchEvent(new Event("initial-loader:lift"));
+      window.dispatchEvent(new Event("initial-loader:complete"));
+      setIsVisible(false);
+      return;
+    }
+
+    let isCancelled = false;
     document.body.classList.add(styles.loadingLocked);
 
     const finish = () => {
+      if (isCancelled) return;
       document.documentElement.setAttribute("data-loader-complete", "true");
       (window as Window & { __initialLoaderComplete?: boolean }).__initialLoaderComplete = true;
-      gsap.set(appShell, { clearProps: "transform,filter,opacity,visibility" });
+      try {
+        window.sessionStorage.setItem(SESSION_STORAGE_KEY, "true");
+      } catch {
+        // Safe fallback for restricted storage environments
+      }
+      gsap.set(appShell, { clearProps: "opacity,visibility" });
       document.body.classList.remove(styles.loadingLocked);
       window.dispatchEvent(new Event("initial-loader:complete"));
       setIsVisible(false);
@@ -45,7 +73,7 @@ export default function InitialLoader() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       gsap.set(logoFill, { clipPath: "inset(0 0% 0 0)" });
       gsap.set(wordsTrack, { yPercent: -200 });
-      gsap.set(appShell, { autoAlpha: 0, y: 0, filter: "blur(0px)", scale: 1 });
+      gsap.set(appShell, { autoAlpha: 0 });
 
       const reducedTimeline = gsap.timeline({
         defaults: { ease: "power1.out" },
@@ -53,24 +81,25 @@ export default function InitialLoader() {
       });
 
       reducedTimeline
-        .to(progress, { scaleX: 1, duration: 1.1 }, 0)
-        .to(loader, { autoAlpha: 0, duration: 0.42 }, 0.92)
-        .to(appShell, { autoAlpha: 1, duration: 0.5 }, 1.02);
+        .to(progress, { scaleX: 1, duration: 0.8 }, 0)
+        .add(() => {
+          window.dispatchEvent(new Event("initial-loader:lift"));
+        }, 0.6)
+        .to(loader, { autoAlpha: 0, duration: 0.35 }, 0.6)
+        .to(appShell, { autoAlpha: 1, duration: 0.35 }, 0.6);
 
       return () => {
+        isCancelled = true;
         reducedTimeline.kill();
         document.body.classList.remove(styles.loadingLocked);
       };
     }
 
     const context = gsap.context(() => {
-      gsap.set(appShell, {
-        autoAlpha: 0,
-        y: 28,
-        filter: "blur(10px)",
-        scale: 0.985,
-        transformOrigin: "50% 40%",
-      });
+      // NOTE: We only animate opacity on appShell.
+      // We explicitly avoid filter: blur() and scale() which cause expensive full-screen
+      // shader recalculations and break ScrollTrigger coordinate offsets.
+      gsap.set(appShell, { autoAlpha: 0 });
       gsap.set(logoFill, { clipPath: "inset(0 100% 0 0)" });
       gsap.set(words, { autoAlpha: 1, yPercent: 0 });
       gsap.set(wordsTrack, { y: 0, autoAlpha: 1 });
@@ -84,12 +113,12 @@ export default function InitialLoader() {
     const rowGap = Number.parseFloat(trackStyles.rowGap || trackStyles.gap || "0") || 0;
     const rowStep = wordHeight + rowGap;
 
-    const timeline = gsap.timeline({
+    // Phase 1: Brand story sequence (logo reveal + concept words + progress to 92%)
+    const phase1Timeline = gsap.timeline({
       defaults: { ease: "power3.out" },
-      onComplete: finish,
     });
 
-    timeline
+    phase1Timeline
       .to(
         logoFill,
         {
@@ -102,9 +131,9 @@ export default function InitialLoader() {
       .to(
         progress,
         {
-          scaleX: 1,
-          duration: LOADING_SECONDS,
-          ease: "none",
+          scaleX: 0.92,
+          duration: 2.2,
+          ease: "power1.out",
         },
         0,
       )
@@ -134,41 +163,73 @@ export default function InitialLoader() {
           ease: "power2.inOut",
         },
         THIRD_SHIFT_AT,
-      )
-      .to(
-        wordsTrack,
-        {
-          autoAlpha: 0,
-          y: -(rowStep * 3.2),
-          duration: 0.18,
-          ease: "power2.in",
-        },
-        2.88,
-      )
-      .to(
-        loader,
-        {
-          yPercent: -100,
-          duration: 1.08,
-          ease: "expo.inOut",
-        },
-        LOADING_SECONDS,
-      )
-      .to(
-        appShell,
-        {
-          autoAlpha: 1,
-          y: 0,
-          filter: "blur(0px)",
-          scale: 1,
-          duration: 0.9,
-          ease: "power4.out",
-        },
-        LOADING_SECONDS + 0.14,
       );
 
+    let phase2Timeline: gsap.core.Timeline | null = null;
+
+    // Gate: Wait for critical visual assets + minimum brand storytelling duration
+    const minTimePromise = new Promise<void>((resolve) => {
+      window.setTimeout(resolve, MIN_BRAND_TIME_MS);
+    });
+
+    Promise.all([preloadCriticalAssets(3800), minTimePromise]).then(() => {
+      if (isCancelled) return;
+
+      // Phase 2: Complete progress bar, signal lift, slide curtain up
+      phase2Timeline = gsap.timeline({
+        onComplete: finish,
+      });
+
+      phase2Timeline
+        .to(
+          wordsTrack,
+          {
+            autoAlpha: 0,
+            y: -(rowStep * 3.2),
+            duration: 0.2,
+            ease: "power2.in",
+          },
+          0,
+        )
+        .to(
+          progress,
+          {
+            scaleX: 1,
+            duration: 0.22,
+            ease: "power2.out",
+          },
+          0,
+        )
+        .add(() => {
+          // Fire lift event right as the curtain begins rolling up so Hero animates concurrently
+          window.dispatchEvent(new Event("initial-loader:lift"));
+        }, 0.22)
+        .to(
+          loader,
+          {
+            yPercent: -100,
+            duration: 0.96,
+            ease: "expo.inOut",
+          },
+          0.22,
+        )
+        .to(
+          appShell,
+          {
+            autoAlpha: 1,
+            duration: 0.45,
+            ease: "power2.out",
+          },
+          0.28,
+        );
+    });
+
     return () => {
-      timeline.kill();
+      isCancelled = true;
+      phase1Timeline.kill();
+      if (phase2Timeline) {
+        phase2Timeline.kill();
+      }
       context.revert();
       document.body.classList.remove(styles.loadingLocked);
     };

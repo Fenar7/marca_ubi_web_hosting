@@ -60,8 +60,30 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       });
     };
 
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    const handleInitialLoaderLift = () => {
+      const isAnyOverlayOpen =
+        document.body.classList.contains("menu-open") ||
+        document.body.classList.contains("profile-modal-open");
+      if (!isAnyOverlayOpen) {
+        lenis?.start();
+      }
+    };
+
     const handleInitialLoaderComplete = () => {
+      const isAnyOverlayOpen =
+        document.body.classList.contains("menu-open") ||
+        document.body.classList.contains("profile-modal-open");
+      if (!isAnyOverlayOpen) {
+        lenis?.start();
+      }
       scheduleRefreshBurst();
+      if (window.location.hash) {
+        scrollToCurrentHash(100);
+      }
     };
 
     const handleWindowLoad = () => {
@@ -127,6 +149,28 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       const escapedId = typeof CSS !== "undefined" && "escape" in CSS ? CSS.escape(targetId) : targetId;
 
       return document.querySelector<HTMLElement>(`[name="${escapedId}"]`);
+    };
+
+    const scrollToCurrentHash = (delayMs = 0) => {
+      const rawHash = window.location.hash;
+      if (!rawHash || rawHash === "#") {
+        return;
+      }
+
+      const runScroll = () => {
+        const target = resolveHashTarget(rawHash);
+        if (!target) {
+          return;
+        }
+        performSmoothScroll(target, new URL(window.location.href), false);
+      };
+
+      if (delayMs > 0) {
+        const timerId = window.setTimeout(runScroll, delayMs);
+        deferredTimerIds.push(timerId);
+      } else {
+        window.requestAnimationFrame(runScroll);
+      }
     };
 
     const updateAddressBar = (url: URL, isTopLink: boolean) => {
@@ -223,14 +267,19 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
 
       const url = new URL(anchor.href, window.location.href);
       const isSamePageLink = url.origin === window.location.origin && url.pathname === window.location.pathname;
-      const isHashTopLink = rawHref === "#" || (rawHref.startsWith("#") && url.hash.length === 0);
-      const isHashLink = rawHref.startsWith("#") || (isSamePageLink && url.hash.length > 0);
+      const isHashTopLink =
+        (isSamePageLink && (rawHref === "/" || rawHref === window.location.pathname)) ||
+        rawHref === "#" ||
+        (rawHref.startsWith("#") && url.hash.length === 0);
+      const isHashLink = isHashTopLink || rawHref.startsWith("#") || (isSamePageLink && url.hash.length > 0);
 
       if (!isSamePageLink || !isHashLink) {
         return;
       }
 
-      const target = isHashTopLink ? null : resolveHashTarget(url.hash);
+      const target = isHashTopLink
+        ? (resolveHashTarget("#project-form") ?? resolveHashTarget("#home") ?? null)
+        : resolveHashTarget(url.hash);
 
       if (!isHashTopLink && !target) {
         return;
@@ -243,14 +292,39 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       });
     };
 
+    const handleHashChange = () => {
+      scrollToCurrentHash(0);
+    };
+
+    const handlePopState = () => {
+      if (window.location.hash) {
+        scrollToCurrentHash(20);
+      }
+    };
+
+    window.addEventListener("initial-loader:lift", handleInitialLoaderLift);
     window.addEventListener("initial-loader:complete", handleInitialLoaderComplete);
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("orientationchange", scheduleRefreshBurst);
     window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("hashchange", handleHashChange);
+    window.addEventListener("popstate", handlePopState);
     document.addEventListener("click", handleAnchorClick, true);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     scheduleRefreshBurst();
+
+    const isLoaderActive =
+      Boolean(document.querySelector("[data-initial-loader]")) &&
+      document.documentElement.getAttribute("data-loader-complete") !== "true";
+
+    if (!isLoaderActive) {
+      if (window.location.hash) {
+        scrollToCurrentHash(140);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }
 
     const cleanupRefreshListeners = () => {
       if (resizeTimerId !== null) {
@@ -258,11 +332,14 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       }
       clearBurstTimers();
       clearDeferredTimers();
+      window.removeEventListener("initial-loader:lift", handleInitialLoaderLift);
       window.removeEventListener("initial-loader:complete", handleInitialLoaderComplete);
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("orientationchange", scheduleRefreshBurst);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("popstate", handlePopState);
       document.removeEventListener("click", handleAnchorClick, true);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -331,6 +408,7 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     window.addEventListener("profile-modal:close", handleProfileModalClose);
 
     if (
+      isLoaderActive ||
       document.body.classList.contains("menu-open") ||
       document.body.classList.contains("profile-modal-open")
     ) {
@@ -338,6 +416,10 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     }
 
     scheduleRefreshBurst();
+
+    if (!isLoaderActive && !window.location.hash) {
+      lenisInstance.scrollTo(0, { immediate: true });
+    }
 
     return () => {
       cleanupRefreshListeners();

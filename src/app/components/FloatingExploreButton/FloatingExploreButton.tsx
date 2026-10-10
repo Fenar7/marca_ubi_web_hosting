@@ -190,8 +190,12 @@ export default function FloatingExploreButton() {
         return;
       }
 
-      const aboutSection = document.querySelector<HTMLElement>("section[data-node-id='496:920']");
-      const heroSection = document.querySelector<HTMLElement>("section[data-node-id='491:896']");
+      const aboutSection =
+        document.getElementById("about") ??
+        document.querySelector<HTMLElement>("section[data-node-id='496:920']");
+      const heroSection =
+        document.getElementById("home") ??
+        document.querySelector<HTMLElement>("section[data-node-id='491:896']");
       const nextSection =
         aboutSection ??
         (heroSection?.nextElementSibling instanceof HTMLElement ? heroSection.nextElementSibling : null);

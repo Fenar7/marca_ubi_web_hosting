@@ -82,7 +82,7 @@ export default function ProjectForm() {
   }
 
   return (
-    <div className={styles.formContainer}>
+    <div className={styles.formContainer} id="project-form">
       <div className={styles.formHeader}>
         {currentStep > 1 ? (
           <button className={styles.backButton} onClick={prevStep} aria-label="Go back">

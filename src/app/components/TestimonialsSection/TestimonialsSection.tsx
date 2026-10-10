@@ -182,7 +182,7 @@ export default function TestimonialsSection() {
   }, []);
 
   return (
-    <section className={styles.testimonialSectionContainerMain} data-node-id="503:927" ref={sectionRef}>
+    <section className={styles.testimonialSectionContainerMain} data-node-id="503:927" id="testimonials" ref={sectionRef}>
       <div className={styles.testimonialSectionContainer}>
         <SectionTitleBlock
           actionWrapClassName={styles.headerAction}
