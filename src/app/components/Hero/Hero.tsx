@@ -452,7 +452,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className={styles.heroSection} data-node-id="491:896" ref={heroSectionRef}>
+    <section className={styles.heroSection} data-node-id="491:896" id="home" ref={heroSectionRef}>
       <div className={styles.backgroundLayer} ref={backgroundLayerRef} aria-hidden="true">
         <div className={styles.heroMotionWrap} ref={heroMotionWrapRef}>
           <Image

@@ -81,6 +81,9 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
         lenis?.start();
       }
       scheduleRefreshBurst();
+      if (window.location.hash) {
+        scrollToCurrentHash(100);
+      }
     };
 
     const handleWindowLoad = () => {
@@ -146,6 +149,28 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       const escapedId = typeof CSS !== "undefined" && "escape" in CSS ? CSS.escape(targetId) : targetId;
 
       return document.querySelector<HTMLElement>(`[name="${escapedId}"]`);
+    };
+
+    const scrollToCurrentHash = (delayMs = 0) => {
+      const rawHash = window.location.hash;
+      if (!rawHash || rawHash === "#") {
+        return;
+      }
+
+      const runScroll = () => {
+        const target = resolveHashTarget(rawHash);
+        if (!target) {
+          return;
+        }
+        performSmoothScroll(target, new URL(window.location.href), false);
+      };
+
+      if (delayMs > 0) {
+        const timerId = window.setTimeout(runScroll, delayMs);
+        deferredTimerIds.push(timerId);
+      } else {
+        window.requestAnimationFrame(runScroll);
+      }
     };
 
     const updateAddressBar = (url: URL, isTopLink: boolean) => {
@@ -242,8 +267,11 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
 
       const url = new URL(anchor.href, window.location.href);
       const isSamePageLink = url.origin === window.location.origin && url.pathname === window.location.pathname;
-      const isHashTopLink = rawHref === "#" || (rawHref.startsWith("#") && url.hash.length === 0);
-      const isHashLink = rawHref.startsWith("#") || (isSamePageLink && url.hash.length > 0);
+      const isHashTopLink =
+        (isSamePageLink && (rawHref === "/" || rawHref === window.location.pathname)) ||
+        rawHref === "#" ||
+        (rawHref.startsWith("#") && url.hash.length === 0);
+      const isHashLink = isHashTopLink || rawHref.startsWith("#") || (isSamePageLink && url.hash.length > 0);
 
       if (!isSamePageLink || !isHashLink) {
         return;
@@ -262,15 +290,35 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       });
     };
 
+    const handleHashChange = () => {
+      scrollToCurrentHash(0);
+    };
+
+    const handlePopState = () => {
+      if (window.location.hash) {
+        scrollToCurrentHash(20);
+      }
+    };
+
     window.addEventListener("initial-loader:lift", handleInitialLoaderLift);
     window.addEventListener("initial-loader:complete", handleInitialLoaderComplete);
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("orientationchange", scheduleRefreshBurst);
     window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("hashchange", handleHashChange);
+    window.addEventListener("popstate", handlePopState);
     document.addEventListener("click", handleAnchorClick, true);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     scheduleRefreshBurst();
+
+    const isLoaderActive =
+      Boolean(document.querySelector("[data-initial-loader]")) &&
+      document.documentElement.getAttribute("data-loader-complete") !== "true";
+
+    if (!isLoaderActive && window.location.hash) {
+      scrollToCurrentHash(140);
+    }
 
     const cleanupRefreshListeners = () => {
       if (resizeTimerId !== null) {
@@ -284,6 +332,8 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("orientationchange", scheduleRefreshBurst);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("popstate", handlePopState);
       document.removeEventListener("click", handleAnchorClick, true);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -350,10 +400,6 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     window.addEventListener("menu:close", handleMenuClose);
     window.addEventListener("profile-modal:open", handleProfileModalOpen);
     window.addEventListener("profile-modal:close", handleProfileModalClose);
-
-    const isLoaderActive =
-      Boolean(document.querySelector("[data-initial-loader]")) &&
-      document.documentElement.getAttribute("data-loader-complete") !== "true";
 
     if (
       isLoaderActive ||

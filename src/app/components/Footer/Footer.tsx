@@ -1,15 +1,17 @@
+import Link from "next/link";
+
 const quickLinks = [
-  { label: "Home", href: "#" },
-  { label: "About", href: "#" },
-  { label: "Works", href: "#" },
-  { label: "Contact", href: "#" },
-  { label: "Testimonial", href: "#" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/#about" },
+  { label: "Works", href: "/#works" },
+  { label: "Contact", href: "/#contact" },
+  { label: "Testimonial", href: "/#testimonials" },
 ];
 
 const socialLinks = [
-  { name: "Instagram", href: "#", icon: "/images/instagram.svg" },
-  { name: "Facebook", href: "#", icon: "/images/facebook.svg" },
-  { name: "LinkedIn", href: "#", icon: "/images/linkedin.svg" },
+  { name: "Instagram", href: "https://www.instagram.com/marcaubi", icon: "/images/instagram.svg" },
+  { name: "Facebook", href: "https://www.facebook.com/marcaubi", icon: "/images/facebook.svg" },
+  { name: "LinkedIn", href: "https://www.linkedin.com/company/marcaubi", icon: "/images/linkedin.svg" },
 ];
 
 const Footer = () => {
@@ -17,7 +19,9 @@ const Footer = () => {
     <footer className="footer-section-container-main">
       <div className="footer-section-container container" data-node-id="558:1264">
         <div className="footer-left-section">
-          <img className="footer-logo" src="/images/marca-ubi.png" alt="Marca Ubi" data-node-id="558:1267" />
+          <Link className="footer-logo-link" href="/" aria-label="Marca Ubi homepage">
+            <img className="footer-logo" src="/images/marca-ubi.png" alt="Marca Ubi" data-node-id="558:1267" />
+          </Link>
 
           <address className="footer-address" data-node-id="558:1268">
             Hilite Business Park
@@ -32,9 +36,9 @@ const Footer = () => {
           <h5 data-node-id="558:1270">Quick Links</h5>
           <nav className="footer-links-list" aria-label="Footer quick links" data-node-id="558:1271">
             {quickLinks.map((link) => (
-              <a key={link.label} href={link.href}>
+              <Link key={link.label} href={link.href}>
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
@@ -47,18 +51,20 @@ const Footer = () => {
                 className="footer-social-link"
                 href={item.href}
                 aria-label={item.name}
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <img src={item.icon} alt="" aria-hidden="true" />
               </a>
             ))}
           </div>
 
-          <a className="footer-contact-btn" href="#" data-node-id="558:1283">
+          <Link className="footer-contact-btn" href="/start-project" data-node-id="558:1283">
             <span className="footer-contact-label">Contact us</span>
             <span className="footer-contact-icon-wrap" aria-hidden="true">
               <img src="/images/top-right-arrow.png" alt="" />
             </span>
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

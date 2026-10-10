@@ -21,6 +21,12 @@
   gap: clamp(0.8rem, 1.1vw, 1.125rem);
 }
 
+.footer-logo-link {
+  display: inline-block;
+  text-decoration: none;
+  width: fit-content;
+}
+
 .footer-logo {
   display: block;
   height: auto;

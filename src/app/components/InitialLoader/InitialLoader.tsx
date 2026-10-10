@@ -11,6 +11,7 @@ const FIRST_SHIFT_AT = 0.8;
 const SECOND_SHIFT_AT = 1.5;
 const THIRD_SHIFT_AT = 2.2;
 const MIN_BRAND_TIME_MS = 2200;
+const SESSION_STORAGE_KEY = "marca_ubi_initial_loader_shown";
 
 export default function InitialLoader() {
   const [isVisible, setIsVisible] = useState(true);
@@ -32,6 +33,25 @@ export default function InitialLoader() {
       return;
     }
 
+    let isAlreadyShown = false;
+    try {
+      isAlreadyShown = window.sessionStorage.getItem(SESSION_STORAGE_KEY) === "true";
+    } catch {
+      isAlreadyShown = false;
+    }
+
+    if (isAlreadyShown) {
+      loader.style.display = "none";
+      document.documentElement.setAttribute("data-loader-complete", "true");
+      (window as Window & { __initialLoaderComplete?: boolean }).__initialLoaderComplete = true;
+      gsap.set(appShell, { clearProps: "opacity,visibility" });
+      document.body.classList.remove(styles.loadingLocked);
+      window.dispatchEvent(new Event("initial-loader:lift"));
+      window.dispatchEvent(new Event("initial-loader:complete"));
+      setIsVisible(false);
+      return;
+    }
+
     let isCancelled = false;
     document.body.classList.add(styles.loadingLocked);
 
@@ -39,6 +59,11 @@ export default function InitialLoader() {
       if (isCancelled) return;
       document.documentElement.setAttribute("data-loader-complete", "true");
       (window as Window & { __initialLoaderComplete?: boolean }).__initialLoaderComplete = true;
+      try {
+        window.sessionStorage.setItem(SESSION_STORAGE_KEY, "true");
+      } catch {
+        // Safe fallback for restricted storage environments
+      }
       gsap.set(appShell, { clearProps: "opacity,visibility" });
       document.body.classList.remove(styles.loadingLocked);
       window.dispatchEvent(new Event("initial-loader:complete"));

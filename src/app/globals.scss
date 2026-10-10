@@ -131,6 +131,10 @@
   --color-foreground: var(--foreground);
 }
 
+html {
+  scroll-padding-top: clamp(5rem, 9vw, 6.5rem);
+}
+
 html,
 body {
   max-width: 100%;

@@ -6,11 +6,11 @@ import { gsap } from "gsap";
 import styles from "./Header.module.scss";
 
 const menuItems = [
-  { label: "Work", href: "#works", hint: "Selected launches and digital experiences" },
-  { label: "Services", href: "#services", hint: "Strategy, art direction, systems, and build" },
-  { label: "About", href: "#about", hint: "How Marca Ubi thinks and operates" },
-  { label: "Values", href: "#values", hint: "Principles shaping every engagement" },
-  { label: "Contact", href: "#contact", hint: "Start a project conversation" },
+  { label: "Work", href: "/#works", hint: "Selected launches and digital experiences" },
+  { label: "Services", href: "/#services", hint: "Strategy, art direction, systems, and build" },
+  { label: "About", href: "/#about", hint: "How Marca Ubi thinks and operates" },
+  { label: "Values", href: "/#values", hint: "Principles shaping every engagement" },
+  { label: "Contact", href: "/#contact", hint: "Start a project conversation" },
 ] as const;
 
 export default function Header() {
