@@ -10,6 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const ContactCtaSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const contentSectionRef = useRef<HTMLDivElement>(null);
   const blackCardRef = useRef<HTMLDivElement>(null);
   const bgImageRef = useRef<HTMLImageElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -19,9 +20,15 @@ const ContactCtaSection = () => {
 
   useGSAP(
     () => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        if (contactInfoRef.current) {
+          contactInfoRef.current.style.opacity = "1";
+        }
+        return;
+      }
 
       const section = sectionRef.current;
+      const contentSection = contentSectionRef.current;
       const blackCard = blackCardRef.current;
       const bgImage = bgImageRef.current;
       const title = titleRef.current;
@@ -71,7 +78,7 @@ const ContactCtaSection = () => {
       // ─── Bottom content: coordinated entrance ─────────────────────────────
       const contentTl = gsap.timeline({
         scrollTrigger: {
-          trigger: ".contact-bottom-section",
+          trigger: contentSection || ".contact-bottom-section",
           start: "top 90%",
           toggleActions: "play none none reverse",
         },
@@ -116,6 +123,15 @@ const ContactCtaSection = () => {
           0.44,
         );
       }
+
+      // Refresh triggers to ensure exact alignment with tall layout
+      const refreshFrameId = window.requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+      });
+
+      return () => {
+        window.cancelAnimationFrame(refreshFrameId);
+      };
     },
     { scope: sectionRef },
   );
@@ -145,7 +161,7 @@ const ContactCtaSection = () => {
         />
         <div className="contact-image-overlay" aria-hidden="true" />
 
-        <div className="contact-bottom-section" data-node-id="555:1244">
+        <div className="contact-bottom-section" data-node-id="555:1244" ref={contentSectionRef}>
           <h2 ref={titleRef}>
             Let<span className="tag-separator">&apos;</span>s Build Something That Holds
           </h2>
