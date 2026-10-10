@@ -240,6 +240,15 @@
     width: 100%;
   }
 
+  .contactButton {
+    min-height: unset;
+  }
+
+  .buttonIcon {
+    height: 1.1rem;
+    width: 1.1rem;
+  }
+
   .itemsContainer {
     margin-top: 1.35rem;
   }
@@ -250,5 +259,12 @@
 
   .itemCard img {
     object-position: center;
+  }
+}
+
+@media (max-width: 23.4375rem) {
+  .buttonIcon {
+    height: 1rem;
+    width: 1rem;
   }
 }

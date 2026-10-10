@@ -368,6 +368,11 @@
     align-items: flex-start;
   }
 
+  .buttonIcon {
+    height: 1.1rem;
+    width: 1.1rem;
+  }
+
   .metricsCards {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -397,5 +402,12 @@
     font-size: clamp(0.875rem, 3.2vw, 1.05rem);
     line-height: $lh-body;
     max-width: none;
+  }
+}
+
+@media (max-width: 23.4375rem) {
+  .buttonIcon {
+    height: 1rem;
+    width: 1rem;
   }
 }
