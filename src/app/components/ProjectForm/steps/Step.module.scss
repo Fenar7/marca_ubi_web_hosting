@@ -375,11 +375,33 @@
 }
 
 @media (max-width: 37.5rem) {
+  .buttonGroup {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+    min-height: 2.85rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
   .summaryCard {
     padding: 1.25rem 1rem;
   }
 
   .summaryContent {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 23.4375rem) {
+  .btnPrimary,
+  .btnSecondary {
+    min-height: 2.7rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
   }
 }
