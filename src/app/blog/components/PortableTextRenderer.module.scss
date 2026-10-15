@@ -144,9 +144,17 @@
   }
 }
 
-.linkArrow {
-  font-size: 0.8em;
-  line-height: 1;
+.linkArrowIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  object-fit: contain;
+  margin-left: 0.15rem;
+  transition: transform 0.2s ease;
+  vertical-align: middle;
+}
+
+.articleLink:hover .linkArrowIcon {
+  transform: translate(2px, -2px);
 }
 
 /* Custom Callouts */

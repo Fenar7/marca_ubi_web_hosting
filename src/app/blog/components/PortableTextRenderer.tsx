@@ -71,7 +71,16 @@ export const portableTextComponents: PortableTextComponents = {
             className={styles.articleLink}
           >
             {children}
-            {isExternal && <span className={styles.linkArrow} aria-hidden="true">↗</span>}
+            {isExternal && (
+              <img
+                src="/hero/primary-arrow.png"
+                alt=""
+                width={12}
+                height={12}
+                className={styles.linkArrowIcon}
+                aria-hidden="true"
+              />
+            )}
           </a>
         );
       }

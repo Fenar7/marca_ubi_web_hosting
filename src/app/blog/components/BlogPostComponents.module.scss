@@ -203,8 +203,22 @@
   text-decoration: none;
   transition: color 0.2s ease;
   padding: 0.5rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 
   &:hover {
     color: $white;
+
+    .ctaSecondaryArrow {
+      transform: translate(2px, -2px);
+    }
   }
+}
+
+.ctaSecondaryArrow {
+  width: 0.82rem;
+  height: 0.82rem;
+  object-fit: contain;
+  transition: transform 0.2s ease;
 }

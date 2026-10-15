@@ -292,7 +292,15 @@ export default async function BlogPostPage({ params }: PageProps) {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          {link.platform.charAt(0).toUpperCase() + link.platform.slice(1)} ↗
+                          <span>{link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}</span>
+                          <img
+                            src="/hero/primary-arrow.png"
+                            alt=""
+                            width={11}
+                            height={11}
+                            className={styles.bioSocialArrow}
+                            aria-hidden="true"
+                          />
                         </a>
                       ))}
                     </div>
@@ -311,7 +319,15 @@ export default async function BlogPostPage({ params }: PageProps) {
                 Related Dispatches
               </h2>
               <Link href="/blog" className={styles.relatedViewAll}>
-                Explore All ↗
+                <span>Explore All</span>
+                <img
+                  src="/hero/primary-arrow.png"
+                  alt=""
+                  width={12}
+                  height={12}
+                  className={styles.relatedArrowIcon}
+                  aria-hidden="true"
+                />
               </Link>
             </div>
 
@@ -349,7 +365,15 @@ export default async function BlogPostPage({ params }: PageProps) {
                         {formatDate(related.publishedAt)}
                       </span>
                       <span className={blogListingStyles.cardReadMore}>
-                        Read <span aria-hidden="true">↗</span>
+                        <span>Read More</span>
+                        <img
+                          src="/hero/primary-arrow.png"
+                          alt=""
+                          width={13}
+                          height={13}
+                          className={blogListingStyles.cardArrowIcon}
+                          aria-hidden="true"
+                        />
                       </span>
                     </div>
                   </div>

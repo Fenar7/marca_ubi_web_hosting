@@ -26,7 +26,15 @@ export default function BlogCtaBanner() {
           icon={<img src="/hero/primary-arrow.png" alt="" width={16} height={16} />}
         />
         <Link href="/#works" className={styles.ctaSecondaryLink}>
-          Explore Selected Works ↗
+          <span>Explore Selected Works</span>
+          <img
+            src="/hero/primary-arrow.png"
+            alt=""
+            width={13}
+            height={13}
+            className={styles.ctaSecondaryArrow}
+            aria-hidden="true"
+          />
         </Link>
       </div>
     </section>

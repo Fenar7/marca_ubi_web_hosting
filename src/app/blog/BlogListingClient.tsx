@@ -173,7 +173,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
 
               <PillButton
                 href={`/blog/${featuredPost.slug}`}
-                label="Read Dispatch"
+                label="Read More"
                 variant="brand"
                 icon={<img src="/hero/primary-arrow.png" alt="" width={16} height={16} />}
               />
@@ -225,7 +225,15 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
                 <div className={styles.cardFooter}>
                   <span className={styles.cardDate}>{formatDate(post.publishedAt)}</span>
                   <span className={styles.cardReadMore}>
-                    Read Dispatch <span aria-hidden="true">↗</span>
+                    <span>Read More</span>
+                    <img
+                      src="/hero/primary-arrow.png"
+                      alt=""
+                      width={13}
+                      height={13}
+                      className={styles.cardArrowIcon}
+                      aria-hidden="true"
+                    />
                   </span>
                 </div>
               </div>

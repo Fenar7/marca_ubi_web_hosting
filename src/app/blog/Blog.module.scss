@@ -401,17 +401,32 @@
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  transition: color 0.2s ease, transform 0.2s ease;
+  gap: 0.4rem;
+  transition: color 0.2s ease;
 
   span {
-    transition: transform 0.2s ease;
+    transition: color 0.2s ease;
   }
 }
 
-.postCard:hover .cardReadMore span {
-  transform: translate(2px, -2px);
+.cardArrowIcon {
+  width: 0.82rem;
+  height: 0.82rem;
+  object-fit: contain;
+  transition: transform 0.22s ease;
+  flex-shrink: 0;
+}
+
+.postCard:hover .cardReadMore {
   color: $cta-orange;
+
+  span {
+    color: $cta-orange;
+  }
+
+  .cardArrowIcon {
+    transform: translate(2px, -2px);
+  }
 }
 
 /* Empty State */
