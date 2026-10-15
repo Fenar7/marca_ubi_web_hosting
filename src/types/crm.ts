@@ -7,9 +7,9 @@
  *               and UI client components.
  */
 
-// ============================================================================
-// 1. DOMAIN ENUMS & UNION TYPES
-// ============================================================================
+/**
+ * Domain Enums & Union Types
+ */
 
 /**
  * Commercial authorization roles determining RLS access boundaries across the CRM.
@@ -77,9 +77,9 @@ export type TeamAuditAction =
   | 'leads_bulk_reassigned'
   | 'password_reset_dispatched';
 
-// ============================================================================
-// 2. RELATIONAL ENTITY MODELS
-// ============================================================================
+/**
+ * Relational Entity Models
+ */
 
 /**
  * Agency team member profile mirroring `public.profiles` and linked to `auth.users(id)`.
@@ -197,21 +197,18 @@ export interface TeamAuditLog {
   created_at: string;
 }
 
-// ============================================================================
-// 3. MUTATION PAYLOADS (Insert / Update Types)
-// ============================================================================
+/**
+ * Mutation Payloads (Insert / Update Types)
+ */
 
 /**
- * Payload required to insert a new lead record via webhook or manual drawer.
- * Requires at least phone or email per `chk_lead_contact_info`.
+ * Base attributes for lead creation shared across all ingestion channels.
  */
-export interface CreateLeadInput {
+export interface BaseLeadInput {
   name: string;
   company?: string | null;
   company_website?: string | null;
   industry?: string | null;
-  phone?: string | null;
-  email?: string | null;
   preferred_channel?: PreferredChannel;
   lead_source_id: string;
   source_detail?: string | null;
@@ -225,6 +222,16 @@ export interface CreateLeadInput {
   notes?: string | null;
   brief_payload?: Record<string, unknown>;
 }
+
+/**
+ * Payload required to insert a new lead record via webhook or manual drawer.
+ * Statically enforces at compile-time that at least one reachable contact coordinate
+ * (non-nullable phone or non-nullable email) is provided, aligning with `chk_lead_contact_info`.
+ */
+export type CreateLeadInput = BaseLeadInput & (
+  | { phone: string; email?: string | null }
+  | { email: string; phone?: string | null }
+);
 
 /**
  * Allowed fields for partial updates to an active deal.
@@ -264,9 +271,9 @@ export interface CreateLeadActivityInput {
   metadata?: Record<string, unknown>;
 }
 
-// ============================================================================
-// 4. EXECUTIVE ANALYTICS & KPI SCHEMAS
-// ============================================================================
+/**
+ * Executive Analytics & KPI Schemas
+ */
 
 /**
  * Aggregated commercial pipeline metrics powering the Executive KPI Ribbon.

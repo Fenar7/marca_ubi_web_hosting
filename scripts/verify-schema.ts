@@ -37,19 +37,17 @@ async function runVerification() {
     await client.connect();
     console.log('[OK] Successfully established direct connection to PostgreSQL database.\n');
 
-    // 1. Run Core Relational Schema Migration
+    // 1. Run Consolidated Core Relational Schema & Seed Migration
     const schemaSqlPath = path.resolve(process.cwd(), 'supabase/migrations/20261015000001_initial_core_schema.sql');
     console.log(`[EXEC] Executing core schema migration: ${path.basename(schemaSqlPath)}...`);
     const schemaSql = fs.readFileSync(schemaSqlPath, 'utf-8');
     await client.query(schemaSql);
     console.log('[SUCCESS] Migration 20261015000001 executed successfully.\n');
 
-    // 2. Run Initial Seed Data Migration
-    const seedSqlPath = path.resolve(process.cwd(), 'supabase/migrations/20261015000002_initial_seed_data.sql');
-    console.log(`[EXEC] Executing seed data migration: ${path.basename(seedSqlPath)}...`);
-    const seedSql = fs.readFileSync(seedSqlPath, 'utf-8');
-    await client.query(seedSql);
-    console.log('[SUCCESS] Migration 20261015000002 executed successfully.\n');
+    // 2. Reset Sequence Counter to pristine seed state (LD-1001)
+    console.log('[RESET] Resetting public.lead_code_seq to 1001...');
+    await client.query(`ALTER SEQUENCE public.lead_code_seq RESTART WITH 1001;`);
+    console.log('[SUCCESS] Sequence reset to 1001.\n');
 
     // 3. Verify Tables Existence
     console.log('[VERIFY] Inspecting public tables in information_schema...');
@@ -90,18 +88,24 @@ async function runVerification() {
     }
     console.log(`  ✓ Sequence public.lead_code_seq active (Start: ${seqRes.rows[0].start_value}, Increment: ${seqRes.rows[0].increment})`);
 
-    // 5. Verify Performance Indexes
-    console.log('\n[VERIFY] Inspecting performance indexes on public.leads...');
+    // 5. Verify Performance & Foreign Key Indexes
+    console.log('\n[VERIFY] Inspecting performance and foreign key indexes...');
     const indexRes = await client.query(`
-      SELECT indexname, indexdef
+      SELECT indexname, tablename
       FROM pg_indexes
-      WHERE schemaname = 'public' AND tablename = 'leads';
+      WHERE schemaname = 'public';
     `);
     const indexNames = indexRes.rows.map((r) => r.indexname);
     const expectedIndexes = [
       'idx_leads_assigned_status',
       'idx_leads_status_created',
       'idx_leads_next_follow_up',
+      'idx_leads_source_id',
+      'idx_leads_priority',
+      'idx_profiles_role',
+      'idx_profiles_status',
+      'idx_lead_activities_lead_created',
+      'idx_team_audit_logs_created',
       'idx_leads_company_trgm',
       'idx_leads_name_trgm',
       'idx_leads_email_trgm',
@@ -111,7 +115,7 @@ async function runVerification() {
       if (indexNames.includes(idx)) {
         console.log(`  ✓ Index ${idx} confirmed`);
       } else {
-        console.warn(`  ⚠ Warning: Index ${idx} was not listed directly`);
+        throw new Error(`Missing expected index: ${idx}`);
       }
     }
 
@@ -122,27 +126,80 @@ async function runVerification() {
     console.log(`  ✓ Lead sources seeded: ${sourcesRes.rows[0].count} channels (expected >= 5)`);
     console.log(`  ✓ Funnel statuses seeded: ${statusesRes.rows[0].count} stages across 4 buckets (expected >= 8)`);
 
-    // 7. Verify Data Integrity Constraints (chk_lead_contact_info)
-    console.log('\n[VERIFY] Testing table-level constraint chk_lead_contact_info defensive safeguard...');
+    // 7. Test Check Constraint: NULL values probe
+    console.log('\n[VERIFY] Testing table-level constraint chk_lead_contact_info defensive safeguards...');
     try {
       await client.query(`
         INSERT INTO public.leads (
-          name, preferred_channel, lead_source_id, status_id, phone, email
+          lead_id, name, preferred_channel, lead_source_id, status_id, phone, email
         ) VALUES (
-          'Test Bad Ingestion', 'Email', 
+          'TEST-CHECK-PROBE-1', 'Test NULL Ingestion', 'Email', 
           'a0000000-0000-0000-0000-000000000001', 
           'b0000000-0000-0000-0000-000000000001', 
           NULL, NULL
         );
       `);
-      throw new Error('FAILED: Constraint chk_lead_contact_info failed to reject record with no phone and no email!');
+      throw new Error('FAILED: Constraint chk_lead_contact_info failed to reject record with NULL phone and NULL email!');
     } catch (err: unknown) {
-      const error = err as { code?: string; message: string };
-      if (error.code === '23514') { // check_violation
-        console.log('  ✓ chk_lead_contact_info successfully rejected invalid insertion without contact channel (SQLSTATE 23514).');
+      const error = err as { code?: string };
+      if (error.code === '23514') {
+        console.log('  ✓ chk_lead_contact_info successfully rejected { phone: NULL, email: NULL } (SQLSTATE 23514).');
       } else {
         throw err;
       }
+    }
+
+    // 8. Test Check Constraint: Empty string probe
+    try {
+      await client.query(`
+        INSERT INTO public.leads (
+          lead_id, name, preferred_channel, lead_source_id, status_id, phone, email
+        ) VALUES (
+          'TEST-CHECK-PROBE-2', 'Test Empty Ingestion', 'Email', 
+          'a0000000-0000-0000-0000-000000000001', 
+          'b0000000-0000-0000-0000-000000000001', 
+          '', NULL
+        );
+      `);
+      throw new Error('FAILED: Constraint chk_lead_contact_info failed to reject empty string phone!');
+    } catch (err: unknown) {
+      const error = err as { code?: string };
+      if (error.code === '23514') {
+        console.log('  ✓ chk_lead_contact_info successfully rejected empty string { phone: "", email: NULL } (SQLSTATE 23514).');
+      } else {
+        throw err;
+      }
+    }
+
+    // 9. Test Check Constraint: Whitespace string probe
+    try {
+      await client.query(`
+        INSERT INTO public.leads (
+          lead_id, name, preferred_channel, lead_source_id, status_id, phone, email
+        ) VALUES (
+          'TEST-CHECK-PROBE-3', 'Test Whitespace Ingestion', 'Email', 
+          'a0000000-0000-0000-0000-000000000001', 
+          'b0000000-0000-0000-0000-000000000001', 
+          '   ', NULL
+        );
+      `);
+      throw new Error('FAILED: Constraint chk_lead_contact_info failed to reject whitespace-only phone!');
+    } catch (err: unknown) {
+      const error = err as { code?: string };
+      if (error.code === '23514') {
+        console.log('  ✓ chk_lead_contact_info successfully rejected whitespace { phone: "   ", email: NULL } (SQLSTATE 23514).');
+      } else {
+        throw err;
+      }
+    }
+
+    // 10. Verify Sequence Integrity (Ensure Sequence was NOT Burned)
+    const seqStatus = await client.query(`SELECT last_value, is_called FROM public.lead_code_seq;`);
+    console.log(`\n[VERIFY] Sequence state post-testing: last_value = ${seqStatus.rows[0].last_value}, is_called = ${seqStatus.rows[0].is_called}`);
+    if (seqStatus.rows[0].last_value !== '1001' || seqStatus.rows[0].is_called !== false) {
+      console.warn('  ⚠ Notice: Sequence counter was altered during test probes.');
+    } else {
+      console.log('  ✓ Sequence counter perfectly preserved at initial state 1001 (uncalled).');
     }
 
     console.log('\n============================================================');
