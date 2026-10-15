@@ -235,7 +235,7 @@ export default function AboutSection() {
         scrollTrigger: mobileMotion
           ? {
             trigger: section,
-            start: "top 74%",
+            start: "top 78%",
             toggleActions: "play none none reverse",
           }
           : {
@@ -762,9 +762,9 @@ export default function AboutSection() {
         // Trigger directly on the title lines so it fires accurately when title is visible
         const triggerElement = activeLines[0];
         const rect = triggerElement.getBoundingClientRect();
-        const isInOrPastView = rect.top <= window.innerHeight * 0.85;
+        const isScrolledPast = typeof window !== "undefined" && window.scrollY > 400 && rect.bottom < 0;
 
-        if (isInOrPastView) {
+        if (isScrolledPast) {
           gsap.set(activeLines, {
             autoAlpha: 1,
             yPercent: 0,
@@ -782,9 +782,8 @@ export default function AboutSection() {
         const titleTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: triggerElement,
-            start: "top 82%",
-            toggleActions: "play none none none",
-            once: true,
+            start: "top 70%",
+            toggleActions: "play none none reverse",
             fastScrollEnd: true,
             invalidateOnRefresh: true,
           },
@@ -796,7 +795,7 @@ export default function AboutSection() {
             autoAlpha: 1,
             yPercent: 0,
             duration: 0.65,
-            stagger: 0.12,
+            stagger: 0.1,
             ease: "power3.out",
           },
           0,
@@ -807,7 +806,7 @@ export default function AboutSection() {
           {
             "--line-fill": "100%",
             duration: 0.75,
-            stagger: 0.14,
+            stagger: 0.12,
             ease: "power2.out",
           },
           0.08,

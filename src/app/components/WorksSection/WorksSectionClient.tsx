@@ -37,15 +37,18 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
                 return;
             }
 
+            const isMobile = window.matchMedia("(max-width: 56.1875rem)").matches;
             const mobileMotion = shouldUseMobileMotion();
-            const mobileHeaderOffsetPx = 4.8 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize || "16");
-            const mobilePinDistance = Math.max(window.innerHeight * 0.92, 520);
             const titleFill = container.querySelector<HTMLElement>(".works-title-fill");
             const titleSection = container.querySelector<HTMLElement>(".title-section-container");
+            const titleH2 = titleSection?.querySelector<HTMLElement>("h2");
             const wrappers = gsap.utils.toArray<HTMLElement>(".work-item-wrapper", container);
             const setSafeState = (filled: boolean) => {
                 if (titleFill) {
                     gsap.set(titleFill, { "--title-fill": filled ? "100%" : "0%" });
+                }
+                if (titleH2) {
+                    gsap.set(titleH2, { autoAlpha: 1, y: 0 });
                 }
 
                 wrappers.forEach((wrapper) => {
@@ -67,26 +70,65 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
                 return;
             }
 
-            // ─── Title: pin + orange fill ─────────────────────────────────────────────
+            // ─── Title ───────────────────────────────────────────────────────────────
             if (titleFill && titleSection) {
-                gsap
-                    .timeline({
-                        scrollTrigger: {
-                            trigger: titleSection,
-                            start: mobileMotion ? `top top+=${mobileHeaderOffsetPx}` : "center center",
-                            end: mobileMotion ? `+=${mobilePinDistance}` : "+=60%",
-                            pin: true,
-                            scrub: mobileMotion ? 0.85 : true,
-                            pinSpacing: true,
-                            anticipatePin: 1,
-                            invalidateOnRefresh: true,
-                        },
-                    })
-                    .fromTo(
-                        titleFill,
-                        { "--title-fill": "0%" },
-                        { "--title-fill": "100%", ease: "none" },
-                    );
+                if (isMobile) {
+                    // Mobile: Scroll reveal + automatic orange fill sweep (No pin, no locked scrub)
+                    gsap.set(titleFill, { "--title-fill": "0%" });
+                    if (titleH2) {
+                        gsap.set(titleH2, { autoAlpha: 0, y: 24 });
+
+                        const mobileTitleTimeline = gsap.timeline({
+                            scrollTrigger: {
+                                trigger: titleSection,
+                                start: "top 78%",
+                                toggleActions: "play none none reverse",
+                                invalidateOnRefresh: true,
+                            },
+                        });
+
+                        mobileTitleTimeline
+                            .to(
+                                titleH2,
+                                {
+                                    autoAlpha: 1,
+                                    y: 0,
+                                    duration: 0.65,
+                                    ease: "power3.out",
+                                },
+                                0,
+                            )
+                            .to(
+                                titleFill,
+                                {
+                                    "--title-fill": "100%",
+                                    duration: 0.85,
+                                    ease: "power2.out",
+                                },
+                                0.12,
+                            );
+                    }
+                } else {
+                    // Desktop & Tablet: Exactly as existing (Pin + scrub fill)
+                    gsap
+                        .timeline({
+                            scrollTrigger: {
+                                trigger: titleSection,
+                                start: "center center",
+                                end: "+=60%",
+                                pin: true,
+                                scrub: true,
+                                pinSpacing: true,
+                                anticipatePin: 1,
+                                invalidateOnRefresh: true,
+                            },
+                        })
+                        .fromTo(
+                            titleFill,
+                            { "--title-fill": "0%" },
+                            { "--title-fill": "100%", ease: "none" },
+                        );
+                }
             } else {
                 setSafeState(true);
             }

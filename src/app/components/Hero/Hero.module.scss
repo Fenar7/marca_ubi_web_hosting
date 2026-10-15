@@ -305,10 +305,20 @@
 
 }
 
+@media (max-width: 56.1875rem) {
+  .heroSection {
+    padding-bottom: 1rem;
+  }
+
+  .bottomRow {
+    bottom: 1rem;
+  }
+}
+
 @media (max-width: 35.9375rem) {
   .heroSection {
     min-height: 45.5rem;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1.5rem 1rem;
     /* consistent 1.5rem inline on mobile */
   }
 
@@ -350,9 +360,21 @@
     align-items: flex-start;
   }
 
+  .buttonIcon {
+    height: 1.1rem;
+    width: 1.1rem;
+  }
+
   .bottomRow {
-    bottom: 1.5rem;
+    bottom: 1rem;
     left: 1rem;
     right: 1rem;
+  }
+}
+
+@media (max-width: 23.4375rem) {
+  .buttonIcon {
+    height: 1rem;
+    width: 1rem;
   }
 }
