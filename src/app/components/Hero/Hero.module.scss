@@ -307,18 +307,18 @@
 
 @media (max-width: 56.1875rem) {
   .heroSection {
-    padding-bottom: 0.4375rem;
+    padding-bottom: 0.75rem;
   }
 
   .bottomRow {
-    bottom: 0.4375rem;
+    bottom: 0.75rem;
   }
 }
 
 @media (max-width: 35.9375rem) {
   .heroSection {
     min-height: 45.5rem;
-    padding: 1rem 1.5rem 0.4375rem;
+    padding: 1rem 1.5rem 0.75rem;
     /* consistent 1.5rem inline on mobile */
   }
 
@@ -366,7 +366,7 @@
   }
 
   .bottomRow {
-    bottom: 0.4375rem;
+    bottom: 0.75rem;
     left: 1rem;
     right: 1rem;
   }
