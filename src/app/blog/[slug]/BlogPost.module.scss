@@ -1,0 +1,352 @@
+.articlePageMain {
+  background: $black;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.articleContainer {
+  flex: 1;
+  max-width: 120rem;
+  width: 100%;
+  margin-inline: auto;
+  padding: clamp(6.5rem, 10vw, 9.5rem) clamp(1rem, 5.2vw, 6.25rem) clamp(4rem, 7vw, 7rem);
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  font-size: 0.84rem;
+  color: $hash-grey;
+  flex-wrap: wrap;
+
+  a {
+    color: #a4a4a4;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $white;
+    }
+  }
+}
+
+.breadcrumbSeparator {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.currentBreadcrumb {
+  color: #777;
+  max-width: 20rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Article Header */
+.articleHeader {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  max-width: 68rem;
+  margin-bottom: clamp(2.5rem, 4.5vw, 4rem);
+}
+
+.headerMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.categoryBadge {
+  color: $cta-orange;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metaDot {
+  color: $hash-grey;
+  font-size: 0.75rem;
+}
+
+.dateText,
+.readingTimeText {
+  color: $hash-grey;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.articleTitle {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(2.15rem, 4.2vw, 4.25rem);
+  font-weight: 300;
+  letter-spacing: -0.018em;
+  line-height: 1.12;
+  margin: 0;
+}
+
+.articleStandfirst {
+  color: #c9c9c9;
+  font-family: $font-graphik;
+  font-size: clamp(1.1rem, 1.4vw, 1.35rem);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.authorRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.authorAvatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #1c1c1c;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.authorDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.authorName {
+  color: $white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.authorRole {
+  color: $hash-grey;
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+/* Hero Media */
+.heroMediaWrap {
+  margin-bottom: clamp(3rem, 6vw, 5.5rem);
+}
+
+.heroImageContainer {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: 44rem;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #141414;
+
+  img {
+    object-fit: cover;
+  }
+}
+
+.heroCaption {
+  color: $hash-grey;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+/* 2-Column Editorial Layout */
+.editorialLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 4vw, 5rem);
+  position: relative;
+
+  @media (min-width: 64rem) {
+    grid-template-columns: 18rem minmax(0, 52rem);
+    justify-content: space-between;
+  }
+}
+
+/* Left Sticky Rail */
+.stickyRail {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+
+  @media (min-width: 64rem) {
+    position: sticky;
+    top: 6rem;
+    height: fit-content;
+  }
+}
+
+.backLink {
+  color: #a4a4a4;
+  font-size: 0.88rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $white;
+  }
+}
+
+/* Main Article Content Column */
+.mainReadingColumn {
+  max-width: 52rem;
+  width: 100%;
+}
+
+/* Author Bio Card */
+.authorBioCard {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  margin-top: clamp(3rem, 5vw, 5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  @media (min-width: 40rem) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.bioAvatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.bioContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bioTag {
+  color: $hash-grey;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bioName {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+.bioRole {
+  color: $hash-grey;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.bioText {
+  color: #bfbfbf;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0.5rem 0 0;
+}
+
+.bioSocials {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+
+  a {
+    color: #9c9c9c;
+    font-size: 0.8125rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $cta-orange;
+    }
+  }
+}
+
+/* Related Dispatches */
+.relatedSection {
+  margin-top: clamp(4rem, 7vw, 7rem);
+}
+
+.relatedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 1rem;
+}
+
+.relatedTitle {
+  color: $white;
+  font-family: $font-movatif;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.relatedViewAll {
+  color: #a4a4a4;
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $white;
+  }
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+
+  @media (min-width: 44rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 68rem) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
