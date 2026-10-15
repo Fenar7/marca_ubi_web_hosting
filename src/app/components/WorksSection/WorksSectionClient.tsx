@@ -73,23 +73,40 @@ const WorksSectionClient = ({ works }: WorksSectionClientProps) => {
             // ─── Title ───────────────────────────────────────────────────────────────
             if (titleFill && titleSection) {
                 if (isMobile) {
-                    // Mobile: Normal title with simple scroll reveal (No pin, no sweep)
+                    // Mobile: Scroll reveal + automatic orange fill sweep (No pin, no locked scrub)
                     gsap.set(titleFill, { "--title-fill": "0%" });
                     if (titleH2) {
-                        gsap.set(titleH2, { autoAlpha: 0, y: 20 });
+                        gsap.set(titleH2, { autoAlpha: 0, y: 24 });
 
-                        gsap.to(titleH2, {
-                            autoAlpha: 1,
-                            y: 0,
-                            duration: 0.65,
-                            ease: "power3.out",
+                        const mobileTitleTimeline = gsap.timeline({
                             scrollTrigger: {
                                 trigger: titleSection,
-                                start: "top 82%",
+                                start: "top 78%",
                                 toggleActions: "play none none reverse",
                                 invalidateOnRefresh: true,
                             },
                         });
+
+                        mobileTitleTimeline
+                            .to(
+                                titleH2,
+                                {
+                                    autoAlpha: 1,
+                                    y: 0,
+                                    duration: 0.65,
+                                    ease: "power3.out",
+                                },
+                                0,
+                            )
+                            .to(
+                                titleFill,
+                                {
+                                    "--title-fill": "100%",
+                                    duration: 0.85,
+                                    ease: "power2.out",
+                                },
+                                0.12,
+                            );
                     }
                 } else {
                     // Desktop & Tablet: Exactly as existing (Pin + scrub fill)
