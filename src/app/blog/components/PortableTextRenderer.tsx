@@ -1,20 +1,23 @@
-import { PortableText, type PortableTextComponents } from "next-sanity";
+import { PortableText, type PortableTextComponents, type PortableTextBlock } from "next-sanity";
 import Link from "next/link";
+import { urlFor } from "@/sanity/lib/image";
 import styles from "./PortableTextRenderer.module.scss";
 
-function slugify(text: string): string {
-  return text
+export function slugify(text: string, index?: number): string {
+  const slug = text
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .trim()
     .replace(/\s+/g, "-");
+  return slug || `heading-${index ?? 0}`;
 }
 
 export const portableTextComponents: PortableTextComponents = {
   block: {
-    h2: ({ children, value }) => {
+    h2: ({ children, value, index }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const text = value?.children?.map((c: any) => c.text).join("") || "";
-      const id = slugify(text);
+      const id = slugify(text, index);
       return (
         <h2 id={id} className={styles.heading2}>
           <a href={`#${id}`} className={styles.headingAnchor}>
@@ -24,10 +27,10 @@ export const portableTextComponents: PortableTextComponents = {
         </h2>
       );
     },
-    h3: ({ children, value }) => {
+    h3: ({ children, value, index }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const text = value?.children?.map((c: any) => c.text).join("") || "";
-      const id = slugify(text);
+      const id = slugify(text, index);
       return (
         <h3 id={id} className={styles.heading3}>
           {children}
@@ -56,17 +59,19 @@ export const portableTextComponents: PortableTextComponents = {
     code: ({ children }) => <code className={styles.inlineCode}>{children}</code>,
     link: ({ value, children }) => {
       const href = value?.href || "#";
-      const isExternal = href.startsWith("http");
-      if (isExternal) {
+      const isExternal = href.startsWith("http://") || href.startsWith("https://") || href.startsWith("//");
+      const isProtocolLink = href.startsWith("mailto:") || href.startsWith("tel:");
+
+      if (isExternal || isProtocolLink) {
         return (
           <a
             href={href}
-            target={value?.blank !== false ? "_blank" : undefined}
-            rel={value?.blank !== false ? "noopener noreferrer" : undefined}
+            target={isExternal && value?.blank !== false ? "_blank" : undefined}
+            rel={isExternal && value?.blank !== false ? "noopener noreferrer" : undefined}
             className={styles.articleLink}
           >
             {children}
-            <span className={styles.linkArrow} aria-hidden="true">↗</span>
+            {isExternal && <span className={styles.linkArrow} aria-hidden="true">↗</span>}
           </a>
         );
       }
@@ -91,7 +96,7 @@ export const portableTextComponents: PortableTextComponents = {
       );
     },
     image: ({ value }) => {
-      const url = value?.asset?.url;
+      const url = value?.asset?.url || (value?.asset ? urlFor(value).url() : null);
       if (!url) return null;
       return (
         <figure className={styles.figure}>
@@ -110,9 +115,9 @@ export const portableTextComponents: PortableTextComponents = {
     codeBlock: ({ value }) => {
       return (
         <div className={styles.codeContainer}>
-          {value?.filename && (
+          {(value?.filename || value?.language) && (
             <div className={styles.codeHeader}>
-              <span className={styles.codeFilename}>{value.filename}</span>
+              <span className={styles.codeFilename}>{value?.filename || ""}</span>
               {value?.language && <span className={styles.codeLang}>{value.language}</span>}
             </div>
           )}
@@ -125,8 +130,7 @@ export const portableTextComponents: PortableTextComponents = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function PortableTextRenderer({ value }: { value: any }) {
+export default function PortableTextRenderer({ value }: { value: PortableTextBlock[] }) {
   if (!value) return null;
   return (
     <div className={styles.articleContent}>

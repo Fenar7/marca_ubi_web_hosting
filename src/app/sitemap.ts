@@ -2,7 +2,9 @@ import type { MetadataRoute } from "next";
 import { client } from "@/sanity/lib/client";
 import { sitemapPostsQuery } from "@/sanity/lib/blog-queries";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com";
+export const revalidate = 3600; // Revalidate sitemap every 1 hour
+
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Core Static Routes

@@ -19,6 +19,7 @@ function formatDate(isoString: string): string {
       month: "short",
       day: "numeric",
       year: "numeric",
+      timeZone: "UTC",
     });
   } catch {
     return "";
@@ -73,6 +74,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
         <nav className={styles.filterBar} aria-label="Filter insights by category">
           <button
             type="button"
+            aria-pressed={selectedCategory === "all"}
             className={`${styles.filterPill} ${selectedCategory === "all" ? styles.filterPillActive : ""}`}
             onClick={() => setSelectedCategory("all")}
           >
@@ -88,6 +90,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
               <button
                 key={category._id}
                 type="button"
+                aria-pressed={selectedCategory === category.slug}
                 className={`${styles.filterPill} ${selectedCategory === category.slug ? styles.filterPillActive : ""}`}
                 onClick={() => setSelectedCategory(category.slug)}
               >
@@ -102,7 +105,12 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
       {/* Featured Leading Card */}
       {featuredPost && (
         <article className={styles.featuredCard}>
-          <div className={styles.featuredMedia}>
+          <Link
+            href={`/blog/${featuredPost.slug}`}
+            className={styles.featuredMedia}
+            tabIndex={-1}
+            aria-hidden="true"
+          >
             {featuredPost.mainImage?.asset?.url ? (
               <Image
                 src={featuredPost.mainImage.asset.url}
@@ -114,7 +122,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
             ) : (
               <div style={{ width: "100%", height: "100%", background: "#161616" }} />
             )}
-          </div>
+          </Link>
 
           <div className={styles.featuredContent}>
             <div className={styles.featuredTop}>
@@ -148,7 +156,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
                 <div className={styles.authorMeta}>
                   {featuredPost.author.avatar?.asset?.url && (
                     <div className={styles.authorAvatar}>
-                      <img
+                      <Image
                         src={featuredPost.author.avatar.asset.url}
                         alt={featuredPost.author.name}
                         width={40}

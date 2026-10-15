@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { PortableTextBlock } from "next-sanity";
 import styles from "./BlogPostComponents.module.scss";
 
 interface TocItem {
@@ -8,30 +9,33 @@ interface TocItem {
   text: string;
 }
 
-function slugify(text: string): string {
-  return text
+function slugify(text: string, index?: number): string {
+  const slug = text
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .trim()
     .replace(/\s+/g, "-");
+  return slug || `heading-${index ?? 0}`;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function TableOfContents({ blocks }: { blocks: any[] }) {
+export default function TableOfContents({ blocks }: { blocks: PortableTextBlock[] }) {
   const [activeId, setActiveId] = useState<string>("");
 
-  const items: TocItem[] = (blocks || [])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter((b: any) => b._type === "block" && b.style === "h2")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((b: any) => {
+  const items: TocItem[] = useMemo(() => {
+    return (blocks || [])
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const text = b.children?.map((c: any) => c.text).join("") || "";
-      return {
-        id: slugify(text),
-        text,
-      };
-    })
-    .filter((item) => item.text.trim().length > 0);
+      .filter((b: any) => b._type === "block" && b.style === "h2")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((b: any, index: number) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const text = b.children?.map((c: any) => c.text).join("") || "";
+        return {
+          id: slugify(text, index),
+          text,
+        };
+      })
+      .filter((item) => item.text.trim().length > 0);
+  }, [blocks]);
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -76,6 +80,7 @@ export default function TableOfContents({ blocks }: { blocks: any[] }) {
                   const target = document.getElementById(item.id);
                   if (target) {
                     target.scrollIntoView({ behavior: "smooth" });
+                    window.history.pushState(null, "", `#${item.id}`);
                     setActiveId(item.id);
                   }
                 }}

@@ -2,7 +2,7 @@ import { groq } from "next-sanity";
 
 // All published posts for the /blog listing page
 export const postsQuery = groq`
-  *[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+  *[_type == "post" && defined(slug.current) && !(_id in path('drafts.**'))] | order(publishedAt desc) {
     _id,
     title,
     "slug": slug.current,
@@ -52,13 +52,13 @@ export const categoriesQuery = groq`
     "slug": slug.current,
     description,
     color,
-    "postCount": count(*[_type == "post" && references(^._id)])
+    "postCount": count(*[_type == "post" && !(_id in path('drafts.**')) && references(^._id)])
   }
 `;
 
 // Detailed single post by slug
 export const postBySlugQuery = groq`
-  *[_type == "post" && slug.current == $slug][0] {
+  *[_type == "post" && slug.current == $slug && !(_id in path('drafts.**'))][0] {
     _id,
     title,
     "slug": slug.current,
@@ -103,7 +103,20 @@ export const postBySlugQuery = groq`
       "slug": slug.current,
       color
     },
-    body,
+    body[] {
+      ...,
+      _type == "image" => {
+        ...,
+        asset-> {
+          _id,
+          url,
+          metadata {
+            dimensions,
+            lqip
+          }
+        }
+      }
+    },
     seo {
       metaTitle,
       metaDescription,
@@ -122,12 +135,12 @@ export const postBySlugQuery = groq`
 
 // Slugs for generateStaticParams()
 export const postSlugsQuery = groq`
-  *[_type == "post" && defined(slug.current)][].slug.current
+  *[_type == "post" && defined(slug.current) && !(_id in path('drafts.**'))][].slug.current
 `;
 
 // Related posts from the same category
 export const relatedPostsQuery = groq`
-  *[_type == "post" && category._ref == $categoryId && _id != $currentPostId] | order(publishedAt desc)[0...3] {
+  *[_type == "post" && category._ref == $categoryId && _id != $currentPostId && !(_id in path('drafts.**')) && defined(slug.current)] | order(publishedAt desc)[0...3] {
     _id,
     title,
     "slug": slug.current,
@@ -161,7 +174,7 @@ export const relatedPostsQuery = groq`
 
 // Slugs and timestamps for dynamic sitemap.ts
 export const sitemapPostsQuery = groq`
-  *[_type == "post" && defined(slug.current)] {
+  *[_type == "post" && defined(slug.current) && !(_id in path('drafts.**')) && seo.noIndex != true] {
     "slug": slug.current,
     _updatedAt,
     publishedAt

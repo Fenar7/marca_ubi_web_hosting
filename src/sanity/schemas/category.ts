@@ -32,8 +32,8 @@ export const categorySchema = defineType({
       name: "color",
       title: "Accent Color Hex",
       type: "string",
-      description: "Hex code (e.g. #fe3a02) used for category pill tags",
-      initialValue: "#fe3a02",
+      description: "Hex code (e.g. #ff6100) used for category pill tags",
+      initialValue: "#ff6100",
     }),
   ],
   preview: {

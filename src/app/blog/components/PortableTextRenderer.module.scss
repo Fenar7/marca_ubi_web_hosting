@@ -29,6 +29,11 @@
     opacity: 1;
     color: $cta-orange;
   }
+
+  &:focus-visible {
+    outline: 2px solid $cta-orange;
+    outline-offset: 3px;
+  }
 }
 
 .anchorSymbol {
@@ -131,6 +136,11 @@
   &:hover {
     color: $cta-orange;
     text-decoration-color: $cta-orange;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $cta-orange;
+    outline-offset: 2px;
   }
 }
 

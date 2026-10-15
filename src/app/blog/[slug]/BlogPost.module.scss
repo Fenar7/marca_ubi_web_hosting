@@ -31,6 +31,11 @@
     &:hover {
       color: $white;
     }
+
+    &:focus-visible {
+      outline: 2px solid $cta-orange;
+      outline-offset: 2px;
+    }
   }
 }
 
@@ -207,6 +212,11 @@
 
   &:hover {
     color: $white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $cta-orange;
+    outline-offset: 3px;
   }
 }
 

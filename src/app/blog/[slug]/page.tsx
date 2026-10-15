@@ -11,6 +11,7 @@ import {
   relatedPostsQuery,
 } from "@/sanity/lib/blog-queries";
 import type { Post, PostSummary } from "@/sanity/types/blog";
+import { calculateReadingTime } from "@/sanity/types/blog";
 import PortableTextRenderer from "../components/PortableTextRenderer";
 import TableOfContents from "../components/TableOfContents";
 import SocialShareBar from "../components/SocialShareBar";
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const metaTitle = post.seo?.metaTitle || `${post.title} — Marca Ubi Insights`;
   const metaDescription = post.seo?.metaDescription || post.excerpt;
   const ogImageUrl = post.seo?.ogImage?.asset?.url || post.mainImage?.asset?.url;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
   const canonicalUrl = post.seo?.canonicalUrl || `${siteUrl}/blog/${post.slug}`;
 
   return {
@@ -85,6 +86,7 @@ function formatDate(isoString: string): string {
       month: "long",
       day: "numeric",
       year: "numeric",
+      timeZone: "UTC",
     });
   } catch {
     return "";
@@ -112,8 +114,9 @@ export default async function BlogPostPage({ params }: PageProps) {
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
   const postUrl = `${siteUrl}/blog/${post.slug}`;
+  const readingMinutes = post.estimatedReadingTime || calculateReadingTime(post.body);
 
   // JSON-LD Structured Data
   const jsonLd = {
@@ -194,10 +197,10 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </time>
               </>
             )}
-            {post.estimatedReadingTime && (
+            {readingMinutes > 0 && (
               <>
                 <span className={styles.metaDot}>•</span>
-                <span className={styles.readingTimeText}>{post.estimatedReadingTime} min read</span>
+                <span className={styles.readingTimeText}>{readingMinutes} min read</span>
               </>
             )}
           </div>
@@ -209,7 +212,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <div className={styles.authorRow}>
               {post.author.avatar?.asset?.url && (
                 <div className={styles.authorAvatar}>
-                  <img
+                  <Image
                     src={post.author.avatar.asset.url}
                     alt={post.author.name}
                     width={44}
@@ -266,7 +269,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               <div className={styles.authorBioCard}>
                 {post.author.avatar?.asset?.url && (
                   <div className={styles.bioAvatar}>
-                    <img
+                    <Image
                       src={post.author.avatar.asset.url}
                       alt={post.author.name}
                       width={64}
@@ -320,13 +323,15 @@ export default async function BlogPostPage({ params }: PageProps) {
                   className={blogListingStyles.postCard}
                 >
                   <div className={blogListingStyles.cardMedia}>
-                    {related.mainImage?.asset?.url && (
+                    {related.mainImage?.asset?.url ? (
                       <Image
                         src={related.mainImage.asset.url}
                         alt={related.mainImage.alt || related.title}
                         fill
                         sizes="(max-width: 44rem) 100vw, 33vw"
                       />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", background: "#161616" }} />
                     )}
                   </div>
                   <div className={blogListingStyles.cardBody}>
