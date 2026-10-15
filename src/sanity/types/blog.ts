@@ -68,7 +68,6 @@ export type PostSummary = Omit<Post, "body" | "seo">;
 
 export function calculateReadingTime(blocks?: PortableTextBlock[]): number {
   if (!blocks || blocks.length === 0) return 3;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const text = (blocks || [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .filter((b: any) => b._type === "block")
