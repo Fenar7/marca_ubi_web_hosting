@@ -7,18 +7,19 @@
 
 .articleContainer {
   flex: 1;
-  max-width: 120rem;
+  max-width: 82rem;
   width: 100%;
   margin-inline: auto;
-  padding: clamp(6.5rem, 10vw, 9.5rem) clamp(1rem, 5.2vw, 6.25rem) clamp(4rem, 7vw, 7rem);
+  padding: clamp(6.5rem, 9vw, 9rem) clamp(1.25rem, 4vw, 3rem) clamp(4rem, 7vw, 7rem);
 }
 
 /* Breadcrumbs */
 .breadcrumbs {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
   font-size: 0.84rem;
   color: $hash-grey;
   flex-wrap: wrap;
@@ -55,14 +56,17 @@
 .articleHeader {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.25rem, 2.5vw, 2rem);
-  max-width: 68rem;
-  margin-bottom: clamp(2.5rem, 4.5vw, 4rem);
+  align-items: center;
+  text-align: center;
+  gap: clamp(1.25rem, 2.2vw, 1.75rem);
+  max-width: 58rem;
+  margin: 0 auto clamp(2.5rem, 4.5vw, 3.75rem);
 }
 
 .headerMetaRow {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.85rem;
   flex-wrap: wrap;
 }
@@ -91,27 +95,33 @@
 .articleTitle {
   color: $white;
   font-family: $font-movatif;
-  font-size: clamp(2.15rem, 4.2vw, 4.25rem);
+  font-size: clamp(2.25rem, 4.2vw, 4rem);
   font-weight: 300;
   letter-spacing: -0.018em;
-  line-height: 1.12;
+  line-height: 1.14;
   margin: 0;
+  text-wrap: balance;
 }
 
 .articleStandfirst {
-  color: #c9c9c9;
+  color: #c0c0c0;
   font-family: $font-graphik;
-  font-size: clamp(1.1rem, 1.4vw, 1.35rem);
-  line-height: 1.55;
-  margin: 0;
+  font-size: clamp(1.08rem, 1.3vw, 1.28rem);
+  line-height: 1.6;
+  max-width: 48rem;
+  margin: 0 auto;
+  text-wrap: pretty;
 }
 
 .authorRow {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.85rem;
-  padding-top: 1rem;
+  padding-top: 1.25rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .authorAvatar {
@@ -133,6 +143,7 @@
 .authorDetails {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .authorName {
@@ -150,17 +161,23 @@
 
 /* Hero Media */
 .heroMediaWrap {
-  margin-bottom: clamp(3rem, 6vw, 5.5rem);
+  max-width: 78rem;
+  margin: 0 auto clamp(3.25rem, 5.5vw, 5rem);
 }
 
 .heroImageContainer {
   position: relative;
-  aspect-ratio: 16 / 9;
-  max-height: 44rem;
+  aspect-ratio: 21 / 9;
+  max-height: 38rem;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: #141414;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.5);
+
+  @media (max-width: 48rem) {
+    aspect-ratio: 16 / 9;
+  }
 
   img {
     object-fit: cover;
@@ -179,12 +196,16 @@
 .editorialLayout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(2rem, 4vw, 5rem);
+  gap: 2.5rem;
   position: relative;
+  max-width: 68rem;
+  margin-inline: auto;
 
   @media (min-width: 64rem) {
-    grid-template-columns: 18rem minmax(0, 52rem);
-    justify-content: space-between;
+    grid-template-columns: 15rem minmax(0, 48rem);
+    column-gap: clamp(3rem, 4.5vw, 4.5rem);
+    justify-content: center;
+    align-items: start;
   }
 }
 
@@ -192,7 +213,7 @@
 .stickyRail {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 2rem;
 
   @media (min-width: 64rem) {
     position: sticky;
@@ -222,7 +243,7 @@
 
 /* Main Article Content Column */
 .mainReadingColumn {
-  max-width: 52rem;
+  max-width: 48rem;
   width: 100%;
 }
 
@@ -329,7 +350,8 @@
 
 /* Related Dispatches */
 .relatedSection {
-  margin-top: clamp(4rem, 7vw, 7rem);
+  max-width: 68rem;
+  margin: clamp(4rem, 7vw, 7rem) auto 0;
 }
 
 .relatedHeader {
