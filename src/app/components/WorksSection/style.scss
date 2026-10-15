@@ -231,6 +231,11 @@
 }
 
 @media (max-width: 56.1875rem) {
+  .works-section-container-main {
+    padding-top: 0.4375rem;
+    padding-bottom: 0.4375rem;
+  }
+
   /* Mobile header ~4.8rem — sticky offset updated; wrapper keeps its 150svh scroll height */
   .work-item-wrapper {
     top: 4.8rem;
