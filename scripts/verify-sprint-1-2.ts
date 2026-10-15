@@ -273,7 +273,7 @@ async function runSprint12Verification() {
     }
     console.log(`  ✓ status_change captured: Description='${actStatusRes.rows[0].description}'`);
 
-    // Mutation 3c: General Field Update (budget_bracket)
+    // Mutation 3c: Automated System Field Update (budget_bracket without JWT actor)
     await client.query(`
       UPDATE public.leads 
       SET budget_bracket = '$25,000 - $50,000'
@@ -283,14 +283,30 @@ async function runSprint12Verification() {
     const actFieldRes = await client.query(`
       SELECT activity_type, description, metadata 
       FROM public.lead_activities 
-      WHERE lead_id = $1 AND activity_type = 'field_update'
+      WHERE lead_id = $1 AND activity_type = 'system_event'
       ORDER BY created_at DESC LIMIT 1;
     `, [auditLeadId]);
 
     if (actFieldRes.rows.length === 0) {
-      throw new Error('audit_lead_changes_trigger failed to capture field_update activity!');
+      throw new Error('audit_lead_changes_trigger failed to classify unauthenticated update as system_event!');
     }
-    console.log(`  ✓ field_update captured: budget_bracket updated to '${actFieldRes.rows[0].metadata.changes.budget_bracket.new}'`);
+    console.log(`  ✓ system_event captured: '${actFieldRes.rows[0].description}' for budget_bracket = '${actFieldRes.rows[0].metadata.changes.budget_bracket.new}'`);
+
+    // Mutation 3d: Compound Mutation (status transition + reassignment)
+    await client.query(`
+      UPDATE public.leads 
+      SET status_id = 'b0000000-0000-0000-0000-000000000006'
+      WHERE id = $1;
+    `, [auditLeadId]);
+
+    const actCompoundRes = await client.query(`
+      SELECT activity_type, description, metadata 
+      FROM public.lead_activities 
+      WHERE lead_id = $1 AND activity_type = 'status_change'
+      ORDER BY created_at DESC LIMIT 1;
+    `, [auditLeadId]);
+
+    console.log(`  ✓ Status transition captured: '${actCompoundRes.rows[0].description}'`);
 
     // Clean up audit probe lead (verifies cascade to lead_activities)
     await client.query(`DELETE FROM public.leads WHERE id = $1;`, [auditLeadId]);

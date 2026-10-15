@@ -5,7 +5,8 @@
  * Sprint: 1.2 (Deterministic Sequence Generators, Audit Engines & Database Triggers)
  * Target Engine: PostgreSQL 15+ (Supabase Managed PostgreSQL)
  * Description: Implements database-level triggers for automatic UTC timestamp synchronization,
- *              agency sole administrator lockout defense, and automated JSONB delta audit logging.
+ *              agency sole administrator lockout defense with advisory serialization,
+ *              and hardened automated JSONB delta audit logging.
  */
 
 -- 1. Automatic UTC Timestamp Synchronization Function & Triggers
@@ -13,12 +14,15 @@
 -- and synchronizes updated_at to the current UTC timestamp using the database engine clock.
 -- Eliminates reliance on client application clocks and prevents timezone drift.
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 BEGIN
     NEW.updated_at = timezone('utc'::text, now());
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 COMMENT ON FUNCTION public.handle_updated_at() IS 'Enforces automatic UTC timestamp synchronization on record mutation.';
 
@@ -34,11 +38,14 @@ FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- 2. Agency Sole Administrator Protection Trigger
 -- Architectural Rationale: Prevents catastrophic administrative lockout where an agency
--- admin inadvertently demotes, suspends, or deletes the sole remaining active admin.
--- Evaluates BEFORE UPDATE OR DELETE on public.profiles. If the target row is an active admin
--- and no other active admin exists, aborts the transaction with SQLSTATE 23514 (check_violation).
+-- admin demotes, suspends, or deletes the sole remaining active admin.
+-- Concurrency Defense: Uses pg_advisory_xact_lock to eliminate write-skew race conditions
+-- when two active administrators attempt concurrent self-demotions in parallel transactions.
 CREATE OR REPLACE FUNCTION public.protect_sole_admin()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 DECLARE
     active_admin_count INT;
 BEGIN
@@ -46,7 +53,10 @@ BEGIN
     IF TG_OP = 'UPDATE' THEN
         IF OLD.role = 'admin' AND OLD.status = 'active' THEN
             -- Check if the update alters role or operational status away from active admin
-            IF NEW.role != 'admin' OR NEW.status != 'active' THEN
+            IF NEW.role IS DISTINCT FROM 'admin' OR NEW.status IS DISTINCT FROM 'active' THEN
+                -- Acquire transactional advisory lock to strictly serialize sole-admin verification
+                PERFORM pg_advisory_xact_lock(hashtext('protect_sole_admin_lock'));
+
                 SELECT COUNT(*)
                 INTO active_admin_count
                 FROM public.profiles
@@ -66,6 +76,9 @@ BEGIN
     -- Evaluate hard deletions
     IF TG_OP = 'DELETE' THEN
         IF OLD.role = 'admin' AND OLD.status = 'active' THEN
+            -- Acquire transactional advisory lock to serialize deletion checks
+            PERFORM pg_advisory_xact_lock(hashtext('protect_sole_admin_lock'));
+
             SELECT COUNT(*)
             INTO active_admin_count
             FROM public.profiles
@@ -83,9 +96,9 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
-COMMENT ON FUNCTION public.protect_sole_admin() IS 'Guarantees agency governance by preventing demotion, suspension, or deletion of the sole active administrator.';
+COMMENT ON FUNCTION public.protect_sole_admin() IS 'Guarantees agency governance by preventing demotion, suspension, or deletion of the sole active administrator with advisory locking.';
 
 DROP TRIGGER IF EXISTS trg_protect_sole_admin ON public.profiles;
 CREATE TRIGGER trg_protect_sole_admin
@@ -93,12 +106,16 @@ BEFORE UPDATE OR DELETE ON public.profiles
 FOR EACH ROW EXECUTE FUNCTION public.protect_sole_admin();
 
 -- 3. Automated Delta-Capturing Audit Engine Trigger
--- Architectural Rationale: Automatically captures before-and-after JSONB deltas on all lead mutations,
--- eliminating the need for boilerplate audit insertion in application Server Actions.
--- Classifies mutations into commercial activity types (status_change, reassignment, priority_change, field_update).
--- Executes as SECURITY DEFINER to ensure immutable audit log persistence regardless of caller RLS restrictions.
+-- Architectural Rationale: Automatically captures before-and-after JSONB deltas on all lead mutations.
+-- Security Definer Hardening: Statically pinned to SET search_path = public, auth, pg_temp to eliminate
+-- search_path hijacking vulnerabilities (CWE-426).
+-- Background Job Categorization: Classifies unauthenticated backend cron mutations as system_event per PRD §15.2.
 CREATE OR REPLACE FUNCTION public.audit_lead_changes_trigger()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql 
+SECURITY DEFINER
+SET search_path = public, auth, pg_temp
+AS $$
 DECLARE
     current_actor UUID;
     delta_json JSONB := '{}'::jsonb;
@@ -109,6 +126,9 @@ DECLARE
     change_desc TEXT := 'Lead record updated';
     old_row_json JSONB;
     new_row_json JSONB;
+    is_status_changed BOOLEAN := FALSE;
+    is_reassigned BOOLEAN := FALSE;
+    is_priority_changed BOOLEAN := FALSE;
 BEGIN
     -- Extract current authenticated Supabase user or fall back to NULL for automated background jobs
     BEGIN
@@ -147,16 +167,31 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    -- Detect and classify primary commercial events
-    IF OLD.status_id IS DISTINCT FROM NEW.status_id THEN
+    -- Detect primary commercial events
+    is_status_changed := (OLD.status_id IS DISTINCT FROM NEW.status_id);
+    is_reassigned := (OLD.assigned_to IS DISTINCT FROM NEW.assigned_to);
+    is_priority_changed := (OLD.priority IS DISTINCT FROM NEW.priority);
+
+    -- Classify and compose event descriptions
+    IF is_status_changed AND is_reassigned THEN
+        activity_type_val := 'status_change';
+        change_desc := 'Funnel status transitioned & account ownership reassigned';
+    ELSIF is_status_changed THEN
         activity_type_val := 'status_change';
         change_desc := 'Funnel status transitioned';
-    ELSIF OLD.assigned_to IS DISTINCT FROM NEW.assigned_to THEN
+    ELSIF is_reassigned THEN
         activity_type_val := 'reassignment';
         change_desc := 'Account ownership reassigned';
-    ELSIF OLD.priority IS DISTINCT FROM NEW.priority THEN
+    ELSIF is_priority_changed THEN
         activity_type_val := 'priority_change';
         change_desc := 'Priority level updated to ' || NEW.priority;
+    ELSIF current_actor IS NULL THEN
+        -- Automated backend job update per Master PRD Section 15.2
+        activity_type_val := 'system_event';
+        change_desc := 'Automated system update';
+    ELSE
+        activity_type_val := 'field_update';
+        change_desc := 'Lead record updated';
     END IF;
 
     -- Insert immutable audit record directly into lead_activities
@@ -181,9 +216,9 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
-COMMENT ON FUNCTION public.audit_lead_changes_trigger() IS 'Automated JSONB delta-capturing audit trigger recording stage transitions and field mutations into lead_activities.';
+COMMENT ON FUNCTION public.audit_lead_changes_trigger() IS 'Automated JSONB delta-capturing audit trigger recording stage transitions and field mutations into lead_activities with security definer search_path protection.';
 
 DROP TRIGGER IF EXISTS trg_audit_lead_changes ON public.leads;
 CREATE TRIGGER trg_audit_lead_changes
