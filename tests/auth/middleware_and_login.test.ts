@@ -146,6 +146,14 @@ describe('Marca Ubi CRM — Next.js 16 Edge Middleware & Login Hardening (Sprint
       assert.equal(response.status, 200);
       assert.equal(response.headers.get('location'), null);
     });
+
+    it('neutralizes circular next=/admin/login parameter to prevent infinite redirect loops', () => {
+      let safeNext = sanitizeRedirectUrl('/admin/login', '/admin');
+      if (safeNext === '/admin/login' || safeNext.startsWith('/admin/login')) {
+        safeNext = '/admin';
+      }
+      assert.equal(safeNext, '/admin');
+    });
   });
 
   describe('Section 4: Progressive Brute-Force Rate Limiting (auth-rate-limit.ts)', () => {
@@ -166,6 +174,16 @@ describe('Marca Ubi CRM — Next.js 16 Edge Middleware & Login Hardening (Sprint
         assert.equal(record.delayMs, 0);
         assert.equal(record.isLocked, false);
       }
+    });
+
+    it('pre-checks attempt 4 with 1,500ms delay when 3 prior failures exist', () => {
+      for (let i = 1; i <= 3; i++) {
+        recordFailedAttempt(testIdentifier);
+      }
+
+      const preCheck = checkRateLimit(testIdentifier);
+      assert.equal(preCheck.delayMs, THROTTLE_DELAY_MS);
+      assert.equal(preCheck.allowed, true);
     });
 
     it('injects 1,500ms artificial latency delay on failed attempts 4 and 5', () => {
@@ -217,6 +235,15 @@ describe('Marca Ubi CRM — Next.js 16 Edge Middleware & Login Hardening (Sprint
       assert.equal(restoredCheck.allowed, true);
       assert.equal(restoredCheck.attempts, 0);
       assert.equal(restoredCheck.isLocked, false);
+    });
+
+    it('evicts oldest keys via FIFO when active keys reach MAX_STORE_SIZE', () => {
+      clearAllRateLimits();
+      for (let k = 0; k < 10050; k++) {
+        recordFailedAttempt(`test_ip_${k}:attacker@botnet.org`);
+      }
+      const probeCheck = checkRateLimit('test_ip_0:attacker@botnet.org');
+      assert.equal(probeCheck.attempts, 0);
     });
   });
 

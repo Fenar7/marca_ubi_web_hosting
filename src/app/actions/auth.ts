@@ -166,7 +166,10 @@ export async function loginAction(
     resetRateLimit(rateLimitKey);
 
     // Sanitize destination to guarantee strictly internal navigation
-    const safeDestination = sanitizeRedirectUrl(next, '/admin');
+    let safeDestination = sanitizeRedirectUrl(next, '/admin');
+    if (safeDestination === '/admin/login' || safeDestination.startsWith('/admin/login')) {
+      safeDestination = '/admin';
+    }
 
     return {
       success: true,

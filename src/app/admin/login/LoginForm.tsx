@@ -239,6 +239,16 @@ export function LoginForm(): React.ReactElement {
         </button>
       </form>
 
+      <div className={styles.helpRow}>
+        <a
+          href="mailto:security@marcaubi.com?subject=Administrative%20Portal%20Access%20Inquiry"
+          className={styles.helpLink}
+          tabIndex={0}
+        >
+          Need assistance with credentials? Contact Agency Directorate
+        </a>
+      </div>
+
       <div className={styles.securityFooter}>
         <svg
           width="13"

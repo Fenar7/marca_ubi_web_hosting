@@ -1,7 +1,8 @@
 /**
  * @file auth-rate-limit.ts
  * @description In-memory defense-in-depth progressive rate limiter for administrative authentication.
- *              Enforces progressive latency throttling, credential-stuffing defense, and temporary account lockout.
+ *              Enforces progressive latency throttling, credential-stuffing defense, FIFO memory capping,
+ *              and temporary account lockout.
  * @module lib/auth-rate-limit
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  * @see Master PRD Section 7.4.3 (Progressive Brute-Force Lockout Engine)
@@ -48,8 +49,8 @@ export const THROTTLE_DELAY_MS = 1500;
 /** In-memory store indexing rate limit records by normalized client identifier */
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-/** Maximum number of tracked keys to prevent heap exhaustion under distributed attacks */
-const MAX_STORE_SIZE = 10000;
+/** Maximum number of tracked keys to prevent heap exhaustion under distributed attacks (H-01 defense) */
+export const MAX_STORE_SIZE = 10000;
 
 /**
  * Prunes expired lockout entries to prevent memory leaks.
@@ -76,22 +77,11 @@ export function normalizeRateLimitKey(identifier: string): string {
 }
 
 /**
- * Calculates whether artificial latency throttling applies based on attempts count.
- * Per PRD Section 7.4.3: Attempts 1-3 have 0 delay; Attempts 4-5 have 1,500ms delay.
- */
-function calculateThrottleDelay(attempts: number): number {
-  if (attempts >= THROTTLE_MIN_ATTEMPTS && attempts <= THROTTLE_MAX_ATTEMPTS) {
-    return THROTTLE_DELAY_MS;
-  }
-  return 0;
-}
-
-/**
  * Inspects whether an identifier is permitted to attempt authentication.
  *
- * Evaluation Rules (PRD Section 7.4.3):
- * 1. Attempts 1–3: Standard error response; delayMs: 0.
- * 2. Attempts 4–5: Enforced artificial latency of 1,500ms injected into response pipeline.
+ * Evaluation Rules (PRD Section 7.4.3 & H-02 Timing Precision):
+ * 1. Prior failures 0-2 (Attempts 1-3): Standard execution; delayMs = 0.
+ * 2. Prior failures 3-4 (Attempts 4-5): Injects 1,500ms artificial latency into response pipeline.
  * 3. Attempt 6+: Temporary account lockout triggered; allowed: false, 15-minute cooldown.
  *
  * @param {string} rawIdentifier IP address or email identity.
@@ -136,7 +126,8 @@ export function checkRateLimit(rawIdentifier: string): RateLimitCheckResult {
     };
   }
 
-  const delayMs = calculateThrottleDelay(entry.attempts);
+  // Pre-check throttle delay: if prior failures are 3 or 4, this attempt is attempt 4 or 5
+  const delayMs = entry.attempts >= 3 && entry.attempts <= 4 ? THROTTLE_DELAY_MS : 0;
 
   return {
     allowed: true,
@@ -149,6 +140,7 @@ export function checkRateLimit(rawIdentifier: string): RateLimitCheckResult {
 
 /**
  * Records a failed authentication attempt, escalating lockout status if threshold is breached.
+ * Enforces hard FIFO eviction cap if store reaches MAX_STORE_SIZE to defend against memory exhaustion (H-01).
  *
  * @param {string} rawIdentifier IP address or email identity.
  * @returns {RateLimitRecordResult} Updated rate limit state post-increment.
@@ -156,6 +148,12 @@ export function checkRateLimit(rawIdentifier: string): RateLimitCheckResult {
 export function recordFailedAttempt(rawIdentifier: string): RateLimitRecordResult {
   if (rateLimitStore.size >= MAX_STORE_SIZE) {
     pruneExpiredEntries();
+    // Enforce strict FIFO eviction if active unexpired attack keys fill the store
+    while (rateLimitStore.size >= MAX_STORE_SIZE) {
+      const oldestKey = rateLimitStore.keys().next().value;
+      if (!oldestKey) break;
+      rateLimitStore.delete(oldestKey);
+    }
   }
 
   const key = normalizeRateLimitKey(rawIdentifier);
@@ -195,7 +193,11 @@ export function recordFailedAttempt(rawIdentifier: string): RateLimitRecordResul
   }
 
   rateLimitStore.set(key, entry);
-  const delayMs = calculateThrottleDelay(entry.attempts);
+
+  // Post-record throttle indicator: if attempt 4 or 5 failed, it was throttled
+  const delayMs = entry.attempts >= THROTTLE_MIN_ATTEMPTS && entry.attempts <= THROTTLE_MAX_ATTEMPTS
+    ? THROTTLE_DELAY_MS
+    : 0;
 
   return {
     attempts: entry.attempts,

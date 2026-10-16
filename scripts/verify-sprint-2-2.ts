@@ -19,6 +19,7 @@ import {
   resetRateLimit,
   clearAllRateLimits,
   MAX_FAILED_ATTEMPTS,
+  MAX_STORE_SIZE,
   LOCKOUT_DURATION_MS,
   THROTTLE_DELAY_MS,
 } from '../src/app/lib/auth-rate-limit';
@@ -41,13 +42,9 @@ function assert(condition: boolean, testName: string, details?: string): void {
 }
 
 async function runSprint22Verification(): Promise<void> {
-  console.log('\n\x1b[1m\x1b[36m====================================================================\x1b[0m');
-  console.log('\x1b[1m\x1b[36m  MARCA UBI CRM — SPRINT 2.2 PRODUCTION VERIFICATION HARNESS       \x1b[0m');
-  console.log('\x1b[1m\x1b[36m====================================================================\x1b[0m\n');
+  console.log('\n\x1b[1m\x1b[36mMarca Ubi CRM — Sprint 2.2 Production Verification Harness\x1b[0m\n');
 
-  // ==========================================================================
-  // SECTION 1: Open Redirect Sanitization (CWE-601 Defense)
-  // ==========================================================================
+  // Section 1: Open Redirect Defense Sanitization (auth-redirect.ts)
   console.log('\x1b[1m[SECTION 1] Open Redirect Defense Sanitization (auth-redirect.ts)\x1b[0m');
 
   assert(
@@ -100,9 +97,7 @@ async function runSprint22Verification(): Promise<void> {
     'Gracefully returns /admin default for empty destination'
   );
 
-  // ==========================================================================
-  // SECTION 2: Cookie Propagation on Redirection (Finding M-02 Compliance)
-  // ==========================================================================
+  // Section 2: Cookie Propagation on Redirection (Finding M-02 Compliance)
   console.log('\n\x1b[1m[SECTION 2] Cookie Propagation on Redirection (Finding M-02 Compliance)\x1b[0m');
 
   const dummyTargetUrl = new URL('http://localhost:3000/admin/login');
@@ -135,9 +130,7 @@ async function runSprint22Verification(): Promise<void> {
     'Propagates rotated refresh token cookie onto the redirect response'
   );
 
-  // ==========================================================================
-  // SECTION 3: Edge Middleware Route Interception
-  // ==========================================================================
+  // Section 3: Edge Middleware Route Interception
   console.log('\n\x1b[1m[SECTION 3] Edge Middleware Route Guard & Redirect Logic (middleware.ts)\x1b[0m');
 
   // Test 3.1: Unauthenticated request to /admin
@@ -193,9 +186,7 @@ async function runSprint22Verification(): Promise<void> {
     'Unauthenticated GET /admin/login passes through with HTTP 200 (renders login card)'
   );
 
-  // ==========================================================================
-  // SECTION 4: Progressive Brute-Force Rate Limiter & Lockout Engine
-  // ==========================================================================
+  // Section 4: Progressive Brute-Force Rate Limiter & Lockout Engine
   console.log('\n\x1b[1m[SECTION 4] Progressive Rate Limiter & Brute-Force Lockout (auth-rate-limit.ts)\x1b[0m');
 
   clearAllRateLimits();
@@ -216,6 +207,13 @@ async function runSprint22Verification(): Promise<void> {
       `Attempt ${i} recorded: allowed without delay`
     );
   }
+
+  // Pre-check for attempt 4: must inject 1,500ms delay per H-02
+  const checkBeforeAttempt4 = checkRateLimit(testClientKey);
+  assert(
+    checkBeforeAttempt4.delayMs === THROTTLE_DELAY_MS,
+    `Pre-check before Attempt 4 indicates ${THROTTLE_DELAY_MS}ms delay`
+  );
 
   // Record attempt 4: throttled with 1,500ms delay
   const attempt4 = recordFailedAttempt(testClientKey);
@@ -253,9 +251,18 @@ async function runSprint22Verification(): Promise<void> {
     'resetRateLimit restores identifier to pristine unlocked state'
   );
 
-  // ==========================================================================
-  // SECTION 5: Enterprise Security Headers Verification (next.config.ts)
-  // ==========================================================================
+  // Test H-01: FIFO hard-cap eviction under distributed load
+  clearAllRateLimits();
+  for (let k = 0; k < MAX_STORE_SIZE + 50; k++) {
+    recordFailedAttempt(`test_ip_${k}:attacker@botnet.org`);
+  }
+  const probeCheck = checkRateLimit('test_ip_0:attacker@botnet.org');
+  assert(
+    probeCheck.attempts === 0,
+    'Oldest entry evicted via FIFO cap when active keys exceed MAX_STORE_SIZE (H-01 Defended)'
+  );
+
+  // Section 5: Enterprise Security Headers Verification (next.config.ts)
   console.log('\n\x1b[1m[SECTION 5] Enterprise Defense-in-Depth Security Headers (next.config.ts)\x1b[0m');
 
   assert(typeof nextConfig.headers === 'function', 'nextConfig defines async headers() method');
@@ -304,12 +311,8 @@ async function runSprint22Verification(): Promise<void> {
     }
   }
 
-  // ==========================================================================
-  // FINAL REPORT
-  // ==========================================================================
-  console.log('\n\x1b[1m\x1b[36m====================================================================\x1b[0m');
-  console.log(`\x1b[1mVERIFICATION SUMMARY: \x1b[32m${passed} PASSED\x1b[0m | \x1b[31m${failed} FAILED\x1b[0m`);
-  console.log('\x1b[1m\x1b[36m====================================================================\x1b[0m\n');
+  // Verification Summary
+  console.log(`\n\x1b[1mVERIFICATION SUMMARY: \x1b[32m${passed} PASSED\x1b[0m | \x1b[31m${failed} FAILED\x1b[0m\n`);
 
   if (failed > 0) {
     process.exit(1);

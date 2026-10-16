@@ -86,13 +86,26 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       (user.user_metadata?.status as string | undefined);
 
     if (userStatus === 'suspended') {
+      // If already on the authentication route, purge session cookies on the response and permit rendering
+      if (isAuthRoute) {
+        request.cookies.getAll().forEach((cookie) => {
+          if (cookie.name.startsWith('sb-') || cookie.name.includes('-auth-token')) {
+            supabaseResponse.cookies.delete(cookie.name);
+          }
+        });
+        return supabaseResponse;
+      }
+
       const suspendedUrl = new URL('/admin/login', request.url);
       suspendedUrl.searchParams.set('error', 'account_suspended');
 
       const redirectResponse = createRedirectResponse(suspendedUrl, supabaseResponse);
-      // Explicitly clear authentication session cookies on suspended account perimeter interception
-      redirectResponse.cookies.delete('sb-access-token');
-      redirectResponse.cookies.delete('sb-refresh-token');
+      // Dynamically purge all Supabase session cookies (including chunked shards) from browser
+      request.cookies.getAll().forEach((cookie) => {
+        if (cookie.name.startsWith('sb-') || cookie.name.includes('-auth-token')) {
+          redirectResponse.cookies.delete(cookie.name);
+        }
+      });
 
       return redirectResponse;
     }
@@ -101,7 +114,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Scenario 3: Authenticated visitor attempting to re-enter login portal
   if (isAuthRoute && user) {
     const rawNext = request.nextUrl.searchParams.get('next');
-    const safeNext = sanitizeRedirectUrl(rawNext, '/admin');
+    let safeNext = sanitizeRedirectUrl(rawNext, '/admin');
+
+    // Prevent circular redirection loop back to the authentication route itself
+    if (safeNext === '/admin/login' || safeNext.startsWith('/admin/login')) {
+      safeNext = '/admin';
+    }
 
     const destinationUrl = new URL(safeNext, request.url);
     return createRedirectResponse(destinationUrl, supabaseResponse);
