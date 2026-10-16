@@ -81,9 +81,7 @@ async function runSprint12Verification() {
       }
     }
 
-    // ------------------------------------------------------------------------
     // TEST 1: Automatic UTC Timestamp Synchronization (handle_updated_at)
-    // ------------------------------------------------------------------------
     console.log('\n[TEST 1] Verifying handle_updated_at UTC timestamp synchronization...');
     // Create probe lead with artificial backdated timestamp
     const backdatedTime = '2020-01-01T00:00:00Z';
@@ -123,9 +121,7 @@ async function runSprint12Verification() {
     // Clean up probe lead
     await client.query(`DELETE FROM public.leads WHERE id = $1;`, [probeLeadId]);
 
-    // ------------------------------------------------------------------------
     // TEST 2: Agency Sole Administrator Lockout Defense (protect_sole_admin)
-    // ------------------------------------------------------------------------
     console.log('\n[TEST 2] Verifying protect_sole_admin lockout defense...');
     const admin1AuthId = 'c0000000-0000-0000-0000-000000000001';
     const admin2AuthId = 'c0000000-0000-0000-0000-000000000002';
@@ -219,9 +215,7 @@ async function runSprint12Verification() {
     await client.query(`DELETE FROM auth.users WHERE id IN ($1, $2);`, [admin1AuthId, admin2AuthId]);
     console.log('  Test administrator profiles and auth records cleaned up.');
 
-    // ------------------------------------------------------------------------
     // TEST 3: Automated Delta-Capturing Audit Engine (audit_lead_changes_trigger)
-    // ------------------------------------------------------------------------
     console.log('\n[TEST 3] Verifying audit_lead_changes_trigger automated event logging...');
     const auditProbeLeadRes = await client.query(`
       INSERT INTO public.leads (
@@ -316,9 +310,7 @@ async function runSprint12Verification() {
     }
     console.log('  ✓ Cascade deletion verified on lead_activities.');
 
-    // ------------------------------------------------------------------------
     // TEST 4: Atomic Monotonic Sequence Concurrency (50 Concurrent Inserts)
-    // ------------------------------------------------------------------------
     console.log('\n[TEST 4] Executing 50 concurrent inserts via connection pool to test lead_code_seq monotonic safety...');
     // Reset sequence to 1001 for pristine concurrency assertion
     await client.query(`ALTER SEQUENCE public.lead_code_seq RESTART WITH 1001;`);
