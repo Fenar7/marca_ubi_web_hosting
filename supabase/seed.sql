@@ -145,22 +145,23 @@ SELECT setval('public.lead_code_seq', 1050, true);
 
 -- 5. Chronological Omnichannel Activity Timeline Seeds
 -- Populates authentic qualification notes, call logs, and stage progression history.
-INSERT INTO public.lead_activities (lead_id, actor_id, activity_type, description, metadata, created_at)
+-- Explicit deterministic primary keys ensure true idempotency upon repeated seed execution.
+INSERT INTO public.lead_activities (id, lead_id, actor_id, activity_type, description, metadata, created_at)
 VALUES
 -- Discovery Touchpoints on High-Value Opportunities
-('c0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'note_added', 'Reviewed inbound web brief. Architecture requires bespoke WebGL resort tour.', '{"source": "web_brief"}'::jsonb, NOW() - INTERVAL '9 days'),
-('c0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'call_logged', 'Initial discovery call with VP of Digital Marketing. Established $320k scope.', '{"duration_minutes": 35, "outcome": "qualified"}'::jsonb, NOW() - INTERVAL '7 days'),
-('c0000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000003', 'meeting_notes', 'Meeting held at Jumeirah corporate HQ. Outlined guest journey friction points.', '{"attendees": 4, "location": "Dubai"}'::jsonb, NOW() - INTERVAL '10 days'),
-('c0000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000003', 'whatsapp_sent', 'Sent executive lookbook and 3D architectural showroom case study via WhatsApp.', '{"status": "delivered"}'::jsonb, NOW() - INTERVAL '8 days'),
+('d0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'note_added', 'Reviewed inbound web brief. Architecture requires bespoke WebGL resort tour.', '{"source": "web_brief"}'::jsonb, NOW() - INTERVAL '9 days'),
+('d0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'call_logged', 'Initial discovery call with VP of Digital Marketing. Established $320k scope.', '{"duration_minutes": 35, "outcome": "qualified"}'::jsonb, NOW() - INTERVAL '7 days'),
+('d0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000003', 'meeting_notes', 'Meeting held at Jumeirah corporate HQ. Outlined guest journey friction points.', '{"attendees": 4, "location": "Dubai"}'::jsonb, NOW() - INTERVAL '10 days'),
+('d0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000003', 'whatsapp_sent', 'Sent executive lookbook and 3D architectural showroom case study via WhatsApp.', '{"status": "delivered"}'::jsonb, NOW() - INTERVAL '8 days'),
 
 -- Proposal Dispatches & Stage Transitions
-('c0000000-0000-0000-0000-000000000017', '00000000-0000-0000-0000-000000000004', 'status_change', 'Advanced deal stage to Proposal Sent. Comprehensive commercial scope delivered.', '{"from_stage": "Qualified", "to_stage": "Proposal Sent"}'::jsonb, NOW() - INTERVAL '20 days'),
-('c0000000-0000-0000-0000-000000000018', '00000000-0000-0000-0000-000000000003', 'call_logged', 'Follow-up call on proposal terms. Client requested breakdown of WebGL shader optimizations.', '{"duration_minutes": 22, "outcome": "interested"}'::jsonb, NOW() - INTERVAL '15 days'),
-('c0000000-0000-0000-0000-000000000023', '00000000-0000-0000-0000-000000000004', 'status_change', 'Moved to Negotiation after legal review approved master terms.', '{"from_stage": "Proposal Sent", "to_stage": "Negotiation"}'::jsonb, NOW() - INTERVAL '5 days'),
-('c0000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000004', 'meeting_notes', 'Executive board presentation for Etihad Residence booking flow. 100% stakeholder buy-in.', '{"location": "Abu Dhabi"}'::jsonb, NOW() - INTERVAL '8 days'),
+('d0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000017', '00000000-0000-0000-0000-000000000004', 'status_change', 'Advanced deal stage to Proposal Sent. Comprehensive commercial scope delivered.', '{"from_stage": "Qualified", "to_stage": "Proposal Sent"}'::jsonb, NOW() - INTERVAL '20 days'),
+('d0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000018', '00000000-0000-0000-0000-000000000003', 'call_logged', 'Follow-up call on proposal terms. Client requested breakdown of WebGL shader optimizations.', '{"duration_minutes": 22, "outcome": "interested"}'::jsonb, NOW() - INTERVAL '15 days'),
+('d0000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000023', '00000000-0000-0000-0000-000000000004', 'status_change', 'Moved to Negotiation after legal review approved master terms.', '{"from_stage": "Proposal Sent", "to_stage": "Negotiation"}'::jsonb, NOW() - INTERVAL '5 days'),
+('d0000000-0000-0000-0000-000000000008', 'c0000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000004', 'meeting_notes', 'Executive board presentation for Etihad Residence booking flow. 100% stakeholder buy-in.', '{"location": "Abu Dhabi"}'::jsonb, NOW() - INTERVAL '8 days'),
 
 -- Converted Deal Audit Logs
-('c0000000-0000-0000-0000-000000000028', '00000000-0000-0000-0000-000000000003', 'status_change', 'Deal won! Received countersigned master service agreement and initial deposit invoice.', '{"revenue": 290000.00, "status": "converted"}'::jsonb, NOW() - INTERVAL '40 days'),
-('c0000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000003', 'status_change', 'Deal won! Contract signed for Oceanz luxury tower digital showroom.', '{"revenue": 180000.00, "status": "converted"}'::jsonb, NOW() - INTERVAL '45 days'),
-('c0000000-0000-0000-0000-000000000033', '00000000-0000-0000-0000-000000000004', 'status_change', 'Deal won! Binghatti Hyper-Towers bespoke digital ecosystem engagement signed.', '{"revenue": 350000.00, "status": "converted"}'::jsonb, NOW() - INTERVAL '60 days')
+('d0000000-0000-0000-0000-000000000009', 'c0000000-0000-0000-0000-000000000028', '00000000-0000-0000-0000-000000000003', 'status_change', 'Deal won! Received countersigned master service agreement and initial deposit invoice.', '{"revenue": 290000.00, "status": "converted"}'::jsonb, NOW() - INTERVAL '40 days'),
+('d0000000-0000-0000-0000-000000000010', 'c0000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000003', 'status_change', 'Deal won! Contract signed for Oceanz luxury tower digital showroom.', '{"revenue": 180000.00, "status": "converted"}'::jsonb, NOW() - INTERVAL '45 days'),
+('d0000000-0000-0000-0000-000000000011', 'c0000000-0000-0000-0000-000000000033', '00000000-0000-0000-0000-000000000004', 'status_change', 'Deal won! Binghatti Hyper-Towers bespoke digital ecosystem engagement signed.', '{"revenue": 350000.00, "status": "converted"}'::jsonb, NOW() - INTERVAL '60 days')
 ON CONFLICT (id) DO NOTHING;

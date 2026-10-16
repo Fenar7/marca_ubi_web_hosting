@@ -3,10 +3,17 @@
 -- Author: Fenar7 <86710532+Fenar7@users.noreply.github.com>
 -- Architectural Standard: Master PRD Section 1.5, Section 1.6 & Section 15.4
 
--- 1. High-Performance Composite & Filter Indexes
--- Architectural Rationale: Eliminates sequential table scans across high-frequency
--- CRM operations (ownership filtering, stage sorting, overdue task alerts, and fuzzy search).
+-- 1. Index Consolidation & Redundancy Elimination
+-- Architectural Rationale: Drops redundant single-column and duplicate indexes from Sprint 1.1
+-- to eliminate write-amplification penalties and prevent index bloat on public.leads.
+DROP INDEX IF EXISTS public.idx_leads_assigned_status;
+DROP INDEX IF EXISTS public.idx_leads_next_follow_up;
+DROP INDEX IF EXISTS public.idx_leads_company_trgm;
+DROP INDEX IF EXISTS public.idx_leads_name_trgm;
+DROP INDEX IF EXISTS public.idx_leads_email_trgm;
+DROP INDEX IF EXISTS public.idx_leads_phone_trgm;
 
+-- 2. High-Performance Composite & Filter Indexes
 -- Index 1: Composite Rep + Status Pipeline Filter
 -- Enables index-only scans when sales representatives view deals filtered by status.
 CREATE INDEX IF NOT EXISTS idx_leads_rep_status 
@@ -24,9 +31,9 @@ CREATE INDEX IF NOT EXISTS idx_leads_overdue_partial
     WHERE next_follow_up IS NOT NULL;
 
 -- Index 4: Compound KPI Aggregation Covering Index
--- Covers all dimensions queried by get_pipeline_kpis to allow index-only aggregation scans.
+-- Optimized column ordering: Leading assigned_to allows direct B-tree seeks during rep-scoped KPI queries.
 CREATE INDEX IF NOT EXISTS idx_leads_kpi_metrics 
-    ON public.leads (status_id, assigned_to, expected_value, next_follow_up);
+    ON public.leads (assigned_to, status_id, expected_value, next_follow_up);
 
 -- Index 5: Normalized Case-Insensitive Email Deduplication Index
 -- Enforces uniqueness on trimmed lowercase emails to prevent duplicate lead ingestion from web forms.
@@ -50,11 +57,13 @@ CREATE INDEX IF NOT EXISTS idx_leads_global_trgm_search
         phone gin_trgm_ops
     );
 
--- 2. Pipeline KPI Aggregation Stored Procedure (get_pipeline_kpis)
+-- 3. Pipeline KPI Aggregation Stored Procedure (get_pipeline_kpis)
 -- Architectural Rationale: Computes all core commercial metrics in a single database round-trip.
 -- Dynamically enforces role-based scoping: Sales Executives are sandboxed to their own assigned deals,
 -- while Leadership (Admin, Sales Manager) and Viewers can query agency-wide totals or specific representatives.
 -- Security Definer Hardening: Statically pinned to SET search_path = public, auth, pg_temp to prevent CWE-426.
+-- Role-Gated Perimeter Defense: Enforces strict session authentication, rejecting unauthenticated callers
+-- and suspended accounts with ERRCODE 42501 (CWE-284 / OWASP API3).
 -- Mathematical Safety: Implements safe conditional division to eliminate division-by-zero exceptions
 -- and wraps sums in COALESCE to guarantee non-null numeric returns.
 CREATE OR REPLACE FUNCTION public.get_pipeline_kpis(
@@ -74,18 +83,22 @@ BEGIN
     -- Determine caller authorization role using cached STABLE function
     caller_role := public.current_user_role();
 
-    -- Scoping Boundary Enforcement:
-    -- If caller is sales_executive, strictly enforce own UID regardless of target_user_id argument
-    -- If caller is admin, sales_manager, or viewer, permit passing target_user_id filter (or NULL for agency-wide)
-    IF caller_role = 'sales_executive' THEN
+    -- Scoping Boundary Enforcement & Role-Gated Access Defense:
+    -- Anonymous / unauthenticated callers and suspended accounts resolve to NULL and are rejected immediately.
+    IF caller_role IS NULL THEN
+        RAISE EXCEPTION 'Access denied: active authenticated CRM session required.' 
+            USING ERRCODE = '42501';
+    ELSIF caller_role = 'sales_executive' THEN
         effective_user := auth.uid();
-    ELSE
+    ELSIF caller_role IN ('admin', 'sales_manager', 'viewer') THEN
         effective_user := target_user_id;
+    ELSE
+        RAISE EXCEPTION 'Access denied: unauthorized operational role.' 
+            USING ERRCODE = '42501';
     END IF;
 
     WITH lead_metrics AS (
         SELECT
-            l.id,
             l.expected_value,
             l.next_follow_up,
             fs.bucket
@@ -126,4 +139,8 @@ $$;
 
 COMMENT ON FUNCTION public.get_pipeline_kpis(UUID) IS 'High-speed aggregated pipeline analytics RPC returning commercial KPIs in a single round-trip with role-based scoping and division-by-zero defense.';
 
+-- Explicit privilege configuration: Revoke default execute permissions from PUBLIC and anon,
+-- granting execute exclusively to authenticated staff and service_role.
+REVOKE EXECUTE ON FUNCTION public.get_pipeline_kpis(UUID) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.get_pipeline_kpis(UUID) FROM anon;
 GRANT EXECUTE ON FUNCTION public.get_pipeline_kpis(UUID) TO authenticated, service_role;

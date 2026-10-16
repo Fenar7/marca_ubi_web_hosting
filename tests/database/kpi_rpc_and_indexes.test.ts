@@ -25,6 +25,7 @@ const ROOT_ADMIN_ID = '00000000-0000-0000-0000-000000000001';
 const EXEC_1_ID = '00000000-0000-0000-0000-000000000003';
 const EXEC_2_ID = '00000000-0000-0000-0000-000000000004';
 const PROBE_EXEC_ZERO = '00000000-0000-0000-0000-000000000088';
+const PROBE_SUSPENDED_CI = '00000000-0000-0000-0000-000000000087';
 
 describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', () => {
   let client: Client;
@@ -36,26 +37,31 @@ describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', 
     });
     await client.connect();
 
-    // Provision temporary probe account with zero leads to test division-by-zero defense
+    // Provision temporary probe accounts
     await client.query(`
-      INSERT INTO auth.users (id, email) VALUES ($1, 'probe_zero_ci@marcaubi.com')
+      INSERT INTO auth.users (id, email) VALUES 
+        ($1, 'probe_zero_ci@marcaubi.com'),
+        ($2, 'probe_susp_ci@marcaubi.com')
       ON CONFLICT (id) DO NOTHING;
-    `, [PROBE_EXEC_ZERO]);
+    `, [PROBE_EXEC_ZERO, PROBE_SUSPENDED_CI]);
+
     await client.query(`
       INSERT INTO public.profiles (id, email, full_name, role, status)
-      VALUES ($1, 'probe_zero_ci@marcaubi.com', 'Probe Closer Zero CI', 'sales_executive', 'active')
-      ON CONFLICT (id) DO UPDATE SET role = 'sales_executive', status = 'active';
-    `, [PROBE_EXEC_ZERO]);
+      VALUES 
+        ($1, 'probe_zero_ci@marcaubi.com', 'Probe Closer Zero CI', 'sales_executive', 'active'),
+        ($2, 'probe_susp_ci@marcaubi.com', 'Probe Suspended CI', 'sales_executive', 'suspended')
+      ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role, status = EXCLUDED.status;
+    `, [PROBE_EXEC_ZERO, PROBE_SUSPENDED_CI]);
   });
 
   after(async () => {
-    // Teardown temporary probe account
-    await client.query(`DELETE FROM public.profiles WHERE id = $1;`, [PROBE_EXEC_ZERO]);
-    await client.query(`DELETE FROM auth.users WHERE id = $1;`, [PROBE_EXEC_ZERO]);
+    // Teardown temporary probe accounts
+    await client.query(`DELETE FROM public.profiles WHERE id IN ($1, $2);`, [PROBE_EXEC_ZERO, PROBE_SUSPENDED_CI]);
+    await client.query(`DELETE FROM auth.users WHERE id IN ($1, $2);`, [PROBE_EXEC_ZERO, PROBE_SUSPENDED_CI]);
     await client.end();
   });
 
-  it('verifies all 7 performance and GIN trigram indexes exist and are valid', async () => {
+  it('verifies all 7 performance and GIN trigram indexes exist and duplicates are dropped', async () => {
     const res = await client.query(`
       SELECT indexname 
       FROM pg_indexes 
@@ -76,6 +82,19 @@ describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', 
     for (const idx of expected) {
       assert.strictEqual(found.has(idx), true, `Index ${idx} must be active on public.leads`);
     }
+
+    const droppedDuplicates = [
+      'idx_leads_assigned_status',
+      'idx_leads_next_follow_up',
+      'idx_leads_company_trgm',
+      'idx_leads_name_trgm',
+      'idx_leads_email_trgm',
+      'idx_leads_phone_trgm',
+    ];
+
+    for (const dropped of droppedDuplicates) {
+      assert.strictEqual(found.has(dropped), false, `Redundant index ${dropped} must be eliminated`);
+    }
   });
 
   it('verifies get_pipeline_kpis security definer, stable caching, and pinned search_path', async () => {
@@ -95,6 +114,41 @@ describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', 
       config.includes('search_path=public, auth, pg_temp'),
       'Function must pin search_path to eliminate CWE-426 search path hijacking'
     );
+  });
+
+  it('strictly blocks anonymous callers from executing get_pipeline_kpis (ERRCODE 42501)', async () => {
+    let blocked = false;
+    try {
+      await client.query('BEGIN');
+      await client.query(`SELECT set_config('request.jwt.claims', '', true);`);
+      await client.query(`SELECT public.get_pipeline_kpis();`);
+      await client.query('COMMIT');
+    } catch (err: unknown) {
+      await client.query('ROLLBACK');
+      const pgErr = err as { code?: string };
+      if (pgErr.code === '42501') {
+        blocked = true;
+      }
+    }
+    assert.strictEqual(blocked, true, 'Unauthenticated execution must throw 42501');
+  });
+
+  it('strictly blocks suspended employees from executing get_pipeline_kpis (ERRCODE 42501)', async () => {
+    let blocked = false;
+    try {
+      await client.query('BEGIN');
+      const claims = JSON.stringify({ sub: PROBE_SUSPENDED_CI, role: 'authenticated', app_metadata: { role: 'sales_executive' } });
+      await client.query(`SELECT set_config('request.jwt.claims', $1, true);`, [claims]);
+      await client.query(`SELECT public.get_pipeline_kpis();`);
+      await client.query('COMMIT');
+    } catch (err: unknown) {
+      await client.query('ROLLBACK');
+      const pgErr = err as { code?: string };
+      if (pgErr.code === '42501') {
+        blocked = true;
+      }
+    }
+    assert.strictEqual(blocked, true, 'Suspended account must be locked out with 42501');
   });
 
   it('calculates mathematically accurate global pipeline metrics for Admin', async () => {
@@ -180,12 +234,17 @@ describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', 
   });
 
   it('benchmarks get_pipeline_kpis execution latency under 20ms', async () => {
+    await client.query('BEGIN');
+    const claims = JSON.stringify({ sub: ROOT_ADMIN_ID, role: 'authenticated', app_metadata: { role: 'admin' } });
+    await client.query(`SELECT set_config('request.jwt.claims', $1, true);`, [claims]);
+
     const res = await client.query(`
       EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)
       SELECT public.get_pipeline_kpis();
     `);
     const plan = res.rows[0]['QUERY PLAN'][0];
     const execTime = plan['Execution Time'];
+    await client.query('COMMIT');
 
     assert.ok(execTime < 20.0, `KPI RPC execution time (${execTime}ms) must be under 20ms`);
   });
