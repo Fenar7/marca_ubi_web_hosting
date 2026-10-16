@@ -74,3 +74,10 @@ export const ResetPasswordSchema = z
   });
 
 export type ResetPasswordFormData = z.infer<typeof ResetPasswordSchema>;
+
+/**
+ * Commercial workload limit defining the maximum active deal assignments
+ * for an individual Sales Representative before triggering the 'Reps at Capacity' indicator.
+ * Governed by Master PRD Section 15.8.
+ */
+export const SALES_REP_CAPACITY_LIMIT = 15;

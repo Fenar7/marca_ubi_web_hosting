@@ -17,8 +17,6 @@ import { generateHighEntropyPassword, isDrawerDirty } from '@/app/lib/team-utils
 import type { ProvisionedCredentialsPayload } from './CredentialRevealModal';
 import styles from '../team.module.scss';
 
-export { generateHighEntropyPassword };
-
 interface AddTeamMemberDrawerProps {
   isOpen: boolean;
   onClose: () => void;

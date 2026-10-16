@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useTransition } from 'react';
+import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus } from '@/types/crm';
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
@@ -31,6 +31,11 @@ export function CommercialDirectoryTable({
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Synchronize internal state when parent updates initialRoster (e.g. optimistic provisioning)
+  useEffect(() => {
+    setRoster(initialRoster);
+  }, [initialRoster]);
 
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);

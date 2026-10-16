@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
+import { SALES_REP_CAPACITY_LIMIT } from '@/app/lib/team-schemas';
 import type { CrmUserRole, TeamMemberRosterItem } from '@/types/crm';
 import { TeamWorkspaceClient } from './components/TeamWorkspaceClient';
 import styles from './team.module.scss';
@@ -82,7 +83,7 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   const totalActiveDeals = roster.reduce((acc, m) => acc + (m.active_deals_count || 0), 0);
   const totalPortfolioValue = roster.reduce((acc, m) => acc + (m.total_deal_value || 0), 0);
 
-  const repsAtCapacity = roster.filter((m) => m.role === 'sales_executive' && m.active_deals_count >= 15).length;
+  const repsAtCapacity = roster.filter((m) => m.role === 'sales_executive' && m.active_deals_count >= SALES_REP_CAPACITY_LIMIT).length;
   const executiveCount = roster.filter((m) => m.role === 'sales_executive').length;
   const adminCount = roster.filter((m) => m.role === 'admin').length;
 

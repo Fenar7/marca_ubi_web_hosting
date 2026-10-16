@@ -40,6 +40,20 @@ export function CredentialRevealModal({
   const purgeClipboard = useCallback(() => {
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
       navigator.clipboard.writeText('').catch(() => {});
+    } else if (typeof document !== 'undefined') {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = '';
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      } catch {
+        // Suppress non-secure context fallback exceptions
+      }
     }
   }, []);
 
@@ -92,8 +106,19 @@ export function CredentialRevealModal({
     ].join('\n');
 
     try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(formattedPayload);
+      } else if (typeof document !== 'undefined') {
+        // Fallback execution for non-secure HTTP contexts (local IP testing)
+        const textArea = document.createElement('textarea');
+        textArea.value = formattedPayload;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
       }
       setCopied(true);
       setSecondsRemaining(60);

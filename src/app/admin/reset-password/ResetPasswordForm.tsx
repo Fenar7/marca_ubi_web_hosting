@@ -10,7 +10,6 @@
  */
 
 import React, { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { resetTemporaryPassword } from '@/app/actions/auth';
 import styles from './reset-password.module.scss';
 
@@ -24,7 +23,6 @@ interface PasswordCriteria {
 }
 
 export function ResetPasswordForm(): React.ReactElement {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const [newPassword, setNewPassword] = useState('');
