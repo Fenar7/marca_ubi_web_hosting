@@ -64,7 +64,8 @@ export type LeadActivityType =
   | 'note_added'
   | 'follow_up_scheduled'
   | 'system_event'
-  | 'field_update';
+  | 'field_update'
+  | 'duplicate_inquiry';
 
 /**
  * Administrative governance actions recorded in the tamper-proof team audit log.
@@ -164,6 +165,7 @@ export interface Lead {
   revisit_date: string | null;
   notes: string | null;
   brief_payload: Record<string, unknown>;
+  inquiry_count: number;
   created_at: string;
   converted_at: string | null;
   updated_at: string;

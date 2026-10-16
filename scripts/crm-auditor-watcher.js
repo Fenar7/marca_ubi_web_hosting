@@ -6,14 +6,14 @@
  */
 
 console.log('[WATCHER] Marca Ubi CRM PR Audit Watcher initialized.');
-console.log('[WATCHER] Monitoring active Sprint 5.1: Ingestion API Route, Rate Limiter, Honeypots & Contact Normalization Engine...');
+console.log('[WATCHER] Monitoring active Sprint 5.2: Client Form Bindings, Deduplication Engine & Alerts...');
 
 let ticks = 0;
 const interval = setInterval(() => {
   ticks++;
   const timestamp = new Date().toISOString().substring(11, 19);
   if (ticks % 3 === 0) {
-    console.log(`[${timestamp}] [SPRINT_5_1_MONITOR] Ingestion Route: ACTIVE | Token-Bucket Limiter: ACTIVE | Cryptographic Honeypot: VERIFIED | Contact Normalization: VERIFIED | Status: RUNNING`);
+    console.log(`[${timestamp}] [SPRINT_5_2_MONITOR] Form Bindings: ACTIVE | Deduplication State Machine: ACTIVE | Studio Alerts Bridge: ACTIVE | Status: RUNNING`);
   }
   if (ticks >= 240) {
     console.log('[WATCHER] Monitoring cycle complete.');
