@@ -10,46 +10,10 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
+import { sanitizeRedirectUrl } from '@/app/lib/auth-redirect';
 
-/**
- * Sanitizes an incoming redirect path to prevent Open Redirect vulnerabilities (CWE-601).
- * Rejects protocol-relative URLs (e.g., `//evil.com`), absolute URLs (`https://evil.com`),
- * backslash tricks (`/\evil.com`, `\\evil.com`), and protocol schemes (`javascript:`, `data:`).
- *
- * @param {string | null | undefined} targetUrl The raw destination query parameter.
- * @param {string} defaultFallback Safe default route if target is untrusted (default: '/admin').
- * @returns {string} A guaranteed relative URI path.
- */
-export function sanitizeRedirectUrl(targetUrl?: string | null, defaultFallback: string = '/admin'): string {
-  if (!targetUrl || typeof targetUrl !== 'string') {
-    return defaultFallback;
-  }
+export { sanitizeRedirectUrl };
 
-  const trimmed = targetUrl.trim();
-
-  if (!trimmed) {
-    return defaultFallback;
-  }
-
-  // Must start with exactly one forward slash; reject protocol-relative or backslash sequences
-  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\') || trimmed.startsWith('\\')) {
-    return defaultFallback;
-  }
-
-  try {
-    const dummyOrigin = 'http://localhost';
-    const parsed = new URL(trimmed, dummyOrigin);
-
-    // Assert that the parsed URL origin strictly matches the dummy origin (guaranteeing relative path)
-    if (parsed.origin !== dummyOrigin) {
-      return defaultFallback;
-    }
-
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    return defaultFallback;
-  }
-}
 
 /**
  * Handles GET requests to `/api/auth/callback`.
