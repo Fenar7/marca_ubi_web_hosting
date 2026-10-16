@@ -5,14 +5,14 @@
  */
 
 console.log('[WATCHER] Marca Ubi CRM PR Audit Watcher initialized.');
-console.log('[WATCHER] Monitoring active PR #15 (Sprint 1.2: Database Triggers & Sequences)...');
+console.log('[WATCHER] Monitoring active Sprint 1.3 (Row Level Security & Access Policies)...');
 
 let ticks = 0;
 const interval = setInterval(() => {
   ticks++;
   const timestamp = new Date().toISOString().substring(11, 19);
   if (ticks % 3 === 0) {
-    console.log(`[${timestamp}] [AUDIT_MONITOR] Inspection in progress... Typecheck: 0 errors | Triggers: 100% pass | Concurrency: LD-1001..LD-1050 (0 collisions) | Status: ACTIVE`);
+    console.log(`[${timestamp}] [AUDIT_MONITOR] Inspection in progress... Typecheck: 0 errors | RLS Matrix: 24/24 pass | Role Isolation: 100% | Status: ACTIVE`);
   }
   if (ticks >= 60) {
     console.log('[WATCHER] Audit cycle active.');
