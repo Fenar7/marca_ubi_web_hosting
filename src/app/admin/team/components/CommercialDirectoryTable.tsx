@@ -15,6 +15,7 @@ import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile }
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
 import { SuspendUserModal } from './SuspendUserModal';
+import { LeadReassignmentWizardModal } from './LeadReassignmentWizardModal';
 import styles from '../team.module.scss';
 
 interface CommercialDirectoryTableProps {
@@ -51,6 +52,9 @@ export function CommercialDirectoryTable({
 
   // Reactivation confirmation modal state
   const [memberToActivate, setMemberToActivate] = useState<TeamMemberRosterItem | null>(null);
+
+  // Dedicated lead reassignment wizard modal state (Sprint 4.2)
+  const [memberToReassign, setMemberToReassign] = useState<TeamMemberRosterItem | null>(null);
 
   // Filter roster dynamically
   const filteredRoster = useMemo(() => {
@@ -316,6 +320,19 @@ export function CommercialDirectoryTable({
                     {isAdmin && (
                       <td className={styles.td} style={{ textAlign: 'right' }}>
                         <div className={styles.actionButtonGroup} style={{ justifyContent: 'flex-end' }}>
+                          {member.active_deals_count > 0 && (
+                            <button
+                              type="button"
+                              className={`${styles.rowActionButton} ${styles.reassignButton}`}
+                              onClick={() => setMemberToReassign(member)}
+                              disabled={isPending}
+                              aria-label={`Reassign active deals from ${member.full_name}`}
+                              title="Reassign Active Deals"
+                            >
+                              <span>Reassign</span>
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             className={styles.rowActionButton}
@@ -440,13 +457,54 @@ export function CommercialDirectoryTable({
         isOpen={Boolean(memberToSuspend)}
         onClose={() => setMemberToSuspend(null)}
         onSuccess={(updatedProfile, suspendedUserId) => {
+          const suspendedMember = memberToSuspend;
           setRoster((prev) =>
             prev.map((item) =>
               item.id === suspendedUserId ? { ...item, status: 'suspended' } : item
             )
           );
           setSuccessNotice(
-            `Account for ${memberToSuspend?.full_name} has been suspended and all sessions revoked.`
+            `Account for ${suspendedMember?.full_name} has been suspended and all sessions revoked.`
+          );
+          // If suspended representative has active deals, immediately open Lead Reassignment Wizard
+          if (suspendedMember && suspendedMember.active_deals_count > 0) {
+            setMemberToReassign({
+              ...suspendedMember,
+              status: 'suspended',
+            });
+          }
+        }}
+      />
+
+      {/* Dedicated Pipeline Lead Reassignment Wizard Modal (Sprint 4.2) */}
+      <LeadReassignmentWizardModal
+        sourceMember={memberToReassign}
+        activeRoster={roster}
+        isOpen={Boolean(memberToReassign)}
+        onClose={() => setMemberToReassign(null)}
+        onSuccess={(result, sourceId, destinationId) => {
+          // Optimistically update deal counts and valuations across roster
+          setRoster((prev) =>
+            prev.map((item) => {
+              if (item.id === sourceId) {
+                return {
+                  ...item,
+                  active_deals_count: 0,
+                  total_deal_value: 0,
+                };
+              }
+              if (item.id === destinationId) {
+                return {
+                  ...item,
+                  active_deals_count: item.active_deals_count + result.reassigned_count,
+                  total_deal_value: item.total_deal_value + result.total_value,
+                };
+              }
+              return item;
+            })
+          );
+          setSuccessNotice(
+            `Successfully transferred ${result.reassigned_count} active deal(s) valued at ${formatDealValuation(result.total_value)}.`
           );
         }}
       />
