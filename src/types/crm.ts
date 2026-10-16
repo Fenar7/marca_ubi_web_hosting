@@ -350,3 +350,69 @@ export interface TeamActionResult<T = unknown> {
   validationErrors?: Record<string, string>;
 }
 
+/**
+ * Breakdown of active deals across individual pipeline stages for a specific sales representative.
+ */
+export interface StageDealBreakdown {
+  status_id: string;
+  status_name: string;
+  bucket: FunnelBucket;
+  color_code: string;
+  sort_order: number;
+  deal_count: number;
+  total_value: number;
+}
+
+/**
+ * Lightweight dossier of an active deal managed by a departing or offboarded representative.
+ */
+export interface ActiveDealSummary {
+  id: string;
+  lead_id: string;
+  name: string;
+  company: string | null;
+  expected_value: number;
+  status_name: string;
+  priority: LeadPriority;
+  next_follow_up: string | null;
+  created_at: string;
+}
+
+/**
+ * Aggregated active commercial inventory dossier for a sales representative used by the Reassignment Wizard.
+ */
+export interface RepDealInventory {
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  user_role: CrmUserRole;
+  user_status: ProfileAccountStatus;
+  active_deals_count: number;
+  cumulative_pipeline_value: number;
+  overdue_follow_ups_count: number;
+  stage_breakdown: StageDealBreakdown[];
+  deals: ActiveDealSummary[];
+}
+
+/**
+ * Input payload supplied to the atomic batch lead reassignment engine.
+ */
+export interface LeadReassignmentInput {
+  sourceUserId: string;
+  destinationUserId: string;
+  transferReason: string;
+}
+
+/**
+ * Enriched execution summary returned by public.execute_atomic_lead_reassignment.
+ */
+export interface AtomicReassignmentResult {
+  success: boolean;
+  reassigned_count: number;
+  total_value: number;
+  affected_lead_ids: string[];
+  source_user_id?: string;
+  destination_user_id?: string;
+  message: string;
+}
+

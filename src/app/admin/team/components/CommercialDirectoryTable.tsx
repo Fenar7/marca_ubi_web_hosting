@@ -11,9 +11,11 @@
  */
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
-import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus } from '@/types/crm';
+import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile } from '@/types/crm';
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
+import { SuspendUserModal } from './SuspendUserModal';
+import { LeadReassignmentWizardModal } from './LeadReassignmentWizardModal';
 import styles from '../team.module.scss';
 
 interface CommercialDirectoryTableProps {
@@ -39,13 +41,20 @@ export function CommercialDirectoryTable({
 
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
   // Role modification modal state
   const [targetMemberForRole, setTargetMemberForRole] = useState<TeamMemberRosterItem | null>(null);
   const [selectedNewRole, setSelectedNewRole] = useState<CrmUserRole>('sales_executive');
 
-  // Status transition confirmation modal state
-  const [targetMemberForStatus, setTargetMemberForStatus] = useState<TeamMemberRosterItem | null>(null);
+  // Dedicated offboarding & suspension modal state (Sprint 4.1)
+  const [memberToSuspend, setMemberToSuspend] = useState<TeamMemberRosterItem | null>(null);
+
+  // Reactivation confirmation modal state
+  const [memberToActivate, setMemberToActivate] = useState<TeamMemberRosterItem | null>(null);
+
+  // Dedicated lead reassignment wizard modal state (Sprint 4.2)
+  const [memberToReassign, setMemberToReassign] = useState<TeamMemberRosterItem | null>(null);
 
   // Filter roster dynamically
   const filteredRoster = useMemo(() => {
@@ -98,31 +107,29 @@ export function CommercialDirectoryTable({
     });
   };
 
-  // Handle Account Status Toggle Execution
-  const handleConfirmStatusToggle = () => {
-    if (!targetMemberForStatus) return;
+  // Handle Account Reactivation Execution
+  const handleConfirmReactivation = () => {
+    if (!memberToActivate) return;
     setActionError(null);
-
-    const nextStatus: ProfileAccountStatus =
-      targetMemberForStatus.status === 'active' ? 'suspended' : 'active';
 
     startTransition(async () => {
       try {
-        const result = await setTeamUserStatus(targetMemberForStatus.id, nextStatus);
+        const result = await setTeamUserStatus(memberToActivate.id, 'active');
 
         if (!result.success) {
-          setActionError(result.error || 'Failed to update account operational status.');
+          setActionError(result.error || 'Failed to reactivate team account.');
           return;
         }
 
         // Optimistically update local roster
         setRoster((prev) =>
           prev.map((item) =>
-            item.id === targetMemberForStatus.id ? { ...item, status: nextStatus } : item
+            item.id === memberToActivate.id ? { ...item, status: 'active' } : item
           )
         );
 
-        setTargetMemberForStatus(null);
+        setSuccessNotice(`Account for ${memberToActivate.full_name} has been successfully reactivated.`);
+        setMemberToActivate(null);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
         setActionError(msg);
@@ -139,6 +146,19 @@ export function CommercialDirectoryTable({
             type="button"
             onClick={() => setActionError(null)}
             style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 700 }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {successNotice && (
+        <div style={{ padding: '1rem 1.5rem', background: 'rgba(34, 197, 94, 0.1)', borderBottom: '1px solid rgba(34, 197, 94, 0.3)', color: '#22c55e', fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{successNotice}</span>
+          <button
+            type="button"
+            onClick={() => setSuccessNotice(null)}
+            style={{ background: 'transparent', border: 'none', color: '#22c55e', cursor: 'pointer', fontWeight: 700 }}
           >
             ✕
           </button>
@@ -300,6 +320,19 @@ export function CommercialDirectoryTable({
                     {isAdmin && (
                       <td className={styles.td} style={{ textAlign: 'right' }}>
                         <div className={styles.actionButtonGroup} style={{ justifyContent: 'flex-end' }}>
+                          {member.active_deals_count > 0 && (
+                            <button
+                              type="button"
+                              className={`${styles.rowActionButton} ${styles.reassignButton}`}
+                              onClick={() => setMemberToReassign(member)}
+                              disabled={isPending}
+                              aria-label={`Reassign active deals from ${member.full_name}`}
+                              title="Reassign Active Deals"
+                            >
+                              <span>Reassign</span>
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             className={styles.rowActionButton}
@@ -318,13 +351,26 @@ export function CommercialDirectoryTable({
                             className={`${styles.rowActionButton} ${
                               member.status === 'active' ? styles.dangerButton : styles.activateButton
                             }`}
-                            onClick={() => setTargetMemberForStatus(member)}
-                            disabled={isPending}
+                            onClick={() => {
+                              if (member.status === 'active') {
+                                setMemberToSuspend(member);
+                              } else {
+                                setMemberToActivate(member);
+                              }
+                            }}
+                            disabled={isPending || (member.status === 'active' && isSelf)}
+                            title={isSelf ? 'Cannot suspend your own account' : undefined}
                             aria-label={`${
                               member.status === 'active' ? 'Suspend' : 'Activate'
                             } account for ${member.full_name}`}
                           >
-                            <span>{member.status === 'active' ? 'Suspend' : 'Activate'}</span>
+                            <span>
+                              {member.status === 'active'
+                                ? isSelf
+                                  ? 'Self'
+                                  : 'Suspend'
+                                : 'Activate'}
+                            </span>
                           </button>
                         </div>
                       </td>
@@ -405,18 +451,77 @@ export function CommercialDirectoryTable({
         </div>
       )}
 
-      {/* Account Status Transition Confirmation Modal */}
-      {targetMemberForStatus && (
+      {/* Dedicated Employee Offboarding & Suspension Modal (Sprint 4.1) */}
+      <SuspendUserModal
+        member={memberToSuspend}
+        isOpen={Boolean(memberToSuspend)}
+        onClose={() => setMemberToSuspend(null)}
+        onSuccess={(updatedProfile, suspendedUserId) => {
+          const suspendedMember = memberToSuspend;
+          setRoster((prev) =>
+            prev.map((item) =>
+              item.id === suspendedUserId ? { ...item, status: 'suspended' } : item
+            )
+          );
+          setSuccessNotice(
+            `Account for ${suspendedMember?.full_name} has been suspended and all sessions revoked.`
+          );
+          // If suspended representative has active deals, immediately open Lead Reassignment Wizard
+          if (suspendedMember && suspendedMember.active_deals_count > 0) {
+            setMemberToReassign({
+              ...suspendedMember,
+              status: 'suspended',
+            });
+          }
+        }}
+      />
+
+      {/* Dedicated Pipeline Lead Reassignment Wizard Modal (Sprint 4.2) */}
+      <LeadReassignmentWizardModal
+        sourceMember={memberToReassign}
+        activeRoster={roster}
+        isOpen={Boolean(memberToReassign)}
+        onClose={() => setMemberToReassign(null)}
+        onSuccess={(result, sourceId, destinationId) => {
+          // Optimistically update deal counts and valuations across roster
+          setRoster((prev) =>
+            prev.map((item) => {
+              if (item.id === sourceId) {
+                return {
+                  ...item,
+                  active_deals_count: 0,
+                  total_deal_value: 0,
+                };
+              }
+              if (item.id === destinationId) {
+                return {
+                  ...item,
+                  active_deals_count: item.active_deals_count + result.reassigned_count,
+                  total_deal_value: item.total_deal_value + result.total_value,
+                };
+              }
+              return item;
+            })
+          );
+          setSuccessNotice(
+            `Successfully transferred ${result.reassigned_count} active deal(s) valued at ${formatDealValuation(result.total_value)}.`
+          );
+        }}
+      />
+
+      {/* Account Reactivation Confirmation Modal */}
+      {memberToActivate && (
         <div
           className={styles.modalOverlay}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="status-modal-title"
+          aria-labelledby="reactivate-modal-title"
         >
           <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
-            <div className={styles.modalAlertBanner}>
+            <div className={styles.modalAlertBanner} style={{ borderColor: 'rgba(34, 197, 94, 0.3)', background: 'rgba(34, 197, 94, 0.08)' }}>
               <svg
                 className={styles.modalAlertIcon}
+                style={{ color: '#22c55e' }}
                 width="20"
                 height="20"
                 viewBox="0 0 24 24"
@@ -427,20 +532,16 @@ export function CommercialDirectoryTable({
                 strokeLinejoin="round"
                 aria-hidden="true"
               >
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4" />
+                <path d="M12 16h.01" />
               </svg>
               <div>
-                <h3 id="status-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.92rem', fontWeight: 700 }}>
-                  {targetMemberForStatus.status === 'active'
-                    ? 'Confirm Account Suspension'
-                    : 'Reactivate Team Account'}
+                <h3 id="reactivate-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>
+                  Reactivate Commercial Personnel
                 </h3>
                 <p className={styles.modalAlertText}>
-                  {targetMemberForStatus.status === 'active'
-                    ? `Suspending ${targetMemberForStatus.full_name} will immediately block their CRM login sessions and deny database query permissions.`
-                    : `Reactivating ${targetMemberForStatus.full_name} will restore their login access and pipeline permissions.`}
+                  Reactivating <strong>{memberToActivate.full_name}</strong> will restore their login access and pipeline permissions across the platform.
                 </p>
               </div>
             </div>
@@ -449,7 +550,7 @@ export function CommercialDirectoryTable({
               <button
                 type="button"
                 className={styles.copyButton}
-                onClick={() => setTargetMemberForStatus(null)}
+                onClick={() => setMemberToActivate(null)}
                 disabled={isPending}
               >
                 Cancel
@@ -458,17 +559,13 @@ export function CommercialDirectoryTable({
                 type="button"
                 className={styles.doneButton}
                 style={{
-                  background: targetMemberForStatus.status === 'active' ? '#ef4444' : '#22c55e',
-                  borderColor: targetMemberForStatus.status === 'active' ? '#ef4444' : '#22c55e',
+                  background: '#22c55e',
+                  borderColor: '#22c55e',
                 }}
-                onClick={handleConfirmStatusToggle}
+                onClick={handleConfirmReactivation}
                 disabled={isPending}
               >
-                {isPending
-                  ? 'Processing...'
-                  : targetMemberForStatus.status === 'active'
-                  ? 'Suspend Account'
-                  : 'Reactivate Account'}
+                {isPending ? 'Reactivating...' : 'Reactivate Account'}
               </button>
             </div>
           </div>
