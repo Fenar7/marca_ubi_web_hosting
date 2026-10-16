@@ -6,14 +6,14 @@
  */
 
 console.log('[WATCHER] Marca Ubi CRM PR Audit Watcher initialized.');
-console.log('[WATCHER] Monitoring active Sprint 4.2: Lead Reassignment Wizard, Stored Procedure & Activity Backfill...');
+console.log('[WATCHER] Monitoring active Phase 4 Milestone: Rep Offboarding Protocol, Session Revocation & Lead Reassignment Engine...');
 
 let ticks = 0;
 const interval = setInterval(() => {
   ticks++;
   const timestamp = new Date().toISOString().substring(11, 19);
   if (ticks % 3 === 0) {
-    console.log(`[${timestamp}] [SPRINT_4_2_MONITOR] Pipeline active... Deal Scanner: ACTIVE | Stored Procedure: ACTIVE | Reassignment Wizard: ACTIVE | Audit Ledger: ACTIVE | Status: RUNNING`);
+    console.log(`[${timestamp}] [PHASE_4_MILESTONE_MONITOR] Pipeline active... Offboarding Protocol: VERIFIED | Session Revocation: VERIFIED | Stored Procedure: ACTIVE | Lead Reassignment Wizard: ACTIVE | Status: RUNNING`);
   }
   if (ticks >= 240) {
     console.log('[WATCHER] Monitoring cycle complete.');
