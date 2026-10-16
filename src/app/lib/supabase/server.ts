@@ -29,7 +29,26 @@ import { getEnv } from '@/app/lib/env';
  * @returns {Promise<ReturnType<typeof createServerClient>>} The initialized SSR server client.
  */
 export async function createClient() {
-  const cookieStore = await cookies();
+  let cookieStore: {
+    getAll: () => { name: string; value: string }[];
+    set: (name: string, value: string, options?: Record<string, unknown>) => void;
+  };
+
+  try {
+    cookieStore = await cookies();
+  } catch {
+    // Graceful in-memory fallback when executed outside Next.js request context (e.g., test harnesses)
+    const memoryCookies = new Map<string, { name: string; value: string; options?: Record<string, unknown> }>();
+    cookieStore = {
+      getAll() {
+        return Array.from(memoryCookies.values()).map(({ name, value }) => ({ name, value }));
+      },
+      set(name: string, value: string, options?: Record<string, unknown>) {
+        memoryCookies.set(name, { name, value, options });
+      },
+    };
+  }
+
   const env = getEnv();
 
   return createServerClient(
