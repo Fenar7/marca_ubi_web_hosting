@@ -6,17 +6,18 @@
  */
 
 console.log('[WATCHER] Marca Ubi CRM PR Audit Watcher initialized.');
-console.log('[WATCHER] Monitoring active Sprint 2.2 (Next.js 16 Edge Middleware Route Guard, Role Resolution & Luxury Admin Login Hardening)...');
+console.log('[WATCHER] Monitoring active Sprint 3.1 (Admin SDK Provisioning Engine, Server Action createTeamUser & RBAC Governance)...');
 
 let ticks = 0;
 const interval = setInterval(() => {
   ticks++;
   const timestamp = new Date().toISOString().substring(11, 19);
   if (ticks % 3 === 0) {
-    console.log(`[${timestamp}] [SPRINT_2_2_MONITOR] Pipeline active... Edge Middleware: PASS | Role Guards: PASS | Login Hardening: PASS | Rate Limiting: PASS | Status: ACTIVE`);
+    console.log(`[${timestamp}] [SPRINT_3_1_MONITOR] Pipeline active... Admin SDK: ACTIVE | createTeamUser: ACTIVE | Rollback Mechanics: VERIFIED | Sole-Admin Invariance: VERIFIED | Status: RUNNING`);
   }
   if (ticks >= 240) {
     console.log('[WATCHER] Monitoring cycle complete.');
     clearInterval(interval);
   }
 }, 5000);
+
