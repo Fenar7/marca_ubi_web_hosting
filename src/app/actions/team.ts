@@ -22,48 +22,7 @@ import type {
   TeamActionResult,
 } from '@/types/crm';
 
-/**
- * Zod validation schema for provisioning a new team member.
- * Enforces strict RFC email validation, sanitized string lengths,
- * and high-entropy temporary password complexity.
- */
-export const createTeamUserSchema = z.object({
-  fullName: z
-    .string({ message: 'Full name is required.' })
-    .trim()
-    .min(2, 'Full name must contain at least 2 characters.')
-    .max(100, 'Full name must not exceed 100 characters.'),
-
-  email: z
-    .string({ message: 'Email address is required.' })
-    .trim()
-    .toLowerCase()
-    .email('A valid business email address is required.'),
-
-  role: z.enum(['admin', 'sales_manager', 'sales_executive', 'viewer'], {
-    message: 'Role must be one of: admin, sales_manager, sales_executive, or viewer.',
-  }),
-
-  jobTitle: z
-    .string({ message: 'Job title is required.' })
-    .trim()
-    .min(2, 'Job title must contain at least 2 characters.')
-    .max(100, 'Job title must not exceed 100 characters.'),
-
-  phone: z
-    .string()
-    .trim()
-    .optional()
-    .nullable()
-    .transform((val) => (val && val.length > 0 ? val : null)),
-
-  tempPassword: z
-    .string({ message: 'Temporary password is required.' })
-    .min(8, 'Temporary password must contain at least 8 characters.')
-    .max(128, 'Temporary password must not exceed 128 characters.'),
-});
-
-export type CreateTeamUserFormData = z.infer<typeof createTeamUserSchema>;
+import { createTeamUserSchema, type CreateTeamUserFormData } from '@/app/lib/team-schemas';
 
 /**
  * Verifies that the active request session belongs to an active administrator.

@@ -1,0 +1,479 @@
+'use client';
+
+/**
+ * @file CommercialDirectoryTable.tsx
+ * @description Interactive Commercial Personnel Directory table component (/admin/team).
+ *              Renders Linear Fluid Cards row rhythm, provides instant client search and filtering,
+ *              formats pipeline values in tabular-nums, and enables administrative role governance
+ *              and account status transitions.
+ * @module app/admin/team/components/CommercialDirectoryTable
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus } from '@/types/crm';
+import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
+import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
+import styles from '../team.module.scss';
+
+interface CommercialDirectoryTableProps {
+  initialRoster: TeamMemberRosterItem[];
+  currentUserRole: CrmUserRole;
+  currentUserId: string;
+}
+
+export function CommercialDirectoryTable({
+  initialRoster,
+  currentUserRole,
+  currentUserId,
+}: CommercialDirectoryTableProps): React.ReactElement {
+  const [roster, setRoster] = useState<TeamMemberRosterItem[]>(initialRoster);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Synchronize internal state when parent updates initialRoster (e.g. optimistic provisioning)
+  useEffect(() => {
+    setRoster(initialRoster);
+  }, [initialRoster]);
+
+  const [isPending, startTransition] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  // Role modification modal state
+  const [targetMemberForRole, setTargetMemberForRole] = useState<TeamMemberRosterItem | null>(null);
+  const [selectedNewRole, setSelectedNewRole] = useState<CrmUserRole>('sales_executive');
+
+  // Status transition confirmation modal state
+  const [targetMemberForStatus, setTargetMemberForStatus] = useState<TeamMemberRosterItem | null>(null);
+
+  // Filter roster dynamically
+  const filteredRoster = useMemo(() => {
+    return roster.filter((member) => {
+      // Search matching: name, email, job title
+      const matchesSearch =
+        !searchQuery.trim() ||
+        member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.job_title.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Role filter matching
+      const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+
+      // Status filter matching
+      const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
+
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+  }, [roster, searchQuery, roleFilter, statusFilter]);
+
+  const isAdmin = currentUserRole === 'admin';
+
+  // Handle Role Change Execution
+  const handleConfirmRoleChange = () => {
+    if (!targetMemberForRole || !selectedNewRole) return;
+    setActionError(null);
+
+    startTransition(async () => {
+      try {
+        const result = await updateTeamUserRole(targetMemberForRole.id, selectedNewRole);
+
+        if (!result.success) {
+          setActionError(result.error || 'Failed to update team member role.');
+          return;
+        }
+
+        // Optimistically update local roster
+        setRoster((prev) =>
+          prev.map((item) =>
+            item.id === targetMemberForRole.id ? { ...item, role: selectedNewRole } : item
+          )
+        );
+
+        setTargetMemberForRole(null);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
+        setActionError(msg);
+      }
+    });
+  };
+
+  // Handle Account Status Toggle Execution
+  const handleConfirmStatusToggle = () => {
+    if (!targetMemberForStatus) return;
+    setActionError(null);
+
+    const nextStatus: ProfileAccountStatus =
+      targetMemberForStatus.status === 'active' ? 'suspended' : 'active';
+
+    startTransition(async () => {
+      try {
+        const result = await setTeamUserStatus(targetMemberForStatus.id, nextStatus);
+
+        if (!result.success) {
+          setActionError(result.error || 'Failed to update account operational status.');
+          return;
+        }
+
+        // Optimistically update local roster
+        setRoster((prev) =>
+          prev.map((item) =>
+            item.id === targetMemberForStatus.id ? { ...item, status: nextStatus } : item
+          )
+        );
+
+        setTargetMemberForStatus(null);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
+        setActionError(msg);
+      }
+    });
+  };
+
+  return (
+    <div className={styles.tableContainer}>
+      {actionError && (
+        <div style={{ padding: '1rem 1.5rem', background: 'rgba(239, 68, 68, 0.1)', borderBottom: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{actionError}</span>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 700 }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Directory Filter Toolbar */}
+      <div className={styles.tableToolbar}>
+        <div className={styles.searchBox}>
+          <svg
+            className={styles.searchIcon}
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search by personnel name, email, or title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Filter team members by name, email, or title"
+          />
+        </div>
+
+        <div className={styles.filterControls}>
+          <select
+            className={styles.filterSelect}
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            aria-label="Filter directory by commercial role"
+          >
+            <option value="all">All Roles</option>
+            <option value="admin">Administrators</option>
+            <option value="sales_manager">Sales Managers</option>
+            <option value="sales_executive">Sales Executives</option>
+            <option value="viewer">Viewers</option>
+          </select>
+
+          <select
+            className={styles.filterSelect}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Filter directory by account status"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active Only</option>
+            <option value="suspended">Suspended Only</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Commercial Personnel Directory Grid */}
+      <div className={styles.tableResponsiveWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.th}>Personnel Identity</th>
+              <th className={styles.th}>Governance Role</th>
+              <th className={styles.th}>Job Title</th>
+              <th className={styles.th}>Active Deals Load</th>
+              <th className={styles.th}>Account Status</th>
+              {isAdmin && <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRoster.length > 0 ? (
+              filteredRoster.map((member) => {
+                const isSelf = member.id === currentUserId;
+
+                return (
+                  <tr key={member.id} className={styles.tr}>
+                    {/* Personnel Identity */}
+                    <td className={styles.td}>
+                      <div className={styles.identityCell}>
+                        <div className={styles.avatar}>
+                          {getInitials(member.full_name)}
+                        </div>
+                        <div className={styles.identityInfo}>
+                          <span className={styles.fullName}>
+                            {member.full_name}
+                            {isSelf && (
+                              <span style={{ fontSize: '0.68rem', color: '#ff6100', marginLeft: '0.4rem', fontWeight: 600 }}>
+                                (You)
+                              </span>
+                            )}
+                          </span>
+                          <span className={styles.emailSubtext}>
+                            {member.email} {member.phone ? `· ${member.phone}` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Governance Role */}
+                    <td className={styles.td}>
+                      {member.role === 'admin' && (
+                        <span className={`${styles.roleBadge} ${styles.roleAdmin}`}>
+                          Admin
+                        </span>
+                      )}
+                      {member.role === 'sales_manager' && (
+                        <span className={`${styles.roleBadge} ${styles.roleSalesManager}`}>
+                          Sales Manager
+                        </span>
+                      )}
+                      {member.role === 'sales_executive' && (
+                        <span className={`${styles.roleBadge} ${styles.roleSalesExecutive}`}>
+                          Sales Executive
+                        </span>
+                      )}
+                      {member.role === 'viewer' && (
+                        <span className={`${styles.roleBadge} ${styles.roleViewer}`}>
+                          Viewer
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Job Title */}
+                    <td className={styles.td} style={{ color: '#cccccc' }}>
+                      {member.job_title}
+                    </td>
+
+                    {/* Active Deals Load */}
+                    <td className={styles.td}>
+                      <div className={styles.dealsPill}>
+                        <span className={styles.dealsCount}>{member.active_deals_count}</span>
+                        <span>deals</span>
+                        {member.total_deal_value > 0 && (
+                          <span className={styles.dealsValuation}>
+                            ({formatDealValuation(member.total_deal_value)})
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Account Status */}
+                    <td className={styles.td}>
+                      <div
+                        className={`${styles.statusIndicator} ${
+                          member.status === 'active' ? styles.statusActive : styles.statusSuspended
+                        }`}
+                      >
+                        <span className={styles.statusDot} />
+                        <span>{member.status === 'active' ? 'Active' : 'Suspended'}</span>
+                      </div>
+                    </td>
+
+                    {/* Administrative Actions */}
+                    {isAdmin && (
+                      <td className={styles.td} style={{ textAlign: 'right' }}>
+                        <div className={styles.actionButtonGroup} style={{ justifyContent: 'flex-end' }}>
+                          <button
+                            type="button"
+                            className={styles.rowActionButton}
+                            onClick={() => {
+                              setTargetMemberForRole(member);
+                              setSelectedNewRole(member.role);
+                            }}
+                            disabled={isPending}
+                            aria-label={`Change role for ${member.full_name}`}
+                          >
+                            <span>Role</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            className={`${styles.rowActionButton} ${
+                              member.status === 'active' ? styles.dangerButton : styles.activateButton
+                            }`}
+                            onClick={() => setTargetMemberForStatus(member)}
+                            disabled={isPending}
+                            aria-label={`${
+                              member.status === 'active' ? 'Suspend' : 'Activate'
+                            } account for ${member.full_name}`}
+                          >
+                            <span>{member.status === 'active' ? 'Suspend' : 'Activate'}</span>
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={isAdmin ? 6 : 5}>
+                  <div className={styles.emptyState}>
+                    <p className={styles.emptyStateTitle}>No Commercial Personnel Found</p>
+                    <p className={styles.emptyStateText}>
+                      No team members matched your active search query or filter selection.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Role Modification Modal Dialog */}
+      {targetMemberForRole && (
+        <div
+          className={styles.modalOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="role-modal-title"
+        >
+          <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
+            <h3 id="role-modal-title" style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700 }}>
+              Modify Governance Role
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: '#888888', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+              Update access permissions and database RLS boundaries for{' '}
+              <strong>{targetMemberForRole.full_name}</strong> ({targetMemberForRole.email}).
+            </p>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label htmlFor="new-role-select" className={styles.drawerLabel} style={{ marginBottom: '0.4rem', display: 'block' }}>
+                Assigned Role
+              </label>
+              <select
+                id="new-role-select"
+                className={styles.drawerSelect}
+                value={selectedNewRole}
+                onChange={(e) => setSelectedNewRole(e.target.value as CrmUserRole)}
+                disabled={isPending}
+              >
+                <option value="sales_executive">Sales Executive (Own Deals Only)</option>
+                <option value="sales_manager">Sales Manager (Global Pipeline View)</option>
+                <option value="admin">Administrator (Full Access & Governance)</option>
+                <option value="viewer">Viewer (Read-Only Financials)</option>
+              </select>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.copyButton}
+                onClick={() => setTargetMemberForRole(null)}
+                disabled={isPending}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.doneButton}
+                onClick={handleConfirmRoleChange}
+                disabled={isPending || selectedNewRole === targetMemberForRole.role}
+              >
+                {isPending ? 'Updating...' : 'Save Role'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Account Status Transition Confirmation Modal */}
+      {targetMemberForStatus && (
+        <div
+          className={styles.modalOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="status-modal-title"
+        >
+          <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
+            <div className={styles.modalAlertBanner}>
+              <svg
+                className={styles.modalAlertIcon}
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <div>
+                <h3 id="status-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.92rem', fontWeight: 700 }}>
+                  {targetMemberForStatus.status === 'active'
+                    ? 'Confirm Account Suspension'
+                    : 'Reactivate Team Account'}
+                </h3>
+                <p className={styles.modalAlertText}>
+                  {targetMemberForStatus.status === 'active'
+                    ? `Suspending ${targetMemberForStatus.full_name} will immediately block their CRM login sessions and deny database query permissions.`
+                    : `Reactivating ${targetMemberForStatus.full_name} will restore their login access and pipeline permissions.`}
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.copyButton}
+                onClick={() => setTargetMemberForStatus(null)}
+                disabled={isPending}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.doneButton}
+                style={{
+                  background: targetMemberForStatus.status === 'active' ? '#ef4444' : '#22c55e',
+                  borderColor: targetMemberForStatus.status === 'active' ? '#ef4444' : '#22c55e',
+                }}
+                onClick={handleConfirmStatusToggle}
+                disabled={isPending}
+              >
+                {isPending
+                  ? 'Processing...'
+                  : targetMemberForStatus.status === 'active'
+                  ? 'Suspend Account'
+                  : 'Reactivate Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
