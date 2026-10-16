@@ -75,7 +75,8 @@ export type TeamAuditAction =
   | 'user_suspended'
   | 'user_activated'
   | 'leads_bulk_reassigned'
-  | 'password_reset_dispatched';
+  | 'password_reset_dispatched'
+  | 'password_reset_completed';
 
 /**
  * Relational Entity Models

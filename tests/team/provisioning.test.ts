@@ -18,7 +18,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createTeamUserSchema } from '../../src/app/actions/team';
+import { createTeamUserSchema } from '../../src/app/lib/team-schemas';
 import {
   createAdminClient,
   getAdminClient,

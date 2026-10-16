@@ -109,6 +109,28 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
       return redirectResponse;
     }
+
+    // Scenario 2b: Mandatory First-Login Password Reset Interception
+    const mustChangePassword =
+      user.app_metadata?.must_change_password === true ||
+      user.user_metadata?.must_change_password === true;
+
+    if (mustChangePassword) {
+      // Allow user to access the password reset workflow
+      if (pathname === '/admin/reset-password') {
+        return supabaseResponse;
+      }
+
+      // Intercept all other administrative requests and redirect to password reset
+      const resetUrl = new URL('/admin/reset-password', request.url);
+      return createRedirectResponse(resetUrl, supabaseResponse);
+    }
+
+    // If user has already rotated their credentials, prevent re-entering reset-password portal
+    if (pathname === '/admin/reset-password') {
+      const adminUrl = new URL('/admin', request.url);
+      return createRedirectResponse(adminUrl, supabaseResponse);
+    }
   }
 
   // Scenario 3: Authenticated visitor attempting to re-enter login portal

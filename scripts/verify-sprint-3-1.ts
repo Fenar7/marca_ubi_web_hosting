@@ -12,7 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
 import dotenv from 'dotenv';
-import { createTeamUserSchema } from '../src/app/actions/team';
+import { createTeamUserSchema } from '../src/app/lib/team-schemas';
 import { createAdminClient, resetAdminClientCache } from '../src/app/lib/supabase/admin';
 
 dotenv.config({ path: '.env.local' });
