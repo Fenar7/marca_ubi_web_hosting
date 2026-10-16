@@ -287,6 +287,22 @@ export interface PipelineKpis {
 }
 
 /**
+ * Raw commercial metrics payload returned by the `get_pipeline_kpis` PostgreSQL RPC function.
+ * Reflects single-round-trip database aggregation with division-by-zero and null-safety guards.
+ */
+export interface PipelineRpcMetrics {
+  total_leads_count: number;
+  open_leads_count: number;
+  potential_leads_count: number;
+  potential_pipeline_value: number;
+  converted_leads_count: number;
+  converted_revenue_value: number;
+  lost_leads_count: number;
+  overdue_follow_ups_count: number;
+  conversion_rate_percentage: number;
+}
+
+/**
  * Distribution of active deals across funnel statuses for pipeline visualization.
  */
 export interface StatusFunnelBreakdown {
