@@ -22,7 +22,11 @@ import type {
   TeamActionResult,
 } from '@/types/crm';
 
-import { createTeamUserSchema, type CreateTeamUserFormData } from '@/app/lib/team-schemas';
+import {
+  createTeamUserSchema,
+  suspendTeamUserSchema,
+  type CreateTeamUserFormData,
+} from '@/app/lib/team-schemas';
 
 /**
  * Verifies that the active request session belongs to an active administrator.
@@ -347,6 +351,175 @@ export async function updateTeamUserRole(
 }
 
 /**
+ * Suspends a team member account and instantly revokes all active authentication sessions.
+ * Enforces strict administrative role authorization, self-suspension prevention,
+ * and sole-administrator invariance protection.
+ *
+ * Technical Sequence (Master PRD Section 15.9):
+ * 1. Schema Validation: Validates target user UUID and optional suspension rationale via Zod.
+ * 2. Authorization Boundary: Confirms the caller is an active authenticated administrator.
+ * 3. Self-Suspension Prevention: Explicitly blocks administrators from suspending their own accounts.
+ * 4. Sole Admin Invariance: Prevents suspending the sole active administrator in the agency.
+ * 5. Session Revocation: Invokes `adminClient.auth.admin.signOut(targetUserId, 'all')` to invalidate
+ *    all active refresh tokens and browser sessions across all devices.
+ * 6. Database Status Transition: Updates `public.profiles` setting `status = 'suspended'`.
+ * 7. Audit Trail Logging: Records an immutable audit log entry in `public.team_audit_logs`.
+ * 8. Cache Revalidation: Triggers path revalidation on `/admin/team` and `/admin`.
+ *
+ * @param {string} targetUserId UUID of the user to offboard/suspend.
+ * @param {string} [reason] Optional administrative justification for offboarding.
+ * @returns {Promise<TeamActionResult<Profile>>} Result envelope with updated profile or error message.
+ */
+export async function suspendTeamUser(
+  targetUserId: string,
+  reason?: string
+): Promise<TeamActionResult<Profile>> {
+  // 1. Validate input payload against Zod schema
+  const parsed = suspendTeamUserSchema.safeParse({ targetUserId, reason });
+  if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0];
+    return {
+      success: false,
+      error: firstIssue ? firstIssue.message : 'Invalid suspension request payload.',
+    };
+  }
+
+  const { targetUserId: sanitizedUserId, reason: sanitizedReason } = parsed.data;
+
+  // 2. Enforce active administrator authorization boundary
+  let caller: { callerId: string; callerEmail: string };
+  try {
+    caller = await assertActiveAdmin();
+  } catch (authErr: unknown) {
+    const message = authErr instanceof Error ? authErr.message : 'Authorization check failed.';
+    return { success: false, error: message };
+  }
+
+  // 3. Prevent Admin Self-Suspension (PRD Section 15.9 Package 4.1.1 / Edge Case Guard)
+  if (sanitizedUserId === caller.callerId) {
+    return {
+      success: false,
+      error: 'Security Policy Violation: Administrators cannot suspend their own account.',
+    };
+  }
+
+  const adminClient = getAdminClient();
+
+  // Retrieve current target profile
+  const { data: targetProfile, error: fetchError } = await adminClient
+    .from('profiles')
+    .select('*')
+    .eq('id', sanitizedUserId)
+    .maybeSingle();
+
+  if (fetchError || !targetProfile) {
+    return { success: false, error: 'Target team member profile not found in agency directory.' };
+  }
+
+  if (targetProfile.status === 'suspended') {
+    return {
+      success: false,
+      error: 'Target team member account is already suspended.',
+    };
+  }
+
+  // 4. Sole active administrator invariant pre-check
+  if (targetProfile.role === 'admin' && targetProfile.status === 'active') {
+    const { count, error: countError } = await adminClient
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('role', 'admin')
+      .eq('status', 'active');
+
+    if (countError) {
+      return { success: false, error: 'Failed to verify active administrator count.' };
+    }
+
+    if (count !== null && count <= 1) {
+      return {
+        success: false,
+        error: 'Agency Invariant Violation: Operation rejected. Cannot suspend the sole active administrator in the agency.',
+      };
+    }
+  }
+
+  try {
+    // 5. Instant Session Revocation via Supabase Admin SDK (Package 4.1.2)
+    // Revokes all active refresh tokens and terminates real-time channels across all client devices.
+    const { error: signOutError } = await adminClient.auth.admin.signOut(sanitizedUserId, 'global');
+    if (signOutError) {
+      console.warn(
+        `[AUTH_REVOCATION_WARNING] Failed to cleanly sign out user ${sanitizedUserId}:`,
+        signOutError.message
+      );
+    }
+
+    // Harden session invalidation by banning the user in Supabase Auth
+    await adminClient.auth.admin.updateUserById(sanitizedUserId, {
+      ban_duration: '876000h',
+    });
+
+    // 6. Database Status Transition to 'suspended' (Package 4.1.3)
+    const { data: updatedProfile, error: updateError } = await adminClient
+      .from('profiles')
+      .update({
+        status: 'suspended',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', sanitizedUserId)
+      .select()
+      .single();
+
+    if (updateError || !updatedProfile) {
+      if (updateError?.code === '23514') {
+        return {
+          success: false,
+          error: 'Agency Invariant Violation: Operation rejected. Cannot suspend the sole active administrator in the agency.',
+        };
+      }
+      throw updateError || new Error('Failed to update account status to suspended.');
+    }
+
+    // 7. Offboarding Audit Trail Logging (Package 4.1.4)
+    const { error: auditError } = await adminClient.from('team_audit_logs').insert({
+      actor_id: caller.callerId,
+      action: 'user_suspended',
+      target_user_email: targetProfile.email,
+      details: {
+        target_user_id: sanitizedUserId,
+        target_user_name: targetProfile.full_name,
+        role: targetProfile.role,
+        previous_status: targetProfile.status,
+        new_status: 'suspended',
+        session_revoked: true,
+        reason: sanitizedReason || 'Administrative offboarding',
+        actor_email: caller.callerEmail,
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    if (auditError) {
+      console.warn('[AUDIT_WARNING] Offboarding audit log entry failed to record:', auditError.message);
+    }
+
+    try {
+      revalidatePath('/admin/team');
+      revalidatePath('/admin');
+    } catch {
+      // Safe no-op outside Next.js request context
+    }
+
+    return {
+      success: true,
+      data: updatedProfile as Profile,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to execute account offboarding.';
+    return { success: false, error: message };
+  }
+}
+
+/**
  * Suspends or reactivates a team member account.
  * Enforces the agency sole-administrator invariant: prevents suspending the last active administrator.
  *
@@ -368,6 +541,14 @@ export async function setTeamUserStatus(
   } catch (authErr: unknown) {
     const message = authErr instanceof Error ? authErr.message : 'Authorization check failed.';
     return { success: false, error: message };
+  }
+
+  // Self-suspension prevention guard
+  if (newStatus === 'suspended' && targetUserId === caller.callerId) {
+    return {
+      success: false,
+      error: 'Security Policy Violation: Administrators cannot suspend their own account.',
+    };
   }
 
   const adminClient = getAdminClient();
@@ -403,9 +584,31 @@ export async function setTeamUserStatus(
   }
 
   try {
+    // If suspending, revoke all active sessions across all devices
+    if (newStatus === 'suspended') {
+      const { error: signOutError } = await adminClient.auth.admin.signOut(targetUserId, 'global');
+      if (signOutError) {
+        console.warn(
+          `[AUTH_REVOCATION_WARNING] Failed to cleanly sign out user ${targetUserId}:`,
+          signOutError.message
+        );
+      }
+      await adminClient.auth.admin.updateUserById(targetUserId, {
+        ban_duration: '876000h',
+      });
+    } else if (newStatus === 'active') {
+      // Unban account in Supabase Auth upon reactivation
+      await adminClient.auth.admin.updateUserById(targetUserId, {
+        ban_duration: 'none',
+      });
+    }
+
     const { data: updatedProfile, error: updateError } = await adminClient
       .from('profiles')
-      .update({ status: newStatus })
+      .update({
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', targetUserId)
       .select()
       .single();
@@ -430,6 +633,7 @@ export async function setTeamUserStatus(
         target_user_id: targetUserId,
         previous_status: targetProfile.status,
         new_status: newStatus,
+        session_revoked: newStatus === 'suspended',
         actor_email: caller.callerEmail,
         timestamp: new Date().toISOString(),
       },

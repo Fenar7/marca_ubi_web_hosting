@@ -81,3 +81,27 @@ export type ResetPasswordFormData = z.infer<typeof ResetPasswordSchema>;
  * Governed by Master PRD Section 15.8.
  */
 export const SALES_REP_CAPACITY_LIMIT = 15;
+
+/**
+ * Zod validation schema for suspending / offboarding a team member account.
+ * Enforces valid UUID format and bounds optional suspension notes to 500 characters.
+ * Governed by Master PRD Section 15.9 Sprint 4.1.
+ */
+export const suspendTeamUserSchema = z.object({
+  targetUserId: z
+    .string({ message: 'Target user ID is required.' })
+    .regex(
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+      'Target user ID must be a valid UUID.'
+    ),
+  reason: z
+    .string()
+    .trim()
+    .max(500, 'Suspension reason must not exceed 500 characters.')
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.length > 0 ? val : null)),
+});
+
+export type SuspendTeamUserFormData = z.infer<typeof suspendTeamUserSchema>;
+
