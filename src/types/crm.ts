@@ -75,7 +75,8 @@ export type TeamAuditAction =
   | 'user_suspended'
   | 'user_activated'
   | 'leads_bulk_reassigned'
-  | 'password_reset_dispatched';
+  | 'password_reset_dispatched'
+  | 'password_reset_completed';
 
 /**
  * Relational Entity Models
@@ -95,9 +96,21 @@ export interface Profile {
   avatar_url: string | null;
   invited_by: string | null;
   last_login_at: string | null;
+  must_change_password: boolean;
   created_at: string;
   updated_at: string;
 }
+
+/**
+ * Hydrated team member directory item joined with active commercial metrics.
+ * Powers the Commercial Personnel Directory table (/admin/team).
+ */
+export interface TeamMemberRosterItem extends Profile {
+  active_deals_count: number;
+  total_deal_value: number;
+  invited_by_name?: string | null;
+}
+
 
 /**
  * Catalog entry for commercial lead acquisition channels mirroring `public.lead_sources`.
@@ -314,3 +327,26 @@ export interface StatusFunnelBreakdown {
   deal_count: number;
   total_value: number;
 }
+
+/**
+ * Payload required to provision a new team member via createTeamUser Server Action.
+ */
+export interface CreateTeamUserInput {
+  fullName: string;
+  email: string;
+  role: CrmUserRole;
+  jobTitle: string;
+  phone?: string | null;
+  tempPassword: string;
+}
+
+/**
+ * Standard server action result envelope for team administrative mutations.
+ */
+export interface TeamActionResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  validationErrors?: Record<string, string>;
+}
+
