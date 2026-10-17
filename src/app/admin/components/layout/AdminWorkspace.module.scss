@@ -1,0 +1,14 @@
+// Marca Ubi CRM Enterprise — Workspace Shell SCSS Module
+@use './admin-shell.module.scss' as shell;
+
+.layoutRoot {
+  @extend .layoutRoot;
+}
+
+.mainViewport {
+  @extend .mainViewport;
+}
+
+.contentContainer {
+  @extend .contentContainer;
+}

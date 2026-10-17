@@ -9,7 +9,6 @@
 
 import React from 'react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
@@ -88,45 +87,15 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   const adminCount = roster.filter((m) => m.role === 'admin').length;
 
   return (
-    <main className={styles.workspace}>
-      {/* Workspace Brand Header */}
+    <div className={styles.workspace}>
+      {/* Workspace Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <img
-            src="/hero/marca-ubi-logo.png"
-            alt="Marca Ubi."
-            style={{
-              display: 'block',
-              width: '140px',
-              height: 'auto',
-              marginBottom: '0.75rem',
-            }}
-          />
           <span className={styles.eyebrow}>Governance & Access Control</span>
           <h1 className={styles.pageTitle}>Commercial Personnel Directory</h1>
           <p className={styles.pageSubtitle}>
             Agency staff roster, role authorization matrix, and portfolio deal load allocation.
           </p>
-        </div>
-
-        <div className={styles.headerActions}>
-          <Link href="/admin" className={styles.backButton}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            <span>Back to Command Center</span>
-          </Link>
         </div>
       </header>
 
@@ -209,6 +178,6 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
         currentUserRole={role}
         currentUserId={callerProfile.id}
       />
-    </main>
+    </div>
   );
 }
