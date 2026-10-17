@@ -7,6 +7,14 @@
 export { ClientDossierDrawer } from './ClientDossierDrawer';
 export type { ClientDossierDrawerProps, LeadDossierData } from './ClientDossierDrawer';
 export { OrganizationDossier, formatDossierCurrency, sanitizeTelUri, createWhatsAppUri, getDossierInitials } from './OrganizationDossier';
-export type { OrganizationDossierProps } from './OrganizationDossier';
 export { RawBriefAccordion } from './RawBriefAccordion';
 export type { RawBriefAccordionProps } from './RawBriefAccordion';
+export { ActivityTimeline } from './ActivityTimeline';
+export type { ActivityTimelineProps } from './ActivityTimeline';
+export { QuickActionComposer } from './QuickActionComposer';
+export type { QuickActionComposerProps, ComposerTab } from './QuickActionComposer';
+export {
+  formatRelativeTime,
+  formatCallDuration,
+  parseMentionsAndTags,
+} from './dossierUtils';
