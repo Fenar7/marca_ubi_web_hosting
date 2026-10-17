@@ -107,7 +107,7 @@ export async function updateLeadStatusInlineAction(
     // 3. Inspect existing deal and verify role sandboxing
     const { data: existingLead, error: leadFetchError } = await supabase
       .from('leads')
-      .select('id, lead_id, assigned_to, status_id, funnel_statuses(name, bucket)')
+      .select('id, lead_id, assigned_to, status_id, converted_at, funnel_statuses(name, bucket)')
       .eq('id', leadId)
       .maybeSingle();
 
@@ -115,6 +115,14 @@ export async function updateLeadStatusInlineAction(
       return {
         success: false,
         error: 'Commercial inquiry not found or inaccessible under security boundaries.',
+      };
+    }
+
+    // Enforce post-conversion record locking: non-admins cannot mutate converted deals
+    if (existingLead.converted_at && profile.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
       };
     }
 
@@ -293,7 +301,7 @@ export async function updateLeadPriorityInlineAction(
     // 3. Inspect target lead and verify role isolation
     const { data: existingLead, error: leadFetchError } = await supabase
       .from('leads')
-      .select('id, lead_id, assigned_to, priority')
+      .select('id, lead_id, assigned_to, priority, converted_at')
       .eq('id', leadId)
       .maybeSingle();
 
@@ -301,6 +309,14 @@ export async function updateLeadPriorityInlineAction(
       return {
         success: false,
         error: 'Target inquiry not found or inaccessible.',
+      };
+    }
+
+    // Enforce post-conversion record locking: non-admins cannot mutate converted deals
+    if (existingLead.converted_at && profile.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
       };
     }
 

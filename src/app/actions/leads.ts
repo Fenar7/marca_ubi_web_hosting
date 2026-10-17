@@ -924,7 +924,7 @@ export async function updateLeadAssignee(
 
     const { data: currentLead, error: currentLeadError } = await supabase
       .from('leads')
-      .select('id, lead_id, assigned_to')
+      .select('id, lead_id, assigned_to, converted_at')
       .eq('id', data.leadId)
       .maybeSingle();
 
@@ -932,6 +932,13 @@ export async function updateLeadAssignee(
       return {
         success: false,
         error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    if (currentLead.converted_at && callerProfile.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
       };
     }
 
@@ -1067,7 +1074,7 @@ export async function updateLeadDealParameters(
 
     const { data: currentLead, error: leadError } = await supabase
       .from('leads')
-      .select('id, assigned_to')
+      .select('id, assigned_to, converted_at')
       .eq('id', data.leadId)
       .maybeSingle();
 
@@ -1075,6 +1082,13 @@ export async function updateLeadDealParameters(
       return {
         success: false,
         error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    if (currentLead.converted_at && callerProfile.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
       };
     }
 

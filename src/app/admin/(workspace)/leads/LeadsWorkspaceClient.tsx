@@ -23,6 +23,8 @@ import {
   type InlineStatusOption,
 } from '@/app/admin/components/LeadsTable';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
+import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
+import type { GuardedTransitionResultPayload } from '@/app/actions/stageTransitionActions';
 import type { LeadPriority } from '@/types/crm';
 import styles from './leads.module.scss';
 
@@ -120,6 +122,17 @@ function LeadsWorkspaceContent({
   // Client 360 Slide-over Drawer State: hydrated from URL search parameter upon deep-link navigation
   const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(leadIdParam);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(Boolean(leadIdParam));
+
+  // Guarded Stage Transition Modal State (Negotiation, Lost, Converted)
+  const [stageModalState, setStageModalState] = useState<{
+    isOpen: boolean;
+    leadId: string | null;
+    targetStatus: { id: string; name: string; bucket: FunnelBucket } | null;
+  }>({
+    isOpen: false,
+    leadId: null,
+    targetStatus: null,
+  });
 
   // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
   const handleOpenDrawer = useCallback((id: string) => {
@@ -322,6 +335,46 @@ function LeadsWorkspaceContent({
     return Array.from(map.values());
   }, [initialStatuses, leads]);
 
+  useEffect(() => {
+    const handleOpenStageModal = (e: Event): void => {
+      const customEvt = e as CustomEvent<{
+        leadId: string;
+        targetStatus?: { id: string; name: string; bucket: FunnelBucket };
+        targetStatusId?: string;
+        targetStageName?: string;
+      }>;
+      const detail = customEvt.detail;
+      if (!detail || !detail.leadId) return;
+
+      let target = detail.targetStatus;
+      if (!target && detail.targetStatusId) {
+        const match = resolvedStatuses.find((s) => s.id === detail.targetStatusId);
+        if (match) {
+          target = { id: match.id, name: match.name, bucket: match.bucket };
+        }
+      }
+      if (!target && detail.targetStageName) {
+        const match = resolvedStatuses.find(
+          (s) => s.name.toLowerCase() === detail.targetStageName?.toLowerCase()
+        );
+        if (match) {
+          target = { id: match.id, name: match.name, bucket: match.bucket };
+        }
+      }
+
+      if (target) {
+        setStageModalState({
+          isOpen: true,
+          leadId: detail.leadId,
+          targetStatus: target,
+        });
+      }
+    };
+
+    window.addEventListener('open-stage-modal', handleOpenStageModal);
+    return () => window.removeEventListener('open-stage-modal', handleOpenStageModal);
+  }, [resolvedStatuses]);
+
   // Real-time record counts per bucket
   const counts = useMemo<BucketCounts>(() => {
     return {
@@ -474,6 +527,26 @@ function LeadsWorkspaceContent({
     []
   );
 
+  // Handler for confirmed guarded stage transition (Negotiation, Lost, Converted)
+  const handleStageTransitionSuccess = useCallback(
+    (payload: GuardedTransitionResultPayload): void => {
+      setLeads((prev) =>
+        prev.map((lead) => {
+          if (lead.id !== payload.leadId) return lead;
+          return {
+            ...lead,
+            status_id: payload.newStatusId,
+            status_name: payload.newStatusName,
+            bucket: payload.bucket,
+            expected_value:
+              payload.expectedValue !== undefined ? payload.expectedValue : lead.expected_value,
+          };
+        })
+      );
+    },
+    []
+  );
+
   return (
     <>
       {/* High-Performance Multi-Filter Action Bar */}
@@ -510,6 +583,27 @@ function LeadsWorkspaceContent({
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
       />
+
+      {/* Guarded Pipeline Stage Transition Modal (Negotiation, Lost, Converted) */}
+      {stageModalState.isOpen && stageModalState.leadId && stageModalState.targetStatus && (
+        <StageTransitionModal
+          isOpen={stageModalState.isOpen}
+          onClose={() =>
+            setStageModalState({ isOpen: false, leadId: null, targetStatus: null })
+          }
+          leadId={stageModalState.leadId}
+          targetStatus={stageModalState.targetStatus}
+          dealIdCode={leads.find((l) => l.id === stageModalState.leadId)?.lead_id}
+          dealName={
+            leads.find((l) => l.id === stageModalState.leadId)?.company ||
+            leads.find((l) => l.id === stageModalState.leadId)?.name
+          }
+          currentExpectedValue={
+            leads.find((l) => l.id === stageModalState.leadId)?.expected_value
+          }
+          onSuccess={handleStageTransitionSuccess}
+        />
+      )}
     </>
   );
 }

@@ -94,25 +94,17 @@ export function InlineStatusSelect({
       return;
     }
 
-    // Guarded Transitions: Converted and Lost require formal contract disclosures
-    if (targetStatus.bucket === 'converted' || targetStatus.bucket === 'lost') {
+    // Guarded Transitions: Converted, Lost, and Negotiation require formal disclosures & valuations
+    const isGuardedStage =
+      targetStatus.bucket === 'converted' ||
+      targetStatus.bucket === 'lost' ||
+      targetStatus.name.toLowerCase() === 'negotiation';
+
+    if (isGuardedStage) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('open-stage-modal', {
             detail: { leadId, targetStatus },
-          })
-        );
-        window.dispatchEvent(
-          new CustomEvent('crm-toast', {
-            detail: {
-              type: 'info',
-              message: `Transitioning to '${targetStatus.name}' requires formal completion. Opening deal dossier.`,
-            },
-          })
-        );
-        window.dispatchEvent(
-          new CustomEvent('open-lead-drawer', {
-            detail: { leadId },
           })
         );
       }
