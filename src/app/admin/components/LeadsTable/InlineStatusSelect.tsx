@@ -94,25 +94,17 @@ export function InlineStatusSelect({
       return;
     }
 
-    // Guarded Transitions: Converted and Lost require formal contract disclosures
-    if (targetStatus.bucket === 'converted' || targetStatus.bucket === 'lost') {
+    // Guarded Transitions: Converted, Lost, and Negotiation require formal disclosures & valuations
+    const isGuardedStage =
+      targetStatus.bucket === 'converted' ||
+      targetStatus.bucket === 'lost' ||
+      targetStatus.name.toLowerCase() === 'negotiation';
+
+    if (isGuardedStage) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('open-stage-modal', {
             detail: { leadId, targetStatus },
-          })
-        );
-        window.dispatchEvent(
-          new CustomEvent('crm-toast', {
-            detail: {
-              type: 'info',
-              message: `Transitioning to '${targetStatus.name}' requires formal completion. Opening deal dossier.`,
-            },
-          })
-        );
-        window.dispatchEvent(
-          new CustomEvent('open-lead-drawer', {
-            detail: { leadId },
           })
         );
       }
@@ -201,7 +193,9 @@ export function InlineStatusSelect({
           className={`${styles.dropdownChevron} ${isOpen ? styles.chevronOpen : ''}`}
           aria-hidden="true"
         >
-          ▼
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </span>
       </button>
 
@@ -245,7 +239,9 @@ export function InlineStatusSelect({
 
                 {isSelected && (
                   <span className={styles.checkMark} aria-hidden="true">
-                    ✓
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   </span>
                 )}
               </button>
