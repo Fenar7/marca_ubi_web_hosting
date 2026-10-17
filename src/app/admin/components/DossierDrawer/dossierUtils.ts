@@ -199,31 +199,38 @@ export function formatCallDuration(totalSeconds: number | null | undefined): str
 /**
  * Tokenizes interactive note text extracting @teammate mentions and #operational tags
  * without resorting to dangerous innerHTML injections.
+ * Enforces boundary checks so email addresses (e.g. client@domain.com) are preserved as plain text.
  * @param text Unformatted raw text
  */
 export function parseMentionsAndTags(
   text: string
 ): { type: 'text' | 'mention' | 'tag'; value: string }[] {
   if (!text) return [];
-  const regex = /([@#][a-zA-Z0-9_-]+)/g;
+  const regex = /(^|\s)([@#][a-zA-Z0-9_-]+)/g;
   const parts: { type: 'text' | 'mention' | 'tag'; value: string }[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
+    const prefixWhitespace = match[1];
+    const token = match[2];
+    const tokenStartIndex = match.index + prefixWhitespace.length;
+
+    if (tokenStartIndex > lastIndex) {
       parts.push({
         type: 'text',
-        value: text.substring(lastIndex, match.index),
+        value: text.substring(lastIndex, tokenStartIndex),
       });
     }
-    const token = match[1];
+
     if (token.startsWith('@')) {
       parts.push({ type: 'mention', value: token });
     } else {
       parts.push({ type: 'tag', value: token });
     }
-    lastIndex = regex.lastIndex;
+
+    lastIndex = tokenStartIndex + token.length;
+    regex.lastIndex = lastIndex;
   }
 
   if (lastIndex < text.length) {

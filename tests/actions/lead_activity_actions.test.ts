@@ -138,14 +138,21 @@ describe('Sprint 8.2: Server Actions & Activity Logging Engine', () => {
   });
 
   describe('Block 2: Script Sanitization Logic', () => {
-    it('strips script tags cleanly from interaction notes', () => {
-      const sanitizeDescription = (text: string): string =>
-        text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim();
+    const sanitizeDescription = (text: string): string =>
+      text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim();
 
+    it('strips script tags cleanly from interaction notes', () => {
       const maliciousNote = 'Reviewed contract <script>alert("xss")</script> with CEO.';
       const cleaned = sanitizeDescription(maliciousNote);
       assert.equal(cleaned, 'Reviewed contract  with CEO.');
       assert.equal(cleaned.includes('<script>'), false);
+    });
+
+    it('identifies when script stripping leaves fewer than 3 characters', () => {
+      const maliciousEmptyPayload = '<script>alert("xss")</script>';
+      const cleaned = sanitizeDescription(maliciousEmptyPayload);
+      assert.equal(cleaned.length < 3, true);
+      assert.equal(cleaned, '');
     });
   });
 

@@ -165,7 +165,11 @@ export function ActivityTimeline({
                 <time
                   className={styles.timestamp}
                   dateTime={act.created_at}
-                  title={new Date(act.created_at).toUTCString()}
+                  title={
+                    act.created_at && !isNaN(new Date(act.created_at).getTime())
+                      ? new Date(act.created_at).toUTCString()
+                      : 'Pending timestamp'
+                  }
                 >
                   {formatRelativeTime(act.created_at)}
                 </time>

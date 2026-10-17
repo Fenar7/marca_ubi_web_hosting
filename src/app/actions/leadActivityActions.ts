@@ -156,6 +156,13 @@ export async function logLeadActivityAction(
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .trim();
 
+    if (sanitizedDescription.length < 3) {
+      return {
+        success: false,
+        error: 'Interaction note contains insufficient content after sanitization.',
+      };
+    }
+
     // 5. Atomic write to public.lead_activities
     const { data: activityRecord, error: insertError } = await supabase
       .from('lead_activities')
@@ -178,10 +185,14 @@ export async function logLeadActivityAction(
 
     // 6. Update lead touchpoint timestamp
     const nowIso = new Date().toISOString();
-    await supabase
+    const { error: updateError } = await supabase
       .from('leads')
       .update({ updated_at: nowIso })
       .eq('id', leadId);
+
+    if (updateError) {
+      console.warn(`[WARN] Failed to update lead updated_at timestamp: ${updateError.message}`);
+    }
 
     // 7. Revalidate leads workspace cache
     revalidatePath('/admin/leads');

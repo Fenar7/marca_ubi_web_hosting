@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useRef, useTransition } from 'react';
 import { logLeadActivityAction } from '@/app/actions/leadActivityActions';
 import type { LeadActivityWithActor, LeadActivityType } from '@/types/crm';
 import styles from './DossierDrawer.module.scss';
@@ -62,6 +62,7 @@ export function QuickActionComposer({
   const [activeTab, setActiveTab] = useState<ComposerTab>('call');
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const submittingLockRef = useRef<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Call Logging State
@@ -96,9 +97,10 @@ export function QuickActionComposer({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isActionDisabled) return;
+    if (submittingLockRef.current || isActionDisabled) return;
 
     // Synchronous submission lock to prevent double-click duplicate activity entries
+    submittingLockRef.current = true;
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -145,6 +147,7 @@ export function QuickActionComposer({
 
         if (!result.success || !result.data) {
           setErrorMessage(result.error || 'Failed to record interaction in activity ledger.');
+          submittingLockRef.current = false;
           setIsSubmitting(false);
           return;
         }
@@ -168,6 +171,7 @@ export function QuickActionComposer({
           err instanceof Error ? err.message : 'An unexpected error occurred while saving.'
         );
       } finally {
+        submittingLockRef.current = false;
         setIsSubmitting(false);
       }
     });

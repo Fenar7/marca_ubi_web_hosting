@@ -123,6 +123,16 @@ describe('Sprint 8.2: Omnichannel Activity Timeline & Composer Engine', () => {
       assert.strictEqual(tokens[0].value, text);
     });
 
+    it('preserves email addresses as plain text without extracting domain as @mention', () => {
+      const text = 'Send contract directly to client@marcaubi.com or partner@agency.org.';
+      const tokens = parseMentionsAndTags(text);
+
+      const mentions = tokens.filter((t) => t.type === 'mention').map((t) => t.value);
+      assert.deepStrictEqual(mentions, []);
+      assert.strictEqual(tokens.length, 1);
+      assert.strictEqual(tokens[0].value, text);
+    });
+
     it('handles empty strings without errors', () => {
       assert.deepStrictEqual(parseMentionsAndTags(''), []);
     });
