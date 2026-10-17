@@ -141,6 +141,21 @@ export function AddTeamMemberDrawer({
           return;
         }
 
+        // Broadcast custom event for optimistic roster synchronization across workspaces
+        window.dispatchEvent(
+          new CustomEvent('team-member-created', {
+            detail: {
+              credentials: {
+                fullName,
+                email,
+                role,
+                jobTitle,
+                tempPassword,
+              },
+            },
+          })
+        );
+
         // Forward credentials to reveal modal and close drawer
         onUserCreated({
           fullName: payload.fullName,

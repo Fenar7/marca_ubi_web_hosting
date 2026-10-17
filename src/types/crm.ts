@@ -353,6 +353,28 @@ export interface TeamActionResult<T = unknown> {
 }
 
 /**
+ * Action result envelope returned by the administrative login Server Action.
+ * Encapsulates redirection path, progressive rate limiting lockout metrics, and error feedback.
+ */
+export interface LoginActionResult {
+  success: boolean;
+  error?: string;
+  redirectTo?: string;
+  remainingLockoutSeconds?: number;
+  isLocked?: boolean;
+}
+
+/**
+ * Action result envelope returned by the mandatory password rotation Server Action.
+ * Encapsulates operation status, form-level error message, and granular field validation issues.
+ */
+export interface ResetPasswordResult {
+  success: boolean;
+  error?: string;
+  validationErrors?: Record<string, string>;
+}
+
+/**
  * Breakdown of active deals across individual pipeline stages for a specific sales representative.
  */
 export interface StageDealBreakdown {

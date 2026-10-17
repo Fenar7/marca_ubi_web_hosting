@@ -136,6 +136,7 @@ export async function createTeamUser(
       },
       app_metadata: {
         role,
+        must_change_password: true,
       },
     });
 
@@ -240,7 +241,9 @@ export async function createTeamUser(
 
 /**
  * Updates a team member's commercial role.
- * Enforces the agency sole-administrator invariant: prevents demoting the last active administrator.
+ * Enforces dual governance invariants:
+ * 1. Blocks administrator self-demotion (accidental or unilateral administrative lockout defense).
+ * 2. Enforces the agency sole-administrator invariant: prevents demoting the last active administrator.
  *
  * @param {string} targetUserId UUID of the user whose role is being changed.
  * @param {CrmUserRole} newRole The target role to assign.
@@ -254,6 +257,8 @@ export async function updateTeamUserRole(
     return { success: false, error: 'Target user ID and new role are required.' };
   }
 
+  const sanitizedUserId = targetUserId.trim();
+
   let caller: { callerId: string; callerEmail: string };
   try {
     caller = await assertActiveAdmin();
@@ -262,13 +267,21 @@ export async function updateTeamUserRole(
     return { success: false, error: message };
   }
 
+  // Prevent Admin Self-Demotion (Security Invariant Protection)
+  if (sanitizedUserId === caller.callerId && newRole !== 'admin') {
+    return {
+      success: false,
+      error: 'Security Policy Violation: Administrators cannot demote their own account. Another administrator must perform this role modification.',
+    };
+  }
+
   const adminClient = getAdminClient();
 
   // Retrieve current target profile
   const { data: targetProfile, error: fetchError } = await adminClient
     .from('profiles')
     .select('*')
-    .eq('id', targetUserId)
+    .eq('id', sanitizedUserId)
     .maybeSingle();
 
   if (fetchError || !targetProfile) {
@@ -300,7 +313,7 @@ export async function updateTeamUserRole(
     const { data: updatedProfile, error: updateError } = await adminClient
       .from('profiles')
       .update({ role: newRole })
-      .eq('id', targetUserId)
+      .eq('id', sanitizedUserId)
       .select()
       .single();
 
@@ -315,7 +328,7 @@ export async function updateTeamUserRole(
     }
 
     // Synchronize role metadata in Supabase Auth
-    await adminClient.auth.admin.updateUserById(targetUserId, {
+    await adminClient.auth.admin.updateUserById(sanitizedUserId, {
       app_metadata: { role: newRole },
       user_metadata: { role: newRole },
     });
@@ -326,7 +339,7 @@ export async function updateTeamUserRole(
       action: 'role_changed',
       target_user_email: targetProfile.email,
       details: {
-        target_user_id: targetUserId,
+        target_user_id: sanitizedUserId,
         previous_role: targetProfile.role,
         new_role: newRole,
         actor_email: caller.callerEmail,
@@ -698,19 +711,27 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
     return { success: false, error: `Failed to load team roster: ${profilesError?.message || 'Unknown error'}` };
   }
 
-  // Fetch all leads to compute active deal counts per representative
+  // Fetch active funnel statuses (non-terminal) to align active counts with Reassignment Wizard
+  const { data: terminalStatuses } = await supabase
+    .from('funnel_statuses')
+    .select('id')
+    .in('bucket', ['converted', 'lost']);
+
+  const terminalIds = new Set((terminalStatuses || []).map((s) => s.id));
+
+  // Fetch leads with status_id to compute active non-terminal deal metrics per representative
   const { data: leads, error: leadsError } = await supabase
     .from('leads')
-    .select('assigned_to, expected_value');
+    .select('assigned_to, expected_value, status_id');
 
   if (leadsError) {
     return { success: false, error: `Failed to aggregate deal counts: ${leadsError.message}` };
   }
 
-  // Aggregate deal counts and pipeline value per user
+  // Aggregate deal counts and pipeline value per user for active deals only
   const metricsMap = new Map<string, { count: number; totalValue: number }>();
   (leads || []).forEach((lead) => {
-    if (lead.assigned_to) {
+    if (lead.assigned_to && !terminalIds.has(lead.status_id)) {
       const current = metricsMap.get(lead.assigned_to) || { count: 0, totalValue: 0 };
       current.count += 1;
       current.totalValue += Number(lead.expected_value || 0);

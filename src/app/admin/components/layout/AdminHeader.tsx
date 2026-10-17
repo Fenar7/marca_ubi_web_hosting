@@ -19,7 +19,7 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps): React.ReactElement {
-  const canManageTeam = currentUser.role === 'admin' || currentUser.role === 'sales_manager';
+  const canManageTeam = currentUser.role === 'admin';
   const canCreateLead = currentUser.role !== 'viewer';
 
   const handleOpenNewLead = (): void => {
