@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createClient } from '@/app/lib/supabase/server';
 import type { PipelineRpcMetrics } from '@/types/crm';
+import { KpiRibbon } from '@/app/admin/components/kpi';
 import styles from './page.module.scss';
 import { ActivityRowItem } from './components/ActivityRowItem';
 
@@ -22,20 +23,6 @@ export const metadata: Metadata = {
     follow: false,
   },
 };
-
-/**
- * Formats numeric currency into clean Indian Lakhs/Crores or formatted rupees.
- */
-function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
 
 /**
  * Relative time formatter for activity timestamps.
@@ -69,30 +56,25 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
   const supabase = await createClient();
 
   // 1. Fetch Aggregated Pipeline Metrics via RPC or Direct Aggregation Fallback
-  let totalLeads = 0;
-  let pipelineValuation = 0;
-  let overdueFollowups = 0;
-  let activeDealsCount = 0;
-
+  let rpcMetrics: PipelineRpcMetrics | null = null;
   const { data: rpcData, error: rpcError } = await supabase.rpc('get_pipeline_kpis');
 
   if (!rpcError && rpcData) {
-    const metrics = rpcData as unknown as PipelineRpcMetrics;
-    totalLeads = metrics.total_leads_count || 0;
-    pipelineValuation = Number(metrics.potential_pipeline_value || 0);
-    overdueFollowups = metrics.overdue_follow_ups_count || 0;
-    activeDealsCount = (metrics.open_leads_count || 0) + (metrics.potential_leads_count || 0);
+    rpcMetrics = rpcData as unknown as PipelineRpcMetrics;
   } else {
     // Invariant: Direct table fallback if RPC is unpopulated in sandbox/mock environments
     const { count: leadCount } = await supabase
       .from('leads')
       .select('*', { count: 'exact', head: true });
-    totalLeads = leadCount || 0;
 
     const { data: activeLeads } = await supabase
       .from('leads')
       .select('expected_value, next_follow_up, funnel_statuses!inner(bucket)')
       .in('funnel_statuses.bucket', ['open', 'potential']);
+
+    let activeDealsCount = 0;
+    let pipelineValuation = 0;
+    let overdueFollowups = 0;
 
     if (activeLeads) {
       activeDealsCount = activeLeads.length;
@@ -105,6 +87,18 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
         (l) => l.next_follow_up && l.next_follow_up < nowIso
       ).length;
     }
+
+    rpcMetrics = {
+      total_leads_count: leadCount || 0,
+      open_leads_count: activeDealsCount,
+      potential_leads_count: activeDealsCount,
+      potential_pipeline_value: pipelineValuation,
+      converted_leads_count: 0,
+      converted_revenue_value: 0,
+      lost_leads_count: 0,
+      overdue_follow_ups_count: overdueFollowups,
+      conversion_rate_percentage: 0,
+    };
   }
 
   // 2. Fetch Commercial Personnel Metrics
@@ -194,85 +188,8 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
         </div>
       </header>
 
-      {/* 4 Stripe Scorecards Ribbon */}
-      <section className={styles.kpiGrid} aria-label="Commercial Executive Scorecards">
-        {/* KPI 1: Total Leads */}
-        <Link href="/admin/leads" className={styles.kpiCard} title="View all deals & inquiries">
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Total Leads</span>
-            <div className={styles.kpiIcon}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-            </div>
-          </div>
-          <div className={styles.kpiValue}>{totalLeads}</div>
-          <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailEmerald}>{activeDealsCount} In Pipeline</span>
-            <span>·</span>
-            <span>Omnichannel</span>
-          </div>
-        </Link>
-
-        {/* KPI 2: Active Pipeline Valuation */}
-        <Link href="/admin/analytics" className={styles.kpiCard} title="View revenue and pipeline analytics">
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Pipeline Valuation</span>
-            <div className={styles.kpiIcon}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="1" x2="12" y2="23" />
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-            </div>
-          </div>
-          <div className={styles.kpiValue}>{formatCurrency(pipelineValuation)}</div>
-          <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailOrange}>Open & Potential Deals</span>
-          </div>
-        </Link>
-
-        {/* KPI 3: Commercial Staff */}
-        <Link href="/admin/team" className={styles.kpiCard} title="View commercial team directory">
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Commercial Staff</span>
-            <div className={styles.kpiIcon}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </div>
-          </div>
-          <div className={styles.kpiValue}>{totalStaff}</div>
-          <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailEmerald}>{activeStaff} Active</span>
-            <span>·</span>
-            <span>{suspendedStaff} Suspended</span>
-          </div>
-        </Link>
-
-        {/* KPI 4: Overdue Follow-ups */}
-        <Link href="/admin/tasks" className={styles.kpiCard} title="View follow-up tasks queue">
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Overdue Tasks</span>
-            <div className={styles.kpiIcon}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-          </div>
-          <div className={styles.kpiValue}>{overdueFollowups}</div>
-          <div className={styles.kpiDetail}>
-            {overdueFollowups > 0 ? (
-              <span className={styles.kpiDetailRed}>Immediate Action Required</span>
-            ) : (
-              <span className={styles.kpiDetailEmerald}>Queue Up To Date</span>
-            )}
-          </div>
-        </Link>
-      </section>
+      {/* Dark Luxury Executive KPI Ribbon */}
+      <KpiRibbon initialData={rpcMetrics} />
 
       {/* 4 Feature Quick-Launch Hub */}
       <section className={styles.quickLaunchSection} aria-label="Feature Quick-Launch Cards">

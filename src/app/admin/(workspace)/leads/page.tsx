@@ -10,7 +10,8 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { createClient } from '@/app/lib/supabase/server';
-import type { FunnelBucket } from '@/types/crm';
+import type { FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
+import { KpiRibbon } from '@/app/admin/components/kpi';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
 import styles from './leads.module.scss';
 
@@ -36,6 +37,10 @@ export default async function AdminLeadsPage(
 ): Promise<React.ReactElement> {
   const resolvedParams = props.searchParams ? await props.searchParams : undefined;
   const supabase = await createClient();
+
+  // Fetch initial Pipeline RPC Metrics for the KPI Ribbon
+  const { data: rpcData } = await supabase.rpc('get_pipeline_kpis');
+  const rpcMetrics = rpcData ? (rpcData as unknown as PipelineRpcMetrics) : null;
 
   let query = supabase
     .from('leads')
@@ -123,6 +128,9 @@ export default async function AdminLeadsPage(
           </p>
         </div>
       </header>
+
+      {/* Dark Luxury Executive KPI Ribbon with Reactive Filter Recalculation */}
+      <KpiRibbon initialData={rpcMetrics} syncWithUrlParams={true} />
 
       <LeadsWorkspaceClient initialLeads={leads} />
     </div>

@@ -307,29 +307,75 @@ export interface CreateLeadActivityInput {
 
 /**
  * Aggregated commercial pipeline metrics powering the Executive KPI Ribbon.
+ * Supports both standard and camelCase/underscore representations for client-server compatibility.
  */
 export interface PipelineKpis {
   total_leads: number;
+  potential_count?: number;
   total_potential_value: number;
+  stage_weighted_pipeline_value?: number;
+  converted_count?: number;
   total_converted_revenue: number;
+  lost_count?: number;
   conversion_rate: number;
   overdue_follow_ups_count: number;
+  overdue_count?: number;
 }
 
 /**
  * Raw commercial metrics payload returned by the `get_pipeline_kpis` PostgreSQL RPC function.
- * Reflects single-round-trip database aggregation with division-by-zero and null-safety guards.
+ * Reflects single-round-trip database aggregation with division-by-zero, spam-exclusion,
+ * and role-scoping guards.
  */
 export interface PipelineRpcMetrics {
   total_leads_count: number;
+  total_leads?: number;
   open_leads_count: number;
   potential_leads_count: number;
+  potential_count?: number;
   potential_pipeline_value: number;
+  potential_value?: number;
+  stage_weighted_pipeline_value?: number;
   converted_leads_count: number;
+  converted_count?: number;
   converted_revenue_value: number;
+  converted_value?: number;
   lost_leads_count: number;
+  lost_count?: number;
+  disqualified_leads_count?: number;
   overdue_follow_ups_count: number;
+  overdue_count?: number;
   conversion_rate_percentage: number;
+  conversion_rate?: number;
+}
+
+/**
+ * Filter parameters for querying pipeline KPIs via API and stored procedure.
+ */
+export interface KpiQueryParams {
+  startDate?: string | null;
+  endDate?: string | null;
+  sourceId?: string | null;
+  assigneeId?: string | null;
+  targetUserId?: string | null;
+}
+
+/**
+ * Structured API response envelope for GET /api/sales-funnel/kpis.
+ */
+export interface KpiApiResponseEnvelope {
+  success: boolean;
+  data?: PipelineRpcMetrics;
+  error?: string;
+  details?: Record<string, string>;
+  meta?: {
+    startDate: string | null;
+    endDate: string | null;
+    sourceId: string | null;
+    assigneeId: string | null;
+    cachedAt: string;
+    executionTimeMs?: number;
+  };
 }
 
 /**
