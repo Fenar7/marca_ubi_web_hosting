@@ -377,23 +377,27 @@ export function ClientDossierDrawer({
                   <div className={styles.keyValuePair}>
                     <span className={styles.fieldLabel}>Inquiry Date</span>
                     <span className={styles.fieldValue}>
-                      {new Date(lead.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
+                      {lead.created_at && !isNaN(new Date(lead.created_at).getTime())
+                        ? new Date(lead.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })
+                        : 'Pending'}
                     </span>
                   </div>
 
                   <div className={styles.keyValuePair}>
                     <span className={styles.fieldLabel}>Last Pipeline Update</span>
                     <span className={styles.fieldValue}>
-                      {new Date(lead.updated_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
+                      {lead.updated_at && !isNaN(new Date(lead.updated_at).getTime())
+                        ? new Date(lead.updated_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })
+                        : 'Pending'}
                     </span>
                   </div>
                 </div>

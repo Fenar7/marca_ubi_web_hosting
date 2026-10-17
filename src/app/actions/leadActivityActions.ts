@@ -261,6 +261,27 @@ export async function getLeadActivitiesAction(
       };
     }
 
+    // Verify caller profile & status defense
+    const { data: callerProfile, error: callerProfileError } = await supabase
+      .from('profiles')
+      .select('id, status')
+      .eq('id', user.id)
+      .single();
+
+    if (callerProfileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Forbidden: Caller profile does not exist in organizational directory.',
+      };
+    }
+
+    if (callerProfile.status === 'suspended') {
+      return {
+        success: false,
+        error: 'Forbidden: Account has been suspended by an enterprise administrator.',
+      };
+    }
+
     // Fetch activities joined with profiles
     const { data: rawActivities, error: activitiesError } = await supabase
       .from('lead_activities')
