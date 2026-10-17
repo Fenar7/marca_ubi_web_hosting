@@ -32,7 +32,12 @@ export interface BatchReassignModalProps {
   /** Modal close callback */
   onClose: () => void;
   /** Success callback */
-  onSuccess?: (reassignedCount: number, destinationName: string) => void;
+  onSuccess?: (
+    reassignedCount: number,
+    destinationName: string,
+    leadIds: string[],
+    destinationUserId: string
+  ) => void;
 }
 
 function formatCurrency(amount: number): string {
@@ -123,7 +128,21 @@ export function BatchReassignModal({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    // Initial focus placement inside modal on open
+    const focusTimer = setTimeout(() => {
+      if (containerRef.current) {
+        const firstFocusable = containerRef.current.querySelector<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        firstFocusable?.focus();
+      }
+    }, 50);
+
+    return () => {
+      clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) {
@@ -186,7 +205,7 @@ export function BatchReassignModal({
         window.dispatchEvent(new Event('popstate'));
       }
 
-      onSuccess?.(count, destName);
+      onSuccess?.(count, destName, selectedLeadIds, destinationUserId);
       onClose();
     });
   };

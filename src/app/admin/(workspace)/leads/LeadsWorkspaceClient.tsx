@@ -83,18 +83,11 @@ function formatCurrency(amount: number): string {
  * 'On Hold' status are suppressed from overdue queues while CURRENT_DATE < revisit_date.
  */
 function isLeadOverdue(lead: HydratedLeadItem): boolean {
-  if (!lead.next_follow_up) return false;
-  if (lead.bucket === 'converted' || lead.bucket === 'lost') return false;
-
-  // PRD §14.2: Suppress overdue alerts for On Hold leads with a future revisit date
-  if (lead.status_name.toLowerCase() === 'on hold' && lead.revisit_date) {
-    const todayStr = new Date().toISOString().split('T')[0];
-    if (lead.revisit_date > todayStr) {
-      return false;
-    }
-  }
-
-  return new Date(lead.next_follow_up).getTime() < Date.now();
+  return calculateOverdueTier(lead.next_follow_up, {
+    bucket: lead.bucket,
+    statusName: lead.status_name,
+    revisitDate: lead.revisit_date,
+  }).isOverdue;
 }
 
 function LeadsWorkspaceContent({
@@ -519,8 +512,22 @@ function LeadsWorkspaceContent({
       }));
   }, [availableAssignees]);
 
-  const handleBatchReassignSuccess = (): void => {
+  const handleBatchReassignSuccess = (
+    _count: number,
+    destinationName: string,
+    leadIds?: string[],
+    destinationUserId?: string
+  ): void => {
     setIsBatchReassignOpen(false);
+    if (leadIds && destinationUserId && leadIds.length > 0) {
+      setLeads((prev) =>
+        prev.map((l) =>
+          leadIds.includes(l.id)
+            ? { ...l, assigned_to: destinationUserId, assigned_to_name: destinationName }
+            : l
+        )
+      );
+    }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('popstate'));
     }

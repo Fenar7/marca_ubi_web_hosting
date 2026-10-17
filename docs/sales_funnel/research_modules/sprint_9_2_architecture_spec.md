@@ -110,7 +110,7 @@ export interface OverdueCalculationResult {
      - Enforces post-conversion deal lock: any lead with `converted_at` cannot be reassigned by non-admins.
 3. **Database Audit Non-Repudiation**:
    - Inserts row in `public.lead_activities` with `activity_type: 'reassignment'`.
-   - Inserts row in `public.team_audit_logs` with action `'bulk_lead_reassignment'`.
+   - Inserts row in `public.team_audit_logs` with action `'leads_bulk_reassigned'`.
 
 ---
 

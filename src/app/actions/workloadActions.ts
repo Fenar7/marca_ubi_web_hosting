@@ -512,18 +512,22 @@ export async function batchReassignOverdueLeadsAction(
 
     // 5. Record administrative governance log in public.team_audit_logs
     try {
-      await supabase.from('team_audit_logs').insert({
+      const { error: auditError } = await supabase.from('team_audit_logs').insert({
         actor_id: callerId,
-        target_user_id: destinationUserId,
+        action: 'leads_bulk_reassigned',
         target_user_email: destProfile.email,
-        action: 'bulk_lead_reassignment',
-        metadata: {
+        details: {
+          destination_user_id: destinationUserId,
           reassigned_deal_count: leadIds.length,
           reassigned_lead_ids: leadIds,
           reason: sanitizedReason,
           timestamp: nowIso,
         },
       });
+
+      if (auditError) {
+        console.error('[workloadActions] Audit logging failure during batch reassignment:', auditError);
+      }
     } catch (auditErr) {
       console.warn('[workloadActions] Audit logging notice:', auditErr);
     }

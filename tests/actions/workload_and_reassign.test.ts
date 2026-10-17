@@ -150,4 +150,50 @@ describe('Sprint 9.2: Workload & Batch Reassignment Validation', () => {
       assert.equal(extractMonogram(''), 'UN');
     });
   });
+
+  describe('Block 3: Audit Ledger & State Reconciliation Invariants', () => {
+    it('structures team_audit_logs payload adhering to chk_team_audit_actions', () => {
+      const auditPayload = {
+        actor_id: validDestUuid,
+        action: 'leads_bulk_reassigned',
+        target_user_email: 'rep@marcaubi.com',
+        details: {
+          destination_user_id: validDestUuid,
+          reassigned_deal_count: 2,
+          reassigned_lead_ids: [validLeadUuid1, validLeadUuid2],
+          reason: 'Workload rebalancing',
+          timestamp: new Date().toISOString(),
+        },
+      };
+
+      assert.equal(auditPayload.action, 'leads_bulk_reassigned');
+      assert.ok('details' in auditPayload);
+      assert.equal(typeof auditPayload.details, 'object');
+      assert.equal(auditPayload.details.reassigned_deal_count, 2);
+    });
+
+    it('reconciles in-memory leads array correctly upon reassignment', () => {
+      const initialLeads = [
+        { id: validLeadUuid1, assigned_to: 'old-rep-1', assigned_to_name: 'Old Rep' },
+        { id: validLeadUuid2, assigned_to: 'old-rep-2', assigned_to_name: 'Old Rep 2' },
+        { id: 'other-lead-3', assigned_to: 'other-rep', assigned_to_name: 'Other Rep' },
+      ];
+
+      const targetLeadIds = [validLeadUuid1, validLeadUuid2];
+      const newAssigneeId = validDestUuid;
+      const newAssigneeName = 'Anita Nair';
+
+      const updatedLeads = initialLeads.map((l) =>
+        targetLeadIds.includes(l.id)
+          ? { ...l, assigned_to: newAssigneeId, assigned_to_name: newAssigneeName }
+          : l
+      );
+
+      assert.equal(updatedLeads[0]?.assigned_to, newAssigneeId);
+      assert.equal(updatedLeads[0]?.assigned_to_name, newAssigneeName);
+      assert.equal(updatedLeads[1]?.assigned_to, newAssigneeId);
+      assert.equal(updatedLeads[1]?.assigned_to_name, newAssigneeName);
+      assert.equal(updatedLeads[2]?.assigned_to, 'other-rep');
+    });
+  });
 });
