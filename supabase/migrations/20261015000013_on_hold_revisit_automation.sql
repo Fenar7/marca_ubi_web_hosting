@@ -89,9 +89,10 @@ BEGIN
         ) VALUES (
             v_lead.id,
             v_lead.assigned_to,
-            'system_reactivation',
+            'system_event',
             format('Automated reactivation: On Hold milestone reached (Revisit Date: %s). Returned to active queue.', v_lead.revisit_date),
             jsonb_build_object(
+                'event_type', 'system_reactivation',
                 'previous_status', 'On Hold',
                 'new_status', 'Contacted',
                 'expired_revisit_date', v_lead.revisit_date,

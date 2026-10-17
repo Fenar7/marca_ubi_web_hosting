@@ -76,10 +76,21 @@ function formatCurrency(amount: number): string {
  * Evaluates whether a lead has an overdue follow-up timestamp.
  * A lead is overdue if next_follow_up is earlier than current clock time
  * and its lifecycle status is neither converted nor lost.
+ * In accordance with PRD §14.2 & §15.19 alert suppression rules, leads in
+ * 'On Hold' status are suppressed from overdue queues while CURRENT_DATE < revisit_date.
  */
 function isLeadOverdue(lead: HydratedLeadItem): boolean {
   if (!lead.next_follow_up) return false;
   if (lead.bucket === 'converted' || lead.bucket === 'lost') return false;
+
+  // PRD §14.2: Suppress overdue alerts for On Hold leads with a future revisit date
+  if (lead.status_name.toLowerCase() === 'on hold' && lead.revisit_date) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (lead.revisit_date > todayStr) {
+      return false;
+    }
+  }
+
   return new Date(lead.next_follow_up).getTime() < Date.now();
 }
 
@@ -417,6 +428,42 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('open-scheduler-modal', handleOpenSchedulerModal);
   }, [leads]);
 
+  // Listener for lead-updated custom events to synchronize workspace data grid
+  useEffect(() => {
+    const handleLeadUpdatedEvent = (e: Event): void => {
+      const customEvt = e as CustomEvent<{
+        leadId: string;
+        field?: string;
+        status?: InlineStatusOption;
+        nextFollowUp?: string;
+        revisitDate?: string;
+      }>;
+      const detail = customEvt.detail;
+      if (!detail || !detail.leadId) return;
+
+      setLeads((prev) =>
+        prev.map((l) => {
+          if (l.id !== detail.leadId) return l;
+          return {
+            ...l,
+            status_id: detail.status?.id || l.status_id,
+            status_name: detail.status?.name || l.status_name,
+            status_color: detail.status?.color_code || l.status_color,
+            bucket: detail.status?.bucket || l.bucket,
+            next_follow_up:
+              detail.nextFollowUp !== undefined ? detail.nextFollowUp : l.next_follow_up,
+            revisit_date:
+              detail.revisitDate !== undefined ? detail.revisitDate : l.revisit_date,
+            updated_at: new Date().toISOString(),
+          };
+        })
+      );
+    };
+
+    window.addEventListener('lead-updated', handleLeadUpdatedEvent);
+    return () => window.removeEventListener('lead-updated', handleLeadUpdatedEvent);
+  }, []);
+
   // Real-time record counts per bucket
   const counts = useMemo<BucketCounts>(() => {
     return {
@@ -582,6 +629,11 @@ function LeadsWorkspaceContent({
             bucket: payload.bucket,
             expected_value:
               payload.expectedValue !== undefined ? payload.expectedValue : lead.expected_value,
+            revisit_date:
+              payload.revisitDate !== undefined ? payload.revisitDate : lead.revisit_date,
+            next_follow_up:
+              payload.nextFollowUp !== undefined ? payload.nextFollowUp : lead.next_follow_up,
+            updated_at: payload.updatedAt || new Date().toISOString(),
           };
         })
       );
@@ -641,6 +693,11 @@ function LeadsWorkspaceContent({
         leadId={activeDrawerLeadId}
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
+        onLeadUpdated={() => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('popstate'));
+          }
+        }}
       />
 
       {/* Guarded Pipeline Stage Transition Modal (Negotiation, Lost, Converted, On Hold) */}

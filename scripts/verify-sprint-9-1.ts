@@ -37,11 +37,13 @@ const requiredFiles = [
   'src/app/admin/components/Scheduler/FollowUpScheduler.tsx',
   'src/app/admin/components/Scheduler/OnHoldModal.tsx',
   'src/app/admin/components/Scheduler/Scheduler.module.scss',
+  'src/app/admin/components/Scheduler/schedulerUtils.ts',
   'src/app/admin/components/Scheduler/index.ts',
   'supabase/migrations/20261015000013_on_hold_revisit_automation.sql',
   'tests/actions/scheduler_actions.test.ts',
   'tests/leads/follow_up_scheduler.test.ts',
   'docs/sales_funnel/research_modules/sprint_9_1_architecture_spec.md',
+  'src/app/api/sales-funnel/cron/reactivate-on-hold/route.ts',
 ];
 
 for (const file of requiredFiles) {
@@ -57,7 +59,9 @@ const filesToAudit = [
   'src/app/admin/components/Scheduler/FollowUpScheduler.tsx',
   'src/app/admin/components/Scheduler/OnHoldModal.tsx',
   'src/app/admin/components/Scheduler/Scheduler.module.scss',
+  'src/app/admin/components/Scheduler/schedulerUtils.ts',
   'src/app/admin/components/Scheduler/index.ts',
+  'src/app/api/sales-funnel/cron/reactivate-on-hold/route.ts',
 ];
 
 let hasGenericBlue = false;
@@ -93,6 +97,10 @@ const schedulerContent = fs.readFileSync(
   path.join(ROOT_DIR, 'src/app/admin/components/Scheduler/FollowUpScheduler.tsx'),
   'utf8'
 );
+const schedulerUtilsContent = fs.readFileSync(
+  path.join(ROOT_DIR, 'src/app/admin/components/Scheduler/schedulerUtils.ts'),
+  'utf8'
+);
 const onHoldModalContent = fs.readFileSync(
   path.join(ROOT_DIR, 'src/app/admin/components/Scheduler/OnHoldModal.tsx'),
   'utf8'
@@ -105,16 +113,27 @@ const migrationContent = fs.readFileSync(
   path.join(ROOT_DIR, 'supabase/migrations/20261015000013_on_hold_revisit_automation.sql'),
   'utf8'
 );
+const workspaceContent = fs.readFileSync(
+  path.join(ROOT_DIR, 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx'),
+  'utf8'
+);
+const cronRouteContent = fs.readFileSync(
+  path.join(ROOT_DIR, 'src/app/api/sales-funnel/cron/reactivate-on-hold/route.ts'),
+  'utf8'
+);
 
 assertCheck('Backdrop blur scrim configured in Scheduler.module.scss', scssContent.includes('backdrop-filter: blur('));
 assertCheck('Minimum 44px tap targets enforced in SCSS', scssContent.includes('min-height: 44px') || scssContent.includes('height: 44px'));
 assertCheck('RFC 5545 iCalendar (.ics) generator in schedulerActions.ts', actionsContent.includes('generateIcsCalendarInvite') && actionsContent.includes('BEGIN:VCALENDAR'));
 assertCheck('Server action checks post-conversion lock (converted_at)', actionsContent.includes('converted_at && role !== \'admin\''));
-assertCheck('Server action checks viewer 403 Forbidden', actionsContent.includes('role === \'viewer\''));
-assertCheck('Quick-select preset calculations in FollowUpScheduler.tsx', schedulerContent.includes('today_2h') && schedulerContent.includes('next_mon_9am'));
+assertCheck('Server action checks viewer 403 Forbidden', actionsContent.includes('role !== \'admin\' && role !== \'sales_manager\''));
+assertCheck('Server action uses canonical follow_up_scheduled activity_type', actionsContent.includes("activity_type: 'follow_up_scheduled'"));
+assertCheck('Quick-select preset calculations in schedulerUtils.ts', schedulerUtilsContent.includes('today_2h') && schedulerUtilsContent.includes('next_mon_9am'));
 assertCheck('Future revisit date enforced in OnHoldModal.tsx', onHoldModalContent.includes('targetDate <= today'));
 assertCheck('SQL trigger trg_validate_on_hold_revisit in migration', migrationContent.includes('trg_validate_on_hold_revisit'));
-assertCheck('SQL procedure reactivate_expired_on_hold_leads in migration', migrationContent.includes('reactivate_expired_on_hold_leads'));
+assertCheck('SQL procedure reactivate_expired_on_hold_leads uses system_event', migrationContent.includes("'system_event'"));
+assertCheck('Workspace isLeadOverdue suppresses future On Hold revisit dates', workspaceContent.includes("lead.status_name.toLowerCase() === 'on hold'") && workspaceContent.includes('lead.revisit_date > todayStr'));
+assertCheck('Automated cron route enforces CRON_SECRET authorization', cronRouteContent.includes('CRON_SECRET'));
 
 console.log('\n[Block 3: Automated Test Suites Execution]');
 

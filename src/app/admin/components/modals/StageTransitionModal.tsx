@@ -98,7 +98,7 @@ export function StageTransitionModal({
         leadName={dealName}
         company={dealIdCode}
         onClose={onClose}
-        onSuccess={() => {
+        onSuccess={(revisitDate: string) => {
           onSuccess?.({
             leadId,
             previousStatusId: '',
@@ -107,6 +107,8 @@ export function StageTransitionModal({
             newStatusName: targetStatus.name,
             bucket: targetStatus.bucket,
             updatedAt: new Date().toISOString(),
+            revisitDate,
+            nextFollowUp: `${revisitDate}T09:00:00.000Z`,
           });
         }}
       />

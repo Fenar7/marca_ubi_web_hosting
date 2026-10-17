@@ -21,49 +21,12 @@ export interface FollowUpSchedulerProps {
   onScheduled?: (newFollowUpIso: string) => void;
 }
 
-type QuickPreset =
-  | 'today_2h'
-  | 'today_plus_2h'
-  | 'tomorrow_10am'
-  | 'in_3_days'
-  | 'next_mon_9am'
-  | 'next_monday_9am';
+import {
+  type QuickPreset,
+  calculatePresetDate,
+} from './schedulerUtils';
 
-/**
- * Calculates ISO string for quick-schedule interval presets relative to local time.
- */
-export function calculatePresetDate(preset: QuickPreset): string {
-  const now = new Date();
-
-  switch (preset) {
-    case 'today_2h':
-    case 'today_plus_2h': {
-      const target = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-      return target.toISOString();
-    }
-    case 'tomorrow_10am': {
-      const target = new Date(now);
-      target.setDate(target.getDate() + 1);
-      target.setHours(10, 0, 0, 0);
-      return target.toISOString();
-    }
-    case 'in_3_days': {
-      const target = new Date(now);
-      target.setDate(target.getDate() + 3);
-      target.setHours(10, 0, 0, 0);
-      return target.toISOString();
-    }
-    case 'next_mon_9am':
-    case 'next_monday_9am': {
-      const target = new Date(now);
-      const dayOfWeek = target.getDay(); // 0 is Sun, 1 is Mon
-      const daysUntilNextMon = dayOfWeek === 1 ? 7 : (1 - dayOfWeek + 7) % 7;
-      target.setDate(target.getDate() + daysUntilNextMon);
-      target.setHours(9, 0, 0, 0);
-      return target.toISOString();
-    }
-  }
-}
+export { type QuickPreset, calculatePresetDate };
 
 /**
  * Master modal for scheduling precision touchpoints with quick interval chips and calendar download.
@@ -96,8 +59,15 @@ export const FollowUpScheduler: React.FC<FollowUpSchedulerProps> = ({
   const [isPending, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Focus trap and Escape key listener
+  // Focus trap, initial focus, and Escape key listener
   useEffect(() => {
+    const focusTimer = setTimeout(() => {
+      const firstFocusable = containerRef.current?.querySelector<HTMLElement>(
+        'button:not([disabled]), input:not([disabled])'
+      );
+      firstFocusable?.focus();
+    }, 50);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
@@ -131,6 +101,7 @@ export const FollowUpScheduler: React.FC<FollowUpSchedulerProps> = ({
     document.body.style.overflow = 'hidden';
 
     return () => {
+      clearTimeout(focusTimer);
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
     };

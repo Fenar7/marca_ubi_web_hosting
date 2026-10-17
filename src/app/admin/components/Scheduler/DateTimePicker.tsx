@@ -92,7 +92,8 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
         <div className={styles.pickerField}>
           <label htmlFor={timeInputId} className={styles.pickerLabel}>
-            Time ({timezoneStr})
+            <span>Time</span>
+            <span className={styles.timezonePill}>{timezoneStr}</span>
           </label>
           <div className={styles.inputWrapper}>
             <input

@@ -233,16 +233,23 @@ describe('Sprint 9.1: Scheduler Actions & RFC 5545 iCalendar Validation', () => 
       assert.ok(ics.includes('First line\\nSecond line\\, with commas\\; and semicolons\\\\slashes'));
     });
 
-    it('defaults duration to 30 minutes when durationMinutes is omitted', () => {
-      const startTime = new Date('2026-11-15T09:00:00Z');
+    it('sanitizes CRLF header injections and Windows carriage returns in iCalendar fields', () => {
+      const startTime = new Date('2026-11-25T11:00:00Z');
       const ics = generateIcsCalendarInvite({
-        title: 'Touchpoint Call',
-        description: 'Weekly status checkpoint',
+        title: 'Title with CRLF\r\nATTENDEE:malicious@evil.com',
+        description: 'Windows CRLF line 1\r\nLine 2 with carriage return\rLine 3',
+        location: 'Room A\r\nRoom B',
         startTime,
       });
 
-      assert.ok(ics.includes('DTSTART:20261115T090000Z'));
-      assert.ok(ics.includes('DTEND:20261115T093000Z'));
+      // Single line fields should replace CRLF with a space
+      assert.ok(!ics.includes('SUMMARY:Title with CRLF\r\nATTENDEE'));
+      assert.ok(ics.includes('SUMMARY:Title with CRLF ATTENDEE:malicious@evil.com'));
+      assert.ok(ics.includes('LOCATION:Room A Room B'));
+
+      // Multi-line description should normalize \r\n to \n and escape without isolated \r
+      assert.ok(!ics.includes('\r\\n'));
+      assert.ok(ics.includes('Windows CRLF line 1\\nLine 2 with carriage return\\nLine 3'));
     });
   });
 });

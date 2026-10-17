@@ -230,16 +230,33 @@ export function LeadsDataGrid({
                     currentPriority={lead.priority}
                     onPriorityChange={onPriorityChange}
                   />
-                  <span
+                  <button
+                    type="button"
                     className={styles.touchpointDate}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (typeof window !== 'undefined') {
+                        window.dispatchEvent(
+                          new CustomEvent('open-scheduler-modal', {
+                            detail: {
+                              leadId: lead.id,
+                              leadName: lead.name,
+                              company: lead.company,
+                              currentFollowUpDate: lead.next_follow_up,
+                            },
+                          })
+                        );
+                      }
+                    }}
                     title={
                       lead.next_follow_up
-                        ? `Next Touchpoint: ${new Date(lead.next_follow_up).toLocaleString()}`
-                        : 'No touchpoint scheduled'
+                        ? `Next Touchpoint: ${new Date(lead.next_follow_up).toLocaleString()} (Click to reschedule)`
+                        : 'Click to schedule next touchpoint'
                     }
+                    aria-label={`Schedule follow-up for ${lead.company || lead.name}`}
                   >
                     {followUpText}
-                  </span>
+                  </button>
                 </div>
               </div>
             );

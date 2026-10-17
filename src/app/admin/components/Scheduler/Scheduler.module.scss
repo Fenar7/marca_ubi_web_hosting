@@ -167,9 +167,23 @@
   gap: 0.375rem;
 
   .pickerLabel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: 0.75rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
+
+    .timezonePill {
+      font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+      font-size: 0.7rem;
+      font-variant-numeric: tabular-nums;
+      color: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
   }
 
   .inputWrapper {
@@ -225,6 +239,11 @@
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
+
+    @media (max-width: 767px) {
+      min-height: 44px;
+      padding: 0.5rem 0.85rem;
+    }
 
     &:hover {
       color: #ffffff;

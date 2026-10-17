@@ -58,6 +58,15 @@ export function generateIcsCalendarInvite(params: {
   const endTime = new Date(params.startTime.getTime() + durationMs);
   const uid = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}@marcaubi.com`;
 
+  const cleanTitle = params.title.replace(/[\r\n]+/g, ' ').replace(/[,;\\]/g, '\\$&');
+  const cleanDescription = params.description
+    .replace(/\r\n|\r/g, '\n')
+    .replace(/[,;\\]/g, '\\$&')
+    .replace(/\n/g, '\\n');
+  const cleanLocation = params.location
+    ? params.location.replace(/[\r\n]+/g, ' ').replace(/[,;\\]/g, '\\$&')
+    : '';
+
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -69,9 +78,9 @@ export function generateIcsCalendarInvite(params: {
     `DTSTAMP:${formatIcsDate(new Date())}`,
     `DTSTART:${formatIcsDate(params.startTime)}`,
     `DTEND:${formatIcsDate(endTime)}`,
-    `SUMMARY:${params.title.replace(/[,;\\]/g, '\\$&')}`,
-    `DESCRIPTION:${params.description.replace(/[,;\\]/g, '\\$&').replace(/\n/g, '\\n')}`,
-    params.location ? `LOCATION:${params.location.replace(/[,;\\]/g, '\\$&')}` : '',
+    `SUMMARY:${cleanTitle}`,
+    `DESCRIPTION:${cleanDescription}`,
+    cleanLocation ? `LOCATION:${cleanLocation}` : '',
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
     'END:VEVENT',
@@ -296,7 +305,7 @@ export async function scheduleFollowUpAction(
     await supabase.from('lead_activities').insert({
       lead_id: leadId,
       actor_id: userId,
-      activity_type: 'task_scheduled',
+      activity_type: 'follow_up_scheduled',
       description,
       metadata: {
         scheduled_for: targetDate.toISOString(),
@@ -485,10 +494,10 @@ export async function reactivateExpiredOnHoldLeadsAction(): Promise<
     }
 
     const { role } = authCheck.identity;
-    if (role === 'viewer') {
+    if (role !== 'admin' && role !== 'sales_manager') {
       return {
         success: false,
-        error: 'Forbidden: Viewers cannot execute reactivation maintenance.',
+        error: 'Forbidden: Only Administrators and Sales Managers can execute reactivation maintenance.',
         statusCode: 403,
       };
     }

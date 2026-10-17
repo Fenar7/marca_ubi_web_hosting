@@ -213,6 +213,18 @@ $text-muted: #8e8e93;
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.68rem;
   color: $text-muted;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #ff6100;
+    text-decoration: underline;
+  }
 }
 
 // Mobile View (< 768px)
