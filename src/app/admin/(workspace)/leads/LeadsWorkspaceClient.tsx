@@ -18,6 +18,11 @@ import {
   type BucketCounts,
   type FilterDropdownOption,
 } from '@/app/admin/components/FilterActionBar';
+import {
+  LeadsDataGrid,
+  type InlineStatusOption,
+} from '@/app/admin/components/LeadsTable';
+import type { LeadPriority } from '@/types/crm';
 import styles from './leads.module.scss';
 
 export interface HydratedLeadItem {
@@ -49,6 +54,7 @@ export interface LeadsWorkspaceClientProps {
   initialLeads: HydratedLeadItem[];
   availableSources?: FilterDropdownOption[];
   availableAssignees?: FilterDropdownOption[];
+  availableStatuses?: InlineStatusOption[];
 }
 
 function formatCurrency(amount: number): string {
@@ -77,8 +83,16 @@ function LeadsWorkspaceContent({
   initialLeads,
   availableSources: initialSources,
   availableAssignees: initialAssignees,
+  availableStatuses: initialStatuses,
 }: LeadsWorkspaceClientProps): React.ReactElement {
   const searchParams = useSearchParams();
+
+  // Local state initialized with server-hydrated leads for optimistic in-memory reconciliation
+  const [leads, setLeads] = useState<HydratedLeadItem[]>(initialLeads);
+
+  useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
 
   // Read initial filter values from URL search parameters
   const bucketParam = searchParams.get('bucket');
@@ -99,7 +113,6 @@ function LeadsWorkspaceContent({
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assigneeParam);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
   const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   /**
    * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
@@ -206,7 +219,7 @@ function LeadsWorkspaceContent({
       return initialSources;
     }
     const map = new Map<string, FilterDropdownOption>();
-    for (const lead of initialLeads) {
+    for (const lead of leads) {
       if (lead.lead_source_id && lead.lead_source_name) {
         map.set(lead.lead_source_id, {
           id: lead.lead_source_id,
@@ -216,14 +229,14 @@ function LeadsWorkspaceContent({
       }
     }
     return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
-  }, [initialLeads, initialSources]);
+  }, [leads, initialSources]);
 
   const availableAssignees = useMemo<FilterDropdownOption[]>(() => {
     if (initialAssignees && initialAssignees.length > 0) {
       return initialAssignees;
     }
     const map = new Map<string, FilterDropdownOption>();
-    for (const lead of initialLeads) {
+    for (const lead of leads) {
       if (lead.assigned_to && lead.assigned_to_name && lead.assigned_to_name !== 'Unassigned') {
         const initials = lead.assigned_to_name
           .split(' ')
@@ -240,25 +253,44 @@ function LeadsWorkspaceContent({
       }
     }
     return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
-  }, [initialLeads, initialAssignees]);
+  }, [leads, initialAssignees]);
+
+  // Resolved pipeline stages for inline stage transitions
+  const resolvedStatuses = useMemo<InlineStatusOption[]>(() => {
+    if (initialStatuses && initialStatuses.length > 0) {
+      return initialStatuses;
+    }
+    const map = new Map<string, InlineStatusOption>();
+    for (const lead of leads) {
+      if (lead.status_id && lead.status_name) {
+        map.set(lead.status_id, {
+          id: lead.status_id,
+          name: lead.status_name,
+          bucket: lead.bucket,
+          color_code: lead.status_color || '#ff6100',
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [initialStatuses, leads]);
 
   // Real-time record counts per bucket
   const counts = useMemo<BucketCounts>(() => {
     return {
-      all: initialLeads.length,
-      open: initialLeads.filter((l) => l.bucket === 'open').length,
-      potential: initialLeads.filter((l) => l.bucket === 'potential').length,
-      converted: initialLeads.filter((l) => l.bucket === 'converted').length,
-      lost: initialLeads.filter((l) => l.bucket === 'lost').length,
-      overdue: initialLeads.filter(isLeadOverdue).length,
+      all: leads.length,
+      open: leads.filter((l) => l.bucket === 'open').length,
+      potential: leads.filter((l) => l.bucket === 'potential').length,
+      converted: leads.filter((l) => l.bucket === 'converted').length,
+      lost: leads.filter((l) => l.bucket === 'lost').length,
+      overdue: leads.filter(isLeadOverdue).length,
     };
-  }, [initialLeads]);
+  }, [leads]);
 
   // In-memory filtered leads with multi-dimensional criteria evaluation
   const filteredLeads = useMemo<HydratedLeadItem[]>(() => {
     const q = searchQuery.toLowerCase().trim();
 
-    return initialLeads.filter((lead) => {
+    return leads.filter((lead) => {
       // 1. Bucket condition
       if (selectedBucket === 'overdue') {
         if (!isLeadOverdue(lead)) return false;
@@ -300,7 +332,7 @@ function LeadsWorkspaceContent({
       );
     });
   }, [
-    initialLeads,
+    leads,
     selectedBucket,
     searchQuery,
     selectedSourceId,
@@ -357,20 +389,42 @@ function LeadsWorkspaceContent({
     });
   };
 
-  // Dispatches global custom event to open Client 360 Drawer
-  const handleRowClick = (leadId: string): void => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('open-lead-drawer', { detail: { leadId } }));
-    }
-  };
+  // Optimistic handler for inline status changes
+  const handleInlineStatusChange = useCallback(
+    (leadId: string, newStatus: InlineStatusOption): void => {
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === leadId
+            ? {
+                ...lead,
+                status_id: newStatus.id,
+                status_name: newStatus.name,
+                status_color: newStatus.color_code,
+                bucket: newStatus.bucket,
+              }
+            : lead
+        )
+      );
+    },
+    []
+  );
 
-  // Deal ID copy with transient feedback
-  const handleCopyDealId = (e: React.MouseEvent, leadIdText: string): void => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(leadIdText);
-    setCopiedId(leadIdText);
-    setTimeout(() => setCopiedId(null), 1500);
-  };
+  // Optimistic handler for inline priority changes
+  const handleInlinePriorityChange = useCallback(
+    (leadId: string, newPriority: LeadPriority): void => {
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === leadId
+            ? {
+                ...lead,
+                priority: newPriority,
+              }
+            : lead
+        )
+      );
+    },
+    []
+  );
 
   return (
     <>
@@ -394,128 +448,13 @@ function LeadsWorkspaceContent({
         onClearAll={handleClearAll}
       />
 
-      {/* Commercial Leads Data Table */}
-      <div className={styles.tableWrapper}>
-        {filteredLeads.length === 0 ? (
-          <div className={styles.emptyState}>
-            <span>No prospective deals matching the current filter criteria.</span>
-          </div>
-        ) : (
-          <table className={styles.table}>
-            <thead className={styles.tableHead}>
-              <tr>
-                <th>Deal ID</th>
-                <th>Client & Company</th>
-                <th>Service</th>
-                <th>Stage</th>
-                <th>Valuation</th>
-                <th>Assigned Rep</th>
-                <th>Next Touchpoint</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeads.map((lead) => {
-                const repInitials = lead.assigned_to_name
-                  ? lead.assigned_to_name
-                      .split(' ')
-                      .filter(Boolean)
-                      .map((n) => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase()
-                  : 'UN';
-
-                let followUpText = 'No touchpoint';
-                if (lead.next_follow_up) {
-                  const d = new Date(lead.next_follow_up);
-                  followUpText = d.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  });
-                }
-
-                return (
-                  <tr
-                    key={lead.id}
-                    className={styles.tableRow}
-                    onClick={() => handleRowClick(lead.id)}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`View deal ${lead.lead_id} for ${lead.name}`}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleRowClick(lead.id);
-                      }
-                    }}
-                  >
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.leadIdToken}
-                        onClick={(e) => handleCopyDealId(e, lead.lead_id)}
-                        title="Click to copy Deal ID"
-                      >
-                        <span>{lead.lead_id}</span>
-                        <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>
-                          {copiedId === lead.lead_id ? '✓' : '⧉'}
-                        </span>
-                      </button>
-                    </td>
-                    <td>
-                      <div className={styles.clientMeta}>
-                        <span className={styles.clientName}>{lead.name}</span>
-                        {lead.company && (
-                          <span className={styles.companyTitle}>{lead.company}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={styles.companyTitle} style={{ color: '#cccccc' }}>
-                        {lead.service_category}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={styles.statusPill}
-                        style={{
-                          background: `${lead.status_color || '#ff6100'}18`,
-                          border: `1px solid ${lead.status_color || '#ff6100'}35`,
-                          color: lead.status_color || '#ff6100',
-                        }}
-                      >
-                        ● {lead.status_name}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={styles.dealValue}>
-                        {formatCurrency(lead.expected_value)}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.repBadge}>
-                        <div className={styles.repAvatar}>{repInitials}</div>
-                        <span>{lead.assigned_to_name}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        style={{
-                          color: '#a1a1aa',
-                          fontFamily: 'monospace',
-                          fontSize: '0.75rem',
-                        }}
-                      >
-                        {followUpText}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {/* Commercial Leads Virtualized Data Grid */}
+      <LeadsDataGrid
+        leads={filteredLeads}
+        availableStatuses={resolvedStatuses}
+        onStatusChange={handleInlineStatusChange}
+        onPriorityChange={handleInlinePriorityChange}
+      />
     </>
   );
 }

@@ -1,0 +1,244 @@
+// SCSS Module: LeadsDataGrid.module.scss
+// Aesthetic: Obsidian Data Grid with Raycast Precision & Apple HIG Vibrancy
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: Fixed 72px row rhythm, zero CLS, tabular-nums
+
+$marca-orange: #ff6100;
+$obsidian-container: #111111;
+$obsidian-head: #16161a;
+$hairline-border: rgba(255, 255, 255, 0.08);
+$hairline-divider: rgba(255, 255, 255, 0.04);
+$text-primary: #ffffff;
+$text-secondary: #a1a1aa;
+$text-muted: #8e8e93;
+
+.gridContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+// Desktop & Tablet Virtualized View
+.virtualScrollContainer {
+  width: 100%;
+  background: $obsidian-container;
+  border: 1px solid $hairline-border;
+  border-radius: 12px;
+  overflow: auto;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+  max-height: calc(100vh - 280px);
+  min-height: 400px;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 14% 22% 14% 14% 12% 14% 10%;
+  align-items: center;
+  gap: 0.5rem;
+  background: $obsidian-head;
+  border-bottom: 1px solid $hairline-border;
+  padding: 0.85rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.thCell {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-muted;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.virtualViewport {
+  position: relative;
+  width: 100%;
+}
+
+.virtualRow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  display: grid;
+  grid-template-columns: 14% 22% 14% 14% 12% 14% 10%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid $hairline-divider;
+  transition: background-color 0.12s ease;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+
+    .clientName {
+      color: $marca-orange;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $marca-orange;
+    outline-offset: -2px;
+  }
+}
+
+// Columns Specific Styling
+.leadIdToken {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $marca-orange;
+  background: rgba(255, 97, 0, 0.1);
+  border: 1px solid rgba(255, 97, 0, 0.25);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  outline: none;
+
+  &:hover {
+    background: rgba(255, 97, 0, 0.22);
+    border-color: rgba(255, 97, 0, 0.45);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $marca-orange;
+  }
+}
+
+.clientMeta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.clientName {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.companyTitle {
+  font-size: 0.74rem;
+  color: $text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.serviceCategory {
+  font-size: 0.76rem;
+  color: $text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dealValue {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.repBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  color: $text-secondary;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.repAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cccccc;
+  flex-shrink: 0;
+}
+
+.priorityTouchpointCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+
+.touchpointDate {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.68rem;
+  color: $text-muted;
+}
+
+// Mobile View (< 768px)
+.mobileCardsContainer {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+// Empty State Display
+.emptyState {
+  padding: 4rem 1.5rem;
+  text-align: center;
+  color: $text-muted;
+  font-size: 0.88rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: $obsidian-container;
+  border: 1px solid $hairline-border;
+  border-radius: 12px;
+}
+
+.emptyStateTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}

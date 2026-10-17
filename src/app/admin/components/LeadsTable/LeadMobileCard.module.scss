@@ -1,0 +1,242 @@
+// SCSS Module: LeadMobileCard.module.scss
+// Aesthetic: Obsidian Mobile Fluid Cards with Apple HIG Touch Ergonomics
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: 44px minimum tap targets, tabular-nums, zero generic blue
+
+$marca-orange: #ff6100;
+$obsidian-card: #111111;
+$hairline-border: rgba(255, 255, 255, 0.08);
+$hairline-divider: rgba(255, 255, 255, 0.05);
+$text-primary: #ffffff;
+$text-secondary: #a1a1aa;
+$text-muted: #8e8e93;
+
+.cardWrapper {
+  background: $obsidian-card;
+  border: 1px solid $hairline-border;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: rgba(255, 97, 0, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $marca-orange;
+    outline-offset: 2px;
+  }
+}
+
+// 1. Header: Deal ID, Timestamp, and Expected Value
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leadIdToken {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $marca-orange;
+  background: rgba(255, 97, 0, 0.1);
+  border: 1px solid rgba(255, 97, 0, 0.25);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 97, 0, 0.2);
+    border-color: rgba(255, 97, 0, 0.4);
+  }
+}
+
+.timeTag {
+  font-size: 0.68rem;
+  color: $text-muted;
+}
+
+.dealValue {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.02em;
+}
+
+// 2. Client & Organization Meta
+.clientSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.clientName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.companyTitle {
+  font-size: 0.78rem;
+  color: $text-secondary;
+}
+
+// 3. Category & Source Tags
+.metaTagsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.serviceTag {
+  font-size: 0.68rem;
+  color: $text-secondary;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+.sourceTag {
+  font-size: 0.68rem;
+  color: $marca-orange;
+  background: rgba(255, 97, 0, 0.08);
+  border: 1px solid rgba(255, 97, 0, 0.2);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+// 4. Interactive Inline Mutators Row
+.inlineSelectorsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid $hairline-divider;
+  border-bottom: 1px solid $hairline-divider;
+}
+
+.repInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: $text-secondary;
+}
+
+.repAvatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.58rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cccccc;
+}
+
+// 5. Quick Omnichannel Action Bar
+.actionBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.actionBtn {
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  outline: none;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $marca-orange;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.callBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.whatsappBtn {
+  background: rgba(37, 211, 102, 0.1);
+  border-color: rgba(37, 211, 102, 0.28);
+  color: #25d366;
+
+  &:hover:not(:disabled) {
+    background: rgba(37, 211, 102, 0.18);
+    border-color: rgba(37, 211, 102, 0.45);
+  }
+}
+
+.drawerBtn {
+  background: rgba(255, 97, 0, 0.1);
+  border-color: rgba(255, 97, 0, 0.25);
+  color: $marca-orange;
+  padding: 0 0.85rem;
+
+  &:hover {
+    background: rgba(255, 97, 0, 0.18);
+    border-color: rgba(255, 97, 0, 0.45);
+  }
+}
