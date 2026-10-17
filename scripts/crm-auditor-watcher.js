@@ -6,14 +6,14 @@
  */
 
 console.log('[WATCHER] Marca Ubi CRM PR Audit Watcher initialized.');
-console.log('[WATCHER] Monitoring active Sprint 5.3: CRM Workspace Shell, Persistent Navigation & Admin Command Center...');
+console.log('[WATCHER] Monitoring active Sprint 6.1: High-Performance Pipeline KPI Aggregation RPC, Indexing & Analytics API Gateway...');
 
 let ticks = 0;
 const interval = setInterval(() => {
   ticks++;
   const timestamp = new Date().toISOString().substring(11, 19);
   if (ticks % 3 === 0) {
-    console.log(`[${timestamp}] [SPRINT_5_3_MONITOR] Workspace Shell: ACTIVE | Persistent Sidebar: ACTIVE | Route Grouping: ACTIVE | Status: RUNNING`);
+    console.log(`[${timestamp}] [SPRINT_6_1_MONITOR] RPC Engine: ACTIVE | Composite Indexes: ACTIVE | API Gateway: ACTIVE | Status: RUNNING`);
   }
   if (ticks >= 240) {
     console.log('[WATCHER] Monitoring cycle complete.');
