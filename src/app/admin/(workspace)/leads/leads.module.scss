@@ -168,10 +168,20 @@
 
 .tableRow {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
+  cursor: pointer;
 
   &:hover {
     background: rgba(255, 255, 255, 0.03);
+
+    .clientName {
+      color: #ff6100;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: -2px;
   }
 
   td {
@@ -188,8 +198,18 @@
   color: #ff6100;
   background: rgba(255, 97, 0, 0.1);
   border: 1px solid rgba(255, 97, 0, 0.25);
-  padding: 0.15rem 0.45rem;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 97, 0, 0.22);
+    border-color: rgba(255, 97, 0, 0.45);
+  }
 }
 
 .clientMeta {
@@ -200,6 +220,7 @@
 .clientName {
   font-weight: 600;
   color: #ffffff;
+  transition: color 0.15s ease;
 }
 
 .companyTitle {

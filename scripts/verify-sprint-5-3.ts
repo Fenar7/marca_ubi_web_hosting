@@ -69,6 +69,13 @@ const REQUIRED_FILES = [
   'src/app/actions/leads.ts',
   'src/app/lib/lead-schemas.ts',
 
+  // Client 360 Lead Detail Drawer & Cross-Workspace Interactivity
+  'src/app/admin/components/drawers/LeadDetailDrawer.tsx',
+  'src/app/admin/components/drawers/LeadDetailDrawer.module.scss',
+  'src/app/lib/lead-detail-types.ts',
+  'src/app/admin/(workspace)/tasks/components/TaskCard.tsx',
+  'src/app/admin/(workspace)/components/ActivityRowItem.tsx',
+
   // Route group layout & workspaces
   'src/app/admin/(workspace)/layout.tsx',
   'src/app/admin/(workspace)/page.tsx',
@@ -277,9 +284,72 @@ check('createManualLeadSchema enforces database constraint chk_lead_contact_info
   assert.ok(!invalidNegativeValue.success, 'Must fail with negative expected value');
 });
 
-// ============================================================================
+// Section 7: Client 360 Lead Detail Drawer & Interactivity Invariants
+console.log('\nSection 7: Client 360 Lead Detail Drawer & Interactivity Invariants');
+
+check('AdminWorkspaceShell mounts LeadDetailDrawer and handles deep links', () => {
+  const shellPath = path.join(ROOT_DIR, 'src/app/admin/components/layout/AdminWorkspaceShell.tsx');
+  const content = fs.readFileSync(shellPath, 'utf8');
+  assert.ok(content.includes('LeadDetailDrawer'), 'Must mount LeadDetailDrawer');
+  assert.ok(content.includes('open-lead-drawer'), 'Must subscribe to open-lead-drawer event');
+  assert.ok(content.includes('leadId'), 'Must handle leadId parameter');
+});
+
+check('src/app/actions/leads.ts exports all 6 Client 360 Server Actions', () => {
+  const actionPath = path.join(ROOT_DIR, 'src/app/actions/leads.ts');
+  const content = fs.readFileSync(actionPath, 'utf8');
+  assert.ok(content.includes('export async function getLeadDetails'), 'Must export getLeadDetails');
+  assert.ok(content.includes('export async function updateLeadStatus'), 'Must export updateLeadStatus');
+  assert.ok(content.includes('export async function updateLeadAssignee'), 'Must export updateLeadAssignee');
+  assert.ok(content.includes('export async function addLeadTouchpoint'), 'Must export addLeadTouchpoint');
+  assert.ok(content.includes('export async function updateLeadDealParameters'), 'Must export updateLeadDealParameters');
+  assert.ok(content.includes('export async function clearLeadFollowUp'), 'Must export clearLeadFollowUp');
+});
+
+check('Leads workspace table rows dispatch open-lead-drawer custom event', () => {
+  const clientPath = path.join(ROOT_DIR, 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx');
+  const content = fs.readFileSync(clientPath, 'utf8');
+  assert.ok(content.includes("'open-lead-drawer'"), 'Row clicks must dispatch open-lead-drawer');
+});
+
+check('TaskCard dispatches open-lead-drawer and provides quick action links', () => {
+  const taskCardPath = path.join(ROOT_DIR, 'src/app/admin/(workspace)/tasks/components/TaskCard.tsx');
+  const content = fs.readFileSync(taskCardPath, 'utf8');
+  assert.ok(content.includes("'open-lead-drawer'"), 'Card clicks must dispatch open-lead-drawer');
+  assert.ok(content.includes('clearLeadFollowUp'), 'Card must integrate clearLeadFollowUp');
+  assert.ok(content.includes('tel:'), 'Card must render direct phone link');
+  assert.ok(content.includes('https://wa.me/'), 'Card must render WhatsApp link');
+});
+
+check('ActivityRowItem dispatches open-lead-drawer on row click', () => {
+  const actPath = path.join(ROOT_DIR, 'src/app/admin/(workspace)/components/ActivityRowItem.tsx');
+  const content = fs.readFileSync(actPath, 'utf8');
+  assert.ok(content.includes("'open-lead-drawer'"), 'Activity clicks must dispatch open-lead-drawer');
+});
+
+check('Copywriting detox dictionary is applied across navigation, ingestion and workspaces', () => {
+  const sidebarPath = path.join(ROOT_DIR, 'src/app/admin/components/layout/AdminSidebar.tsx');
+  const sidebarContent = fs.readFileSync(sidebarPath, 'utf8');
+  assert.ok(sidebarContent.includes('Team & Analytics'), 'Sidebar must use Team & Analytics');
+  assert.ok(sidebarContent.includes('Website Inquiries'), 'Sidebar must use Website Inquiries');
+
+  const ingestionPath = path.join(ROOT_DIR, 'src/app/admin/(workspace)/ingestion/page.tsx');
+  const ingestionContent = fs.readFileSync(ingestionPath, 'utf8');
+  assert.ok(ingestionContent.includes('Website Inquiries & Form Capture'), 'Ingestion page must use detoxed title');
+  assert.ok(ingestionContent.includes('24-Hour Smart Merge'), 'Ingestion page must use 24-Hour Smart Merge');
+  assert.ok(ingestionContent.includes('Automated Spam Shield Active'), 'Ingestion page must use Automated Spam Shield Active');
+
+  const teamPath = path.join(ROOT_DIR, 'src/app/admin/(workspace)/team/page.tsx');
+  const teamContent = fs.readFileSync(teamPath, 'utf8');
+  assert.ok(teamContent.includes('Team Directory'), 'Team page must use Team Directory');
+
+  const analyticsPath = path.join(ROOT_DIR, 'src/app/admin/(workspace)/analytics/page.tsx');
+  const analyticsContent = fs.readFileSync(analyticsPath, 'utf8');
+  assert.ok(analyticsContent.includes('Closed Revenue'), 'Analytics page must use Closed Revenue');
+  assert.ok(analyticsContent.includes('Total Deals'), 'Analytics page must use Total Deals');
+});
+
 // Summary
-// ============================================================================
 console.log('\n============================================================');
 console.log(`Verification Complete: ${passedChecks}/${totalChecks} assertions passed successfully.`);
 console.log('Sprint 5.3 Workspace Shell, Lead Drawer & Navigation Rails Certified.');

@@ -112,7 +112,7 @@ export function AdminSidebar({
       ],
     },
     {
-      groupTitle: 'Intelligence & Roster',
+      groupTitle: 'Team & Analytics',
       items: [
         {
           label: 'Commercial Team',
@@ -159,7 +159,7 @@ export function AdminSidebar({
           ),
         },
         {
-          label: 'Ingestion Telemetry',
+          label: 'Website Inquiries',
           href: '/admin/ingestion',
           icon: ({ active }) => (
             <svg

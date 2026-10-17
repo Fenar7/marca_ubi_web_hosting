@@ -1,8 +1,8 @@
 /**
  * @file page.tsx
- * @description Commercial Deals & Pipeline Workspace (/admin/leads).
+ * @description Commercial Deals & Inquiries Workspace (/admin/leads).
  *              Server Component querying active client engagements, funnel stages,
- *              deal valuations, and representative assignments.
+ *              deal valuations, and representative assignments with deep-link search filters.
  * @module app/admin/(workspace)/leads/page
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -15,23 +15,37 @@ import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceCli
 import styles from './leads.module.scss';
 
 export const metadata: Metadata = {
-  title: 'Pipeline Deals & Ingested Leads | Marca Ubi Enterprise CRM',
+  title: 'Deals & Inquiries | Marca Ubi Enterprise CRM',
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default async function AdminLeadsPage(): Promise<React.ReactElement> {
+interface AdminLeadsPageProps {
+  searchParams?: Promise<{
+    stage?: string;
+    assigned_to?: string;
+    bucket?: string;
+    leadId?: string;
+  }>;
+}
+
+export default async function AdminLeadsPage(
+  props: AdminLeadsPageProps
+): Promise<React.ReactElement> {
+  const resolvedParams = props.searchParams ? await props.searchParams : undefined;
   const supabase = await createClient();
 
-  const { data: rawLeads } = await supabase
+  let query = supabase
     .from('leads')
     .select(`
       id,
       lead_id,
       name,
       company,
+      company_website,
+      industry,
       phone,
       email,
       preferred_channel,
@@ -39,18 +53,41 @@ export default async function AdminLeadsPage(): Promise<React.ReactElement> {
       expected_value,
       priority,
       status_id,
+      assigned_to,
+      lead_source_id,
+      notes,
+      brief_payload,
       next_follow_up,
       created_at,
-      funnel_statuses!inner(name, bucket, color_code),
-      profiles!leads_assigned_to_fkey(full_name)
-    `)
-    .order('created_at', { ascending: false });
+      updated_at,
+      funnel_statuses!inner(id, name, bucket, color_code, sort_order),
+      lead_sources!inner(id, name, color_code),
+      profiles!leads_assigned_to_fkey(id, full_name, role)
+    `);
+
+  if (resolvedParams?.stage && resolvedParams.stage.trim().length > 0) {
+    query = query.eq('status_id', resolvedParams.stage.trim());
+  }
+
+  if (resolvedParams?.assigned_to && resolvedParams.assigned_to.trim().length > 0) {
+    query = query.eq('assigned_to', resolvedParams.assigned_to.trim());
+  }
+
+  if (resolvedParams?.bucket && resolvedParams.bucket.trim().length > 0 && resolvedParams.bucket !== 'all') {
+    query = query.eq('funnel_statuses.bucket', resolvedParams.bucket.trim());
+  }
+
+  query = query.order('created_at', { ascending: false });
+
+  const { data: rawLeads } = await query;
 
   const leads: HydratedLeadItem[] = (rawLeads || []).map((l) => {
     const statusData = l.funnel_statuses as {
+      id?: string;
       name?: string;
       bucket?: FunnelBucket;
       color_code?: string;
+      sort_order?: number;
     } | null;
 
     return {
@@ -80,9 +117,9 @@ export default async function AdminLeadsPage(): Promise<React.ReactElement> {
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.eyebrow}>Commercial Pipeline & Staging</span>
-          <h1 className={styles.pageTitle}>Pipeline Deals & Ingested Leads</h1>
+          <h1 className={styles.pageTitle}>Deals & Inquiries</h1>
           <p className={styles.pageSubtitle}>
-            Full commercial inventory, stage progression, deal valuations, and account ownership.
+            Track incoming inquiries, negotiate high-ticket proposals, and manage deal progression.
           </p>
         </div>
       </header>

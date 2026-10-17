@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import Link from 'next/link';
 import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile } from '@/types/crm';
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
@@ -234,7 +235,7 @@ export function CommercialDirectoryTable({
               <th className={styles.th}>Personnel Identity</th>
               <th className={styles.th}>Governance Role</th>
               <th className={styles.th}>Job Title</th>
-              <th className={styles.th}>Active Deals Load</th>
+              <th className={styles.th}>Active Portfolio</th>
               <th className={styles.th}>Account Status</th>
               {isAdmin && <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>}
             </tr>
@@ -262,7 +263,27 @@ export function CommercialDirectoryTable({
                             )}
                           </span>
                           <span className={styles.emailSubtext}>
-                            {member.email} {member.phone ? `· ${member.phone}` : ''}
+                            <a
+                              href={`mailto:${member.email}`}
+                              style={{ color: 'inherit', textDecoration: 'none' }}
+                              onClick={(e) => e.stopPropagation()}
+                              title={`Compose email to ${member.email}`}
+                            >
+                              {member.email}
+                            </a>
+                            {member.phone && (
+                              <>
+                                {' · '}
+                                <a
+                                  href={`tel:${member.phone}`}
+                                  style={{ color: 'inherit', textDecoration: 'none' }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  title={`Call ${member.phone}`}
+                                >
+                                  {member.phone}
+                                </a>
+                              </>
+                            )}
                           </span>
                         </div>
                       </div>
@@ -297,17 +318,36 @@ export function CommercialDirectoryTable({
                       {member.job_title}
                     </td>
 
-                    {/* Active Deals Load */}
+                    {/* Active Deals Load / Active Portfolio */}
                     <td className={styles.td}>
-                      <div className={styles.dealsPill}>
-                        <span className={styles.dealsCount}>{member.active_deals_count}</span>
-                        <span>deals</span>
-                        {member.total_deal_value > 0 && (
-                          <span className={styles.dealsValuation}>
-                            ({formatDealValuation(member.total_deal_value)})
-                          </span>
-                        )}
-                      </div>
+                      {member.active_deals_count > 0 ? (
+                        <Link
+                          href={`/admin/leads?assigned_to=${member.id}`}
+                          className={styles.dealsPill}
+                          style={{
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                          }}
+                          title={`View ${member.active_deals_count} active deals assigned to ${member.full_name}`}
+                        >
+                          <span className={styles.dealsCount}>{member.active_deals_count}</span>
+                          <span>deals</span>
+                          {member.total_deal_value > 0 && (
+                            <span className={styles.dealsValuation}>
+                              ({formatDealValuation(member.total_deal_value)})
+                            </span>
+                          )}
+                          <span style={{ fontSize: '0.72rem', color: '#ff6100' }}>→</span>
+                        </Link>
+                      ) : (
+                        <div className={styles.dealsPill}>
+                          <span className={styles.dealsCount}>0</span>
+                          <span>deals</span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Account Status */}

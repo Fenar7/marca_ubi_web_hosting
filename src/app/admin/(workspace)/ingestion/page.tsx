@@ -13,7 +13,7 @@ import { createClient } from '@/app/lib/supabase/server';
 import styles from './ingestion.module.scss';
 
 export const metadata: Metadata = {
-  title: 'Webhook Telemetry & Deduplication | Marca Ubi Enterprise CRM',
+  title: 'Website Inquiries & Form Capture | Marca Ubi Enterprise CRM',
   robots: {
     index: false,
     follow: false,
@@ -37,10 +37,10 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>API Gateway & Stream Diagnostics</span>
-          <h1 className={styles.pageTitle}>Webhook Ingestion Telemetry</h1>
+          <span className={styles.eyebrow}>Form Gateway & Website Inquiries</span>
+          <h1 className={styles.pageTitle}>Website Inquiries & Form Capture</h1>
           <p className={styles.pageSubtitle}>
-            Live endpoint telemetry, automated phone/email deduplication collision window, and rate limiting status.
+            Monitor incoming form submissions from the website, automatic duplicate protection, and intake health.
           </p>
         </div>
       </header>
@@ -60,7 +60,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
 
         <div className={styles.telemetryCard}>
           <span className={styles.telemetryKey}>Deduplication Window</span>
-          <div className={styles.telemetryVal}>24-Hour Collision Buffer</div>
+          <div className={styles.telemetryVal}>24-Hour Smart Merge</div>
           <span className={styles.telemetrySub}>
             Matches normalized phone or lowercase email
           </span>
@@ -68,7 +68,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
 
         <div className={styles.telemetryCard}>
           <span className={styles.telemetryKey}>Rate Limiter Perimeter</span>
-          <div className={styles.telemetryVal}>Token Bucket Guarded</div>
+          <div className={styles.telemetryVal}>Automated Spam Shield Active</div>
           <span className={styles.telemetrySub}>
             10 req/min burst protection via Upstash/In-Memory
           </span>
@@ -84,7 +84,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>
-              <strong>Atomic E164 Phone Normalization:</strong> Strips extraneous characters, converts Indian 10-digit numbers to +91 international standard before deduplication comparison.
+              <strong>International Phone Formatting:</strong> Strips extraneous characters, converts Indian 10-digit numbers to +91 international standard before deduplication comparison.
             </span>
           </div>
           <div className={styles.ruleItem}>
@@ -92,7 +92,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>
-              <strong>Case-Insensitive Lowercase Email:</strong> Ensures whitespace is trimmed and strings are forced to lowercase, preventing duplicate submissions from multiple marketing campaigns.
+              <strong>Automatic Email Matching:</strong> Ensures whitespace is trimmed and strings are forced to lowercase, preventing duplicate submissions from multiple marketing campaigns.
             </span>
           </div>
           <div className={styles.ruleItem}>
@@ -100,7 +100,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>
-              <strong>Inquiry Counter Increment:</strong> Duplicate inquiries within the 24-hour window update `inquiry_count` and append an immutable touchpoint record to `lead_activities` without resetting deal stages.
+              <strong>Repeat Inquiry Tracking:</strong> Duplicate inquiries within the 24-hour window update `inquiry_count` and append an immutable touchpoint record to `lead_activities` without resetting deal stages.
             </span>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
 
       {/* Live Ingestion Log Feed */}
       <section className={styles.sectionBox}>
-        <h2 className={styles.sectionTitle}>Recent Ingestion & Deduplication Feed</h2>
+        <h2 className={styles.sectionTitle}>Recent Inbound Submissions</h2>
         {logs.length === 0 ? (
           <div className={styles.emptyState}>
             <span>No incoming webhook ingestion events logged recently.</span>

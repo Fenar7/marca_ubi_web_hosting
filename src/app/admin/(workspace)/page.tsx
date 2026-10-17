@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { createClient } from '@/app/lib/supabase/server';
 import type { PipelineRpcMetrics } from '@/types/crm';
 import styles from './page.module.scss';
+import { ActivityRowItem } from './components/ActivityRowItem';
 
 export const metadata: Metadata = {
   title: 'Executive Command Center | Marca Ubi Enterprise CRM',
@@ -61,6 +62,7 @@ interface ActivityItem {
   description: string;
   actor: string;
   createdAt: string;
+  leadId?: string | null;
 }
 
 export default async function AdminDashboardPage(): Promise<React.ReactElement> {
@@ -120,7 +122,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
 
   const { data: leadActs } = await supabase
     .from('lead_activities')
-    .select('id, activity_type, description, created_at, actor_id, profiles(full_name)')
+    .select('id, lead_id, activity_type, description, created_at, actor_id, profiles(full_name)')
     .order('created_at', { ascending: false })
     .limit(4);
 
@@ -142,6 +144,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
         description: act.description,
         actor: actorName,
         createdAt: act.created_at,
+        leadId: act.lead_id,
       });
     });
   }
@@ -179,14 +182,14 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
           <span className={styles.eyebrow}>Sales Intelligence & Pipeline Ops</span>
           <h1 className={styles.pageTitle}>Executive Command Center</h1>
           <p className={styles.pageSubtitle}>
-            Global deal velocity, commercial staff roster, and omnichannel ingestion telemetry.
+            Global deal velocity, commercial team directory, and real-time lead capture and webhook processing.
           </p>
         </div>
 
         <div className={styles.headerMeta}>
           <div className={styles.nodeBadge}>
             <span className={styles.nodeDot} />
-            <span>Supabase Cloud Node</span>
+            <span>System Online / Verified Secure</span>
           </div>
         </div>
       </header>
@@ -194,7 +197,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
       {/* 4 Stripe Scorecards Ribbon */}
       <section className={styles.kpiGrid} aria-label="Commercial Executive Scorecards">
         {/* KPI 1: Total Leads */}
-        <div className={styles.kpiCard}>
+        <Link href="/admin/leads" className={styles.kpiCard} title="View all deals & inquiries">
           <div className={styles.kpiLabelRow}>
             <span className={styles.kpiLabel}>Total Leads</span>
             <div className={styles.kpiIcon}>
@@ -209,10 +212,10 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
             <span>·</span>
             <span>Omnichannel</span>
           </div>
-        </div>
+        </Link>
 
         {/* KPI 2: Active Pipeline Valuation */}
-        <div className={styles.kpiCard}>
+        <Link href="/admin/analytics" className={styles.kpiCard} title="View revenue and pipeline analytics">
           <div className={styles.kpiLabelRow}>
             <span className={styles.kpiLabel}>Pipeline Valuation</span>
             <div className={styles.kpiIcon}>
@@ -226,10 +229,10 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
           <div className={styles.kpiDetail}>
             <span className={styles.kpiDetailOrange}>Open & Potential Deals</span>
           </div>
-        </div>
+        </Link>
 
         {/* KPI 3: Commercial Staff */}
-        <div className={styles.kpiCard}>
+        <Link href="/admin/team" className={styles.kpiCard} title="View commercial team directory">
           <div className={styles.kpiLabelRow}>
             <span className={styles.kpiLabel}>Commercial Staff</span>
             <div className={styles.kpiIcon}>
@@ -247,10 +250,10 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
             <span>·</span>
             <span>{suspendedStaff} Suspended</span>
           </div>
-        </div>
+        </Link>
 
         {/* KPI 4: Overdue Follow-ups */}
-        <div className={styles.kpiCard}>
+        <Link href="/admin/tasks" className={styles.kpiCard} title="View follow-up tasks queue">
           <div className={styles.kpiLabelRow}>
             <span className={styles.kpiLabel}>Overdue Tasks</span>
             <div className={styles.kpiIcon}>
@@ -268,7 +271,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
               <span className={styles.kpiDetailEmerald}>Queue Up To Date</span>
             )}
           </div>
-        </div>
+        </Link>
       </section>
 
       {/* 4 Feature Quick-Launch Hub */}
@@ -300,7 +303,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
               </p>
             </div>
             <div className={styles.launchCardFooter}>
-              <span className={styles.launchActionLabel}>Open Roster</span>
+              <span className={styles.launchActionLabel}>View Team Directory</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.launchArrow} aria-hidden="true">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
@@ -394,33 +397,18 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
           </div>
         ) : (
           <div className={styles.activityList}>
-            {displayActivities.map((act) => {
-              const badgeClass =
-                act.badgeStyle === 'emerald'
-                  ? styles.badgeEmerald
-                  : act.badgeStyle === 'amber'
-                  ? styles.badgeAmber
-                  : act.badgeStyle === 'orange'
-                  ? styles.badgeOrange
-                  : styles.badgeBlue;
-
-              return (
-                <div key={act.id} className={styles.activityRow}>
-                  <div className={styles.activityLeft}>
-                    <span className={`${styles.activityBadge} ${badgeClass}`}>
-                      {act.type}
-                    </span>
-                    <span className={styles.activityDesc}>{act.description}</span>
-                  </div>
-                  <div className={styles.activityRight}>
-                    <span className={styles.activityActor}>{act.actor}</span>
-                    <span className={styles.activityTime}>
-                      {formatTimeAgo(act.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+            {displayActivities.map((act) => (
+              <ActivityRowItem
+                key={act.id}
+                id={act.id}
+                type={act.type}
+                badgeStyle={act.badgeStyle}
+                description={act.description}
+                actor={act.actor}
+                timeAgo={formatTimeAgo(act.createdAt)}
+                leadId={act.leadId}
+              />
+            ))}
           </div>
         )}
       </section>

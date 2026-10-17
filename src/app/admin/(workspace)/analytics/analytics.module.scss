@@ -72,6 +72,13 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  transition: all 0.18s ease;
+
+  &:hover {
+    border-color: rgba(255, 97, 0, 0.35);
+    background: #141418;
+    transform: translateY(-1px);
+  }
 
   &::before {
     content: '';
@@ -155,6 +162,17 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   gap: 1rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 97, 0, 0.35);
+
+    .stageName {
+      color: #ff6100;
+    }
+  }
 }
 
 .stageLeft {

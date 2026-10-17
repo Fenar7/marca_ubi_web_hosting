@@ -9,11 +9,13 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
 import { NewLeadDrawer } from './NewLeadDrawer';
+import { LeadDetailDrawer } from '@/app/admin/components/drawers/LeadDetailDrawer';
 import { AddTeamMemberDrawer } from '@/app/admin/(workspace)/team/components/AddTeamMemberDrawer';
 import {
   CredentialRevealModal,
@@ -27,6 +29,27 @@ interface AdminWorkspaceShellProps {
   children: React.ReactNode;
 }
 
+/**
+ * Synchronizes URL query parameters (?leadId=...) with the Client 360 Drawer.
+ * Encapsulated inside a Suspense boundary to prevent App Router hydration mismatches.
+ */
+function LeadUrlSync({
+  onLeadIdFound,
+}: {
+  onLeadIdFound: (leadId: string) => void;
+}): null {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const leadId = searchParams.get('leadId');
+    if (leadId) {
+      onLeadIdFound(leadId);
+    }
+  }, [searchParams, onLeadIdFound]);
+
+  return null;
+}
+
 export function AdminWorkspaceShell({
   currentUser,
   children,
@@ -35,6 +58,8 @@ export function AdminWorkspaceShell({
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isNewLeadDrawerOpen, setIsNewLeadDrawerOpen] = useState<boolean>(false);
   const [isAddMemberDrawerOpen, setIsAddMemberDrawerOpen] = useState<boolean>(false);
+  const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
+  const [isLeadDrawerOpen, setIsLeadDrawerOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] = useState<ProvisionedCredentialsPayload | null>(null);
   const [isCredentialModalOpen, setIsCredentialModalOpen] = useState<boolean>(false);
 
@@ -61,6 +86,47 @@ export function AdminWorkspaceShell({
       return next;
     });
   }, []);
+
+  const handleOpenLead = useCallback((id: string) => {
+    setActiveLeadId(id);
+    setIsLeadDrawerOpen(true);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('leadId') !== id) {
+        url.searchParams.set('leadId', id);
+        window.history.replaceState({}, '', url.pathname + url.search);
+      }
+    }
+  }, []);
+
+  const handleCloseLeadDrawer = useCallback(() => {
+    setIsLeadDrawerOpen(false);
+    setActiveLeadId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('leadId')) {
+        url.searchParams.delete('leadId');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      }
+    }
+  }, []);
+
+  // Listen to open-lead-drawer custom events dispatched across any workspace
+  useEffect(() => {
+    const handleOpenLeadDrawerEvent = (e: Event): void => {
+      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
+      const id =
+        typeof customEvt.detail === 'string'
+          ? customEvt.detail
+          : customEvt.detail?.leadId;
+      if (id) {
+        handleOpenLead(id);
+      }
+    };
+
+    window.addEventListener('open-lead-drawer', handleOpenLeadDrawerEvent);
+    return () => window.removeEventListener('open-lead-drawer', handleOpenLeadDrawerEvent);
+  }, [handleOpenLead]);
 
   // Listen to open-new-lead-drawer custom events dispatched by sidebar / header buttons
   useEffect(() => {
@@ -170,6 +236,26 @@ export function AdminWorkspaceShell({
         onClose={() => {
           setIsCredentialModalOpen(false);
           setRevealedCredentials(null);
+        }}
+      />
+
+      {/* URL Synchronization Bridge for Client 360 Drawer */}
+      <Suspense fallback={null}>
+        <LeadUrlSync onLeadIdFound={handleOpenLead} />
+      </Suspense>
+
+      {/* Client 360 Lead Detail Dossier Drawer */}
+      <LeadDetailDrawer
+        leadId={activeLeadId}
+        isOpen={isLeadDrawerOpen}
+        onClose={handleCloseLeadDrawer}
+        currentUser={currentUser}
+        onLeadUpdated={() => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('lead-data-mutated', { detail: activeLeadId })
+            );
+          }
         }}
       />
     </div>

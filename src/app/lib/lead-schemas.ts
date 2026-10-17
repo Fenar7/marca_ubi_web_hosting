@@ -7,7 +7,14 @@
  */
 
 import { z } from 'zod';
-import type { CrmUserRole, PreferredChannel, ServiceCategory, LeadPriority } from '@/types/crm';
+import type {
+  CrmUserRole,
+  PreferredChannel,
+  ServiceCategory,
+  LeadPriority,
+  AssigneeOption,
+  LeadActionResult,
+} from '@/types/crm';
 
 /**
  * Service category enum list matching database check constraint `chk_leads_service_category`.
@@ -35,6 +42,8 @@ export const PREFERRED_CHANNELS = [
  * Lead priority tiers matching database check constraint `chk_leads_priority`.
  */
 export const LEAD_PRIORITIES = ['High', 'Medium', 'Low'] as const;
+
+const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 /**
  * Common budget tiers for agency client valuation profiling.
@@ -118,12 +127,12 @@ export const createManualLeadSchema = z
       .default(0),
     assignedTo: z
       .string()
-      .uuid({ message: 'Invalid representative identifier' })
+      .regex(UUID_REGEX, { message: 'Invalid representative identifier' })
       .optional()
       .or(z.literal('')),
     leadSourceId: z
       .string()
-      .uuid({ message: 'Invalid lead source identifier' })
+      .regex(UUID_REGEX, { message: 'Invalid lead source identifier' })
       .optional()
       .or(z.literal('')),
     notes: z
@@ -148,16 +157,132 @@ export const createManualLeadSchema = z
 
 export type CreateManualLeadInput = z.infer<typeof createManualLeadSchema>;
 
-export interface AssigneeOption {
-  id: string;
-  fullName: string;
-  email: string;
-  role: CrmUserRole;
-}
+export type { AssigneeOption, LeadActionResult } from '@/types/crm';
 
-export interface LeadActionResult {
-  success: boolean;
-  leadId?: string;
-  id?: string;
-  error?: string;
-}
+/**
+ * Omnichannel touchpoint activity types supported by the fast logger.
+ */
+export const TOUCHPOINT_ACTIVITY_TYPES = [
+  'call_logged',
+  'email_sent',
+  'meeting_held',
+  'meeting_notes',
+  'whatsapp_sent',
+  'note_added',
+  'follow_up_scheduled',
+] as const;
+
+export type TouchpointActivityType = (typeof TOUCHPOINT_ACTIVITY_TYPES)[number];
+
+/**
+ * Zod validation schema for updating deal funnel stage progression.
+ * Accommodates terminal status attribution (lostReason) and optional stage transition notes.
+ */
+export const updateLeadStatusSchema = z.object({
+  leadId: z
+    .string({ message: 'Lead identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid lead identifier' }),
+  newStatusId: z
+    .string({ message: 'New status identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid status identifier' }),
+  lostReason: z
+    .string()
+    .trim()
+    .max(500, { message: 'Lost reason must not exceed 500 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  note: z
+    .string()
+    .trim()
+    .max(2000, { message: 'Status transition note must not exceed 2000 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
+
+export type UpdateLeadStatusInput = z.infer<typeof updateLeadStatusSchema>;
+
+/**
+ * Zod validation schema for logging customer touchpoints and scheduling follow-ups.
+ * Enforces non-empty interaction narratives and sanitized ISO date stamps.
+ */
+export const addLeadTouchpointSchema = z.object({
+  leadId: z
+    .string({ message: 'Lead identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid lead identifier' }),
+  activityType: z.enum(TOUCHPOINT_ACTIVITY_TYPES, {
+    message: 'Please select a valid touchpoint activity type',
+  }),
+  description: z
+    .string({ message: 'Touchpoint description is required' })
+    .trim()
+    .min(1, { message: 'Touchpoint description must not be empty' })
+    .max(3000, { message: 'Touchpoint description must not exceed 3000 characters' }),
+  nextFollowUp: z
+    .string()
+    .trim()
+    .refine(
+      (val) => {
+        if (!val || val.length === 0) return true;
+        const parsed = Date.parse(val);
+        return !Number.isNaN(parsed);
+      },
+      { message: 'Next follow-up must be a valid ISO date timestamp' }
+    )
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
+
+export type AddLeadTouchpointInput = z.infer<typeof addLeadTouchpointSchema>;
+
+/**
+ * Zod validation schema for reassigning commercial deal ownership to a staff member.
+ * Restricts target user to active representatives via downstream server action validation.
+ */
+export const updateLeadAssigneeSchema = z.object({
+  leadId: z
+    .string({ message: 'Lead identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid lead identifier' }),
+  newAssigneeId: z
+    .string({ message: 'Assignee identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid representative identifier' }),
+  note: z
+    .string()
+    .trim()
+    .max(2000, { message: 'Reassignment note must not exceed 2000 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
+
+export type UpdateLeadAssigneeInput = z.infer<typeof updateLeadAssigneeSchema>;
+
+/**
+ * Zod validation schema for updating deal valuation parameters, priority tier, and client notes.
+ */
+export const updateLeadDealParametersSchema = z.object({
+  leadId: z
+    .string({ message: 'Lead identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid lead identifier' }),
+  expectedValue: z.coerce
+    .number({ message: 'Expected valuation must be a numeric amount' })
+    .min(0, { message: 'Expected valuation cannot be negative' })
+    .max(1000000000, { message: 'Expected valuation cannot exceed ₹100 Crore' })
+    .optional(),
+  priority: z
+    .enum(LEAD_PRIORITIES, {
+      message: 'Please select a valid deal priority',
+    })
+    .optional(),
+  notes: z
+    .string()
+    .trim()
+    .max(5000, { message: 'Engagement notes must not exceed 5000 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
+
+export type UpdateLeadDealParametersInput = z.infer<typeof updateLeadDealParametersSchema>;

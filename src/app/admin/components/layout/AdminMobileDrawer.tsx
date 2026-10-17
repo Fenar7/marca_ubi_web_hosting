@@ -128,7 +128,7 @@ export function AdminMobileDrawer({
       ],
     },
     {
-      groupTitle: 'Intelligence & Roster',
+      groupTitle: 'Team & Analytics',
       items: [
         {
           label: 'Commercial Team',
@@ -175,7 +175,7 @@ export function AdminMobileDrawer({
           ),
         },
         {
-          label: 'Ingestion Telemetry',
+          label: 'Website Inquiries',
           href: '/admin/ingestion',
           icon: ({ active }) => (
             <svg

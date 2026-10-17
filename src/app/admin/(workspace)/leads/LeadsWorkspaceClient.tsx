@@ -2,14 +2,15 @@
 
 /**
  * @file LeadsWorkspaceClient.tsx
- * @description Interactive Client Component for the Pipeline Deals Workspace (/admin/leads).
- *              Provides instantaneous client-side search filtering across company, contact,
- *              and lead ID, with real-time bucket tab counters and Linear Fluid Card data tables.
+ * @description Interactive Client Component for the Deals & Inquiries Workspace (/admin/leads).
+ *              Provides instantaneous client-side search filtering, URL deep-linking support,
+ *              clickable table row triggers for the Client 360 Drawer, and 1-click clipboard tokens.
  * @module app/admin/(workspace)/leads/LeadsWorkspaceClient
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
 import styles from './leads.module.scss';
 
@@ -28,6 +29,7 @@ export interface HydratedLeadItem {
   status_name: string;
   status_color: string;
   bucket: FunnelBucket;
+  assigned_to?: string | null;
   assigned_to_name: string;
   next_follow_up: string | null;
   created_at: string;
@@ -48,11 +50,50 @@ function formatCurrency(amount: number): string {
   return `₹${amount.toLocaleString('en-IN')}`;
 }
 
-export function LeadsWorkspaceClient({
+function LeadsWorkspaceContent({
   initialLeads,
 }: LeadsWorkspaceClientProps): React.ReactElement {
-  const [selectedBucket, setSelectedBucket] = useState<'all' | FunnelBucket>('all');
+  const searchParams = useSearchParams();
+
+  // URL query parameter synchronization
+  const bucketParam = searchParams.get('bucket');
+  const stageParam = searchParams.get('stage');
+  const assignedToParam = searchParams.get('assigned_to');
+
+  const [selectedBucket, setSelectedBucket] = useState<'all' | FunnelBucket>(
+    bucketParam === 'open' ||
+      bucketParam === 'potential' ||
+      bucketParam === 'converted' ||
+      bucketParam === 'lost'
+      ? bucketParam
+      : 'all'
+  );
+
+  const [activeStageFilter, setActiveStageFilter] = useState<string | null>(stageParam);
+  const [activeAssigneeFilter, setActiveAssigneeFilter] = useState<string | null>(
+    assignedToParam
+  );
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (
+      bucketParam === 'open' ||
+      bucketParam === 'potential' ||
+      bucketParam === 'converted' ||
+      bucketParam === 'lost'
+    ) {
+      setSelectedBucket(bucketParam);
+    }
+  }, [bucketParam]);
+
+  useEffect(() => {
+    setActiveStageFilter(stageParam);
+  }, [stageParam]);
+
+  useEffect(() => {
+    setActiveAssigneeFilter(assignedToParam);
+  }, [assignedToParam]);
 
   // Bucket counts
   const counts = useMemo(() => {
@@ -69,6 +110,16 @@ export function LeadsWorkspaceClient({
   const filteredLeads = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return initialLeads.filter((lead) => {
+      // Stage filter check (from deep links)
+      if (activeStageFilter && lead.status_id !== activeStageFilter) {
+        return false;
+      }
+
+      // Assignee filter check (from deep links)
+      if (activeAssigneeFilter && lead.assigned_to !== activeAssigneeFilter) {
+        return false;
+      }
+
       // Bucket check
       if (selectedBucket !== 'all' && lead.bucket !== selectedBucket) {
         return false;
@@ -82,13 +133,117 @@ export function LeadsWorkspaceClient({
         lead.lead_id.toLowerCase().includes(q) ||
         (lead.email && lead.email.toLowerCase().includes(q)) ||
         (lead.phone && lead.phone.toLowerCase().includes(q)) ||
-        lead.service_category.toLowerCase().includes(q)
+        lead.service_category.toLowerCase().includes(q) ||
+        lead.assigned_to_name.toLowerCase().includes(q)
       );
     });
-  }, [initialLeads, selectedBucket, searchQuery]);
+  }, [
+    initialLeads,
+    selectedBucket,
+    searchQuery,
+    activeStageFilter,
+    activeAssigneeFilter,
+  ]);
+
+  // Handle row click: dispatches global custom event to open Client 360 Drawer
+  const handleRowClick = (leadId: string): void => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('open-lead-drawer', { detail: { leadId } })
+      );
+    }
+  };
+
+  // Handle Deal ID copy
+  const handleCopyDealId = (e: React.MouseEvent, leadIdText: string): void => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(leadIdText);
+    setCopiedId(leadIdText);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
+  // Clear specific deep-link filters
+  const handleClearStageFilter = (): void => {
+    setActiveStageFilter(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('stage');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    }
+  };
+
+  const handleClearAssigneeFilter = (): void => {
+    setActiveAssigneeFilter(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('assigned_to');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    }
+  };
 
   return (
     <>
+      {/* Active Filter Indicators */}
+      {(activeStageFilter || activeAssigneeFilter) && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.65rem 1rem',
+            background: 'rgba(255, 97, 0, 0.08)',
+            border: '1px solid rgba(255, 97, 0, 0.25)',
+            borderRadius: '8px',
+            fontSize: '0.8rem',
+            color: '#ffffff',
+          }}
+        >
+          <span style={{ color: '#ff6100', fontWeight: 600 }}>Active Filters:</span>
+          {activeStageFilter && (
+            <button
+              type="button"
+              onClick={handleClearStageFilter}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
+                fontSize: '0.74rem',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              <span>Stage Filter Active</span>
+              <span style={{ color: '#ff6100' }}>✕</span>
+            </button>
+          )}
+          {activeAssigneeFilter && (
+            <button
+              type="button"
+              onClick={handleClearAssigneeFilter}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
+                fontSize: '0.74rem',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              <span>Representative Filter Active</span>
+              <span style={{ color: '#ff6100' }}>✕</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Controls Bar: Bucket Tabs & Search */}
       <div className={styles.controlsBar}>
         <div className={styles.bucketTabs} role="tablist" aria-label="Pipeline Stages">
@@ -129,7 +284,7 @@ export function LeadsWorkspaceClient({
             onClick={() => setSelectedBucket('converted')}
             className={`${styles.tabBtn} ${selectedBucket === 'converted' ? styles.tabBtnActive : ''}`}
           >
-            <span>Converted</span>
+            <span>Won</span>
             <span className={styles.tabCount}>{counts.converted}</span>
           </button>
           <button
@@ -208,9 +363,28 @@ export function LeadsWorkspaceClient({
                   : '—';
 
                 return (
-                  <tr key={lead.id} className={styles.tableRow}>
+                  <tr
+                    key={lead.id}
+                    className={styles.tableRow}
+                    onClick={() => handleRowClick(lead.id)}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRowClick(lead.id);
+                    }}
+                    aria-label={`Open Client 360 dossier for ${lead.name}`}
+                  >
                     <td>
-                      <span className={styles.leadIdToken}>{lead.lead_id}</span>
+                      <span
+                        className={styles.leadIdToken}
+                        onClick={(e) => handleCopyDealId(e, lead.lead_id)}
+                        title="Click to copy Deal ID"
+                      >
+                        {lead.lead_id}
+                        {copiedId === lead.lead_id ? (
+                          <span style={{ color: '#10b981', fontSize: '0.62rem' }}>✓</span>
+                        ) : null}
+                      </span>
                     </td>
                     <td>
                       <div className={styles.clientMeta}>
@@ -249,7 +423,13 @@ export function LeadsWorkspaceClient({
                       </div>
                     </td>
                     <td>
-                      <span style={{ color: '#a1a1aa', fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                      <span
+                        style={{
+                          color: '#a1a1aa',
+                          fontFamily: 'monospace',
+                          fontSize: '0.75rem',
+                        }}
+                      >
                         {followUpText}
                       </span>
                     </td>
@@ -261,5 +441,15 @@ export function LeadsWorkspaceClient({
         )}
       </div>
     </>
+  );
+}
+
+export function LeadsWorkspaceClient(
+  props: LeadsWorkspaceClientProps
+): React.ReactElement {
+  return (
+    <Suspense fallback={null}>
+      <LeadsWorkspaceContent {...props} />
+    </Suspense>
   );
 }
