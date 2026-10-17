@@ -140,7 +140,7 @@ export function LeadsDataGrid({
                   month: 'short',
                   day: 'numeric',
                 })
-              : '—';
+              : 'None';
 
             return (
               <div
@@ -149,6 +149,7 @@ export function LeadsDataGrid({
                 className={styles.virtualRow}
                 style={{
                   transform: `translateY(${virtualRow.start}px)`,
+                  zIndex: leads.length - virtualRow.index,
                 }}
                 onClick={() => handleRowClick(lead.id)}
                 role="row"
@@ -165,6 +166,12 @@ export function LeadsDataGrid({
                   <button
                     type="button"
                     onClick={(e) => handleCopyDealId(lead.lead_id, e)}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleCopyDealId(lead.lead_id, e as unknown as React.MouseEvent);
+                      }
+                    }}
                     className={styles.leadIdToken}
                     title="Click to copy Deal ID"
                     aria-label={`Copy Deal ID ${lead.lead_id}`}

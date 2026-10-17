@@ -17,7 +17,7 @@ import {
   inlinePrioritySchema,
 } from '@/app/actions/leadInlineActions';
 import { LEAD_PRIORITIES } from '@/app/lib/lead-schemas';
-import type { LeadPriority, FunnelBucket } from '@/types/crm';
+import type { LeadPriority, FunnelBucket, CrmUserRole } from '@/types/crm';
 
 describe('Sprint 7.2: Server Actions & Inline Mutation Validation Engine', () => {
   describe('Block 1: inlineStatusSchema Validation & Sanitization', () => {
@@ -86,7 +86,7 @@ describe('Sprint 7.2: Server Actions & Inline Mutation Validation Engine', () =>
 
     it('rejects invalid or case-mismatched priority values', () => {
       const validLeadId = 'b819f72a-d6e2-4ef9-a9a3-112233445566';
-      const invalidPriorities = ['urgent', 'HIGH', 'critical', 'Critical', 'LowPriority', '', 1];
+      const invalidPriorities = ['urgent', 'Urgent', 'HIGH', 'critical', 'Critical', 'LowPriority', '', 1];
 
       invalidPriorities.forEach((priority) => {
         const result = inlinePrioritySchema.safeParse({
@@ -146,10 +146,10 @@ describe('Sprint 7.2: Server Actions & Inline Mutation Validation Engine', () =>
   });
 
   describe('Block 4: Role Sandboxing Authorization Matrix', () => {
-    it('allows leadership roles to modify any deal while sales executives are sandboxed', () => {
+    it('allows leadership roles to modify any deal, sandboxes sales executives, and strictly forbids viewers', () => {
       interface MockUser {
         id: string;
-        role: 'super_admin' | 'sales_lead' | 'sales_rep';
+        role: CrmUserRole;
       }
 
       interface MockLead {
@@ -158,34 +158,45 @@ describe('Sprint 7.2: Server Actions & Inline Mutation Validation Engine', () =>
       }
 
       function canUserModifyLead(user: MockUser, lead: MockLead): boolean {
-        if (user.role === 'super_admin' || user.role === 'sales_lead') {
+        if (user.role === 'viewer') {
+          return false;
+        }
+        if (user.role === 'admin' || user.role === 'sales_manager') {
           return true;
         }
-        return lead.assigned_to === user.id;
+        if (user.role === 'sales_executive') {
+          return lead.assigned_to === user.id;
+        }
+        return false;
       }
 
-      const superAdmin: MockUser = { id: 'admin-01', role: 'super_admin' };
-      const salesLead: MockUser = { id: 'lead-01', role: 'sales_lead' };
-      const repA: MockUser = { id: 'rep-01', role: 'sales_rep' };
-      const repB: MockUser = { id: 'rep-02', role: 'sales_rep' };
+      const adminUser: MockUser = { id: 'admin-01', role: 'admin' };
+      const managerUser: MockUser = { id: 'manager-01', role: 'sales_manager' };
+      const executiveA: MockUser = { id: 'rep-01', role: 'sales_executive' };
+      const executiveB: MockUser = { id: 'rep-02', role: 'sales_executive' };
+      const viewerUser: MockUser = { id: 'viewer-01', role: 'viewer' };
 
       const dealOfRepA: MockLead = { id: 'deal-01', assigned_to: 'rep-01' };
       const unassignedDeal: MockLead = { id: 'deal-02', assigned_to: null };
 
-      // Super Admin: access to all
-      assert.equal(canUserModifyLead(superAdmin, dealOfRepA), true);
-      assert.equal(canUserModifyLead(superAdmin, unassignedDeal), true);
+      // Admin: global write access
+      assert.equal(canUserModifyLead(adminUser, dealOfRepA), true);
+      assert.equal(canUserModifyLead(adminUser, unassignedDeal), true);
 
-      // Sales Lead: access to all
-      assert.equal(canUserModifyLead(salesLead, dealOfRepA), true);
-      assert.equal(canUserModifyLead(salesLead, unassignedDeal), true);
+      // Sales Manager: global write access
+      assert.equal(canUserModifyLead(managerUser, dealOfRepA), true);
+      assert.equal(canUserModifyLead(managerUser, unassignedDeal), true);
 
-      // Rep A: access to own deal, blocked from unassigned
-      assert.equal(canUserModifyLead(repA, dealOfRepA), true);
-      assert.equal(canUserModifyLead(repA, unassignedDeal), false);
+      // Sales Executive A: access to own deal, blocked from unassigned
+      assert.equal(canUserModifyLead(executiveA, dealOfRepA), true);
+      assert.equal(canUserModifyLead(executiveA, unassignedDeal), false);
 
-      // Rep B: blocked from Rep A's deal
-      assert.equal(canUserModifyLead(repB, dealOfRepA), false);
+      // Sales Executive B: blocked from Rep A's deal
+      assert.equal(canUserModifyLead(executiveB, dealOfRepA), false);
+
+      // Viewer: strictly blocked from ALL deals
+      assert.equal(canUserModifyLead(viewerUser, dealOfRepA), false);
+      assert.equal(canUserModifyLead(viewerUser, unassignedDeal), false);
     });
   });
 
@@ -193,39 +204,42 @@ describe('Sprint 7.2: Server Actions & Inline Mutation Validation Engine', () =>
     it('constructs correct immutable audit entries for status changes', () => {
       const auditPayload = {
         lead_id: 'b819f72a-d6e2-4ef9-a9a3-112233445566',
-        performed_by: 'user-sales-01',
+        actor_id: 'user-sales-01',
         activity_type: 'status_change',
-        details: {
-          change_type: 'status_inline_update',
-          old_status_id: 'status-eval-01',
+        description: 'Stage updated from "Evaluation" to "Proposal Sent" via fast inline selector.',
+        metadata: {
+          previous_status_id: 'status-eval-01',
+          previous_status_name: 'Evaluation',
           new_status_id: 'status-prop-02',
-          old_status_name: 'Evaluation',
           new_status_name: 'Proposal Sent',
+          new_bucket: 'potential',
+          client_timestamp: '2026-10-17T12:00:00.000Z',
         },
       };
 
       assert.equal(auditPayload.activity_type, 'status_change');
-      assert.equal(auditPayload.details.change_type, 'status_inline_update');
-      assert.equal(auditPayload.details.old_status_id, 'status-eval-01');
-      assert.equal(auditPayload.details.new_status_id, 'status-prop-02');
+      assert.equal(auditPayload.actor_id, 'user-sales-01');
+      assert.equal(auditPayload.metadata.previous_status_id, 'status-eval-01');
+      assert.equal(auditPayload.metadata.new_status_id, 'status-prop-02');
     });
 
     it('constructs correct immutable audit entries for priority changes', () => {
       const auditPayload = {
         lead_id: 'b819f72a-d6e2-4ef9-a9a3-112233445566',
-        performed_by: 'user-sales-01',
+        actor_id: 'user-sales-01',
         activity_type: 'priority_change',
-        details: {
-          change_type: 'priority_inline_update',
-          old_priority: 'Medium',
-          new_priority: 'Urgent',
+        description: 'Deal priority reprioritized from Medium to High.',
+        metadata: {
+          previous_priority: 'Medium',
+          new_priority: 'High',
+          updated_at: '2026-10-17T12:00:00.000Z',
         },
       };
 
       assert.equal(auditPayload.activity_type, 'priority_change');
-      assert.equal(auditPayload.details.change_type, 'priority_inline_update');
-      assert.equal(auditPayload.details.old_priority, 'Medium');
-      assert.equal(auditPayload.details.new_priority, 'Urgent');
+      assert.equal(auditPayload.actor_id, 'user-sales-01');
+      assert.equal(auditPayload.metadata.previous_priority, 'Medium');
+      assert.equal(auditPayload.metadata.new_priority, 'High');
     });
   });
 });

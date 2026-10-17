@@ -140,6 +140,7 @@ export function InlinePrioritySelect({
       ref={containerRef}
       className={`${styles.priorityContainer} ${className || ''}`}
       onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
     >
       <button
         type="button"

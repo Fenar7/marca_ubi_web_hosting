@@ -30,7 +30,7 @@ function createMockLead(overrides: Partial<HydratedLeadItem> = {}): HydratedLead
     preferred_channel: 'WhatsApp',
     service_category: 'Full Rebrand & Web Suite',
     expected_value: 4800000,
-    priority: 'Urgent',
+    priority: 'High',
     status_id: 'status-eval-01',
     status_name: 'Evaluation',
     status_color: '#3b82f6',
@@ -168,10 +168,10 @@ describe('Sprint 7.2: Virtualized Data Grid & Optimistic Inline Editing Engine',
       ];
 
       const updatedLeads = initialLeads.map((l) =>
-        l.id === 'lead-01' ? { ...l, priority: 'Urgent' as LeadPriority } : l
+        l.id === 'lead-01' ? { ...l, priority: 'Low' as LeadPriority } : l
       );
 
-      assert.equal(updatedLeads[0].priority, 'Urgent');
+      assert.equal(updatedLeads[0].priority, 'Low');
     });
 
     it('intercepts terminal stages (converted/lost) and dispatches stage modal instead of mutating', () => {

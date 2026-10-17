@@ -112,6 +112,23 @@ assert(mobileCardTsx.includes('tel:'), 'LeadMobileCard implements Click-to-Call 
 assert(mobileCardTsx.includes('wa.me'), 'LeadMobileCard implements Click-to-WhatsApp (wa.me) trigger');
 assert(dataGridScss.includes('@media (max-width: 768px)'), 'LeadsDataGrid declares responsive breakpoint reflow at 768px');
 
+// Anti-Slop: Zero toy emojis and zero em-dashes in UI copy
+assert(!mobileCardTsx.includes('📞') && !mobileCardTsx.includes('💬'), 'Zero toy emojis in LeadMobileCard');
+assert(!dataGridTsx.includes("'—'"), 'Zero em-dashes in LeadsDataGrid copy');
+
+// Accessibility: 44px tap targets
+assert(mobileCardScss.includes('min-height: 44px'), 'LeadMobileCard declares 44px minimum tap targets');
+
+// Stacking context defense
+assert(dataGridTsx.includes('zIndex: leads.length - virtualRow.index'), 'Descending zIndex configured for virtual row stacking context');
+
+// Keyboard event isolation
+assert(inlineStatusTsx.includes('onKeyDown={(e) => e.stopPropagation()}'), 'InlineStatusSelect implements keyboard event propagation defense');
+assert(inlinePriorityTsx.includes('onKeyDown={(e) => e.stopPropagation()}'), 'InlinePrioritySelect implements keyboard event propagation defense');
+
+// Security: Viewer rejection in Server Actions
+assert(inlineActionsTs.includes("profile.role === 'viewer'"), 'Server Actions enforce strict viewer mutation rejection');
+
 // 3. Automated Test Suite Execution
 console.log('\n[Block 3: Automated Test Execution]');
 try {

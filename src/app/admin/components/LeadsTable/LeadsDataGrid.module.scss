@@ -99,6 +99,11 @@ $text-muted: #8e8e93;
     }
   }
 
+  &:hover,
+  &:focus-within {
+    z-index: 50 !important;
+  }
+
   &:focus-visible {
     outline: 2px solid $marca-orange;
     outline-offset: -2px;

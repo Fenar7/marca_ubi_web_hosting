@@ -118,6 +118,24 @@ export async function updateLeadStatusInlineAction(
       };
     }
 
+    if (profile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Forbidden: Viewers hold read-only permissions across the commercial pipeline.',
+      };
+    }
+
+    if (
+      profile.role !== 'admin' &&
+      profile.role !== 'sales_manager' &&
+      profile.role !== 'sales_executive'
+    ) {
+      return {
+        success: false,
+        error: 'Forbidden: Insufficient privileges to modify commercial pipeline records.',
+      };
+    }
+
     if (
       profile.role === 'sales_executive' &&
       existingLead.assigned_to !== profile.id
@@ -279,6 +297,24 @@ export async function updateLeadPriorityInlineAction(
       return {
         success: false,
         error: 'Target inquiry not found or inaccessible.',
+      };
+    }
+
+    if (profile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Forbidden: Viewers hold read-only permissions across the commercial pipeline.',
+      };
+    }
+
+    if (
+      profile.role !== 'admin' &&
+      profile.role !== 'sales_manager' &&
+      profile.role !== 'sales_executive'
+    ) {
+      return {
+        success: false,
+        error: 'Forbidden: Insufficient privileges to modify commercial pipeline records.',
       };
     }
 

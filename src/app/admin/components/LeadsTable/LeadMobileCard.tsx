@@ -74,11 +74,18 @@ export function LeadMobileCard({
     .substring(0, 2)
     .toUpperCase();
 
-  // Sanitize digits for WhatsApp international link
-  const digitsOnly = (lead.phone || '').replace(/[^0-9]/g, '');
+  // Sanitize digits for WhatsApp international link with pre-filled deal reference
+  const digitsOnly = (lead.phone || '').replace(/\D/g, '');
   const hasValidPhone = Boolean(digitsOnly && digitsOnly.length >= 7);
-  const whatsAppUrl = hasValidPhone ? `https://wa.me/${digitsOnly}` : null;
-  const telUrl = lead.phone ? `tel:${lead.phone.trim()}` : null;
+  const whatsAppUrl = hasValidPhone
+    ? `https://wa.me/${digitsOnly}?text=${encodeURIComponent(
+        `Hello ${lead.name}, this is regarding your inquiry with Marca Ubi (Ref: ${lead.lead_id}).`
+      )}`
+    : null;
+
+  // Strict RFC 3966 telephone coordinate sanitization
+  const cleanedPhone = (lead.phone || '').replace(/[^\d+]/g, '');
+  const telUrl = cleanedPhone.length >= 7 ? `tel:${cleanedPhone}` : null;
 
   const currentStatusOption: InlineStatusOption = {
     id: lead.status_id,
@@ -107,6 +114,12 @@ export function LeadMobileCard({
           <button
             type="button"
             onClick={handleCopyDealId}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleCopyDealId(e as unknown as React.MouseEvent);
+              }
+            }}
             className={styles.leadIdToken}
             title="Click to copy Deal ID"
             aria-label={`Copy Deal ID ${lead.lead_id}`}
@@ -141,7 +154,11 @@ export function LeadMobileCard({
       </div>
 
       {/* 4. Interactive Inline Modifiers Row */}
-      <div className={styles.inlineSelectorsRow} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.inlineSelectorsRow}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         <InlineStatusSelect
           leadId={lead.id}
           currentStatus={currentStatusOption}
@@ -161,15 +178,34 @@ export function LeadMobileCard({
       </div>
 
       {/* 5. Quick Omnichannel Action Bar */}
-      <div className={styles.actionBar} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.actionBar}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         {telUrl ? (
           <a
             href={telUrl}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
             className={`${styles.actionBtn} ${styles.callBtn}`}
             title={`Call ${lead.name}`}
             aria-label={`Call ${lead.name} at ${lead.phone}`}
           >
-            <span>📞 Call</span>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span>Call</span>
           </a>
         ) : (
           <button
@@ -178,7 +214,20 @@ export function LeadMobileCard({
             className={`${styles.actionBtn} ${styles.callBtn}`}
             aria-disabled="true"
           >
-            <span>📞 Call</span>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span>Call</span>
           </button>
         )}
 
@@ -187,11 +236,26 @@ export function LeadMobileCard({
             href={whatsAppUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
             className={`${styles.actionBtn} ${styles.whatsappBtn}`}
-            title={`Message on WhatsApp`}
+            title="Message on WhatsApp"
             aria-label={`Send WhatsApp message to ${lead.name}`}
           >
-            <span>💬 WhatsApp</span>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>WhatsApp</span>
           </a>
         ) : (
           <button
@@ -200,13 +264,32 @@ export function LeadMobileCard({
             className={`${styles.actionBtn} ${styles.whatsappBtn}`}
             aria-disabled="true"
           >
-            <span>💬 WhatsApp</span>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>WhatsApp</span>
           </button>
         )}
 
         <button
           type="button"
           onClick={handleCardClick}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleCardClick();
+            }
+          }}
           className={`${styles.actionBtn} ${styles.drawerBtn}`}
           aria-label="Open 360-degree client dossier"
         >

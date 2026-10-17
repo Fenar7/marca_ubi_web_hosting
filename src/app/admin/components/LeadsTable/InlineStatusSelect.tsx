@@ -146,6 +146,7 @@ export function InlineStatusSelect({
       ref={containerRef}
       className={`${styles.statusSelectContainer} ${className || ''}`}
       onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
     >
       <button
         type="button"
