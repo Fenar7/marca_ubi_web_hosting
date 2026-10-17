@@ -102,6 +102,19 @@ export function InlineStatusSelect({
             detail: { leadId, targetStatus },
           })
         );
+        window.dispatchEvent(
+          new CustomEvent('crm-toast', {
+            detail: {
+              type: 'info',
+              message: `Transitioning to '${targetStatus.name}' requires formal completion. Opening deal dossier.`,
+            },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('open-lead-drawer', {
+            detail: { leadId },
+          })
+        );
       }
       return;
     }

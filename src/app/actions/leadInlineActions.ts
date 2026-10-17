@@ -97,10 +97,10 @@ export async function updateLeadStatusInlineAction(
       };
     }
 
-    if (profile.status === 'suspended') {
+    if (profile.status !== 'active') {
       return {
         success: false,
-        error: 'Forbidden: Suspended accounts are barred from commercial mutations.',
+        error: 'Forbidden: Inactive or suspended accounts are barred from commercial mutations.',
       };
     }
 
@@ -189,7 +189,7 @@ export async function updateLeadStatusInlineAction(
     const previousStatusName =
       (existingLead.funnel_statuses as { name?: string } | null)?.name || 'Previous Stage';
 
-    await supabase.from('lead_activities').insert({
+    const { error: activityError } = await supabase.from('lead_activities').insert({
       lead_id: leadId,
       actor_id: profile.id,
       activity_type: 'status_change',
@@ -203,6 +203,10 @@ export async function updateLeadStatusInlineAction(
         client_timestamp: nowIso,
       },
     });
+
+    if (activityError) {
+      console.warn('[AUDIT_LEDGER] Activity log advisory:', activityError.message);
+    }
 
     revalidatePath('/admin/leads');
 
@@ -279,10 +283,10 @@ export async function updateLeadPriorityInlineAction(
       };
     }
 
-    if (profile.status === 'suspended') {
+    if (profile.status !== 'active') {
       return {
         success: false,
-        error: 'Forbidden: Suspended accounts cannot adjust deal priorities.',
+        error: 'Forbidden: Inactive or suspended accounts cannot adjust deal priorities.',
       };
     }
 
@@ -346,7 +350,7 @@ export async function updateLeadPriorityInlineAction(
     }
 
     // 5. Append immutable activity ledger log
-    await supabase.from('lead_activities').insert({
+    const { error: activityError } = await supabase.from('lead_activities').insert({
       lead_id: leadId,
       actor_id: profile.id,
       activity_type: 'priority_change',
@@ -357,6 +361,10 @@ export async function updateLeadPriorityInlineAction(
         client_timestamp: nowIso,
       },
     });
+
+    if (activityError) {
+      console.warn('[AUDIT_LEDGER] Activity log advisory:', activityError.message);
+    }
 
     revalidatePath('/admin/leads');
 
