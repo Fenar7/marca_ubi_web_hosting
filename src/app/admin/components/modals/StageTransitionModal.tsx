@@ -20,6 +20,7 @@ import {
 import { useModalAnimation } from './useModalAnimation';
 import { LostReasonModal } from './LostReasonModal';
 import { ConvertedCelebrationModal } from './ConvertedCelebrationModal';
+import { OnHoldModal } from '../Scheduler/OnHoldModal';
 import styles from './StageModals.module.scss';
 
 export interface StageTargetDescriptor {
@@ -85,6 +86,29 @@ export function StageTransitionModal({
         dealName={dealName}
         currentExpectedValue={currentExpectedValue}
         onSuccess={onSuccess}
+      />
+    );
+  }
+
+  // If target stage is On Hold, delegate to OnHoldModal with mandatory future revisit date
+  if (targetStatus.name.toLowerCase() === 'on hold') {
+    return (
+      <OnHoldModal
+        leadId={leadId}
+        leadName={dealName}
+        company={dealIdCode}
+        onClose={onClose}
+        onSuccess={() => {
+          onSuccess?.({
+            leadId,
+            previousStatusId: '',
+            previousStatusName: '',
+            newStatusId: targetStatus.id,
+            newStatusName: targetStatus.name,
+            bucket: targetStatus.bucket,
+            updatedAt: new Date().toISOString(),
+          });
+        }}
       />
     );
   }

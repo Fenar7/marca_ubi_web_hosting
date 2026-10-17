@@ -24,6 +24,7 @@ import {
 } from '@/app/admin/components/LeadsTable';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
+import { FollowUpScheduler } from '@/app/admin/components/Scheduler';
 import type { GuardedTransitionResultPayload } from '@/app/actions/stageTransitionActions';
 import type { LeadPriority } from '@/types/crm';
 import styles from './leads.module.scss';
@@ -132,6 +133,21 @@ function LeadsWorkspaceContent({
     isOpen: false,
     leadId: null,
     targetStatus: null,
+  });
+
+  // Precision Follow-up Scheduler Modal State
+  const [schedulerState, setSchedulerState] = useState<{
+    isOpen: boolean;
+    leadId: string | null;
+    leadName?: string | null;
+    company?: string | null;
+    currentFollowUpDate?: string | null;
+  }>({
+    isOpen: false,
+    leadId: null,
+    leadName: null,
+    company: null,
+    currentFollowUpDate: null,
   });
 
   // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
@@ -375,6 +391,32 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('open-stage-modal', handleOpenStageModal);
   }, [resolvedStatuses]);
 
+  // Listener for programmatic open-scheduler-modal events
+  useEffect(() => {
+    const handleOpenSchedulerModal = (e: Event): void => {
+      const customEvt = e as CustomEvent<{
+        leadId: string;
+        leadName?: string | null;
+        company?: string | null;
+        currentFollowUpDate?: string | null;
+      }>;
+      const detail = customEvt.detail;
+      if (!detail || !detail.leadId) return;
+
+      const matchedLead = leads.find((l) => l.id === detail.leadId);
+      setSchedulerState({
+        isOpen: true,
+        leadId: detail.leadId,
+        leadName: detail.leadName || matchedLead?.name || null,
+        company: detail.company || matchedLead?.company || null,
+        currentFollowUpDate: detail.currentFollowUpDate || matchedLead?.next_follow_up || null,
+      });
+    };
+
+    window.addEventListener('open-scheduler-modal', handleOpenSchedulerModal);
+    return () => window.removeEventListener('open-scheduler-modal', handleOpenSchedulerModal);
+  }, [leads]);
+
   // Real-time record counts per bucket
   const counts = useMemo<BucketCounts>(() => {
     return {
@@ -547,6 +589,23 @@ function LeadsWorkspaceContent({
     []
   );
 
+  // Handler for scheduled precision follow-up touchpoint
+  const handleFollowUpScheduled = useCallback(
+    (leadId: string, nextFollowUp: string): void => {
+      setLeads((prev) =>
+        prev.map((lead) => {
+          if (lead.id !== leadId) return lead;
+          return {
+            ...lead,
+            next_follow_up: nextFollowUp,
+            updated_at: new Date().toISOString(),
+          };
+        })
+      );
+    },
+    []
+  );
+
   return (
     <>
       {/* High-Performance Multi-Filter Action Bar */}
@@ -584,7 +643,7 @@ function LeadsWorkspaceContent({
         onClose={handleCloseDrawer}
       />
 
-      {/* Guarded Pipeline Stage Transition Modal (Negotiation, Lost, Converted) */}
+      {/* Guarded Pipeline Stage Transition Modal (Negotiation, Lost, Converted, On Hold) */}
       {stageModalState.isOpen && stageModalState.leadId && stageModalState.targetStatus && (
         <StageTransitionModal
           isOpen={stageModalState.isOpen}
@@ -602,6 +661,31 @@ function LeadsWorkspaceContent({
             leads.find((l) => l.id === stageModalState.leadId)?.expected_value
           }
           onSuccess={handleStageTransitionSuccess}
+        />
+      )}
+
+      {/* Precision Follow-up Date-Time Scheduler Modal */}
+      {schedulerState.isOpen && schedulerState.leadId && (
+        <FollowUpScheduler
+          isOpen={schedulerState.isOpen}
+          leadId={schedulerState.leadId}
+          leadName={schedulerState.leadName}
+          company={schedulerState.company}
+          currentFollowUpDate={schedulerState.currentFollowUpDate}
+          onClose={() =>
+            setSchedulerState({
+              isOpen: false,
+              leadId: null,
+              leadName: null,
+              company: null,
+              currentFollowUpDate: null,
+            })
+          }
+          onSuccess={(scheduledIso: string) => {
+            if (schedulerState.leadId) {
+              handleFollowUpScheduled(schedulerState.leadId, scheduledIso);
+            }
+          }}
         />
       )}
     </>
