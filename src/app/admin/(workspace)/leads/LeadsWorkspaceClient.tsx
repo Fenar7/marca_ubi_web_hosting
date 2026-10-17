@@ -22,6 +22,7 @@ import {
   LeadsDataGrid,
   type InlineStatusOption,
 } from '@/app/admin/components/LeadsTable';
+import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import type { LeadPriority } from '@/types/crm';
 import styles from './leads.module.scss';
 
@@ -102,6 +103,8 @@ function LeadsWorkspaceContent({
   const priorityParam = searchParams.get('priority');
   const stageParam = searchParams.get('stage');
 
+  const leadIdParam = searchParams.get('leadId');
+
   const validBuckets: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
   const initialBucket: BucketTabId = validBuckets.includes(bucketParam as BucketTabId)
     ? (bucketParam as BucketTabId)
@@ -113,6 +116,51 @@ function LeadsWorkspaceContent({
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assigneeParam);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
   const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
+
+  // Client 360 Slide-over Drawer State: hydrated from URL search parameter upon deep-link navigation
+  const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(leadIdParam);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(Boolean(leadIdParam));
+
+  // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
+  const handleOpenDrawer = useCallback((id: string) => {
+    setActiveDrawerLeadId(id);
+    setIsDrawerOpen(true);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('leadId') !== id) {
+        url.searchParams.set('leadId', id);
+        window.history.replaceState({}, '', url.pathname + url.search);
+      }
+    }
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setIsDrawerOpen(false);
+    setActiveDrawerLeadId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('leadId')) {
+        url.searchParams.delete('leadId');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleOpenDrawerEvent = (e: Event): void => {
+      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
+      const id =
+        typeof customEvt.detail === 'string'
+          ? customEvt.detail
+          : customEvt.detail?.leadId;
+      if (id) {
+        handleOpenDrawer(id);
+      }
+    };
+
+    window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
+    return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
+  }, [handleOpenDrawer]);
 
   /**
    * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
@@ -454,6 +502,13 @@ function LeadsWorkspaceContent({
         availableStatuses={resolvedStatuses}
         onStatusChange={handleInlineStatusChange}
         onPriorityChange={handleInlinePriorityChange}
+      />
+
+      {/* Slide-over Client 360 Degree Dossier Drawer */}
+      <ClientDossierDrawer
+        leadId={activeDrawerLeadId}
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
       />
     </>
   );
