@@ -502,3 +502,484 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
     transform: rotate(360deg);
   }
 }
+
+/* Quick Action Composer */
+.composerContainer {
+  background: $surface-card;
+  border: 1px solid $border-specular;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.composerTabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid $border-subtle;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.composerTab {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $text-muted;
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: $text-secondary;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  &.activeTab {
+    color: $text-primary;
+    border-bottom-color: $cta-orange;
+    background: rgba(255, 97, 0, 0.05);
+  }
+}
+
+.composerForm {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.composerFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.composerRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.composerFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.composerSelect,
+.composerInput {
+  min-height: 38px;
+  padding: 0.45rem 0.75rem;
+  background: $obsidian-deep;
+  border: 1px solid $border-specular;
+  border-radius: 6px;
+  color: $text-primary;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    border-color: $cta-orange;
+  }
+}
+
+.composerTextarea {
+  min-height: 80px;
+  padding: 0.6rem 0.75rem;
+  background: $obsidian-deep;
+  border: 1px solid $border-specular;
+  border-radius: 6px;
+  color: $text-primary;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    border-color: $cta-orange;
+  }
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.presetGroup {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.presetBtn {
+  min-height: 38px;
+  padding: 0.25rem 0.6rem;
+  background: $obsidian-deep;
+  border: 1px solid $border-specular;
+  border-radius: 6px;
+  color: $text-secondary;
+  font-size: 0.74rem;
+  font-family: $font-mono;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: $text-primary;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &.activePreset {
+    background: $cta-orange-subtle;
+    border-color: $cta-orange;
+    color: $cta-orange;
+  }
+}
+
+.tagPillContainer {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.tagPillBtn {
+  min-height: 24px;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid $border-subtle;
+  color: $text-muted;
+  font-size: 0.68rem;
+  font-family: $font-mono;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: $cta-orange;
+    border-color: rgba(255, 97, 0, 0.3);
+    background: $cta-orange-subtle;
+  }
+}
+
+.composerError {
+  padding: 0.5rem 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.composerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.25rem;
+}
+
+.characterHint {
+  font-size: 0.72rem;
+}
+
+.hintWarning {
+  color: #f59e0b;
+}
+
+.hintReady {
+  color: $text-muted;
+}
+
+.submitTouchpointBtn {
+  min-height: 44px;
+  padding: 0 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: $cta-orange;
+  border: none;
+  border-radius: 6px;
+  color: $text-primary;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover:not(.disabled) {
+    background: #e05500;
+    box-shadow: 0 0 15px rgba(255, 97, 0, 0.4);
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.miniSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Activity Timeline */
+.timelineContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-left: 1.75rem;
+}
+
+.timelineTrack {
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  left: 0.75rem;
+  width: 1px;
+  background: $border-specular;
+}
+
+.timelineItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.glyphWrapper {
+  position: absolute;
+  left: -1.75rem;
+  top: 0.75rem;
+  z-index: 2;
+}
+
+.timelineGlyph {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $obsidian-deep;
+  border: 1px solid $border-specular;
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.glyphCall {
+  color: #34c759;
+  border-color: rgba(52, 199, 89, 0.3);
+  background: rgba(52, 199, 89, 0.1);
+}
+
+.glyphWhatsApp {
+  color: #25d366;
+  border-color: rgba(37, 211, 102, 0.3);
+  background: rgba(37, 211, 102, 0.1);
+}
+
+.glyphMeeting {
+  color: #a855f7;
+  border-color: rgba(168, 85, 247, 0.3);
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.glyphSystem {
+  color: $cta-orange;
+  border-color: rgba(255, 97, 0, 0.3);
+  background: $cta-orange-subtle;
+}
+
+.glyphNote {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.timelineCard {
+  background: $surface-card;
+  border: 1px solid $border-specular;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.authorBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.authorMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.authorName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.activityLabel {
+  font-size: 0.68rem;
+  color: $text-muted;
+}
+
+.timestamp {
+  font-size: 0.72rem;
+  color: $text-muted;
+  font-family: $font-mono;
+}
+
+.timelineBody {
+  font-size: 0.82rem;
+  color: #e4e4e7;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.mentionToken {
+  display: inline-block;
+  padding: 0 0.35rem;
+  margin: 0 0.15rem;
+  border-radius: 4px;
+  background: $cta-orange-subtle;
+  color: $cta-orange;
+  font-family: $font-mono;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.tagToken {
+  display: inline-block;
+  padding: 0 0.35rem;
+  margin: 0 0.15rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid $border-subtle;
+  color: #fbbf24;
+  font-family: $font-mono;
+  font-size: 0.76rem;
+}
+
+.metadataPills {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid $border-subtle;
+  color: $text-secondary;
+  font-size: 0.7rem;
+  font-family: $font-mono;
+
+  svg {
+    width: 11px;
+    height: 11px;
+    color: $text-muted;
+  }
+}
+
+.outcomePill {
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.25);
+  color: #34c759;
+}
+
+.timelineEmptyContainer {
+  background: $surface-card;
+  border: 1px dashed $border-specular;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.emptyIconCircle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid $border-subtle;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-muted;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.emptyTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin: 0;
+}
+
+.emptySubtitle {
+  font-size: 0.78rem;
+  color: $text-muted;
+  line-height: 1.4;
+  max-width: 300px;
+  margin: 0;
+}

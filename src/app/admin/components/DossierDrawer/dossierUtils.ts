@@ -133,3 +133,105 @@ export function extractBriefEntries(
       !EXCLUDED_KEYS.includes(key)
   );
 }
+
+/**
+ * Formats an ISO timestamp into a concise, human-readable relative duration.
+ * @param isoString ISO date string
+ * @param referenceDate Optional current reference date (defaults to Date.now())
+ */
+export function formatRelativeTime(
+  isoString: string | null | undefined,
+  referenceDate: Date = new Date()
+): string {
+  if (!isoString) return 'Pending';
+  const target = new Date(isoString);
+  if (isNaN(target.getTime())) return 'Invalid Date';
+
+  const diffMs = referenceDate.getTime() - target.getTime();
+  if (diffMs < 0) {
+    const futureDiffMin = Math.round(Math.abs(diffMs) / 60000);
+    if (futureDiffMin < 60) return `in ${futureDiffMin}m`;
+    const futureDiffHours = Math.round(futureDiffMin / 60);
+    if (futureDiffHours < 24) return `in ${futureDiffHours}h`;
+    const futureDiffDays = Math.round(futureDiffHours / 24);
+    return `in ${futureDiffDays}d`;
+  }
+
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'Just now';
+
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return target.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: target.getFullYear() === referenceDate.getFullYear() ? undefined : 'numeric',
+  });
+}
+
+/**
+ * Formats a duration in seconds into a standard commercial telephony clock string (e.g. '4m 30s').
+ * @param totalSeconds Duration in seconds
+ */
+export function formatCallDuration(totalSeconds: number | null | undefined): string {
+  if (!totalSeconds || isNaN(totalSeconds) || totalSeconds <= 0) return '0s';
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+  }
+  return `${seconds}s`;
+}
+
+/**
+ * Tokenizes interactive note text extracting @teammate mentions and #operational tags
+ * without resorting to dangerous innerHTML injections.
+ * @param text Unformatted raw text
+ */
+export function parseMentionsAndTags(
+  text: string
+): { type: 'text' | 'mention' | 'tag'; value: string }[] {
+  if (!text) return [];
+  const regex = /([@#][a-zA-Z0-9_-]+)/g;
+  const parts: { type: 'text' | 'mention' | 'tag'; value: string }[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({
+        type: 'text',
+        value: text.substring(lastIndex, match.index),
+      });
+    }
+    const token = match[1];
+    if (token.startsWith('@')) {
+      parts.push({ type: 'mention', value: token });
+    } else {
+      parts.push({ type: 'tag', value: token });
+    }
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({
+      type: 'text',
+      value: text.substring(lastIndex),
+    });
+  }
+
+  return parts;
+}

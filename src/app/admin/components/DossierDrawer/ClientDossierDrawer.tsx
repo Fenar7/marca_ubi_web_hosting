@@ -10,7 +10,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getLeadDetails } from '@/app/actions/leads';
+import type { LeadActivityWithActor } from '@/types/crm';
 import { OrganizationDossier } from './OrganizationDossier';
+import { QuickActionComposer } from './QuickActionComposer';
+import { ActivityTimeline } from './ActivityTimeline';
 import styles from './DossierDrawer.module.scss';
 
 export interface LeadDossierData {
@@ -60,6 +63,7 @@ export function ClientDossierDrawer({
   onLeadUpdated,
 }: ClientDossierDrawerProps): React.ReactElement | null {
   const [lead, setLead] = useState<LeadDossierData | null>(initialLead || null);
+  const [activities, setActivities] = useState<LeadActivityWithActor[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState<boolean>(false);
@@ -148,6 +152,7 @@ export function ClientDossierDrawer({
         };
 
         setLead(normalized);
+        setActivities(response.data.activities || []);
       } catch (err) {
         setFetchError(
           err instanceof Error ? err.message : 'An unexpected exception occurred while retrieving the dossier.'
@@ -159,15 +164,22 @@ export function ClientDossierDrawer({
     []
   );
 
+  const handleActivityLogged = useCallback(
+    (newActivity: LeadActivityWithActor) => {
+      setActivities((prev) => [newActivity, ...prev]);
+      setLead((prev) => (prev ? { ...prev, updated_at: newActivity.created_at } : null));
+      if (onLeadUpdated) {
+        onLeadUpdated();
+      }
+    },
+    [onLeadUpdated]
+  );
+
   useEffect(() => {
     if (isOpen && leadId) {
-      if (initialLead && initialLead.id === leadId) {
-        setLead(initialLead);
-      } else {
-        loadDossier(leadId);
-      }
+      loadDossier(leadId);
     }
-  }, [isOpen, leadId, initialLead, loadDossier]);
+  }, [isOpen, leadId, loadDossier]);
 
   // Keyboard accessibility: Escape key dismissal and focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
@@ -314,15 +326,37 @@ export function ClientDossierDrawer({
             {/* Column 1: Organization & Brand Dossier */}
             <OrganizationDossier lead={lead} />
 
-            {/* Column 2: Omnichannel Touchpoint Studio (Sprint 8.2 Handshake) */}
+            {/* Column 2: Omnichannel Touchpoint Studio & Activity Timeline */}
             <div className={styles.dossierColumn}>
+              {/* Quick Action Interaction Composer */}
+              <QuickActionComposer
+                leadId={lead.id}
+                onActivityLogged={handleActivityLogged}
+              />
+
+              {/* Omnichannel Activity Timeline */}
               <div className={styles.sectionCard}>
                 <div className={styles.sectionTitle}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
-                  <span>Omnichannel Interaction Studio</span>
+                  <span>Activity History ({activities.length})</span>
+                </div>
+
+                <ActivityTimeline activities={activities} />
+              </div>
+
+              {/* Deal Operational Schedule & Context */}
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionTitle}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span>Schedule & Pipeline Coordinates</span>
                 </div>
 
                 <div className={styles.keyValueList}>
