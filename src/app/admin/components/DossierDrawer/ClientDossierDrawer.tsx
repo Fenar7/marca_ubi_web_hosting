@@ -95,6 +95,14 @@ export function ClientDossierDrawer({
     }
   }, [isOpen, shouldRender, isClosing]);
 
+  // Ensure body scroll lock is restored if component unmounts unexpectedly while open
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, []);
+
   // Load complete lead dossier from Server Action
   const loadDossier = useCallback(
     async (id: string) => {
@@ -161,13 +169,40 @@ export function ClientDossierDrawer({
     }
   }, [isOpen, leadId, initialLead, loadDossier]);
 
-  // Keyboard accessibility: Escape key closes the drawer cleanly
+  // Keyboard accessibility: Escape key dismissal and focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
+    if (!isOpen) return;
+
+    // Focus the drawer container upon opening for screen-reader and keyboard context
+    drawerRef.current?.focus();
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && drawerRef.current) {
+        const focusableElements = drawerRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || document.activeElement === drawerRef.current) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
@@ -179,9 +214,13 @@ export function ClientDossierDrawer({
     e.stopPropagation();
     if (!lead) return;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(lead.lead_id);
-      setCopiedId(true);
-      setTimeout(() => setCopiedId(false), 2000);
+      navigator.clipboard
+        .writeText(lead.lead_id)
+        .then(() => {
+          setCopiedId(true);
+          setTimeout(() => setCopiedId(false), 2000);
+        })
+        .catch(() => {});
     }
   };
 

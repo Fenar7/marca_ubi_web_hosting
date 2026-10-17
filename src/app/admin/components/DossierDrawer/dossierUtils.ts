@@ -33,7 +33,7 @@ export function formatDossierCurrency(value: number): string {
  */
 export function sanitizeTelUri(phone: string | null): string | null {
   if (!phone) return null;
-  const cleaned = phone.replace(/[^\d+]/g, '');
+  const cleaned = phone.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
   return cleaned.length >= 7 ? `tel:${cleaned}` : null;
 }
 
@@ -96,12 +96,20 @@ export function formatBriefValue(value: unknown): string {
 export function extractBriefEntries(
   payload: Record<string, unknown> | null
 ): [string, unknown][] {
-  if (!payload || typeof payload !== 'object') return [];
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return [];
+  const EXCLUDED_KEYS = [
+    'submitted_at',
+    '_timestamp',
+    'created_at',
+    'creator_id',
+    'created_via',
+    'phone_warning',
+  ];
   return Object.entries(payload).filter(
     ([key, val]) =>
       val !== null &&
       val !== undefined &&
       val !== '' &&
-      !['submitted_at', '_timestamp'].includes(key)
+      !EXCLUDED_KEYS.includes(key)
   );
 }

@@ -125,13 +125,23 @@ export function AdminWorkspaceShell({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
+        // If already on /admin/leads, the LeadsWorkspaceClient mounts ClientDossierDrawer directly
+        if (
+          e.type === 'open-lead-drawer' &&
+          typeof window !== 'undefined' &&
+          window.location.pathname.startsWith('/admin/leads')
+        ) {
+          return;
+        }
         handleOpenLead(id);
       }
     };
 
     window.addEventListener('open-lead-modal', handleOpenLeadEvent);
+    window.addEventListener('open-lead-drawer', handleOpenLeadEvent);
     return () => {
       window.removeEventListener('open-lead-modal', handleOpenLeadEvent);
+      window.removeEventListener('open-lead-drawer', handleOpenLeadEvent);
     };
   }, [handleOpenLead]);
 

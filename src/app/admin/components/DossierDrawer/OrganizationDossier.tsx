@@ -33,10 +33,11 @@ export function OrganizationDossier({
   const whatsAppUri = createWhatsAppUri(lead.phone, lead.lead_id, lead.name);
 
   // Normalize company website URL to ensure https protocol
-  const websiteUrl = lead.company_website
-    ? lead.company_website.startsWith('http://') || lead.company_website.startsWith('https://')
-      ? lead.company_website
-      : `https://${lead.company_website}`
+  const trimmedWebsite = lead.company_website?.trim() || null;
+  const websiteUrl = trimmedWebsite
+    ? trimmedWebsite.startsWith('http://') || trimmedWebsite.startsWith('https://')
+      ? trimmedWebsite
+      : `https://${trimmedWebsite}`
     : null;
 
   return (
