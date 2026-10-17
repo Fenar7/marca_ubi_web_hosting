@@ -94,11 +94,12 @@ export function InlineStatusSelect({
       return;
     }
 
-    // Guarded Transitions: Converted, Lost, and Negotiation require formal disclosures & valuations
+    // Guarded Transitions: Converted, Lost, Negotiation, and On Hold require formal disclosures, valuations, or revisit dates
     const isGuardedStage =
       targetStatus.bucket === 'converted' ||
       targetStatus.bucket === 'lost' ||
-      targetStatus.name.toLowerCase() === 'negotiation';
+      targetStatus.name.toLowerCase() === 'negotiation' ||
+      targetStatus.name.toLowerCase() === 'on hold';
 
     if (isGuardedStage) {
       if (typeof window !== 'undefined') {

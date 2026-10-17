@@ -48,8 +48,9 @@ function renderActivityGlyph(type: LeadActivityType): React.ReactElement {
       );
     case 'meeting_notes':
     case 'meeting_held':
+    case 'follow_up_scheduled':
       return (
-        <span className={`${styles.timelineGlyph} ${styles.glyphMeeting}`} title="Meeting">
+        <span className={`${styles.timelineGlyph} ${styles.glyphMeeting}`} title="Touchpoint / Meeting">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
@@ -96,6 +97,8 @@ function getActivityTypeLabel(type: LeadActivityType): string {
     case 'meeting_notes':
     case 'meeting_held':
       return 'Meeting Held';
+    case 'follow_up_scheduled':
+      return 'Follow-up Scheduled';
     case 'status_change':
       return 'Stage Transition';
     case 'priority_change':
