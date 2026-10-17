@@ -10,7 +10,7 @@ $hairline-border: rgba(255, 255, 255, 0.08);
 $hairline-active: rgba(255, 97, 0, 0.4);
 $text-primary: #ffffff;
 $text-secondary: #a1a1aa;
-$text-muted: #71717a;
+$text-muted: #8e8e93;
 
 .filterActionBar {
   display: flex;
@@ -296,6 +296,13 @@ $text-muted: #71717a;
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 2px;
+  }
+
+  @media (max-width: 640px) {
+    right: auto;
+    left: 0;
+    min-width: 200px;
+    max-width: calc(100vw - 32px);
   }
 }
 

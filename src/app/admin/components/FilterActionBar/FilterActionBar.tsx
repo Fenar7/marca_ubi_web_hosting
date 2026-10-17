@@ -114,6 +114,15 @@ export function FilterActionBar({
     setLocalSearch(searchQuery);
   }, [searchQuery]);
 
+  // Clean up debounce timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, []);
+
   // Click outside and Escape key handler for popover dismissal
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent): void => {

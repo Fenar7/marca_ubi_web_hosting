@@ -79,6 +79,7 @@ export default async function AdminLeadsPage(
         notes,
         brief_payload,
         next_follow_up,
+        revisit_date,
         created_at,
         updated_at,
         funnel_statuses!inner(id, name, bucket, color_code, sort_order),
@@ -153,6 +154,7 @@ export default async function AdminLeadsPage(
       lead_source_name: sourceData?.name || null,
       lead_source_color: sourceData?.color_code || null,
       next_follow_up: l.next_follow_up,
+      revisit_date: l.revisit_date,
       created_at: l.created_at,
     };
   });

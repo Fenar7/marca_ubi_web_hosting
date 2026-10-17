@@ -41,6 +41,7 @@ export interface HydratedLeadItem {
   lead_source_name?: string | null;
   lead_source_color?: string | null;
   next_follow_up: string | null;
+  revisit_date?: string | null;
   created_at: string;
 }
 
@@ -142,14 +143,18 @@ function LeadsWorkspaceContent({
 
       if (nextSource) {
         url.searchParams.set('source', nextSource);
+        url.searchParams.set('source_id', nextSource);
       } else {
         url.searchParams.delete('source');
+        url.searchParams.delete('source_id');
       }
 
       if (nextAssignee) {
         url.searchParams.set('assigned_to', nextAssignee);
+        url.searchParams.set('assignee_id', nextAssignee);
       } else {
         url.searchParams.delete('assigned_to');
+        url.searchParams.delete('assignee_id');
       }
 
       if (nextPriority) {
@@ -187,10 +192,12 @@ function LeadsWorkspaceContent({
     }
 
     setSearchQuery(searchParams.get('search') || searchParams.get('q') || '');
-    setSelectedSourceId(searchParams.get('source'));
-    setSelectedAssigneeId(searchParams.get('assigned_to'));
-    setSelectedPriority(searchParams.get('priority'));
-    setSelectedStageId(searchParams.get('stage'));
+    setSelectedSourceId(searchParams.get('source_id') || searchParams.get('source') || null);
+    setSelectedAssigneeId(
+      searchParams.get('assigned_to') || searchParams.get('assignee_id') || null
+    );
+    setSelectedPriority(searchParams.get('priority') || null);
+    setSelectedStageId(searchParams.get('stage') || null);
   }, [searchParams]);
 
   // Derive catalog dropdown options dynamically if not passed directly from server props
