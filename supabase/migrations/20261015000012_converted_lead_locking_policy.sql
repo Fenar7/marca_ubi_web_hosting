@@ -7,7 +7,8 @@
 
 -- 1. Upgrade leads update RLS policy
 -- Converted deals (where converted_at IS NOT NULL) are strictly locked from non-admin modifications.
--- Only 'admin' role is permitted to modify a lead once converted_at is set.
+-- The USING clause inspects the pre-mutation record state: once converted_at is set, non-admins cannot select the row for UPDATE.
+-- The WITH CHECK clause validates the new state: ensuring Sales Executives cannot hijack foreign records.
 DROP POLICY IF EXISTS "leads_update_policy" ON public.leads;
 
 CREATE POLICY "leads_update_policy" ON public.leads
@@ -28,15 +29,16 @@ USING (
     )
 )
 WITH CHECK (
+    -- Admin has universal update rights
     public.current_user_role() = 'admin'
     OR (
+        -- Sales Manager can perform updates
         public.current_user_role() = 'sales_manager'
-        AND converted_at IS NULL
     )
     OR (
+        -- Sales Executive cannot transfer ownership outside of their assigned account
         public.current_user_role() = 'sales_executive'
         AND assigned_to = auth.uid()
-        AND converted_at IS NULL
     )
 );
 

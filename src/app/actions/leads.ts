@@ -569,7 +569,7 @@ export async function updateLeadStatus(
 
     const { data: currentLead, error: currentLeadError } = await supabase
       .from('leads')
-      .select('id, assigned_to, status_id, funnel_statuses(bucket)')
+      .select('id, assigned_to, status_id, converted_at, funnel_statuses(name, bucket)')
       .eq('id', data.leadId)
       .maybeSingle();
 
@@ -577,6 +577,13 @@ export async function updateLeadStatus(
       return {
         success: false,
         error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    if (currentLead.converted_at && callerProfile.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
       };
     }
 
@@ -597,6 +604,18 @@ export async function updateLeadStatus(
       return {
         success: false,
         error: 'Specified target funnel stage does not exist.',
+      };
+    }
+
+    // Intercept guarded stage advances (Negotiation, Lost, Converted) to enforce disclosures
+    if (
+      targetStatus.bucket === 'converted' ||
+      targetStatus.bucket === 'lost' ||
+      targetStatus.name.toLowerCase() === 'negotiation'
+    ) {
+      return {
+        success: false,
+        error: `Guarded transition: Advancing to "${targetStatus.name}" requires commercial disclosures via guarded modal.`,
       };
     }
 

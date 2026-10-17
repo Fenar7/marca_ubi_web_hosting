@@ -65,13 +65,17 @@ describe('Sprint 8.3: Guarded Stage Transition Actions & State Machine Locking',
       assert.equal(result.success, false);
     });
 
-    it('requires an anticipated close date', () => {
-      const result = transitionToNegotiationSchema.safeParse({
-        leadId: validLeadUuid,
-        expectedValue: 500000,
-        anticipatedCloseDate: '',
+    it('requires a valid, parseable anticipated close date', () => {
+      const invalidDates = ['', 'invalid-date', 'not-a-date', '2026-99-99'];
+
+      invalidDates.forEach((dateStr) => {
+        const result = transitionToNegotiationSchema.safeParse({
+          leadId: validLeadUuid,
+          expectedValue: 500000,
+          anticipatedCloseDate: dateStr,
+        });
+        assert.equal(result.success, false, `Should have rejected date: ${dateStr}`);
       });
-      assert.equal(result.success, false);
     });
   });
 

@@ -66,7 +66,10 @@ export const transitionToNegotiationSchema = z.object({
   anticipatedCloseDate: z
     .string()
     .trim()
-    .min(1, { message: 'Anticipated close date is required.' }),
+    .min(1, { message: 'Anticipated close date is required.' })
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: 'Anticipated close date must be a valid date.',
+    }),
   notes: z.string().trim().max(2000).optional().nullable(),
 });
 
@@ -512,7 +515,13 @@ export async function transitionToConvertedAction(
 
     const nowIso = new Date().toISOString();
     const sanitizedNotes = sanitizeInputText(notes);
-    const sanitizedTerms = sanitizeInputText(paymentTerms) || paymentTerms;
+    const sanitizedTerms = sanitizeInputText(paymentTerms);
+    if (!sanitizedTerms || sanitizedTerms.length < 3) {
+      return {
+        success: false,
+        error: 'Commercial payment terms must contain valid text (minimum 3 characters).',
+      };
+    }
     const existingNotes = lead.notes ? `${lead.notes}\n\n` : '';
     const updatedNotes = `${existingNotes}[Converted Agreement]: Signed on ${signedContractDate}. Terms: ${sanitizedTerms}.${sanitizedNotes ? ` Note: ${sanitizedNotes}` : ''}`.trim();
 
@@ -538,7 +547,7 @@ export async function transitionToConvertedAction(
     const previousStatusName =
       (lead.funnel_statuses as { name?: string } | null)?.name || 'Previous Stage';
 
-    await supabase.from('lead_activities').insert({
+    const { error: activityError } = await supabase.from('lead_activities').insert({
       lead_id: leadId,
       actor_id: profile.id,
       activity_type: 'status_change',
@@ -555,6 +564,10 @@ export async function transitionToConvertedAction(
         transition_type: 'guarded_converted',
       },
     });
+
+    if (activityError) {
+      console.warn('[STAGE_TRANSITION] Activity ledger logging warning:', activityError.message);
+    }
 
     revalidatePath('/admin/leads');
     revalidatePath('/admin');
