@@ -11,7 +11,8 @@
 
 import React, { useActionState, useEffect, useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { loginAction, type LoginActionResult } from '@/app/actions/auth';
+import { loginAction } from '@/app/actions/auth';
+import type { LoginActionResult } from '@/types/crm';
 import styles from './login.module.scss';
 
 export function LoginForm(): React.ReactElement {

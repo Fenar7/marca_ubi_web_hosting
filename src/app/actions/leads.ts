@@ -1,0 +1,1210 @@
+'use server';
+
+/**
+ * @file leads.ts
+ * @description Server Actions for commercial deal management, 360-degree client dossiers,
+ *              pipeline stage advancement, omnichannel touchpoint logging, and deal parameter mutations.
+ *              Enforces strict Next.js 16 Server Action boundaries, Supabase RLS security policies,
+ *              role-based access guards (viewers blocked, sales executives restricted to assigned deals,
+ *              administrators and sales managers permitted global commercial mutation scope),
+ *              and transaction consistency across `public.leads` and `public.lead_activities`.
+ * @module actions/leads
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/app/lib/supabase/server';
+import { normalizeEmail, normalizePhone, sanitizeHtml } from '@/app/lib/normalization';
+import {
+  createManualLeadSchema,
+  updateLeadStatusSchema,
+  addLeadTouchpointSchema,
+  updateLeadAssigneeSchema,
+  updateLeadDealParametersSchema,
+} from '@/app/lib/lead-schemas';
+import type {
+  CrmUserRole,
+  AssigneeOption,
+  LeadActionResult,
+  LeadDetailPayload,
+  LeadWithRelations,
+  LeadActivityWithActor,
+  FunnelStatus,
+  LeadSource,
+  Profile,
+  LeadPriority,
+  LeadActivityType,
+  PreferredChannel,
+  ServiceCategory,
+} from '@/types/crm';
+
+const DEFAULT_NEW_FUNNEL_STATUS_ID = 'b0000000-0000-0000-0000-000000000001';
+const DEFAULT_DIRECT_REFERRAL_SOURCE_ID = 'a0000000-0000-0000-0000-000000000003';
+const DEFAULT_FOUNDER_OUTREACH_SOURCE_ID = 'a0000000-0000-0000-0000-000000000004';
+const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+function isValidUuid(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
+/**
+ * Creates a new commercial deal dossier manually from the CRM workspace drawer.
+ * Enforces RLS invariant `leads_insert_policy`:
+ * - Admins and Sales Managers can assign to any active commercial personnel.
+ * - Sales Executives are strictly restricted to assigning deals to themselves.
+ * - Viewers are rejected with a privilege authorization exception.
+ *
+ * @param input Raw form values matching `createManualLeadSchema`.
+ * @returns {Promise<LeadActionResult>} Outcome containing new lead identifiers or error message.
+ */
+export async function createManualLead(input: unknown): Promise<LeadActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to register a prospective engagement.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Caller profile could not be verified in the agency directory.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Account suspended: Inactive personnel cannot register prospective engagements.',
+      };
+    }
+
+    if (callerProfile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Privilege Violation: Read-only personnel cannot create client records.',
+      };
+    }
+
+    const validationResult = createManualLeadSchema.safeParse(input);
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0];
+      return {
+        success: false,
+        error: firstIssue ? firstIssue.message : 'Invalid prospective lead parameters.',
+      };
+    }
+
+    const data = validationResult.data;
+
+    const normalizedEmail = normalizeEmail(data.email);
+    const phoneResult = normalizePhone(data.phone);
+    const normalizedPhone = phoneResult.phone;
+
+    const sanitizedName = sanitizeHtml(data.name) ?? data.name;
+    const sanitizedCompany = sanitizeHtml(data.company);
+    const sanitizedWebsite = sanitizeHtml(data.companyWebsite);
+    const sanitizedNotes = sanitizeHtml(data.notes);
+    const sanitizedBudget = sanitizeHtml(data.budgetBracket);
+
+    let targetAssigneeId: string | null = null;
+    if (callerProfile.role === 'sales_executive') {
+      targetAssigneeId = user.id;
+    } else {
+      targetAssigneeId =
+        data.assignedTo && data.assignedTo.trim().length > 0
+          ? data.assignedTo
+          : user.id;
+    }
+
+    const defaultSourceId =
+      callerProfile.role === 'admin'
+        ? DEFAULT_FOUNDER_OUTREACH_SOURCE_ID
+        : DEFAULT_DIRECT_REFERRAL_SOURCE_ID;
+    const finalSourceId = data.leadSourceId || defaultSourceId;
+
+    const { data: newLead, error: insertError } = await supabase
+      .from('leads')
+      .insert({
+        name: sanitizedName,
+        company: sanitizedCompany,
+        company_website: sanitizedWebsite,
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        preferred_channel: data.preferredChannel,
+        lead_source_id: finalSourceId,
+        source_detail: 'Manual CRM Workspace Entry',
+        service_category: data.serviceCategory,
+        budget_bracket: sanitizedBudget,
+        priority: data.priority,
+        status_id: DEFAULT_NEW_FUNNEL_STATUS_ID,
+        assigned_to: targetAssigneeId,
+        expected_value: data.expectedValue,
+        notes: sanitizedNotes,
+        brief_payload: {
+          created_via: 'manual_workspace_drawer',
+          creator_id: user.id,
+          creator_name: callerProfile.full_name,
+          creator_role: callerProfile.role,
+          phone_warning: phoneResult.warning,
+          created_at: new Date().toISOString(),
+        },
+      })
+      .select('id, lead_id')
+      .single();
+
+    if (insertError || !newLead) {
+      return {
+        success: false,
+        error: `Database insertion rejected: ${insertError?.message || 'Unknown persistence fault.'}`,
+      };
+    }
+
+    await supabase.from('lead_activities').insert({
+      lead_id: newLead.id,
+      actor_id: user.id,
+      activity_type: 'system_event',
+      description: `Prospect manually registered and assigned to commercial representative by ${callerProfile.full_name}.`,
+      metadata: {
+        lead_id_code: newLead.lead_id,
+        creator_id: user.id,
+        assigned_to: targetAssigneeId,
+        source: 'manual_crm_drawer',
+      },
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/analytics');
+
+    return {
+      success: true,
+      id: newLead.id,
+      leadId: newLead.lead_id,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Action Error';
+    return {
+      success: false,
+      error: `Execution failure: ${message}`,
+    };
+  }
+}
+
+/**
+ * Queries active commercial personnel to populate representative selectors.
+ * Gated to active authenticated staff.
+ *
+ * @returns {Promise<AssigneeOption[]>} List of active commercial personnel.
+ */
+export async function getActiveTeamAssignees(): Promise<AssigneeOption[]> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return [];
+    }
+
+    const { data: roster, error: rosterError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role')
+      .eq('status', 'active')
+      .in('role', ['admin', 'sales_manager', 'sales_executive'])
+      .order('full_name', { ascending: true });
+
+    if (rosterError || !roster) {
+      return [];
+    }
+
+    return roster.map((p) => ({
+      id: p.id,
+      fullName: p.full_name,
+      email: p.email,
+      role: p.role as CrmUserRole,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Retrieves the comprehensive 360-degree commercial client dossier for a specific deal.
+ * Joins related stage progression, lead acquisition source, and assigned representative.
+ * Enforces role guards: Sales Executives can only inspect deals assigned to their portfolio.
+ *
+ * @param leadId Primary key UUID of the deal record.
+ * @returns {Promise<LeadActionResult<LeadDetailPayload>>} Full dossier, interaction history, and mutation options.
+ */
+export async function getLeadDetails(
+  leadId: string
+): Promise<LeadActionResult<LeadDetailPayload>> {
+  try {
+    if (!leadId || typeof leadId !== 'string' || !isValidUuid(leadId)) {
+      return {
+        success: false,
+        error: 'Invalid deal identifier format.',
+      };
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to inspect deal details.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Caller profile could not be verified in the agency directory.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Account suspended: Inactive personnel cannot access commercial dossiers.',
+      };
+    }
+
+    const { data: leadRecord, error: leadError } = await supabase
+      .from('leads')
+      .select(`
+        id,
+        lead_id,
+        name,
+        company,
+        company_website,
+        industry,
+        phone,
+        email,
+        preferred_channel,
+        lead_source_id,
+        source_detail,
+        service_category,
+        budget_bracket,
+        priority,
+        status_id,
+        assigned_to,
+        expected_value,
+        next_follow_up,
+        lost_reason,
+        revisit_date,
+        notes,
+        brief_payload,
+        inquiry_count,
+        created_at,
+        converted_at,
+        updated_at,
+        funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at),
+        lead_sources(id, name, color_code, is_active, created_at),
+        profiles!leads_assigned_to_fkey(id, full_name, role, email, avatar_url)
+      `)
+      .eq('id', leadId)
+      .maybeSingle();
+
+    if (leadError || !leadRecord) {
+      return {
+        success: false,
+        error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    if (callerProfile.role === 'sales_executive' && leadRecord.assigned_to !== user.id) {
+      return {
+        success: false,
+        error: 'Privilege Violation: Sales executives may only access deals assigned to their portfolio.',
+      };
+    }
+
+    const { data: rawActivities } = await supabase
+      .from('lead_activities')
+      .select(`
+        id,
+        lead_id,
+        actor_id,
+        activity_type,
+        description,
+        metadata,
+        created_at,
+        profiles(id, full_name, role, avatar_url, email)
+      `)
+      .eq('lead_id', leadId)
+      .order('created_at', { ascending: false });
+
+    const { data: rawStatuses } = await supabase
+      .from('funnel_statuses')
+      .select('id, name, bucket, color_code, sort_order, is_active, created_at')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    const { data: rawStaff } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role')
+      .eq('status', 'active')
+      .in('role', ['admin', 'sales_manager', 'sales_executive'])
+      .order('full_name', { ascending: true });
+
+    const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
+      const actProfile = act.profiles as {
+        id?: string;
+        full_name?: string;
+        role?: CrmUserRole;
+        avatar_url?: string | null;
+        email?: string | null;
+      } | null;
+
+      return {
+        id: act.id,
+        lead_id: act.lead_id,
+        actor_id: act.actor_id,
+        actor_name: actProfile?.full_name || 'System Staff',
+        actor_role: actProfile?.role || 'viewer',
+        activity_type: act.activity_type as LeadActivityType,
+        description: act.description,
+        metadata: (act.metadata as Record<string, unknown>) || {},
+        created_at: act.created_at,
+        actor: actProfile
+          ? {
+              id: actProfile.id || act.actor_id || '',
+              full_name: actProfile.full_name || 'System Staff',
+              role: (actProfile.role as CrmUserRole) || 'viewer',
+              avatar_url: actProfile.avatar_url || null,
+              email: actProfile.email || null,
+            }
+          : null,
+      };
+    });
+
+    const lead: LeadWithRelations = {
+      id: leadRecord.id,
+      lead_id: leadRecord.lead_id,
+      name: leadRecord.name,
+      company: leadRecord.company,
+      company_website: leadRecord.company_website,
+      industry: leadRecord.industry,
+      phone: leadRecord.phone,
+      email: leadRecord.email,
+      preferred_channel: (leadRecord.preferred_channel as PreferredChannel) || 'Phone',
+      lead_source_id: leadRecord.lead_source_id,
+      source_detail: leadRecord.source_detail,
+      service_category: (leadRecord.service_category as ServiceCategory) || 'Web & Digital',
+      budget_bracket: leadRecord.budget_bracket,
+      priority: (leadRecord.priority as LeadPriority) || 'Medium',
+      status_id: leadRecord.status_id,
+      assigned_to: leadRecord.assigned_to,
+      expected_value: Number(leadRecord.expected_value) || 0,
+      next_follow_up: leadRecord.next_follow_up,
+      lost_reason: leadRecord.lost_reason,
+      revisit_date: leadRecord.revisit_date,
+      notes: leadRecord.notes,
+      brief_payload: (leadRecord.brief_payload as Record<string, unknown>) || {},
+      inquiry_count: Number(leadRecord.inquiry_count) || 1,
+      created_at: leadRecord.created_at,
+      converted_at: leadRecord.converted_at,
+      updated_at: leadRecord.updated_at,
+      status: (leadRecord.funnel_statuses as unknown as FunnelStatus) || undefined,
+      lead_source: (leadRecord.lead_sources as unknown as LeadSource) || undefined,
+      assignee: (leadRecord.profiles as unknown as Profile) || null,
+    };
+
+    const availableStatuses: FunnelStatus[] = (rawStatuses || []).map((s) => ({
+      id: s.id,
+      name: s.name,
+      bucket: s.bucket,
+      color_code: s.color_code || '#ffffff',
+      sort_order: s.sort_order || 0,
+      is_active: s.is_active,
+      created_at: s.created_at,
+    }));
+
+    const availableAssignees: AssigneeOption[] = (rawStaff || []).map((p) => ({
+      id: p.id,
+      fullName: p.full_name,
+      email: p.email,
+      role: p.role as CrmUserRole,
+    }));
+
+    const payload: LeadDetailPayload = {
+      lead,
+      activities,
+      availableStatuses,
+      availableAssignees,
+      funnelStatuses: availableStatuses,
+      teamAssignees: availableAssignees,
+    };
+
+    return {
+      success: true,
+      data: payload,
+      lead,
+      activities,
+      availableStatuses,
+      availableAssignees,
+      funnelStatuses: availableStatuses,
+      teamAssignees: availableAssignees,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Action Error';
+    return {
+      success: false,
+      error: `Dossier retrieval fault: ${message}`,
+    };
+  }
+}
+
+/**
+ * Transitions a commercial lead to a new pipeline stage.
+ * Enforces business invariants:
+ * - Rejects read-only viewers.
+ * - Sales executives may only advance deals assigned to their personal portfolio.
+ * - Sets converted_at timestamp upon entering 'converted' bucket.
+ * - Resets converted_at to null if transitioning away from converted stage.
+ * - Captures terminal lost_reason when transition bucket is 'lost'.
+ * - Appends optional transition note to immutable activity ledger.
+ *
+ * @param inputOrLeadId Object conforming to `updateLeadStatusSchema` or leadId string.
+ * @param optionalStatusId Target funnel status UUID when called with positional arguments.
+ * @param optionalReason Optional context note or lost reason when called with positional arguments.
+ * @returns {Promise<LeadActionResult>} Operation outcome.
+ */
+export async function updateLeadStatus(
+  inputOrLeadId: unknown,
+  optionalStatusId?: string,
+  optionalReason?: string
+): Promise<LeadActionResult> {
+  try {
+    let normalizedInput: unknown;
+    if (typeof inputOrLeadId === 'string') {
+      normalizedInput = {
+        leadId: inputOrLeadId,
+        newStatusId: optionalStatusId,
+        lostReason: optionalReason,
+        note: optionalReason,
+      };
+    } else {
+      normalizedInput = inputOrLeadId;
+    }
+
+    const validationResult = updateLeadStatusSchema.safeParse(normalizedInput);
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0];
+      return {
+        success: false,
+        error: firstIssue ? firstIssue.message : 'Invalid deal status parameters.',
+      };
+    }
+
+    const data = validationResult.data;
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to modify deal stage.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Caller profile could not be verified in the agency directory.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Account suspended: Inactive personnel cannot modify deal stages.',
+      };
+    }
+
+    if (callerProfile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Privilege Violation: Read-only personnel cannot modify pipeline stages.',
+      };
+    }
+
+    const { data: currentLead, error: currentLeadError } = await supabase
+      .from('leads')
+      .select('id, assigned_to, status_id, funnel_statuses(bucket)')
+      .eq('id', data.leadId)
+      .maybeSingle();
+
+    if (currentLeadError || !currentLead) {
+      return {
+        success: false,
+        error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    if (callerProfile.role === 'sales_executive' && currentLead.assigned_to !== user.id) {
+      return {
+        success: false,
+        error: 'Privilege Violation: Sales executives may only advance deals assigned to their portfolio.',
+      };
+    }
+
+    const { data: targetStatus, error: statusError } = await supabase
+      .from('funnel_statuses')
+      .select('id, name, bucket')
+      .eq('id', data.newStatusId)
+      .maybeSingle();
+
+    if (statusError || !targetStatus) {
+      return {
+        success: false,
+        error: 'Specified target funnel stage does not exist.',
+      };
+    }
+
+    const currentBucket = (
+      currentLead.funnel_statuses as { bucket?: string } | null
+    )?.bucket;
+
+    const updatePayload: Record<string, unknown> = {
+      status_id: data.newStatusId,
+    };
+
+    if (targetStatus.bucket === 'converted') {
+      updatePayload.converted_at = new Date().toISOString();
+    } else if (currentBucket === 'converted' && targetStatus.bucket !== 'converted') {
+      updatePayload.converted_at = null;
+    }
+
+    if (targetStatus.bucket === 'lost' && data.lostReason && data.lostReason.trim().length > 0) {
+      updatePayload.lost_reason = sanitizeHtml(data.lostReason.trim());
+    }
+
+    const { error: updateError } = await supabase
+      .from('leads')
+      .update(updatePayload)
+      .eq('id', data.leadId);
+
+    if (updateError) {
+      return {
+        success: false,
+        error: `Database update rejected: ${updateError.message}`,
+      };
+    }
+
+    if (data.note && data.note.trim().length > 0) {
+      const sanitizedNote = sanitizeHtml(data.note.trim()) ?? data.note.trim();
+      await supabase.from('lead_activities').insert({
+        lead_id: data.leadId,
+        actor_id: user.id,
+        activity_type: 'note_added',
+        description: sanitizedNote,
+        metadata: {
+          context: 'stage_transition_note',
+          target_status_id: data.newStatusId,
+          target_status_name: targetStatus.name,
+          bucket: targetStatus.bucket,
+        },
+      });
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/analytics');
+
+    return {
+      success: true,
+      id: data.leadId,
+      leadId: data.leadId,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Action Error';
+    return {
+      success: false,
+      error: `Execution failure: ${message}`,
+    };
+  }
+}
+
+/**
+ * Records an omnichannel customer communication touchpoint or scheduled follow-up.
+ * Validates payload, sanitizes description against XSS, records to public.lead_activities,
+ * and synchronizes next_follow_up date on the parent deal record when provided.
+ *
+ * @param inputOrLeadId Object conforming to `addLeadTouchpointSchema` or leadId string.
+ * @param optionalPayload Touchpoint fields when called with positional arguments.
+ * @returns {Promise<LeadActionResult>} Operation outcome.
+ */
+export async function addLeadTouchpoint(
+  inputOrLeadId: unknown,
+  optionalPayload?: {
+    activityType?: 'call_logged' | 'email_sent' | 'meeting_held' | 'meeting_notes' | 'whatsapp_sent' | 'note_added' | 'follow_up_scheduled';
+    description?: string;
+    nextFollowUp?: string | null;
+  }
+): Promise<LeadActionResult> {
+  try {
+    let normalizedInput: unknown;
+    if (typeof inputOrLeadId === 'string') {
+      normalizedInput = {
+        leadId: inputOrLeadId,
+        activityType: optionalPayload?.activityType,
+        description: optionalPayload?.description,
+        nextFollowUp: optionalPayload?.nextFollowUp,
+      };
+    } else {
+      normalizedInput = inputOrLeadId;
+    }
+
+    const validationResult = addLeadTouchpointSchema.safeParse(normalizedInput);
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0];
+      return {
+        success: false,
+        error: firstIssue ? firstIssue.message : 'Invalid touchpoint parameters.',
+      };
+    }
+
+    const data = validationResult.data;
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to record touchpoints.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Caller profile could not be verified in the agency directory.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Account suspended: Inactive personnel cannot record touchpoints.',
+      };
+    }
+
+    if (callerProfile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Privilege Violation: Read-only personnel cannot record touchpoints.',
+      };
+    }
+
+    const { data: currentLead, error: leadError } = await supabase
+      .from('leads')
+      .select('id, assigned_to')
+      .eq('id', data.leadId)
+      .maybeSingle();
+
+    if (leadError || !currentLead) {
+      return {
+        success: false,
+        error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    if (callerProfile.role === 'sales_executive' && currentLead.assigned_to !== user.id) {
+      return {
+        success: false,
+        error: 'Privilege Violation: Sales executives may only log touchpoints on their assigned deals.',
+      };
+    }
+
+    const sanitizedDescription = sanitizeHtml(data.description) ?? data.description;
+
+    const { error: insertError } = await supabase.from('lead_activities').insert({
+      lead_id: data.leadId,
+      actor_id: user.id,
+      activity_type: data.activityType,
+      description: sanitizedDescription,
+      metadata: {
+        recorded_via: 'lead_detail_drawer',
+        author_name: callerProfile.full_name,
+        author_role: callerProfile.role,
+        scheduled_follow_up: data.nextFollowUp || null,
+      },
+    });
+
+    if (insertError) {
+      return {
+        success: false,
+        error: `Activity ledger insertion rejected: ${insertError.message}`,
+      };
+    }
+
+    if (data.nextFollowUp !== undefined) {
+      const followUpValue =
+        data.nextFollowUp && data.nextFollowUp.trim().length > 0
+          ? data.nextFollowUp.trim()
+          : null;
+
+      await supabase
+        .from('leads')
+        .update({ next_follow_up: followUpValue })
+        .eq('id', data.leadId);
+    }
+
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/tasks');
+
+    return {
+      success: true,
+      id: data.leadId,
+      leadId: data.leadId,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Action Error';
+    return {
+      success: false,
+      error: `Execution failure: ${message}`,
+    };
+  }
+}
+
+/**
+ * Reassigns commercial deal ownership to another active agency representative.
+ * Strictly gated to Administrators and Sales Managers per Master PRD Section 7.
+ * Appends a reassignment audit entry to the immutable activity ledger.
+ *
+ * @param inputOrLeadId Object conforming to `updateLeadAssigneeSchema` or leadId string.
+ * @param optionalAssigneeId Target personnel profile UUID when called with positional arguments.
+ * @param optionalNote Optional reassignment justification note when called with positional arguments.
+ * @returns {Promise<LeadActionResult>} Operation outcome.
+ */
+export async function updateLeadAssignee(
+  inputOrLeadId: unknown,
+  optionalAssigneeId?: string,
+  optionalNote?: string
+): Promise<LeadActionResult> {
+  try {
+    let normalizedInput: unknown;
+    if (typeof inputOrLeadId === 'string') {
+      normalizedInput = {
+        leadId: inputOrLeadId,
+        newAssigneeId: optionalAssigneeId,
+        note: optionalNote,
+      };
+    } else {
+      normalizedInput = inputOrLeadId;
+    }
+
+    const validationResult = updateLeadAssigneeSchema.safeParse(normalizedInput);
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0];
+      return {
+        success: false,
+        error: firstIssue ? firstIssue.message : 'Invalid reassignment parameters.',
+      };
+    }
+
+    const data = validationResult.data;
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to reassign deals.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Caller profile could not be verified in the agency directory.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Account suspended: Inactive personnel cannot reassign deals.',
+      };
+    }
+
+    if (callerProfile.role !== 'admin' && callerProfile.role !== 'sales_manager') {
+      return {
+        success: false,
+        error: 'Privilege Violation: Deal reassignment requires Administrative or Sales Manager authorization.',
+      };
+    }
+
+    const { data: destUser, error: destError } = await supabase
+      .from('profiles')
+      .select('id, full_name, role, status')
+      .eq('id', data.newAssigneeId)
+      .maybeSingle();
+
+    if (destError || !destUser) {
+      return {
+        success: false,
+        error: 'Target representative does not exist in the agency directory.',
+      };
+    }
+
+    if (destUser.status !== 'active') {
+      return {
+        success: false,
+        error: 'Cannot assign deal to an inactive or suspended representative.',
+      };
+    }
+
+    if (destUser.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Cannot assign deal to read-only personnel.',
+      };
+    }
+
+    const { data: currentLead, error: currentLeadError } = await supabase
+      .from('leads')
+      .select('id, lead_id, assigned_to')
+      .eq('id', data.leadId)
+      .maybeSingle();
+
+    if (currentLeadError || !currentLead) {
+      return {
+        success: false,
+        error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    const { error: updateError } = await supabase
+      .from('leads')
+      .update({ assigned_to: data.newAssigneeId })
+      .eq('id', data.leadId);
+
+    if (updateError) {
+      return {
+        success: false,
+        error: `Reassignment update rejected: ${updateError.message}`,
+      };
+    }
+
+    const sanitizedNote = data.note ? sanitizeHtml(data.note.trim()) : null;
+    const descriptionText = sanitizedNote
+      ? `Deal reassigned to ${destUser.full_name} by ${callerProfile.full_name}. Note: ${sanitizedNote}`
+      : `Deal reassigned to ${destUser.full_name} by ${callerProfile.full_name}.`;
+
+    await supabase.from('lead_activities').insert({
+      lead_id: data.leadId,
+      actor_id: user.id,
+      activity_type: 'reassignment',
+      description: descriptionText,
+      metadata: {
+        previous_assignee_id: currentLead.assigned_to,
+        new_assignee_id: data.newAssigneeId,
+        new_assignee_name: destUser.full_name,
+        reassigned_by: callerProfile.full_name,
+        note: sanitizedNote,
+      },
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/team');
+
+    return {
+      success: true,
+      id: data.leadId,
+      leadId: data.leadId,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Action Error';
+    return {
+      success: false,
+      error: `Execution failure: ${message}`,
+    };
+  }
+}
+
+/**
+ * Modifies commercial deal parameters (valuation, priority tier, internal notes).
+ * Enforces role guards: Sales Executives may only edit deals assigned to their portfolio.
+ *
+ * @param inputOrLeadId Object conforming to `updateLeadDealParametersSchema` or leadId string.
+ * @param optionalPayload Deal parameters when called with positional arguments.
+ * @returns {Promise<LeadActionResult>} Operation outcome.
+ */
+export async function updateLeadDealParameters(
+  inputOrLeadId: unknown,
+  optionalPayload?: {
+    expectedValue?: number;
+    priority?: LeadPriority;
+    notes?: string | null;
+  }
+): Promise<LeadActionResult> {
+  try {
+    let normalizedInput: unknown;
+    if (typeof inputOrLeadId === 'string') {
+      normalizedInput = {
+        leadId: inputOrLeadId,
+        expectedValue: optionalPayload?.expectedValue,
+        priority: optionalPayload?.priority,
+        notes: optionalPayload?.notes,
+      };
+    } else {
+      normalizedInput = inputOrLeadId;
+    }
+
+    const validationResult = updateLeadDealParametersSchema.safeParse(normalizedInput);
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0];
+      return {
+        success: false,
+        error: firstIssue ? firstIssue.message : 'Invalid deal parameter values.',
+      };
+    }
+
+    const data = validationResult.data;
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to modify deal parameters.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Caller profile could not be verified in the agency directory.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Account suspended: Inactive personnel cannot modify deal parameters.',
+      };
+    }
+
+    if (callerProfile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Privilege Violation: Read-only personnel cannot modify deal parameters.',
+      };
+    }
+
+    const { data: currentLead, error: leadError } = await supabase
+      .from('leads')
+      .select('id, assigned_to')
+      .eq('id', data.leadId)
+      .maybeSingle();
+
+    if (leadError || !currentLead) {
+      return {
+        success: false,
+        error: 'Deal record not found or inaccessible.',
+      };
+    }
+
+    if (callerProfile.role === 'sales_executive' && currentLead.assigned_to !== user.id) {
+      return {
+        success: false,
+        error: 'Privilege Violation: Sales executives may only edit deals assigned to their portfolio.',
+      };
+    }
+
+    const updatePayload: Record<string, unknown> = {};
+    if (data.expectedValue !== undefined) {
+      updatePayload.expected_value = data.expectedValue;
+    }
+    if (data.priority !== undefined) {
+      updatePayload.priority = data.priority;
+    }
+    if (data.notes !== undefined) {
+      updatePayload.notes =
+        data.notes && data.notes.trim().length > 0
+          ? sanitizeHtml(data.notes.trim())
+          : null;
+    }
+
+    if (Object.keys(updatePayload).length > 0) {
+      const { error: updateError } = await supabase
+        .from('leads')
+        .update(updatePayload)
+        .eq('id', data.leadId);
+
+      if (updateError) {
+        return {
+          success: false,
+          error: `Deal parameters update rejected: ${updateError.message}`,
+        };
+      }
+
+      await supabase.from('lead_activities').insert({
+        lead_id: data.leadId,
+        actor_id: user.id,
+        activity_type: 'field_update',
+        description: `Deal terms updated by ${callerProfile.full_name}.`,
+        metadata: {
+          updated_fields: Object.keys(updatePayload),
+        },
+      });
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/analytics');
+
+    return {
+      success: true,
+      id: data.leadId,
+      leadId: data.leadId,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Action Error';
+    return {
+      success: false,
+      error: `Execution failure: ${message}`,
+    };
+  }
+}
+
+/**
+ * One-click clearance for completed follow-up touchpoints from the scheduler queue.
+ * Clears the next_follow_up date and logs completion in the activity ledger.
+ *
+ * @param leadId Lead identifier.
+ * @param note Optional resolution context.
+ * @returns {Promise<LeadActionResult>} Operation outcome.
+ */
+export async function clearLeadFollowUp(
+  leadId: string,
+  note?: string
+): Promise<LeadActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Unauthorized: Session required.' };
+    }
+
+    const { data: callerProfile } = await supabase
+      .from('profiles')
+      .select('full_name, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!callerProfile || callerProfile.status !== 'active') {
+      return { success: false, error: 'Account suspended or unverified.' };
+    }
+
+    const { error: updateError } = await supabase
+      .from('leads')
+      .update({ next_follow_up: null })
+      .eq('id', leadId);
+
+    if (updateError) {
+      return { success: false, error: `Clearing follow-up failed: ${updateError.message}` };
+    }
+
+    const cleanNote = note ? sanitizeHtml(note) ?? note : undefined;
+    const desc = `Scheduled follow-up marked as completed by ${callerProfile.full_name}.${cleanNote ? ` Note: ${cleanNote}` : ''}`;
+
+    await supabase.from('lead_activities').insert({
+      lead_id: leadId,
+      actor_id: user.id,
+      activity_type: 'note_added',
+      description: desc,
+      metadata: {
+        cleared_follow_up: true,
+        note: cleanNote,
+      },
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/leads');
+
+    return { success: true, id: leadId };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Clear follow-up fault.';
+    return { success: false, error: message };
+  }
+}

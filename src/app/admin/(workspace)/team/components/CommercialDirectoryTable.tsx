@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import Link from 'next/link';
 import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile } from '@/types/crm';
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
@@ -81,6 +82,12 @@ export function CommercialDirectoryTable({
   // Handle Role Change Execution
   const handleConfirmRoleChange = () => {
     if (!targetMemberForRole || !selectedNewRole) return;
+    if (targetMemberForRole.id === currentUserId && selectedNewRole !== 'admin') {
+      setActionError(
+        'Security Policy Violation: Administrators cannot demote their own account. Another administrator must perform this action.'
+      );
+      return;
+    }
     setActionError(null);
 
     startTransition(async () => {
@@ -228,7 +235,7 @@ export function CommercialDirectoryTable({
               <th className={styles.th}>Personnel Identity</th>
               <th className={styles.th}>Governance Role</th>
               <th className={styles.th}>Job Title</th>
-              <th className={styles.th}>Active Deals Load</th>
+              <th className={styles.th}>Active Portfolio</th>
               <th className={styles.th}>Account Status</th>
               {isAdmin && <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>}
             </tr>
@@ -256,7 +263,27 @@ export function CommercialDirectoryTable({
                             )}
                           </span>
                           <span className={styles.emailSubtext}>
-                            {member.email} {member.phone ? `· ${member.phone}` : ''}
+                            <a
+                              href={`mailto:${member.email}`}
+                              style={{ color: 'inherit', textDecoration: 'none' }}
+                              onClick={(e) => e.stopPropagation()}
+                              title={`Compose email to ${member.email}`}
+                            >
+                              {member.email}
+                            </a>
+                            {member.phone && (
+                              <>
+                                {' · '}
+                                <a
+                                  href={`tel:${member.phone}`}
+                                  style={{ color: 'inherit', textDecoration: 'none' }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  title={`Call ${member.phone}`}
+                                >
+                                  {member.phone}
+                                </a>
+                              </>
+                            )}
                           </span>
                         </div>
                       </div>
@@ -291,17 +318,36 @@ export function CommercialDirectoryTable({
                       {member.job_title}
                     </td>
 
-                    {/* Active Deals Load */}
+                    {/* Active Deals Load / Active Portfolio */}
                     <td className={styles.td}>
-                      <div className={styles.dealsPill}>
-                        <span className={styles.dealsCount}>{member.active_deals_count}</span>
-                        <span>deals</span>
-                        {member.total_deal_value > 0 && (
-                          <span className={styles.dealsValuation}>
-                            ({formatDealValuation(member.total_deal_value)})
-                          </span>
-                        )}
-                      </div>
+                      {member.active_deals_count > 0 ? (
+                        <Link
+                          href={`/admin/leads?assigned_to=${member.id}`}
+                          className={styles.dealsPill}
+                          style={{
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                          }}
+                          title={`View ${member.active_deals_count} active deals assigned to ${member.full_name}`}
+                        >
+                          <span className={styles.dealsCount}>{member.active_deals_count}</span>
+                          <span>deals</span>
+                          {member.total_deal_value > 0 && (
+                            <span className={styles.dealsValuation}>
+                              ({formatDealValuation(member.total_deal_value)})
+                            </span>
+                          )}
+                          <span style={{ fontSize: '0.72rem', color: '#ff6100' }}>→</span>
+                        </Link>
+                      ) : (
+                        <div className={styles.dealsPill}>
+                          <span className={styles.dealsCount}>0</span>
+                          <span>deals</span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Account Status */}
@@ -395,61 +441,105 @@ export function CommercialDirectoryTable({
       </div>
 
       {/* Role Modification Modal Dialog */}
-      {targetMemberForRole && (
-        <div
-          className={styles.modalOverlay}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="role-modal-title"
-        >
-          <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
-            <h3 id="role-modal-title" style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700 }}>
-              Modify Governance Role
-            </h3>
-            <p style={{ fontSize: '0.82rem', color: '#888888', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
-              Update access permissions and database RLS boundaries for{' '}
-              <strong>{targetMemberForRole.full_name}</strong> ({targetMemberForRole.email}).
-            </p>
+      {targetMemberForRole && (() => {
+        const isSelfRoleEdit = targetMemberForRole.id === currentUserId;
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label htmlFor="new-role-select" className={styles.drawerLabel} style={{ marginBottom: '0.4rem', display: 'block' }}>
-                Assigned Role
-              </label>
-              <select
-                id="new-role-select"
-                className={styles.drawerSelect}
-                value={selectedNewRole}
-                onChange={(e) => setSelectedNewRole(e.target.value as CrmUserRole)}
-                disabled={isPending}
-              >
-                <option value="sales_executive">Sales Executive (Own Deals Only)</option>
-                <option value="sales_manager">Sales Manager (Global Pipeline View)</option>
-                <option value="admin">Administrator (Full Access & Governance)</option>
-                <option value="viewer">Viewer (Read-Only Financials)</option>
-              </select>
-            </div>
+        return (
+          <div
+            className={styles.modalOverlay}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="role-modal-title"
+          >
+            <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
+              <h3 id="role-modal-title" style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700 }}>
+                Modify Governance Role
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: '#888888', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+                Update access permissions and database RLS boundaries for{' '}
+                <strong>{targetMemberForRole.full_name}</strong> ({targetMemberForRole.email}).
+              </p>
 
-            <div className={styles.modalActions}>
-              <button
-                type="button"
-                className={styles.copyButton}
-                onClick={() => setTargetMemberForRole(null)}
-                disabled={isPending}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className={styles.doneButton}
-                onClick={handleConfirmRoleChange}
-                disabled={isPending || selectedNewRole === targetMemberForRole.role}
-              >
-                {isPending ? 'Updating...' : 'Save Role'}
-              </button>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label htmlFor="new-role-select" className={styles.drawerLabel} style={{ marginBottom: '0.4rem', display: 'block' }}>
+                  Assigned Role
+                </label>
+                <select
+                  id="new-role-select"
+                  className={styles.drawerSelect}
+                  value={selectedNewRole}
+                  onChange={(e) => {
+                    const roleVal = e.target.value as CrmUserRole;
+                    if (isSelfRoleEdit && roleVal !== 'admin') {
+                      return;
+                    }
+                    setSelectedNewRole(roleVal);
+                  }}
+                  disabled={isPending || isSelfRoleEdit}
+                >
+                  <option value="sales_executive" disabled={isSelfRoleEdit}>
+                    Sales Executive (Own Deals Only)
+                  </option>
+                  <option value="sales_manager" disabled={isSelfRoleEdit}>
+                    Sales Manager (Global Pipeline View)
+                  </option>
+                  <option value="admin">Administrator (Full Access & Governance)</option>
+                  <option value="viewer" disabled={isSelfRoleEdit}>
+                    Viewer (Read-Only Financials)
+                  </option>
+                </select>
+
+                {isSelfRoleEdit && (
+                  <div className={styles.modalAlertBanner} style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={styles.modalAlertIcon}
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <p className={styles.modalAlertText}>
+                      Administrators cannot demote their own account. Another administrator must perform this action.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.modalActions}>
+                <button
+                  type="button"
+                  className={styles.copyButton}
+                  onClick={() => setTargetMemberForRole(null)}
+                  disabled={isPending}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={styles.doneButton}
+                  onClick={handleConfirmRoleChange}
+                  disabled={
+                    isPending ||
+                    selectedNewRole === targetMemberForRole.role ||
+                    (isSelfRoleEdit && selectedNewRole !== 'admin')
+                  }
+                >
+                  {isPending ? 'Updating...' : 'Save Role'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Dedicated Employee Offboarding & Suspension Modal (Sprint 4.1) */}
       <SuspendUserModal

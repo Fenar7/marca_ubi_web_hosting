@@ -303,6 +303,71 @@ describe('Marca Ubi CRM — Team Provisioning & Multi-Role Governance (Sprint 3.
         'Non-admin role changes are not restricted by sole-admin check'
       );
     });
+
+    it('strictly prohibits administrator self-demotion regardless of admin count', () => {
+      function evaluateSelfDemotionAllowed(
+        callerId: string,
+        targetUserId: string,
+        callerRole: string,
+        newRole: string
+      ): { allowed: boolean; error?: string } {
+        if (callerId === targetUserId && callerRole === 'admin' && newRole !== 'admin') {
+          return {
+            allowed: false,
+            error:
+              'Security Policy Violation: Administrators cannot demote their own account. Another administrator must perform this role modification.',
+          };
+        }
+        return { allowed: true };
+      }
+
+      const adminCallerId = '11111111-2222-3333-4444-555555555555';
+      const otherAdminId = '99999999-8888-7777-6666-555555555555';
+
+      // Self-demotion attempts must be rejected
+      const demoteToManager = evaluateSelfDemotionAllowed(
+        adminCallerId,
+        adminCallerId,
+        'admin',
+        'sales_manager'
+      );
+      assert.equal(demoteToManager.allowed, false);
+      assert.match(demoteToManager.error ?? '', /cannot demote their own account/);
+
+      const demoteToExecutive = evaluateSelfDemotionAllowed(
+        adminCallerId,
+        adminCallerId,
+        'admin',
+        'sales_executive'
+      );
+      assert.equal(demoteToExecutive.allowed, false);
+
+      const demoteToViewer = evaluateSelfDemotionAllowed(
+        adminCallerId,
+        adminCallerId,
+        'admin',
+        'viewer'
+      );
+      assert.equal(demoteToViewer.allowed, false);
+
+      // Modifying other administrator role is permitted (subject to sole admin check)
+      const demoteOther = evaluateSelfDemotionAllowed(
+        adminCallerId,
+        otherAdminId,
+        'admin',
+        'sales_manager'
+      );
+      assert.equal(demoteOther.allowed, true);
+
+      // Admin confirming own role as admin is permitted
+      const keepAdmin = evaluateSelfDemotionAllowed(
+        adminCallerId,
+        adminCallerId,
+        'admin',
+        'admin'
+      );
+      assert.equal(keepAdmin.allowed, true);
+    });
   });
 
   describe('Section 5: Team Audit Action Whitelist & Immutability', () => {

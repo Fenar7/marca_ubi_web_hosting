@@ -9,14 +9,10 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { TeamMemberRosterItem, CrmUserRole } from '@/types/crm';
 import { CommercialDirectoryTable } from './CommercialDirectoryTable';
-import { AddTeamMemberDrawer } from './AddTeamMemberDrawer';
-import {
-  CredentialRevealModal,
-  type ProvisionedCredentialsPayload,
-} from './CredentialRevealModal';
+import type { ProvisionedCredentialsPayload } from './CredentialRevealModal';
 import styles from '../team.module.scss';
 
 interface TeamWorkspaceClientProps {
@@ -31,39 +27,39 @@ export function TeamWorkspaceClient({
   currentUserId,
 }: TeamWorkspaceClientProps): React.ReactElement {
   const [roster, setRoster] = useState<TeamMemberRosterItem[]>(initialRoster);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [revealedCredentials, setRevealedCredentials] =
-    useState<ProvisionedCredentialsPayload | null>(null);
-  const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
-
   const isAdmin = currentUserRole === 'admin';
 
-  const handleUserCreated = (credentials: ProvisionedCredentialsPayload) => {
-    // Reveal credentials modal
-    setRevealedCredentials(credentials);
-    setIsCredentialModalOpen(true);
+  // Synchronize optimistic additions when a team member is provisioned globally
+  useEffect(() => {
+    const handleTeamMemberCreated = (event: Event): void => {
+      const customEvent = event as CustomEvent<{ credentials: ProvisionedCredentialsPayload }>;
+      if (!customEvent.detail?.credentials) return;
+      const { credentials } = customEvent.detail;
 
-    // Add provisioned user optimistically to directory table
-    const newMember: TeamMemberRosterItem = {
-      id: `temp-${Date.now()}`,
-      full_name: credentials.fullName,
-      email: credentials.email,
-      role: credentials.role as CrmUserRole,
-      job_title: credentials.jobTitle,
-      phone: null,
-      status: 'active',
-      avatar_url: null,
-      invited_by: currentUserId,
-      last_login_at: null,
-      must_change_password: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      active_deals_count: 0,
-      total_deal_value: 0,
+      const newMember: TeamMemberRosterItem = {
+        id: `temp-${Date.now()}`,
+        full_name: credentials.fullName,
+        email: credentials.email,
+        role: credentials.role as CrmUserRole,
+        job_title: credentials.jobTitle,
+        phone: null,
+        status: 'active',
+        avatar_url: null,
+        invited_by: currentUserId,
+        last_login_at: null,
+        must_change_password: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        active_deals_count: 0,
+        total_deal_value: 0,
+      };
+
+      setRoster((prev) => [newMember, ...prev]);
     };
 
-    setRoster((prev) => [newMember, ...prev]);
-  };
+    window.addEventListener('team-member-created', handleTeamMemberCreated);
+    return () => window.removeEventListener('team-member-created', handleTeamMemberCreated);
+  }, [currentUserId]);
 
   return (
     <>
@@ -73,7 +69,7 @@ export function TeamWorkspaceClient({
           <button
             type="button"
             className={styles.primaryActionButton}
-            onClick={() => setIsDrawerOpen(true)}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-add-member-drawer'))}
             aria-label="Open add team member drawer"
           >
             <svg
@@ -130,23 +126,6 @@ export function TeamWorkspaceClient({
         initialRoster={roster}
         currentUserRole={currentUserRole}
         currentUserId={currentUserId}
-      />
-
-      {/* Add Team Member Drawer */}
-      <AddTeamMemberDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onUserCreated={handleUserCreated}
-      />
-
-      {/* One-Time Credential Reveal Modal */}
-      <CredentialRevealModal
-        isOpen={isCredentialModalOpen}
-        credentials={revealedCredentials}
-        onClose={() => {
-          setIsCredentialModalOpen(false);
-          setRevealedCredentials(null);
-        }}
       />
     </>
   );
