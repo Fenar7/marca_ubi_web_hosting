@@ -281,6 +281,27 @@ export function ClientDossierDrawer({
                   style={{ backgroundColor: lead.status_color }}
                 />
                 <span>{lead.status_name}</span>
+                {lead.converted_at && (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      marginLeft: '0.35rem',
+                      paddingLeft: '0.35rem',
+                      borderLeft: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#10b981',
+                      fontSize: '0.72rem',
+                    }}
+                    title="Deal Converted: Immutable to non-admin roles"
+                  >
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    <span>Locked</span>
+                  </span>
+                )}
               </div>
             )}
           </div>
