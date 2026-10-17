@@ -148,7 +148,7 @@ async function runSprint51Verification() {
       const validBody = JSON.stringify({
         name: `Rate Limit Prospect ${i}`,
         email: `ratelimit_${runId}_${i}@marcaubi-test.ae`,
-        phone: '050 123 4567',
+        phone: `050 123 ${String(1000 + i)}`,
       });
 
       const req = new Request('http://localhost:3000/api/sales-funnel/ingest', {

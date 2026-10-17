@@ -109,6 +109,13 @@ export const ingestLeadSchema = z
       .max(100)
       .optional()
       .default('Website Form'),
+    source_detail: z
+      .string()
+      .trim()
+      .max(255)
+      .nullable()
+      .optional()
+      .transform((val) => (val && val.length > 0 ? val : null)),
     source_id: z
       .string()
       .uuid('Invalid source identifier UUID.')
