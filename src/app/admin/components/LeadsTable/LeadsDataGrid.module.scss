@@ -209,6 +209,13 @@ $text-muted: #8e8e93;
   align-items: flex-start;
 }
 
+.touchpointGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
 .touchpointDate {
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.68rem;

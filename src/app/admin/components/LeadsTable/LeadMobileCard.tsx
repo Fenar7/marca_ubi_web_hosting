@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
 import { InlinePrioritySelect } from './InlinePrioritySelect';
+import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { LeadPriority } from '@/types/crm';
 import styles from './LeadMobileCard.module.scss';
 
@@ -132,6 +133,13 @@ export function LeadMobileCard({
               day: 'numeric',
             })}
           </span>
+          <OverdueBadge
+            nextFollowUp={lead.next_follow_up}
+            statusName={lead.status_name}
+            revisitDate={lead.revisit_date}
+            bucket={lead.bucket}
+            variant="short"
+          />
         </div>
 
         <span className={styles.dealValue}>{formatCurrency(lead.expected_value)}</span>

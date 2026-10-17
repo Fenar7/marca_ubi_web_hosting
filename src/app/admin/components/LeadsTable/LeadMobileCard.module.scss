@@ -49,6 +49,7 @@ $text-muted: #8e8e93;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .leadIdToken {

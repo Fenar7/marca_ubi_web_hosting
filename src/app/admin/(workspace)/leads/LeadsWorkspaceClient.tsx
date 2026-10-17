@@ -24,7 +24,10 @@ import {
 } from '@/app/admin/components/LeadsTable';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
+import { BatchReassignModal } from '@/app/admin/components/modals';
 import { FollowUpScheduler } from '@/app/admin/components/Scheduler';
+import { calculateOverdueTier } from '@/app/admin/components/Badges';
+import type { OverdueLeadSummary } from '@/app/actions/workloadActions';
 import type { GuardedTransitionResultPayload } from '@/app/actions/stageTransitionActions';
 import type { LeadPriority } from '@/types/crm';
 import styles from './leads.module.scss';
@@ -160,6 +163,9 @@ function LeadsWorkspaceContent({
     company: null,
     currentFollowUpDate: null,
   });
+
+  // Guarded Batch Lead Reassignment Modal State
+  const [isBatchReassignOpen, setIsBatchReassignOpen] = useState<boolean>(false);
 
   // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
   const handleOpenDrawer = useCallback((id: string) => {
@@ -464,6 +470,62 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('lead-updated', handleLeadUpdatedEvent);
   }, []);
 
+  // Listener for programmatic open-batch-reassign events
+  useEffect(() => {
+    const handleOpenBatchReassignModal = (): void => {
+      setIsBatchReassignOpen(true);
+    };
+
+    window.addEventListener('open-batch-reassign', handleOpenBatchReassignModal);
+    return () => window.removeEventListener('open-batch-reassign', handleOpenBatchReassignModal);
+  }, []);
+
+  // Memoized overdue lead summaries for batch reassign modal
+  const overdueSummaries = useMemo<OverdueLeadSummary[]>(() => {
+    return leads
+      .filter(isLeadOverdue)
+      .map((l) => {
+        const tierCalc = calculateOverdueTier(l.next_follow_up, {
+          bucket: l.bucket,
+          statusName: l.status_name,
+          revisitDate: l.revisit_date,
+        });
+        return {
+          id: l.id,
+          leadId: l.lead_id,
+          name: l.name,
+          company: l.company || 'Private Client',
+          expectedValue: l.expected_value,
+          priority: l.priority,
+          nextFollowUp: l.next_follow_up || '',
+          statusName: l.status_name,
+          currentAssigneeId: l.assigned_to || null,
+          currentAssigneeName: l.assigned_to_name || 'Unassigned',
+          tier: tierCalc.tier,
+          overdueLabel: tierCalc.label,
+        };
+      });
+  }, [leads]);
+
+  // Memoized representative list for destination selection in batch reassignment
+  const availableRepsForModal = useMemo(() => {
+    return (availableAssignees || [])
+      .filter((a) => a.id && a.id !== 'all')
+      .map((a) => ({
+        id: a.id,
+        fullName: a.label,
+        role: 'Sales Representative',
+        email: '',
+      }));
+  }, [availableAssignees]);
+
+  const handleBatchReassignSuccess = (): void => {
+    setIsBatchReassignOpen(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('popstate'));
+    }
+  };
+
   // Real-time record counts per bucket
   const counts = useMemo<BucketCounts>(() => {
     return {
@@ -680,6 +742,46 @@ function LeadsWorkspaceContent({
         onClearAll={handleClearAll}
       />
 
+      {/* Overdue Stalled Pipeline Escalation Banner */}
+      {selectedBucket === 'overdue' && counts.overdue > 0 && (
+        <div className={styles.overdueNoticeBanner} role="region" aria-label="Overdue SLA Alert">
+          <div className={styles.overdueNoticeLeft}>
+            <div className={styles.overdueNoticeIcon} aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div>
+              <p className={styles.overdueNoticeTitle}>
+                {counts.overdue} Overdue {counts.overdue === 1 ? 'Touchpoint' : 'Touchpoints'} Requiring Escalation
+              </p>
+              <p className={styles.overdueNoticeSub}>
+                Reallocate stalled accounts across active sales personnel to restore pipeline velocity.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className={styles.batchReassignTriggerBtn}
+            onClick={() => setIsBatchReassignOpen(true)}
+            aria-label="Launch batch reassignment modal"
+          >
+            Batch Reassign Overdue Leads
+          </button>
+        </div>
+      )}
+
       {/* Commercial Leads Virtualized Data Grid */}
       <LeadsDataGrid
         leads={filteredLeads}
@@ -743,6 +845,17 @@ function LeadsWorkspaceContent({
               handleFollowUpScheduled(schedulerState.leadId, scheduledIso);
             }
           }}
+        />
+      )}
+
+      {/* Guarded Batch Lead Reassignment Modal */}
+      {isBatchReassignOpen && (
+        <BatchReassignModal
+          isOpen={isBatchReassignOpen}
+          overdueLeads={overdueSummaries}
+          availableReps={availableRepsForModal}
+          onClose={() => setIsBatchReassignOpen(false)}
+          onSuccess={handleBatchReassignSuccess}
         />
       )}
     </>

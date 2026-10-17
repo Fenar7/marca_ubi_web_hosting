@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { createClient } from '@/app/lib/supabase/server';
 import type { PipelineRpcMetrics } from '@/types/crm';
 import { KpiRibbon } from '@/app/admin/components/kpi';
+import { ManagerWorkloadCard } from '@/app/admin/components/Dashboard';
 import styles from './page.module.scss';
 import { ActivityRowItem } from './components/ActivityRowItem';
 
@@ -190,6 +191,9 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
 
       {/* Dark Luxury Executive KPI Ribbon */}
       <KpiRibbon initialData={rpcMetrics} />
+
+      {/* Commercial Rep Workload Balancing & SLA Oversight */}
+      <ManagerWorkloadCard />
 
       {/* 4 Feature Quick-Launch Hub */}
       <section className={styles.quickLaunchSection} aria-label="Feature Quick-Launch Cards">
