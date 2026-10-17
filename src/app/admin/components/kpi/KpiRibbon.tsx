@@ -77,6 +77,7 @@ function KpiRibbonContent({
           const allowedKeys = [
             'start_date',
             'end_date',
+            'source',
             'source_id',
             'assignee_id',
             'target_user_id',
@@ -90,6 +91,8 @@ function KpiRibbonContent({
             if (val && val.trim().length > 0) {
               if (key === 'assigned_to') {
                 queryParams.set('assignee_id', val.trim());
+              } else if (key === 'source') {
+                queryParams.set('source_id', val.trim());
               } else {
                 queryParams.set(key, val.trim());
               }
@@ -164,6 +167,23 @@ function KpiRibbonContent({
     };
   }, [syncWithUrlParams, searchParams, fetchMetrics, initialData]);
 
+  // Listen for native popstate events dispatched by shallow URL synchronizers
+  useEffect(() => {
+    if (!syncWithUrlParams) {
+      return;
+    }
+
+    const handlePopState = (): void => {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      fetchMetrics(currentUrlParams);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [syncWithUrlParams, fetchMetrics]);
+
   // Handle manual trigger refresh
   const handleManualRefresh = (): void => {
     fetchMetrics(syncWithUrlParams ? searchParams : null);
@@ -178,6 +198,7 @@ function KpiRibbonContent({
       (searchParams.get('start_date') ||
         searchParams.get('end_date') ||
         searchParams.get('source_id') ||
+        searchParams.get('source') ||
         searchParams.get('assignee_id') ||
         searchParams.get('assigned_to') ||
         searchParams.get('stage') ||
