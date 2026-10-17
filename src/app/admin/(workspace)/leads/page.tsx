@@ -13,7 +13,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/app/lib/supabase/server';
 import type { FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
 import { KpiRibbon } from '@/app/admin/components/kpi';
-import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable';
+import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
 import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBar';
 import styles from './leads.module.scss';
@@ -46,7 +46,7 @@ export default async function AdminLeadsPage(
   const supabase = await createClient();
 
   // Parallel server query execution for instant shell rendering and metadata resolution
-  const [rpcRes, sourcesRes, profilesRes, leadsRes] = await Promise.all([
+  const [rpcRes, sourcesRes, profilesRes, statusesRes, leadsRes] = await Promise.all([
     supabase.rpc('get_pipeline_kpis'),
     supabase
       .from('lead_sources')
@@ -58,6 +58,11 @@ export default async function AdminLeadsPage(
       .select('id, full_name, role')
       .eq('status', 'active')
       .order('full_name'),
+    supabase
+      .from('funnel_statuses')
+      .select('id, name, bucket, color_code, sort_order')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true }),
     supabase
       .from('leads')
       .select(`
@@ -115,6 +120,14 @@ export default async function AdminLeadsPage(
       avatarText: initials,
     };
   });
+
+  const availableStatuses: InlineStatusOption[] = (statusesRes.data || []).map((s) => ({
+    id: s.id,
+    name: s.name,
+    bucket: s.bucket as FunnelBucket,
+    color_code: s.color_code || '#ff6100',
+    sort_order: s.sort_order,
+  }));
 
   // Hydrate client model with relational properties
   const leads: HydratedLeadItem[] = (leadsRes.data || []).map((l) => {
@@ -181,6 +194,7 @@ export default async function AdminLeadsPage(
           initialLeads={leads}
           availableSources={availableSources}
           availableAssignees={availableAssignees}
+          availableStatuses={availableStatuses}
         />
       </Suspense>
     </div>
