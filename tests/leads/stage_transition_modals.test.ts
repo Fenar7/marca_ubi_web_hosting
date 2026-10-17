@@ -15,9 +15,6 @@ import assert from 'node:assert/strict';
 import { LOST_REASON_OPTIONS } from '@/app/actions/stageTransitionActions';
 
 describe('Sprint 8.3: Guarded Stage Transition Modals & UI Contracts', () => {
-  // -------------------------------------------------------------
-  // Block 1: Currency Formatting for Luxury Deal Valuation Preview
-  // -------------------------------------------------------------
   describe('Block 1: Currency Formatters (formatCurrency)', () => {
     function formatCurrency(amount: number): string {
       if (!amount || amount <= 0) return '₹0';
@@ -52,9 +49,6 @@ describe('Sprint 8.3: Guarded Stage Transition Modals & UI Contracts', () => {
     });
   });
 
-  // -------------------------------------------------------------
-  // Block 2: Standardized Lost Reason Catalog Invariants
-  // -------------------------------------------------------------
   describe('Block 2: Lost Reason Options Compliance', () => {
     it('contains all 7 standardized options mandated by PRD §15.18', () => {
       const expectedReasons = [
@@ -77,9 +71,6 @@ describe('Sprint 8.3: Guarded Stage Transition Modals & UI Contracts', () => {
     });
   });
 
-  // -------------------------------------------------------------
-  // Block 3: Event Routing & Dispatch Payload Contracts
-  // -------------------------------------------------------------
   describe('Block 3: Custom Event Dispatching (open-stage-modal)', () => {
     interface StageModalEventDetail {
       leadId: string;
@@ -136,9 +127,6 @@ describe('Sprint 8.3: Guarded Stage Transition Modals & UI Contracts', () => {
     });
   });
 
-  // -------------------------------------------------------------
-  // Block 4: Confetti Physics & Animation Invariants
-  // -------------------------------------------------------------
   describe('Block 4: Canvas Confetti Engine Mathematical Invariants', () => {
     interface Particle {
       x: number;

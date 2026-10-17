@@ -27,12 +27,9 @@ function assertCheck(name: string, condition: boolean, details?: string): void {
 }
 
 console.log('================================================================');
-console.log(' MARCA UBI ENTERPRISE CRM — SPRINT 8.3 DELIVERY GATE AUDITOR');
+console.log(' MARCA UBI ENTERPRISE CRM: SPRINT 8.3 DELIVERY GATE AUDITOR');
 console.log('================================================================\n');
 
-// -------------------------------------------------------------
-// BLOCK 1: Deliverable Files Verification
-// -------------------------------------------------------------
 console.log('[Block 1: Deliverable Files Verification]');
 const requiredFiles = [
   'src/app/actions/stageTransitionActions.ts',
@@ -52,9 +49,6 @@ for (const file of requiredFiles) {
   assertCheck(`File exists: ${file}`, fs.existsSync(fullPath));
 }
 
-// -------------------------------------------------------------
-// BLOCK 2: Anti-AI-Slop & Dark Luxury Token Auditing
-// -------------------------------------------------------------
 console.log('\n[Block 2: Anti-AI-Slop & Dark Luxury Token Auditing]');
 
 const filesToAudit = [
@@ -116,9 +110,6 @@ assertCheck('Lost modal enforces >= 10 characters for Other reason', lostModalCo
 assertCheck('Server action checks post-conversion lock (lead.converted_at)', actionsContent.includes('lead.converted_at && profile.role !== \'admin\''));
 assertCheck('Server action checks viewer 403 Forbidden', actionsContent.includes('profile.role === \'viewer\''));
 
-// -------------------------------------------------------------
-// BLOCK 3: Automated Test Suites Execution
-// -------------------------------------------------------------
 console.log('\n[Block 3: Automated Test Suites Execution]');
 
 const testSuites = [
@@ -139,9 +130,6 @@ for (const testFile of testSuites) {
   }
 }
 
-// -------------------------------------------------------------
-// BLOCK 4: Strict TypeScript Compilation
-// -------------------------------------------------------------
 console.log('\n[Block 4: Strict TypeScript Compilation]');
 
 try {
@@ -156,9 +144,6 @@ try {
   assertCheck('TypeScript compiler (tsc --noEmit) reported 0 errors', false, tscError);
 }
 
-// -------------------------------------------------------------
-// SUMMARY
-// -------------------------------------------------------------
 console.log('\n================================================================');
 console.log(` TOTAL CHECKS: ${passedChecks + failedChecks} | PASSED: ${passedChecks} | FAILED: ${failedChecks}`);
 console.log('================================================================\n');

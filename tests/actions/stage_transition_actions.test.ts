@@ -26,9 +26,6 @@ import type { CrmUserRole } from '@/types/crm';
 describe('Sprint 8.3: Guarded Stage Transition Actions & State Machine Locking', () => {
   const validLeadUuid = 'a0000000-0000-0000-0000-000000000001';
 
-  // -------------------------------------------------------------
-  // Block 1: Negotiation Schema & Positive Valuation
-  // -------------------------------------------------------------
   describe('Block 1: transitionToNegotiationSchema Validation', () => {
     it('accepts perfectly formatted negotiation payloads', () => {
       const payload = {
@@ -78,9 +75,6 @@ describe('Sprint 8.3: Guarded Stage Transition Actions & State Machine Locking',
     });
   });
 
-  // -------------------------------------------------------------
-  // Block 2: Lost Reason Schema & Mandatory Disclosures
-  // -------------------------------------------------------------
   describe('Block 2: transitionToLostSchema Validation & Loss Attribution', () => {
     it('accepts all standardized lost reason enum values', () => {
       LOST_REASON_OPTIONS.forEach((reason) => {
@@ -138,9 +132,6 @@ describe('Sprint 8.3: Guarded Stage Transition Actions & State Machine Locking',
     });
   });
 
-  // -------------------------------------------------------------
-  // Block 3: Converted Schema & Commercial Terms
-  // -------------------------------------------------------------
   describe('Block 3: transitionToConvertedSchema Validation', () => {
     it('accepts fully satisfied commercial conversion terms', () => {
       const payload = {
@@ -188,9 +179,6 @@ describe('Sprint 8.3: Guarded Stage Transition Actions & State Machine Locking',
     });
   });
 
-  // -------------------------------------------------------------
-  // Block 4: State Machine Progression & Converted Deal Locking
-  // -------------------------------------------------------------
   describe('Block 4: State Machine Invariants & Post-Conversion Locking', () => {
     interface MockLead {
       id: string;
