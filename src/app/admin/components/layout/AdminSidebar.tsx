@@ -265,31 +265,33 @@ export function AdminSidebar({
         </button>
       </div>
 
-      {/* Quick Action Button */}
-      <div className={styles.quickActionBox}>
-        <button
-          type="button"
-          onClick={handleOpenNewLead}
-          className={styles.newLeadBtn}
-          title="Log new prospective engagement"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+      {/* Quick Action Button: Gated against viewers */}
+      {currentUser.role !== 'viewer' && (
+        <div className={styles.quickActionBox}>
+          <button
+            type="button"
+            onClick={handleOpenNewLead}
+            className={styles.newLeadBtn}
+            title="Log new prospective engagement"
           >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          {!isCollapsed && <span>New Lead</span>}
-        </button>
-      </div>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            {!isCollapsed && <span>New Lead</span>}
+          </button>
+        </div>
+      )}
 
       {/* Navigation Groups */}
       <nav className={styles.navScrollArea}>

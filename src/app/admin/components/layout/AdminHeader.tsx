@@ -20,6 +20,7 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps): React.ReactElement {
   const canManageTeam = currentUser.role === 'admin' || currentUser.role === 'sales_manager';
+  const canCreateLead = currentUser.role !== 'viewer';
 
   const handleOpenNewLead = (): void => {
     window.dispatchEvent(new CustomEvent('open-new-lead-drawer'));
@@ -92,28 +93,30 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
 
         {/* Quick Action Triggers */}
         <div className={styles.headerActionBtns}>
-          <button
-            type="button"
-            onClick={handleOpenNewLead}
-            className={`${styles.quickActionBtn} ${styles.primaryAction}`}
-            title="Log new prospective engagement"
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          {canCreateLead && (
+            <button
+              type="button"
+              onClick={handleOpenNewLead}
+              className={`${styles.quickActionBtn} ${styles.primaryAction}`}
+              title="Log new prospective engagement"
             >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span>+ New Lead</span>
-          </button>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>+ New Lead</span>
+            </button>
+          )}
 
           {canManageTeam && (
             <button

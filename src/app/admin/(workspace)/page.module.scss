@@ -76,9 +76,7 @@
   box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
 }
 
-// ==========================================
-// Stripe Scorecards Ribbon
-// ==========================================
+/* Stripe Scorecards Ribbon */
 .kpiGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -181,9 +179,7 @@
   font-weight: 600;
 }
 
-// ==========================================
-// Quick Launch Hub
-// ==========================================
+/* Quick Launch Hub */
 .quickLaunchSection {
   display: flex;
   flex-direction: column;
@@ -316,9 +312,7 @@
   transition: all 0.2s ease;
 }
 
-// ==========================================
-// Recent Activity Ledger
-// ==========================================
+/* Recent Activity Ledger */
 .activitySection {
   background: #111111;
   border: 1px solid rgba(255, 255, 255, 0.08);

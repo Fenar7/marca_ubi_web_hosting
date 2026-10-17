@@ -13,6 +13,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
+import { NewLeadDrawer } from './NewLeadDrawer';
 import type { CurrentUserSession } from './UserProfileDropdown';
 import styles from './AdminWorkspace.module.scss';
 
@@ -27,6 +28,7 @@ export function AdminWorkspaceShell({
 }: AdminWorkspaceShellProps): React.ReactElement {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
+  const [isNewLeadDrawerOpen, setIsNewLeadDrawerOpen] = useState<boolean>(false);
 
   // Restore sidebar collapse preference from localStorage upon client hydration
   useEffect(() => {
@@ -52,17 +54,34 @@ export function AdminWorkspaceShell({
     });
   }, []);
 
-  // Global keyboard shortcuts: ⌘B / Ctrl+B toggles navigation rail
+  // Listen to open-new-lead-drawer custom events dispatched by sidebar / header buttons
+  useEffect(() => {
+    const handleOpenDrawer = (): void => {
+      if (currentUser.role !== 'viewer') {
+        setIsNewLeadDrawerOpen(true);
+      }
+    };
+
+    window.addEventListener('open-new-lead-drawer', handleOpenDrawer);
+    return () => window.removeEventListener('open-new-lead-drawer', handleOpenDrawer);
+  }, [currentUser.role]);
+
+  // Global keyboard shortcuts: ⌘B / Ctrl+B toggles rail, ⌘L / Ctrl+L opens New Lead drawer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
         e.preventDefault();
         toggleSidebar();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        if (currentUser.role !== 'viewer') {
+          setIsNewLeadDrawerOpen((prev) => !prev);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleSidebar]);
+  }, [toggleSidebar, currentUser.role]);
 
   return (
     <div
@@ -97,6 +116,15 @@ export function AdminWorkspaceShell({
           {children}
         </main>
       </div>
+
+      {/* New Client Engagement Drawer */}
+      {currentUser.role !== 'viewer' && (
+        <NewLeadDrawer
+          isOpen={isNewLeadDrawerOpen}
+          onClose={() => setIsNewLeadDrawerOpen(false)}
+          currentUser={currentUser}
+        />
+      )}
     </div>
   );
 }
