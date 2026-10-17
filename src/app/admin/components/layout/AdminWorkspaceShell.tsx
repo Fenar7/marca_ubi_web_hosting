@@ -130,10 +130,8 @@ export function AdminWorkspaceShell({
     };
 
     window.addEventListener('open-lead-modal', handleOpenLeadEvent);
-    window.addEventListener('open-lead-drawer', handleOpenLeadEvent);
     return () => {
       window.removeEventListener('open-lead-modal', handleOpenLeadEvent);
-      window.removeEventListener('open-lead-drawer', handleOpenLeadEvent);
     };
   }, [handleOpenLead]);
 

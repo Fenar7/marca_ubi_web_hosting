@@ -1,0 +1,460 @@
+/**
+ * @file DossierDrawer.module.scss
+ * @description Dark Luxury SCSS Module for Client 360° Sliding Drawer Shell & Organization Dossier.
+ *              Enforces Apple HIG Vibrancy, Linear fluid card physics, and Raycast monospace tokens.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+$black: #000000;
+$obsidian-deep: #0a0a0c;
+$surface-card: #121216;
+$surface-hover: #18181e;
+$border-specular: rgba(255, 255, 255, 0.08);
+$border-subtle: rgba(255, 255, 255, 0.05);
+$cta-orange: #ff6100;
+$cta-orange-subtle: rgba(255, 97, 0, 0.12);
+$text-primary: #ffffff;
+$text-secondary: #a1a1aa;
+$text-muted: #71717a;
+$font-mono: 'SF Mono', 'Fira Code', Menlo, Consolas, Monaco, monospace;
+$ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: flex-end;
+  opacity: 1;
+  transition: opacity 0.28s $ease-spring;
+
+  &.closing {
+    opacity: 0;
+  }
+}
+
+.drawerContainer {
+  position: relative;
+  width: min(840px, 100vw);
+  height: 100vh;
+  height: 100dvh;
+  background: $obsidian-deep;
+  border-left: 1px solid $border-specular;
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8), inset 1px 0 1px rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(0);
+  transition: transform 0.32s $ease-spring;
+
+  &.closing {
+    transform: translateX(100%);
+  }
+
+  @media (max-width: 767px) {
+    width: 100vw;
+    border-left: none;
+  }
+}
+
+/* Header Rail */
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid $border-specular;
+  background: rgba(14, 14, 18, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.leadIdToken {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: $text-primary;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+.headerCompany {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.headerStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.closeButton {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: $text-secondary;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Two-Column Scrollable Body */
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 1.75rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    padding: 1.25rem 1rem;
+    gap: 1.25rem;
+  }
+}
+
+/* Left Column: Organization & Brand Dossier */
+.dossierColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sectionCard {
+  background: $surface-card;
+  border: 1px solid $border-specular;
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+}
+
+.sectionTitle {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: $cta-orange;
+  }
+}
+
+/* Key Value Pairs & Layout */
+.keyValueList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.keyValuePair {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.fieldLabel {
+  font-size: 0.8rem;
+  color: $text-secondary;
+  flex-shrink: 0;
+}
+
+.fieldValue {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: $text-primary;
+  text-align: right;
+  word-break: break-word;
+
+  &.mono {
+    font-family: $font-mono;
+    font-size: 0.8rem;
+  }
+
+  &.tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.externalLink {
+  color: $cta-orange;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Action Triggers Grid */
+.actionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.actionButton {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s $ease-spring;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.callBtn {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: $text-primary;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+  }
+
+  &.waBtn {
+    background: rgba(37, 211, 102, 0.1);
+    border-color: rgba(37, 211, 102, 0.25);
+    color: #25d366;
+
+    &:hover {
+      background: rgba(37, 211, 102, 0.18);
+      border-color: rgba(37, 211, 102, 0.4);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+/* Service Scope Tags */
+.tagsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.serviceTag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: $text-primary;
+}
+
+/* Valuation Highlight */
+.valuationBadge {
+  font-family: $font-mono;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #34c759;
+  letter-spacing: 0.02em;
+}
+
+/* Raw Brief Accordion */
+.briefAccordion {
+  border: 1px solid $border-subtle;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.accordionTrigger {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: $text-primary;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: $text-muted;
+    transition: transform 0.2s $ease-spring;
+  }
+
+  &.open svg {
+    transform: rotate(180deg);
+  }
+}
+
+.accordionContent {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid $border-subtle;
+  font-size: 0.8rem;
+  color: $text-secondary;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.briefEntry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.briefKey {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $text-muted;
+}
+
+.briefVal {
+  color: $text-primary;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.emptyBrief {
+  font-style: italic;
+  color: $text-muted;
+  font-size: 0.8rem;
+  padding: 0.5rem 0;
+}
+
+/* Loading & Empty States */
+.loadingContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: $text-secondary;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: $cta-orange;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

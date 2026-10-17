@@ -2,18 +2,18 @@
 
 /**
  * @file LeadDetailDrawer.tsx
- * @description Backward compatibility adapter re-exporting LeadDetailModal as LeadDetailDrawer.
+ * @description Backward compatibility adapter exporting ClientDossierDrawer as LeadDetailDrawer.
  *              Ensures existing imports across workspaces continue to function seamlessly after
- *              the centered luxury modal migration.
+ *              the Sprint 8.1 Client 360 sliding drawer release.
  * @module app/admin/components/drawers/LeadDetailDrawer
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import {
-  LeadDetailModal,
-  type LeadDetailModalProps,
-} from '@/app/admin/components/modals/LeadDetailModal';
+  ClientDossierDrawer,
+  type ClientDossierDrawerProps,
+} from '@/app/admin/components/DossierDrawer';
 
-export type LeadDetailDrawerProps = LeadDetailModalProps;
-export const LeadDetailDrawer = LeadDetailModal;
-export default LeadDetailModal;
+export type LeadDetailDrawerProps = ClientDossierDrawerProps;
+export const LeadDetailDrawer = ClientDossierDrawer;
+export default ClientDossierDrawer;
