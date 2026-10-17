@@ -688,10 +688,8 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
     return { success: false, error: 'Access Denied: Sales Executives do not have roster inspection privileges.' };
   }
 
-  const adminClient = getAdminClient();
-
-  // Fetch all profiles ordered by creation timestamp
-  const { data: profiles, error: profilesError } = await adminClient
+  // Fetch all profiles ordered by creation timestamp using caller's authenticated session under RLS
+  const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false });
@@ -701,7 +699,7 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
   }
 
   // Fetch all leads to compute active deal counts per representative
-  const { data: leads, error: leadsError } = await adminClient
+  const { data: leads, error: leadsError } = await supabase
     .from('leads')
     .select('assigned_to, expected_value');
 

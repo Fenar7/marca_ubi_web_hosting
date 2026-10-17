@@ -58,6 +58,16 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
         }}
       >
         <div>
+          <img
+            src="/hero/marca-ubi-logo.png"
+            alt="Marca Ubi."
+            style={{
+              display: 'block',
+              width: '160px',
+              height: 'auto',
+              marginBottom: '0.75rem',
+            }}
+          />
           <span
             style={{
               fontSize: '0.72rem',

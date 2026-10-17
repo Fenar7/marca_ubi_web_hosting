@@ -90,7 +90,15 @@ export function LoginForm(): React.ReactElement {
           <span className={styles.brandBadgeDot} aria-hidden="true" />
           <span>Internal Access</span>
         </div>
-        <h1 className={styles.brandTitle}>Marca Ubi</h1>
+        <div className={styles.brandLogoWrap}>
+          <img
+            src="/hero/marca-ubi-logo.png"
+            alt="Marca Ubi."
+            className={styles.brandLogo}
+            width={190}
+            height={40}
+          />
+        </div>
         <p className={styles.brandSubtitle}>Enterprise Sales Intelligence</p>
 
         <div className={styles.portalNotice}>

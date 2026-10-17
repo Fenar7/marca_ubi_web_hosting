@@ -52,6 +52,15 @@ export default async function ResetPasswordPage(): Promise<React.ReactElement> {
             <span className={styles.securityBadgeDot} />
             <span>Identity Governance Protocol</span>
           </div>
+          <div className={styles.brandLogoWrap}>
+            <img
+              src="/hero/marca-ubi-logo.png"
+              alt="Marca Ubi."
+              className={styles.brandLogo}
+              width={180}
+              height={38}
+            />
+          </div>
           <h1 className={styles.title}>Establish Credentials</h1>
           <p className={styles.subtitle}>Account Security Invariant</p>
 

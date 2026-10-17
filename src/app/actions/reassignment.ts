@@ -13,7 +13,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
-import { getAdminClient } from '@/app/lib/supabase/admin';
 import type {
   TeamActionResult,
   RepDealInventory,
@@ -120,10 +119,10 @@ export async function getRepDealInventory(userId: string): Promise<TeamActionRes
       };
     }
 
-    const adminClient = getAdminClient();
+    const supabase = await createClient();
 
     // 1. Fetch target representative profile
-    const { data: targetProfile, error: profileError } = await adminClient
+    const { data: targetProfile, error: profileError } = await supabase
       .from('profiles')
       .select('id, full_name, email, role, status')
       .eq('id', userId)
@@ -137,7 +136,7 @@ export async function getRepDealInventory(userId: string): Promise<TeamActionRes
     }
 
     // 2. Fetch all funnel statuses to accurately partition active vs terminal macro-buckets
-    const { data: statuses, error: statusesError } = await adminClient
+    const { data: statuses, error: statusesError } = await supabase
       .from('funnel_statuses')
       .select('id, name, bucket, color_code, sort_order')
       .order('sort_order', { ascending: true });
@@ -165,7 +164,7 @@ export async function getRepDealInventory(userId: string): Promise<TeamActionRes
     });
 
     // 3. Fetch all active leads currently assigned to the target representative
-    const { data: leads, error: leadsError } = await adminClient
+    const { data: leads, error: leadsError } = await supabase
       .from('leads')
       .select('id, lead_id, name, company, expected_value, priority, next_follow_up, created_at, status_id')
       .eq('assigned_to', userId)
@@ -281,10 +280,10 @@ export async function executeLeadReassignment(
     }
 
     const { sourceUserId, destinationUserId, transferReason } = validation.data;
-    const adminClient = getAdminClient();
+    const supabase = await createClient();
 
     // Verify destination representative is an active commercial staff member
-    const { data: destProfile, error: destError } = await adminClient
+    const { data: destProfile, error: destError } = await supabase
       .from('profiles')
       .select('id, full_name, email, role, status')
       .eq('id', destinationUserId)
@@ -315,8 +314,8 @@ export async function executeLeadReassignment(
       };
     }
 
-    // Call atomic PostgreSQL stored procedure
-    const { data: rpcResult, error: rpcError } = await adminClient.rpc(
+    // Call atomic PostgreSQL stored procedure via authenticated caller session
+    const { data: rpcResult, error: rpcError } = await supabase.rpc(
       'execute_atomic_lead_reassignment',
       {
         p_source_user_id: sourceUserId,

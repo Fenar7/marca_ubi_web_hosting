@@ -92,6 +92,16 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
       {/* Workspace Brand Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
+          <img
+            src="/hero/marca-ubi-logo.png"
+            alt="Marca Ubi."
+            style={{
+              display: 'block',
+              width: '140px',
+              height: 'auto',
+              marginBottom: '0.75rem',
+            }}
+          />
           <span className={styles.eyebrow}>Governance & Access Control</span>
           <h1 className={styles.pageTitle}>Commercial Personnel Directory</h1>
           <p className={styles.pageSubtitle}>
