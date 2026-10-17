@@ -15,6 +15,7 @@ import {
   formatBriefLabel,
   formatBriefValue,
   extractBriefEntries,
+  getDossierInitials,
 } from '../../src/app/admin/components/DossierDrawer/dossierUtils';
 import type { LeadDossierData } from '../../src/app/admin/components/DossierDrawer/ClientDossierDrawer';
 
@@ -88,11 +89,16 @@ describe('Sprint 8.1: Client 360° Dossier & Organization Dossier Engine', () =>
       assert.strictEqual(formatBriefValue('Tier 1 Enterprise'), 'Tier 1 Enterprise');
     });
 
-    it('filters internal metadata and empty values from questionnaire entries', () => {
+    it('filters internal metadata, idempotency keys, and empty values from questionnaire entries', () => {
       const payload = {
         primary_goal: 'Rebrand portal',
         submitted_at: '2026-10-15T00:00:00Z',
         _timestamp: 123456789,
+        idempotencyKey: 'idem-uuid-999',
+        idempotency_key: 'idem-uuid-888',
+        creator_name: 'System Hook',
+        creator_role: 'system',
+        phone_warning: 'Invalid',
         empty_field: '',
         null_field: null,
         valid_budget: '$50,000+',
@@ -101,6 +107,18 @@ describe('Sprint 8.1: Client 360° Dossier & Organization Dossier Engine', () =>
       assert.strictEqual(entries.length, 2);
       assert.deepStrictEqual(entries[0], ['primary_goal', 'Rebrand portal']);
       assert.deepStrictEqual(entries[1], ['valid_budget', '$50,000+']);
+    });
+
+    it('extracts uppercase 2-letter avatar initials or defaults to UN safely', () => {
+      assert.strictEqual(getDossierInitials('Anita Nair'), 'AN');
+      assert.strictEqual(getDossierInitials('Elena Rostova'), 'ER');
+      assert.strictEqual(getDossierInitials('Cher'), 'CH');
+      assert.strictEqual(getDossierInitials('Sarah Connor'), 'SC');
+      assert.strictEqual(getDossierInitials('Dr. Sarah Connor'), 'DC');
+      assert.strictEqual(getDossierInitials('Unassigned'), 'UN');
+      assert.strictEqual(getDossierInitials(''), 'UN');
+      assert.strictEqual(getDossierInitials(null), 'UN');
+      assert.strictEqual(getDossierInitials(undefined), 'UN');
     });
   });
 

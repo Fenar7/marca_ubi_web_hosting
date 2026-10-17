@@ -15,10 +15,11 @@ import {
   formatDossierCurrency,
   sanitizeTelUri,
   createWhatsAppUri,
+  getDossierInitials,
 } from './dossierUtils';
 import styles from './DossierDrawer.module.scss';
 
-export { formatDossierCurrency, sanitizeTelUri, createWhatsAppUri };
+export { formatDossierCurrency, sanitizeTelUri, createWhatsAppUri, getDossierInitials };
 
 export interface OrganizationDossierProps {
   lead: LeadDossierData;
@@ -32,6 +33,11 @@ export function OrganizationDossier({
   const telUri = sanitizeTelUri(lead.phone);
   const whatsAppUri = createWhatsAppUri(lead.phone, lead.lead_id, lead.name);
 
+  // International phone validation: flag numbers failing E.164 requirements (< 7 digits)
+  const isPhoneInvalid = Boolean(
+    lead.phone && (!telUri || lead.phone.replace(/\D/g, '').length < 7)
+  );
+
   // Normalize company website URL to ensure https protocol
   const trimmedWebsite = lead.company_website?.trim() || null;
   const websiteUrl = trimmedWebsite
@@ -39,6 +45,11 @@ export function OrganizationDossier({
       ? trimmedWebsite
       : `https://${trimmedWebsite}`
     : null;
+
+  // Split comma-delimited service categories for granular tags
+  const serviceCategories = lead.service_category
+    ? lead.service_category.split(',').map((s) => s.trim()).filter(Boolean)
+    : ['Web & Digital'];
 
   return (
     <div className={`${styles.dossierColumn} ${className || ''}`}>
@@ -101,11 +112,21 @@ export function OrganizationDossier({
         <div className={styles.keyValueList}>
           <div className={styles.keyValuePair}>
             <span className={styles.fieldLabel}>Full Name</span>
-            <span className={styles.fieldValue}>{lead.name}</span>
+            <span className={styles.fieldValue}>{lead.name || 'Private Contact'}</span>
           </div>
 
           <div className={styles.keyValuePair}>
-            <span className={styles.fieldLabel}>Direct Phone</span>
+            <div className={styles.fieldLabelGroup}>
+              <span className={styles.fieldLabel}>Direct Phone</span>
+              {isPhoneInvalid && (
+                <span
+                  className={styles.phoneWarningBadge}
+                  title="Phone coordinate does not conform to international E.164 dialing requirements"
+                >
+                  Invalid Format
+                </span>
+              )}
+            </div>
             <span className={`${styles.fieldValue} ${styles.mono}`}>{lead.phone || 'Not Provided'}</span>
           </div>
 
@@ -170,7 +191,11 @@ export function OrganizationDossier({
           <div className={styles.keyValuePair}>
             <span className={styles.fieldLabel}>Service Category</span>
             <div className={styles.tagsWrapper}>
-              <span className={styles.serviceTag}>{lead.service_category}</span>
+              {serviceCategories.map((cat) => (
+                <span key={cat} className={styles.serviceTag}>
+                  {cat}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -191,7 +216,16 @@ export function OrganizationDossier({
 
           <div className={styles.keyValuePair}>
             <span className={styles.fieldLabel}>Assigned Representative</span>
-            <span className={styles.fieldValue}>{lead.assigned_to_name || 'Unassigned'}</span>
+            <div className={styles.repBadge}>
+              <span
+                className={styles.avatarInitials}
+                title={`Assigned to ${lead.assigned_to_name || 'Unassigned'}`}
+                aria-label={`Initials for ${lead.assigned_to_name || 'Unassigned'}`}
+              >
+                {getDossierInitials(lead.assigned_to_name)}
+              </span>
+              <span className={styles.fieldValue}>{lead.assigned_to_name || 'Unassigned'}</span>
+            </div>
           </div>
         </div>
       </div>

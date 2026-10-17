@@ -253,6 +253,50 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+.fieldLabelGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.phoneWarningBadge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  line-height: 1;
+}
+
+.repBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.avatarInitials {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 97, 0, 0.15);
+  border: 1px solid rgba(255, 97, 0, 0.35);
+  color: $cta-orange;
+  font-size: 0.65rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  font-family: $font-mono;
+  flex-shrink: 0;
+}
+
 .externalLink {
   color: $cta-orange;
   display: inline-flex;

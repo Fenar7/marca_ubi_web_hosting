@@ -103,6 +103,8 @@ function LeadsWorkspaceContent({
   const priorityParam = searchParams.get('priority');
   const stageParam = searchParams.get('stage');
 
+  const leadIdParam = searchParams.get('leadId');
+
   const validBuckets: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
   const initialBucket: BucketTabId = validBuckets.includes(bucketParam as BucketTabId)
     ? (bucketParam as BucketTabId)
@@ -115,9 +117,34 @@ function LeadsWorkspaceContent({
   const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
   const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
 
-  // Client 360 Slide-over Drawer State
-  const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  // Client 360 Slide-over Drawer State: hydrated from URL search parameter upon deep-link navigation
+  const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(leadIdParam);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(Boolean(leadIdParam));
+
+  // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
+  const handleOpenDrawer = useCallback((id: string) => {
+    setActiveDrawerLeadId(id);
+    setIsDrawerOpen(true);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('leadId') !== id) {
+        url.searchParams.set('leadId', id);
+        window.history.replaceState({}, '', url.pathname + url.search);
+      }
+    }
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setIsDrawerOpen(false);
+    setActiveDrawerLeadId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('leadId')) {
+        url.searchParams.delete('leadId');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleOpenDrawerEvent = (e: Event): void => {
@@ -127,14 +154,13 @@ function LeadsWorkspaceContent({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
-        setActiveDrawerLeadId(id);
-        setIsDrawerOpen(true);
+        handleOpenDrawer(id);
       }
     };
 
     window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
     return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
-  }, []);
+  }, [handleOpenDrawer]);
 
   /**
    * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
@@ -482,7 +508,7 @@ function LeadsWorkspaceContent({
       <ClientDossierDrawer
         leadId={activeDrawerLeadId}
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={handleCloseDrawer}
       />
     </>
   );

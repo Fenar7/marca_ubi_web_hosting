@@ -6,7 +6,7 @@
 
 export { ClientDossierDrawer } from './ClientDossierDrawer';
 export type { ClientDossierDrawerProps, LeadDossierData } from './ClientDossierDrawer';
-export { OrganizationDossier, formatDossierCurrency, sanitizeTelUri, createWhatsAppUri } from './OrganizationDossier';
+export { OrganizationDossier, formatDossierCurrency, sanitizeTelUri, createWhatsAppUri, getDossierInitials } from './OrganizationDossier';
 export type { OrganizationDossierProps } from './OrganizationDossier';
 export { RawBriefAccordion } from './RawBriefAccordion';
 export type { RawBriefAccordionProps } from './RawBriefAccordion';

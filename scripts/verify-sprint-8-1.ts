@@ -115,6 +115,10 @@ assertCheck('Backdrop scrim implements frosted glass blur', scssContent.includes
 assertCheck('Interactive triggers declare 44px minimum tap targets', scssContent.includes('min-height: 44px') || scssContent.includes('min-width: 44px'));
 assertCheck('OrganizationDossier implements Click-to-Call (tel:) trigger', orgDossierContent.includes('sanitizeTelUri') && dossierUtilsContent.includes('tel:'));
 assertCheck('OrganizationDossier implements Click-to-WhatsApp (wa.me) trigger', orgDossierContent.includes('createWhatsAppUri') && dossierUtilsContent.includes('wa.me'));
+assertCheck('OrganizationDossier renders representative initials badge', orgDossierContent.includes('avatarInitials') && orgDossierContent.includes('getDossierInitials'));
+assertCheck('RawBriefAccordion implements bidirectional WAI-ARIA linkage', fs.readFileSync(path.join(ROOT_DIR, 'src/app/admin/components/DossierDrawer/RawBriefAccordion.tsx'), 'utf8').includes('aria-controls="brief-accordion-region"'));
+assertCheck('AdminWorkspaceShell routes leadId params to open-lead-drawer', fs.readFileSync(path.join(ROOT_DIR, 'src/app/admin/components/layout/AdminWorkspaceShell.tsx'), 'utf8').includes('open-lead-drawer'));
+assertCheck('LeadsWorkspaceClient synchronizes leadId in URL without full reload', fs.readFileSync(path.join(ROOT_DIR, 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx'), 'utf8').includes('window.history.replaceState'));
 assertCheck('ClientDossierDrawer implements Escape key dismissal', drawerContent.includes("e.key === 'Escape'"));
 assertCheck('ClientDossierDrawer implements body scroll lock', drawerContent.includes("document.body.style.overflow = 'hidden'"));
 

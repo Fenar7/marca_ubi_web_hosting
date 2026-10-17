@@ -90,7 +90,23 @@ export function formatBriefValue(value: unknown): string {
 }
 
 /**
- * Filters out internal timestamps and non-informative empty keys from brief payloads.
+ * Extracts uppercase 2-letter avatar initials from a team member name.
+ * Defaults to 'UN' for unassigned or missing personnel.
+ * @param name Full name string
+ */
+export function getDossierInitials(name: string | null | undefined): string {
+  if (!name || name.trim() === '' || name === 'Unassigned') {
+    return 'UN';
+  }
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 1) {
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+/**
+ * Filters out internal timestamps, technical keys, and non-informative empty keys from brief payloads.
  * @param payload Raw brief payload JSONB
  */
 export function extractBriefEntries(
@@ -103,7 +119,11 @@ export function extractBriefEntries(
     'created_at',
     'creator_id',
     'created_via',
+    'creator_name',
+    'creator_role',
     'phone_warning',
+    'idempotencyKey',
+    'idempotency_key',
   ];
   return Object.entries(payload).filter(
     ([key, val]) =>

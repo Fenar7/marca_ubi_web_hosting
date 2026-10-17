@@ -32,9 +32,11 @@ export function RawBriefAccordion({
   return (
     <div className={`${styles.briefAccordion} ${className || ''}`}>
       <button
+        id="brief-accordion-trigger"
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
+        aria-controls="brief-accordion-region"
         className={`${styles.accordionTrigger} ${isOpen ? styles.open : ''}`}
       >
         <span>
@@ -54,7 +56,12 @@ export function RawBriefAccordion({
       </button>
 
       {isOpen && (
-        <div className={styles.accordionContent} role="region">
+        <div
+          id="brief-accordion-region"
+          className={styles.accordionContent}
+          role="region"
+          aria-labelledby="brief-accordion-trigger"
+        >
           {fieldCount === 0 ? (
             <p className={styles.emptyBrief}>
               No website questionnaire answers recorded for this inquiry.

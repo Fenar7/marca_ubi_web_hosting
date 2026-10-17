@@ -48,7 +48,17 @@ function LeadUrlSync({
   useEffect(() => {
     const leadId = searchParams.get('leadId');
     if (leadId) {
-      onLeadIdFound(leadId);
+      if (
+        typeof window !== 'undefined' &&
+        window.location.pathname.startsWith('/admin/leads')
+      ) {
+        // Leads workspace mounts ClientDossierDrawer directly; dispatch open-lead-drawer
+        window.dispatchEvent(
+          new CustomEvent('open-lead-drawer', { detail: { leadId } })
+        );
+      } else {
+        onLeadIdFound(leadId);
+      }
     }
   }, [searchParams, onLeadIdFound]);
 
