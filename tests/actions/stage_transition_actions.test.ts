@@ -181,6 +181,20 @@ describe('Sprint 8.3: Guarded Stage Transition Actions & State Machine Locking',
         assert.equal(result.success, false);
       });
     });
+
+    it('rejects unparseable or invalid signed contract dates', () => {
+      const invalidDates = ['invalid-date', '2026-99-99', 'not_a_date'];
+
+      invalidDates.forEach((dateStr) => {
+        const result = transitionToConvertedSchema.safeParse({
+          leadId: validLeadUuid,
+          finalRevenue: 500000,
+          signedContractDate: dateStr,
+          paymentTerms: '50% advance',
+        });
+        assert.equal(result.success, false);
+      });
+    });
   });
 
   describe('Block 4: State Machine Invariants & Post-Conversion Locking', () => {

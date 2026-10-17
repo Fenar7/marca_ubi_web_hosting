@@ -114,7 +114,10 @@ export const transitionToConvertedSchema = z.object({
   signedContractDate: z
     .string()
     .trim()
-    .min(1, { message: 'Signed contract date is required.' }),
+    .min(1, { message: 'Signed contract date is required.' })
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: 'Signed contract date must be a valid date.',
+    }),
   paymentTerms: z
     .string()
     .trim()
