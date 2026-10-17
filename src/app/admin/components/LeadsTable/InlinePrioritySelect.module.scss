@@ -112,7 +112,8 @@ $text-muted: #8e8e93;
 .popoverMenu {
   position: absolute;
   top: calc(100% + 5px);
-  left: 0;
+  right: 0;
+  left: auto;
   min-width: 130px;
   background: $obsidian-popover;
   backdrop-filter: blur(24px);

@@ -110,27 +110,40 @@ export function InlineStatusSelect({
       // 1. Instant optimistic visual feedback
       setOptimisticStatus(targetStatus);
 
-      // 2. Execute Server Action
-      const result = await updateLeadStatusInlineAction(leadId, targetStatus.id);
+      try {
+        // 2. Execute Server Action
+        const result = await updateLeadStatusInlineAction(leadId, targetStatus.id);
 
-      if (result.success && result.data?.statusDetails) {
-        onStatusChange?.(leadId, result.data.statusDetails);
+        if (result.success && result.data?.statusDetails) {
+          onStatusChange?.(leadId, result.data.statusDetails);
 
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('lead-updated', {
-              detail: { leadId, field: 'status', status: result.data.statusDetails },
-            })
-          );
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('lead-updated', {
+                detail: { leadId, field: 'status', status: result.data.statusDetails },
+              })
+            );
+          }
+        } else {
+          // Rollback occurs automatically when transition finishes without local commit
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('crm-toast', {
+                detail: {
+                  type: 'error',
+                  message: result.error || 'Failed to update deal stage. Reverting.',
+                },
+              })
+            );
+          }
         }
-      } else {
-        // Rollback occurs automatically when transition finishes without local commit
+      } catch {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
             new CustomEvent('crm-toast', {
               detail: {
                 type: 'error',
-                message: result.error || 'Failed to update deal stage. Reverting.',
+                message: 'Network connection failure. Action reverted.',
               },
             })
           );

@@ -94,27 +94,40 @@ export function InlinePrioritySelect({
       // 1. Instant optimistic update
       setOptimisticPriority(targetPriority);
 
-      // 2. Execute Server Action
-      const result = await updateLeadPriorityInlineAction(leadId, targetPriority);
+      try {
+        // 2. Execute Server Action
+        const result = await updateLeadPriorityInlineAction(leadId, targetPriority);
 
-      if (result.success && result.data) {
-        onPriorityChange?.(leadId, targetPriority);
+        if (result.success && result.data) {
+          onPriorityChange?.(leadId, targetPriority);
 
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('lead-updated', {
-              detail: { leadId, field: 'priority', priority: targetPriority },
-            })
-          );
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('lead-updated', {
+                detail: { leadId, field: 'priority', priority: targetPriority },
+              })
+            );
+          }
+        } else {
+          // Rollback occurs automatically when transition concludes without state commit
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('crm-toast', {
+                detail: {
+                  type: 'error',
+                  message: result.error || 'Failed to update priority tier. Reverting.',
+                },
+              })
+            );
+          }
         }
-      } else {
-        // Rollback occurs automatically when transition concludes without state commit
+      } catch {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
             new CustomEvent('crm-toast', {
               detail: {
                 type: 'error',
-                message: result.error || 'Failed to update priority tier. Reverting.',
+                message: 'Network connection failure. Action reverted.',
               },
             })
           );
