@@ -48,7 +48,17 @@ function LeadUrlSync({
   useEffect(() => {
     const leadId = searchParams.get('leadId');
     if (leadId) {
-      onLeadIdFound(leadId);
+      if (
+        typeof window !== 'undefined' &&
+        window.location.pathname.startsWith('/admin/leads')
+      ) {
+        // Leads workspace mounts ClientDossierDrawer directly; dispatch open-lead-drawer
+        window.dispatchEvent(
+          new CustomEvent('open-lead-drawer', { detail: { leadId } })
+        );
+      } else {
+        onLeadIdFound(leadId);
+      }
     }
   }, [searchParams, onLeadIdFound]);
 
@@ -125,6 +135,14 @@ export function AdminWorkspaceShell({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
+        // If already on /admin/leads, the LeadsWorkspaceClient mounts ClientDossierDrawer directly
+        if (
+          e.type === 'open-lead-drawer' &&
+          typeof window !== 'undefined' &&
+          window.location.pathname.startsWith('/admin/leads')
+        ) {
+          return;
+        }
         handleOpenLead(id);
       }
     };
