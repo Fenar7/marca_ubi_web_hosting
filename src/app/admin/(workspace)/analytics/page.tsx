@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createClient } from '@/app/lib/supabase/server';
 import type { PipelineRpcMetrics } from '@/types/crm';
+import { KpiRibbon } from '@/app/admin/components/kpi';
 import styles from './analytics.module.scss';
 
 export const metadata: Metadata = {
@@ -36,24 +37,21 @@ function formatCurrency(amount: number): string {
 export default async function AdminAnalyticsPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
 
-  let conversionRate = 0;
-  let potentialValue = 0;
-  let convertedRevenue = 0;
-  let totalDeals = 0;
-
+  let rpcMetrics: PipelineRpcMetrics | null = null;
   const { data: rpcData, error: rpcError } = await supabase.rpc('get_pipeline_kpis');
 
   if (!rpcError && rpcData) {
-    const metrics = rpcData as unknown as PipelineRpcMetrics;
-    conversionRate = metrics.conversion_rate_percentage || 0;
-    potentialValue = Number(metrics.potential_pipeline_value || 0);
-    convertedRevenue = Number(metrics.converted_revenue_value || 0);
-    totalDeals = metrics.total_leads_count || 0;
+    rpcMetrics = rpcData as unknown as PipelineRpcMetrics;
   } else {
     // Table query fallback
     const { data: leads } = await supabase
       .from('leads')
       .select('expected_value, funnel_statuses!inner(bucket)');
+
+    let totalDeals = 0;
+    let conversionRate = 0;
+    let convertedRevenue = 0;
+    let potentialValue = 0;
 
     if (leads && leads.length > 0) {
       totalDeals = leads.length;
@@ -67,6 +65,18 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
       convertedRevenue = converted.reduce((acc, l) => acc + (Number(l.expected_value) || 0), 0);
       potentialValue = potential.reduce((acc, l) => acc + (Number(l.expected_value) || 0), 0);
     }
+
+    rpcMetrics = {
+      total_leads_count: totalDeals,
+      open_leads_count: 0,
+      potential_leads_count: 0,
+      potential_pipeline_value: potentialValue,
+      converted_leads_count: 0,
+      converted_revenue_value: convertedRevenue,
+      lost_leads_count: 0,
+      overdue_follow_ups_count: 0,
+      conversion_rate_percentage: conversionRate,
+    };
   }
 
   // Fetch breakdown across all funnel statuses
@@ -104,72 +114,8 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
         </div>
       </header>
 
-      {/* Stripe Scorecards Ribbon */}
-      <section className={styles.kpiGrid} aria-label="Commercial Performance Scorecards">
-        <Link
-          href="/admin/leads?bucket=converted"
-          className={styles.kpiCard}
-          style={{ textDecoration: 'none', color: 'inherit' }}
-          title="Inspect won deals"
-        >
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Conversion Rate</span>
-            <span style={{ color: '#ff6100', fontSize: '0.8rem' }}>↗</span>
-          </div>
-          <div className={styles.kpiValue}>{conversionRate}%</div>
-          <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailEmerald}>Total Deals Converted</span>
-          </div>
-        </Link>
-
-        <Link
-          href="/admin/leads?bucket=potential"
-          className={styles.kpiCard}
-          style={{ textDecoration: 'none', color: 'inherit' }}
-          title="Inspect active potential pipeline"
-        >
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Pipeline Valuation</span>
-            <span style={{ color: '#ff6100', fontSize: '0.8rem' }}>↗</span>
-          </div>
-          <div className={styles.kpiValue}>{formatCurrency(potentialValue)}</div>
-          <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailOrange}>Active Negotiations</span>
-          </div>
-        </Link>
-
-        <Link
-          href="/admin/leads?bucket=converted"
-          className={styles.kpiCard}
-          style={{ textDecoration: 'none', color: 'inherit' }}
-          title="Inspect closed revenue deals"
-        >
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Closed Revenue</span>
-            <span style={{ color: '#ff6100', fontSize: '0.8rem' }}>↗</span>
-          </div>
-          <div className={styles.kpiValue}>{formatCurrency(convertedRevenue)}</div>
-          <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailEmerald}>Booked Agency Gross</span>
-          </div>
-        </Link>
-
-        <Link
-          href="/admin/leads"
-          className={styles.kpiCard}
-          style={{ textDecoration: 'none', color: 'inherit' }}
-          title="Inspect all commercial deals"
-        >
-          <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Total Deals</span>
-            <span style={{ color: '#ff6100', fontSize: '0.8rem' }}>↗</span>
-          </div>
-          <div className={styles.kpiValue}>{totalDeals}</div>
-          <div className={styles.kpiDetail}>
-            <span>All Commercial Deals</span>
-          </div>
-        </Link>
-      </section>
+      {/* Dark Luxury Executive KPI Ribbon */}
+      <KpiRibbon initialData={rpcMetrics} />
 
       {/* Funnel Stage Breakdown */}
       <section className={styles.breakdownSection} aria-label="Funnel Stage Distribution">
