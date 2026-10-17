@@ -9,7 +9,6 @@
 
 import React from 'react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
@@ -19,7 +18,7 @@ import { TeamWorkspaceClient } from './components/TeamWorkspaceClient';
 import styles from './team.module.scss';
 
 export const metadata: Metadata = {
-  title: 'Commercial Personnel & Governance | Marca Ubi Enterprise CRM',
+  title: 'Team Directory | Marca Ubi Enterprise CRM',
   robots: {
     index: false,
     follow: false,
@@ -88,35 +87,15 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   const adminCount = roster.filter((m) => m.role === 'admin').length;
 
   return (
-    <main className={styles.workspace}>
-      {/* Workspace Brand Header */}
+    <div className={styles.workspace}>
+      {/* Workspace Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.eyebrow}>Governance & Access Control</span>
-          <h1 className={styles.pageTitle}>Commercial Personnel Directory</h1>
+          <h1 className={styles.pageTitle}>Team Directory</h1>
           <p className={styles.pageSubtitle}>
-            Agency staff roster, role authorization matrix, and portfolio deal load allocation.
+            Manage team members, assign client portfolios, and update account permissions.
           </p>
-        </div>
-
-        <div className={styles.headerActions}>
-          <Link href="/admin" className={styles.backButton}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            <span>Back to Command Center</span>
-          </Link>
         </div>
       </header>
 
@@ -125,7 +104,7 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
         {/* KPI 1: Total Personnel */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Total Staff</span>
+            <span className={styles.kpiLabel}>Team Members</span>
             <div className={styles.kpiIcon}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -199,6 +178,6 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
         currentUserRole={role}
         currentUserId={callerProfile.id}
       />
-    </main>
+    </div>
   );
 }

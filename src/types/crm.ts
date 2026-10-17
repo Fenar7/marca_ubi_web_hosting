@@ -59,12 +59,15 @@ export type LeadActivityType =
   | 'priority_change'
   | 'reassignment'
   | 'call_logged'
+  | 'email_sent'
+  | 'meeting_held'
   | 'whatsapp_sent'
   | 'meeting_notes'
   | 'note_added'
   | 'follow_up_scheduled'
   | 'system_event'
-  | 'field_update';
+  | 'field_update'
+  | 'duplicate_inquiry';
 
 /**
  * Administrative governance actions recorded in the tamper-proof team audit log.
@@ -164,6 +167,7 @@ export interface Lead {
   revisit_date: string | null;
   notes: string | null;
   brief_payload: Record<string, unknown>;
+  inquiry_count: number;
   created_at: string;
   converted_at: string | null;
   updated_at: string;
@@ -192,10 +196,23 @@ export interface LeadActivity {
 }
 
 /**
+ * Essential commercial staff profile coordinates joined for touchpoint display.
+ */
+export interface ActivityActor {
+  id: string;
+  full_name: string;
+  role: CrmUserRole;
+  avatar_url?: string | null;
+  email?: string | null;
+}
+
+/**
  * Hydrated touchpoint record including actor details for timeline display.
  */
 export interface LeadActivityWithActor extends LeadActivity {
-  actor?: Profile | null;
+  actor?: ActivityActor | Profile | null;
+  actor_name: string;
+  actor_role: string;
 }
 
 /**
@@ -351,6 +368,28 @@ export interface TeamActionResult<T = unknown> {
 }
 
 /**
+ * Action result envelope returned by the administrative login Server Action.
+ * Encapsulates redirection path, progressive rate limiting lockout metrics, and error feedback.
+ */
+export interface LoginActionResult {
+  success: boolean;
+  error?: string;
+  redirectTo?: string;
+  remainingLockoutSeconds?: number;
+  isLocked?: boolean;
+}
+
+/**
+ * Action result envelope returned by the mandatory password rotation Server Action.
+ * Encapsulates operation status, form-level error message, and granular field validation issues.
+ */
+export interface ResetPasswordResult {
+  success: boolean;
+  error?: string;
+  validationErrors?: Record<string, string>;
+}
+
+/**
  * Breakdown of active deals across individual pipeline stages for a specific sales representative.
  */
 export interface StageDealBreakdown {
@@ -414,5 +453,98 @@ export interface AtomicReassignmentResult {
   source_user_id?: string;
   destination_user_id?: string;
   message: string;
+}
+
+/**
+ * Lightweight representative option for commercial assignee dropdown selectors.
+ */
+export interface AssigneeOption {
+  id: string;
+  fullName: string;
+  email: string;
+  role: CrmUserRole;
+}
+
+/**
+ * Standard server action result envelope for commercial lead mutations.
+ * Provides typed payload delivery, error messages, and validation feedback.
+ */
+export interface LeadActionResult<T = unknown> {
+  success: boolean;
+  leadId?: string;
+  id?: string;
+  error?: string;
+  data?: T;
+  validationErrors?: Record<string, string>;
+  lead?: LeadWithRelations;
+  activities?: LeadActivityWithActor[];
+  availableStatuses?: FunnelStatus[];
+  availableAssignees?: AssigneeOption[];
+  funnelStatuses?: FunnelStatus[];
+  teamAssignees?: AssigneeOption[];
+}
+
+/**
+ * Comprehensive 360-degree commercial lead dossier payload powering LeadDetailDrawer.
+ * Encapsulates full deal coordinates, related stage & source entities, creative brief payload,
+ * chronological interaction ledger, and available dropdown options for atomic mutations.
+ */
+export interface LeadDetailPayload {
+  lead: LeadWithRelations;
+  activities: LeadActivityWithActor[];
+  availableStatuses: FunnelStatus[];
+  availableAssignees: AssigneeOption[];
+  funnelStatuses?: FunnelStatus[];
+  teamAssignees?: AssigneeOption[];
+}
+
+/**
+ * Mutation payload for updating a deal's funnel stage, handling terminal bucket timestamps
+ * and optional transition notes.
+ */
+export interface UpdateLeadStatusPayload {
+  leadId: string;
+  newStatusId: string;
+  lostReason?: string | null;
+  note?: string | null;
+}
+
+/**
+ * Mutation payload for recording an omnichannel customer touchpoint or scheduled follow-up
+ * into the immutable lead activities ledger.
+ */
+export interface AddLeadTouchpointPayload {
+  leadId: string;
+  activityType:
+    | 'call_logged'
+    | 'email_sent'
+    | 'meeting_held'
+    | 'meeting_notes'
+    | 'whatsapp_sent'
+    | 'note_added'
+    | 'follow_up_scheduled';
+  description: string;
+  nextFollowUp?: string | null;
+}
+
+/**
+ * Mutation payload for single-deal commercial representative reassignment.
+ * Strictly gated to administrators and sales managers.
+ */
+export interface UpdateLeadAssigneePayload {
+  leadId: string;
+  newAssigneeId: string;
+  note?: string | null;
+}
+
+/**
+ * Mutation payload for updating commercial deal valuation parameters, priority tier,
+ * and high-level engagement notes.
+ */
+export interface UpdateLeadDealParametersPayload {
+  leadId: string;
+  expectedValue?: number;
+  priority?: LeadPriority;
+  notes?: string | null;
 }
 

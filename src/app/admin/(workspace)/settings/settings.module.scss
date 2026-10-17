@@ -1,0 +1,157 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 1.5rem;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff6100;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.pageTitle {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 0.4rem;
+}
+
+.pageSubtitle {
+  font-size: 0.88rem;
+  color: #a1a1aa;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.matrixCard {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tableHead {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  th {
+    padding: 0.75rem 1rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #71717a;
+  }
+}
+
+.tableRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+  td {
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    color: #cccccc;
+  }
+}
+
+.roleName {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.checkMark {
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.dashMark {
+  color: #555555;
+}
+
+.auditSection {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.auditList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.auditRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  gap: 1rem;
+}
+
+.auditAction {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ff6100;
+  background: rgba(255, 97, 0, 0.1);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+.auditEmail {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.auditTime {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.7rem;
+  color: #71717a;
+}

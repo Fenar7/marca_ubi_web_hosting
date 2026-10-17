@@ -21,6 +21,7 @@ import {
 } from '@/app/lib/auth-rate-limit';
 import { getAdminClient } from '@/app/lib/supabase/admin';
 import { ResetPasswordSchema } from '@/app/lib/team-schemas';
+import type { LoginActionResult, ResetPasswordResult } from '@/types/crm';
 
 /**
  * Validation schema for administrative login credentials.
@@ -37,14 +38,6 @@ const LoginSchema = z.object({
     .max(128, 'Password exceeds maximum allowable length'),
   next: z.string().optional(),
 });
-
-export interface LoginActionResult {
-  success: boolean;
-  error?: string;
-  redirectTo?: string;
-  remainingLockoutSeconds?: number;
-  isLocked?: boolean;
-}
 
 /**
  * Resolves the client network identifier (IP address) from Next.js request headers.
@@ -197,12 +190,6 @@ export async function loginAction(
       error: 'An internal authentication error occurred. Please try again later.',
     };
   }
-}
-
-export interface ResetPasswordResult {
-  success: boolean;
-  error?: string;
-  validationErrors?: Record<string, string>;
 }
 
 /**
