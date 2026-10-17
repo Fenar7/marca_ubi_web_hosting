@@ -3,9 +3,9 @@
 /**
  * @file AdminWorkspaceShell.tsx
  * @description Master Client Container managing layout geometry, sidebar collapse preferences,
- *              responsive drawers, and CSS custom variable injection across the CRM workspace.
- * @architecture Encapsulates persistent UI state (`localStorage`), keyboard shortcuts (`⌘B`),
- *               and provides the unified layout grid for all authenticated CRM routes.
+ *              centered luxury modal surfaces, and CSS custom variable injection across the CRM workspace.
+ * @architecture Encapsulates persistent UI state (`localStorage`), keyboard shortcuts (`⌘B`, `⌘L`, `⌘M`),
+ *               and provides the unified layout grid and modal command center for all CRM routes.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -14,9 +14,9 @@ import { useSearchParams } from 'next/navigation';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
-import { NewLeadDrawer } from './NewLeadDrawer';
-import { LeadDetailDrawer } from '@/app/admin/components/drawers/LeadDetailDrawer';
-import { AddTeamMemberDrawer } from '@/app/admin/(workspace)/team/components/AddTeamMemberDrawer';
+import { NewLeadModal } from '@/app/admin/components/modals/NewLeadModal';
+import { LeadDetailModal } from '@/app/admin/components/modals/LeadDetailModal';
+import { AddTeamMemberModal } from '@/app/admin/components/modals/AddTeamMemberModal';
 import {
   CredentialRevealModal,
   type ProvisionedCredentialsPayload,
@@ -24,13 +24,18 @@ import {
 import type { CurrentUserSession } from './UserProfileDropdown';
 import styles from './AdminWorkspace.module.scss';
 
+// Backward compatibility aliases for existing imports and assertions
+export { LeadDetailModal as LeadDetailDrawer } from '@/app/admin/components/modals/LeadDetailModal';
+export { NewLeadModal as NewLeadDrawer } from '@/app/admin/components/modals/NewLeadModal';
+export { AddTeamMemberModal as AddTeamMemberDrawer } from '@/app/admin/components/modals/AddTeamMemberModal';
+
 interface AdminWorkspaceShellProps {
   currentUser: CurrentUserSession;
   children: React.ReactNode;
 }
 
 /**
- * Synchronizes URL query parameters (?leadId=...) with the Client 360 Drawer.
+ * Synchronizes URL query parameters (?leadId=...) with the Centered Client 360 Modal.
  * Encapsulated inside a Suspense boundary to prevent App Router hydration mismatches.
  */
 function LeadUrlSync({
@@ -56,10 +61,10 @@ export function AdminWorkspaceShell({
 }: AdminWorkspaceShellProps): React.ReactElement {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
-  const [isNewLeadDrawerOpen, setIsNewLeadDrawerOpen] = useState<boolean>(false);
-  const [isAddMemberDrawerOpen, setIsAddMemberDrawerOpen] = useState<boolean>(false);
+  const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState<boolean>(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState<boolean>(false);
   const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
-  const [isLeadDrawerOpen, setIsLeadDrawerOpen] = useState<boolean>(false);
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] = useState<ProvisionedCredentialsPayload | null>(null);
   const [isCredentialModalOpen, setIsCredentialModalOpen] = useState<boolean>(false);
 
@@ -89,7 +94,7 @@ export function AdminWorkspaceShell({
 
   const handleOpenLead = useCallback((id: string) => {
     setActiveLeadId(id);
-    setIsLeadDrawerOpen(true);
+    setIsLeadModalOpen(true);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       if (url.searchParams.get('leadId') !== id) {
@@ -99,8 +104,8 @@ export function AdminWorkspaceShell({
     }
   }, []);
 
-  const handleCloseLeadDrawer = useCallback(() => {
-    setIsLeadDrawerOpen(false);
+  const handleCloseLeadModal = useCallback(() => {
+    setIsLeadModalOpen(false);
     setActiveLeadId(null);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
@@ -111,9 +116,9 @@ export function AdminWorkspaceShell({
     }
   }, []);
 
-  // Listen to open-lead-drawer custom events dispatched across any workspace
+  // Listen to open-lead-modal and open-lead-drawer custom events dispatched across any workspace
   useEffect(() => {
-    const handleOpenLeadDrawerEvent = (e: Event): void => {
+    const handleOpenLeadEvent = (e: Event): void => {
       const customEvt = e as CustomEvent<{ leadId?: string } | string>;
       const id =
         typeof customEvt.detail === 'string'
@@ -124,35 +129,47 @@ export function AdminWorkspaceShell({
       }
     };
 
-    window.addEventListener('open-lead-drawer', handleOpenLeadDrawerEvent);
-    return () => window.removeEventListener('open-lead-drawer', handleOpenLeadDrawerEvent);
+    window.addEventListener('open-lead-modal', handleOpenLeadEvent);
+    window.addEventListener('open-lead-drawer', handleOpenLeadEvent);
+    return () => {
+      window.removeEventListener('open-lead-modal', handleOpenLeadEvent);
+      window.removeEventListener('open-lead-drawer', handleOpenLeadEvent);
+    };
   }, [handleOpenLead]);
 
-  // Listen to open-new-lead-drawer custom events dispatched by sidebar / header buttons
+  // Listen to open-new-lead-modal and open-new-lead-drawer custom events dispatched by quick action buttons
   useEffect(() => {
-    const handleOpenDrawer = (): void => {
+    const handleOpenNewLead = (): void => {
       if (currentUser.role !== 'viewer') {
-        setIsNewLeadDrawerOpen(true);
+        setIsNewLeadModalOpen(true);
       }
     };
 
-    window.addEventListener('open-new-lead-drawer', handleOpenDrawer);
-    return () => window.removeEventListener('open-new-lead-drawer', handleOpenDrawer);
+    window.addEventListener('open-new-lead-modal', handleOpenNewLead);
+    window.addEventListener('open-new-lead-drawer', handleOpenNewLead);
+    return () => {
+      window.removeEventListener('open-new-lead-modal', handleOpenNewLead);
+      window.removeEventListener('open-new-lead-drawer', handleOpenNewLead);
+    };
   }, [currentUser.role]);
 
-  // Listen to open-add-member-drawer custom events dispatched by header / workspace buttons
+  // Listen to open-add-member-modal and open-add-member-drawer custom events dispatched by header / workspace buttons
   useEffect(() => {
     const handleOpenAddMember = (): void => {
       if (currentUser.role === 'admin') {
-        setIsAddMemberDrawerOpen(true);
+        setIsAddMemberModalOpen(true);
       }
     };
 
+    window.addEventListener('open-add-member-modal', handleOpenAddMember);
     window.addEventListener('open-add-member-drawer', handleOpenAddMember);
-    return () => window.removeEventListener('open-add-member-drawer', handleOpenAddMember);
+    return () => {
+      window.removeEventListener('open-add-member-modal', handleOpenAddMember);
+      window.removeEventListener('open-add-member-drawer', handleOpenAddMember);
+    };
   }, [currentUser.role]);
 
-  // Global keyboard shortcuts: ⌘B / Ctrl+B toggles rail, ⌘L / Ctrl+L opens New Lead drawer, ⌘M / Ctrl+M opens Add Member drawer
+  // Global keyboard shortcuts: ⌘B toggles rail, ⌘L opens New Lead modal, ⌘M opens Add Member modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
@@ -161,12 +178,12 @@ export function AdminWorkspaceShell({
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'l') {
         e.preventDefault();
         if (currentUser.role !== 'viewer') {
-          setIsNewLeadDrawerOpen((prev) => !prev);
+          setIsNewLeadModalOpen((prev) => !prev);
         }
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         if (currentUser.role === 'admin') {
-          setIsAddMemberDrawerOpen((prev) => !prev);
+          setIsAddMemberModalOpen((prev) => !prev);
         }
       }
     };
@@ -208,20 +225,20 @@ export function AdminWorkspaceShell({
         </main>
       </div>
 
-      {/* New Client Engagement Drawer */}
+      {/* Centered New Client Engagement Modal (re-exported as NewLeadDrawer for backward compatibility) */}
       {currentUser.role !== 'viewer' && (
-        <NewLeadDrawer
-          isOpen={isNewLeadDrawerOpen}
-          onClose={() => setIsNewLeadDrawerOpen(false)}
+        <NewLeadModal
+          isOpen={isNewLeadModalOpen}
+          onClose={() => setIsNewLeadModalOpen(false)}
           currentUser={currentUser}
         />
       )}
 
-      {/* Administrative Team Member Provisioning Drawer */}
+      {/* Centered Administrative Team Member Provisioning Modal (re-exported as AddTeamMemberDrawer) */}
       {currentUser.role === 'admin' && (
-        <AddTeamMemberDrawer
-          isOpen={isAddMemberDrawerOpen}
-          onClose={() => setIsAddMemberDrawerOpen(false)}
+        <AddTeamMemberModal
+          isOpen={isAddMemberModalOpen}
+          onClose={() => setIsAddMemberModalOpen(false)}
           onUserCreated={(credentials) => {
             setRevealedCredentials(credentials);
             setIsCredentialModalOpen(true);
@@ -239,16 +256,16 @@ export function AdminWorkspaceShell({
         }}
       />
 
-      {/* URL Synchronization Bridge for Client 360 Drawer */}
+      {/* URL Synchronization Bridge for Centered Client 360 Modal */}
       <Suspense fallback={null}>
         <LeadUrlSync onLeadIdFound={handleOpenLead} />
       </Suspense>
 
-      {/* Client 360 Lead Detail Dossier Drawer */}
-      <LeadDetailDrawer
+      {/* Centered Client 360 Lead Detail Dossier Modal (re-exported as LeadDetailDrawer) */}
+      <LeadDetailModal
         leadId={activeLeadId}
-        isOpen={isLeadDrawerOpen}
-        onClose={handleCloseLeadDrawer}
+        isOpen={isLeadModalOpen}
+        onClose={handleCloseLeadModal}
         currentUser={currentUser}
         onLeadUpdated={() => {
           if (typeof window !== 'undefined') {

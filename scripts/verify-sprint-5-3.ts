@@ -101,6 +101,15 @@ const REQUIRED_FILES = [
   'src/app/admin/(workspace)/ingestion/ingestion.module.scss',
   'src/app/admin/(workspace)/settings/page.tsx',
   'src/app/admin/(workspace)/settings/settings.module.scss',
+
+  // Centered Luxury Modal Architecture (Sprint 5.3 Extension)
+  'src/app/admin/components/modals/LeadDetailModal.tsx',
+  'src/app/admin/components/modals/LeadDetailModal.module.scss',
+  'src/app/admin/components/modals/NewLeadModal.tsx',
+  'src/app/admin/components/modals/NewLeadModal.module.scss',
+  'src/app/admin/components/modals/AddTeamMemberModal.tsx',
+  'src/app/admin/components/modals/AddTeamMemberModal.module.scss',
+  'src/app/admin/components/modals/useModalAnimation.ts',
 ];
 
 REQUIRED_FILES.forEach((relPath) => {
@@ -347,6 +356,82 @@ check('Copywriting detox dictionary is applied across navigation, ingestion and 
   const analyticsContent = fs.readFileSync(analyticsPath, 'utf8');
   assert.ok(analyticsContent.includes('Closed Revenue'), 'Analytics page must use Closed Revenue');
   assert.ok(analyticsContent.includes('Total Deals'), 'Analytics page must use Total Deals');
+});
+
+// Section 8: Centered Luxury Modal Architecture & Motion Choreography
+console.log('\nSection 8: Centered Luxury Modal Architecture & Motion Choreography');
+
+check('LeadDetailModal.module.scss defines Apple HIG centered geometry & motion keyframes', () => {
+  const scssPath = path.join(ROOT_DIR, 'src/app/admin/components/modals/LeadDetailModal.module.scss');
+  const content = fs.readFileSync(scssPath, 'utf8');
+  assert.ok(content.includes('backdropFadeIn'), 'Must define backdropFadeIn keyframe');
+  assert.ok(content.includes('backdropFadeOut'), 'Must define backdropFadeOut keyframe');
+  assert.ok(content.includes('modalEntrance'), 'Must define modalEntrance keyframe');
+  assert.ok(content.includes('modalExit'), 'Must define modalExit keyframe');
+  assert.ok(content.includes('align-items: center'), 'Overlay must center items vertically');
+  assert.ok(content.includes('justify-content: center'), 'Overlay must center items horizontally');
+  assert.ok(content.includes('max-width: 880px'), 'Modal container must have max-width 880px');
+  assert.ok(content.includes('blur(20px)'), 'Overlay must deploy Apple HIG 20px backdrop blur');
+  assert.ok(content.includes('prefers-reduced-motion'), 'Must honor prefers-reduced-motion accessibility');
+});
+
+check('NewLeadModal.module.scss defines 680px centered geometry & motion keyframes', () => {
+  const scssPath = path.join(ROOT_DIR, 'src/app/admin/components/modals/NewLeadModal.module.scss');
+  const content = fs.readFileSync(scssPath, 'utf8');
+  assert.ok(content.includes('modalEntrance'), 'Must define modalEntrance keyframe');
+  assert.ok(content.includes('modalExit'), 'Must define modalExit keyframe');
+  assert.ok(content.includes('align-items: center'), 'Overlay must center items vertically');
+  assert.ok(content.includes('justify-content: center'), 'Overlay must center items horizontally');
+  assert.ok(content.includes('max-width: 680px'), 'Modal container must have max-width 680px');
+  assert.ok(content.includes('prefers-reduced-motion'), 'Must honor prefers-reduced-motion accessibility');
+});
+
+check('AddTeamMemberModal.module.scss defines 560px centered geometry & motion keyframes', () => {
+  const scssPath = path.join(ROOT_DIR, 'src/app/admin/components/modals/AddTeamMemberModal.module.scss');
+  const content = fs.readFileSync(scssPath, 'utf8');
+  assert.ok(content.includes('modalEntrance'), 'Must define modalEntrance keyframe');
+  assert.ok(content.includes('modalExit'), 'Must define modalExit keyframe');
+  assert.ok(content.includes('align-items: center'), 'Overlay must center items vertically');
+  assert.ok(content.includes('justify-content: center'), 'Overlay must center items horizontally');
+  assert.ok(content.includes('max-width: 560px'), 'Modal container must have max-width 560px');
+  assert.ok(content.includes('prefers-reduced-motion'), 'Must honor prefers-reduced-motion accessibility');
+});
+
+check('AdminWorkspaceShell mounts Centered Modals and handles dual modal/drawer events', () => {
+  const shellPath = path.join(ROOT_DIR, 'src/app/admin/components/layout/AdminWorkspaceShell.tsx');
+  const content = fs.readFileSync(shellPath, 'utf8');
+  assert.ok(content.includes('LeadDetailModal'), 'Must mount LeadDetailModal');
+  assert.ok(content.includes('NewLeadModal'), 'Must mount NewLeadModal');
+  assert.ok(content.includes('AddTeamMemberModal'), 'Must mount AddTeamMemberModal');
+  assert.ok(content.includes('open-lead-modal'), 'Must listen to open-lead-modal event');
+  assert.ok(content.includes('open-lead-drawer'), 'Must listen to open-lead-drawer event');
+  assert.ok(content.includes('open-new-lead-modal'), 'Must listen to open-new-lead-modal event');
+  assert.ok(content.includes('open-new-lead-drawer'), 'Must listen to open-new-lead-drawer event');
+  assert.ok(content.includes('open-add-member-modal'), 'Must listen to open-add-member-modal event');
+  assert.ok(content.includes('open-add-member-drawer'), 'Must listen to open-add-member-drawer event');
+});
+
+check('Backward compatibility bridges re-export centered modals seamlessly', () => {
+  const leadDrawerPath = path.join(ROOT_DIR, 'src/app/admin/components/drawers/LeadDetailDrawer.tsx');
+  const leadDrawerContent = fs.readFileSync(leadDrawerPath, 'utf8');
+  assert.ok(leadDrawerContent.includes('LeadDetailModal'), 'LeadDetailDrawer must re-export LeadDetailModal');
+
+  const newLeadDrawerPath = path.join(ROOT_DIR, 'src/app/admin/components/layout/NewLeadDrawer.tsx');
+  const newLeadDrawerContent = fs.readFileSync(newLeadDrawerPath, 'utf8');
+  assert.ok(newLeadDrawerContent.includes('NewLeadModal'), 'NewLeadDrawer must re-export NewLeadModal');
+
+  const addTeamDrawerPath = path.join(ROOT_DIR, 'src/app/admin/(workspace)/team/components/AddTeamMemberDrawer.tsx');
+  const addTeamDrawerContent = fs.readFileSync(addTeamDrawerPath, 'utf8');
+  assert.ok(addTeamDrawerContent.includes('AddTeamMemberModal'), 'AddTeamMemberDrawer must re-export AddTeamMemberModal');
+});
+
+check('useModalAnimation coordinates exit duration & scrollbar layout shift compensation', () => {
+  const hookPath = path.join(ROOT_DIR, 'src/app/admin/components/modals/useModalAnimation.ts');
+  const hookContent = fs.readFileSync(hookPath, 'utf8');
+  assert.ok(hookContent.includes('export function useModalAnimation'), 'Must export useModalAnimation');
+  assert.ok(hookContent.includes('scrollbarWidth'), 'Must compute scrollbarWidth');
+  assert.ok(hookContent.includes('paddingRight'), 'Must compensate layout shift with paddingRight');
+  assert.ok(hookContent.includes('overflow = \'hidden\''), 'Must lock body scroll');
 });
 
 // Summary
