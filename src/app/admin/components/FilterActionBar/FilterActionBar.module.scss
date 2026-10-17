@@ -1,0 +1,443 @@
+// SCSS Module: FilterActionBar.module.scss
+// Aesthetic: Apple HIG Vibrancy & Linear Fluid Controls
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: Zero generic blue, zero toy emojis, tabular-nums
+
+$marca-orange: #ff6100;
+$obsidian-base: #111111;
+$obsidian-popover: rgba(18, 18, 22, 0.95);
+$hairline-border: rgba(255, 255, 255, 0.08);
+$hairline-active: rgba(255, 97, 0, 0.4);
+$text-primary: #ffffff;
+$text-secondary: #a1a1aa;
+$text-muted: #71717a;
+
+.filterActionBar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  position: relative;
+  z-index: 20;
+}
+
+// 1. Top Controls Row: Bucket Tabs & Action Controls
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+// 2. Bucket Segmented Tabs
+.bucketTabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid $hairline-border;
+  border-radius: 10px;
+  padding: 0.25rem;
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: $text-secondary;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $marca-orange;
+    outline-offset: -2px;
+  }
+
+  &.activeTab {
+    background: rgba(255, 97, 0, 0.12);
+    color: $text-primary;
+    border-color: rgba(255, 97, 0, 0.3);
+
+    .tabCount {
+      background: $marca-orange;
+      color: #ffffff;
+    }
+  }
+
+  &.urgentTab {
+    border-color: rgba(255, 97, 0, 0.3);
+
+    &.hasOverdue {
+      animation: tabAlertGlow 2.5s infinite ease-in-out;
+    }
+
+    &.activeTab {
+      border-color: rgba(255, 97, 0, 0.6);
+      background: rgba(255, 97, 0, 0.16);
+    }
+  }
+}
+
+@keyframes tabAlertGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 97, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 10px 1px rgba(255, 97, 0, 0.35);
+  }
+}
+
+.tabCount {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 0.12rem 0.38rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cccccc;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.urgentPulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $marca-orange;
+  box-shadow: 0 0 6px rgba(255, 97, 0, 0.8);
+  animation: dotPulse 1.8s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+}
+
+// 3. Search Bar & Dropdown Group
+.controlsRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: $obsidian-base;
+  border: 1px solid $hairline-border;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  min-width: 250px;
+  position: relative;
+  transition: all 0.15s ease;
+
+  &:focus-within {
+    border-color: rgba(255, 97, 0, 0.5);
+    box-shadow: 0 0 0 1px rgba(255, 97, 0, 0.3);
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.searchIcon {
+  color: $text-muted;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: $text-primary;
+  font-size: 0.82rem;
+  width: 100%;
+  outline: none;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.clearSearchBtn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.1rem 0.25rem;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// 4. Filter Dropdown Trigger Buttons
+.filterDropdownContainer {
+  position: relative;
+}
+
+.dropdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: $obsidian-base;
+  border: 1px solid $hairline-border;
+  border-radius: 8px;
+  padding: 0.42rem 0.75rem;
+  color: $text-secondary;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: $text-primary;
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+
+  &.activeFilter {
+    background: rgba(255, 97, 0, 0.08);
+    border-color: $hairline-active;
+    color: $text-primary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $marca-orange;
+    outline-offset: 1px;
+  }
+}
+
+.dropdownChevron {
+  font-size: 0.65rem;
+  color: $text-muted;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+// 5. Apple HIG Vibrancy Popover Menu
+.popoverMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: $obsidian-popover;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  padding: 0.4rem;
+  z-index: 40;
+  animation: popoverFade 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+  }
+}
+
+@keyframes popoverFade {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.popoverHeader {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-muted;
+  padding: 0.3rem 0.65rem 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 0.25rem;
+}
+
+.popoverItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: $text-secondary;
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: $text-primary;
+  }
+
+  &.selectedItem {
+    background: rgba(255, 97, 0, 0.15);
+    color: $text-primary;
+    font-weight: 600;
+  }
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.avatarPillSmall {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cccccc;
+}
+
+.sourceColorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.checkMark {
+  color: $marca-orange;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+// 6. Active Filter Chips Ribbon
+.activeFiltersRibbon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.45rem 0.75rem;
+  background: rgba(255, 97, 0, 0.05);
+  border: 1px solid rgba(255, 97, 0, 0.2);
+  border-radius: 8px;
+  font-size: 0.76rem;
+}
+
+.activeFiltersLabel {
+  color: $marca-orange;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: $text-primary;
+  font-size: 0.74rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.chipRemoveBtn {
+  background: transparent;
+  border: none;
+  color: $marca-orange;
+  font-size: 0.7rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.12s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.clearAllBtn {
+  background: transparent;
+  border: none;
+  color: $text-secondary;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: auto;
+  transition: color 0.12s ease;
+
+  &:hover {
+    color: $marca-orange;
+  }
+}

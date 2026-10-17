@@ -1,18 +1,21 @@
 /**
  * @file page.tsx
  * @description Commercial Deals & Inquiries Workspace (/admin/leads).
- *              Server Component querying active client engagements, funnel stages,
- *              deal valuations, and representative assignments with deep-link search filters.
+ *              Server Component executing parallel streaming queries across active client engagements,
+ *              deal valuations, pipeline stage state machines, and staff assignments.
+ *              Wrapped in React 19 Suspense boundary with zero-CLS LeadsTableSkeleton fallback.
  * @module app/admin/(workspace)/leads/page
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { createClient } from '@/app/lib/supabase/server';
 import type { FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
 import { KpiRibbon } from '@/app/admin/components/kpi';
+import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
+import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBar';
 import styles from './leads.module.scss';
 
 export const metadata: Metadata = {
@@ -29,70 +32,103 @@ interface AdminLeadsPageProps {
     assigned_to?: string;
     bucket?: string;
     leadId?: string;
+    source?: string;
+    priority?: string;
+    search?: string;
   }>;
 }
 
 export default async function AdminLeadsPage(
   props: AdminLeadsPageProps
 ): Promise<React.ReactElement> {
-  const resolvedParams = props.searchParams ? await props.searchParams : undefined;
+  // Await Next.js 16 dynamic search parameters
+  await (props.searchParams ? props.searchParams : Promise.resolve(undefined));
   const supabase = await createClient();
 
-  // Fetch initial Pipeline RPC Metrics for the KPI Ribbon
-  const { data: rpcData } = await supabase.rpc('get_pipeline_kpis');
-  const rpcMetrics = rpcData ? (rpcData as unknown as PipelineRpcMetrics) : null;
+  // Parallel server query execution for instant shell rendering and metadata resolution
+  const [rpcRes, sourcesRes, profilesRes, leadsRes] = await Promise.all([
+    supabase.rpc('get_pipeline_kpis'),
+    supabase
+      .from('lead_sources')
+      .select('id, name, color_code')
+      .eq('is_active', true)
+      .order('name'),
+    supabase
+      .from('profiles')
+      .select('id, full_name, role')
+      .eq('status', 'active')
+      .order('full_name'),
+    supabase
+      .from('leads')
+      .select(`
+        id,
+        lead_id,
+        name,
+        company,
+        company_website,
+        industry,
+        phone,
+        email,
+        preferred_channel,
+        service_category,
+        expected_value,
+        priority,
+        status_id,
+        assigned_to,
+        lead_source_id,
+        notes,
+        brief_payload,
+        next_follow_up,
+        created_at,
+        updated_at,
+        funnel_statuses!inner(id, name, bucket, color_code, sort_order),
+        lead_sources(id, name, color_code),
+        profiles!leads_assigned_to_fkey(id, full_name, role)
+      `)
+      .order('created_at', { ascending: false }),
+  ]);
 
-  let query = supabase
-    .from('leads')
-    .select(`
-      id,
-      lead_id,
-      name,
-      company,
-      company_website,
-      industry,
-      phone,
-      email,
-      preferred_channel,
-      service_category,
-      expected_value,
-      priority,
-      status_id,
-      assigned_to,
-      lead_source_id,
-      notes,
-      brief_payload,
-      next_follow_up,
-      created_at,
-      updated_at,
-      funnel_statuses!inner(id, name, bucket, color_code, sort_order),
-      lead_sources!inner(id, name, color_code),
-      profiles!leads_assigned_to_fkey(id, full_name, role)
-    `);
+  const rpcMetrics = rpcRes.data ? (rpcRes.data as unknown as PipelineRpcMetrics) : null;
 
-  if (resolvedParams?.stage && resolvedParams.stage.trim().length > 0) {
-    query = query.eq('status_id', resolvedParams.stage.trim());
-  }
+  // Transform lookup catalog options for filter dropdown menus
+  const availableSources: FilterDropdownOption[] = (sourcesRes.data || []).map((s) => ({
+    id: s.id,
+    label: s.name,
+    colorCode: s.color_code,
+  }));
 
-  if (resolvedParams?.assigned_to && resolvedParams.assigned_to.trim().length > 0) {
-    query = query.eq('assigned_to', resolvedParams.assigned_to.trim());
-  }
+  const availableAssignees: FilterDropdownOption[] = (profilesRes.data || []).map((p) => {
+    const initials = p.full_name
+      ? p.full_name
+          .split(' ')
+          .filter(Boolean)
+          .map((n: string) => n[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase()
+      : 'MU';
 
-  if (resolvedParams?.bucket && resolvedParams.bucket.trim().length > 0 && resolvedParams.bucket !== 'all') {
-    query = query.eq('funnel_statuses.bucket', resolvedParams.bucket.trim());
-  }
+    return {
+      id: p.id,
+      label: p.full_name,
+      avatarText: initials,
+    };
+  });
 
-  query = query.order('created_at', { ascending: false });
-
-  const { data: rawLeads } = await query;
-
-  const leads: HydratedLeadItem[] = (rawLeads || []).map((l) => {
+  // Hydrate client model with relational properties
+  const leads: HydratedLeadItem[] = (leadsRes.data || []).map((l) => {
     const statusData = l.funnel_statuses as {
       id?: string;
       name?: string;
       bucket?: FunnelBucket;
       color_code?: string;
       sort_order?: number;
+    } | null;
+
+    const sourceData = l.lead_sources as {
+      id?: string;
+      name?: string;
+      color_code?: string;
     } | null;
 
     return {
@@ -110,8 +146,12 @@ export default async function AdminLeadsPage(
       status_name: statusData?.name || 'Active Deal',
       status_color: statusData?.color_code || '#ff6100',
       bucket: statusData?.bucket || 'open',
+      assigned_to: l.assigned_to,
       assigned_to_name:
         (l.profiles as { full_name?: string } | null)?.full_name || 'Unassigned',
+      lead_source_id: l.lead_source_id,
+      lead_source_name: sourceData?.name || null,
+      lead_source_color: sourceData?.color_code || null,
       next_follow_up: l.next_follow_up,
       created_at: l.created_at,
     };
@@ -119,6 +159,7 @@ export default async function AdminLeadsPage(
 
   return (
     <div className={styles.container}>
+      {/* Workspace Header & Operational Context */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.eyebrow}>Commercial Pipeline & Staging</span>
@@ -129,10 +170,17 @@ export default async function AdminLeadsPage(
         </div>
       </header>
 
-      {/* Dark Luxury Executive KPI Ribbon with Reactive Filter Recalculation */}
+      {/* Dark Luxury Executive KPI Ribbon with Reactive URL Filter Recalculation */}
       <KpiRibbon initialData={rpcMetrics} syncWithUrlParams={true} />
 
-      <LeadsWorkspaceClient initialLeads={leads} />
+      {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
+      <Suspense fallback={<LeadsTableSkeleton rowCount={8} />}>
+        <LeadsWorkspaceClient
+          initialLeads={leads}
+          availableSources={availableSources}
+          availableAssignees={availableAssignees}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -37,7 +37,12 @@ describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', 
     });
     await client.connect();
 
-    // Provision temporary probe accounts
+    // Ensure clean state before provisioning temporary probe accounts
+    await client.query(`
+      DELETE FROM public.profiles WHERE email IN ('probe_zero_ci@marcaubi.com', 'probe_susp_ci@marcaubi.com');
+      DELETE FROM auth.users WHERE email IN ('probe_zero_ci@marcaubi.com', 'probe_susp_ci@marcaubi.com');
+    `);
+
     await client.query(`
       INSERT INTO auth.users (id, email) VALUES 
         ($1, 'probe_zero_ci@marcaubi.com'),
