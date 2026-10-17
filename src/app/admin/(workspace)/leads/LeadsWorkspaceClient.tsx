@@ -3,15 +3,26 @@
 /**
  * @file LeadsWorkspaceClient.tsx
  * @description Interactive Client Component for the Deals & Inquiries Workspace (/admin/leads).
- *              Provides instantaneous client-side search filtering, URL deep-linking support,
- *              clickable table row triggers for the Client 360 Drawer, and 1-click clipboard tokens.
+ *              Integrates the Multi-Filter Action Bar, pipeline bucket segmented tabs, debounced search,
+ *              instantaneous client-side filtering, sub-16ms URL state synchronization, and drawer triggers.
  * @module app/admin/(workspace)/leads/LeadsWorkspaceClient
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
+import {
+  FilterActionBar,
+  type BucketTabId,
+  type BucketCounts,
+  type FilterDropdownOption,
+} from '@/app/admin/components/FilterActionBar';
+import {
+  LeadsDataGrid,
+  type InlineStatusOption,
+} from '@/app/admin/components/LeadsTable';
+import type { LeadPriority } from '@/types/crm';
 import styles from './leads.module.scss';
 
 export interface HydratedLeadItem {
@@ -31,12 +42,19 @@ export interface HydratedLeadItem {
   bucket: FunnelBucket;
   assigned_to?: string | null;
   assigned_to_name: string;
+  lead_source_id?: string | null;
+  lead_source_name?: string | null;
+  lead_source_color?: string | null;
   next_follow_up: string | null;
+  revisit_date?: string | null;
   created_at: string;
 }
 
-interface LeadsWorkspaceClientProps {
+export interface LeadsWorkspaceClientProps {
   initialLeads: HydratedLeadItem[];
+  availableSources?: FilterDropdownOption[];
+  availableAssignees?: FilterDropdownOption[];
+  availableStatuses?: InlineStatusOption[];
 }
 
 function formatCurrency(amount: number): string {
@@ -50,87 +68,263 @@ function formatCurrency(amount: number): string {
   return `₹${amount.toLocaleString('en-IN')}`;
 }
 
+/**
+ * Evaluates whether a lead has an overdue follow-up timestamp.
+ * A lead is overdue if next_follow_up is earlier than current clock time
+ * and its lifecycle status is neither converted nor lost.
+ */
+function isLeadOverdue(lead: HydratedLeadItem): boolean {
+  if (!lead.next_follow_up) return false;
+  if (lead.bucket === 'converted' || lead.bucket === 'lost') return false;
+  return new Date(lead.next_follow_up).getTime() < Date.now();
+}
+
 function LeadsWorkspaceContent({
   initialLeads,
+  availableSources: initialSources,
+  availableAssignees: initialAssignees,
+  availableStatuses: initialStatuses,
 }: LeadsWorkspaceClientProps): React.ReactElement {
   const searchParams = useSearchParams();
 
-  // URL query parameter synchronization
-  const bucketParam = searchParams.get('bucket');
-  const stageParam = searchParams.get('stage');
-  const assignedToParam = searchParams.get('assigned_to');
-
-  const [selectedBucket, setSelectedBucket] = useState<'all' | FunnelBucket>(
-    bucketParam === 'open' ||
-      bucketParam === 'potential' ||
-      bucketParam === 'converted' ||
-      bucketParam === 'lost'
-      ? bucketParam
-      : 'all'
-  );
-
-  const [activeStageFilter, setActiveStageFilter] = useState<string | null>(stageParam);
-  const [activeAssigneeFilter, setActiveAssigneeFilter] = useState<string | null>(
-    assignedToParam
-  );
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Local state initialized with server-hydrated leads for optimistic in-memory reconciliation
+  const [leads, setLeads] = useState<HydratedLeadItem[]>(initialLeads);
 
   useEffect(() => {
-    if (
-      bucketParam === 'open' ||
-      bucketParam === 'potential' ||
-      bucketParam === 'converted' ||
-      bucketParam === 'lost'
-    ) {
-      setSelectedBucket(bucketParam);
-    }
-  }, [bucketParam]);
-
-  useEffect(() => {
-    setActiveStageFilter(stageParam);
-  }, [stageParam]);
-
-  useEffect(() => {
-    setActiveAssigneeFilter(assignedToParam);
-  }, [assignedToParam]);
-
-  // Bucket counts
-  const counts = useMemo(() => {
-    return {
-      all: initialLeads.length,
-      open: initialLeads.filter((l) => l.bucket === 'open').length,
-      potential: initialLeads.filter((l) => l.bucket === 'potential').length,
-      converted: initialLeads.filter((l) => l.bucket === 'converted').length,
-      lost: initialLeads.filter((l) => l.bucket === 'lost').length,
-    };
+    setLeads(initialLeads);
   }, [initialLeads]);
 
-  // Filtered leads
-  const filteredLeads = useMemo(() => {
+  // Read initial filter values from URL search parameters
+  const bucketParam = searchParams.get('bucket');
+  const searchParam = searchParams.get('search') || searchParams.get('q') || '';
+  const sourceParam = searchParams.get('source');
+  const assigneeParam = searchParams.get('assigned_to');
+  const priorityParam = searchParams.get('priority');
+  const stageParam = searchParams.get('stage');
+
+  const validBuckets: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
+  const initialBucket: BucketTabId = validBuckets.includes(bucketParam as BucketTabId)
+    ? (bucketParam as BucketTabId)
+    : 'all';
+
+  const [selectedBucket, setSelectedBucket] = useState<BucketTabId>(initialBucket);
+  const [searchQuery, setSearchQuery] = useState<string>(searchParam);
+  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(sourceParam);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assigneeParam);
+  const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
+  const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
+
+  /**
+   * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
+   * without triggering a Next.js server component re-render or layout jitter.
+   * Dispatches a native popstate event so KpiRibbon remains reactively synchronized.
+   */
+  const updateUrlParams = useCallback(
+    (updates: {
+      bucket?: BucketTabId;
+      search?: string;
+      source?: string | null;
+      assigned_to?: string | null;
+      priority?: string | null;
+      stage?: string | null;
+    }): void => {
+      if (typeof window === 'undefined') return;
+
+      const url = new URL(window.location.href);
+
+      // Determine updated parameter values
+      const nextBucket = updates.bucket !== undefined ? updates.bucket : selectedBucket;
+      const nextSearch = updates.search !== undefined ? updates.search : searchQuery;
+      const nextSource = updates.source !== undefined ? updates.source : selectedSourceId;
+      const nextAssignee =
+        updates.assigned_to !== undefined ? updates.assigned_to : selectedAssigneeId;
+      const nextPriority = updates.priority !== undefined ? updates.priority : selectedPriority;
+      const nextStage = updates.stage !== undefined ? updates.stage : selectedStageId;
+
+      if (nextBucket && nextBucket !== 'all') {
+        url.searchParams.set('bucket', nextBucket);
+      } else {
+        url.searchParams.delete('bucket');
+      }
+
+      if (nextSearch && nextSearch.trim().length > 0) {
+        url.searchParams.set('search', nextSearch.trim());
+      } else {
+        url.searchParams.delete('search');
+        url.searchParams.delete('q');
+      }
+
+      if (nextSource) {
+        url.searchParams.set('source', nextSource);
+        url.searchParams.set('source_id', nextSource);
+      } else {
+        url.searchParams.delete('source');
+        url.searchParams.delete('source_id');
+      }
+
+      if (nextAssignee) {
+        url.searchParams.set('assigned_to', nextAssignee);
+        url.searchParams.set('assignee_id', nextAssignee);
+      } else {
+        url.searchParams.delete('assigned_to');
+        url.searchParams.delete('assignee_id');
+      }
+
+      if (nextPriority) {
+        url.searchParams.set('priority', nextPriority);
+      } else {
+        url.searchParams.delete('priority');
+      }
+
+      if (nextStage) {
+        url.searchParams.set('stage', nextStage);
+      } else {
+        url.searchParams.delete('stage');
+      }
+
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      window.dispatchEvent(new Event('popstate'));
+    },
+    [
+      selectedBucket,
+      searchQuery,
+      selectedSourceId,
+      selectedAssigneeId,
+      selectedPriority,
+      selectedStageId,
+    ]
+  );
+
+  // Sync state if URL changes externally (e.g. browser back/forward or external deep links)
+  useEffect(() => {
+    const rawBucket = searchParams.get('bucket');
+    if (validBuckets.includes(rawBucket as BucketTabId)) {
+      setSelectedBucket(rawBucket as BucketTabId);
+    } else {
+      setSelectedBucket('all');
+    }
+
+    setSearchQuery(searchParams.get('search') || searchParams.get('q') || '');
+    setSelectedSourceId(searchParams.get('source_id') || searchParams.get('source') || null);
+    setSelectedAssigneeId(
+      searchParams.get('assigned_to') || searchParams.get('assignee_id') || null
+    );
+    setSelectedPriority(searchParams.get('priority') || null);
+    setSelectedStageId(searchParams.get('stage') || null);
+  }, [searchParams]);
+
+  // Derive catalog dropdown options dynamically if not passed directly from server props
+  const availableSources = useMemo<FilterDropdownOption[]>(() => {
+    if (initialSources && initialSources.length > 0) {
+      return initialSources;
+    }
+    const map = new Map<string, FilterDropdownOption>();
+    for (const lead of leads) {
+      if (lead.lead_source_id && lead.lead_source_name) {
+        map.set(lead.lead_source_id, {
+          id: lead.lead_source_id,
+          label: lead.lead_source_name,
+          colorCode: lead.lead_source_color || '#ff6100',
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [leads, initialSources]);
+
+  const availableAssignees = useMemo<FilterDropdownOption[]>(() => {
+    if (initialAssignees && initialAssignees.length > 0) {
+      return initialAssignees;
+    }
+    const map = new Map<string, FilterDropdownOption>();
+    for (const lead of leads) {
+      if (lead.assigned_to && lead.assigned_to_name && lead.assigned_to_name !== 'Unassigned') {
+        const initials = lead.assigned_to_name
+          .split(' ')
+          .filter(Boolean)
+          .map((n) => n[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase();
+        map.set(lead.assigned_to, {
+          id: lead.assigned_to,
+          label: lead.assigned_to_name,
+          avatarText: initials,
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [leads, initialAssignees]);
+
+  // Resolved pipeline stages for inline stage transitions
+  const resolvedStatuses = useMemo<InlineStatusOption[]>(() => {
+    if (initialStatuses && initialStatuses.length > 0) {
+      return initialStatuses;
+    }
+    const map = new Map<string, InlineStatusOption>();
+    for (const lead of leads) {
+      if (lead.status_id && lead.status_name) {
+        map.set(lead.status_id, {
+          id: lead.status_id,
+          name: lead.status_name,
+          bucket: lead.bucket,
+          color_code: lead.status_color || '#ff6100',
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [initialStatuses, leads]);
+
+  // Real-time record counts per bucket
+  const counts = useMemo<BucketCounts>(() => {
+    return {
+      all: leads.length,
+      open: leads.filter((l) => l.bucket === 'open').length,
+      potential: leads.filter((l) => l.bucket === 'potential').length,
+      converted: leads.filter((l) => l.bucket === 'converted').length,
+      lost: leads.filter((l) => l.bucket === 'lost').length,
+      overdue: leads.filter(isLeadOverdue).length,
+    };
+  }, [leads]);
+
+  // In-memory filtered leads with multi-dimensional criteria evaluation
+  const filteredLeads = useMemo<HydratedLeadItem[]>(() => {
     const q = searchQuery.toLowerCase().trim();
-    return initialLeads.filter((lead) => {
-      // Stage filter check (from deep links)
-      if (activeStageFilter && lead.status_id !== activeStageFilter) {
+
+    return leads.filter((lead) => {
+      // 1. Bucket condition
+      if (selectedBucket === 'overdue') {
+        if (!isLeadOverdue(lead)) return false;
+      } else if (selectedBucket !== 'all') {
+        if (lead.bucket !== selectedBucket) return false;
+      }
+
+      // 2. Stage filter condition (from deep link or KPI ribbon drilldown)
+      if (selectedStageId && lead.status_id !== selectedStageId) {
         return false;
       }
 
-      // Assignee filter check (from deep links)
-      if (activeAssigneeFilter && lead.assigned_to !== activeAssigneeFilter) {
+      // 3. Lead Source filter condition
+      if (selectedSourceId && lead.lead_source_id !== selectedSourceId) {
         return false;
       }
 
-      // Bucket check
-      if (selectedBucket !== 'all' && lead.bucket !== selectedBucket) {
+      // 4. Assigned Representative filter condition
+      if (selectedAssigneeId && lead.assigned_to !== selectedAssigneeId) {
         return false;
       }
 
-      // Search query check
+      // 5. Priority tier filter condition
+      if (selectedPriority && lead.priority.toLowerCase() !== selectedPriority.toLowerCase()) {
+        return false;
+      }
+
+      // 6. Search query condition (multi-attribute match)
       if (!q) return true;
+
       return (
+        lead.lead_id.toLowerCase().includes(q) ||
         lead.name.toLowerCase().includes(q) ||
         (lead.company && lead.company.toLowerCase().includes(q)) ||
-        lead.lead_id.toLowerCase().includes(q) ||
         (lead.email && lead.email.toLowerCase().includes(q)) ||
         (lead.phone && lead.phone.toLowerCase().includes(q)) ||
         lead.service_category.toLowerCase().includes(q) ||
@@ -138,308 +332,129 @@ function LeadsWorkspaceContent({
       );
     });
   }, [
-    initialLeads,
+    leads,
     selectedBucket,
     searchQuery,
-    activeStageFilter,
-    activeAssigneeFilter,
+    selectedSourceId,
+    selectedAssigneeId,
+    selectedPriority,
+    selectedStageId,
   ]);
 
-  // Handle row click: dispatches global custom event to open Client 360 Drawer
-  const handleRowClick = (leadId: string): void => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', { detail: { leadId } })
+  // Action handlers updating local state and URL parameters
+  const handleBucketChange = (bucket: BucketTabId): void => {
+    setSelectedBucket(bucket);
+    updateUrlParams({ bucket });
+  };
+
+  const handleSearchChange = (query: string): void => {
+    setSearchQuery(query);
+    updateUrlParams({ search: query });
+  };
+
+  const handleSourceChange = (sourceId: string | null): void => {
+    setSelectedSourceId(sourceId);
+    updateUrlParams({ source: sourceId });
+  };
+
+  const handleAssigneeChange = (assigneeId: string | null): void => {
+    setSelectedAssigneeId(assigneeId);
+    updateUrlParams({ assigned_to: assigneeId });
+  };
+
+  const handlePriorityChange = (priority: string | null): void => {
+    setSelectedPriority(priority);
+    updateUrlParams({ priority });
+  };
+
+  const handleStageClear = (): void => {
+    setSelectedStageId(null);
+    updateUrlParams({ stage: null });
+  };
+
+  const handleClearAll = (): void => {
+    setSelectedBucket('all');
+    setSearchQuery('');
+    setSelectedSourceId(null);
+    setSelectedAssigneeId(null);
+    setSelectedPriority(null);
+    setSelectedStageId(null);
+    updateUrlParams({
+      bucket: 'all',
+      search: '',
+      source: null,
+      assigned_to: null,
+      priority: null,
+      stage: null,
+    });
+  };
+
+  // Optimistic handler for inline status changes
+  const handleInlineStatusChange = useCallback(
+    (leadId: string, newStatus: InlineStatusOption): void => {
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === leadId
+            ? {
+                ...lead,
+                status_id: newStatus.id,
+                status_name: newStatus.name,
+                status_color: newStatus.color_code,
+                bucket: newStatus.bucket,
+              }
+            : lead
+        )
       );
-    }
-  };
+    },
+    []
+  );
 
-  // Handle Deal ID copy
-  const handleCopyDealId = (e: React.MouseEvent, leadIdText: string): void => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(leadIdText);
-    setCopiedId(leadIdText);
-    setTimeout(() => setCopiedId(null), 1500);
-  };
-
-  // Clear specific deep-link filters
-  const handleClearStageFilter = (): void => {
-    setActiveStageFilter(null);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('stage');
-      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-    }
-  };
-
-  const handleClearAssigneeFilter = (): void => {
-    setActiveAssigneeFilter(null);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('assigned_to');
-      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-    }
-  };
+  // Optimistic handler for inline priority changes
+  const handleInlinePriorityChange = useCallback(
+    (leadId: string, newPriority: LeadPriority): void => {
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === leadId
+            ? {
+                ...lead,
+                priority: newPriority,
+              }
+            : lead
+        )
+      );
+    },
+    []
+  );
 
   return (
     <>
-      {/* Active Filter Indicators */}
-      {(activeStageFilter || activeAssigneeFilter) && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.65rem 1rem',
-            background: 'rgba(255, 97, 0, 0.08)',
-            border: '1px solid rgba(255, 97, 0, 0.25)',
-            borderRadius: '8px',
-            fontSize: '0.8rem',
-            color: '#ffffff',
-          }}
-        >
-          <span style={{ color: '#ff6100', fontWeight: 600 }}>Active Filters:</span>
-          {activeStageFilter && (
-            <button
-              type="button"
-              onClick={handleClearStageFilter}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#ffffff',
-                fontSize: '0.74rem',
-                padding: '0.2rem 0.5rem',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              <span>Stage Filter Active</span>
-              <span style={{ color: '#ff6100' }}>✕</span>
-            </button>
-          )}
-          {activeAssigneeFilter && (
-            <button
-              type="button"
-              onClick={handleClearAssigneeFilter}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#ffffff',
-                fontSize: '0.74rem',
-                padding: '0.2rem 0.5rem',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              <span>Representative Filter Active</span>
-              <span style={{ color: '#ff6100' }}>✕</span>
-            </button>
-          )}
-        </div>
-      )}
+      {/* High-Performance Multi-Filter Action Bar */}
+      <FilterActionBar
+        counts={counts}
+        selectedBucket={selectedBucket}
+        searchQuery={searchQuery}
+        selectedSourceId={selectedSourceId}
+        selectedAssigneeId={selectedAssigneeId}
+        selectedPriority={selectedPriority}
+        selectedStageId={selectedStageId}
+        availableSources={availableSources}
+        availableAssignees={availableAssignees}
+        onBucketChange={handleBucketChange}
+        onSearchChange={handleSearchChange}
+        onSourceChange={handleSourceChange}
+        onAssigneeChange={handleAssigneeChange}
+        onPriorityChange={handlePriorityChange}
+        onStageClear={handleStageClear}
+        onClearAll={handleClearAll}
+      />
 
-      {/* Controls Bar: Bucket Tabs & Search */}
-      <div className={styles.controlsBar}>
-        <div className={styles.bucketTabs} role="tablist" aria-label="Pipeline Stages">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selectedBucket === 'all'}
-            onClick={() => setSelectedBucket('all')}
-            className={`${styles.tabBtn} ${selectedBucket === 'all' ? styles.tabBtnActive : ''}`}
-          >
-            <span>All Deals</span>
-            <span className={styles.tabCount}>{counts.all}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selectedBucket === 'open'}
-            onClick={() => setSelectedBucket('open')}
-            className={`${styles.tabBtn} ${selectedBucket === 'open' ? styles.tabBtnActive : ''}`}
-          >
-            <span>Open</span>
-            <span className={styles.tabCount}>{counts.open}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selectedBucket === 'potential'}
-            onClick={() => setSelectedBucket('potential')}
-            className={`${styles.tabBtn} ${selectedBucket === 'potential' ? styles.tabBtnActive : ''}`}
-          >
-            <span>Potential</span>
-            <span className={styles.tabCount}>{counts.potential}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selectedBucket === 'converted'}
-            onClick={() => setSelectedBucket('converted')}
-            className={`${styles.tabBtn} ${selectedBucket === 'converted' ? styles.tabBtnActive : ''}`}
-          >
-            <span>Won</span>
-            <span className={styles.tabCount}>{counts.converted}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selectedBucket === 'lost'}
-            onClick={() => setSelectedBucket('lost')}
-            className={`${styles.tabBtn} ${selectedBucket === 'lost' ? styles.tabBtnActive : ''}`}
-          >
-            <span>Lost</span>
-            <span className={styles.tabCount}>{counts.lost}</span>
-          </button>
-        </div>
-
-        <div className={styles.searchBox}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search deals, company, or rep..."
-            className={styles.searchInput}
-            aria-label="Filter deals"
-          />
-        </div>
-      </div>
-
-      {/* Leads Data Table */}
-      <div className={styles.tableWrapper}>
-        {filteredLeads.length === 0 ? (
-          <div className={styles.emptyState}>
-            <span>No prospective deals matching the current filter criteria.</span>
-          </div>
-        ) : (
-          <table className={styles.table}>
-            <thead className={styles.tableHead}>
-              <tr>
-                <th>Deal ID</th>
-                <th>Client & Company</th>
-                <th>Service</th>
-                <th>Stage</th>
-                <th>Valuation</th>
-                <th>Assigned Rep</th>
-                <th>Next Touchpoint</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeads.map((lead) => {
-                const repInitials = lead.assigned_to_name
-                  ? lead.assigned_to_name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase()
-                  : 'UN';
-
-                const followUpText = lead.next_follow_up
-                  ? new Date(lead.next_follow_up).toLocaleDateString('en-IN', {
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                  : '—';
-
-                return (
-                  <tr
-                    key={lead.id}
-                    className={styles.tableRow}
-                    onClick={() => handleRowClick(lead.id)}
-                    tabIndex={0}
-                    role="button"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRowClick(lead.id);
-                    }}
-                    aria-label={`Open Client 360 dossier for ${lead.name}`}
-                  >
-                    <td>
-                      <span
-                        className={styles.leadIdToken}
-                        onClick={(e) => handleCopyDealId(e, lead.lead_id)}
-                        title="Click to copy Deal ID"
-                      >
-                        {lead.lead_id}
-                        {copiedId === lead.lead_id ? (
-                          <span style={{ color: '#10b981', fontSize: '0.62rem' }}>✓</span>
-                        ) : null}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.clientMeta}>
-                        <span className={styles.clientName}>{lead.name}</span>
-                        <span className={styles.companyTitle}>
-                          {lead.company || 'Private Client'}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span style={{ color: '#a1a1aa', fontSize: '0.8rem' }}>
-                        {lead.service_category}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={styles.statusPill}
-                        style={{
-                          background: `${lead.status_color || '#ff6100'}18`,
-                          border: `1px solid ${lead.status_color || '#ff6100'}35`,
-                          color: lead.status_color || '#ff6100',
-                        }}
-                      >
-                        ● {lead.status_name}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={styles.dealValue}>
-                        {formatCurrency(lead.expected_value)}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.repBadge}>
-                        <div className={styles.repAvatar}>{repInitials}</div>
-                        <span>{lead.assigned_to_name}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        style={{
-                          color: '#a1a1aa',
-                          fontFamily: 'monospace',
-                          fontSize: '0.75rem',
-                        }}
-                      >
-                        {followUpText}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {/* Commercial Leads Virtualized Data Grid */}
+      <LeadsDataGrid
+        leads={filteredLeads}
+        availableStatuses={resolvedStatuses}
+        onStatusChange={handleInlineStatusChange}
+        onPriorityChange={handleInlinePriorityChange}
+      />
     </>
   );
 }

@@ -37,7 +37,12 @@ describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', 
     });
     await client.connect();
 
-    // Provision temporary probe accounts
+    // Ensure clean state before provisioning temporary probe accounts
+    await client.query(`
+      DELETE FROM public.profiles WHERE email IN ('probe_zero_ci@marcaubi.com', 'probe_susp_ci@marcaubi.com');
+      DELETE FROM auth.users WHERE email IN ('probe_zero_ci@marcaubi.com', 'probe_susp_ci@marcaubi.com');
+    `);
+
     await client.query(`
       INSERT INTO auth.users (id, email) VALUES 
         ($1, 'probe_zero_ci@marcaubi.com'),
@@ -219,33 +224,43 @@ describe('Marca Ubi CRM — PostgreSQL Indexing & get_pipeline_kpis RPC Suite', 
 
   it('safely handles zero-lead accounts without division-by-zero or null exceptions', async () => {
     await client.query('BEGIN');
-    const claims = JSON.stringify({ sub: PROBE_EXEC_ZERO, role: 'authenticated', app_metadata: { role: 'sales_executive' } });
-    await client.query(`SELECT set_config('request.jwt.claims', $1, true);`, [claims]);
+    try {
+      const claims = JSON.stringify({ sub: PROBE_EXEC_ZERO, role: 'authenticated', app_metadata: { role: 'sales_executive' } });
+      await client.query(`SELECT set_config('request.jwt.claims', $1, true);`, [claims]);
 
-    const res = await client.query(`SELECT public.get_pipeline_kpis() AS kpi;`);
-    const kpi: PipelineRpcMetrics = res.rows[0].kpi;
-    await client.query('COMMIT');
+      const res = await client.query(`SELECT public.get_pipeline_kpis() AS kpi;`);
+      const kpi: PipelineRpcMetrics = res.rows[0].kpi;
+      await client.query('COMMIT');
 
-    assert.strictEqual(kpi.total_leads_count, 0);
-    assert.strictEqual(Number(kpi.conversion_rate_percentage), 0.0);
-    assert.strictEqual(Number(kpi.potential_pipeline_value), 0.0);
-    assert.strictEqual(Number(kpi.converted_revenue_value), 0.0);
-    assert.strictEqual(kpi.overdue_follow_ups_count, 0);
+      assert.strictEqual(kpi.total_leads_count, 0);
+      assert.strictEqual(Number(kpi.conversion_rate_percentage), 0.0);
+      assert.strictEqual(Number(kpi.potential_pipeline_value), 0.0);
+      assert.strictEqual(Number(kpi.converted_revenue_value), 0.0);
+      assert.strictEqual(kpi.overdue_follow_ups_count, 0);
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw err;
+    }
   });
 
   it('benchmarks get_pipeline_kpis execution latency under 20ms', async () => {
     await client.query('BEGIN');
-    const claims = JSON.stringify({ sub: ROOT_ADMIN_ID, role: 'authenticated', app_metadata: { role: 'admin' } });
-    await client.query(`SELECT set_config('request.jwt.claims', $1, true);`, [claims]);
+    try {
+      const claims = JSON.stringify({ sub: ROOT_ADMIN_ID, role: 'authenticated', app_metadata: { role: 'admin' } });
+      await client.query(`SELECT set_config('request.jwt.claims', $1, true);`, [claims]);
 
-    const res = await client.query(`
-      EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)
-      SELECT public.get_pipeline_kpis();
-    `);
-    const plan = res.rows[0]['QUERY PLAN'][0];
-    const execTime = plan['Execution Time'];
-    await client.query('COMMIT');
+      const res = await client.query(`
+        EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)
+        SELECT public.get_pipeline_kpis();
+      `);
+      const plan = res.rows[0]['QUERY PLAN'][0];
+      const execTime = plan['Execution Time'];
+      await client.query('COMMIT');
 
-    assert.ok(execTime < 20.0, `KPI RPC execution time (${execTime}ms) must be under 20ms`);
+      assert.ok(execTime < 20.0, `KPI RPC execution time (${execTime}ms) must be under 20ms`);
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw err;
+    }
   });
 });

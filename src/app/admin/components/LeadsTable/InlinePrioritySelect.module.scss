@@ -1,0 +1,208 @@
+// SCSS Module: InlinePrioritySelect.module.scss
+// Aesthetic: Raycast Monospace Tokens & Apple HIG Vibrancy
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: Zero generic blue, zero toy emojis, tabular-nums
+
+$marca-orange: #ff6100;
+$amber-priority: #f59e0b;
+$slate-priority: #8e8e93;
+$obsidian-popover: rgba(18, 18, 22, 0.96);
+$hairline-border: rgba(255, 255, 255, 0.1);
+$text-primary: #ffffff;
+$text-secondary: #a1a1aa;
+$text-muted: #8e8e93;
+
+.priorityContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.priorityBadgeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $marca-orange;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.priorityHigh {
+    background: rgba(255, 97, 0, 0.12);
+    border-color: rgba(255, 97, 0, 0.3);
+    color: #ff6100;
+
+    .priorityDot {
+      background: #ff6100;
+      box-shadow: 0 0 6px rgba(255, 97, 0, 0.8);
+    }
+  }
+
+  &.priorityMedium {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.28);
+    color: #f59e0b;
+
+    .priorityDot {
+      background: #f59e0b;
+      box-shadow: 0 0 4px rgba(245, 158, 11, 0.6);
+    }
+  }
+
+  &.priorityLow {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #8e8e93;
+
+    .priorityDot {
+      background: #8e8e93;
+    }
+  }
+}
+
+.priorityDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.priorityLabel {
+  letter-spacing: -0.01em;
+}
+
+.dropdownChevron {
+  font-size: 0.5rem;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+  margin-left: 0.1rem;
+
+  &.chevronOpen {
+    transform: rotate(180deg);
+  }
+}
+
+.popoverMenu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  left: auto;
+  min-width: 130px;
+  background: $obsidian-popover;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid $hairline-border;
+  border-radius: 8px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  padding: 0.3rem;
+  z-index: 50;
+  animation: priorityFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes priorityFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popoverHeader {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-muted;
+  padding: 0.2rem 0.45rem 0.3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 0.2rem;
+}
+
+.popoverItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border-radius: 5px;
+  background: transparent;
+  border: none;
+  color: $text-secondary;
+  font-size: 0.74rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+  outline: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: $text-primary;
+  }
+
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.1);
+    color: $text-primary;
+  }
+
+  &.selectedItem {
+    background: rgba(255, 97, 0, 0.14);
+    color: #ffffff;
+    font-weight: 600;
+  }
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.checkMark {
+  color: $marca-orange;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.isPendingShimmer {
+  opacity: 0.75;
+  animation: pendingPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes pendingPulse {
+  0%, 100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
