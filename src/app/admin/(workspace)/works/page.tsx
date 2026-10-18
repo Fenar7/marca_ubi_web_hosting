@@ -115,6 +115,13 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
     };
   });
 
+  // Query active team personnel for directorial assignment governance
+  const { data: teamProfiles } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, role')
+    .eq('status', 'active')
+    .order('full_name', { ascending: true });
+
   return (
     <div className={styles.worksWorkspace}>
       {/* Workspace Header Strip */}
@@ -129,7 +136,11 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
       </header>
 
       {/* Main Works Workspace Client */}
-      <WorksWorkspaceClient initialWorks={clientWorks} />
+      <WorksWorkspaceClient
+        initialWorks={clientWorks}
+        userRole={role}
+        profiles={teamProfiles || []}
+      />
     </div>
   );
 }

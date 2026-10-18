@@ -24,7 +24,7 @@ import {
 } from '@/app/admin/components/LeadsTable';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
-import { BatchReassignModal } from '@/app/admin/components/modals';
+import { BatchReassignModal, ConvertLeadToDealModal, type LeadForConversion } from '@/app/admin/components/modals';
 import { FollowUpScheduler } from '@/app/admin/components/Scheduler';
 import { calculateOverdueTier } from '@/app/admin/components/Badges';
 import type { OverdueLeadSummary } from '@/app/lib/workload-schemas';
@@ -159,6 +159,15 @@ function LeadsWorkspaceContent({
 
   // Guarded Batch Lead Reassignment Modal State
   const [isBatchReassignOpen, setIsBatchReassignOpen] = useState<boolean>(false);
+
+  // 1-Click Inbound Lead Conversion Modal State
+  const [convertModalState, setConvertModalState] = useState<{
+    isOpen: boolean;
+    lead: LeadForConversion | null;
+  }>({
+    isOpen: false,
+    lead: null,
+  });
 
   // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
   const handleOpenDrawer = useCallback((id: string) => {
@@ -472,6 +481,39 @@ function LeadsWorkspaceContent({
     window.addEventListener('open-batch-reassign', handleOpenBatchReassignModal);
     return () => window.removeEventListener('open-batch-reassign', handleOpenBatchReassignModal);
   }, []);
+
+  // Listener for programmatic open-convert-lead-modal events
+  useEffect(() => {
+    const handleOpenConvertModal = (e: Event): void => {
+      const customEvt = e as CustomEvent<string | { leadId?: string; lead?: LeadForConversion }>;
+      const detail = customEvt.detail;
+      if (!detail) return;
+      const target =
+        typeof detail === 'string'
+          ? leads.find((l) => l.id === detail)
+          : detail.lead || (detail.leadId ? leads.find((l) => l.id === detail.leadId) : undefined);
+
+      if (target) {
+        setConvertModalState({
+          isOpen: true,
+          lead: {
+            id: target.id,
+            lead_id: target.lead_id,
+            name: target.name,
+            company: target.company,
+            service_category: target.service_category,
+            expected_value: target.expected_value,
+            assigned_to: target.assigned_to,
+            priority: target.priority,
+          },
+        });
+      }
+    };
+
+    window.addEventListener('open-convert-lead-modal', handleOpenConvertModal);
+    return () => window.removeEventListener('open-convert-lead-modal', handleOpenConvertModal);
+  }, [leads]);
+
 
   // Memoized overdue lead summaries for batch reassign modal
   const overdueSummaries = useMemo<OverdueLeadSummary[]>(() => {
@@ -789,6 +831,63 @@ function LeadsWorkspaceContent({
         </div>
       )}
 
+      {/* Inbound Speed-to-Lead Triage Banner */}
+      {selectedBucket === 'open' && counts.open > 0 && (
+        <div className={styles.inboundTriageBanner} role="region" aria-label="Inbound Discovery Triage">
+          <div className={styles.overdueNoticeLeft}>
+            <div className={styles.inboundTriageIcon} aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </div>
+            <div>
+              <p className={styles.overdueNoticeTitle}>
+                {counts.open} Inbound {counts.open === 1 ? 'Inquiry' : 'Inquiries'} in Speed-to-Lead Triage
+              </p>
+              <p className={styles.overdueNoticeSub}>
+                Qualify incoming briefs and convert high-intent prospective engagements into active pipeline deals.
+              </p>
+            </div>
+          </div>
+          {filteredLeads.length > 0 && (
+            <button
+              type="button"
+              className={styles.convertTriggerBtn}
+              onClick={() => {
+                const target = filteredLeads.find((l) => l.bucket === 'open') || filteredLeads[0];
+                if (target) {
+                  setConvertModalState({
+                    isOpen: true,
+                    lead: {
+                      id: target.id,
+                      lead_id: target.lead_id,
+                      name: target.name,
+                      company: target.company,
+                      service_category: target.service_category,
+                      expected_value: target.expected_value,
+                      assigned_to: target.assigned_to,
+                      priority: target.priority,
+                    },
+                  });
+                }
+              }}
+              aria-label="Convert lead to pipeline deal"
+            >
+              1-Click Convert to Deal
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Commercial Leads Virtualized Data Grid */}
       <LeadsDataGrid
         leads={filteredLeads}
@@ -863,6 +962,23 @@ function LeadsWorkspaceContent({
           availableReps={availableRepsForModal}
           onClose={() => setIsBatchReassignOpen(false)}
           onSuccess={handleBatchReassignSuccess}
+        />
+      )}
+
+      {/* 1-Click Inbound Lead Conversion Modal */}
+      {convertModalState.isOpen && convertModalState.lead && (
+        <ConvertLeadToDealModal
+          isOpen={convertModalState.isOpen}
+          lead={convertModalState.lead}
+          availableAssignees={availableAssignees}
+          availableStatuses={resolvedStatuses}
+          onClose={() => setConvertModalState({ isOpen: false, lead: null })}
+          onSuccess={(_convertedId) => {
+            setConvertModalState({ isOpen: false, lead: null });
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('popstate'));
+            }
+          }}
         />
       )}
     </>

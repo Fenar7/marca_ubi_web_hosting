@@ -5,7 +5,7 @@
   width: 100%;
 }
 
-.filterBar {
+.topControlBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -19,7 +19,7 @@
   align-items: center;
   flex: 1;
   min-width: 280px;
-  max-width: 480px;
+  max-width: 440px;
 }
 
 .searchIcon {
@@ -31,6 +31,7 @@
 
 .searchInput {
   width: 100%;
+  min-height: 44px;
   padding: 0.65rem 0.85rem 0.65rem 2.25rem;
   background-color: #111113;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -50,21 +51,68 @@
   }
 }
 
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.viewModeToggle {
+  display: flex;
+  align-items: center;
+  background-color: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.2rem;
+  gap: 0.2rem;
+}
+
+.viewModeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  color: #a1a1aa;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.viewModeBtnActive {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-weight: 600;
+}
+
 .bucketFilterGroup {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
   background-color: #111113;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  padding: 0.25rem;
+  padding: 0.2rem;
 }
 
 .filterPill {
   background: transparent;
   border: none;
   border-radius: 6px;
-  padding: 0.45rem 0.85rem;
+  padding: 0.45rem 0.75rem;
   color: #a1a1aa;
   font-size: 0.78rem;
   font-weight: 500;
@@ -89,17 +137,287 @@
   font-weight: 600;
 }
 
+/* Kanban Board Styling */
+.kanbanBoardContainer {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding-bottom: 1.5rem;
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+  }
+}
+
+.kanbanColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 310px;
+  max-width: 340px;
+  background-color: #0d0d0f;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 0.9rem;
+  gap: 0.85rem;
+  flex-shrink: 0;
+}
+
+.columnHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.columnTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.columnIdentity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.columnStatusDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.columnTitle {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.columnCountBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #a1a1aa;
+  background-color: rgba(255, 255, 255, 0.06);
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+}
+
+.columnValuationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.columnValuationLabel {
+  font-size: 0.7rem;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.columnValuationSum {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ff6100;
+  font-feature-settings: 'tnum';
+}
+
+.columnCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 120px;
+}
+
+.kanbanCard {
+  background-color: #141416;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    border-color: rgba(255, 97, 0, 0.4);
+    background-color: #18181a;
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.cardTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardIdBadge {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.72rem;
+  color: #ff6100;
+  background-color: rgba(255, 97, 0, 0.08);
+  border: 1px solid rgba(255, 97, 0, 0.2);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+}
+
+.cardClientBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cardClientName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardCompanyName {
+  font-size: 0.76rem;
+  color: #a1a1aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardValueRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cardValueLabel {
+  font-size: 0.7rem;
+  color: #a1a1aa;
+}
+
+.cardValueAmount {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #ffffff;
+  font-feature-settings: 'tnum';
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cardOwnerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.avatarMonogram {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #d4d4d8;
+}
+
+.cardOwnerName {
+  font-size: 0.74rem;
+  color: #a1a1aa;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardQuickActions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.stageMoveBtn {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #d4d4d8;
+  font-size: 0.72rem;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 97, 0, 0.15);
+    color: #ff6100;
+    border-color: rgba(255, 97, 0, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.emptyColumnState {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+  color: #a1a1aa;
+  font-size: 0.76rem;
+  background-color: rgba(255, 255, 255, 0.01);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.04);
+}
+
+/* Data Grid (Table) Styling */
 .gridCard {
   background-color: #0d0d0f;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .tableHeader {
   display: grid;
   grid-template-columns: 120px 2.2fr 1.4fr 1.5fr 1fr 1.5fr 110px;
+  min-width: 860px;
   padding: 0.85rem 1.25rem;
   background-color: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -111,6 +429,36 @@
   align-items: center;
 }
 
+.sortableHeaderCol {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0;
+  min-height: 44px;
+  text-align: left;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.sortArrow {
+  font-size: 0.68rem;
+  color: #ff6100;
+}
+
 .tableBody {
   display: flex;
   flex-direction: column;
@@ -119,6 +467,7 @@
 .dealRow {
   display: grid;
   grid-template-columns: 120px 2.2fr 1.4fr 1.5fr 1fr 1.5fr 110px;
+  min-width: 860px;
   padding: 0.85rem 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   align-items: center;
@@ -201,6 +550,7 @@
   font-size: 0.88rem;
   font-weight: 600;
   color: #ffffff;
+  font-feature-settings: 'tnum';
 }
 
 .priorityBadge {
@@ -281,4 +631,29 @@
   font-size: 0.82rem;
   color: #a1a1aa;
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .topControlBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .rightControls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .bucketFilterGroup {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.35rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kanbanBoardContainer {
+    padding-bottom: 1.5rem;
+  }
 }
