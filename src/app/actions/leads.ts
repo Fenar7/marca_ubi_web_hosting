@@ -21,6 +21,7 @@ import {
   addLeadTouchpointSchema,
   updateLeadAssigneeSchema,
   updateLeadDealParametersSchema,
+  convertLeadToDealSchema,
 } from '@/app/lib/lead-schemas';
 import type {
   CrmUserRole,
@@ -1241,3 +1242,186 @@ export async function clearLeadFollowUp(
     return { success: false, error: message };
   }
 }
+
+/**
+ * Converts a raw inbound lead or inquiry into an active commercial deal opportunity.
+ * Advances the lead into a qualified stage with target contract valuation, deal priority,
+ * and designated representative assignment.
+ *
+ * @param input Raw input matching convertLeadToDealSchema.
+ * @returns {Promise<LeadActionResult>}
+ */
+export async function convertInboundLeadToDealAction(
+  input: unknown
+): Promise<LeadActionResult> {
+  try {
+    const parsed = convertLeadToDealSchema.safeParse(input);
+
+    if (!parsed.success) {
+      const validationErrors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0]?.toString() || 'form';
+        validationErrors[field] = issue.message;
+      }
+      return {
+        success: false,
+        error: 'Validation failed for lead conversion.',
+        validationErrors,
+      };
+    }
+
+    const { leadId, targetStatusId, expectedValue, assignedTo, priority, notes } = parsed.data;
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to convert inbound lead.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Forbidden: Operational identity profile not found.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Forbidden: Inactive or suspended accounts cannot convert leads.',
+      };
+    }
+
+    if (callerProfile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Forbidden: Viewers hold read-only permissions across the commercial pipeline.',
+      };
+    }
+
+    // Verify existing lead
+    const { data: lead, error: leadError } = await supabase
+      .from('leads')
+      .select('id, lead_id, name, company, status_id, assigned_to, funnel_statuses(id, name, bucket)')
+      .eq('id', leadId)
+      .maybeSingle();
+
+    if (leadError || !lead) {
+      return {
+        success: false,
+        error: 'Inbound inquiry not found or inaccessible under security boundaries.',
+      };
+    }
+
+    // Resolve target status: if not provided or valid, find first potential status
+    let resolvedStatusId = targetStatusId;
+    let targetStatusName = 'Qualified Deal';
+
+    if (!resolvedStatusId) {
+      const { data: statusMatch } = await supabase
+        .from('funnel_statuses')
+        .select('id, name')
+        .eq('is_active', true)
+        .eq('bucket', 'potential')
+        .order('sort_order', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (statusMatch) {
+        resolvedStatusId = statusMatch.id;
+        targetStatusName = statusMatch.name;
+      } else {
+        // Fallback to current status
+        resolvedStatusId = lead.status_id;
+      }
+    } else {
+      const { data: statusObj } = await supabase
+        .from('funnel_statuses')
+        .select('name')
+        .eq('id', resolvedStatusId)
+        .maybeSingle();
+      if (statusObj) {
+        targetStatusName = statusObj.name;
+      }
+    }
+
+    // Determine assignee
+    let finalAssignee = lead.assigned_to;
+    if (callerProfile.role === 'admin' || callerProfile.role === 'sales_manager') {
+      if (assignedTo && isValidUuid(assignedTo)) {
+        finalAssignee = assignedTo;
+      }
+    } else if (callerProfile.role === 'sales_executive') {
+      // Sales executive can assign to themselves if unassigned
+      if (!finalAssignee) {
+        finalAssignee = user.id;
+      }
+    }
+
+    const cleanNotes = notes ? sanitizeHtml(notes) ?? notes : null;
+
+    // Execute atomic update
+    const { error: updateError } = await supabase
+      .from('leads')
+      .update({
+        status_id: resolvedStatusId,
+        expected_value: expectedValue,
+        priority,
+        assigned_to: finalAssignee,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', leadId);
+
+    if (updateError) {
+      return {
+        success: false,
+        error: `Database mutation error during lead conversion: ${updateError.message}`,
+      };
+    }
+
+    // Log conversion activity
+    const activityDesc = `Inbound lead converted to active deal (${targetStatusName}) with expected valuation ₹${expectedValue.toLocaleString('en-IN')} by ${callerProfile.full_name}.${cleanNotes ? ` Notes: ${cleanNotes}` : ''}`;
+
+    await supabase.from('lead_activities').insert({
+      lead_id: leadId,
+      actor_id: user.id,
+      activity_type: 'note_added',
+      description: activityDesc,
+      metadata: {
+        converted_to_deal: true,
+        previous_status_id: lead.status_id,
+        new_status_id: resolvedStatusId,
+        expected_value: expectedValue,
+        priority,
+        assigned_to: finalAssignee,
+      },
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+
+    return {
+      success: true,
+      id: leadId,
+      leadId,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unexpected lead conversion fault.';
+    return { success: false, error: message };
+  }
+}
+

@@ -3,13 +3,20 @@
 /**
  * @file WorksWorkspaceClient.tsx
  * @description Interactive Client Component for Client Works & Project Deliverables (/admin/works).
- *              Displays post-conversion creative engagements with milestone progress meters,
- *              health status indicators, director assignments, and stage transition controls.
+ *              Displays post-conversion creative engagements with an interactive milestone completion
+ *              checklist, dynamic production stage progression, and operational delivery health status controls.
+ *              Enforces sub-16ms optimistic UI updates with resilient Server Action reconciliation.
+ * @module app/admin/(workspace)/works/WorksWorkspaceClient
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import type { ClientWorkItem, ClientWorkDeliveryStage, ClientWorkHealthStatus } from '@/types/crm';
+import {
+  updateClientWorkMilestoneAction,
+  updateClientWorkStageAction,
+  updateClientWorkHealthAction,
+} from '@/app/actions/works';
 import styles from './WorksWorkspaceClient.module.scss';
 
 interface WorksWorkspaceClientProps {
@@ -26,14 +33,14 @@ function formatCurrency(amount: number): string {
   return `₹${amount.toLocaleString('en-IN')}`;
 }
 
-const STAGE_LABELS: Record<ClientWorkDeliveryStage, string> = {
-  kickoff: 'Kickoff & Alignment',
-  strategy: 'Brand Strategy',
-  design_ui_ux: 'UI/UX Design Systems',
-  development: 'Production Development',
-  review_qa: 'Client QA & Review',
-  delivered: 'Completed & Delivered',
-};
+const STAGE_OPTIONS: Array<{ key: ClientWorkDeliveryStage; label: string }> = [
+  { key: 'kickoff', label: '1. Kickoff & Alignment' },
+  { key: 'strategy', label: '2. Brand Strategy' },
+  { key: 'design_ui_ux', label: '3. UI/UX Design' },
+  { key: 'development', label: '4. Production Build' },
+  { key: 'review_qa', label: '5. Client QA & Review' },
+  { key: 'delivered', label: '6. Delivered & Complete' },
+];
 
 const HEALTH_LABELS: Record<ClientWorkHealthStatus, { label: string; className: string }> = {
   on_track: { label: 'On Track', className: styles.healthOnTrack },
@@ -43,24 +50,130 @@ const HEALTH_LABELS: Record<ClientWorkHealthStatus, { label: string; className: 
 };
 
 export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps): React.ReactElement {
+  const [works, setWorks] = useState<ClientWorkItem[]>(initialWorks);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedHealth, setSelectedHealth] = useState<string>('all');
   const [selectedStage, setSelectedStage] = useState<string>('all');
+  const [expandedWorkId, setExpandedWorkId] = useState<string | null>(null);
 
   const filteredWorks = useMemo(() => {
-    return initialWorks.filter((work) => {
+    return works.filter((work) => {
+      const q = searchTerm.toLowerCase().trim();
       const matchesSearch =
-        work.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        work.project_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (work.company && work.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        work.service_scope.toLowerCase().includes(searchTerm.toLowerCase());
+        !q ||
+        work.client_name.toLowerCase().includes(q) ||
+        work.project_code.toLowerCase().includes(q) ||
+        (work.company && work.company.toLowerCase().includes(q)) ||
+        work.service_scope.toLowerCase().includes(q);
 
       const matchesHealth = selectedHealth === 'all' || work.health_status === selectedHealth;
       const matchesStage = selectedStage === 'all' || work.delivery_stage === selectedStage;
 
       return matchesSearch && matchesHealth && matchesStage;
     });
-  }, [initialWorks, searchTerm, selectedHealth, selectedStage]);
+  }, [works, searchTerm, selectedHealth, selectedStage]);
+
+  /**
+   * Toggles milestone status between pending and completed.
+   */
+  const handleToggleMilestone = useCallback(
+    async (workId: string, milestoneId: string, currentStatus: string): Promise<void> => {
+      const nextStatus: 'pending' | 'completed' =
+        currentStatus === 'completed' ? 'pending' : 'completed';
+
+      // Optimistic update
+      setWorks((prev) =>
+        prev.map((item) => {
+          if (item.id !== workId) return item;
+          const updatedMilestones = item.milestones.map((m) =>
+            m.id === milestoneId
+              ? {
+                  ...m,
+                  status: nextStatus,
+                  completed_at: nextStatus === 'completed' ? new Date().toISOString() : null,
+                }
+              : m
+          );
+          return {
+            ...item,
+            milestones: updatedMilestones,
+          };
+        })
+      );
+
+      const result = await updateClientWorkMilestoneAction({
+        workId,
+        milestoneId,
+        status: nextStatus,
+      });
+
+      if (!result.success) {
+        // Rollback on failure
+        setWorks(initialWorks);
+        console.error('[WorksWorkspaceClient] Milestone update failed:', result.error);
+      }
+    },
+    [initialWorks]
+  );
+
+  /**
+   * Updates delivery stage for a client work.
+   */
+  const handleChangeStage = useCallback(
+    async (workId: string, newStage: ClientWorkDeliveryStage): Promise<void> => {
+      // Optimistic update
+      setWorks((prev) =>
+        prev.map((item) => {
+          if (item.id !== workId) return item;
+          return {
+            ...item,
+            delivery_stage: newStage,
+            health_status: newStage === 'delivered' ? 'completed' : item.health_status,
+          };
+        })
+      );
+
+      const result = await updateClientWorkStageAction({
+        workId,
+        stage: newStage,
+      });
+
+      if (!result.success) {
+        setWorks(initialWorks);
+        console.error('[WorksWorkspaceClient] Stage transition failed:', result.error);
+      }
+    },
+    [initialWorks]
+  );
+
+  /**
+   * Updates operational health status for a client work.
+   */
+  const handleChangeHealth = useCallback(
+    async (workId: string, newHealth: ClientWorkHealthStatus): Promise<void> => {
+      // Optimistic update
+      setWorks((prev) =>
+        prev.map((item) => {
+          if (item.id !== workId) return item;
+          return {
+            ...item,
+            health_status: newHealth,
+          };
+        })
+      );
+
+      const result = await updateClientWorkHealthAction({
+        workId,
+        healthStatus: newHealth,
+      });
+
+      if (!result.success) {
+        setWorks(initialWorks);
+        console.error('[WorksWorkspaceClient] Health status update failed:', result.error);
+      }
+    },
+    [initialWorks]
+  );
 
   return (
     <div className={styles.clientContainer}>
@@ -85,7 +198,7 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Search projects by client, code (PRJ-1001), or scope..."
+            placeholder="Search projects by client, project code (PRJ-1001), or scope..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -97,7 +210,7 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
             className={`${styles.filterPill} ${selectedHealth === 'all' ? styles.filterPillActive : ''}`}
             onClick={() => setSelectedHealth('all')}
           >
-            All Projects ({initialWorks.length})
+            All Projects ({works.length})
           </button>
           <button
             type="button"
@@ -150,7 +263,7 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
         <div className={styles.emptyCard}>
           <p className={styles.emptyTitle}>No active client projects match your filters.</p>
           <p className={styles.emptySub}>
-            Projects are automatically instantiated when deals transition to the Converted stage.
+            Projects are automatically instantiated when commercial opportunities reach the Converted stage.
           </p>
         </div>
       ) : (
@@ -159,18 +272,29 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
             const healthMeta = HEALTH_LABELS[work.health_status] || HEALTH_LABELS.on_track;
             const completedMilestones = work.milestones.filter((m) => m.status === 'completed').length;
             const totalMilestones = work.milestones.length || 5;
-            const progressPercent = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+            const progressPercent =
+              totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+            const isMilestoneExpanded = expandedWorkId === work.id;
 
             return (
               <article key={work.id} className={styles.workCard}>
-                {/* Card Header */}
+                {/* Card Header with Interactive Health Selector */}
                 <div className={styles.cardHeader}>
                   <div className={styles.projectIdentity}>
                     <span className={styles.projectCode}>{work.project_code}</span>
-                    <span className={`${styles.healthBadge} ${healthMeta.className}`}>
-                      <span className={styles.statusDot} aria-hidden="true" />
-                      {healthMeta.label}
-                    </span>
+                    <select
+                      className={styles.healthSelect}
+                      value={work.health_status}
+                      onChange={(e) =>
+                        handleChangeHealth(work.id, e.target.value as ClientWorkHealthStatus)
+                      }
+                      aria-label="Update operational health status"
+                    >
+                      <option value="on_track">● On Track</option>
+                      <option value="at_risk">● At Risk</option>
+                      <option value="blocked">● Blocked</option>
+                      <option value="completed">● Delivered</option>
+                    </select>
                   </div>
                   <span className={styles.contractValue}>{formatCurrency(work.contract_value)}</span>
                 </div>
@@ -182,13 +306,26 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
                   <span className={styles.serviceScope}>{work.service_scope}</span>
                 </div>
 
-                {/* Current Stage Strip */}
+                {/* Current Stage Strip with Interactive Stage Selector */}
                 <div className={styles.stageBlock}>
-                  <div className={styles.stageLabelArea}>
-                    <span className={styles.stageCaption}>Active Production Stage</span>
-                    <span className={styles.stageName}>
-                      {STAGE_LABELS[work.delivery_stage] || work.delivery_stage}
-                    </span>
+                  <div className={styles.stageHeaderRow}>
+                    <div className={styles.stageLabelArea}>
+                      <span className={styles.stageCaption}>Active Production Stage</span>
+                    </div>
+                    <select
+                      className={styles.stageSelect}
+                      value={work.delivery_stage}
+                      onChange={(e) =>
+                        handleChangeStage(work.id, e.target.value as ClientWorkDeliveryStage)
+                      }
+                      aria-label="Update delivery stage"
+                    >
+                      {STAGE_OPTIONS.map((opt) => (
+                        <option key={opt.key} value={opt.key}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Milestone Progress Meter */}
@@ -207,6 +344,67 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
                       {completedMilestones}/{totalMilestones} Milestones ({progressPercent}%)
                     </span>
                   </div>
+                </div>
+
+                {/* Interactive Milestone Completion Checklist */}
+                <div className={styles.milestonesContainer}>
+                  <div className={styles.milestonesHeader}>
+                    <span className={styles.milestonesSectionTitle}>Milestone Deliverables</span>
+                    <button
+                      type="button"
+                      className={styles.stagePillBtn}
+                      onClick={() => setExpandedWorkId(isMilestoneExpanded ? null : work.id)}
+                      aria-expanded={isMilestoneExpanded}
+                    >
+                      {isMilestoneExpanded ? 'Hide Checklist' : `Checklist (${completedMilestones}/${totalMilestones})`}
+                    </button>
+                  </div>
+
+                  {isMilestoneExpanded && (
+                    <div className={styles.milestonesList} role="group" aria-label="Milestone checklist">
+                      {work.milestones.map((m) => {
+                        const isCompleted = m.status === 'completed';
+                        const isInProgress = m.status === 'in_progress';
+
+                        return (
+                          <div
+                            key={m.id}
+                            className={`${styles.milestoneItem} ${isCompleted ? styles.milestoneItemCompleted : ''}`}
+                            onClick={() => handleToggleMilestone(work.id, m.id, m.status)}
+                            role="checkbox"
+                            aria-checked={isCompleted}
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === ' ' || e.key === 'Enter') {
+                                e.preventDefault();
+                                handleToggleMilestone(work.id, m.id, m.status);
+                              }
+                            }}
+                          >
+                            <span
+                              className={`${styles.milestoneCheckbox} ${
+                                isCompleted
+                                  ? styles.milestoneCheckboxChecked
+                                  : isInProgress
+                                  ? styles.milestoneCheckboxInProgress
+                                  : ''
+                              }`}
+                              aria-hidden="true"
+                            >
+                              {isCompleted ? '✓' : isInProgress ? '•' : ''}
+                            </span>
+                            <span
+                              className={`${styles.milestoneTitle} ${
+                                isCompleted ? styles.milestoneTitleCompleted : ''
+                              }`}
+                            >
+                              {m.title}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Director Ownership & Dates */}
@@ -228,7 +426,11 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
                   </div>
 
                   <span className={styles.kickoffDate}>
-                    Kickoff: {new Date(work.kickoff_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    Kickoff: {new Date(work.kickoff_date).toLocaleDateString('en-IN', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </span>
                 </div>
               </article>

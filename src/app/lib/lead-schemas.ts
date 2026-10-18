@@ -286,3 +286,41 @@ export const updateLeadDealParametersSchema = z.object({
 });
 
 export type UpdateLeadDealParametersInput = z.infer<typeof updateLeadDealParametersSchema>;
+
+/**
+ * Zod validation schema for converting an inbound inquiry into an active pipeline deal.
+ */
+export const convertLeadToDealSchema = z.object({
+  leadId: z
+    .string({ message: 'Lead identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid lead identifier' }),
+  targetStatusId: z
+    .string()
+    .regex(UUID_REGEX, { message: 'Invalid target status identifier' })
+    .optional(),
+  expectedValue: z.coerce
+    .number({ message: 'Expected valuation must be a numeric amount' })
+    .min(0, { message: 'Expected valuation cannot be negative' })
+    .max(1000000000, { message: 'Expected valuation cannot exceed ₹100 Crore' }),
+  assignedTo: z
+    .string()
+    .regex(UUID_REGEX, { message: 'Invalid representative identifier' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  priority: z
+    .enum(LEAD_PRIORITIES, {
+      message: 'Please select a valid deal priority',
+    })
+    .default('High'),
+  notes: z
+    .string()
+    .trim()
+    .max(2000, { message: 'Conversion notes must not exceed 2000 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
+
+export type ConvertLeadToDealInput = z.infer<typeof convertLeadToDealSchema>;
+
