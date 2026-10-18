@@ -16,6 +16,7 @@ import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorksp
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
 import { InlinePrioritySelect } from './InlinePrioritySelect';
 import { LeadMobileCard } from './LeadMobileCard';
+import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { LeadPriority } from '@/types/crm';
 import styles from './LeadsDataGrid.module.scss';
 
@@ -230,16 +231,42 @@ export function LeadsDataGrid({
                     currentPriority={lead.priority}
                     onPriorityChange={onPriorityChange}
                   />
-                  <span
-                    className={styles.touchpointDate}
-                    title={
-                      lead.next_follow_up
-                        ? `Next Touchpoint: ${new Date(lead.next_follow_up).toLocaleString()}`
-                        : 'No touchpoint scheduled'
-                    }
-                  >
-                    {followUpText}
-                  </span>
+                  <div className={styles.touchpointGroup}>
+                    <button
+                      type="button"
+                      className={styles.touchpointDate}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (typeof window !== 'undefined') {
+                          window.dispatchEvent(
+                            new CustomEvent('open-scheduler-modal', {
+                              detail: {
+                                leadId: lead.id,
+                                leadName: lead.name,
+                                company: lead.company,
+                                currentFollowUpDate: lead.next_follow_up,
+                              },
+                            })
+                          );
+                        }
+                      }}
+                      title={
+                        lead.next_follow_up
+                          ? `Next Touchpoint: ${new Date(lead.next_follow_up).toLocaleString()} (Click to reschedule)`
+                          : 'Click to schedule next touchpoint'
+                      }
+                      aria-label={`Schedule follow-up for ${lead.company || lead.name}`}
+                    >
+                      {followUpText}
+                    </button>
+                    <OverdueBadge
+                      nextFollowUp={lead.next_follow_up}
+                      statusName={lead.status_name}
+                      revisitDate={lead.revisit_date}
+                      bucket={lead.bucket}
+                      variant="short"
+                    />
+                  </div>
                 </div>
               </div>
             );

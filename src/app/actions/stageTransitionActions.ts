@@ -136,6 +136,8 @@ export interface GuardedTransitionResultPayload {
   convertedAt?: string | null;
   expectedValue?: number;
   lostReason?: string | null;
+  revisitDate?: string | null;
+  nextFollowUp?: string | null;
 }
 
 /**
