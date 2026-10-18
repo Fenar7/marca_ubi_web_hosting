@@ -12,11 +12,13 @@
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import Link from 'next/link';
-import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile } from '@/types/crm';
+import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile, CrmTabKey } from '@/types/crm';
+import { ROLE_DEFAULT_TABS } from '@/types/crm';
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
 import { SuspendUserModal } from './SuspendUserModal';
 import { LeadReassignmentWizardModal } from './LeadReassignmentWizardModal';
+import { EditUserPermissionsModal } from './EditUserPermissionsModal';
 import styles from '../team.module.scss';
 
 interface CommercialDirectoryTableProps {
@@ -44,6 +46,9 @@ export function CommercialDirectoryTable({
   const [actionError, setActionError] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
+  // Tab Permissions modal state
+  const [memberForPermissions, setMemberForPermissions] = useState<TeamMemberRosterItem | null>(null);
+
   // Role modification modal state
   const [targetMemberForRole, setTargetMemberForRole] = useState<TeamMemberRosterItem | null>(null);
   const [selectedNewRole, setSelectedNewRole] = useState<CrmUserRole>('sales_executive');
@@ -56,6 +61,17 @@ export function CommercialDirectoryTable({
 
   // Dedicated lead reassignment wizard modal state (Sprint 4.2)
   const [memberToReassign, setMemberToReassign] = useState<TeamMemberRosterItem | null>(null);
+
+  // Optimistic handler for updated tab permissions
+  const handlePermissionsUpdated = (userId: string, newTabs: string[]) => {
+    setRoster((prev) =>
+      prev.map((item) =>
+        item.id === userId ? { ...item, allowed_tabs: newTabs } : item
+      )
+    );
+    setSuccessNotice('Tab permissions updated successfully.');
+    setTimeout(() => setSuccessNotice(null), 4000);
+  };
 
   // Filter roster dynamically
   const filteredRoster = useMemo(() => {
@@ -235,6 +251,7 @@ export function CommercialDirectoryTable({
               <th className={styles.th}>Personnel Identity</th>
               <th className={styles.th}>Governance Role</th>
               <th className={styles.th}>Job Title</th>
+              <th className={styles.th}>Tab Permissions</th>
               <th className={styles.th}>Active Portfolio</th>
               <th className={styles.th}>Account Status</th>
               {isAdmin && <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>}
@@ -318,6 +335,42 @@ export function CommercialDirectoryTable({
                       {member.job_title}
                     </td>
 
+                    {/* Granular Tab Permissions */}
+                    <td className={styles.td}>
+                      {(() => {
+                        const memberTabs = Array.isArray(member.allowed_tabs)
+                          ? member.allowed_tabs
+                          : (Object.keys(ROLE_DEFAULT_TABS[member.role] || {}) as CrmTabKey[]).filter(
+                              (k) => ROLE_DEFAULT_TABS[member.role]?.[k]
+                            );
+                        const tabCount = memberTabs.length;
+                        const isFull = tabCount === 9;
+
+                        return (
+                          <button
+                            type="button"
+                            className={`${styles.permissionsPill} ${
+                              isFull ? styles.permissionsFull : styles.permissionsCustom
+                            }`}
+                            onClick={() => isAdmin && setMemberForPermissions(member)}
+                            disabled={!isAdmin}
+                            title={
+                              isAdmin
+                                ? `Click to configure permissions for ${member.full_name} (${tabCount}/9 tabs authorized)`
+                                : `${tabCount}/9 tabs authorized`
+                            }
+                            aria-label={`Configure permissions for ${member.full_name}: ${tabCount} of 9 tabs authorized`}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            <span>{tabCount}/9 Tabs</span>
+                          </button>
+                        );
+                      })()}
+                    </td>
+
                     {/* Active Deals Load / Active Portfolio */}
                     <td className={styles.td}>
                       {member.active_deals_count > 0 ? (
@@ -381,6 +434,17 @@ export function CommercialDirectoryTable({
 
                           <button
                             type="button"
+                            className={`${styles.rowActionButton} ${styles.permissionsButton}`}
+                            onClick={() => setMemberForPermissions(member)}
+                            disabled={isPending}
+                            aria-label={`Configure tab permissions for ${member.full_name}`}
+                            title="Configure Tab Permissions"
+                          >
+                            <span>Permissions</span>
+                          </button>
+
+                          <button
+                            type="button"
                             className={styles.rowActionButton}
                             onClick={() => {
                               setTargetMemberForRole(member);
@@ -426,7 +490,7 @@ export function CommercialDirectoryTable({
               })
             ) : (
               <tr>
-                <td colSpan={isAdmin ? 6 : 5}>
+                <td colSpan={isAdmin ? 7 : 6}>
                   <div className={styles.emptyState}>
                     <p className={styles.emptyStateTitle}>No Commercial Personnel Found</p>
                     <p className={styles.emptyStateText}>
@@ -661,6 +725,15 @@ export function CommercialDirectoryTable({
           </div>
         </div>
       )}
+
+      {/* Tab Permissions Configuration Modal */}
+      <EditUserPermissionsModal
+        isOpen={Boolean(memberForPermissions)}
+        targetMember={memberForPermissions}
+        currentUserId={currentUserId}
+        onClose={() => setMemberForPermissions(null)}
+        onPermissionsUpdated={handlePermissionsUpdated}
+      />
     </div>
   );
 }

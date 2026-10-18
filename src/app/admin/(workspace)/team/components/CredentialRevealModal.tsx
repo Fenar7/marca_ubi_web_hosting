@@ -18,6 +18,7 @@ export interface ProvisionedCredentialsPayload {
   role: string;
   jobTitle: string;
   tempPassword: string;
+  allowedTabs?: string[];
 }
 
 interface CredentialRevealModalProps {

@@ -560,6 +560,45 @@
   }
 }
 
+.permissionsButton {
+  &:hover {
+    color: #ff6100;
+    border-color: rgba(255, 97, 0, 0.4);
+    background: rgba(255, 97, 0, 0.08);
+  }
+}
+
+.permissionsPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.72rem;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: rgba(255, 97, 0, 0.4);
+    background: rgba(255, 97, 0, 0.08);
+    color: #ffffff;
+  }
+}
+
+.permissionsFull {
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.permissionsCustom {
+  border-color: rgba(255, 97, 0, 0.3);
+  color: #ff914d;
+}
+
 .emptyState {
   padding: 4rem 2rem;
   text-align: center;

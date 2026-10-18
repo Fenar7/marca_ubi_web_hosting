@@ -25,8 +25,11 @@ import type {
 import {
   createTeamUserSchema,
   suspendTeamUserSchema,
+  updateUserPermissionsSchema,
   type CreateTeamUserFormData,
+  type UpdateUserPermissionsFormData,
 } from '@/app/lib/team-schemas';
+import { ROLE_DEFAULT_TABS, type CrmTabKey } from '@/types/crm';
 
 /**
  * Verifies that the active request session belongs to an active administrator.
@@ -94,7 +97,15 @@ export async function createTeamUser(
     };
   }
 
-  const { fullName, email, role, jobTitle, phone, tempPassword } = parsed.data;
+  const { fullName, email, role, jobTitle, phone, tempPassword, allowedTabs, featurePermissions } = parsed.data;
+
+  // Resolve effective allowed tabs: if explicitly specified, use provided array; otherwise derive from role defaults
+  const effectiveAllowedTabs: string[] =
+    Array.isArray(allowedTabs) && allowedTabs.length > 0
+      ? allowedTabs
+      : (Object.keys(ROLE_DEFAULT_TABS[role] || {}) as CrmTabKey[]).filter(
+          (k) => ROLE_DEFAULT_TABS[role]?.[k]
+        );
 
   // 2. Enforce active administrator authorization boundary
   let caller: { callerId: string; callerEmail: string };
@@ -133,10 +144,12 @@ export async function createTeamUser(
         role,
         job_title: jobTitle,
         must_change_password: true,
+        allowed_tabs: effectiveAllowedTabs,
       },
       app_metadata: {
         role,
         must_change_password: true,
+        allowed_tabs: effectiveAllowedTabs,
       },
     });
 
@@ -173,6 +186,8 @@ export async function createTeamUser(
         status: 'active',
         invited_by: caller.callerId,
         must_change_password: true,
+        allowed_tabs: effectiveAllowedTabs,
+        feature_permissions: featurePermissions || {},
       })
       .select()
       .single();
@@ -193,6 +208,8 @@ export async function createTeamUser(
           role,
           job_title: jobTitle,
           full_name: fullName,
+          allowed_tabs: effectiveAllowedTabs,
+          feature_permissions: featurePermissions || {},
           invited_by_id: caller.callerId,
           invited_by_email: caller.callerEmail,
           created_at: new Date().toISOString(),
@@ -760,3 +777,151 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
     data: roster,
   };
 }
+
+/**
+ * Updates a team member's granular tab access permissions and feature capabilities.
+ *
+ * Invariants & Security Boundaries:
+ * 1. Administrator Guard: Caller must be an active administrator (assertActiveAdmin).
+ * 2. Admin Self-Lockout Prevention: If caller is modifying their own account, they CANNOT revoke
+ *    their own access to the 'users' or 'settings' workspace tabs.
+ * 3. Identity Sync: Persists allowed_tabs and feature_permissions atomically in `public.profiles`
+ *    and synchronizes to Supabase Auth `user_metadata` and `app_metadata`.
+ * 4. Audit Log Immutability: Records an entry in `public.team_audit_logs` capturing previous and new tab sets.
+ * 5. Cache Revalidation: Revalidates `/admin/team` and `/admin`.
+ *
+ * @param {UpdateUserPermissionsFormData} input Target user ID and new allowed tabs array.
+ * @returns {Promise<TeamActionResult<Profile>>} Result envelope with updated profile record.
+ */
+export async function updateUserPermissions(
+  input: UpdateUserPermissionsFormData
+): Promise<TeamActionResult<Profile>> {
+  // 1. Validate payload against Zod schema
+  const parsed = updateUserPermissionsSchema.safeParse(input);
+  if (!parsed.success) {
+    const validationErrors: Record<string, string> = {};
+    parsed.error.issues.forEach((issue) => {
+      const field = issue.path[0] ? String(issue.path[0]) : 'form';
+      validationErrors[field] = issue.message;
+    });
+
+    return {
+      success: false,
+      error: 'Validation failed. Please provide a valid UUID and tab permissions array.',
+      validationErrors,
+    };
+  }
+
+  const { targetUserId, allowedTabs, featurePermissions } = parsed.data;
+
+  // 2. Caller authorization guard: only active admins can alter permissions
+  let caller: { callerId: string; callerEmail: string };
+  try {
+    caller = await assertActiveAdmin();
+  } catch (authErr: unknown) {
+    const message = authErr instanceof Error ? authErr.message : 'Authorization check failed.';
+    return { success: false, error: message };
+  }
+
+  const adminClient = getAdminClient();
+
+  // 3. Fetch existing profile to inspect current state
+  const { data: targetProfile, error: fetchError } = await adminClient
+    .from('profiles')
+    .select('*')
+    .eq('id', targetUserId)
+    .maybeSingle();
+
+  if (fetchError || !targetProfile) {
+    return {
+      success: false,
+      error: 'Target team member profile does not exist in the agency directory.',
+    };
+  }
+
+  // 4. Admin Self-Lockout Prevention Guard:
+  // An administrator cannot revoke their own access to the 'users' or 'settings' tabs
+  if (targetUserId === caller.callerId) {
+    if (!allowedTabs.includes('users') || !allowedTabs.includes('settings')) {
+      return {
+        success: false,
+        error: 'Self-Lockout Violation: Administrators cannot revoke their own access to the Users or Settings workspace tabs.',
+      };
+    }
+  }
+
+  // 5. Update domain profile in public.profiles
+  try {
+    const updatePayload: Record<string, unknown> = {
+      allowed_tabs: allowedTabs,
+      updated_at: new Date().toISOString(),
+    };
+    if (featurePermissions) {
+      updatePayload.feature_permissions = featurePermissions;
+    }
+
+    const { data: updatedProfile, error: updateError } = await adminClient
+      .from('profiles')
+      .update(updatePayload)
+      .eq('id', targetUserId)
+      .select()
+      .single();
+
+    if (updateError || !updatedProfile) {
+      return {
+        success: false,
+        error: `Database update failed: ${updateError?.message || 'Unknown error'}`,
+      };
+    }
+
+    // 6. Synchronize with Supabase Auth app_metadata and user_metadata
+    try {
+      await adminClient.auth.admin.updateUserById(targetUserId, {
+        app_metadata: { allowed_tabs: allowedTabs },
+        user_metadata: { allowed_tabs: allowedTabs },
+      });
+    } catch (authSyncErr: unknown) {
+      console.warn(
+        `[AUTH_SYNC_WARNING] Failed to sync allowed_tabs to Supabase Auth metadata for user ${targetUserId}:`,
+        authSyncErr
+      );
+    }
+
+    // 7. Record immutable entry in public.team_audit_logs
+    const { error: auditError } = await adminClient
+      .from('team_audit_logs')
+      .insert({
+        actor_id: caller.callerId,
+        action: 'permissions_updated',
+        target_user_email: targetProfile.email,
+        details: {
+          target_user_id: targetUserId,
+          target_user_name: targetProfile.full_name,
+          previous_allowed_tabs: targetProfile.allowed_tabs || [],
+          new_allowed_tabs: allowedTabs,
+          feature_permissions: featurePermissions || targetProfile.feature_permissions || {},
+          updated_at: new Date().toISOString(),
+        },
+      });
+
+    if (auditError) {
+      console.warn('[AUDIT_WARNING] Failed to record permissions_updated audit entry:', auditError.message);
+    }
+
+    try {
+      revalidatePath('/admin/team');
+      revalidatePath('/admin');
+    } catch {
+      // Safe no-op outside Next.js request context
+    }
+
+    return {
+      success: true,
+      data: updatedProfile as Profile,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to update user permissions.';
+    return { success: false, error: message };
+  }
+}
+
