@@ -27,7 +27,7 @@ dotenv.config({ path: '.env.local' });
 
 async function runPhase1Verification(): Promise<void> {
   console.log('================================================================');
-  console.log('MARCA UBI CRM — PHASE 1 AUTOMATED DATABASE & PERMISSIONS VERIFIER');
+  console.log('MARCA UBI CRM: PHASE 1 AUTOMATED DATABASE & PERMISSIONS VERIFIER');
   console.log('================================================================\n');
 
   const connectionString = process.env.DATABASE_URL;
@@ -54,9 +54,7 @@ async function runPhase1Verification(): Promise<void> {
   }
 
   try {
-    // ---------------------------------------------------------
-    // TEST SUITE 1: Migration 1 (Granular User Tab Permissions)
-    // ---------------------------------------------------------
+    // Test Suite 1: Migration 1 (Granular User Tab Permissions)
     console.log('\n[TEST 1] Deploying and validating Migration 20261019000001 (Tab Permissions)...');
     const mig1Path = path.resolve('supabase/migrations/20261019000001_granular_user_tab_permissions.sql');
     const mig1Sql = fs.readFileSync(mig1Path, 'utf8');
@@ -117,9 +115,7 @@ async function runPhase1Verification(): Promise<void> {
     }
     assert(adminLockoutTriggered, 'Database strictly rejected stripping users/settings from active administrator (ERRCODE 23514).');
 
-    // ---------------------------------------------------------
-    // TEST SUITE 2: Migration 2 (Client Works Relational Engine)
-    // ---------------------------------------------------------
+    // Test Suite 2: Migration 2 (Client Works Relational Engine)
     console.log('\n[TEST 3] Deploying and validating Migration 20261019000002 (Client Works Engine)...');
     const mig2Path = path.resolve('supabase/migrations/20261019000002_client_works_projects_schema.sql');
     const mig2Sql = fs.readFileSync(mig2Path, 'utf8');
@@ -224,9 +220,7 @@ async function runPhase1Verification(): Promise<void> {
     await client.query(`DELETE FROM public.leads WHERE id = $1;`, [testLeadId]);
     console.log('  Cleaned up synthetic test records.');
 
-    // ---------------------------------------------------------
-    // TEST SUITE 3: Zod Schema Contract Validation
-    // ---------------------------------------------------------
+    // Test Suite 3: Zod Schema Contract Validation
     console.log('\n[TEST 5] Testing Zod Validation Schemas for Permissions & Client Works...');
 
     // 1. Tab permissions schema
