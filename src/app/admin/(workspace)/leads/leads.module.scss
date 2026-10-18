@@ -387,18 +387,28 @@
   min-height: 44px;
   padding: 0 18px;
   border-radius: 8px;
-  background-color: #ff6100;
+  background: linear-gradient(135deg, #ff6100 0%, #e05500 100%);
   color: #000000;
   font-size: 13px;
   font-weight: 600;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 14px rgba(255, 97, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: #ff731a;
-    box-shadow: 0 4px 14px rgba(255, 97, 0, 0.35);
+    background: linear-gradient(135deg, #ff751a 0%, #eb5e00 100%);
+    box-shadow: 0 6px 20px rgba(255, 97, 0, 0.35);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
   }
 
   @media (max-width: 767px) {

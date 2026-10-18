@@ -232,6 +232,26 @@ export function LeadsDataGrid({
                     onPriorityChange={onPriorityChange}
                   />
                   <div className={styles.touchpointGroup}>
+                    {lead.bucket === 'open' && (
+                      <button
+                        type="button"
+                        className={styles.rowConvertBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(
+                              new CustomEvent('open-convert-lead-modal', {
+                                detail: { leadId: lead.id },
+                              })
+                            );
+                          }
+                        }}
+                        title="1-Click Convert Inbound Lead to Pipeline Deal"
+                        aria-label={`Convert ${lead.lead_id} to pipeline deal`}
+                      >
+                        ⚡ Convert
+                      </button>
+                    )}
                     <button
                       type="button"
                       className={styles.touchpointDate}

@@ -5,8 +5,8 @@
  * @description Next.js 16 Server Actions for Client Works & Project Deliverables (/admin/works).
  *              Manages post-conversion active client deliverables, interactive milestone checklist toggling,
  *              production stage state progression, operational health status updates, and director assignments.
- *              Enforces cryptographic caller authentication, Supabase Row-Level Security,
- *              and atomic updates across public.client_works.
+ *              Enforces cryptographic caller authentication, explicit role boundaries, Supabase Row-Level Security,
+ *              row update verification, and immutable activity logging across public.lead_activities.
  * @module actions/works
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -87,7 +87,7 @@ async function authenticateAndAuthorizeCaller() {
 
 /**
  * Toggles or updates an individual milestone within a client work engagement.
- * Automatically synchronizes completion timestamps and recalculates project health.
+ * Automatically synchronizes completion timestamps and logs immutable activity audit.
  *
  * @param input Raw input matching updateClientWorkMilestoneSchema.
  * @returns {Promise<WorksActionResult<ClientWorkMilestone[]>>} Updated milestone list.
@@ -117,12 +117,12 @@ export async function updateClientWorkMilestoneAction(
     return { success: false, error: authCheck.error };
   }
 
-  const { supabase } = authCheck;
+  const { supabase, callerProfile } = authCheck;
 
-  // Retrieve current milestones for this client work
+  // Retrieve current project coordinates and director assignment
   const { data: currentWork, error: fetchError } = await supabase
     .from('client_works')
-    .select('id, milestones, delivery_stage, health_status')
+    .select('id, lead_id, project_code, creative_lead_id, tech_lead_id, milestones, delivery_stage, health_status')
     .eq('id', workId)
     .maybeSingle();
 
@@ -133,12 +133,28 @@ export async function updateClientWorkMilestoneAction(
     };
   }
 
+  // Explicit role guard: Admin, Sales Manager, or assigned Creative/Tech Director
+  const isDirectlyAuthorized =
+    callerProfile.role === 'admin' ||
+    callerProfile.role === 'sales_manager' ||
+    currentWork.creative_lead_id === callerProfile.id ||
+    currentWork.tech_lead_id === callerProfile.id;
+
+  if (!isDirectlyAuthorized) {
+    return {
+      success: false,
+      error: 'Forbidden: Only administrators, sales managers, or assigned directors can modify project milestones.',
+    };
+  }
+
   const rawMilestones = (currentWork.milestones as ClientWorkMilestone[]) || [];
   let found = false;
+  let targetMilestoneTitle = milestoneId;
 
   const updatedMilestones: ClientWorkMilestone[] = rawMilestones.map((m) => {
     if (m.id === milestoneId) {
       found = true;
+      targetMilestoneTitle = m.title;
       return {
         ...m,
         status,
@@ -155,20 +171,38 @@ export async function updateClientWorkMilestoneAction(
     };
   }
 
-  // Update client_works table
-  const { error: updateError } = await supabase
+  // Update client_works table with row verification
+  const { data: updatedRows, error: updateError } = await supabase
     .from('client_works')
     .update({
       milestones: updatedMilestones,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', workId);
+    .eq('id', workId)
+    .select('id');
 
-  if (updateError) {
+  if (updateError || !updatedRows || updatedRows.length === 0) {
     return {
       success: false,
-      error: `Database update failed: ${updateError.message}`,
+      error: updateError
+        ? `Database update failed: ${updateError.message}`
+        : 'Milestone update rejected: Project not found or prohibited by security policies.',
     };
+  }
+
+  // Record immutable activity log
+  if (currentWork.lead_id) {
+    await supabase.from('lead_activities').insert({
+      lead_id: currentWork.lead_id,
+      actor_id: callerProfile.id,
+      activity_type: 'note_added',
+      description: `Deliverable milestone updated: "${targetMilestoneTitle}" marked as ${status} by ${callerProfile.full_name}.`,
+      metadata: {
+        work_id: workId,
+        milestone_id: milestoneId,
+        status,
+      },
+    });
   }
 
   revalidatePath('/admin/works');
@@ -210,7 +244,34 @@ export async function updateClientWorkStageAction(
     return { success: false, error: authCheck.error };
   }
 
-  const { supabase } = authCheck;
+  const { supabase, callerProfile } = authCheck;
+
+  // Retrieve current project coordinates
+  const { data: currentWork, error: fetchError } = await supabase
+    .from('client_works')
+    .select('id, lead_id, project_code, creative_lead_id, tech_lead_id, delivery_stage')
+    .eq('id', workId)
+    .maybeSingle();
+
+  if (fetchError || !currentWork) {
+    return {
+      success: false,
+      error: 'Client work project not found or inaccessible under security boundaries.',
+    };
+  }
+
+  const isDirectlyAuthorized =
+    callerProfile.role === 'admin' ||
+    callerProfile.role === 'sales_manager' ||
+    currentWork.creative_lead_id === callerProfile.id ||
+    currentWork.tech_lead_id === callerProfile.id;
+
+  if (!isDirectlyAuthorized) {
+    return {
+      success: false,
+      error: 'Forbidden: Only administrators, sales managers, or assigned directors can transition production stages.',
+    };
+  }
 
   const updatePayload: Record<string, unknown> = {
     delivery_stage: stage,
@@ -222,16 +283,34 @@ export async function updateClientWorkStageAction(
     updatePayload.health_status = 'completed';
   }
 
-  const { error: updateError } = await supabase
+  const { data: updatedRows, error: updateError } = await supabase
     .from('client_works')
     .update(updatePayload)
-    .eq('id', workId);
+    .eq('id', workId)
+    .select('id');
 
-  if (updateError) {
+  if (updateError || !updatedRows || updatedRows.length === 0) {
     return {
       success: false,
-      error: `Failed to transition delivery stage: ${updateError.message}`,
+      error: updateError
+        ? `Failed to transition delivery stage: ${updateError.message}`
+        : 'Stage transition rejected: Project not found or prohibited by security policies.',
     };
+  }
+
+  // Record immutable activity log
+  if (currentWork.lead_id) {
+    await supabase.from('lead_activities').insert({
+      lead_id: currentWork.lead_id,
+      actor_id: callerProfile.id,
+      activity_type: 'stage_change',
+      description: `Production delivery stage transitioned from ${currentWork.delivery_stage} to ${stage} by ${callerProfile.full_name}.`,
+      metadata: {
+        work_id: workId,
+        previous_stage: currentWork.delivery_stage,
+        new_stage: stage,
+      },
+    });
   }
 
   revalidatePath('/admin/works');
@@ -275,21 +354,66 @@ export async function updateClientWorkHealthAction(
     return { success: false, error: authCheck.error };
   }
 
-  const { supabase } = authCheck;
+  const { supabase, callerProfile } = authCheck;
 
-  const { error: updateError } = await supabase
+  // Retrieve current project coordinates
+  const { data: currentWork, error: fetchError } = await supabase
+    .from('client_works')
+    .select('id, lead_id, project_code, creative_lead_id, tech_lead_id, health_status')
+    .eq('id', workId)
+    .maybeSingle();
+
+  if (fetchError || !currentWork) {
+    return {
+      success: false,
+      error: 'Client work project not found or inaccessible under security boundaries.',
+    };
+  }
+
+  const isDirectlyAuthorized =
+    callerProfile.role === 'admin' ||
+    callerProfile.role === 'sales_manager' ||
+    currentWork.creative_lead_id === callerProfile.id ||
+    currentWork.tech_lead_id === callerProfile.id;
+
+  if (!isDirectlyAuthorized) {
+    return {
+      success: false,
+      error: 'Forbidden: Only administrators, sales managers, or assigned directors can update delivery health status.',
+    };
+  }
+
+  const { data: updatedRows, error: updateError } = await supabase
     .from('client_works')
     .update({
       health_status: healthStatus,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', workId);
+    .eq('id', workId)
+    .select('id');
 
-  if (updateError) {
+  if (updateError || !updatedRows || updatedRows.length === 0) {
     return {
       success: false,
-      error: `Failed to update delivery health: ${updateError.message}`,
+      error: updateError
+        ? `Failed to update delivery health: ${updateError.message}`
+        : 'Health update rejected: Project not found or prohibited by security policies.',
     };
+  }
+
+  // Record immutable activity log
+  if (currentWork.lead_id) {
+    await supabase.from('lead_activities').insert({
+      lead_id: currentWork.lead_id,
+      actor_id: callerProfile.id,
+      activity_type: 'note_added',
+      description: `Delivery operational health updated from ${currentWork.health_status} to ${healthStatus} by ${callerProfile.full_name}.`,
+      metadata: {
+        work_id: workId,
+        previous_health: currentWork.health_status,
+        new_health: healthStatus,
+      },
+    });
   }
 
   revalidatePath('/admin/works');
@@ -301,6 +425,8 @@ export async function updateClientWorkHealthAction(
 
 /**
  * Assigns or updates Creative Director and Technical Director oversight.
+ * Restricts mutation strictly to administrators and sales managers.
+ * Validates director identities against active user profiles.
  *
  * @param input Raw input matching assignClientWorkLeadsSchema.
  * @returns {Promise<WorksActionResult>}
@@ -332,12 +458,62 @@ export async function assignClientWorkDirectorsAction(
 
   const { supabase, callerProfile } = authCheck;
 
-  // Only Admins and Sales Managers can assign directors
+  // Strict role boundary: Only Admins and Sales Managers can assign project directors
   if (callerProfile.role !== 'admin' && callerProfile.role !== 'sales_manager') {
     return {
       success: false,
       error: 'Forbidden: Only administrators and sales managers can reassign project directors.',
     };
+  }
+
+  // Verify project exists
+  const { data: currentWork, error: fetchError } = await supabase
+    .from('client_works')
+    .select('id, lead_id, project_code')
+    .eq('id', workId)
+    .maybeSingle();
+
+  if (fetchError || !currentWork) {
+    return {
+      success: false,
+      error: 'Client work project not found or inaccessible.',
+    };
+  }
+
+  // Validate active profile for Creative Director
+  let creativeDirectorName: string | null = null;
+  if (creativeLeadId) {
+    const { data: creativeProfile } = await supabase
+      .from('profiles')
+      .select('id, full_name, status')
+      .eq('id', creativeLeadId)
+      .maybeSingle();
+
+    if (!creativeProfile || creativeProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Invalid Creative Director: User profile not found or inactive.',
+      };
+    }
+    creativeDirectorName = creativeProfile.full_name;
+  }
+
+  // Validate active profile for Technical Director
+  let techDirectorName: string | null = null;
+  if (techLeadId) {
+    const { data: techProfile } = await supabase
+      .from('profiles')
+      .select('id, full_name, status')
+      .eq('id', techLeadId)
+      .maybeSingle();
+
+    if (!techProfile || techProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Invalid Technical Director: User profile not found or inactive.',
+      };
+    }
+    techDirectorName = techProfile.full_name;
   }
 
   const updatePayload: Record<string, unknown> = {
@@ -351,16 +527,41 @@ export async function assignClientWorkDirectorsAction(
     updatePayload.tech_lead_id = techLeadId;
   }
 
-  const { error: updateError } = await supabase
+  const { data: updatedRows, error: updateError } = await supabase
     .from('client_works')
     .update(updatePayload)
-    .eq('id', workId);
+    .eq('id', workId)
+    .select('id');
 
-  if (updateError) {
+  if (updateError || !updatedRows || updatedRows.length === 0) {
     return {
       success: false,
-      error: `Failed to assign project directors: ${updateError.message}`,
+      error: updateError
+        ? `Failed to assign project directors: ${updateError.message}`
+        : 'Director assignment rejected: Project not found or prohibited by security policies.',
     };
+  }
+
+  // Record immutable activity log
+  if (currentWork.lead_id) {
+    const directorSummary = [
+      creativeLeadId !== undefined ? `Creative Director: ${creativeDirectorName || 'Unassigned'}` : null,
+      techLeadId !== undefined ? `Tech Director: ${techDirectorName || 'Unassigned'}` : null,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    await supabase.from('lead_activities').insert({
+      lead_id: currentWork.lead_id,
+      actor_id: callerProfile.id,
+      activity_type: 'note_added',
+      description: `Project directorial governance updated (${directorSummary}) by ${callerProfile.full_name}.`,
+      metadata: {
+        work_id: workId,
+        creative_lead_id: creativeLeadId,
+        tech_lead_id: techLeadId,
+      },
+    });
   }
 
   revalidatePath('/admin/works');

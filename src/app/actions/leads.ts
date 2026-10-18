@@ -1305,10 +1305,11 @@ export async function convertInboundLeadToDealAction(
       };
     }
 
-    if (callerProfile.role === 'viewer') {
+    // Managerial Authorization Guard: Inbound triage and commercial deal creation restricted to Admin & Sales Manager
+    if (callerProfile.role !== 'admin' && callerProfile.role !== 'sales_manager') {
       return {
         success: false,
-        error: 'Forbidden: Viewers hold read-only permissions across the commercial pipeline.',
+        error: 'Forbidden: Only administrators and sales managers can convert inbound leads to pipeline deals.',
       };
     }
 
@@ -1333,7 +1334,7 @@ export async function convertInboundLeadToDealAction(
     if (!resolvedStatusId) {
       const { data: statusMatch } = await supabase
         .from('funnel_statuses')
-        .select('id, name')
+        .select('id, name, bucket, is_active')
         .eq('is_active', true)
         .eq('bucket', 'potential')
         .order('sort_order', { ascending: true })
@@ -1350,31 +1351,37 @@ export async function convertInboundLeadToDealAction(
     } else {
       const { data: statusObj } = await supabase
         .from('funnel_statuses')
-        .select('name')
+        .select('id, name, bucket, is_active')
         .eq('id', resolvedStatusId)
         .maybeSingle();
-      if (statusObj) {
-        targetStatusName = statusObj.name;
+
+      if (!statusObj || !statusObj.is_active) {
+        return {
+          success: false,
+          error: 'Invalid target stage: Funnel stage does not exist or is currently inactive.',
+        };
       }
+
+      if (statusObj.bucket === 'converted' || statusObj.bucket === 'lost') {
+        return {
+          success: false,
+          error: 'Invalid target stage: Inbound conversion must enter an active pipeline stage, not terminal states.',
+        };
+      }
+
+      targetStatusName = statusObj.name;
     }
 
     // Determine assignee
     let finalAssignee = lead.assigned_to;
-    if (callerProfile.role === 'admin' || callerProfile.role === 'sales_manager') {
-      if (assignedTo && isValidUuid(assignedTo)) {
-        finalAssignee = assignedTo;
-      }
-    } else if (callerProfile.role === 'sales_executive') {
-      // Sales executive can assign to themselves if unassigned
-      if (!finalAssignee) {
-        finalAssignee = user.id;
-      }
+    if (assignedTo && isValidUuid(assignedTo)) {
+      finalAssignee = assignedTo;
     }
 
     const cleanNotes = notes ? sanitizeHtml(notes) ?? notes : null;
 
-    // Execute atomic update
-    const { error: updateError } = await supabase
+    // Execute atomic update with row verification
+    const { data: updatedRows, error: updateError } = await supabase
       .from('leads')
       .update({
         status_id: resolvedStatusId,
@@ -1383,12 +1390,15 @@ export async function convertInboundLeadToDealAction(
         assigned_to: finalAssignee,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', leadId);
+      .eq('id', leadId)
+      .select('id');
 
-    if (updateError) {
+    if (updateError || !updatedRows || updatedRows.length === 0) {
       return {
         success: false,
-        error: `Database mutation error during lead conversion: ${updateError.message}`,
+        error: updateError
+          ? `Database mutation error during lead conversion: ${updateError.message}`
+          : 'Lead conversion failed: Inbound inquiry not found or inaccessible.',
       };
     }
 

@@ -5,12 +5,12 @@
  * @description Centered 1-click modal dialog for converting inbound leads into qualified pipeline deals.
  *              Allows setting expected deal valuation, target pipeline stage, designated sales representative,
  *              deal priority tier, and conversion rationale notes.
- *              Integrates with convertInboundLeadToDealAction.
+ *              Integrates with convertInboundLeadToDealAction with focus trap and dirty discard confirmation.
  * @module app/admin/components/modals/ConvertLeadToDealModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition, useEffect, useRef } from 'react';
+import React, { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { convertInboundLeadToDealAction } from '@/app/actions/leads';
 import { useModalAnimation } from './useModalAnimation';
 import type { LeadPriority } from '@/types/crm';
@@ -62,6 +62,7 @@ export function ConvertLeadToDealModal({
 
   const [isPending, startTransition] = useTransition();
   const valueInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [expectedValue, setExpectedValue] = useState<number>(lead?.expected_value || 500000);
@@ -70,6 +71,24 @@ export function ConvertLeadToDealModal({
   const [priority, setPriority] = useState<LeadPriority>('High');
   const [notes, setNotes] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Track if user has modified input fields
+  const isDirty =
+    notes.trim().length > 0 ||
+    expectedValue !== (lead?.expected_value || 500000) ||
+    assignedTo !== (lead?.assigned_to || '') ||
+    priority !== ((lead?.priority as LeadPriority) || 'High');
+
+  const handleSafeClose = useCallback((): void => {
+    if (isPending) return;
+    if (isDirty) {
+      const confirmDiscard = window.confirm(
+        'You have unsaved deal conversion details. Discard changes and close?'
+      );
+      if (!confirmDiscard) return;
+    }
+    onClose();
+  }, [isPending, isDirty, onClose]);
 
   // Auto-focus and pre-populate when opened
   useEffect(() => {
@@ -94,18 +113,44 @@ export function ConvertLeadToDealModal({
     }
   }, [isOpen, lead, availableStatuses]);
 
-  // Keyboard escape key listener
+  // Keyboard escape key and focus trap
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape' && !isPending) {
-        onClose();
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleSafeClose();
+        return;
+      }
+
+      // Accessible Focus Trap within modal dialog
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
+
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isPending, onClose]);
+  }, [isOpen, handleSafeClose]);
 
   if (!shouldRender || !lead) return null;
 
@@ -139,12 +184,13 @@ export function ConvertLeadToDealModal({
       className={`${styles.backdrop} ${isClosing ? styles.backdropClosing : ''}`}
       onClick={(e) => {
         if (e.target === e.currentTarget && !isPending) {
-          onClose();
+          handleSafeClose();
         }
       }}
       onAnimationEnd={handleAnimationEnd}
     >
       <div
+        ref={modalRef}
         className={`${styles.modalSurface} ${isClosing ? styles.modalSurfaceClosing : ''}`}
         role="dialog"
         aria-labelledby="convert-deal-heading"
@@ -161,7 +207,7 @@ export function ConvertLeadToDealModal({
           <button
             type="button"
             className={styles.closeBtn}
-            onClick={onClose}
+            onClick={handleSafeClose}
             disabled={isPending}
             aria-label="Close modal"
           >
@@ -178,90 +224,95 @@ export function ConvertLeadToDealModal({
               </div>
             )}
 
-            {/* Target Lead Summary Card */}
+            {/* Target Account Summary Banner */}
             <div className={styles.leadInfoCard}>
               <div className={styles.leadDetails}>
                 <span className={styles.leadCode}>{lead.lead_id}</span>
-                <span className={styles.leadName}>{lead.name}</span>
-                <span className={styles.leadCompany}>{lead.company || 'Private Client'}</span>
+                <span className={styles.leadClient}>{lead.company || lead.name}</span>
+                <span className={styles.leadScope}>
+                  Scope: {lead.service_category || 'Commercial Inquiry'}
+                </span>
               </div>
-              <span className={styles.leadScopeBadge}>
-                {lead.service_category || 'Web & Digital'}
-              </span>
+              <div className={styles.leadLiveEstimate}>
+                <span className={styles.estimateLabel}>Initial Value</span>
+                <span className={styles.estimateAmount}>
+                  {formatCurrencyLive(expectedValue)}
+                </span>
+              </div>
             </div>
 
-            {/* Expected Valuation */}
+            {/* Valuation Input */}
             <div className={styles.formGroup}>
-              <label htmlFor="deal-valuation" className={styles.fieldLabel}>
-                Contract Valuation (₹)
+              <label htmlFor="deal-expected-value" className={styles.fieldLabel}>
+                Contract Expected Valuation (₹ INR) <span className={styles.requiredMark}>*</span>
               </label>
               <div className={styles.inputWrapper}>
-                <span className={styles.currencyPrefix} aria-hidden="true">
-                  ₹
-                </span>
+                <span className={styles.currencyPrefix}>₹</span>
                 <input
                   ref={valueInputRef}
-                  id="deal-valuation"
+                  id="deal-expected-value"
                   type="number"
                   min="0"
                   step="10000"
                   className={styles.currencyInput}
                   value={expectedValue}
-                  onChange={(e) => setExpectedValue(Number(e.target.value) || 0)}
+                  onChange={(e) => setExpectedValue(Math.max(0, Number(e.target.value) || 0))}
                   disabled={isPending}
                   required
                 />
               </div>
               <span className={styles.fieldHelper}>
-                Live Valuation Preview: <strong>{formatCurrencyLive(expectedValue)}</strong>
+                Active valuation for pipeline weighting and forecasting. Live: {formatCurrencyLive(expectedValue)}
               </span>
             </div>
 
-            {/* Target Pipeline Stage */}
-            <div className={styles.formGroup}>
-              <label htmlFor="deal-target-stage" className={styles.fieldLabel}>
-                Target Funnel Stage
-              </label>
-              <select
-                id="deal-target-stage"
-                className={styles.selectInput}
-                value={targetStatusId}
-                onChange={(e) => setTargetStatusId(e.target.value)}
-                disabled={isPending}
-              >
-                {availableStatuses.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.bucket.toUpperCase()})
-                  </option>
-                ))}
-              </select>
+            {/* Stage & Assignee Row */}
+            <div className={styles.formRowTwoCol}>
+              <div className={styles.formGroup}>
+                <label htmlFor="deal-target-stage" className={styles.fieldLabel}>
+                  Target Pipeline Stage <span className={styles.requiredMark}>*</span>
+                </label>
+                <select
+                  id="deal-target-stage"
+                  className={styles.selectInput}
+                  value={targetStatusId}
+                  onChange={(e) => setTargetStatusId(e.target.value)}
+                  disabled={isPending}
+                  required
+                >
+                  {availableStatuses.map((st) => (
+                    <option key={st.id} value={st.id}>
+                      {st.name} ({st.bucket})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="deal-assigned-rep" className={styles.fieldLabel}>
+                  Assigned Commercial Lead
+                </label>
+                <select
+                  id="deal-assigned-rep"
+                  className={styles.selectInput}
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  disabled={isPending}
+                >
+                  <option value="">Unassigned</option>
+                  {availableAssignees.map((rep) => (
+                    <option key={rep.id} value={rep.id}>
+                      {rep.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* Representative Assignment */}
-            <div className={styles.formGroup}>
-              <label htmlFor="deal-assigned-rep" className={styles.fieldLabel}>
-                Assigned Representative
-              </label>
-              <select
-                id="deal-assigned-rep"
-                className={styles.selectInput}
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                disabled={isPending}
-              >
-                <option value="">Unassigned</option>
-                {availableAssignees.map((rep) => (
-                  <option key={rep.id} value={rep.id}>
-                    {rep.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Deal Priority */}
+            {/* Priority Tier */}
             <div className={styles.formGroup}>
               <label htmlFor="deal-priority" className={styles.fieldLabel}>
-                Priority Tier
+                Commercial Priority Tier
               </label>
               <select
                 id="deal-priority"
@@ -298,7 +349,7 @@ export function ConvertLeadToDealModal({
             <button
               type="button"
               className={styles.cancelBtn}
-              onClick={onClose}
+              onClick={handleSafeClose}
               disabled={isPending}
             >
               Cancel

@@ -210,6 +210,38 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
   }, [handleOpenDrawer]);
 
+  // Global event listener to open 1-click deal conversion modal for any target lead
+  useEffect(() => {
+    const handleOpenConvertEvent = (e: Event): void => {
+      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
+      const id =
+        typeof customEvt.detail === 'string'
+          ? customEvt.detail
+          : customEvt.detail?.leadId;
+      if (id) {
+        const found = leads.find((l) => l.id === id);
+        if (found) {
+          setConvertModalState({
+            isOpen: true,
+            lead: {
+              id: found.id,
+              lead_id: found.lead_id,
+              name: found.name,
+              company: found.company,
+              service_category: found.service_category,
+              expected_value: found.expected_value,
+              assigned_to: found.assigned_to,
+              priority: found.priority,
+            },
+          });
+        }
+      }
+    };
+
+    window.addEventListener('open-convert-lead-modal', handleOpenConvertEvent);
+    return () => window.removeEventListener('open-convert-lead-modal', handleOpenConvertEvent);
+  }, [leads]);
+
   /**
    * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
    * without triggering a Next.js server component re-render or layout jitter.

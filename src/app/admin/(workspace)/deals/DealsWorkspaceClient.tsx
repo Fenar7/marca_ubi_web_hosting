@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import type { FunnelBucket } from '@/types/crm';
 import { updateLeadStatusInlineAction } from '@/app/actions/leadInlineActions';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
@@ -53,6 +53,7 @@ interface DealsWorkspaceClientProps {
   sources?: Array<{ id: string; name: string }>;
   profiles?: Array<{ id: string; full_name: string; email: string; role: string }>;
   statuses?: FunnelStatusItem[];
+  userRole?: string;
 }
 
 function formatDealValue(amount: number): string {
@@ -70,8 +71,14 @@ type SortField = 'lead_id' | 'name' | 'status_name' | 'expected_value' | 'priori
 export function DealsWorkspaceClient({
   initialDeals,
   statuses = [],
+  userRole,
 }: DealsWorkspaceClientProps): React.ReactElement {
   const [deals, setDeals] = useState<HydratedDealItem[]>(initialDeals);
+
+  // Synchronize state when server hydration updates
+  useEffect(() => {
+    setDeals(initialDeals);
+  }, [initialDeals]);
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted'>('all');
@@ -220,15 +227,18 @@ export function DealsWorkspaceClient({
       // Perform server mutation
       const res = await updateLeadStatusInlineAction(deal.id, targetStage.id);
       if (!res.success) {
-        // Rollback on failure
-        setDeals(initialDeals);
+        // Targeted rollback for this deal only
+        setDeals((prev) =>
+          prev.map((d) => (d.id === deal.id ? deal : d))
+        );
         console.error('[DealsWorkspaceClient] Stage transition failed:', res.error);
       }
     },
-    [sortedStages, initialDeals]
+    [sortedStages]
   );
 
   const handleStageTransitionSuccess = (payload: GuardedTransitionResultPayload): void => {
+    const matchingStage = sortedStages.find((s) => s.id === payload.newStatusId);
     setDeals((prev) =>
       prev.map((d) =>
         d.id === payload.leadId
@@ -237,6 +247,7 @@ export function DealsWorkspaceClient({
               status_id: payload.newStatusId,
               status_name: payload.newStatusName,
               status_bucket: payload.bucket as HydratedDealItem['status_bucket'],
+              status_color: matchingStage?.color_code || d.status_color,
               expected_value:
                 payload.expectedValue !== undefined ? payload.expectedValue : d.expected_value,
               updated_at: payload.updatedAt || new Date().toISOString(),
@@ -435,13 +446,21 @@ export function DealsWorkspaceClient({
                               <span className={styles.cardOwnerName}>{deal.assigned_to_name}</span>
                             </div>
 
-                            <div className={styles.cardQuickActions} onClick={(e) => e.stopPropagation()}>
+                            <div
+                              className={styles.cardQuickActions}
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => e.stopPropagation()}
+                            >
                               <button
                                 type="button"
                                 className={styles.stageMoveBtn}
-                                title="Move to previous stage"
-                                disabled={stageIdx === 0}
-                                onClick={() => handleMoveStage(deal, 'prev')}
+                                title={userRole === 'viewer' ? 'Read-only access' : 'Move to previous stage'}
+                                disabled={stageIdx === 0 || userRole === 'viewer'}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMoveStage(deal, 'prev');
+                                }}
+                                onKeyDown={(e) => e.stopPropagation()}
                                 aria-label={`Move ${deal.lead_id} to previous stage`}
                               >
                                 ◀
@@ -449,9 +468,13 @@ export function DealsWorkspaceClient({
                               <button
                                 type="button"
                                 className={styles.stageMoveBtn}
-                                title="Advance to next stage"
-                                disabled={stageIdx === sortedStages.length - 1}
-                                onClick={() => handleMoveStage(deal, 'next')}
+                                title={userRole === 'viewer' ? 'Read-only access' : 'Advance to next stage'}
+                                disabled={stageIdx === sortedStages.length - 1 || userRole === 'viewer'}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMoveStage(deal, 'next');
+                                }}
+                                onKeyDown={(e) => e.stopPropagation()}
                                 aria-label={`Advance ${deal.lead_id} to next stage`}
                               >
                                 ▶

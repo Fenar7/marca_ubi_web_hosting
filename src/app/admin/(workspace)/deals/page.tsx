@@ -181,6 +181,7 @@ export default async function AdminDealsPage(
           sources={sources}
           profiles={profiles}
           statuses={statuses}
+          userRole={role}
         />
       </Suspense>
     </div>

@@ -309,6 +309,25 @@ export function ClientDossierDrawer({
           </div>
 
           <div className={styles.headerActions}>
+            {lead && lead.bucket === 'open' && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(
+                      new CustomEvent('open-convert-lead-modal', {
+                        detail: { leadId: lead.id },
+                      })
+                    );
+                  }
+                }}
+                className={styles.convertHeaderBtn}
+                title="Convert Inbound Lead to Pipeline Deal"
+                aria-label={`Convert ${lead.lead_id} to pipeline deal`}
+              >
+                ⚡ Convert
+              </button>
+            )}
             {lead && (
               <button
                 type="button"

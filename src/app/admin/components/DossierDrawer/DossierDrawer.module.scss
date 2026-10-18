@@ -140,6 +140,37 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
+.convertHeaderBtn {
+  min-height: 44px;
+  padding: 0 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 97, 0, 0.4);
+  background: linear-gradient(135deg, #ff6100 0%, #e05500 100%);
+  color: #000000;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 97, 0, 0.35);
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #ff751a 0%, #eb5e00 100%);
+    box-shadow: 0 4px 14px rgba(255, 97, 0, 0.45);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
+}
+
 .scheduleHeaderBtn {
   min-height: 44px;
   padding: 0 0.85rem;
