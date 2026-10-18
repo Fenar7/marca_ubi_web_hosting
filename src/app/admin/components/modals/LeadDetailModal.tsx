@@ -827,7 +827,7 @@ export function LeadDetailModal({
                         checked={touchpointType === 'call_logged'}
                         onChange={() => setTouchpointType('call_logged')}
                       />
-                      <span>📞 Call Logged</span>
+                      <span>Call Logged</span>
                     </label>
 
                     <label
@@ -842,7 +842,7 @@ export function LeadDetailModal({
                         checked={touchpointType === 'whatsapp_sent'}
                         onChange={() => setTouchpointType('whatsapp_sent')}
                       />
-                      <span>💬 WhatsApp Sent</span>
+                      <span>WhatsApp Sent</span>
                     </label>
 
                     <label
@@ -857,7 +857,7 @@ export function LeadDetailModal({
                         checked={touchpointType === 'meeting_notes'}
                         onChange={() => setTouchpointType('meeting_notes')}
                       />
-                      <span>🤝 Meeting Held</span>
+                      <span>Meeting Held</span>
                     </label>
 
                     <label
@@ -872,7 +872,7 @@ export function LeadDetailModal({
                         checked={touchpointType === 'note_added'}
                         onChange={() => setTouchpointType('note_added')}
                       />
-                      <span>📝 Internal Note</span>
+                      <span>Internal Note</span>
                     </label>
                   </div>
 

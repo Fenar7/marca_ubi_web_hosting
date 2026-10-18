@@ -340,7 +340,7 @@ export function LeadReassignmentWizardModal({
                 ) : (
                   destinationCandidates.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.full_name} ({c.job_title || c.role}) — Managing {c.active_deals_count} active deal(s)
+                      {c.full_name} ({c.job_title || c.role}) - Managing {c.active_deals_count} active deal(s)
                     </option>
                   ))
                 )}
@@ -403,7 +403,7 @@ export function LeadReassignmentWizardModal({
               {isSubmitting ? (
                 <span>Executing Reassignment...</span>
               ) : (
-                <span>⚡ Execute Atomic Reassignment</span>
+                <span>Execute Atomic Reassignment</span>
               )}
             </button>
           )}
