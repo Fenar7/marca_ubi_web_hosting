@@ -821,4 +821,19 @@ export interface ClientWorkItem {
   tech_lead?: { full_name: string } | null;
 }
 
+/**
+ * Authenticated active session telemetry for administrative and CRM workspaces.
+ */
+export interface CurrentUserSession {
+  id: string;
+  name: string;
+  fullName?: string;
+  email: string;
+  role: CrmUserRole;
+  jobTitle?: string;
+  allowed_tabs?: string[];
+  feature_permissions?: FeaturePermissions;
+}
+
+
 

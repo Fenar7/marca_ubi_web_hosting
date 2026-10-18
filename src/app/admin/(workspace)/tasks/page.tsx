@@ -9,8 +9,9 @@
 
 import React from 'react';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { LeadPriority } from '@/types/crm';
+import type { CrmUserRole, LeadPriority } from '@/types/crm';
 import { TaskCard, type TaskLeadItem } from './components/TaskCard';
 import styles from './tasks.module.scss';
 
@@ -38,6 +39,31 @@ function formatDate(iso: string): string {
 
 export default async function AdminTasksPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/admin/login?next=%2Fadmin%2Ftasks');
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, status, allowed_tabs')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const role = (profile?.role as CrmUserRole) || 'viewer';
+  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
+
+  const hasTasksAccess = Array.isArray(allowedTabs)
+    ? allowedTabs.includes('tasks')
+    : role !== 'viewer';
+
+  if (!hasTasksAccess) {
+    redirect('/admin?error=unauthorized_role_access');
+  }
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());

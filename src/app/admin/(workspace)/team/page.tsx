@@ -52,7 +52,7 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   // Retrieve authenticated caller profile
   const { data: callerProfile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, role, status')
+    .select('id, role, status, allowed_tabs')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -65,8 +65,13 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   }
 
   const role = callerProfile.role as CrmUserRole;
+  const allowedTabs = callerProfile.allowed_tabs as string[] | undefined;
 
-  if (role !== 'admin' && role !== 'sales_manager') {
+  const hasUsersAccess = Array.isArray(allowedTabs)
+    ? allowedTabs.includes('users')
+    : role === 'admin' || role === 'sales_manager';
+
+  if (!hasUsersAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 

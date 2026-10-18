@@ -1,15 +1,15 @@
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: var(--sidebar-width, 260px);
+  width: 256px;
   background-color: #000000;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  z-index: 40;
-  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 30;
+  user-select: none;
   overflow: hidden;
 
   @media (max-width: 1024px) {
@@ -18,25 +18,33 @@
 }
 
 .collapsed {
-  width: 72px;
+  width: 76px;
 
   .brandContainer {
     padding: 0 0.85rem;
     justify-content: center;
   }
 
-  .navItem {
-    justify-content: center;
-    padding: 0.65rem 0;
-    margin: 0.2rem 0.5rem;
-  }
-
   .quickActionBox {
-    padding: 0.75rem 0.5rem;
+    padding: 0.65rem 0.5rem;
   }
 
   .newLeadBtn {
+    padding: 0.55rem;
     justify-content: center;
+  }
+
+  .navItem {
+    justify-content: center;
+    padding: 0.55rem 0;
+    margin: 0.2rem 0.5rem;
+  }
+
+  .itemContent {
+    display: none;
+  }
+
+  .navGroup {
     padding: 0.65rem 0;
   }
 
@@ -101,12 +109,12 @@
 }
 
 .collapseToggle {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #888888;
+  color: #a1a1aa;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,8 +128,13 @@
     border-color: rgba(255, 255, 255, 0.15);
   }
 
+  &:active {
+    transform: scale(0.96);
+  }
+
   &:focus-visible {
     outline: 2px solid #ff6100;
+    outline-offset: 2px;
   }
 }
 
@@ -132,6 +145,7 @@
 
 .newLeadBtn {
   width: 100%;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -157,7 +171,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ffffff;
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
   }
 }
 
@@ -186,7 +201,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #71717a;
+  color: #a1a1aa;
   padding: 0 1.25rem;
   margin-bottom: 0.45rem;
 }
@@ -202,6 +217,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.55rem 0.85rem;
+  min-height: 44px;
   margin: 0.15rem 0.65rem;
   border-radius: 8px;
   color: #a1a1aa;
@@ -216,8 +232,13 @@
     color: #ffffff;
   }
 
+  &:active {
+    transform: scale(0.98);
+  }
+
   &:focus-visible {
     outline: 2px solid #ff6100;
+    outline-offset: 2px;
   }
 }
 
@@ -259,9 +280,8 @@
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.65rem;
   font-weight: 600;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  letter-spacing: 0.02em;
   line-height: 1;
 }
 
@@ -297,6 +317,8 @@
 .sidebarFooter {
   padding: 0.85rem 1.25rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
 }
 
@@ -306,25 +328,13 @@
   gap: 0.65rem;
 }
 
-.statusRadarDot {
+.statusDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
   flex-shrink: 0;
-  animation: radarPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes radarPulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.55;
-    transform: scale(0.92);
-  }
 }
 
 .statusText {
@@ -341,5 +351,5 @@
 
 .statusSub {
   font-size: 0.62rem;
-  color: #71717a;
+  color: #a1a1aa;
 }

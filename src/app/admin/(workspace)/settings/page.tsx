@@ -34,14 +34,19 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, status')
+    .select('role, status, allowed_tabs')
     .eq('id', user.id)
     .maybeSingle();
 
   const role = (profile?.role as CrmUserRole) || 'viewer';
+  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
-  // Strict perimeter role guard: only system administrators may access security settings
-  if (role !== 'admin') {
+  // Perimeter guard: checks granular tab permissions with admin fallback
+  const hasSettingsAccess = Array.isArray(allowedTabs)
+    ? allowedTabs.includes('settings')
+    : role === 'admin';
+
+  if (!hasSettingsAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 

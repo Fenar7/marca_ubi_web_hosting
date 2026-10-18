@@ -10,8 +10,9 @@
 
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
+import type { CrmUserRole, FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
 import { KpiRibbon } from '@/app/admin/components/kpi';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
@@ -19,7 +20,7 @@ import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBa
 import styles from './leads.module.scss';
 
 export const metadata: Metadata = {
-  title: 'Deals & Inquiries | Marca Ubi Enterprise CRM',
+  title: 'Inbound Leads | Marca Ubi Enterprise CRM',
   robots: {
     index: false,
     follow: false,
@@ -44,6 +45,36 @@ export default async function AdminLeadsPage(
   // Await Next.js 16 dynamic search parameters
   await (props.searchParams ? props.searchParams : Promise.resolve(undefined));
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/admin/login?next=%2Fadmin%2Fleads');
+  }
+
+  // Verify tab-level access against user's granular allowed_tabs
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, status, allowed_tabs')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profile?.status === 'suspended') {
+    redirect('/admin/login?error=account_suspended');
+  }
+
+  const role = (profile?.role as CrmUserRole) || 'viewer';
+  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
+
+  const hasLeadsAccess = Array.isArray(allowedTabs)
+    ? allowedTabs.includes('leads')
+    : true;
+
+  if (!hasLeadsAccess) {
+    redirect('/admin?error=unauthorized_role_access');
+  }
 
   // Parallel server query execution for instant shell rendering and metadata resolution
   const [rpcRes, sourcesRes, profilesRes, statusesRes, leadsRes] = await Promise.all([
