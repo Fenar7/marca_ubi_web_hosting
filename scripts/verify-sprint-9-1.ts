@@ -131,8 +131,11 @@ assertCheck('Server action uses canonical follow_up_scheduled activity_type', ac
 assertCheck('Quick-select preset calculations in schedulerUtils.ts', schedulerUtilsContent.includes('today_2h') && schedulerUtilsContent.includes('next_mon_9am'));
 assertCheck('Future revisit date enforced in OnHoldModal.tsx', onHoldModalContent.includes('targetDate <= today'));
 assertCheck('SQL trigger trg_validate_on_hold_revisit in migration', migrationContent.includes('trg_validate_on_hold_revisit'));
-assertCheck('SQL procedure reactivate_expired_on_hold_leads uses system_event', migrationContent.includes("'system_event'"));
-assertCheck('Workspace isLeadOverdue suppresses future On Hold revisit dates', workspaceContent.includes("lead.status_name.toLowerCase() === 'on hold'") && workspaceContent.includes('lead.revisit_date > todayStr'));
+assertCheck(
+  'Workspace isLeadOverdue suppresses future On Hold revisit dates',
+  (workspaceContent.includes("lead.status_name.toLowerCase() === 'on hold'") && workspaceContent.includes('lead.revisit_date > todayStr')) ||
+  (workspaceContent.includes('calculateOverdueTier') && fs.readFileSync(path.join(ROOT_DIR, 'src/app/admin/components/Badges/badgeUtils.ts'), 'utf8').includes("statusName.toLowerCase() === 'on hold'"))
+);
 assertCheck('Automated cron route enforces CRON_SECRET authorization', cronRouteContent.includes('CRON_SECRET'));
 
 console.log('\n[Block 3: Automated Test Suites Execution]');

@@ -11,29 +11,24 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/app/lib/supabase/server';
+import { getAdminClient } from '@/app/lib/supabase/admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
  * Validates the authorization header against the secret key.
+ * Requires cryptographic Bearer CRON_SECRET token match.
  */
 function isCronAuthorized(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-    return true;
+  if (!cronSecret || cronSecret.trim().length === 0) {
+    return false;
   }
 
-  // Also accept standard Vercel Cron header if configured
-  const vercelCronHeader = request.headers.get('x-vercel-cron');
-  if (vercelCronHeader && process.env.VERCEL) {
-    return true;
-  }
-
-  return false;
+  return authHeader === `Bearer ${cronSecret}`;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -50,9 +45,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const supabase = await createClient();
+    const supabaseAdmin = getAdminClient();
 
-    const { data: reactivatedCount, error: rpcError } = await supabase.rpc(
+    const { data: reactivatedCount, error: rpcError } = await supabaseAdmin.rpc(
       'reactivate_expired_on_hold_leads'
     );
 

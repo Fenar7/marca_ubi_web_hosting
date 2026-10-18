@@ -13,6 +13,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/app/lib/supabase/server';
+import { getAdminClient } from '@/app/lib/supabase/admin';
 import { calculateOverdueTier, type OverdueTier } from '@/app/admin/components/Badges/badgeUtils';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -510,9 +511,10 @@ export async function batchReassignOverdueLeadsAction(
       console.error('[workloadActions] Activity logging failure during batch reassignment:', activityError);
     }
 
-    // 5. Record administrative governance log in public.team_audit_logs
+    // 5. Record administrative governance log in public.team_audit_logs via privileged admin client
     try {
-      const { error: auditError } = await supabase.from('team_audit_logs').insert({
+      const adminClient = getAdminClient();
+      const { error: auditError } = await adminClient.from('team_audit_logs').insert({
         actor_id: callerId,
         action: 'leads_bulk_reassigned',
         target_user_email: destProfile.email,
