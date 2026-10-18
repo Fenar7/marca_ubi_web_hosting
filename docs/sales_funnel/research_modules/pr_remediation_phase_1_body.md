@@ -43,12 +43,13 @@ It directly addresses core enterprise gaps identified during the live UI/UX insp
 - Client works validation schema tests: 4 / 4 passed.
 
 ### Block 3: PostgreSQL Row Level Security (RLS) & DB Verification
-- `npm run test:rls`: **24 / 24 assertions passed (100%)**.
-- `npx tsx scripts/verify-phase-1-remediation.ts`: **28 / 28 live database assertions passed (100%)**:
+- `npm run test:rls`: **25 / 25 assertions passed (100%)**.
+- `npx tsx scripts/verify-phase-1-remediation.ts`: **29 / 29 live database assertions passed (100%)**:
   - Tab permissions column existence & check constraints.
   - Administrator lockout defense trigger throwing `23514`.
-  - Sequence & client works table structure.
-  - Auto-spawn trigger creating `PRJ-1006` with ₹25L valuation upon deal conversion.
+  - Sequence & client works table structure with unique `lead_id` constraint.
+  - Auto-spawn trigger creating `PRJ-1017` with ₹25L valuation upon deal conversion.
+  - Sandboxed `client_works_select_policy` isolating sales executives strictly to assigned projects.
   - Zod validation boundary assertions.
 
 ### Block 4: Production Build Gate
