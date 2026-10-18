@@ -50,6 +50,7 @@ export function TeamWorkspaceClient({
         must_change_password: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        allowed_tabs: ['command_center', 'leads', 'deals', 'works', 'tasks'],
         active_deals_count: 0,
         total_deal_value: 0,
       };

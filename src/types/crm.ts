@@ -79,7 +79,8 @@ export type TeamAuditAction =
   | 'user_activated'
   | 'leads_bulk_reassigned'
   | 'password_reset_dispatched'
-  | 'password_reset_completed';
+  | 'password_reset_completed'
+  | 'permissions_updated';
 
 /**
  * Relational Entity Models
@@ -100,6 +101,8 @@ export interface Profile {
   invited_by: string | null;
   last_login_at: string | null;
   must_change_password: boolean;
+  allowed_tabs?: string[];
+  feature_permissions?: FeaturePermissions;
   created_at: string;
   updated_at: string;
 }
@@ -593,4 +596,229 @@ export interface UpdateLeadDealParametersPayload {
   priority?: LeadPriority;
   notes?: string | null;
 }
+
+/**
+ * Granular Tab & Capability Permission System
+ */
+
+export type CrmTabKey =
+  | 'command_center'
+  | 'leads'
+  | 'deals'
+  | 'works'
+  | 'tasks'
+  | 'users'
+  | 'analytics'
+  | 'ingestion'
+  | 'settings';
+
+export type TabPermissions = Record<CrmTabKey, boolean>;
+
+export type CrmFeatureKey =
+  | 'can_view_financials'
+  | 'can_export_data'
+  | 'can_reassign_leads'
+  | 'can_delete_records'
+  | 'can_manage_team';
+
+export type FeaturePermissions = Record<CrmFeatureKey, boolean>;
+
+export interface TabMetadata {
+  key: CrmTabKey;
+  label: string;
+  route: string;
+  description: string;
+  iconName: string;
+}
+
+export const CRM_TAB_REGISTRY: TabMetadata[] = [
+  {
+    key: 'command_center',
+    label: 'Command Center',
+    route: '/admin',
+    description: 'Executive dashboard overview, quick actions, and high-level KPI ribbon.',
+    iconName: 'LayoutDashboard',
+  },
+  {
+    key: 'leads',
+    label: 'Inbound Leads',
+    route: '/admin/leads',
+    description: 'Raw inbound brief submissions, discovery queue, and qualification triage.',
+    iconName: 'Inbox',
+  },
+  {
+    key: 'deals',
+    label: 'Pipeline Deals',
+    route: '/admin/deals',
+    description: 'Commercial deal kanban/table, client proposals, and status advancement.',
+    iconName: 'Kanban',
+  },
+  {
+    key: 'works',
+    label: 'Client Works',
+    route: '/admin/works',
+    description: 'Active client deliverables, milestone tracking, and creative project health.',
+    iconName: 'FolderGit2',
+  },
+  {
+    key: 'tasks',
+    label: 'Follow-up Tasks',
+    route: '/admin/tasks',
+    description: 'Follow-up task scheduler, touchpoint logs, and client call reminders.',
+    iconName: 'Clock',
+  },
+  {
+    key: 'users',
+    label: 'User Management',
+    route: '/admin/team',
+    description: 'Staff directory, role assignments, tab permission matrix, and offboarding.',
+    iconName: 'Users',
+  },
+  {
+    key: 'analytics',
+    label: 'Executive Analytics',
+    route: '/admin/analytics',
+    description: 'Revenue performance graphs, deal conversion cohorts, and pipeline forecasting.',
+    iconName: 'BarChart2',
+  },
+  {
+    key: 'ingestion',
+    label: 'Website Inquiries',
+    route: '/admin/ingestion',
+    description: 'Incoming website brief submissions, deduplication logs, and triage queue.',
+    iconName: 'Webhook',
+  },
+  {
+    key: 'settings',
+    label: 'Security & Settings',
+    route: '/admin/settings',
+    description: 'Agency security policies, API integrations, and system audit logs.',
+    iconName: 'Shield',
+  },
+];
+
+export const ROLE_DEFAULT_TABS: Record<CrmUserRole, TabPermissions> = {
+  admin: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: true,
+    users: true,
+    analytics: true,
+    ingestion: true,
+    settings: true,
+  },
+  sales_manager: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: true,
+    users: true,
+    analytics: true,
+    ingestion: true,
+    settings: false,
+  },
+  sales_executive: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: true,
+    users: false,
+    analytics: false,
+    ingestion: false,
+    settings: false,
+  },
+  viewer: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: false,
+    users: false,
+    analytics: true,
+    ingestion: false,
+    settings: false,
+  },
+};
+
+export const ROLE_DEFAULT_FEATURES: Record<CrmUserRole, FeaturePermissions> = {
+  admin: {
+    can_view_financials: true,
+    can_export_data: true,
+    can_reassign_leads: true,
+    can_delete_records: true,
+    can_manage_team: true,
+  },
+  sales_manager: {
+    can_view_financials: true,
+    can_export_data: true,
+    can_reassign_leads: true,
+    can_delete_records: false,
+    can_manage_team: false,
+  },
+  sales_executive: {
+    can_view_financials: false,
+    can_export_data: false,
+    can_reassign_leads: false,
+    can_delete_records: false,
+    can_manage_team: false,
+  },
+  viewer: {
+    can_view_financials: true,
+    can_export_data: false,
+    can_reassign_leads: false,
+    can_delete_records: false,
+    can_manage_team: false,
+  },
+};
+
+/**
+ * Client Works & Post-Conversion Project Delivery Models
+ */
+
+export type ClientWorkDeliveryStage =
+  | 'kickoff'
+  | 'strategy'
+  | 'design_ui_ux'
+  | 'development'
+  | 'review_qa'
+  | 'delivered';
+
+export type ClientWorkHealthStatus =
+  | 'on_track'
+  | 'at_risk'
+  | 'blocked'
+  | 'completed';
+
+export interface ClientWorkMilestone {
+  id: string;
+  title: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  completed_at?: string | null;
+}
+
+export interface ClientWorkItem {
+  id: string;
+  project_code: string;
+  lead_id: string;
+  client_name: string;
+  company: string | null;
+  service_scope: string;
+  contract_value: number;
+  delivery_stage: ClientWorkDeliveryStage;
+  health_status: ClientWorkHealthStatus;
+  creative_lead_id: string | null;
+  tech_lead_id: string | null;
+  milestones: ClientWorkMilestone[];
+  target_delivery_date: string | null;
+  kickoff_date: string;
+  created_at: string;
+  updated_at: string;
+  creative_lead?: { full_name: string } | null;
+  tech_lead?: { full_name: string } | null;
+}
+
 
