@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:unit": "tsx --test tests/unit/*.test.ts tests/ingest/*.test.ts tests/leads/*.test.ts tests/actions/*.test.ts tests/analytics/*.test.ts tests/auth/*.test.ts tests/team/*.test.ts",
-    "test:rls": "tsx --test tests/rls/*.test.ts tests/database/*.test.ts",
+    "test:rls": "tsx --test --test-concurrency=1 tests/rls/*.test.ts tests/database/*.test.ts",
     "test:e2e": "playwright test",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "test:load": "tsx scripts/run-load-benchmark.ts",
