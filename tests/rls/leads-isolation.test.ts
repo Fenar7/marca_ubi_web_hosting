@@ -110,6 +110,8 @@ describe('Sprint 10.1: PostgreSQL Row Level Security (RLS) Multi-Role Isolation 
     try {
       client = new Client({ connectionString, ssl: { rejectUnauthorized: false } });
       await client.connect();
+      // Acquire session-level advisory lock to serialize concurrent test executions
+      await client.query('SELECT pg_advisory_lock(742910382);');
       dbAvailable = true;
 
       // 1. Ensure Root Admin identity exists to uphold protect_sole_admin invariant
@@ -136,10 +138,15 @@ describe('Sprint 10.1: PostgreSQL Row Level Security (RLS) Multi-Role Isolation 
 
       // 3. Provision deterministic test identities
       for (const u of Object.values(RLS_IDENTITIES)) {
-        await client.query(`INSERT INTO auth.users (id, email) VALUES ($1, $2);`, [u.id, u.email]);
+        await client.query(
+          `INSERT INTO auth.users (id, email) VALUES ($1, $2)
+           ON CONFLICT (id) DO UPDATE SET email = $2;`,
+          [u.id, u.email]
+        );
         await client.query(
           `INSERT INTO public.profiles (id, email, full_name, role, status)
-           VALUES ($1, $2, 'RLS Test User', $3, $4);`,
+           VALUES ($1, $2, 'RLS Test User', $3, $4)
+           ON CONFLICT (id) DO UPDATE SET role = $3, status = $4;`,
           [u.id, u.email, u.role, u.status]
         );
       }
@@ -203,6 +210,7 @@ describe('Sprint 10.1: PostgreSQL Row Level Security (RLS) Multi-Role Isolation 
         await client.query(`DELETE FROM public.leads WHERE lead_id LIKE 'TEST-RLS-%';`).catch(() => {});
         await client.query(`DELETE FROM public.profiles WHERE id IN (${identityIds});`).catch(() => {});
         await client.query(`DELETE FROM auth.users WHERE id IN (${identityIds});`).catch(() => {});
+        await client.query('SELECT pg_advisory_unlock(742910382);').catch(() => {});
         await client.end();
       } catch {
         // Safe tear-down
