@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:unit": "tsx --test tests/unit/*.test.ts tests/ingest/*.test.ts tests/leads/*.test.ts tests/actions/*.test.ts tests/analytics/*.test.ts tests/auth/*.test.ts tests/team/*.test.ts",
+    "test:rls": "tsx --test tests/rls/*.test.ts tests/database/*.test.ts",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test:unit && npm run test:rls"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -29,6 +33,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
@@ -37,7 +42,6 @@
     "dotenv": "^18.0.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "pg": "^8.23.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
