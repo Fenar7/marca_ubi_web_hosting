@@ -10,9 +10,39 @@
 import { z } from 'zod';
 
 /**
+ * Zod validation schema for granular tab access permissions.
+ */
+export const tabPermissionsSchema = z.object({
+  command_center: z.boolean(),
+  leads: z.boolean(),
+  deals: z.boolean(),
+  works: z.boolean(),
+  tasks: z.boolean(),
+  users: z.boolean(),
+  analytics: z.boolean(),
+  ingestion: z.boolean(),
+  settings: z.boolean(),
+});
+
+export type TabPermissionsData = z.infer<typeof tabPermissionsSchema>;
+
+/**
+ * Zod validation schema for sensitive feature permissions.
+ */
+export const featurePermissionsSchema = z.object({
+  can_view_financials: z.boolean(),
+  can_export_data: z.boolean(),
+  can_reassign_leads: z.boolean(),
+  can_delete_records: z.boolean(),
+  can_manage_team: z.boolean(),
+});
+
+export type FeaturePermissionsData = z.infer<typeof featurePermissionsSchema>;
+
+/**
  * Zod validation schema for provisioning a new team member.
  * Enforces strict RFC email validation, sanitized string lengths,
- * and high-entropy temporary password complexity.
+ * high-entropy temporary password complexity, and optional granular permissions.
  */
 export const createTeamUserSchema = z.object({
   fullName: z
@@ -48,9 +78,55 @@ export const createTeamUserSchema = z.object({
     .string({ message: 'Temporary password is required.' })
     .min(8, 'Temporary password must contain at least 8 characters.')
     .max(128, 'Temporary password must not exceed 128 characters.'),
+
+  allowedTabs: z
+    .array(
+      z.enum([
+        'command_center',
+        'leads',
+        'deals',
+        'works',
+        'tasks',
+        'users',
+        'analytics',
+        'ingestion',
+        'settings',
+      ])
+    )
+    .optional(),
+
+  featurePermissions: featurePermissionsSchema.optional(),
 });
 
 export type CreateTeamUserFormData = z.infer<typeof createTeamUserSchema>;
+
+/**
+ * Zod validation schema for updating a team member's granular tab permissions.
+ */
+export const updateUserPermissionsSchema = z.object({
+  targetUserId: z
+    .string({ message: 'Target user ID is required.' })
+    .regex(
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+      'Target user ID must be a valid UUID.'
+    ),
+  allowedTabs: z.array(
+    z.enum([
+      'command_center',
+      'leads',
+      'deals',
+      'works',
+      'tasks',
+      'users',
+      'analytics',
+      'ingestion',
+      'settings',
+    ])
+  ),
+  featurePermissions: featurePermissionsSchema.optional(),
+});
+
+export type UpdateUserPermissionsFormData = z.infer<typeof updateUserPermissionsSchema>;
 
 /**
  * Validation schema for first-login mandatory password reset.
