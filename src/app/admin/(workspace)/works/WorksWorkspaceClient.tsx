@@ -403,10 +403,10 @@ export function WorksWorkspaceClient({
                         onChange={(e) => handleChangeHealth(work.id, e.target.value as ClientWorkHealthStatus)}
                         aria-label={`Update operational health for ${work.project_code}`}
                       >
-                        <option value="on_track">🟢 On Track</option>
-                        <option value="at_risk">🟡 At Risk</option>
-                        <option value="blocked">🔴 Blocked</option>
-                        <option value="completed">✓ Delivered</option>
+                        <option value="on_track">On Track</option>
+                        <option value="at_risk">At Risk</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="completed">Delivered</option>
                       </select>
                     )}
                   </div>
@@ -510,7 +510,24 @@ export function WorksWorkspaceClient({
                               }`}
                               aria-hidden="true"
                             >
-                              {isCompleted ? '✓' : isInProgress ? '•' : ''}
+                              {isCompleted ? (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width="12"
+                                  height="12"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              ) : isInProgress ? (
+                                <svg viewBox="0 0 24 24" width="8" height="8" fill="currentColor">
+                                  <circle cx="12" cy="12" r="5" />
+                                </svg>
+                              ) : null}
                             </span>
                             <span
                               className={`${styles.milestoneTitle} ${
@@ -591,7 +608,20 @@ export function WorksWorkspaceClient({
                 onClick={() => setAssigningWork(null)}
                 aria-label="Close dialog"
               >
-                ✕
+                <svg
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 

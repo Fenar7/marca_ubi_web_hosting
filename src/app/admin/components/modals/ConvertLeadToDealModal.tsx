@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useTransition, useEffect, useRef, useCallback, useMemo } from 'react';
 import { convertInboundLeadToDealAction } from '@/app/actions/leads';
 import { useModalAnimation } from './useModalAnimation';
 import type { LeadPriority } from '@/types/crm';
@@ -72,12 +72,19 @@ export function ConvertLeadToDealModal({
   const [notes, setNotes] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Determine initial default target status
+  const defaultTargetStatusId = useMemo(() => {
+    const firstPotential = availableStatuses.find((s) => s.bucket === 'potential');
+    return firstPotential?.id || availableStatuses[0]?.id || '';
+  }, [availableStatuses]);
+
   // Track if user has modified input fields
   const isDirty =
     notes.trim().length > 0 ||
     expectedValue !== (lead?.expected_value || 500000) ||
     assignedTo !== (lead?.assigned_to || '') ||
-    priority !== ((lead?.priority as LeadPriority) || 'High');
+    priority !== ((lead?.priority as LeadPriority) || 'High') ||
+    (targetStatusId !== '' && targetStatusId !== defaultTargetStatusId);
 
   const handleSafeClose = useCallback((): void => {
     if (isPending) return;
@@ -98,20 +105,13 @@ export function ConvertLeadToDealModal({
       setPriority((lead.priority as LeadPriority) || 'High');
       setNotes('');
       setErrorMsg(null);
-
-      // Default target status to first potential stage
-      const firstPotential = availableStatuses.find((s) => s.bucket === 'potential');
-      if (firstPotential) {
-        setTargetStatusId(firstPotential.id);
-      } else if (availableStatuses.length > 0) {
-        setTargetStatusId(availableStatuses[0].id);
-      }
+      setTargetStatusId(defaultTargetStatusId);
 
       setTimeout(() => {
         valueInputRef.current?.focus();
       }, 50);
     }
-  }, [isOpen, lead, availableStatuses]);
+  }, [isOpen, lead, defaultTargetStatusId]);
 
   // Keyboard escape key and focus trap
   useEffect(() => {
@@ -211,7 +211,20 @@ export function ConvertLeadToDealModal({
             disabled={isPending}
             aria-label="Close modal"
           >
-            ✕
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 

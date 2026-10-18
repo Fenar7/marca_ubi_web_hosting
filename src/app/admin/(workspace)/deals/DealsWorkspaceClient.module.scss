@@ -645,7 +645,7 @@
     width: 100%;
   }
 
-  .bucketPills {
+  .bucketFilterGroup {
     width: 100%;
     overflow-x: auto;
     flex-wrap: nowrap;
@@ -653,7 +653,7 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  .kanbanBoard {
+  .kanbanBoardContainer {
     padding-bottom: 1.5rem;
   }
 }
