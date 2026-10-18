@@ -1,16 +1,17 @@
 /**
  * @file 05-pipeline-stage-transitions.spec.ts
- * @description Playwright E2E User Journey 5: Guarded Stage Progression & Post-Conversion Record Locking.
+ * @description Playwright E2E User Journey 5: Guarded Stage Progression & Post-Conversion Record Locking (PRD §4.1 WP4).
  *              Validates input verification for Negotiation, standardized reason catalog for Lost,
  *              confetti particle burst for Converted, and post-conversion locking badge presentation.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import { test, expect } from '@playwright/test';
+import { ensureAuthenticatedSession } from './auth-helper';
 
 test.describe('E2E Journey 5: Guarded Stage Transitions & Converted Record Locking', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/admin/leads');
+    await ensureAuthenticatedSession(page, '/admin/leads', 'admin');
   });
 
   test('intercepts terminal stage transitions and routes to guarded modal dialog', async ({ page }) => {

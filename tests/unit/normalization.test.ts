@@ -42,6 +42,11 @@ describe('Sprint 10.1 Unit Suite: Normalization & Deduplication Validation', () 
       assert.equal(normalizeEmail('user+crm@domain.co.uk'), 'user+crm@domain.co.uk');
       assert.equal(normalizeEmail('finance.ops+q3@enterprise.com'), 'finance.ops+q3@enterprise.com');
     });
+
+    it('normalizes international domain names to IDN ASCII Punycode', () => {
+      assert.equal(normalizeEmail('info@münchen-agency.de'), 'info@xn--mnchen-agency-wob.de');
+      assert.equal(normalizeEmail('contact@zürich-partner.ch'), 'contact@xn--zrich-partner-wob.ch');
+    });
   });
 
   describe('Block 2: International Phone Normalization (ITU-T E.164)', () => {
@@ -121,6 +126,30 @@ describe('Sprint 10.1 Unit Suite: Normalization & Deduplication Validation', () 
       });
     });
 
+    describe('Saudi Arabia (+966)', () => {
+      it('formats domestic mobile numbers with Saudi-exclusive prefix (051, 057, 059) to E.164', () => {
+        const res = normalizePhone('051 234 5678');
+        assert.equal(res.phone, '+966512345678');
+        assert.equal(res.warning, false);
+
+        const zain = normalizePhone('059 876 5432');
+        assert.equal(zain.phone, '+966598765432');
+        assert.equal(zain.warning, false);
+      });
+
+      it('formats Saudi mobile numbers using countryHint', () => {
+        const res = normalizePhone('050 123 4567', 'SA');
+        assert.equal(res.phone, '+966501234567');
+        assert.equal(res.warning, false);
+      });
+
+      it('formats international Saudi numbers starting with 966', () => {
+        const res = normalizePhone('+966 51 234 5678');
+        assert.equal(res.phone, '+966512345678');
+        assert.equal(res.warning, false);
+      });
+    });
+
     describe('North America (+1)', () => {
       it('formats standard 10-digit US/Canada phone numbers', () => {
         const res = normalizePhone('(555) 234-5678');
@@ -132,6 +161,23 @@ describe('Sprint 10.1 Unit Suite: Normalization & Deduplication Validation', () 
         const res = normalizePhone('1-800-555-0199');
         assert.equal(res.phone, '+18005550199');
         assert.equal(res.warning, false);
+      });
+
+      it('disambiguates US 10-digit numbers starting with 6, 7, 8, or 9 from Indian numbers', () => {
+        // Boston area code 617
+        const boston = normalizePhone('(617) 555-0199');
+        assert.equal(boston.phone, '+16175550199');
+        assert.equal(boston.warning, false);
+
+        // New York area code 917
+        const nyc = normalizePhone('(917) 555-0199');
+        assert.equal(nyc.phone, '+19175550199');
+        assert.equal(nyc.warning, false);
+
+        // Los Angeles area code 818 with dashes
+        const la = normalizePhone('818-555-0199');
+        assert.equal(la.phone, '+18185550199');
+        assert.equal(la.warning, false);
       });
     });
 

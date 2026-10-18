@@ -29,6 +29,7 @@ marca_ubi_web_hosting/
 │   ├── unit/
 │   │   └── normalization.test.ts               # International phone, email & dedup unit tests
 │   └── e2e/
+│       ├── auth-helper.ts                      # Playwright authentication & session helper
 │       ├── 01-admin-provisioning.spec.ts       # Journey 1: Team member invite & role provisioning
 │       ├── 02-website-brief-ingestion.spec.ts  # Journey 2: /start-project inquiry & webhook ingestion
 │       ├── 03-data-grid-realtime.spec.ts       # Journey 3: Multi-filter action bar & virtualized data grid

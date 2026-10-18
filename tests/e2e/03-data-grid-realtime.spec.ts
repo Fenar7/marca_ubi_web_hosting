@@ -1,16 +1,17 @@
 /**
  * @file 03-data-grid-realtime.spec.ts
- * @description Playwright E2E User Journey 3: Virtualized Leads Data Grid & Multi-Filter Action Bar.
+ * @description Playwright E2E User Journey 3: Virtualized Leads Data Grid & Multi-Filter Action Bar (PRD §4.1 WP4).
  *              Validates real-time bucket switching, debounced search filtering, fixed 72px row rhythm,
  *              and responsive mobile card reflow across the /admin/leads workspace.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import { test, expect } from '@playwright/test';
+import { ensureAuthenticatedSession } from './auth-helper';
 
 test.describe('E2E Journey 3: Virtualized Data Grid & Multi-Filter Action Bar', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/admin/leads');
+    await ensureAuthenticatedSession(page, '/admin/leads', 'admin');
   });
 
   test('renders Multi-Filter Action Bar with bucket tabs and active counts', async ({ page }) => {
@@ -32,8 +33,6 @@ test.describe('E2E Journey 3: Virtualized Data Grid & Multi-Filter Action Bar', 
     const searchInput = page.locator('input[type="search"], input[placeholder*="Search" i]').first();
     if (await searchInput.isVisible()) {
       await searchInput.fill('Emaar');
-      // Wait for debounced search URL sync
-      await page.waitForTimeout(400);
       await expect(page).toHaveURL(/search=Emaar|q=Emaar/);
     }
   });

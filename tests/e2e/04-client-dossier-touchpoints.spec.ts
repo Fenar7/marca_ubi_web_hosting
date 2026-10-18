@@ -1,16 +1,17 @@
 /**
  * @file 04-client-dossier-touchpoints.spec.ts
- * @description Playwright E2E User Journey 4: Client 360 Slide-over Drawer & Omnichannel Touchpoint Studio.
+ * @description Playwright E2E User Journey 4: Client 360 Slide-over Drawer & Omnichannel Touchpoint Studio (PRD §4.1 WP4).
  *              Validates slide-over drawer opening, Deal ID token copying, click-to-call deep-links,
- *              interaction stopwatch logging, and real-time activity timeline rendering.
+ *              interaction duration presets, and real-time activity timeline rendering.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import { test, expect } from '@playwright/test';
+import { ensureAuthenticatedSession } from './auth-helper';
 
 test.describe('E2E Journey 4: Client 360 Drawer & Omnichannel Interaction Studio', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/admin/leads');
+    await ensureAuthenticatedSession(page, '/admin/leads', 'admin');
   });
 
   test('slides open Client 360 drawer upon row or card interaction', async ({ page }) => {
@@ -31,7 +32,7 @@ test.describe('E2E Journey 4: Client 360 Drawer & Omnichannel Interaction Studio
     }
   });
 
-  test('logs phone call interaction with duration stopwatch and outcome', async ({ page }) => {
+  test('logs phone call interaction with duration presets and outcome selection', async ({ page }) => {
     const leadTrigger = page.locator('tr[data-lead-id], button:has-text("View"), [data-testid="lead-card"]').first();
     if (await leadTrigger.isVisible()) {
       await leadTrigger.click();
@@ -43,13 +44,10 @@ test.describe('E2E Journey 4: Client 360 Drawer & Omnichannel Interaction Studio
         if (await callTab.isVisible()) {
           await callTab.click();
 
-          // Verify stopwatch start button
-          const stopwatchBtn = drawer.locator('button:has-text("Start"), button[aria-label*="Timer" i]').first();
-          if (await stopwatchBtn.isVisible()) {
-            await stopwatchBtn.click();
-            await page.waitForTimeout(500);
-            // Stop stopwatch
-            await stopwatchBtn.click();
+          // Verify duration preset selection
+          const durationBtn = drawer.locator('button:has-text("15m"), button:has-text("5m")').first();
+          if (await durationBtn.isVisible()) {
+            await durationBtn.click();
           }
 
           // Input notes and submit interaction

@@ -1,8 +1,9 @@
 /**
  * @file verify-sprint-10-1.ts
- * @description Official 4-Block Delivery Gate Verification Auditor for Sprint 10.1.
- *              Validates deliverable file existence, anti-AI-slop compliance,
- *              unit & RLS test execution, and strict TypeScript compilation.
+ * @description Official 4-Block Delivery Gate Verification Script for Sprint 10.1:
+ *              Test Harness & Automated Suites (PRD §4.1 & §15.20).
+ *              Asserts deliverable presence, zero AI-slop rules, automated test suite passes,
+ *              orchestrator health, and 0 TypeScript compiler errors.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -11,10 +12,6 @@ import * as path from 'path';
 import { execSync } from 'child_process';
 
 const ROOT_DIR = process.cwd();
-
-console.log('================================================================');
-console.log(' MARCA UBI ENTERPRISE CRM: SPRINT 10.1 DELIVERY GATE AUDITOR');
-console.log('================================================================\n');
 
 let totalChecks = 0;
 let passedChecks = 0;
@@ -34,15 +31,15 @@ function assertCheck(name: string, condition: boolean, details?: string): void {
   }
 }
 
-// ==========================================
-// BLOCK 1: Deliverable Files Verification
-// ==========================================
+// Block 1: Deliverable Files Verification
 console.log('[Block 1: Deliverable Files Verification]');
 
 const requiredFiles = [
   'playwright.config.ts',
+  'scripts/test-orchestrator.ts',
   'tests/rls/leads-isolation.test.ts',
   'tests/unit/normalization.test.ts',
+  'tests/e2e/auth-helper.ts',
   'tests/e2e/01-admin-provisioning.spec.ts',
   'tests/e2e/02-website-brief-ingestion.spec.ts',
   'tests/e2e/03-data-grid-realtime.spec.ts',
@@ -59,15 +56,15 @@ for (const relPath of requiredFiles) {
   assertCheck(`File exists: ${relPath}`, fs.existsSync(fullPath));
 }
 
-// ==========================================
-// BLOCK 2: Anti-AI-Slop & Quality Standards
-// ==========================================
+// Block 2: Anti-AI-Slop & Quality Standards
 console.log('\n[Block 2: Anti-AI-Slop & Quality Standards]');
 
 const codeFilesToAudit = [
   'playwright.config.ts',
+  'scripts/test-orchestrator.ts',
   'tests/rls/leads-isolation.test.ts',
   'tests/unit/normalization.test.ts',
+  'tests/e2e/auth-helper.ts',
   'tests/e2e/01-admin-provisioning.spec.ts',
   'tests/e2e/02-website-brief-ingestion.spec.ts',
   'tests/e2e/03-data-grid-realtime.spec.ts',
@@ -146,11 +143,10 @@ const playwrightConfigContent = fs.readFileSync(path.join(ROOT_DIR, 'playwright.
 assertCheck('Playwright config defines chromium project', playwrightConfigContent.includes("'chromium'"));
 assertCheck('Playwright config defines firefox project', playwrightConfigContent.includes("'firefox'"));
 assertCheck('Playwright config defines webkit project', playwrightConfigContent.includes("'webkit'"));
+assertCheck('Playwright config defines webServer lifecycle', playwrightConfigContent.includes('webServer:'));
 
-// ==========================================
-// BLOCK 3: Automated Test Suites Execution
-// ==========================================
-console.log('\n[Block 3: Automated Test Suites Execution]');
+// Block 3: Automated Test Suites & Orchestrator Execution
+console.log('\n[Block 3: Automated Test Suites & Orchestrator Execution]');
 
 const testSuites = [
   'tests/unit/normalization.test.ts',
@@ -170,9 +166,7 @@ for (const testFile of testSuites) {
   }
 }
 
-// ==========================================
-// BLOCK 4: Strict TypeScript Compilation
-// ==========================================
+// Block 4: Strict TypeScript Compilation
 console.log('\n[Block 4: Strict TypeScript Compilation]');
 
 try {
@@ -186,9 +180,7 @@ try {
   assertCheck('TypeScript compiler (tsc --noEmit) reported 0 errors', false, errorOutput);
 }
 
-// ==========================================
-// SUMMARY
-// ==========================================
+// Summary
 console.log('\n================================================================');
 console.log(` TOTAL CHECKS: ${totalChecks} | PASSED: ${passedChecks} | FAILED: ${failedChecks}`);
 console.log('================================================================\n');

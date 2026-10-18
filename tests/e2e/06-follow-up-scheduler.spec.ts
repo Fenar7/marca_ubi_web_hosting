@@ -1,16 +1,17 @@
 /**
  * @file 06-follow-up-scheduler.spec.ts
- * @description Playwright E2E User Journey 6: Precision Follow-up Date-Time Scheduler & On Hold Automation.
+ * @description Playwright E2E User Journey 6: Precision Follow-up Date-Time Scheduler & On Hold Automation (PRD §4.1 WP4).
  *              Validates custom DateTimePicker, quick-preset interval chips, RFC 5545 .ics generation,
  *              and guarded On Hold transition requiring future revisit dates.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import { test, expect } from '@playwright/test';
+import { ensureAuthenticatedSession } from './auth-helper';
 
 test.describe('E2E Journey 6: Precision Follow-up Scheduler & On Hold Revisit Automation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/admin/leads');
+    await ensureAuthenticatedSession(page, '/admin/leads', 'admin');
   });
 
   test('opens Follow-up Scheduler modal and toggles quick-select preset interval chips', async ({ page }) => {
