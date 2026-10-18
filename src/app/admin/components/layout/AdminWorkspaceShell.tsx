@@ -32,6 +32,7 @@ export { AddTeamMemberModal as AddTeamMemberDrawer } from '@/app/admin/component
 interface AdminWorkspaceShellProps {
   currentUser: CurrentUserSession;
   children: React.ReactNode;
+  dueTasksCount?: number;
 }
 
 /**
@@ -68,6 +69,7 @@ function LeadUrlSync({
 export function AdminWorkspaceShell({
   currentUser,
   children,
+  dueTasksCount,
 }: AdminWorkspaceShellProps): React.ReactElement {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
@@ -223,6 +225,7 @@ export function AdminWorkspaceShell({
         currentUser={currentUser}
         isCollapsed={isCollapsed}
         onToggleCollapse={toggleSidebar}
+        dueTasksCount={dueTasksCount}
       />
 
       {/* Mobile Off-Canvas Drawer (Screens < 1024px) */}
@@ -230,6 +233,7 @@ export function AdminWorkspaceShell({
         isOpen={isMobileOpen}
         onClose={() => setIsMobileOpen(false)}
         currentUser={currentUser}
+        dueTasksCount={dueTasksCount}
       />
 
       {/* Main Viewport Enclave */}

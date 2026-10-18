@@ -1,0 +1,331 @@
+.clientContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 280px;
+  max-width: 480px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.85rem;
+  color: #71717a;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.65rem 0.85rem 0.65rem 2.25rem;
+  background-color: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.84rem;
+  transition: all 0.15s ease;
+
+  &::placeholder {
+    color: #71717a;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #ff6100;
+    box-shadow: 0 0 0 1px #ff6100;
+  }
+}
+
+.filterPills {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+.filterPill {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  color: #a1a1aa;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.filterPillActive {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.emptyCard {
+  background-color: #0d0d0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.emptyTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.emptySub {
+  font-size: 0.84rem;
+  color: #71717a;
+  margin: 0;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.worksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.25rem;
+}
+
+.workCard {
+  background-color: #0d0d0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.projectIdentity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.projectCode {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ff6100;
+  background-color: rgba(255, 97, 0, 0.12);
+  border: 1px solid rgba(255, 97, 0, 0.25);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.healthBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.healthOnTrack {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.healthAtRisk {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.healthBlocked {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.healthCompleted {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.contractValue {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.clientDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.clientTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.companyName {
+  font-size: 0.8rem;
+  color: #a1a1aa;
+}
+
+.serviceScope {
+  font-size: 0.76rem;
+  color: #ff6100;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.stageBlock {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.stageLabelArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stageCaption {
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #71717a;
+}
+
+.stageName {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.meterContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.meterTrack {
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6100 0%, #ff8c42 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.meterText {
+  font-size: 0.7rem;
+  color: #888888;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 0.85rem;
+  font-size: 0.74rem;
+}
+
+.directorsArea {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.directorBadge {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 0.2rem 0.45rem;
+  color: #d4d4d8;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.unassignedDirector {
+  color: #71717a;
+  font-size: 0.7rem;
+  font-style: italic;
+}
+
+.kickoffDate {
+  color: #71717a;
+  font-size: 0.72rem;
+}

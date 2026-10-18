@@ -1,0 +1,270 @@
+.clientContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 280px;
+  max-width: 480px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.85rem;
+  color: #71717a;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.65rem 0.85rem 0.65rem 2.25rem;
+  background-color: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.84rem;
+  transition: all 0.15s ease;
+
+  &::placeholder {
+    color: #71717a;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #ff6100;
+    box-shadow: 0 0 0 1px #ff6100;
+  }
+}
+
+.bucketFilterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+.filterPill {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  color: #a1a1aa;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.filterPillActive {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.gridCard {
+  background-color: #0d0d0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 120px 2.2fr 1.4fr 1.5fr 1fr 1.5fr 110px;
+  padding: 0.85rem 1.25rem;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #71717a;
+  align-items: center;
+}
+
+.tableBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.dealRow {
+  display: grid;
+  grid-template-columns: 120px 2.2fr 1.4fr 1.5fr 1fr 1.5fr 110px;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  align-items: center;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.monoId {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.75rem;
+  color: #a1a1aa;
+  background-color: rgba(255, 255, 255, 0.04);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.colClient {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.clientName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.companyName {
+  font-size: 0.76rem;
+  color: #71717a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stagePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  width: fit-content;
+}
+
+.valueNumber {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.priorityBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+
+.priorityHigh {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.priorityMedium {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.priorityLow {
+  background-color: rgba(161, 161, 170, 0.15);
+  color: #a1a1aa;
+  border: 1px solid rgba(161, 161, 170, 0.3);
+}
+
+.ownerText {
+  font-size: 0.82rem;
+  color: #d4d4d8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inspectButton {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #d4d4d8;
+  font-size: 0.74rem;
+  font-weight: 500;
+  padding: 0.45rem 0.75rem;
+  min-height: 44px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 97, 0, 0.15);
+    color: #ff6100;
+    border-color: rgba(255, 97, 0, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.emptyState {
+  padding: 3rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.emptyTitle {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.emptySub {
+  font-size: 0.82rem;
+  color: #71717a;
+  margin: 0;
+}

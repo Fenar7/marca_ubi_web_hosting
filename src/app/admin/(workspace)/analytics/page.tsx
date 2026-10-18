@@ -10,8 +10,9 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { PipelineRpcMetrics } from '@/types/crm';
+import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
 import { KpiRibbon } from '@/app/admin/components/kpi';
 import styles from './analytics.module.scss';
 
@@ -36,6 +37,31 @@ function formatCurrency(amount: number): string {
 
 export default async function AdminAnalyticsPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/admin/login?next=%2Fadmin%2Fanalytics');
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, status, allowed_tabs')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const role = (profile?.role as CrmUserRole) || 'viewer';
+  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
+
+  const hasAnalyticsAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+    ? allowedTabs.includes('analytics')
+    : role !== 'sales_executive';
+
+  if (!hasAnalyticsAccess) {
+    redirect('/admin?error=unauthorized_role_access');
+  }
 
   let rpcMetrics: PipelineRpcMetrics | null = null;
   const { data: rpcData, error: rpcError } = await supabase.rpc('get_pipeline_kpis');

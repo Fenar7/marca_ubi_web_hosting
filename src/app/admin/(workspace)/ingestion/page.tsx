@@ -9,7 +9,9 @@
 
 import React from 'react';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
+import type { CrmUserRole } from '@/types/crm';
 import styles from './ingestion.module.scss';
 
 export const metadata: Metadata = {
@@ -22,6 +24,31 @@ export const metadata: Metadata = {
 
 export default async function AdminIngestionPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/admin/login?next=%2Fadmin%2Fingestion');
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, status, allowed_tabs')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const role = (profile?.role as CrmUserRole) || 'viewer';
+  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
+
+  const hasIngestionAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+    ? allowedTabs.includes('ingestion')
+    : role !== 'sales_executive';
+
+  if (!hasIngestionAccess) {
+    redirect('/admin?error=unauthorized_role_access');
+  }
 
   // Query recent webhook and deduplication activities
   const { data: ingestionActivities } = await supabase
