@@ -209,22 +209,25 @@
   margin: 0.2rem 0 0;
 }
 
-.quickLaunchGrid {
+.funnelDistributionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.funnelCardsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
 
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 640px) {
+  @media (max-width: 960px) {
     grid-template-columns: 1fr;
   }
 }
 
-.launchCard {
-  background: #111111;
+.funnelCard {
+  background: #111115;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 1.5rem;
@@ -232,26 +235,30 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 160px;
+  min-height: 180px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+  }
+
   &:hover {
     transform: translateY(-2px);
     border-color: rgba(255, 97, 0, 0.4);
-    background: #141418;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+    background: #15151c;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
 
-    .launchArrow {
+    .funnelCardFooter svg {
       transform: translateX(3px);
       color: #ff6100;
-    }
-
-    .cardIconWrapper {
-      background: rgba(255, 97, 0, 0.15);
-      color: #ff6100;
-      border-color: rgba(255, 97, 0, 0.3);
     }
   }
 
@@ -261,58 +268,104 @@
   }
 }
 
-.cardIconWrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.funnelCardHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #e4e4e7;
+  justify-content: space-between;
   margin-bottom: 1rem;
-  transition: all 0.2s ease;
 }
 
-.launchCardContent {
+.funnelPillarStep {
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.funnelEnclaveBadge {
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d4d4d8;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.enclaveOrange {
+  background: rgba(255, 97, 0, 0.12);
+  color: #ff6100;
+  border-color: rgba(255, 97, 0, 0.28);
+}
+
+.enclaveEmerald {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+.funnelCardBody {
   flex: 1;
 }
 
-.launchCardTitle {
-  font-size: 0.95rem;
+.funnelCardTitle {
+  font-size: 1.05rem;
   font-weight: 700;
   color: #ffffff;
   margin: 0 0 0.35rem;
 }
 
-.launchCardDesc {
+.funnelCardDesc {
   font-size: 0.78rem;
   color: #a1a1aa;
   line-height: 1.45;
-  margin: 0;
+  margin: 0 0 1rem;
 }
 
-.launchCardFooter {
+.funnelMetricRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.funnelMetricValue {
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.funnelMetricLabel {
+  font-size: 0.75rem;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.funnelCardFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 1.25rem;
   padding-top: 0.85rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.launchActionLabel {
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #71717a;
-}
 
-.launchArrow {
-  color: #71717a;
-  transition: all 0.2s ease;
+  svg {
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
 }
 
 /* Recent Activity Ledger */
@@ -440,10 +493,18 @@
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
+.badgeNeutral,
 .badgeBlue {
   background: rgba(255, 255, 255, 0.08);
   color: #cccccc;
   border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.externalIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.25rem;
 }
 
 .activityDesc {

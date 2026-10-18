@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
@@ -33,6 +33,15 @@ export interface LeadsDataGridProps {
   className?: string;
 }
 
+type SortField =
+  | 'lead_id'
+  | 'name'
+  | 'service_category'
+  | 'status_name'
+  | 'expected_value'
+  | 'assigned_to_name'
+  | 'priority';
+
 function formatCurrency(amount: number): string {
   if (!amount || amount <= 0) return '₹0';
   if (amount >= 10000000) {
@@ -53,10 +62,49 @@ export function LeadsDataGrid({
 }: LeadsDataGridProps): React.ReactElement {
   const parentRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('lead_id');
+  const [sortAscending, setSortAscending] = useState<boolean>(true);
+
+  const handleToggleSort = (field: SortField): void => {
+    if (sortField === field) {
+      setSortAscending((prev) => !prev);
+    } else {
+      setSortField(field);
+      setSortAscending(true);
+    }
+  };
+
+  const sortedLeads = useMemo(() => {
+    const cloned = [...leads];
+    cloned.sort((a, b) => {
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+
+      if (sortField === 'expected_value') {
+        const aNum = Number(aVal) || 0;
+        const bNum = Number(bVal) || 0;
+        return sortAscending ? aNum - bNum : bNum - aNum;
+      }
+
+      if (sortField === 'priority') {
+        const weight: Record<string, number> = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+        const aW = weight[String(aVal)] || 0;
+        const bW = weight[String(bVal)] || 0;
+        return sortAscending ? aW - bW : bW - aW;
+      }
+
+      const aStr = String(aVal || '').toLowerCase();
+      const bStr = String(bVal || '').toLowerCase();
+      if (aStr < bStr) return sortAscending ? -1 : 1;
+      if (aStr > bStr) return sortAscending ? 1 : -1;
+      return 0;
+    });
+    return cloned;
+  }, [leads, sortField, sortAscending]);
 
   // Virtualizer instance configured with 72px row rhythm and 6-row overscan buffer
   const rowVirtualizer = useVirtualizer({
-    count: leads.length,
+    count: sortedLeads.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 72,
     overscan: 6,
@@ -99,15 +147,119 @@ export function LeadsDataGrid({
         aria-label="Commercial Pipeline Data Grid"
         tabIndex={0}
       >
-        {/* Sticky Table Header (7 Columns) */}
-        <div className={styles.tableHeader} role="row" aria-hidden="true">
-          <div className={styles.thCell}>Deal ID</div>
-          <div className={styles.thCell}>Client & Org</div>
-          <div className={styles.thCell}>Service Scope</div>
-          <div className={styles.thCell}>Funnel Stage</div>
-          <div className={styles.thCell}>Expected Value</div>
-          <div className={styles.thCell}>Representative</div>
-          <div className={styles.thCell}>Priority & Touchpoint</div>
+        {/* Sticky Table Header (7 Columns) with Sort Controls */}
+        <div className={styles.tableHeader} role="row">
+          <button
+            type="button"
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('lead_id')}
+            aria-label={`Sort by Deal ID, currently ${sortField === 'lead_id' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Deal ID</span>
+            {sortField === 'lead_id' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('name')}
+            aria-label={`Sort by Client & Organization, currently ${sortField === 'name' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Client & Org</span>
+            {sortField === 'name' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('service_category')}
+            aria-label={`Sort by Service Scope, currently ${sortField === 'service_category' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Service Scope</span>
+            {sortField === 'service_category' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('status_name')}
+            aria-label={`Sort by Funnel Stage, currently ${sortField === 'status_name' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Funnel Stage</span>
+            {sortField === 'status_name' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('expected_value')}
+            aria-label={`Sort by Expected Valuation, currently ${sortField === 'expected_value' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Expected Value</span>
+            {sortField === 'expected_value' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('assigned_to_name')}
+            aria-label={`Sort by Representative, currently ${sortField === 'assigned_to_name' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Representative</span>
+            {sortField === 'assigned_to_name' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('priority')}
+            aria-label={`Sort by Priority Tier, currently ${sortField === 'priority' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Priority & Touchpoint</span>
+            {sortField === 'priority' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Dynamic Virtualized Rows Viewport */}
@@ -116,7 +268,7 @@ export function LeadsDataGrid({
           style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const lead = leads[virtualRow.index];
+            const lead = sortedLeads[virtualRow.index];
             if (!lead) return null;
 
             const repInitials = (lead.assigned_to_name || 'Unassigned')
@@ -150,7 +302,7 @@ export function LeadsDataGrid({
                 className={styles.virtualRow}
                 style={{
                   transform: `translateY(${virtualRow.start}px)`,
-                  zIndex: leads.length - virtualRow.index,
+                  zIndex: sortedLeads.length - virtualRow.index,
                 }}
                 onClick={() => handleRowClick(lead.id)}
                 role="row"
@@ -289,6 +441,25 @@ export function LeadsDataGrid({
                       bucket={lead.bucket}
                       variant="short"
                     />
+
+                    {/* Quick Hover Action Strip */}
+                    <div className={styles.rowQuickActions} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowClick(lead.id);
+                        }}
+                        title="Inspect Client Dossier"
+                        aria-label={`Inspect dossier for ${lead.lead_id}`}
+                      >
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -299,7 +470,7 @@ export function LeadsDataGrid({
 
       {/* 2. Mobile Responsive Card Queue (< 768px) */}
       <div className={styles.mobileCardsContainer} role="feed" aria-label="Commercial Inquiries Queue">
-        {leads.map((lead) => (
+        {sortedLeads.map((lead) => (
           <LeadMobileCard
             key={lead.id}
             lead={lead}

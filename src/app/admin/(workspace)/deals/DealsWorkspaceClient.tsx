@@ -501,42 +501,84 @@ export function DealsWorkspaceClient({
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('lead_id')}
             >
-              Deal Ref {sortField === 'lead_id' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Deal Ref{' '}
+              {sortField === 'lead_id' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('name')}
             >
-              Client & Company {sortField === 'name' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Client & Company{' '}
+              {sortField === 'name' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('status_name')}
             >
-              Stage {sortField === 'status_name' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Stage{' '}
+              {sortField === 'status_name' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('expected_value')}
             >
-              Contract Valuation {sortField === 'expected_value' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Contract Valuation{' '}
+              {sortField === 'expected_value' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('priority')}
             >
-              Priority {sortField === 'priority' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Priority{' '}
+              {sortField === 'priority' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('assigned_to_name')}
             >
-              Representative {sortField === 'assigned_to_name' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Representative{' '}
+              {sortField === 'assigned_to_name' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <span className={styles.colAction}>Action</span>
           </div>
