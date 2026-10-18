@@ -35,9 +35,9 @@ export interface HydratedDealItem {
 
 interface DealsWorkspaceClientProps {
   initialDeals: HydratedDealItem[];
-  sources: Array<{ id: string; name: string }>;
-  profiles: Array<{ id: string; full_name: string; email: string; role: string }>;
-  statuses: Array<{ id: string; name: string; stage_order: number; bucket: string; color: string }>;
+  sources?: Array<{ id: string; name: string }>;
+  profiles?: Array<{ id: string; full_name: string; email: string; role: string }>;
+  statuses?: Array<{ id: string; name: string; sort_order: number; bucket: string; color_code: string }>;
 }
 
 function formatDealValue(amount: number): string {

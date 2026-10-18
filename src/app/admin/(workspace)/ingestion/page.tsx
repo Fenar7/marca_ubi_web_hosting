@@ -42,9 +42,9 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
-  const hasIngestionAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+  const hasIngestionAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('ingestion')
-    : role !== 'sales_executive';
+    : role === 'admin' || role === 'sales_manager';
 
   if (!hasIngestionAccess) {
     redirect('/admin?error=unauthorized_role_access');

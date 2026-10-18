@@ -47,6 +47,11 @@ export function AdminMobileDrawer({
     }
   }, [isOpen, onClose]);
 
+  // Automatically dismiss drawer when pathname changes
+  useEffect(() => {
+    onClose();
+  }, [pathname, onClose]);
+
   const isRouteActive = (href: string): boolean => {
     if (href === '/admin') {
       return pathname === '/admin';
@@ -124,6 +129,8 @@ export function AdminMobileDrawer({
                     const badgeClass =
                       badgeInfo?.variant === 'emerald'
                         ? styles.badgeEmerald
+                        : badgeInfo?.variant === 'amber'
+                        ? styles.badgeAmber
                         : styles.badgeOrange;
 
                     return (
@@ -158,10 +165,10 @@ export function AdminMobileDrawer({
         {/* Footer Authenticated Session Telemetry */}
         <div className={styles.drawerFooter}>
           <div className={styles.systemStatusBlock}>
-            <span className={styles.statusRadarDot} aria-hidden="true" />
+            <span className={styles.statusDot} aria-hidden="true" />
             <div className={styles.statusText}>
               <span className={styles.statusLabel}>{formattedRole}</span>
-              <span className={styles.statusSub}>Secure Enclave Active</span>
+              <span className={styles.statusSub}>{currentUser.email}</span>
             </div>
           </div>
         </div>

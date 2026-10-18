@@ -67,12 +67,13 @@ It solves critical enterprise navigation and layout gaps identified during the l
 - `npx tsc --noEmit`: **0 TypeScript compilation errors**.
 
 ### Block 2: Automated Unit & Taxonomy Validation
-- `npm run test:unit`: **396 / 396 assertions passed (100%)**.
-- Phase 2 Navigation Taxonomy & RBAC tests: **8 / 8 passed (100%)**:
+- `npm run test:unit`: **397 / 397 assertions passed (100%)**.
+- Phase 2 Navigation Taxonomy & RBAC tests: **9 / 9 passed (100%)**:
   - Enclave organization and all 9 canonical tab keys.
   - App Router route mapping parity.
   - Admin full access evaluation.
   - Granular `allowed_tabs` override evaluation.
+  - Zero-trust explicit empty array `allowed_tabs = []` rejection.
   - Role default sandboxing for Sales Executive, Viewer, and Sales Manager.
   - Defensive handling for unauthenticated / null user session states.
 
@@ -81,6 +82,38 @@ It solves critical enterprise navigation and layout gaps identified during the l
 - Multi-role isolation, append-only immutability, and `client_works` RLS policies verified.
 
 ### Block 4: Production Build Gate
-- `npm run build`: **Next.js 16.1.6 (Turbopack) compiled in 88s**.
+- `npm run build`: **Next.js 16.1.6 (Turbopack) compiled in 81s**.
 - **27 / 27 static, dynamic, and SSG routes generated with zero errors**.
 - All workspace sub-routes (`/admin/deals`, `/admin/works`, `/admin/tasks`, `/admin/team`, `/admin/settings`, `/admin/analytics`, `/admin/ingestion`, `/admin/leads`, `/admin`) verified.
+
+---
+
+## Independent CTO PR Audit & Remediation Log
+
+An independent adversarial review was executed across three specialized subagent domains (Systems Architecture, CISO / AppSec, and Staff Frontend / Anti-Slop). All identified findings were systematically resolved:
+
+1. **Schema Correction (`/admin/deals`)**:
+   - *Finding*: `funnel_statuses` query selected non-existent `stage_order` and `color`.
+   - *Fix*: Aligned with PostgreSQL schema to query `sort_order` and `color_code` in `deals/page.tsx` and `DealsWorkspaceClient.tsx`.
+2. **Missing Page Guard (`/admin/leads`)**:
+   - *Finding*: `/admin/leads/page.tsx` had no server-side auth or role verification.
+   - *Fix*: Added server-side authentication (`supabase.auth.getUser()`), active account verification, and `hasLeadsAccess` RBAC validation.
+3. **Insecure Ingestion Fallback (`/admin/ingestion`)**:
+   - *Finding*: Allowed Viewers or unassigned staff when `allowedTabs` was null.
+   - *Fix*: Restricted fallback to `role === 'admin' || role === 'sales_manager'`.
+4. **Zero-Trust Empty Array Override (`allowed_tabs = []`)**:
+   - *Finding*: Checking `allowed_tabs.length > 0` allowed an explicit empty array to fall back to default role tabs.
+   - *Fix*: Updated `navigationConfig.tsx` and all 8 workspace page guards to inspect `Array.isArray(allowedTabs)` so explicit empty arrays deny all tabs. Added test case.
+5. **Mobile Drawer DOM & UX Synchronizations**:
+   - *Finding*: Class selector mismatches (`.overlay` vs `.backdrop`, `.logoLink` vs `.brandLink`) in `AdminMobileDrawer.module.scss`.
+   - *Fix*: Re-synchronized SCSS module class names, added 44px close button, min-height touch targets, focus-visible outlines, and route change dismissal listener.
+6. **Purged Residual Radar Slop**:
+   - *Finding*: Residual `.statusRadarDot` and `radarPulse` CSS keyframes.
+   - *Fix*: Completely removed unused keyframes and replaced fake enclave text with authenticated user email and static status indicator.
+7. **Breadcrumb Mappings & Stage Filter**:
+   - *Finding*: Missing breadcrumbs for `deals` and `works`; works stage filter UI was non-interactive.
+   - *Fix*: Added breadcrumb mappings and interactive stage filter pills to `WorksWorkspaceClient.tsx`.
+8. **WCAG AA Contrast Elevation**:
+   - *Finding*: `#71717a` text contrast was below optimal AA standard.
+   - *Fix*: Elevated muted typography to `#a1a1aa` (8.19:1 contrast ratio).
+

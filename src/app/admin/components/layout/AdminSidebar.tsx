@@ -183,13 +183,13 @@ export function AdminSidebar({
       <div className={styles.sidebarFooter}>
         <div
           className={styles.systemStatusBlock}
-          title={`Active Secure Enclave (${formattedRole})`}
+          title={`Authenticated as ${currentUser.email} (${formattedRole})`}
         >
-          <span className={styles.statusRadarDot} aria-hidden="true" />
+          <span className={styles.statusDot} aria-hidden="true" />
           {!isCollapsed && (
             <div className={styles.statusText}>
               <span className={styles.statusLabel}>{formattedRole}</span>
-              <span className={styles.statusSub}>Secure Enclave Active</span>
+              <span className={styles.statusSub}>{currentUser.email}</span>
             </div>
           )}
         </div>

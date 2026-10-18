@@ -55,7 +55,7 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
-  const hasAnalyticsAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+  const hasAnalyticsAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('analytics')
     : role !== 'sales_executive';
 

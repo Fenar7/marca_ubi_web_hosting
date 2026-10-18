@@ -43,7 +43,7 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
-  const hasWorksAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+  const hasWorksAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('works')
     : true;
 

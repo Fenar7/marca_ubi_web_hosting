@@ -121,6 +121,28 @@ export function WorksWorkspaceClient({ initialWorks }: WorksWorkspaceClientProps
             Delivered
           </button>
         </div>
+
+        <div className={styles.stageFilterGroup}>
+          <span className={styles.filterLabel}>Stage:</span>
+          {[
+            { key: 'all', label: 'All' },
+            { key: 'kickoff', label: 'Kickoff' },
+            { key: 'strategy', label: 'Strategy' },
+            { key: 'design_ui_ux', label: 'UI/UX' },
+            { key: 'development', label: 'Development' },
+            { key: 'review_qa', label: 'QA' },
+            { key: 'delivered', label: 'Delivered' },
+          ].map((stg) => (
+            <button
+              key={stg.key}
+              type="button"
+              className={`${styles.stagePillBtn} ${selectedStage === stg.key ? styles.stagePillBtnActive : ''}`}
+              onClick={() => setSelectedStage(stg.key)}
+            >
+              {stg.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Projects Grid */}

@@ -58,7 +58,7 @@ export default async function AdminDealsPage(
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
-  const hasDealsAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+  const hasDealsAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('deals')
     : true;
 
@@ -71,7 +71,7 @@ export default async function AdminDealsPage(
     supabase.rpc('get_pipeline_kpis'),
     supabase.from('lead_sources').select('id, name').order('name'),
     supabase.from('profiles').select('id, full_name, email, role, status').order('full_name'),
-    supabase.from('funnel_statuses').select('id, name, stage_order, bucket, color').order('stage_order'),
+    supabase.from('funnel_statuses').select('id, name, sort_order, bucket, color_code').order('sort_order'),
     supabase
       .from('leads')
       .select(`
@@ -99,9 +99,9 @@ export default async function AdminDealsPage(
         funnel_status:funnel_statuses!leads_status_id_fkey (
           id,
           name,
-          stage_order,
+          sort_order,
           bucket,
-          color
+          color_code
         ),
         lead_source:lead_sources!leads_lead_source_id_fkey (
           id,
@@ -133,7 +133,7 @@ export default async function AdminDealsPage(
   // Transform relational leads to typed deal records
   const deals: HydratedDealItem[] = ((dealsRes.data || []) as unknown[]).map((raw) => {
     const item = raw as Record<string, unknown>;
-    const statusObj = item.funnel_status as { id: string; name: string; stage_order: number; bucket: string; color: string } | null;
+    const statusObj = item.funnel_status as { id: string; name: string; sort_order: number; bucket: string; color_code: string } | null;
     const profileObj = item.assigned_profile as { id: string; full_name: string; email: string } | null;
     const sourceObj = item.lead_source as { id: string; name: string } | null;
 
@@ -155,7 +155,7 @@ export default async function AdminDealsPage(
       assigned_to_name: profileObj?.full_name || 'Unassigned',
       status_name: statusObj?.name || 'Open',
       status_bucket: (statusObj?.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open',
-      status_color: statusObj?.color || '#ff6100',
+      status_color: statusObj?.color_code || '#ff6100',
       source_name: sourceObj?.name || 'Direct Ingestion',
     };
   });

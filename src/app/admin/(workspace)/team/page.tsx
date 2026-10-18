@@ -67,7 +67,7 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   const role = callerProfile.role as CrmUserRole;
   const allowedTabs = callerProfile.allowed_tabs as string[] | undefined;
 
-  const hasUsersAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+  const hasUsersAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('users')
     : role === 'admin' || role === 'sales_manager';
 

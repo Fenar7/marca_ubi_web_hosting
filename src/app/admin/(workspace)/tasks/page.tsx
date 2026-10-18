@@ -57,7 +57,7 @@ export default async function AdminTasksPage(): Promise<React.ReactElement> {
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
-  const hasTasksAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+  const hasTasksAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('tasks')
     : role !== 'viewer';
 

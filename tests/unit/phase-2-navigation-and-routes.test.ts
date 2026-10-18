@@ -168,6 +168,25 @@ describe('Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture', (
     assert.strictEqual(isTabAuthorized('settings', managerUser), false);
   });
 
+  it('enforces strict zero-trust sandbox when allowed_tabs is an explicit empty array []', () => {
+    const quarantinedAdmin: CurrentUserSession = {
+      id: 'q0000000-0000-0000-0000-000000000001',
+      email: 'quarantine@marcaubi.com',
+      name: 'Quarantined User',
+      fullName: 'Quarantined User',
+      role: 'admin',
+      allowed_tabs: [],
+    };
+
+    CRM_TAB_REGISTRY.forEach((tab) => {
+      assert.strictEqual(
+        isTabAuthorized(tab.key, quarantinedAdmin),
+        false,
+        `Explicit empty allowed_tabs must deny access to ${tab.key} without reverting to role defaults`
+      );
+    });
+  });
+
   it('handles null or unauthenticated user defensively without throwing', () => {
     assert.strictEqual(isTabAuthorized('command_center', null), false);
     assert.strictEqual(isTabAuthorized('leads', undefined), false);

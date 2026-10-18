@@ -42,7 +42,7 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
   // Perimeter guard: checks granular tab permissions with admin fallback
-  const hasSettingsAccess = Array.isArray(allowedTabs) && allowedTabs.length > 0
+  const hasSettingsAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('settings')
     : role === 'admin';
 

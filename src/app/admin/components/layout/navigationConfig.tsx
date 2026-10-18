@@ -39,7 +39,7 @@ export function isTabAuthorized(tabKey: CrmTabKey, user: CurrentUserSession | nu
     return false;
   }
 
-  if (Array.isArray(user.allowed_tabs) && user.allowed_tabs.length > 0) {
+  if (Array.isArray(user.allowed_tabs)) {
     return user.allowed_tabs.includes(tabKey);
   }
 

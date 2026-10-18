@@ -182,7 +182,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     if (matchingRoute) {
       let isPermitted = false;
 
-      if (Array.isArray(userAllowedTabs) && userAllowedTabs.length > 0) {
+      if (Array.isArray(userAllowedTabs)) {
         isPermitted = userAllowedTabs.includes(matchingRoute.tabKey);
       } else {
         const defaultRoleTabs = ROLE_DEFAULT_TABS[userRole];

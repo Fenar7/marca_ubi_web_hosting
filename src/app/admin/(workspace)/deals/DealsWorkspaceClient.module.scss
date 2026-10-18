@@ -25,7 +25,7 @@
 .searchIcon {
   position: absolute;
   left: 0.85rem;
-  color: #71717a;
+  color: #a1a1aa;
   pointer-events: none;
 }
 
@@ -40,7 +40,7 @@
   transition: all 0.15s ease;
 
   &::placeholder {
-    color: #71717a;
+    color: #a1a1aa;
   }
 
   &:focus {
@@ -107,7 +107,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #71717a;
+  color: #a1a1aa;
   align-items: center;
 }
 
@@ -138,6 +138,20 @@
   }
 }
 
+.colId,
+.colStage,
+.colValue,
+.colPriority,
+.colOwner,
+.colAction {
+  display: flex;
+  align-items: center;
+}
+
+.colAction {
+  justify-content: flex-end;
+}
+
 .monoId {
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.75rem;
@@ -165,7 +179,7 @@
 
 .companyName {
   font-size: 0.76rem;
-  color: #71717a;
+  color: #a1a1aa;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -265,6 +279,6 @@
 
 .emptySub {
   font-size: 0.82rem;
-  color: #71717a;
+  color: #a1a1aa;
   margin: 0;
 }

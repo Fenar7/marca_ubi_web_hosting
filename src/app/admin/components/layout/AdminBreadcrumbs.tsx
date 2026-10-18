@@ -19,12 +19,14 @@ import styles from './AdminBreadcrumbs.module.scss';
  */
 const ROUTE_NAME_MAP: Record<string, string> = {
   admin: 'Command Center',
-  team: 'Commercial Directory',
-  tasks: 'Follow-up Scheduler',
-  leads: 'Pipeline Deals',
+  leads: 'Inbound Leads',
+  deals: 'Pipeline Deals',
+  works: 'Client Works',
+  tasks: 'Follow-up Tasks',
+  team: 'User Management',
   analytics: 'Executive Analytics',
-  ingestion: 'Webhook Telemetry',
-  settings: 'Security & Governance',
+  ingestion: 'Website Inquiries',
+  settings: 'Security & Settings',
 };
 
 export function AdminBreadcrumbs(): React.ReactElement {
