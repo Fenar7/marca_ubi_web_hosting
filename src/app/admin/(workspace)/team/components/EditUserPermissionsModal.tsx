@@ -243,7 +243,10 @@ export function EditUserPermissionsModal({
                   <div className={styles.tabsGrid}>
                     {enclave.tabs.map((tab) => {
                       const isChecked = allowedTabs.includes(tab.key);
-                      const isLocked = isSelf && (tab.key === 'users' || tab.key === 'settings');
+                      // F-02 & Invariant: Lock users & settings tabs for active administrators to guarantee system governance
+                      const isLocked =
+                        (isSelf || targetMember.role === 'admin') &&
+                        (tab.key === 'users' || tab.key === 'settings');
 
                       return (
                         <div
@@ -262,7 +265,9 @@ export function EditUserPermissionsModal({
                           aria-checked={isChecked}
                           aria-disabled={isLocked}
                           tabIndex={isLocked ? -1 : 0}
-                          aria-label={`${tab.label} (${tab.route}) ${isLocked ? 'Locked for self-protection' : ''}`}
+                          aria-label={`${tab.label} (${tab.route}) ${
+                            isLocked ? (isSelf ? 'Locked for self-protection' : 'Locked administrator invariant') : ''
+                          }`}
                         >
                           <div className={styles.customCheckbox} aria-hidden="true">
                             {isChecked && (

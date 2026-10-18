@@ -68,7 +68,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   const isAuthRoute = pathname === '/admin/login';
   const isAdminRoute = (pathname === '/admin' || pathname.startsWith('/admin/')) && !isAuthRoute;
-  const isTeamGovernanceRoute = pathname === '/admin/team' || pathname.startsWith('/admin/team/');
 
   // Scenario 1: Unauthenticated visitor attempting to access protected administrative enclaves
   if (isAdminRoute && !user) {
@@ -151,17 +150,14 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   // Scenario 4: Granular Tab & Role-based Edge Route Gating
   if (isAdminRoute && user) {
+    // SEC-02: Enforce app_metadata as the sole source of truth for authorization claims (role & allowed_tabs)
+    // Client-side user_metadata is excluded to prevent tampering via client auth.updateUser() calls
     const userRole = (
       (user.app_metadata?.role as string | undefined) ||
-      (user.user_metadata?.role as string | undefined) ||
       'viewer'
     ) as CrmUserRole;
 
-    const userAllowedTabs = (
-      user.app_metadata?.allowed_tabs as string[] | undefined
-    ) || (
-      user.user_metadata?.allowed_tabs as string[] | undefined
-    );
+    const userAllowedTabs = user.app_metadata?.allowed_tabs as string[] | undefined;
 
     // Canonical route-to-tab permission mapping
     const ROUTE_TAB_MAP: Array<{ prefix: string; tabKey: CrmTabKey }> = [

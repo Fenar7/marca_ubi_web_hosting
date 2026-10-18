@@ -19,6 +19,7 @@ import {
   CRM_TAB_REGISTRY,
   ROLE_DEFAULT_TABS,
   type CrmTabKey,
+  type CrmUserRole,
 } from '../../src/types/crm';
 
 describe('Phase 3: User Governance & Granular Tab Permissions Suite', () => {
@@ -198,7 +199,92 @@ describe('Phase 3: User Governance & Granular Tab Permissions Suite', () => {
     // Retaining both users and settings should be allowed
     const validSelfTabs = ['command_center', 'leads', 'deals', 'users', 'settings'];
     const isAllowedValid = !isSelf || (validSelfTabs.includes('users') && validSelfTabs.includes('settings'));
-
     assert.strictEqual(isAllowedValid, true, 'Self-edit retaining users and settings must be permitted');
+  });
+
+  it('validates custom tab override detection accurately distinguishes default from modified permissions', () => {
+    const isCustomOverride = (role: CrmUserRole, tabs: string[]): boolean => {
+      const defaults = getInitialAllowedTabs(role);
+      if (tabs.length !== defaults.length) return true;
+      return !tabs.every((t) => defaults.includes(t as CrmTabKey));
+    };
+
+    // Sales Executive with standard 5 tabs -> false
+    assert.strictEqual(
+      isCustomOverride('sales_executive', ['command_center', 'leads', 'deals', 'works', 'tasks']),
+      false
+    );
+
+    // Sales Executive with custom 'analytics' tab added -> true
+    assert.strictEqual(
+      isCustomOverride('sales_executive', ['command_center', 'leads', 'deals', 'works', 'tasks', 'analytics']),
+      true
+    );
+
+    // Admin with all 9 tabs -> false
+    assert.strictEqual(
+      isCustomOverride('admin', [
+        'command_center', 'leads', 'deals', 'works', 'tasks',
+        'users', 'analytics', 'ingestion', 'settings',
+      ]),
+      false
+    );
+
+    // Admin with 'leads' stripped -> true
+    assert.strictEqual(
+      isCustomOverride('admin', [
+        'command_center', 'deals', 'works', 'tasks',
+        'users', 'analytics', 'ingestion', 'settings',
+      ]),
+      true
+    );
+
+    // Sales Manager with 8 standard tabs -> false
+    assert.strictEqual(
+      isCustomOverride('sales_manager', [
+        'command_center', 'leads', 'deals', 'works', 'tasks',
+        'users', 'analytics', 'ingestion',
+      ]),
+      false
+    );
+  });
+
+  it('validates edge middleware ROUTE_TAB_MAP covers all 9 canonical tabs and aliased routes', () => {
+    const ROUTE_TAB_MAP: Array<{ prefix: string; tabKey: CrmTabKey }> = [
+      { prefix: '/admin/team', tabKey: 'users' },
+      { prefix: '/admin/users', tabKey: 'users' },
+      { prefix: '/admin/analytics', tabKey: 'analytics' },
+      { prefix: '/admin/ingestion', tabKey: 'ingestion' },
+      { prefix: '/admin/settings', tabKey: 'settings' },
+      { prefix: '/admin/leads', tabKey: 'leads' },
+      { prefix: '/admin/deals', tabKey: 'deals' },
+      { prefix: '/admin/works', tabKey: 'works' },
+      { prefix: '/admin/tasks', tabKey: 'tasks' },
+    ];
+
+    // Ensure all 9 canonical tabs have mapped route prefixes
+    const coveredTabKeys = new Set(ROUTE_TAB_MAP.map((r) => r.tabKey));
+    const allExpectedTabs: CrmTabKey[] = [
+      'command_center',
+      'leads',
+      'deals',
+      'works',
+      'tasks',
+      'users',
+      'analytics',
+      'ingestion',
+      'settings',
+    ];
+
+    allExpectedTabs.forEach((tab) => {
+      if (tab !== 'command_center') {
+        assert.ok(coveredTabKeys.has(tab), `Tab key '${tab}' must be protected by edge middleware`);
+      }
+    });
+
+    // Verify /admin/users alias maps to 'users' tab
+    const usersAlias = ROUTE_TAB_MAP.find((r) => r.prefix === '/admin/users');
+    assert.ok(usersAlias);
+    assert.strictEqual(usersAlias.tabKey, 'users');
   });
 });

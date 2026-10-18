@@ -101,7 +101,7 @@ export function AddTeamMemberModal({
   };
 
   // Determine whether the form contains unsaved modifications
-  const defaultTabs = getInitialAllowedTabs('sales_executive');
+  const defaultTabs = getInitialAllowedTabs(role);
   const areTabsModified =
     allowedTabs.length !== defaultTabs.length ||
     !allowedTabs.every((t) => defaultTabs.includes(t));
@@ -188,9 +188,11 @@ export function AddTeamMemberModal({
         }
 
         // Broadcast custom event for optimistic roster synchronization across workspaces
+        // F-04: Include real provisioned UUID in event detail so optimistic mutations work immediately
         window.dispatchEvent(
           new CustomEvent('team-member-created', {
             detail: {
+              id: result.data?.id,
               credentials: {
                 fullName,
                 email,

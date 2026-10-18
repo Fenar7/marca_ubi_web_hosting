@@ -29,7 +29,7 @@ import {
   type CreateTeamUserFormData,
   type UpdateUserPermissionsFormData,
 } from '@/app/lib/team-schemas';
-import { ROLE_DEFAULT_TABS, type CrmTabKey } from '@/types/crm';
+import { ROLE_DEFAULT_TABS, ROLE_DEFAULT_FEATURES, type CrmTabKey } from '@/types/crm';
 
 /**
  * Verifies that the active request session belongs to an active administrator.
@@ -99,13 +99,21 @@ export async function createTeamUser(
 
   const { fullName, email, role, jobTitle, phone, tempPassword, allowedTabs, featurePermissions } = parsed.data;
 
-  // Resolve effective allowed tabs: if explicitly specified, use provided array; otherwise derive from role defaults
+  // SEC-03: Administrators must always have all 9 canonical tabs to preserve agency governance
+  // F-01: Fallback feature permissions to role defaults when omitted so permissions are not dropped
   const effectiveAllowedTabs: string[] =
-    Array.isArray(allowedTabs) && allowedTabs.length > 0
+    role === 'admin'
+      ? ['command_center', 'leads', 'deals', 'works', 'tasks', 'users', 'analytics', 'ingestion', 'settings']
+      : Array.isArray(allowedTabs) && allowedTabs.length > 0
       ? allowedTabs
       : (Object.keys(ROLE_DEFAULT_TABS[role] || {}) as CrmTabKey[]).filter(
           (k) => ROLE_DEFAULT_TABS[role]?.[k]
         );
+
+  const effectiveFeaturePermissions =
+    featurePermissions && Object.keys(featurePermissions).length > 0
+      ? featurePermissions
+      : ROLE_DEFAULT_FEATURES[role] || {};
 
   // 2. Enforce active administrator authorization boundary
   let caller: { callerId: string; callerEmail: string };
@@ -187,7 +195,7 @@ export async function createTeamUser(
         invited_by: caller.callerId,
         must_change_password: true,
         allowed_tabs: effectiveAllowedTabs,
-        feature_permissions: featurePermissions || {},
+        feature_permissions: effectiveFeaturePermissions,
       })
       .select()
       .single();
@@ -209,7 +217,7 @@ export async function createTeamUser(
           job_title: jobTitle,
           full_name: fullName,
           allowed_tabs: effectiveAllowedTabs,
-          feature_permissions: featurePermissions || {},
+          feature_permissions: effectiveFeaturePermissions,
           invited_by_id: caller.callerId,
           invited_by_email: caller.callerEmail,
           created_at: new Date().toISOString(),
@@ -702,7 +710,7 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
 
   const { data: callerProfile, error: callerProfileError } = await supabase
     .from('profiles')
-    .select('role, status')
+    .select('role, status, allowed_tabs')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -714,8 +722,14 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
     return { success: false, error: 'Access Denied: Suspended accounts cannot view team directory.' };
   }
 
-  if (callerProfile.role === 'sales_executive') {
-    return { success: false, error: 'Access Denied: Sales Executives do not have roster inspection privileges.' };
+  // F-07: Invariant Check: Verify if caller has access to the 'users' tab permission,
+  // falling back to role baseline (non-sales_executive) if allowed_tabs is not explicitly set.
+  const hasUsersAccess = Array.isArray(callerProfile.allowed_tabs)
+    ? callerProfile.allowed_tabs.includes('users')
+    : callerProfile.role !== 'sales_executive';
+
+  if (!hasUsersAccess) {
+    return { success: false, error: 'Access Denied: You do not have roster inspection privileges.' };
   }
 
   // Fetch all profiles ordered by creation timestamp using caller's authenticated session under RLS

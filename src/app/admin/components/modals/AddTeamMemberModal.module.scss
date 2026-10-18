@@ -71,6 +71,11 @@
   &.overlayClosing {
     animation: backdropFadeOut 0.18s ease-in forwards;
   }
+
+  @media (max-width: 640px) {
+    padding: 0;
+    align-items: flex-end;
+  }
 }
 
 .modalDialog {
@@ -137,15 +142,17 @@
 }
 
 .closeButton {
-  height: 32px;
+  min-height: 44px;
+  min-width: 44px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   color: #888888;
-  padding: 0 0.55rem;
+  padding: 0 0.75rem;
   cursor: pointer;
   font-size: 0.8rem;
   transition: all 0.15s ease;
@@ -158,6 +165,11 @@
 
   &:focus-visible {
     outline: 2px solid #ff6100;
+    outline-offset: 1px;
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 }
 
@@ -240,7 +252,7 @@
 .input,
 .select {
   width: 100%;
-  height: 42px;
+  min-height: 44px;
   padding: 0 0.85rem;
   background: #141418;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -293,7 +305,7 @@
 
 .passwordInput {
   flex: 1;
-  height: 40px;
+  min-height: 44px;
   padding: 0 0.85rem;
   background: #0b0b0b;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -311,8 +323,8 @@
 }
 
 .passwordActionBtn {
-  height: 40px;
-  padding: 0 0.75rem;
+  min-height: 44px;
+  padding: 0 0.85rem;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
@@ -322,12 +334,22 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   transition: all 0.15s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.12);
     color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 1px;
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
@@ -552,7 +574,7 @@
 }
 
 .cancelButton {
-  height: 40px;
+  min-height: 44px;
   padding: 0 1.25rem;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -561,16 +583,28 @@
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.15s ease;
 
   &:hover {
     color: #ffffff;
     border-color: rgba(255, 255, 255, 0.25);
   }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 1px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .submitButton {
-  height: 40px;
+  min-height: 44px;
   padding: 0 1.5rem;
   background: #ff6100;
   border: 1px solid #ff6100;
@@ -582,11 +616,21 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, transform 0.15s ease;
 
   &:hover:not(:disabled) {
     background: #e05500;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
   }
 
   &:disabled {
@@ -643,33 +687,61 @@
 }
 
 .promptKeepBtn {
+  min-height: 44px;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #cccccc;
   font-size: 0.8rem;
   font-weight: 600;
-  padding: 0.45rem 0.85rem;
+  padding: 0 1rem;
   border-radius: 6px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
 
   &:hover {
     color: #ffffff;
     border-color: rgba(255, 255, 255, 0.25);
   }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 1px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .promptDiscardBtn {
+  min-height: 44px;
   background: #ef4444;
   border: 1px solid #ef4444;
   color: #ffffff;
   font-size: 0.8rem;
   font-weight: 600;
-  padding: 0.45rem 0.85rem;
+  padding: 0 1rem;
   border-radius: 6px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.15s ease;
 
   &:hover {
     background: #dc2626;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 

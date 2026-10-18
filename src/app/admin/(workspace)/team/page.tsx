@@ -13,7 +13,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
 import { SALES_REP_CAPACITY_LIMIT } from '@/app/lib/team-schemas';
-import type { CrmUserRole, TeamMemberRosterItem } from '@/types/crm';
+import { getInitialAllowedTabs } from '@/app/lib/team-permissions-config';
+import type { CrmTabKey, CrmUserRole, TeamMemberRosterItem } from '@/types/crm';
 import { TeamWorkspaceClient } from './components/TeamWorkspaceClient';
 import styles from './team.module.scss';
 
@@ -86,8 +87,13 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
 
   const totalActiveDeals = roster.reduce((acc, m) => acc + (m.active_deals_count || 0), 0);
   const totalPortfolioValue = roster.reduce((acc, m) => acc + (m.total_deal_value || 0), 0);
-
-  const customPermissionStaff = roster.filter((m) => Array.isArray(m.allowed_tabs)).length;
+  // F-06: Compute staff members with genuine custom tab overrides compared to role baseline
+  const customPermissionStaff = roster.filter((m) => {
+    if (!Array.isArray(m.allowed_tabs)) return false;
+    const defaults = getInitialAllowedTabs(m.role);
+    if (m.allowed_tabs.length !== defaults.length) return true;
+    return !m.allowed_tabs.every((tab) => defaults.includes(tab as CrmTabKey));
+  }).length;
   const adminCount = roster.filter((m) => m.role === 'admin').length;
   const managerCount = roster.filter((m) => m.role === 'sales_manager').length;
 
