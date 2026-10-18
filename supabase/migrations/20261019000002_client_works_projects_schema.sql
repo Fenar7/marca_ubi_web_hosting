@@ -34,7 +34,7 @@ COMMENT ON FUNCTION public.generate_project_code() IS 'Generates unique human-re
 CREATE TABLE IF NOT EXISTS public.client_works (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_code TEXT NOT NULL UNIQUE DEFAULT public.generate_project_code(),
-    lead_id UUID REFERENCES public.leads(id) ON DELETE CASCADE,
+    lead_id UUID UNIQUE REFERENCES public.leads(id) ON DELETE CASCADE,
     client_name TEXT NOT NULL,
     company TEXT,
     service_scope TEXT NOT NULL DEFAULT 'Branding & Digital Infrastructure',
@@ -53,6 +53,23 @@ CREATE TABLE IF NOT EXISTS public.client_works (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
+
+-- Idempotently ensure unique constraint exists if table already existed prior to migration
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conrelid = 'public.client_works'::regclass 
+          AND conname = 'uq_client_works_lead_id'
+    ) AND NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conrelid = 'public.client_works'::regclass 
+          AND contype = 'u' 
+          AND conkey = ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid = 'public.client_works'::regclass AND attname = 'lead_id')]
+    ) THEN
+        ALTER TABLE public.client_works ADD CONSTRAINT uq_client_works_lead_id UNIQUE (lead_id);
+    END IF;
+END $$;
 
 COMMENT ON TABLE public.client_works IS 'Post-conversion active client projects, milestone progress, and creative delivery tracking.';
 COMMENT ON COLUMN public.client_works.delivery_stage IS 'Active production stage: kickoff, strategy, design_ui_ux, development, review_qa, delivered.';
@@ -164,15 +181,25 @@ CREATE INDEX IF NOT EXISTS idx_client_works_created_at_desc
 -- 6. Row Level Security Policies
 ALTER TABLE public.client_works ENABLE ROW LEVEL SECURITY;
 
--- Policy 1: Authenticated active personnel can select client works
+-- Policy 1: Authenticated active personnel can select client works (Leadership & Viewers see all; Sales Executives isolated to assigned/originated projects)
 DROP POLICY IF EXISTS "client_works_select_policy" ON public.client_works;
 CREATE POLICY "client_works_select_policy" ON public.client_works
 FOR SELECT
 TO authenticated
 USING (
     EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE id = auth.uid() AND status = 'active'
+        SELECT 1 FROM public.profiles p
+        WHERE p.id = auth.uid()
+          AND p.status = 'active'
+          AND (
+              p.role IN ('admin', 'sales_manager', 'viewer')
+              OR client_works.creative_lead_id = p.id
+              OR client_works.tech_lead_id = p.id
+              OR EXISTS (
+                  SELECT 1 FROM public.leads l
+                  WHERE l.id = client_works.lead_id AND l.assigned_to = p.id
+              )
+          )
     )
 );
 

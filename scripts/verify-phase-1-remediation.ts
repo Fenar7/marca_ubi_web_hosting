@@ -147,6 +147,19 @@ async function runPhase1Verification(): Promise<void> {
     assert(cwCols.includes('milestones'), 'Column milestones exists.');
     assert(cwCols.includes('contract_value'), 'Column contract_value exists.');
 
+    // Verify unique constraint on lead_id
+    const uqRes = await client.query(`
+      SELECT conname
+      FROM pg_constraint
+      WHERE conrelid = 'public.client_works'::regclass
+        AND contype = 'u';
+    `);
+    const uqNames = uqRes.rows.map((r) => r.conname);
+    assert(
+      uqNames.includes('uq_client_works_lead_id') || uqNames.some((n: string) => n.includes('lead_id')),
+      'Unique constraint exists on client_works(lead_id).'
+    );
+
     // Verify Auto-Spawn Trigger on Lead Conversion
     console.log('\n[TEST 4] Testing Auto-Spawn Client Work Trigger on Deal Conversion...');
     // Query a valid lead_source_id

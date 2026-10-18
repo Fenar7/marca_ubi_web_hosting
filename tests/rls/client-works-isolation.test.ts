@@ -71,4 +71,19 @@ describe('Phase 1: Client Works PostgreSQL RLS Multi-Role Isolation Suite', () =
     assert.strictEqual(res.rows[0].prosecdef, true, 'current_user_has_tab must be SECURITY DEFINER.');
     assert.strictEqual(res.rows[0].provolatile, 's', 'current_user_has_tab must be STABLE.');
   });
+
+  it('verifies client_works_select_policy enforces sales executive sandboxing to assigned projects', async () => {
+    const res = await client.query(`
+      SELECT qual
+      FROM pg_policies
+      WHERE schemaname = 'public'
+        AND tablename = 'client_works'
+        AND policyname = 'client_works_select_policy';
+    `);
+    assert.strictEqual(res.rows.length, 1);
+    const qual = res.rows[0].qual;
+    assert(qual.includes('creative_lead_id'), 'SELECT policy must grant access to creative leads.');
+    assert(qual.includes('tech_lead_id'), 'SELECT policy must grant access to tech leads.');
+    assert(qual.includes('assigned_to'), 'SELECT policy must grant access to reps assigned to underlying leads.');
+  });
 });
