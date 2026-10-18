@@ -121,6 +121,14 @@ export const transitionToOnHoldSchema = z.object({
       (val) => {
         const parsed = Date.parse(val);
         if (isNaN(parsed)) return false;
+        const parts = val.split('-');
+        if (parts.length === 3) {
+          const target = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          target.setHours(0, 0, 0, 0);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return target.getTime() > today.getTime();
+        }
         const target = new Date(val);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
