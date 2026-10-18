@@ -27,7 +27,7 @@ test.describe('E2E Journey 8: Account Suspension & Route Guard Security', () => 
   test('announces suspended account security notice when suspended credentials access portal', async ({ page }) => {
     await page.goto('/admin/login?error=account_suspended');
 
-    const errorAlert = page.locator('text=Corporate account has been suspended, [role="alert"]').first();
+    const errorAlert = page.getByRole('alert').filter({ hasText: 'Corporate account has been suspended' }).first();
     await expect(errorAlert).toBeVisible();
   });
 });
