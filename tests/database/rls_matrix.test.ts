@@ -94,6 +94,9 @@ describe('Marca Ubi CRM — PostgreSQL Row Level Security (RLS) 24-Point Matrix'
     client = new Client({ connectionString, ssl: { rejectUnauthorized: false } });
     await client.connect();
 
+    // Acquire PostgreSQL session advisory lock to serialize database tests and prevent concurrency collisions
+    await client.query('SELECT pg_advisory_lock(742910382);');
+
     // Ensure root admin exists so protect_sole_admin invariant is never violated
     const ROOT_ADMIN_ID = '00000000-0000-0000-0000-000000000001';
     await client.query(`
@@ -154,11 +157,12 @@ describe('Marca Ubi CRM — PostgreSQL Row Level Security (RLS) 24-Point Matrix'
 
   after(async () => {
     if (client) {
-      await client.query(`DELETE FROM public.team_audit_logs WHERE actor_id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`);
-      await client.query(`DELETE FROM public.lead_activities WHERE actor_id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`);
-      await client.query(`DELETE FROM public.leads WHERE lead_id LIKE 'TEST-MTX-%';`);
-      await client.query(`DELETE FROM public.profiles WHERE id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`);
-      await client.query(`DELETE FROM auth.users WHERE id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`);
+      await client.query(`DELETE FROM public.team_audit_logs WHERE actor_id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`).catch(() => {});
+      await client.query(`DELETE FROM public.lead_activities WHERE actor_id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`).catch(() => {});
+      await client.query(`DELETE FROM public.leads WHERE lead_id LIKE 'TEST-MTX-%';`).catch(() => {});
+      await client.query(`DELETE FROM public.profiles WHERE id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`).catch(() => {});
+      await client.query(`DELETE FROM auth.users WHERE id IN (${Object.values(IDENTITIES).map(u => `'${u.id}'`).join(', ')});`).catch(() => {});
+      await client.query('SELECT pg_advisory_unlock(742910382);').catch(() => {});
       await client.end();
     }
   });
