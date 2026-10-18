@@ -203,7 +203,7 @@
 }
 
 .kpiIcon {
-  color: #777777;
+  color: #888888;
   display: flex;
   align-items: center;
 }
@@ -411,7 +411,7 @@
 
 .emailSubtext {
   font-size: 0.75rem;
-  color: #777777;
+  color: #a1a1aa;
   font-variant-numeric: tabular-nums;
 }
 
@@ -435,9 +435,9 @@
 }
 
 .roleSalesManager {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #93c5fd;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
 }
 
 .roleSalesExecutive {
@@ -560,6 +560,56 @@
   }
 }
 
+.permissionsButton {
+  &:hover {
+    color: #ff6100;
+    border-color: rgba(255, 97, 0, 0.4);
+    background: rgba(255, 97, 0, 0.08);
+  }
+}
+
+.permissionsPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  min-height: 36px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.72rem;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: rgba(255, 97, 0, 0.4);
+    background: rgba(255, 97, 0, 0.08);
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 1px;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.permissionsFull {
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.permissionsCustom {
+  border-color: rgba(255, 97, 0, 0.3);
+  color: #ff914d;
+}
+
 .emptyState {
   padding: 4rem 2rem;
   text-align: center;
@@ -578,7 +628,7 @@
 
 .emptyStateText {
   font-size: 0.82rem;
-  color: #777777;
+  color: #a1a1aa;
   max-width: 360px;
   margin: 0;
   line-height: 1.5;
@@ -837,7 +887,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #777777;
+  color: #888888;
 }
 
 .credentialValue {
@@ -953,7 +1003,7 @@
 }
 
 .suspendImpactKey {
-  color: #777777;
+  color: #a1a1aa;
   font-weight: 500;
 }
 
@@ -1078,7 +1128,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #777777;
+  color: #888888;
 }
 
 .wizardStatValue {

@@ -9,10 +9,9 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { TeamMemberRosterItem, CrmUserRole } from '@/types/crm';
 import { CommercialDirectoryTable } from './CommercialDirectoryTable';
-import type { ProvisionedCredentialsPayload } from './CredentialRevealModal';
 import styles from '../team.module.scss';
 
 interface TeamWorkspaceClientProps {
@@ -26,41 +25,7 @@ export function TeamWorkspaceClient({
   currentUserRole,
   currentUserId,
 }: TeamWorkspaceClientProps): React.ReactElement {
-  const [roster, setRoster] = useState<TeamMemberRosterItem[]>(initialRoster);
   const isAdmin = currentUserRole === 'admin';
-
-  // Synchronize optimistic additions when a team member is provisioned globally
-  useEffect(() => {
-    const handleTeamMemberCreated = (event: Event): void => {
-      const customEvent = event as CustomEvent<{ credentials: ProvisionedCredentialsPayload }>;
-      if (!customEvent.detail?.credentials) return;
-      const { credentials } = customEvent.detail;
-
-      const newMember: TeamMemberRosterItem = {
-        id: `temp-${Date.now()}`,
-        full_name: credentials.fullName,
-        email: credentials.email,
-        role: credentials.role as CrmUserRole,
-        job_title: credentials.jobTitle,
-        phone: null,
-        status: 'active',
-        avatar_url: null,
-        invited_by: currentUserId,
-        last_login_at: null,
-        must_change_password: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        allowed_tabs: ['command_center', 'leads', 'deals', 'works', 'tasks'],
-        active_deals_count: 0,
-        total_deal_value: 0,
-      };
-
-      setRoster((prev) => [newMember, ...prev]);
-    };
-
-    window.addEventListener('team-member-created', handleTeamMemberCreated);
-    return () => window.removeEventListener('team-member-created', handleTeamMemberCreated);
-  }, [currentUserId]);
 
   return (
     <>
@@ -124,7 +89,7 @@ export function TeamWorkspaceClient({
 
       {/* Commercial Directory Table */}
       <CommercialDirectoryTable
-        initialRoster={roster}
+        initialRoster={initialRoster}
         currentUserRole={currentUserRole}
         currentUserId={currentUserId}
       />

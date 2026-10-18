@@ -12,11 +12,14 @@
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import Link from 'next/link';
-import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile } from '@/types/crm';
+import { useRouter } from 'next/navigation';
+import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile, CrmTabKey } from '@/types/crm';
+import { ROLE_DEFAULT_TABS } from '@/types/crm';
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
 import { SuspendUserModal } from './SuspendUserModal';
 import { LeadReassignmentWizardModal } from './LeadReassignmentWizardModal';
+import { EditUserPermissionsModal } from './EditUserPermissionsModal';
 import styles from '../team.module.scss';
 
 interface CommercialDirectoryTableProps {
@@ -30,19 +33,67 @@ export function CommercialDirectoryTable({
   currentUserRole,
   currentUserId,
 }: CommercialDirectoryTableProps): React.ReactElement {
+  const router = useRouter();
   const [roster, setRoster] = useState<TeamMemberRosterItem[]>(initialRoster);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Synchronize internal state when parent updates initialRoster (e.g. optimistic provisioning)
+  // Synchronize internal state if initialRoster reference changes
   useEffect(() => {
     setRoster(initialRoster);
   }, [initialRoster]);
 
+  // F-03 & F-04: Single authoritative listener for team-member-created with real UUID
+  useEffect(() => {
+    const handleTeamMemberCreated = (event: Event): void => {
+      const customEvent = event as CustomEvent<{
+        id?: string;
+        credentials: {
+          fullName: string;
+          email: string;
+          role: string;
+          jobTitle: string;
+          tempPassword?: string;
+          allowedTabs?: string[];
+        };
+      }>;
+      if (!customEvent.detail?.credentials) return;
+      const { id, credentials } = customEvent.detail;
+
+      const newMember: TeamMemberRosterItem = {
+        id: id || `temp-${Date.now()}`,
+        full_name: credentials.fullName,
+        email: credentials.email,
+        role: credentials.role as CrmUserRole,
+        job_title: credentials.jobTitle,
+        phone: null,
+        status: 'active',
+        avatar_url: null,
+        invited_by: currentUserId,
+        last_login_at: null,
+        must_change_password: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        allowed_tabs: credentials.allowedTabs || ['command_center', 'leads', 'deals', 'works', 'tasks'],
+        active_deals_count: 0,
+        total_deal_value: 0,
+      };
+
+      setRoster((prev) => [newMember, ...prev]);
+      router.refresh();
+    };
+
+    window.addEventListener('team-member-created', handleTeamMemberCreated);
+    return () => window.removeEventListener('team-member-created', handleTeamMemberCreated);
+  }, [currentUserId, router]);
+
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
+
+  // Tab Permissions modal state
+  const [memberForPermissions, setMemberForPermissions] = useState<TeamMemberRosterItem | null>(null);
 
   // Role modification modal state
   const [targetMemberForRole, setTargetMemberForRole] = useState<TeamMemberRosterItem | null>(null);
@@ -56,6 +107,30 @@ export function CommercialDirectoryTable({
 
   // Dedicated lead reassignment wizard modal state (Sprint 4.2)
   const [memberToReassign, setMemberToReassign] = useState<TeamMemberRosterItem | null>(null);
+
+  // Modal Escape key dismissal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isPending) {
+        if (targetMemberForRole) setTargetMemberForRole(null);
+        if (memberToActivate) setMemberToActivate(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [targetMemberForRole, memberToActivate, isPending]);
+
+  // Optimistic handler for updated tab permissions
+  const handlePermissionsUpdated = (userId: string, newTabs: string[]) => {
+    setRoster((prev) =>
+      prev.map((item) =>
+        item.id === userId ? { ...item, allowed_tabs: newTabs } : item
+      )
+    );
+    setSuccessNotice('Tab permissions updated successfully.');
+    router.refresh();
+    setTimeout(() => setSuccessNotice(null), 4000);
+  };
 
   // Filter roster dynamically
   const filteredRoster = useMemo(() => {
@@ -107,6 +182,7 @@ export function CommercialDirectoryTable({
         );
 
         setTargetMemberForRole(null);
+        router.refresh();
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
         setActionError(msg);
@@ -137,6 +213,7 @@ export function CommercialDirectoryTable({
 
         setSuccessNotice(`Account for ${memberToActivate.full_name} has been successfully reactivated.`);
         setMemberToActivate(null);
+        router.refresh();
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
         setActionError(msg);
@@ -235,6 +312,7 @@ export function CommercialDirectoryTable({
               <th className={styles.th}>Personnel Identity</th>
               <th className={styles.th}>Governance Role</th>
               <th className={styles.th}>Job Title</th>
+              <th className={styles.th}>Tab Permissions</th>
               <th className={styles.th}>Active Portfolio</th>
               <th className={styles.th}>Account Status</th>
               {isAdmin && <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>}
@@ -318,6 +396,42 @@ export function CommercialDirectoryTable({
                       {member.job_title}
                     </td>
 
+                    {/* Granular Tab Permissions */}
+                    <td className={styles.td}>
+                      {(() => {
+                        const memberTabs = Array.isArray(member.allowed_tabs)
+                          ? member.allowed_tabs
+                          : (Object.keys(ROLE_DEFAULT_TABS[member.role] || {}) as CrmTabKey[]).filter(
+                              (k) => ROLE_DEFAULT_TABS[member.role]?.[k]
+                            );
+                        const tabCount = memberTabs.length;
+                        const isFull = tabCount === 9;
+
+                        return (
+                          <button
+                            type="button"
+                            className={`${styles.permissionsPill} ${
+                              isFull ? styles.permissionsFull : styles.permissionsCustom
+                            }`}
+                            onClick={() => isAdmin && setMemberForPermissions(member)}
+                            disabled={!isAdmin}
+                            title={
+                              isAdmin
+                                ? `Click to configure permissions for ${member.full_name} (${tabCount}/9 tabs authorized)`
+                                : `${tabCount}/9 tabs authorized`
+                            }
+                            aria-label={`Configure permissions for ${member.full_name}: ${tabCount} of 9 tabs authorized`}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            <span>{tabCount}/9 Tabs</span>
+                          </button>
+                        );
+                      })()}
+                    </td>
+
                     {/* Active Deals Load / Active Portfolio */}
                     <td className={styles.td}>
                       {member.active_deals_count > 0 ? (
@@ -381,6 +495,17 @@ export function CommercialDirectoryTable({
 
                           <button
                             type="button"
+                            className={`${styles.rowActionButton} ${styles.permissionsButton}`}
+                            onClick={() => setMemberForPermissions(member)}
+                            disabled={isPending}
+                            aria-label={`Configure tab permissions for ${member.full_name}`}
+                            title="Configure Tab Permissions"
+                          >
+                            <span>Permissions</span>
+                          </button>
+
+                          <button
+                            type="button"
                             className={styles.rowActionButton}
                             onClick={() => {
                               setTargetMemberForRole(member);
@@ -426,7 +551,7 @@ export function CommercialDirectoryTable({
               })
             ) : (
               <tr>
-                <td colSpan={isAdmin ? 6 : 5}>
+                <td colSpan={isAdmin ? 7 : 6}>
                   <div className={styles.emptyState}>
                     <p className={styles.emptyStateTitle}>No Commercial Personnel Found</p>
                     <p className={styles.emptyStateText}>
@@ -450,6 +575,11 @@ export function CommercialDirectoryTable({
             role="dialog"
             aria-modal="true"
             aria-labelledby="role-modal-title"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !isPending) {
+                setTargetMemberForRole(null);
+              }
+            }}
           >
             <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
               <h3 id="role-modal-title" style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700 }}>
@@ -556,6 +686,7 @@ export function CommercialDirectoryTable({
           setSuccessNotice(
             `Account for ${suspendedMember?.full_name} has been suspended and all sessions revoked.`
           );
+          router.refresh();
           // If suspended representative has active deals, immediately open Lead Reassignment Wizard
           if (suspendedMember && suspendedMember.active_deals_count > 0) {
             setMemberToReassign({
@@ -596,6 +727,7 @@ export function CommercialDirectoryTable({
           setSuccessNotice(
             `Successfully transferred ${result.reassigned_count} active deal(s) valued at ${formatDealValuation(result.total_value)}.`
           );
+          router.refresh();
         }}
       />
 
@@ -606,6 +738,11 @@ export function CommercialDirectoryTable({
           role="dialog"
           aria-modal="true"
           aria-labelledby="reactivate-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isPending) {
+              setMemberToActivate(null);
+            }
+          }}
         >
           <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
             <div className={styles.modalAlertBanner} style={{ borderColor: 'rgba(34, 197, 94, 0.3)', background: 'rgba(34, 197, 94, 0.08)' }}>
@@ -661,6 +798,15 @@ export function CommercialDirectoryTable({
           </div>
         </div>
       )}
+
+      {/* Tab Permissions Configuration Modal */}
+      <EditUserPermissionsModal
+        isOpen={Boolean(memberForPermissions)}
+        targetMember={memberForPermissions}
+        currentUserId={currentUserId}
+        onClose={() => setMemberForPermissions(null)}
+        onPermissionsUpdated={handlePermissionsUpdated}
+      />
     </div>
   );
 }
