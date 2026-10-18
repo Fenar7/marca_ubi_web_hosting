@@ -109,6 +109,10 @@ const actionsContent = fs.readFileSync(
   path.join(ROOT_DIR, 'src/app/actions/schedulerActions.ts'),
   'utf8'
 );
+const schedulerSchemasPath = path.join(ROOT_DIR, 'src/app/lib/scheduler-schemas.ts');
+const schedulerSchemasContent = fs.existsSync(schedulerSchemasPath)
+  ? fs.readFileSync(schedulerSchemasPath, 'utf8')
+  : '';
 const migrationContent = fs.readFileSync(
   path.join(ROOT_DIR, 'supabase/migrations/20261015000013_on_hold_revisit_automation.sql'),
   'utf8'
@@ -124,7 +128,11 @@ const cronRouteContent = fs.readFileSync(
 
 assertCheck('Backdrop blur scrim configured in Scheduler.module.scss', scssContent.includes('backdrop-filter: blur('));
 assertCheck('Minimum 44px tap targets enforced in SCSS', scssContent.includes('min-height: 44px') || scssContent.includes('height: 44px'));
-assertCheck('RFC 5545 iCalendar (.ics) generator in schedulerActions.ts', actionsContent.includes('generateIcsCalendarInvite') && actionsContent.includes('BEGIN:VCALENDAR'));
+assertCheck(
+  'RFC 5545 iCalendar (.ics) generator in scheduler-schemas.ts or schedulerActions.ts',
+  (schedulerSchemasContent.includes('generateIcsCalendarInvite') && schedulerSchemasContent.includes('BEGIN:VCALENDAR')) ||
+  (actionsContent.includes('generateIcsCalendarInvite') && actionsContent.includes('BEGIN:VCALENDAR'))
+);
 assertCheck('Server action checks post-conversion lock (converted_at)', actionsContent.includes('converted_at && role !== \'admin\''));
 assertCheck('Server action checks viewer 403 Forbidden', actionsContent.includes('role !== \'admin\' && role !== \'sales_manager\''));
 assertCheck('Server action uses canonical follow_up_scheduled activity_type', actionsContent.includes("activity_type: 'follow_up_scheduled'"));

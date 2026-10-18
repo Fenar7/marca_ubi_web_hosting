@@ -14,10 +14,8 @@
 
 import React, { useState, useEffect, useRef, useId, useTransition } from 'react';
 import { OverdueBadge } from '@/app/admin/components/Badges';
-import {
-  batchReassignOverdueLeadsAction,
-  type OverdueLeadSummary,
-} from '@/app/actions/workloadActions';
+import { batchReassignOverdueLeadsAction } from '@/app/actions/workloadActions';
+import type { OverdueLeadSummary } from '@/app/lib/workload-schemas';
 import styles from './BatchReassignModal.module.scss';
 
 export interface BatchReassignModalProps {

@@ -11,29 +11,13 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
 import { createClient } from '@/app/lib/supabase/server';
 import { getAdminClient } from '@/app/lib/supabase/admin';
 import { calculateOverdueTier, type OverdueTier } from '@/app/admin/components/Badges/badgeUtils';
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/**
- * Zod validation schema for batch overdue lead reassignment.
- */
-export const batchReassignSchema = z.object({
-  leadIds: z
-    .array(z.string().regex(UUID_REGEX, 'Each lead ID must be a valid UUID v4.'))
-    .min(1, 'At least one overdue deal must be selected for reassignment.')
-    .max(100, 'Cannot reassign more than 100 deals in a single batch.'),
-  destinationUserId: z.string().regex(UUID_REGEX, 'Destination representative ID must be a valid UUID v4.'),
-  reason: z
-    .string()
-    .min(3, 'Reassignment rationale must contain at least 3 characters.')
-    .max(1000, 'Reassignment rationale cannot exceed 1,000 characters.'),
-});
-
-export type BatchReassignInput = z.infer<typeof batchReassignSchema>;
+import {
+  batchReassignSchema,
+  type BatchReassignInput,
+} from '@/app/lib/workload-schemas';
 
 export interface OverdueLeadSummary {
   id: string;

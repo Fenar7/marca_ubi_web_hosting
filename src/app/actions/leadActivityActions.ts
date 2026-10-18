@@ -11,7 +11,6 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
 import { createClient } from '@/app/lib/supabase/server';
 import type {
   LeadActionResult,
@@ -19,36 +18,12 @@ import type {
   LeadActivityWithActor,
   CrmUserRole,
 } from '@/types/crm';
+import {
+  leadActivityInputSchema,
+  type LeadActivityInput,
+} from '@/app/lib/lead-activity-schemas';
 
 const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
-/**
- * Validated input schema for logging commercial interactions in the CRM.
- */
-export const leadActivityInputSchema = z.object({
-  leadId: z
-    .string()
-    .trim()
-    .regex(UUID_REGEX, { message: 'Invalid deal UUID identifier format.' }),
-  activityType: z.enum(
-    [
-      'call_logged',
-      'whatsapp_sent',
-      'meeting_notes',
-      'meeting_held',
-      'note_added',
-    ],
-    { message: 'Invalid commercial interaction type specified.' }
-  ),
-  description: z
-    .string()
-    .trim()
-    .min(3, { message: 'Interaction note must be at least 3 characters in length.' })
-    .max(5000, { message: 'Interaction note cannot exceed 5,000 characters.' }),
-  metadata: z.record(z.string(), z.unknown()).default({}),
-});
-
-export type LeadActivityInput = z.infer<typeof leadActivityInputSchema>;
 
 /**
  * Appends an immutable interaction touchpoint to `public.lead_activities`.

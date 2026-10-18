@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import {
   leadActivityInputSchema,
   type LeadActivityInput,
-} from '@/app/actions/leadActivityActions';
+} from '@/app/lib/lead-activity-schemas';
 import type { CrmUserRole } from '@/types/crm';
 
 describe('Sprint 8.2: Server Actions & Activity Logging Engine', () => {

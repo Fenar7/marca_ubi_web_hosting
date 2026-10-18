@@ -12,7 +12,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { LOST_REASON_OPTIONS } from '@/app/actions/stageTransitionActions';
+import { LOST_REASON_OPTIONS } from '@/app/lib/stage-transition-schemas';
 
 describe('Sprint 8.3: Guarded Stage Transition Modals & UI Contracts', () => {
   describe('Block 1: Currency Formatters (formatCurrency)', () => {

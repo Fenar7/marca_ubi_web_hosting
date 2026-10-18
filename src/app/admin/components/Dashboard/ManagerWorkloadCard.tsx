@@ -13,11 +13,11 @@
  */
 
 import React, { useState, useEffect, useTransition } from 'react';
-import {
-  getManagerWorkloadDataAction,
-  type ManagerWorkloadData,
-  type OverdueLeadSummary,
-} from '@/app/actions/workloadActions';
+import { getManagerWorkloadDataAction } from '@/app/actions/workloadActions';
+import type {
+  ManagerWorkloadData,
+  OverdueLeadSummary,
+} from '@/app/lib/workload-schemas';
 import { BatchReassignModal } from '@/app/admin/components/modals';
 import styles from './ManagerWorkloadCard.module.scss';
 

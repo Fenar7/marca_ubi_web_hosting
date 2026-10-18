@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import {
   inlineStatusSchema,
   inlinePrioritySchema,
-} from '@/app/actions/leadInlineActions';
+} from '@/app/lib/lead-inline-schemas';
 import { LEAD_PRIORITIES } from '@/app/lib/lead-schemas';
 import type { LeadPriority, FunnelBucket, CrmUserRole } from '@/types/crm';
 

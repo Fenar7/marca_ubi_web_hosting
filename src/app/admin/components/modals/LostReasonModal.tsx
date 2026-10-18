@@ -11,12 +11,12 @@
  */
 
 import React, { useState, useEffect, useRef, useTransition, useCallback } from 'react';
+import { transitionToLostAction } from '@/app/actions/stageTransitionActions';
 import {
-  transitionToLostAction,
   LOST_REASON_OPTIONS,
   type LostReasonEnum,
   type GuardedTransitionResultPayload,
-} from '@/app/actions/stageTransitionActions';
+} from '@/app/lib/stage-transition-schemas';
 import { useModalAnimation } from './useModalAnimation';
 import styles from './StageModals.module.scss';
 

@@ -13,7 +13,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { FOLLOW_UP_ACTION_TYPES, ON_HOLD_REASONS } from '@/app/actions/schedulerActions';
+import { FOLLOW_UP_ACTION_TYPES, ON_HOLD_REASONS } from '@/app/lib/scheduler-schemas';
 import {
   calculatePresetDate,
   formatTimezoneOffset,

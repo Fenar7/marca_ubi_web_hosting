@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import styles from './Scheduler.module.scss';
+import { transitionToOnHoldAction } from '@/app/actions/schedulerActions';
 import {
-  transitionToOnHoldAction,
   ON_HOLD_REASONS,
-  OnHoldReason,
-} from '@/app/actions/schedulerActions';
+  type OnHoldReason,
+} from '@/app/lib/scheduler-schemas';
 
 export interface OnHoldModalProps {
   leadId: string;

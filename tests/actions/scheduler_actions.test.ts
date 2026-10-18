@@ -18,7 +18,7 @@ import {
   generateIcsCalendarInvite,
   FOLLOW_UP_ACTION_TYPES,
   ON_HOLD_REASONS,
-} from '@/app/actions/schedulerActions';
+} from '@/app/lib/scheduler-schemas';
 
 describe('Sprint 9.1: Scheduler Actions & RFC 5545 iCalendar Validation', () => {
   const validLeadUuid = 'a0000000-0000-0000-0000-000000000001';

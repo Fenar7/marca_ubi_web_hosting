@@ -20,7 +20,7 @@ import {
   transitionToConvertedSchema,
   LOST_REASON_OPTIONS,
   LOST_REASON_ALIASES,
-} from '@/app/actions/stageTransitionActions';
+} from '@/app/lib/stage-transition-schemas';
 import type { CrmUserRole } from '@/types/crm';
 
 describe('Sprint 8.3: Guarded Stage Transition Actions & State Machine Locking', () => {

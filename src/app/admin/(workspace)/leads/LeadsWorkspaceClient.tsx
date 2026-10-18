@@ -27,8 +27,8 @@ import { StageTransitionModal } from '@/app/admin/components/modals/StageTransit
 import { BatchReassignModal } from '@/app/admin/components/modals';
 import { FollowUpScheduler } from '@/app/admin/components/Scheduler';
 import { calculateOverdueTier } from '@/app/admin/components/Badges';
-import type { OverdueLeadSummary } from '@/app/actions/workloadActions';
-import type { GuardedTransitionResultPayload } from '@/app/actions/stageTransitionActions';
+import type { OverdueLeadSummary } from '@/app/lib/workload-schemas';
+import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
 import type { LeadPriority } from '@/types/crm';
 import styles from './leads.module.scss';
 

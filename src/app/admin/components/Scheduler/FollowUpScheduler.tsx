@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import styles from './Scheduler.module.scss';
 import { DateTimePicker } from './DateTimePicker';
+import { scheduleFollowUpAction } from '@/app/actions/schedulerActions';
 import {
-  scheduleFollowUpAction,
-  FollowUpActionType,
+  type FollowUpActionType,
   FOLLOW_UP_ACTION_TYPES,
-} from '@/app/actions/schedulerActions';
+} from '@/app/lib/scheduler-schemas';
 
 export interface FollowUpSchedulerProps {
   leadId: string;

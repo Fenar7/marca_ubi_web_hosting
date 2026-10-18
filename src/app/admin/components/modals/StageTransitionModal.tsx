@@ -13,10 +13,8 @@
 
 import React, { useState, useEffect, useRef, useTransition, useCallback } from 'react';
 import type { FunnelBucket } from '@/types/crm';
-import {
-  transitionToNegotiationAction,
-  type GuardedTransitionResultPayload,
-} from '@/app/actions/stageTransitionActions';
+import { transitionToNegotiationAction } from '@/app/actions/stageTransitionActions';
+import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
 import { useModalAnimation } from './useModalAnimation';
 import { LostReasonModal } from './LostReasonModal';
 import { ConvertedCelebrationModal } from './ConvertedCelebrationModal';

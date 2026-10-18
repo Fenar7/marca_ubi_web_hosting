@@ -11,7 +11,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { batchReassignSchema } from '@/app/actions/workloadActions';
+import { batchReassignSchema } from '@/app/lib/workload-schemas';
 
 describe('Sprint 9.2: Workload & Batch Reassignment Validation', () => {
   const validLeadUuid1 = 'a0000000-0000-0000-0000-000000000001';

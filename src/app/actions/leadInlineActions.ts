@@ -11,35 +11,15 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
 import { createClient } from '@/app/lib/supabase/server';
-import { LEAD_PRIORITIES } from '@/app/lib/lead-schemas';
 import type { LeadActionResult, LeadPriority, FunnelBucket } from '@/types/crm';
-
-const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
-export const inlineStatusSchema = z.object({
-  leadId: z.string().trim().regex(UUID_REGEX, { message: 'Invalid deal UUID format.' }),
-  statusId: z.string().trim().regex(UUID_REGEX, { message: 'Invalid target status UUID format.' }),
-});
-
-export const inlinePrioritySchema = z.object({
-  leadId: z.string().trim().regex(UUID_REGEX, { message: 'Invalid deal UUID format.' }),
-  priority: z.enum(LEAD_PRIORITIES, { message: 'Invalid priority tier specified.' }),
-});
-
-export interface InlineMutationResultPayload {
-  leadId: string;
-  field: 'status' | 'priority';
-  newValue: string;
-  statusDetails?: {
-    id: string;
-    name: string;
-    bucket: FunnelBucket;
-    color_code: string;
-  };
-  updatedAt: string;
-}
+import {
+  inlineStatusSchema,
+  inlinePrioritySchema,
+  type InlineStatusInput,
+  type InlinePriorityInput,
+  type InlineMutationResultPayload,
+} from '@/app/lib/lead-inline-schemas';
 
 /**
  * Executes an inline pipeline stage transition from the virtualized data grid or mobile card.
