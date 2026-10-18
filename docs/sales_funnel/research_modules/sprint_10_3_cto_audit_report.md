@@ -41,6 +41,8 @@ Sprint 10.3 represents the technical capstone of the Marca Ubi Enterprise CRM & 
   - `63a9de1`: `docs(sales-funnel): author enterprise runbooks for secret rotation, disaster recovery and production deployment`
   - `073af32`: `Engineering: Add delivery gate auditor and architectural specifications for Sprint 10.3`
   - `585fd78`: `Testing: Harden database RLS matrix suite with advisory lock and serialized test concurrency`
+  - `7a2fd92`: `Audit: Compile Senior CTO architecture and PRD compliance audit report for Sprint 10.3`
+  - `a791055`: `Docs: Align PR 10.3 body check counts with delivery gate auditor output`
 
 ---
 
