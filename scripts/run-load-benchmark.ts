@@ -224,8 +224,8 @@ export async function runLoadBenchmark(
           allLatencies.push(duration);
         }
 
-        // Realistic client think-time between human interactions (15-35ms)
-        await new Promise((resolve) => setTimeout(resolve, 15 + Math.random() * 20));
+        // Realistic client think-time between human interactions (100-300ms) adhering to k6-agency-benchmark.js
+        await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 200));
       }
     } finally {
       await client.end();

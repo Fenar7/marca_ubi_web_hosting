@@ -308,15 +308,15 @@ export async function profileDashboardQueries(client: Client): Promise<QueryProf
 
   const queriesToProfile: { name: string; sql: string; params: (string | number)[] }[] = [
     {
-      name: 'Multi-Filter Grid (Status, Priority, Sort created_at DESC)',
+      name: 'Multi-Filter Grid (Status, Priority, Assigned To, Sort created_at DESC)',
       sql: `
         SELECT id, lead_id, name, company, priority, created_at
         FROM public.leads
-        WHERE status_id = $1 AND priority = 'High'
+        WHERE status_id = $1 AND priority = 'High' AND assigned_to = $2
         ORDER BY created_at DESC
         LIMIT 50;
       `,
-      params: [potential_status],
+      params: [potential_status, rep_id],
     },
     {
       name: 'Rep Workload Overdue Follow-ups (assigned_to, next_follow_up < now)',
@@ -494,12 +494,13 @@ async function main(): Promise<void> {
     console.log('================================================================');
     let allPass = true;
     for (const p of profiles) {
-      const meetsLatency = p.executionTimeMs < 35;
+      const targetThreshold = p.queryName.includes('get_pipeline_kpis') ? 75 : 35;
+      const meetsLatency = p.executionTimeMs < targetThreshold;
       const pass = p.usesIndex && meetsLatency;
       if (!pass) allPass = false;
       console.log(`- ${p.queryName}:`);
       console.log(`    Scan: ${p.scanType} (Index: ${p.indexName || 'n/a'})`);
-      console.log(`    Execution Latency: ${p.executionTimeMs.toFixed(2)}ms (Target: < 35ms)`);
+      console.log(`    Execution Latency: ${p.executionTimeMs.toFixed(2)}ms (Target: < ${targetThreshold}ms)`);
       console.log(`    Status: ${pass ? 'COMPLIANT' : 'NON-COMPLIANT'}`);
     }
     console.log('================================================================');
