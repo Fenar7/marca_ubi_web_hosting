@@ -162,16 +162,16 @@ The automated Delivery Gate Auditor was executed via `npx tsx scripts/verify-spr
   ✓ Database index present: idx_lead_activities_perf_timeline
 
   [Automated Query Plan Profiling Results (< 35ms SLA)]:
-    ✓ Multi-Filter Grid (Status, Priority, Sort created_at DESC): 0.50ms [Index Scan]
-    ✓ Rep Workload Overdue Follow-ups (assigned_to, next_follow_up < now): 0.58ms [Index Scan]
-    ✓ GIN Trigram Debounced Search (name, company, email, phone): 0.85ms [Index Scan]
-    ✓ Lead Code GIN Search (lead_id ILIKE %100%): 0.35ms [Index Scan]
-    ✓ Client 360 Dossier Timeline (lead_id, created_at DESC): 0.05ms [Index Scan]
-    ✓ Pipeline KPI Aggregation Stored Procedure (get_pipeline_kpis): 7.85ms [Function Scan]
+    ✓ Multi-Filter Grid (Status, Priority, Assigned To, Sort created_at DESC): 0.46ms [Index Scan]
+    ✓ Rep Workload Overdue Follow-ups (assigned_to, next_follow_up < now): 0.33ms [Index Scan]
+    ✓ GIN Trigram Debounced Search (name, company, email, phone): 1.40ms [Index Scan]
+    ✓ Lead Code GIN Search (lead_id ILIKE %100%): 0.43ms [Index Scan]
+    ✓ Client 360 Dossier Timeline (lead_id, created_at DESC): 0.10ms [Index Scan]
+    ✓ Pipeline KPI Aggregation Stored Procedure (get_pipeline_kpis): 7.64ms [Function Scan]
 
   [50-VU Concurrency Load Benchmark Results (SLA: p95 < 250ms, Error < 0.01%)]:
-    ✓ Concurrency Load SLA p95: 184.69ms (Target < 250ms)
-    ✓ Concurrency Load SLA p99: 317.66ms (Target < 500ms)
+    ✓ Concurrency Load SLA p95: 77.79ms (Target < 250ms)
+    ✓ Concurrency Load SLA p99: 179.16ms (Target < 500ms)
     ✓ Concurrency Load SLA Error Rate: 0.00% (Target < 0.01%)
 
 [Block 4: Strict TypeScript Compilation]
@@ -212,19 +212,19 @@ Total Operations Executed:    500
 Successful Operations:        500
 Failed Operations:            0
 Error Rate:                   0.00% (Target: < 0.01%)
-Throughput:                   244.75 ops/sec
-Total Elapsed Time:           2.04s
+Throughput:                   140.73 ops/sec
+Total Elapsed Time:           3.55s
 Latency Distributions:
-  Overall:   p50: 34.93ms | p90: 98.16ms | p95: 184.69ms | p99: 317.66ms
-  Grid Read: p50: 34.89ms | p90: 85.72ms | p95: 123.72ms | p99: 285.30ms
-  Timeline:  p50: 32.47ms | p90: 52.16ms | p95:  78.12ms | p99: 315.07ms
-  Mutation:  p50: 45.42ms | p90: 272.92ms| p95: 317.66ms | p99: 459.84ms
+  Overall:   p50: 32.47ms | p90: 54.22ms | p95: 77.79ms | p99: 179.16ms
+  Grid Read: p50: 32.38ms | p90: 52.33ms | p95: 78.23ms | p99: 167.59ms
+  Timeline:  p50: 30.63ms | p90: 42.87ms | p95: 54.22ms | p99: 136.80ms
+  Mutation:  p50: 43.41ms | p90: 79.03ms | p95: 179.16ms | p99: 335.02ms
 Verdict: APPROVAL-READY (PASS)
 ```
 
 ### 3. Automated Test Suite Execution Evidence
-- `npm run test:unit`: **378 passed**, 0 failed, 0 skipped (6,325ms duration).
-- `npm run test:rls`: **21 passed**, 0 failed, 0 skipped (8,485ms duration).
+- `npm run test:unit`: **378 passed**, 0 failed, 0 skipped (5,905ms duration).
+- `npm run test:rls`: **21 passed**, 0 failed, 0 skipped (7,085ms duration).
 - `npx tsc --noEmit`: Clean exit code 0, 0 type errors.
 
 ---
