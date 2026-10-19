@@ -18,7 +18,7 @@ import styles from './AdminBreadcrumbs.module.scss';
  * High-value domain dictionary mapping URL path slugs to professional CRM titles.
  */
 const ROUTE_NAME_MAP: Record<string, string> = {
-  admin: 'Command Center',
+  admin: 'Executive Overview',
   leads: 'Inbound Leads',
   deals: 'Pipeline Deals',
   works: 'Client Works',

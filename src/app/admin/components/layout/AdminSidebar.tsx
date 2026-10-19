@@ -55,7 +55,7 @@ export function AdminSidebar({
     >
       {/* Brand Header */}
       <div className={styles.brandContainer}>
-        <Link href="/admin" className={styles.logoLink} title="Marca Ubi CRM Command Center">
+        <Link href="/admin" className={styles.logoLink} title="Marca Ubi CRM Executive Overview">
           <img
             src="/hero/marca-ubi-logo.png"
             alt="Marca Ubi."
@@ -74,6 +74,7 @@ export function AdminSidebar({
           className={styles.collapseToggle}
           title={isCollapsed ? 'Expand navigation rail (⌘B)' : 'Collapse navigation rail (⌘B)'}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!isCollapsed}
         >
           <svg
             width="14"
@@ -103,6 +104,7 @@ export function AdminSidebar({
             onClick={handleOpenNewLead}
             className={styles.newLeadBtn}
             title="Log new prospective engagement"
+            aria-label="New Lead"
           >
             <svg
               width="14"
@@ -154,6 +156,7 @@ export function AdminSidebar({
                         href={item.href}
                         className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
                         title={isCollapsed ? item.label : undefined}
+                        aria-current={active ? 'page' : undefined}
                       >
                         <div className={styles.iconWrapper}>
                           {item.icon({ active })}

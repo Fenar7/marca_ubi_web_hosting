@@ -14,10 +14,12 @@ import React, { useEffect } from 'react';
 
 interface AdminRootClientProviderProps {
   children: React.ReactNode;
+  fontVariables?: string;
 }
 
 export function AdminRootClientProvider({
   children,
+  fontVariables,
 }: AdminRootClientProviderProps): React.ReactElement {
   useEffect(() => {
     // Flag documentElement to disable public custom orange cursor and enforce system native cursors
@@ -37,7 +39,11 @@ export function AdminRootClientProvider({
   }, []);
 
   return (
-    <div data-admin-root="true" style={{ minHeight: '100vh', width: '100%' }}>
+    <div
+      data-admin-root="true"
+      className={fontVariables}
+      style={{ minHeight: '100vh', width: '100%' }}
+    >
       {children}
     </div>
   );

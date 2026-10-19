@@ -1,3 +1,11 @@
+/**
+ * @file UserProfileDropdown.module.scss
+ * @description User Profile Dropdown and Popover Menu styling for Marca Ubi CRM.
+ *              Strictly adheres to Accordion & Sypher light palette tokens.
+ *              Provides high-contrast identity telemetry and 44px min-height touch targets (Rule R-03).
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .container {
   position: relative;
 }
@@ -6,18 +14,18 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
   padding: 0.35rem 0.85rem 0.35rem 0.45rem;
   min-height: 44px;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.16);
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &:active {
@@ -25,7 +33,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -34,8 +42,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff6100 0%, #d44d00 100%);
-  color: #ffffff;
+  background: var(--admin-surface-inverse, #1f242f);
+  color: var(--admin-text-inverse, #ffffff);
   font-weight: 700;
   font-size: 0.72rem;
   display: flex;
@@ -43,7 +51,6 @@
   justify-content: center;
   letter-spacing: 0.02em;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(255, 97, 0, 0.35);
 }
 
 .identityDetails {
@@ -60,7 +67,7 @@
 .userName {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   line-height: 1.2;
   white-space: nowrap;
   max-width: 130px;
@@ -71,14 +78,14 @@
 .roleChip {
   font-size: 0.65rem;
   font-weight: 600;
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   line-height: 1.2;
 }
 
 .chevron {
-  color: #888888;
+  color: var(--admin-text-muted, #8a92a0);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
@@ -92,119 +99,114 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 260px;
-  background: rgba(18, 18, 22, 0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 12px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  padding: 0.85rem;
-  z-index: 100;
-  animation: dropdownFade 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 36px rgba(31, 36, 47, 0.12);
+  padding: 0.75rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes dropdownFade {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-4px) scale(0.98);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .menuHeader {
+  padding: 0.25rem 0.25rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.25rem 0.35rem 0.5rem;
+  gap: 0.15rem;
 }
 
-.menuEmail {
-  font-size: 0.82rem;
+.menuEmail,
+.menuUserEmail {
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   word-break: break-all;
+  line-height: 1.3;
 }
 
-.menuTitle {
-  font-size: 0.72rem;
-  color: #a1a1aa;
+.menuTitle,
+.menuUserRole {
+  font-size: 0.7rem;
+  color: var(--admin-text-secondary, #525965);
+  line-height: 1.2;
 }
 
-.divider {
+.divider,
+.menuDivider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  margin: 0.5rem 0;
+  background-color: var(--admin-border-subtle, #eef0f3);
+  margin: 0.25rem 0;
 }
 
 .menuSection {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  padding: 0.25rem 0.35rem;
+  padding: 0.25rem 0.25rem;
 }
 
 .menuInfoRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
 }
 
 .infoKey {
-  color: #a1a1aa;
-  font-weight: 500;
+  color: var(--admin-text-secondary, #525965);
 }
 
 .infoVal {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  color: #cccccc;
-  font-size: 0.72rem;
+  font-family: var(--font-admin-code, monospace);
+  color: var(--admin-text-primary, #1f242f);
+  font-size: 0.7rem;
+  font-weight: 500;
 }
 
 .infoValGreen {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: #22c55e;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-
-  &::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: #22c55e;
-    box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
-  }
+  color: var(--admin-status-emerald-text, #065f46);
 }
 
 .logoutForm {
   margin-top: 0.25rem;
 }
 
-.signOutButton {
+.signOutButton,
+.logoutItem {
   width: 100%;
   min-height: 44px;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.75rem;
-  background: transparent;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
   border-radius: 8px;
-  color: #ef4444;
+  background: var(--admin-status-rose-bg, #fef2f2);
+  border: 1px solid var(--admin-status-rose-border, #fecaca);
+  color: var(--admin-status-rose-text, #991b1b);
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.35);
+    background: #fee2e2;
+    border-color: #fca5a5;
   }
 
   &:active {
@@ -212,7 +214,39 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ef4444;
+    outline: 2px solid var(--admin-status-rose-text, #991b1b);
     outline-offset: 2px;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #525965);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  min-height: 44px;
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    color: var(--admin-text-primary, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: -1px;
   }
 }

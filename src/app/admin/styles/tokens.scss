@@ -1,0 +1,209 @@
+/**
+ * @file src/app/admin/styles/tokens.scss
+ * @description Centralized Design System Tokens for Marca Ubi Enterprise CRM.
+ *              Aesthetic benchmarks: Accordion Executive Advisory × Sypher Minimalist SaaS Architecture.
+ *              Strictly scoped to [data-admin-root="true"] to guarantee zero interference
+ *              with the public website's styling and dark obsidian theme.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+[data-admin-root="true"] {
+  // Typography Font Variable References
+  --font-admin-primary: var(--font-admin-sans), 'MessinaSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-admin-btn: var(--font-admin-button), 'MessinaSansBook', 'MessinaSans', sans-serif;
+  --font-admin-code: var(--font-admin-mono), 'MessinaSansMono', 'SF Mono', Menlo, Consolas, monospace;
+
+  // Surfaces & Canvas (Sypher High-Density Neutral Light Canvas)
+  --admin-canvas-bg: #f7f8fa;          // Soft neutral anti-glare foundation
+  --admin-card-bg: #ffffff;            // Crisp pure white elevated card surfaces
+  --admin-surface-muted: #f0f2f5;      // Subdued container fill (kanban columns, headers)
+  --admin-surface-hover: #f4f6f9;      // Interactive row & tile hover state
+  --admin-surface-active: #ebeef3;     // Active selection & pressed states
+  --admin-surface-inverse: #1f242f;    // High-contrast slate charcoal
+
+  // Hairline Specular Borders (Zero Muddy Shadows)
+  --admin-border-subtle: #eef0f3;      // Internal cell dividers & secondary borders
+  --admin-border-default: #e2e5ea;     // Standard 1px card and table outline
+  --admin-border-strong: #1f242f;      // High-contrast Accordion 1px outline
+
+  // Text & Inks (Editorial High-Finance Richness)
+  --admin-text-primary: #1f242f;       // Deep charcoal headline & primary data (15.54:1 on white)
+  --admin-text-secondary: #525965;     // Refined executive slate grey for body & descriptions (7.1:1)
+  --admin-text-muted: #8a92a0;         // Metadata, timestamps & empty states
+  --admin-text-inverse: #ffffff;       // White ink for dark badges & high-contrast elements
+
+  // Signature Accordion Accent (Lemon Yellow)
+  --admin-accent-lemon: #eefb87;       // Signature Electric Lemon Yellow
+  --admin-accent-lemon-hover: #e4f375; // Lemon press/hover state
+  --admin-accent-lemon-ink: #1f242f;   // Paired contrast text/border (Mandatory 13.92:1 AAA)
+  --admin-accent-lemon-tint: rgba(238, 251, 135, 0.35); // Soft tinted badge background
+
+  // Semantic Status Tokens (Calm Fintech Standards)
+  --admin-status-emerald-bg: #ecfdf5;
+  --admin-status-emerald-border: #a7f3d0;
+  --admin-status-emerald-text: #065f46;
+  --admin-status-emerald-dot: #10b981;
+
+  --admin-status-amber-bg: #fffbeb;
+  --admin-status-amber-border: #fde68a;
+  --admin-status-amber-text: #92400e;
+  --admin-status-amber-dot: #f59e0b;
+
+  --admin-status-rose-bg: #fef2f2;
+  --admin-status-rose-border: #fecaca;
+  --admin-status-rose-text: #991b1b;
+  --admin-status-rose-dot: #ef4444;
+
+  --admin-status-slate-bg: #f8fafc;
+  --admin-status-slate-border: #cbd5e1;
+  --admin-status-slate-text: #1e293b;
+  --admin-status-slate-dot: #64748b;
+
+  // Geometry & Radii Hierarchy
+  --admin-radius-pill: 9999px;         // Buttons, search input, segmented chips, status pills
+  --admin-radius-outer: 16px;          // Dialog modals, shell envelopes
+  --admin-radius-card: 12px;           // Scorecards, kanban tiles, data grid wrapper
+  --admin-radius-inner: 8px;           // Input fields, popovers, inner wells
+  --admin-radius-micro: 4px;           // Monospace tags, keyboard shortcuts
+
+  // Elevation & Micro-Shadows
+  --admin-shadow-none: none;
+  --admin-shadow-subtle: 0 1px 2px rgba(31, 36, 47, 0.04);
+  --admin-shadow-hover: 0 4px 14px rgba(31, 36, 47, 0.08);
+  --admin-shadow-modal: 0 24px 60px rgba(31, 36, 47, 0.16);
+}
+
+// Standardized interactive pill mixins honoring 44px touch targets (Rule R-03) and Accordion geometry.
+
+// Primary Signature Accordion Pill Button (#eefb87 fill, 1px solid #1f242f border)
+@mixin accordionPillPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1.5rem;
+  background-color: var(--admin-accent-lemon);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-accent-lemon-ink);
+  font-family: var(--font-admin-btn);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    background-color: var(--admin-accent-lemon-hover);
+    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// Secondary Accordion Outline Pill Button (#ffffff fill, 1px solid #1f242f border)
+@mixin accordionPillSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1.5rem;
+  background-color: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-text-primary);
+  font-family: var(--font-admin-btn);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// Subtle Ghost Action Pill Button (#f0f2f5 fill, 1px solid #e2e5ea border)
+@mixin accordionPillGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  background-color: var(--admin-surface-muted);
+  border: 1px solid var(--admin-border-default);
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-text-primary);
+  font-family: var(--font-admin-btn);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover);
+    border-color: var(--admin-border-strong);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong);
+    outline-offset: 2px;
+  }
+}
+
+// Raycast Monospace Micro-Token
+@mixin adminMonoToken {
+  font-family: var(--font-admin-code);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  background-color: var(--admin-surface-muted);
+  border: 1px solid var(--admin-border-default);
+  border-radius: var(--admin-radius-micro);
+  color: var(--admin-text-primary);
+  letter-spacing: 0.02em;
+}
