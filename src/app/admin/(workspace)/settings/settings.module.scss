@@ -1,7 +1,7 @@
 /**
  * @file settings.module.scss
  * @description Layout and Commercial Authorization Matrix styles for /admin/settings.
- *              Strictly complies with WCAG AA 4.5:1 contrast standards.
+ *              Strictly complies with Accordion / Sypher light design tokens and WCAG AA contrast.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -16,7 +16,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
   padding-bottom: 1.5rem;
   gap: 1.5rem;
 
@@ -36,42 +36,46 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ff6100;
+  color: var(--admin-text-secondary, #525965);
   display: block;
   margin-bottom: 0.35rem;
 }
 
 .pageTitle {
+  font-family: var(--font-admin-primary, 'MessinaSans', sans-serif);
   font-size: 1.85rem;
   font-weight: 700;
   letter-spacing: -0.025em;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   margin: 0 0 0.4rem;
 }
 
 .pageSubtitle {
   font-size: 0.88rem;
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
   margin: 0;
   line-height: 1.5;
 }
 
 .matrixCard {
-  background: #111111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(31, 36, 47, 0.04);
   padding: 1.5rem;
 }
 
 .sectionTitle {
-  font-size: 1.05rem;
+  font-family: var(--font-admin-primary, 'MessinaSans', sans-serif);
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   margin: 0 0 1rem;
 }
 
 .tableWrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
@@ -81,7 +85,8 @@
 }
 
 .tableHead {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
 
   th {
     padding: 0.75rem 1rem;
@@ -89,32 +94,43 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #a1a1aa; /* Elevated to meet WCAG AA contrast */
+    color: var(--admin-text-secondary, #525965);
   }
 }
 
 .tableRow {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f4f6f9);
+  }
 
   td {
     padding: 0.85rem 1rem;
     font-size: 0.82rem;
-    color: #cccccc;
+    color: var(--admin-text-primary, #1f242f);
   }
 }
 
 .roleName {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
 }
 
 .checkMark {
-  color: #22c55e;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--admin-status-emerald-text, #065f46);
+  font-weight: 600;
+
+  svg {
+    color: var(--admin-status-emerald-dot, #10b981);
+    flex-shrink: 0;
+  }
 }
 
-/* R-25: Elevated contrast from #555555 (2.53:1 fail) to #a1a1aa (7.37:1 pass) */
 .dashMark {
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
   font-weight: 500;
 }

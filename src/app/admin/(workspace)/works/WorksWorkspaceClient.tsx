@@ -600,7 +600,7 @@ export function WorksWorkspaceClient({
           >
             <div className={styles.directorModalHeader}>
               <h3 id="assign-directors-title" className={styles.directorModalTitle}>
-                Assign Project Directors
+                Assign Project Directors.
               </h3>
               <button
                 type="button"

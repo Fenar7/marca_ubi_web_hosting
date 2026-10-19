@@ -224,27 +224,35 @@ export function CommercialDirectoryTable({
   return (
     <div className={styles.tableContainer}>
       {actionError && (
-        <div style={{ padding: '1rem 1.5rem', background: 'rgba(239, 68, 68, 0.1)', borderBottom: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '0.85rem 1.25rem', background: 'var(--admin-status-rose-bg, #fef2f2)', borderBottom: '1px solid var(--admin-status-rose-border, #fecaca)', color: 'var(--admin-status-rose-text, #991b1b)', fontSize: '0.84rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{actionError}</span>
           <button
             type="button"
             onClick={() => setActionError(null)}
-            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 700 }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--admin-status-rose-text, #991b1b)', cursor: 'pointer', minHeight: '44px', minWidth: '44px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+            aria-label="Dismiss error notice"
           >
-            ✕
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       )}
 
       {successNotice && (
-        <div style={{ padding: '1rem 1.5rem', background: 'rgba(34, 197, 94, 0.1)', borderBottom: '1px solid rgba(34, 197, 94, 0.3)', color: '#22c55e', fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '0.85rem 1.25rem', background: 'var(--admin-status-emerald-bg, #ecfdf5)', borderBottom: '1px solid var(--admin-status-emerald-border, #a7f3d0)', color: 'var(--admin-status-emerald-text, #065f46)', fontSize: '0.84rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{successNotice}</span>
           <button
             type="button"
             onClick={() => setSuccessNotice(null)}
-            style={{ background: 'transparent', border: 'none', color: '#22c55e', cursor: 'pointer', fontWeight: 700 }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--admin-status-emerald-text, #065f46)', cursor: 'pointer', minHeight: '44px', minWidth: '44px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+            aria-label="Dismiss success notice"
           >
-            ✕
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       )}
@@ -335,7 +343,7 @@ export function CommercialDirectoryTable({
                           <span className={styles.fullName}>
                             {member.full_name}
                             {isSelf && (
-                              <span style={{ fontSize: '0.68rem', color: '#ff6100', marginLeft: '0.4rem', fontWeight: 600 }}>
+                              <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-secondary, #525965)', marginLeft: '0.4rem', fontWeight: 600 }}>
                                 (You)
                               </span>
                             )}
@@ -454,7 +462,10 @@ export function CommercialDirectoryTable({
                               ({formatDealValuation(member.total_deal_value)})
                             </span>
                           )}
-                          <span style={{ fontSize: '0.72rem', color: '#ff6100' }}>→</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
                         </Link>
                       ) : (
                         <div className={styles.dealsPill}>

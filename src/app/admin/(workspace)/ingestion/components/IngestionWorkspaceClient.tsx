@@ -227,7 +227,7 @@ export function IngestionWorkspaceClient({
       {/* Recent Inbound Submissions & Raw Payload Inspector */}
       <section className={styles.sectionCard} aria-label="Recent Inbound Submissions">
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Recent Inbound Brief Submissions</h2>
+          <h2 className={styles.sectionTitle}>Recent Inbound Brief Submissions.</h2>
           <span className={styles.countTag}>{recentSubmissions.length} Registered</span>
         </div>
 
@@ -291,7 +291,7 @@ export function IngestionWorkspaceClient({
                   {isExpanded && hasPayload && (
                     <div id={`payload-viewer-${sub.id}`} className={styles.payloadViewer}>
                       <div className={styles.payloadHeader}>
-                        <span className={styles.payloadTitle}>Raw Webhook Brief Payload (JSON)</span>
+                        <span className={styles.payloadTitle}>Raw Webhook Brief Payload (JSON).</span>
                         <button
                           type="button"
                           className={styles.copyPayloadBtn}
@@ -319,7 +319,7 @@ export function IngestionWorkspaceClient({
       {/* Ingestion & Smart Merge Activity Feed */}
       <section className={styles.sectionCard} aria-label="Ingestion Event Activity Feed">
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Intake & Deduplication Activity Feed</h2>
+          <h2 className={styles.sectionTitle}>Intake & Deduplication Activity Feed.</h2>
           <span className={styles.countTag}>{recentActivities.length} Events</span>
         </div>
 
@@ -371,7 +371,7 @@ export function IngestionWorkspaceClient({
           <div ref={modalRef} className={styles.modalContent}>
             <header className={styles.modalHeader}>
               <h3 id="simulate-modal-title" className={styles.modalTitle}>
-                Simulate Inbound Website Brief
+                Simulate Inbound Website Brief.
               </h3>
               <button
                 type="button"

@@ -102,8 +102,8 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
       {/* Workspace Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Governance & Access Control</span>
-          <h1 className={styles.pageTitle}>User Management & Access Control</h1>
+          <span className={styles.eyebrow}>System Governance</span>
+          <h1 className={styles.pageTitle}>Commercial Team & Governance.</h1>
           <p className={styles.pageSubtitle}>
             Manage agency personnel accounts, configure granular tab-level access permissions, and oversee team operations.
           </p>

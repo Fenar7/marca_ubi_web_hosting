@@ -1,3 +1,10 @@
+/**
+ * @file works.module.scss
+ * @description Layout styles for Client Deliverables Workspace (/admin/works).
+ *              Consumes Accordion / Sypher light design tokens.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .worksWorkspace {
   display: flex;
   flex-direction: column;
@@ -26,20 +33,23 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #ff6100;
+  color: var(--admin-text-secondary, #525965);
 }
 
 .heading {
-  font-size: 1.5rem;
+  font-family: var(--font-admin-primary, 'MessinaSans', sans-serif);
+  font-size: 1.85rem;
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.02em;
+  color: var(--admin-text-primary, #1f242f);
+  letter-spacing: -0.025em;
   margin: 0;
+  line-height: 1.2;
 }
 
 .subheading {
-  font-size: 0.84rem;
-  color: #888888;
+  font-size: 0.88rem;
+  color: var(--admin-text-secondary, #525965);
   margin: 0;
   max-width: 600px;
+  line-height: 1.5;
 }

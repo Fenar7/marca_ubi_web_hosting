@@ -113,7 +113,7 @@ export function SettingsWorkspaceClient({
       <section className={styles.settingsSection} aria-label="Operational SLAs and Alerts">
         <div className={styles.sectionHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Operational SLAs & Automated Alert Thresholds</h2>
+            <h2 className={styles.sectionTitle}>Operational SLAs & Automated Alert Thresholds.</h2>
             <p className={styles.sectionSubtitle}>
               Calibrate agency response speed, follow-up grace intervals, and spam defense parameters.
             </p>
@@ -339,7 +339,7 @@ export function SettingsWorkspaceClient({
       <section className={styles.auditSection} aria-label="System Governance Audit Ledger">
         <div className={styles.auditHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Security & Governance Audit Trail</h2>
+            <h2 className={styles.sectionTitle}>Security & Governance Audit Trail.</h2>
             <p className={styles.sectionSubtitle}>
               Immutable cryptographic ledger tracking administrative mutations and permission updates.
             </p>

@@ -127,10 +127,10 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
       {/* Workspace Header Strip */}
       <header className={styles.header}>
         <div className={styles.titleArea}>
-          <div className={styles.eyebrow}>Agency Deliverables Engine</div>
-          <h1 className={styles.heading}>Client Works & Engagements</h1>
+          <div className={styles.eyebrow}>Client Deliverables</div>
+          <h1 className={styles.heading}>Client Deliverables.</h1>
           <p className={styles.subheading}>
-            Tracking active post-conversion creative deliverables, milestone progress, and engineering health.
+            Tracking active post-conversion deliverables, milestone progress, and engineering health.
           </p>
         </div>
       </header>
