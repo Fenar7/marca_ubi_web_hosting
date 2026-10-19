@@ -105,7 +105,7 @@ export function ManagerWorkloadCard({
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.eyebrow}>Team Capacity & SLA Tracking</span>
-          <h2 className={styles.title}>Representative Workload Oversight</h2>
+          <h2 className={styles.title}>Representative Workload Oversight.</h2>
           <p className={styles.subtitle}>
             Active deal quotas, conversion velocities, and overdue touchpoint escalation monitoring.
           </p>
