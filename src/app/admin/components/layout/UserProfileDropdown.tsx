@@ -30,17 +30,17 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
     setIsLoggingOut(true);
 
     try {
-      // 1. Purge modal/body scroll locks and admin route document flags before teardown
+      // Purge modal/body scroll locks and admin route document flags before teardown
       if (typeof document !== 'undefined') {
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
         document.documentElement.removeAttribute('data-admin-route');
       }
 
-      // 2. Invalidate server-side Supabase session cookies
+      // Invalidate server-side Supabase session cookies
       const res = await logoutAction();
 
-      // 3. Force clean browser heap flush and router cache purge via hard navigation
+      // Force clean browser heap flush and router cache purge via hard navigation
       window.location.href = res?.redirectTo || '/admin/login';
     } catch {
       // Defensive fallback ensuring user is never stranded on network failure
@@ -148,6 +148,7 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
             <button
               type="submit"
               disabled={isLoggingOut}
+              aria-busy={isLoggingOut}
               className={styles.signOutButton}
               role="menuitem"
             >

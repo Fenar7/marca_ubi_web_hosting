@@ -322,18 +322,40 @@ export async function resetTemporaryPassword(
 export interface LogoutActionResult {
   success: boolean;
   redirectTo: string;
+  error?: string;
 }
 
 /**
  * Terminates the active administrative session across all Supabase cookies and clears authentication context.
  * Returns structured navigation target to allow the client to execute a hard browser window navigation,
  * completely purging the client-side RSC cache and in-memory heap to prevent state leaks.
+ * Defensively catches Supabase connection errors to prevent unhandled Server Action rejections.
  */
 export async function logoutAction(): Promise<LogoutActionResult> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  return {
-    success: true,
-    redirectTo: '/admin/login',
-  };
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.warn('[AUTH_LOGOUT_WARN] Supabase signOut reported non-fatal error:', error.message);
+      return {
+        success: false,
+        redirectTo: '/admin/login',
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      redirectTo: '/admin/login',
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown internal error';
+    console.error('[AUTH_LOGOUT_FATAL] Unexpected error during session logout:', message);
+    return {
+      success: false,
+      redirectTo: '/admin/login',
+      error: 'An unexpected error occurred during logout.',
+    };
+  }
 }

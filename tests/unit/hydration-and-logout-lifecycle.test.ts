@@ -56,12 +56,20 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
         'Must export LogoutActionResult interface contract'
       );
       assert.ok(
+        content.includes('error?: string;'),
+        'LogoutActionResult must support optional error property'
+      );
+      assert.ok(
         content.includes('export async function logoutAction(): Promise<LogoutActionResult>'),
         'logoutAction must be an async function returning LogoutActionResult'
       );
       assert.ok(
         content.includes("redirectTo: '/admin/login'"),
         "logoutAction must resolve redirectTo target '/admin/login'"
+      );
+      assert.ok(
+        content.includes('try {') && content.includes('catch (err: unknown) {'),
+        'logoutAction must defensively catch exceptions to prevent unhandled server rejections'
       );
       assert.strictEqual(
         content.includes("redirect('/admin/login')"),
@@ -89,8 +97,32 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
         'UserProfileDropdown must track isLoggingOut state to prevent duplicate submissions'
       );
       assert.ok(
+        content.includes('aria-busy={isLoggingOut}'),
+        'Sign out button must declare aria-busy={isLoggingOut}'
+      );
+      assert.ok(
         content.includes('onSubmit={handleLogout}'),
         'Logout form must wire onSubmit={handleLogout}'
+      );
+    });
+
+    it('verifies UserProfileDropdown.module.scss defines disabled styling and guards hover states', () => {
+      const scssPath = path.resolve(
+        process.cwd(),
+        'src/app/admin/components/layout/UserProfileDropdown.module.scss'
+      );
+      const scssContent = fs.readFileSync(scssPath, 'utf8');
+      assert.ok(
+        scssContent.includes('&:hover:not(:disabled)'),
+        'Hover state must be guarded against disabled state'
+      );
+      assert.ok(
+        scssContent.includes('&:disabled'),
+        'Sign-out button must declare &:disabled styles'
+      );
+      assert.ok(
+        scssContent.includes('cursor: not-allowed;'),
+        'Disabled button must enforce cursor: not-allowed'
       );
     });
   });
