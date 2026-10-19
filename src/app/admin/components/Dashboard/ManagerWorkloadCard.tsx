@@ -238,7 +238,7 @@ export function ManagerWorkloadCard({
                           <Link
                             href={`/admin/leads?assigned_to=${encodeURIComponent(rep.userId)}&bucket=overdue`}
                             className={styles.pillAmber}
-                            title={`${rep.amberCount} deal(s) overdue <24h — Click to filter leads`}
+                            title={`${rep.amberCount} deal(s) overdue <24h: Click to filter leads`}
                           >
                             {rep.amberCount} &lt;24h
                           </Link>
@@ -247,7 +247,7 @@ export function ManagerWorkloadCard({
                           <Link
                             href={`/admin/leads?assigned_to=${encodeURIComponent(rep.userId)}&bucket=overdue`}
                             className={styles.pillOrange}
-                            title={`${rep.orangeCount} deal(s) overdue 24-72h — Click to filter leads`}
+                            title={`${rep.orangeCount} deal(s) overdue 24-72h: Click to filter leads`}
                           >
                             {rep.orangeCount} 1-3d
                           </Link>
@@ -256,7 +256,7 @@ export function ManagerWorkloadCard({
                           <Link
                             href={`/admin/leads?assigned_to=${encodeURIComponent(rep.userId)}&bucket=overdue`}
                             className={styles.pillRed}
-                            title={`${rep.criticalCount} deal(s) critical >72h — Click to filter leads`}
+                            title={`${rep.criticalCount} deal(s) critical >72h: Click to filter leads`}
                           >
                             {rep.criticalCount} &gt;3d
                           </Link>

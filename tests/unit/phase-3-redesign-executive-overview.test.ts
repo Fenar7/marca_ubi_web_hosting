@@ -191,13 +191,53 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
       assert.ok(tsx.includes('/admin/leads?assigned_to='));
       assert.ok(tsx.includes('encodeURIComponent'));
     });
+
+    it('verifies zero em dashes (—) in ManagerWorkloadCard.tsx per Anti-Slop Rule R-02', () => {
+      const tsx = fs.readFileSync(workloadTsxPath, 'utf8');
+      assert.strictEqual(tsx.includes('—'), false);
+    });
+
+    it('verifies summaryMetricLink holds divider borders in ManagerWorkloadCard.module.scss', () => {
+      const scss = fs.readFileSync(workloadScssPath, 'utf8');
+      assert.ok(scss.includes('.summaryMetricLink'));
+      assert.ok(scss.includes('border-right: 1px solid var(--admin-border-subtle'));
+    });
+
+    it('verifies statItemLink satisfies minimum 44px touch target', () => {
+      const scss = fs.readFileSync(workloadScssPath, 'utf8');
+      assert.ok(scss.includes('.statItemLink'));
+      assert.ok(scss.includes('min-height: 44px'));
+    });
   });
 
-  describe('5. Activity Row Item Refactoring', () => {
+  describe('5. Activity Row Item Refactoring & Keyboard Accessibility', () => {
     it('verifies ActivityRowItem.tsx uses currentColor for SVG stroke', () => {
       const tsx = fs.readFileSync(activityRowItemPath, 'utf8');
       assert.strictEqual(tsx.includes('stroke="#ff6100"'), false);
       assert.ok(tsx.includes('stroke="currentColor"'));
+    });
+
+    it('verifies ActivityRowItem supports Space and Enter key activation per Rule R-32', () => {
+      const tsx = fs.readFileSync(activityRowItemPath, 'utf8');
+      assert.ok(tsx.includes("e.key === 'Enter' || e.key === ' '"));
+    });
+
+    it('verifies dead blue badge variant is pruned from ActivityRowItem and page.tsx', () => {
+      const activityTsx = fs.readFileSync(activityRowItemPath, 'utf8');
+      const pageTsx = fs.readFileSync(pageTsxPath, 'utf8');
+      assert.strictEqual(activityTsx.includes("'blue'"), false);
+      assert.strictEqual(pageTsx.includes("'blue'"), false);
+    });
+
+    it('verifies explicit session authentication guard in page.tsx', () => {
+      const pageTsx = fs.readFileSync(pageTsxPath, 'utf8');
+      assert.ok(pageTsx.includes('supabase.auth.getUser()'));
+      assert.ok(pageTsx.includes("redirect('/admin/login?next=%2Fadmin')"));
+    });
+
+    it('verifies newLeadBtn and activityRow enforce 44px touch targets in page.module.scss', () => {
+      const scss = fs.readFileSync(pageScssPath, 'utf8');
+      assert.ok(scss.includes('min-height: 44px'));
     });
   });
 });

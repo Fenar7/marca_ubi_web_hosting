@@ -99,6 +99,7 @@
 }
 
 .currencyBtn {
+  position: relative;
   font-family: var(--font-admin-btn, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 0.6875rem;
   font-weight: 600;
@@ -112,6 +113,18 @@
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
 
   &:hover:not(.currencyActive) {
     color: var(--admin-text-primary, #1f242f);
@@ -134,10 +147,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
-  min-height: 36px;
-  min-width: 36px;
-  padding: 0 10px;
+  height: 44px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: var(--admin-radius-pill, 9999px);
@@ -200,8 +213,12 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 768px) and (min-width: 541px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > :last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
   }
 
   @media (max-width: 540px) {

@@ -10,6 +10,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { PipelineRpcMetrics } from '@/types/crm';
 import { KpiRibbon } from '@/app/admin/components/kpi';
@@ -46,7 +47,7 @@ function formatTimeAgo(isoDate: string): string {
 interface ActivityItem {
   id: string;
   type: string;
-  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue';
+  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral';
   description: string;
   actor: string;
   createdAt: string;
@@ -55,6 +56,14 @@ interface ActivityItem {
 
 export default async function AdminDashboardPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
+
+  // Invariant: Short-circuit unauthenticated calls before issuing telemetry queries
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/admin/login?next=%2Fadmin');
+  }
 
   // 1. Fetch Aggregated Pipeline Metrics via RPC or Direct Aggregation Fallback
   let rpcMetrics: PipelineRpcMetrics | null = null;
@@ -121,7 +130,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
     leadActs.forEach((act) => {
       const typeStr = (act.activity_type || 'update').replace(/_/g, ' ');
       const actorName = (act.profiles as { full_name?: string } | null)?.full_name || 'System';
-      let badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue' = 'neutral';
+      let badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' = 'neutral';
 
       if (act.activity_type === 'status_change') badgeStyle = 'emerald';
       else if (act.activity_type === 'call_logged' || act.activity_type === 'meeting_notes')
