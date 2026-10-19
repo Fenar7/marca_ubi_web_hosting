@@ -201,14 +201,28 @@
   background: transparent;
   border: none;
   color: var(--admin-text-secondary, #525965);
-  font-size: 0.75rem;
   cursor: pointer;
-  padding: 0.2rem 0.35rem;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   transition: all 0.15s ease;
+
+  // 44px minimum touch target expander (Rule R-03)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+  }
 
   &:hover {
     color: var(--admin-text-primary, #1f242f);
@@ -422,12 +436,27 @@
   background: transparent;
   border: none;
   color: var(--admin-text-secondary, #525965);
-  font-size: 0.7rem;
   cursor: pointer;
   padding: 0;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  position: relative;
   transition: color 0.12s ease;
+
+  // 44px minimum touch target expander (Rule R-03)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+  }
 
   &:hover {
     color: var(--admin-text-primary, #1f242f);
@@ -443,6 +472,10 @@
   cursor: pointer;
   text-decoration: underline;
   margin-left: auto;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.5rem;
   transition: color 0.12s ease;
 
   &:hover {

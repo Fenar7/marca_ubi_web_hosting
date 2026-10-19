@@ -226,6 +226,7 @@ export default async function AdminLeadsPage(
           availableSources={availableSources}
           availableAssignees={availableAssignees}
           availableStatuses={availableStatuses}
+          userRole={role}
         />
       </Suspense>
     </div>

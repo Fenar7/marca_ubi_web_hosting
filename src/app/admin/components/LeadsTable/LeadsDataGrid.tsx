@@ -29,6 +29,8 @@ export interface LeadsDataGridProps {
   onStatusChange?: (leadId: string, newStatus: InlineStatusOption) => void;
   /** Optional callback fired when an inline priority modification confirms */
   onPriorityChange?: (leadId: string, newPriority: LeadPriority) => void;
+  /** Optional user role for role-based authorization */
+  userRole?: string;
   /** Optional custom class name */
   className?: string;
 }
@@ -58,6 +60,7 @@ export function LeadsDataGrid({
   availableStatuses,
   onStatusChange,
   onPriorityChange,
+  userRole,
   className,
 }: LeadsDataGridProps): React.ReactElement {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -343,7 +346,16 @@ export function LeadsDataGrid({
                     title="Click to copy Deal ID"
                     aria-label={`Copy Deal ID ${lead.lead_id}`}
                   >
-                    <span>{isCopied ? '✓ Copied' : lead.lead_id}</span>
+                    {isCopied ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Copied
+                      </span>
+                    ) : (
+                      <span>{lead.lead_id}</span>
+                    )}
                   </button>
                 </div>
 
@@ -369,6 +381,7 @@ export function LeadsDataGrid({
                     currentStatus={currentStatusOption}
                     availableStatuses={availableStatuses}
                     onStatusChange={onStatusChange}
+                    disabled={userRole === 'viewer'}
                   />
                 </div>
 
@@ -396,9 +409,10 @@ export function LeadsDataGrid({
                     leadId={lead.id}
                     currentPriority={lead.priority}
                     onPriorityChange={onPriorityChange}
+                    disabled={userRole === 'viewer'}
                   />
                   <div className={styles.touchpointGroup}>
-                    {lead.bucket === 'open' && (
+                    {lead.bucket === 'open' && userRole !== 'viewer' && (
                       <button
                         type="button"
                         className={styles.rowConvertBtn}
@@ -424,8 +438,10 @@ export function LeadsDataGrid({
                     <button
                       type="button"
                       className={styles.touchpointDate}
+                      disabled={userRole === 'viewer'}
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (userRole === 'viewer') return;
                         if (typeof window !== 'undefined') {
                           window.dispatchEvent(
                             new CustomEvent('open-scheduler-modal', {
@@ -440,7 +456,9 @@ export function LeadsDataGrid({
                         }
                       }}
                       title={
-                        lead.next_follow_up
+                        userRole === 'viewer'
+                          ? 'Read-only access'
+                          : lead.next_follow_up
                           ? `Next Touchpoint: ${new Date(lead.next_follow_up).toLocaleString()} (Click to reschedule)`
                           : 'Click to schedule next touchpoint'
                       }
@@ -504,6 +522,7 @@ export function LeadsDataGrid({
             availableStatuses={availableStatuses}
             onStatusChange={onStatusChange}
             onPriorityChange={onPriorityChange}
+            userRole={userRole}
           />
         ))}
       </div>

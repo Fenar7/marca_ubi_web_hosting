@@ -3,7 +3,8 @@
  * @description Dedicated Unit Test Suite for Phase 4:
  *              Commercial Funnel Workspaces, Inbound Leads Grid & Deals Kanban Architecture.
  *              Verifies Accordion PE Advisory & Sypher Minimalist Light Canvas tokens,
- *              WCAG AAA/AA contrast compliance, 44px touch targets, vector SVGs, and editorial periods.
+ *              WCAG AAA/AA contrast compliance, 44px touch targets, vector SVGs,
+ *              role gating for viewers, and complete eradication of #ff6100 and raw unicode.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -42,9 +43,17 @@ function getContrastRatio(hex1: string, hex2: string): number {
 describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture Suite', () => {
   const leadsPagePath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/page.tsx');
   const leadsScssPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/leads.module.scss');
+  const leadsClientPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx');
+  const filterBarTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/FilterActionBar/FilterActionBar.tsx');
   const filterBarScssPath = path.resolve(process.cwd(), 'src/app/admin/components/FilterActionBar/FilterActionBar.module.scss');
   const leadsGridTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/LeadsDataGrid.tsx');
   const leadsGridScssPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/LeadsDataGrid.module.scss');
+  const mobileCardTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/LeadMobileCard.tsx');
+  const mobileCardScssPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/LeadMobileCard.module.scss');
+  const inlineStatusTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/InlineStatusSelect.tsx');
+  const inlineStatusScssPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/InlineStatusSelect.module.scss');
+  const inlinePriorityTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/InlinePrioritySelect.tsx');
+  const inlinePriorityScssPath = path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/InlinePrioritySelect.module.scss');
   const overdueBadgeScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Badges/OverdueBadge.module.scss');
   const dealsPagePath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/deals/page.tsx');
   const dealsScssPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/deals/deals.module.scss');
@@ -96,13 +105,20 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.ok(content.includes('Stage 01: Inbound Discovery'));
     });
 
-    it('verifies leads/page.tsx and LeadsDataGrid.tsx sanitize status_color fallback from #ff6100 to #1f242f', () => {
-      const pageContent = fs.readFileSync(leadsPagePath, 'utf8');
-      const gridContent = fs.readFileSync(leadsGridTsxPath, 'utf8');
-      assert.strictEqual(pageContent.includes("color_code || '#ff6100'"), false);
-      assert.strictEqual(gridContent.includes("status_color || '#ff6100'"), false);
-      assert.ok(pageContent.includes("color_code || '#1f242f'"));
-      assert.ok(gridContent.includes("status_color || '#1f242f'"));
+    it('verifies leads/page.tsx passes userRole={role} to LeadsWorkspaceClient', () => {
+      const content = fs.readFileSync(leadsPagePath, 'utf8');
+      assert.ok(content.includes('userRole={role}'));
+    });
+
+    it('verifies LeadsWorkspaceClient.tsx gates batch reassign and convert for viewers', () => {
+      const content = fs.readFileSync(leadsClientPath, 'utf8');
+      assert.ok(content.includes("userRole !== 'viewer'"));
+      assert.ok(content.includes('userRole={userRole}'));
+    });
+
+    it('verifies LeadsDataGrid.tsx disables inline status/priority selectors for viewers', () => {
+      const content = fs.readFileSync(leadsGridTsxPath, 'utf8');
+      assert.ok(content.includes("disabled={userRole === 'viewer'}"));
     });
 
     it('verifies leads.module.scss purges legacy obsidian tokens (#0b0b0b, #111113, #121216) and #ff6100', () => {
@@ -120,18 +136,35 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.ok(scss.includes('.convertTriggerBtn'));
     });
 
-    it('verifies FilterActionBar.module.scss purges dark surfaces and enforces 44px targets', () => {
+    it('verifies FilterActionBar.module.scss enforces 44px targets on clear search, chips, and clear all', () => {
       const scss = fs.readFileSync(filterBarScssPath, 'utf8');
       assert.strictEqual(scss.includes('#111113'), false);
       assert.strictEqual(scss.includes('#0b0b0b'), false);
       assert.ok(scss.includes('min-height: 44px;'));
+      assert.ok(scss.includes('.clearSearchBtn'));
+      assert.ok(scss.includes('.chipRemoveBtn'));
+      assert.ok(scss.includes('.clearAllBtn'));
     });
 
-    it('verifies LeadsDataGrid.module.scss enforces 72px row rhythm and 44px touch targets', () => {
+    it('verifies LeadsDataGrid.module.scss enforces 44px min-height on sortableHeaderCol', () => {
       const scss = fs.readFileSync(leadsGridScssPath, 'utf8');
-      assert.ok(scss.includes('min-height: 72px;') || scss.includes('min-height: 44px;'));
+      assert.ok(scss.includes('min-height: 44px;'));
       assert.strictEqual(scss.includes('#0d0d0f'), false);
       assert.strictEqual(scss.includes('#ff6100'), false);
+    });
+
+    it('verifies InlineStatusSelect and InlinePrioritySelect popovers enforce 44px touch targets', () => {
+      const statusScss = fs.readFileSync(inlineStatusScssPath, 'utf8');
+      const priorityScss = fs.readFileSync(inlinePriorityScssPath, 'utf8');
+      assert.ok(statusScss.includes('min-height: 44px;'));
+      assert.ok(priorityScss.includes('min-height: 44px;'));
+    });
+
+    it('verifies LeadMobileCard.module.scss enforces uppercase tracking on drawerBtn and flex-wrap on inlineSelectorsRow', () => {
+      const scss = fs.readFileSync(mobileCardScssPath, 'utf8');
+      assert.ok(scss.includes('text-transform: uppercase;'));
+      assert.ok(scss.includes('letter-spacing: 0.06em;'));
+      assert.ok(scss.includes('flex-wrap: wrap;'));
     });
 
     it('verifies OverdueBadge.module.scss uses WCAG AAA/AA light tokens and zero generic red', () => {
@@ -164,12 +197,10 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.ok(scss.includes('.subheading'));
     });
 
-    it('verifies DealsWorkspaceClient.tsx purges raw unicode arrows (◀, ▶, ✕) in favor of vector SVGs', () => {
+    it('verifies DealsWorkspaceClient.tsx guards handleMoveStage for viewers', () => {
       const content = fs.readFileSync(dealsClientTsxPath, 'utf8');
-      assert.strictEqual(content.includes('◀'), false, 'Raw unicode ◀ must be replaced with vector SVG');
-      assert.strictEqual(content.includes('▶'), false, 'Raw unicode ▶ must be replaced with vector SVG');
-      assert.strictEqual(content.includes('Clear Rep Filter ✕'), false, 'Raw unicode ✕ must be replaced with vector SVG');
-      assert.ok(content.includes('<svg'));
+      assert.ok(content.includes("if (userRole === 'viewer') return;"));
+      assert.ok(content.includes('[sortedStages, userRole]'));
     });
 
     it('verifies DealsWorkspaceClient.tsx sanitizes columnStatusDot fallback to #1f242f', () => {
@@ -207,12 +238,74 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
     });
   });
 
-  describe('4. Anti-AI-Slop & Editorial Invariants', () => {
+  describe('4. Complete Anti-AI-Slop Invariants (Rule R-12 Unicode & Token Hygiene)', () => {
+    it('verifies 100% elimination of legacy #ff6100 across all Phase 4 component and style files', () => {
+      const phase4Files = [
+        leadsPagePath,
+        leadsScssPath,
+        leadsClientPath,
+        filterBarTsxPath,
+        filterBarScssPath,
+        leadsGridTsxPath,
+        leadsGridScssPath,
+        mobileCardTsxPath,
+        mobileCardScssPath,
+        inlineStatusTsxPath,
+        inlineStatusScssPath,
+        inlinePriorityTsxPath,
+        inlinePriorityScssPath,
+        overdueBadgeScssPath,
+        dealsPagePath,
+        dealsScssPath,
+        dealsClientTsxPath,
+        dealsClientScssPath,
+      ];
+
+      for (const file of phase4Files) {
+        const content = fs.readFileSync(file, 'utf8');
+        assert.strictEqual(
+          content.includes('#ff6100'),
+          false,
+          `Residual #ff6100 detected in ${path.basename(file)}`
+        );
+      }
+    });
+
+    it('verifies 100% eradication of raw unicode characters (▼, ▲, ✕, ✓, →, ◀, ▶) across Phase 4 TSX files', () => {
+      const tsxFiles = [
+        leadsPagePath,
+        leadsClientPath,
+        filterBarTsxPath,
+        leadsGridTsxPath,
+        mobileCardTsxPath,
+        inlineStatusTsxPath,
+        inlinePriorityTsxPath,
+        dealsPagePath,
+        dealsClientTsxPath,
+      ];
+
+      const forbiddenSymbols = ['▼', '▲', '✕', '✓', '→', '◀', '▶'];
+
+      for (const file of tsxFiles) {
+        const content = fs.readFileSync(file, 'utf8');
+        for (const symbol of forbiddenSymbols) {
+          assert.strictEqual(
+            content.includes(symbol),
+            false,
+            `Forbidden raw unicode symbol "${symbol}" detected in ${path.basename(file)}`
+          );
+        }
+      }
+    });
+
     it('verifies zero generic blue (#2563eb, #1d4ed8, #3b82f6) in Phase 4 files', () => {
       const files = [
         leadsScssPath,
         filterBarScssPath,
         leadsGridScssPath,
+        mobileCardScssPath,
+        inlineStatusScssPath,
+        inlinePriorityScssPath,
         overdueBadgeScssPath,
         dealsScssPath,
         dealsClientScssPath,
@@ -238,6 +331,8 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
         leadsScssPath,
         dealsScssPath,
         dealsClientScssPath,
+        leadsGridScssPath,
+        filterBarScssPath,
       ];
 
       for (const file of files) {

@@ -158,7 +158,7 @@ export function InlineStatusSelect({
     });
   };
 
-  const statusColor = optimisticStatus.color_code || '#ff6100';
+  const statusColor = optimisticStatus.color_code || '#1f242f';
 
   return (
     <div
@@ -210,7 +210,7 @@ export function InlineStatusSelect({
           {availableStatuses.map((status) => {
             const isSelected = status.id === optimisticStatus.id;
             const isGuarded = status.bucket === 'converted' || status.bucket === 'lost';
-            const itemColor = status.color_code || '#ffffff';
+            const itemColor = status.color_code || '#1f242f';
 
             return (
               <button

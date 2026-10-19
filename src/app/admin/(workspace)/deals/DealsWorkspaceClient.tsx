@@ -229,6 +229,8 @@ export function DealsWorkspaceClient({
    */
   const handleMoveStage = useCallback(
     async (deal: HydratedDealItem, direction: 'prev' | 'next'): Promise<void> => {
+      if (userRole === 'viewer') return;
+
       const currentIndex = sortedStages.findIndex((s) => s.id === deal.status_id);
       if (currentIndex === -1) return;
 
@@ -276,7 +278,7 @@ export function DealsWorkspaceClient({
         console.error('[DealsWorkspaceClient] Stage transition failed:', res.error);
       }
     },
-    [sortedStages]
+    [sortedStages, userRole]
   );
 
   const handleStageTransitionSuccess = (payload: GuardedTransitionResultPayload): void => {
