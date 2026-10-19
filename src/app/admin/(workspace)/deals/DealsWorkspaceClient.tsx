@@ -193,6 +193,22 @@ export function DealsWorkspaceClient({
     setActiveDrawerDealId(null);
   };
 
+  // Synchronize with global open-lead-drawer events dispatched by header / URL sync
+  useEffect(() => {
+    const handleOpenDrawerEvent = (e: Event): void => {
+      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
+      const id =
+        typeof customEvt.detail === 'string'
+          ? customEvt.detail
+          : customEvt.detail?.leadId;
+      if (id) {
+        handleInspectDeal(id);
+      }
+    };
+    window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
+    return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
+  }, []);
+
   /**
    * Evaluates if advancing to a target status triggers guarded requirements.
    */

@@ -1,3 +1,10 @@
+/**
+ * @file ingestion.module.scss
+ * @description Layout and Automated Deduplication Protocol styling for /admin/ingestion.
+ *              Strictly complies with WCAG AA 4.5:1 contrast standards.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .container {
   display: flex;
   flex-direction: column;
@@ -49,66 +56,6 @@
   line-height: 1.5;
 }
 
-.statusRibbon {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.telemetryCard {
-  background: #111111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.telemetryKey {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #71717a;
-}
-
-.telemetryVal {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.telemetrySub {
-  font-size: 0.75rem;
-  color: #a1a1aa;
-}
-
-.dotGreen {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
-}
-
-.codeBox {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  font-size: 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 0.2rem 0.5rem;
-  color: #ff6100;
-}
-
 .sectionBox {
   background: #111111;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -146,40 +93,4 @@
     flex-shrink: 0;
     margin-top: 0.2rem;
   }
-}
-
-.logList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.logRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
-  font-size: 0.8rem;
-  gap: 1rem;
-}
-
-.logDesc {
-  color: #e4e4e7;
-}
-
-.logTime {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  color: #71717a;
-  font-size: 0.72rem;
-  flex-shrink: 0;
-}
-
-.emptyState {
-  padding: 2.5rem 1rem;
-  text-align: center;
-  color: #71717a;
-  font-size: 0.85rem;
 }

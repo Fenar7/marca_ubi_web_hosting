@@ -15,7 +15,7 @@ import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
 import { NewLeadModal } from '@/app/admin/components/modals/NewLeadModal';
-import { LeadDetailModal } from '@/app/admin/components/modals/LeadDetailModal';
+import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { AddTeamMemberModal } from '@/app/admin/components/modals/AddTeamMemberModal';
 import {
   CredentialRevealModal,
@@ -25,7 +25,7 @@ import type { CurrentUserSession } from './UserProfileDropdown';
 import styles from './AdminWorkspace.module.scss';
 
 // Backward compatibility aliases for existing imports and assertions
-export { LeadDetailModal as LeadDetailDrawer } from '@/app/admin/components/modals/LeadDetailModal';
+export { ClientDossierDrawer as LeadDetailDrawer } from '@/app/admin/components/DossierDrawer';
 export { NewLeadModal as NewLeadDrawer } from '@/app/admin/components/modals/NewLeadModal';
 export { AddTeamMemberModal as AddTeamMemberDrawer } from '@/app/admin/components/modals/AddTeamMemberModal';
 
@@ -51,9 +51,10 @@ function LeadUrlSync({
     if (leadId) {
       if (
         typeof window !== 'undefined' &&
-        window.location.pathname.startsWith('/admin/leads')
+        (window.location.pathname.startsWith('/admin/leads') ||
+         window.location.pathname.startsWith('/admin/deals'))
       ) {
-        // Leads workspace mounts ClientDossierDrawer directly; dispatch open-lead-drawer
+        // Leads and Deals workspaces mount ClientDossierDrawer directly; dispatch open-lead-drawer
         window.dispatchEvent(
           new CustomEvent('open-lead-drawer', { detail: { leadId } })
         );
@@ -75,8 +76,8 @@ export function AdminWorkspaceShell({
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState<boolean>(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState<boolean>(false);
-  const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
-  const [isLeadModalOpen, setIsLeadModalOpen] = useState<boolean>(false);
+  const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] = useState<ProvisionedCredentialsPayload | null>(null);
   const [isCredentialModalOpen, setIsCredentialModalOpen] = useState<boolean>(false);
 
@@ -104,9 +105,9 @@ export function AdminWorkspaceShell({
     });
   }, []);
 
-  const handleOpenLead = useCallback((id: string) => {
-    setActiveLeadId(id);
-    setIsLeadModalOpen(true);
+  const handleOpenDrawer = useCallback((id: string) => {
+    setActiveDrawerLeadId(id);
+    setIsDrawerOpen(true);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       if (url.searchParams.get('leadId') !== id) {
@@ -116,9 +117,9 @@ export function AdminWorkspaceShell({
     }
   }, []);
 
-  const handleCloseLeadModal = useCallback(() => {
-    setIsLeadModalOpen(false);
-    setActiveLeadId(null);
+  const handleCloseDrawer = useCallback(() => {
+    setIsDrawerOpen(false);
+    setActiveDrawerLeadId(null);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       if (url.searchParams.has('leadId')) {
@@ -137,15 +138,15 @@ export function AdminWorkspaceShell({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
-        // If already on /admin/leads, the LeadsWorkspaceClient mounts ClientDossierDrawer directly
+        // If already on /admin/leads or /admin/deals, those workspaces mount ClientDossierDrawer directly
         if (
-          e.type === 'open-lead-drawer' &&
           typeof window !== 'undefined' &&
-          window.location.pathname.startsWith('/admin/leads')
+          (window.location.pathname.startsWith('/admin/leads') ||
+           window.location.pathname.startsWith('/admin/deals'))
         ) {
           return;
         }
-        handleOpenLead(id);
+        handleOpenDrawer(id);
       }
     };
 
@@ -155,7 +156,7 @@ export function AdminWorkspaceShell({
       window.removeEventListener('open-lead-modal', handleOpenLeadEvent);
       window.removeEventListener('open-lead-drawer', handleOpenLeadEvent);
     };
-  }, [handleOpenLead]);
+  }, [handleOpenDrawer]);
 
   // Listen to open-new-lead-modal and open-new-lead-drawer custom events dispatched by quick action buttons
   useEffect(() => {
@@ -278,21 +279,21 @@ export function AdminWorkspaceShell({
         }}
       />
 
-      {/* URL Synchronization Bridge for Centered Client 360 Modal */}
+      {/* URL Synchronization Bridge for Client 360 Dossier */}
       <Suspense fallback={null}>
-        <LeadUrlSync onLeadIdFound={handleOpenLead} />
+        <LeadUrlSync onLeadIdFound={handleOpenDrawer} />
       </Suspense>
 
-      {/* Centered Client 360 Lead Detail Dossier Modal (re-exported as LeadDetailDrawer) */}
-      <LeadDetailModal
-        leadId={activeLeadId}
-        isOpen={isLeadModalOpen}
-        onClose={handleCloseLeadModal}
-        currentUser={currentUser}
+
+      {/* Slide-over Client 360 Degree Dossier Drawer (Unified across all CRM workspaces) */}
+      <ClientDossierDrawer
+        leadId={activeDrawerLeadId}
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
         onLeadUpdated={() => {
           if (typeof window !== 'undefined') {
             window.dispatchEvent(
-              new CustomEvent('lead-data-mutated', { detail: activeLeadId })
+              new CustomEvent('lead-data-mutated', { detail: activeDrawerLeadId })
             );
           }
         }}
