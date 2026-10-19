@@ -84,12 +84,73 @@ html.lenis {
   pointer-events: none;
 }
 
-body, html {
+/* ─── Custom Brand Cursor (Public Site Only) ─────────────────────────── */
+html:not([data-admin-route='true']),
+html:not([data-admin-route='true']) body {
   cursor: url('/cursor-default.svg'), auto !important;
 }
 
-a, button, [role='button'], input, textarea, select, label, summary, [data-cursor-hover] {
+html:not([data-admin-route='true']) a,
+html:not([data-admin-route='true']) button,
+html:not([data-admin-route='true']) [role='button'],
+html:not([data-admin-route='true']) input,
+html:not([data-admin-route='true']) textarea,
+html:not([data-admin-route='true']) select,
+html:not([data-admin-route='true']) label,
+html:not([data-admin-route='true']) summary,
+html:not([data-admin-route='true']) [data-cursor-hover] {
   cursor: url('/cursor-pointer.svg') 10 0, pointer !important;
+}
+
+/* ─── Admin Workspace Native Cursor & Standard Scroll Invariants ───────── */
+html[data-admin-route='true'],
+html[data-admin-route='true'] body,
+html[data-admin-route='true'] [data-admin-root],
+[data-admin-root] {
+  cursor: default !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-admin-route='true'] *,
+[data-admin-root] * {
+  cursor: inherit;
+}
+
+html[data-admin-route='true'] a,
+html[data-admin-route='true'] button,
+html[data-admin-route='true'] [role='button'],
+html[data-admin-route='true'] select,
+html[data-admin-route='true'] label,
+html[data-admin-route='true'] summary,
+html[data-admin-route='true'] [data-cursor-hover],
+[data-admin-root] a,
+[data-admin-root] button,
+[data-admin-root] [role='button'],
+[data-admin-root] select,
+[data-admin-root] label,
+[data-admin-root] summary,
+[data-admin-root] [data-cursor-hover] {
+  cursor: pointer !important;
+}
+
+html[data-admin-route='true'] input,
+html[data-admin-route='true'] textarea,
+[data-admin-root] input,
+[data-admin-root] textarea {
+  cursor: text !important;
+}
+
+html[data-admin-route='true'] [disabled],
+html[data-admin-route='true'] button:disabled,
+html[data-admin-route='true'] input:disabled,
+html[data-admin-route='true'] textarea:disabled,
+html[data-admin-route='true'] select:disabled,
+[data-admin-root] [disabled],
+[data-admin-root] button:disabled,
+[data-admin-root] input:disabled,
+[data-admin-root] textarea:disabled,
+[data-admin-root] select:disabled {
+  cursor: not-allowed !important;
 }
 
 @import "./components/StepSectionContainer/style.scss";
