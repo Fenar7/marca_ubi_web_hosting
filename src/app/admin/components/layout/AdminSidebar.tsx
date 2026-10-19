@@ -55,7 +55,7 @@ export function AdminSidebar({
     >
       {/* Brand Header */}
       <div className={styles.brandContainer}>
-        <Link href="/admin" className={styles.logoLink} title="Marca Ubi CRM Command Center">
+        <Link href="/admin" className={styles.logoLink} title="Marca Ubi CRM Executive Overview">
           <img
             src="/hero/marca-ubi-logo.png"
             alt="Marca Ubi."

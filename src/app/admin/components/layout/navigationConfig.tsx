@@ -60,7 +60,7 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     items: [
       {
         key: 'command_center',
-        label: 'Command Center',
+        label: 'Executive Overview',
         href: '/admin',
         icon: ({ active }) => (
           <svg

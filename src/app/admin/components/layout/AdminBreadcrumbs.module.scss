@@ -1,3 +1,9 @@
+/**
+ * @file AdminBreadcrumbs.module.scss
+ * @description Dynamic breadcrumb engine styling conforming to Accordion light tokens.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .breadcrumbNav {
   display: flex;
   align-items: center;
@@ -22,7 +28,7 @@
 }
 
 .rootLink {
-  color: #7c7c7c;
+  color: var(--admin-text-secondary, #525965);
   text-decoration: none;
   font-size: 0.75rem;
   font-weight: 600;
@@ -31,44 +37,44 @@
   transition: color 0.15s ease;
 
   &:hover {
-    color: #ff6100;
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
     border-radius: 2px;
   }
 }
 
 .separator {
-  color: #444444;
+  color: var(--admin-text-muted, #8a92a0);
   margin: 0 0.4rem;
   font-size: 0.75rem;
   user-select: none;
 }
 
 .breadcrumbLink {
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
   text-decoration: none;
   font-size: 0.8rem;
   font-weight: 500;
   transition: color 0.15s ease;
 
   &:hover {
-    color: #ffffff;
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
     border-radius: 2px;
   }
 }
 
 .currentSegment {
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
