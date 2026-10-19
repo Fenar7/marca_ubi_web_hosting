@@ -2,7 +2,8 @@
  * @file tests/unit/phase-2-brand-upgrade-layout-and-fixed-rail.test.ts
  * @description Dedicated Unit Test Suite for Phase 2: Modern Fluid Layout, Collapsible Fixed Left Rail
  *              & Symmetrical Content Container Geometry.
- *              Validates fixed left rail pinning, 72px collapsed geometry, authentic logo colors,
+ *              Validates fixed left rail pinning, 72px collapsed geometry, authentic logo colors on desktop & mobile,
+ *              pure CSS fluid text transitions (zero React unmounting / zero display: none pops),
  *              symmetrical 1720px content envelope, and header action duplicate-glyph eradication.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -16,6 +17,10 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
   const sidebarScssPath = path.resolve(
     process.cwd(),
     'src/app/admin/components/layout/AdminSidebar.module.scss'
+  );
+  const mobileDrawerScssPath = path.resolve(
+    process.cwd(),
+    'src/app/admin/components/layout/AdminMobileDrawer.module.scss'
   );
   const sidebarTsxPath = path.resolve(
     process.cwd(),
@@ -67,7 +72,7 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       assert.ok(collapsedBlock.includes('border-radius: 50%;'), 'New lead button collapses into circular icon button');
     });
 
-    it('verifies authentic brand logo coloration is preserved without filter: brightness(0)', () => {
+    it('verifies authentic brand logo coloration is preserved on desktop without filter: brightness(0)', () => {
       const content = fs.readFileSync(sidebarScssPath, 'utf8');
       assert.strictEqual(
         content.includes('filter: brightness(0);'),
@@ -76,16 +81,61 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       );
     });
 
-    it('verifies AdminSidebar.tsx uses CSS-driven text opacity for smooth collapse transitions', () => {
-      const content = fs.readFileSync(sidebarTsxPath, 'utf8');
+    it('verifies authentic brand logo coloration is preserved on mobile without filter: brightness(0)', () => {
+      const content = fs.readFileSync(mobileDrawerScssPath, 'utf8');
+      assert.strictEqual(
+        content.includes('filter: brightness(0);'),
+        false,
+        'Brand logo in mobile drawer must never be washed out with filter: brightness(0)'
+      );
+    });
+
+    it('verifies .brandLogo declares smooth sizing transitions to prevent logo snapping', () => {
+      const content = fs.readFileSync(sidebarScssPath, 'utf8');
+      const logoBlock = content.match(/\.brandLogo\s*\{[\s\S]*?\n\}/)?.[0] || '';
       assert.ok(
-        content.includes('newLeadBtnText'),
-        'New Lead button label must use CSS class for smooth transition'
+        logoBlock.includes('transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1);'),
+        'Brand logo must declare smooth cubic-bezier transitions for width and height'
+      );
+    });
+
+    it('verifies AdminSidebar.tsx preserves all text nodes in the DOM without React conditional unmounting', () => {
+      const content = fs.readFileSync(sidebarTsxPath, 'utf8');
+      assert.strictEqual(
+        content.includes('{!isCollapsed && ('),
+        false,
+        'Must never conditionally unmount labels in React to prevent layout popping'
       );
       assert.strictEqual(
         content.includes('{!isCollapsed && <span>New Lead</span>}'),
         false,
-        'Must not unmount label conditionally to prevent layout pop'
+        'Must not conditionally unmount New Lead label'
+      );
+    });
+
+    it('verifies AdminSidebar.module.scss eliminates display: none from .collapsed text elements', () => {
+      const content = fs.readFileSync(sidebarScssPath, 'utf8');
+      const collapsedBlock = content.match(/\.collapsed\s*\{[\s\S]*?\n\}/)?.[0] || '';
+      assert.strictEqual(
+        collapsedBlock.includes('display: none;'),
+        false,
+        'Collapsed block must never use display: none on text elements to allow CSS transitions'
+      );
+      assert.ok(
+        collapsedBlock.includes('pointer-events: none;'),
+        'Collapsed text elements must disable pointer events'
+      );
+    });
+
+    it('verifies collapsible text elements declare base CSS transitions for fluid animation', () => {
+      const content = fs.readFileSync(sidebarScssPath, 'utf8');
+      assert.ok(
+        content.includes('.newLeadBtnText {'),
+        'Must define base .newLeadBtnText class'
+      );
+      assert.ok(
+        content.includes('transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);'),
+        'Must declare smooth cubic-bezier opacity and max-width transitions'
       );
     });
   });
@@ -150,7 +200,7 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
     });
   });
 
-  describe('3. Platform Rail Tokens & Shell State Persistence', () => {
+  describe('3. Platform Rail Tokens, State Persistence & Contrast Compliance', () => {
     it('verifies tokens.scss registers expanded and collapsed sidebar width tokens', () => {
       const content = fs.readFileSync(tokensScssPath, 'utf8');
       assert.ok(
@@ -160,6 +210,19 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       assert.ok(
         content.includes('--admin-sidebar-width-collapsed: 72px;'),
         'Must declare --admin-sidebar-width-collapsed token'
+      );
+    });
+
+    it('verifies tokens.scss declares WCAG AA compliant --admin-text-muted token (#6b7280)', () => {
+      const content = fs.readFileSync(tokensScssPath, 'utf8');
+      assert.ok(
+        content.includes('--admin-text-muted: #6b7280;'),
+        'Must use #6b7280 for at least 4.72:1 contrast against white background'
+      );
+      assert.strictEqual(
+        content.includes('--admin-text-muted: #8a92a0;'),
+        false,
+        'Must not use failing #8a92a0 contrast token'
       );
     });
 

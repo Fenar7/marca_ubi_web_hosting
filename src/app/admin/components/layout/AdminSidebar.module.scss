@@ -51,25 +51,20 @@
     justify-content: center;
   }
 
-  .newLeadBtnText {
-    opacity: 0;
-    max-width: 0;
-    display: none;
-  }
-
   .navItem {
     justify-content: center;
     padding: 0.55rem 0;
     margin: 0.2rem 0.5rem;
   }
 
+  .newLeadBtnText,
   .itemContent,
   .brandMeta,
   .groupHeading,
   .statusText {
     opacity: 0;
     max-width: 0;
-    display: none;
+    pointer-events: none;
   }
 
   .navGroup {
@@ -106,6 +101,7 @@
   height: auto;
   display: block;
   object-fit: contain;
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 
   .collapsed & {
     width: 32px;
@@ -117,6 +113,11 @@
 .brandMeta {
   display: flex;
   flex-direction: column;
+  opacity: 1;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .brandTitle {
@@ -207,6 +208,14 @@
   }
 }
 
+.newLeadBtnText {
+  opacity: 1;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .navScrollArea {
   flex: 1;
   overflow-y: auto;
@@ -235,6 +244,11 @@
   color: var(--admin-text-secondary, #525965);
   padding: 0 1.25rem;
   margin-bottom: 0.45rem;
+  opacity: 1;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navList {
@@ -308,6 +322,11 @@
   justify-content: space-between;
   flex: 1;
   min-width: 0;
+  opacity: 1;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .itemLabel {
@@ -381,6 +400,11 @@
 .statusText {
   display: flex;
   flex-direction: column;
+  opacity: 1;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .statusLabel {
