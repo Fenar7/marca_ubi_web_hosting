@@ -77,6 +77,10 @@
   --admin-shadow-subtle: 0 1px 2px rgba(31, 36, 47, 0.04);
   --admin-shadow-hover: 0 4px 14px rgba(31, 36, 47, 0.08);
   --admin-shadow-modal: 0 24px 60px rgba(31, 36, 47, 0.16);
+
+  // Platform Rail Dimensions & Viewport Grid Geometry
+  --admin-sidebar-width-expanded: 260px;
+  --admin-sidebar-width-collapsed: 72px;
 }
 
 // Standardized interactive pill mixins honoring 44px touch targets (Rule R-03) and Accordion geometry.
