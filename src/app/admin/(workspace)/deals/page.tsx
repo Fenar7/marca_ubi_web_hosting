@@ -155,7 +155,7 @@ export default async function AdminDealsPage(
       assigned_to_name: profileObj?.full_name || 'Unassigned',
       status_name: statusObj?.name || 'Open',
       status_bucket: (statusObj?.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open',
-      status_color: statusObj?.color_code || '#ff6100',
+      status_color: statusObj?.color_code || '#1f242f',
       source_name: sourceObj?.name || 'Direct Ingestion',
     };
   });
@@ -165,8 +165,11 @@ export default async function AdminDealsPage(
       {/* Dynamic KPI Header Strip */}
       <header className={styles.header}>
         <div className={styles.titleArea}>
-          <div className={styles.eyebrow}>Commercial Architecture</div>
-          <h1 className={styles.heading}>Pipeline Deals</h1>
+          <div className={styles.eyebrow}>Stage 02: Pipeline Negotiations</div>
+          <h1 className={styles.heading}>Commercial Deals.</h1>
+          <p className={styles.subheading}>
+            Active commercial negotiations, proposal development, and high-ticket engagement staging.
+          </p>
         </div>
       </header>
 

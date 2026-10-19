@@ -1,38 +1,30 @@
 // SCSS Module: LeadMobileCard.module.scss
-// Aesthetic: Obsidian Mobile Fluid Cards with Apple HIG Touch Ergonomics
+// Aesthetic: Accordion Executive Advisory & Sypher Light Mobile Fluid Architecture
 // Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
-// Strict Anti-AI-Slop: 44px minimum tap targets, tabular-nums, zero generic blue
-
-$marca-orange: #ff6100;
-$obsidian-card: #111111;
-$hairline-border: rgba(255, 255, 255, 0.08);
-$hairline-divider: rgba(255, 255, 255, 0.05);
-$text-primary: #ffffff;
-$text-secondary: #a1a1aa;
-$text-muted: #8e8e93;
+// Strict Anti-AI-Slop: 44px minimum tap targets, tabular-nums, zero generic blue, zero drop shadows
 
 .cardWrapper {
-  background: $obsidian-card;
-  border: 1px solid $hairline-border;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-card, 12px);
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   position: relative;
   overflow: hidden;
 
   &:hover {
-    border-color: rgba(255, 97, 0, 0.35);
+    border-color: var(--admin-border-strong, #1f242f);
     transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.08);
   }
 
   &:focus-visible {
-    outline: 2px solid $marca-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -53,14 +45,14 @@ $text-muted: #8e8e93;
 }
 
 .leadIdToken {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.72rem;
   font-weight: 600;
-  color: $marca-orange;
-  background: rgba(255, 97, 0, 0.1);
-  border: 1px solid rgba(255, 97, 0, 0.25);
+  color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--admin-radius-micro, 4px);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -68,20 +60,22 @@ $text-muted: #8e8e93;
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(255, 97, 0, 0.2);
-    border-color: rgba(255, 97, 0, 0.4);
+    background: var(--admin-surface-hover, #e4e7ec);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 }
 
 .timeTag {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.68rem;
-  color: $text-muted;
+  color: var(--admin-text-secondary, #525965);
 }
 
 .dealValue {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.95rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.02em;
@@ -95,15 +89,17 @@ $text-muted: #8e8e93;
 }
 
 .clientName {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.95rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   letter-spacing: -0.01em;
 }
 
 .companyTitle {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.78rem;
-  color: $text-secondary;
+  color: var(--admin-text-secondary, #525965);
 }
 
 // 3. Category & Source Tags
@@ -115,21 +111,23 @@ $text-muted: #8e8e93;
 }
 
 .serviceTag {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.68rem;
-  color: $text-secondary;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--admin-text-secondary, #525965);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   padding: 0.15rem 0.45rem;
-  border-radius: 4px;
+  border-radius: var(--admin-radius-micro, 4px);
 }
 
 .sourceTag {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.68rem;
-  color: $marca-orange;
-  background: rgba(255, 97, 0, 0.08);
-  border: 1px solid rgba(255, 97, 0, 0.2);
+  color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   padding: 0.15rem 0.45rem;
-  border-radius: 4px;
+  border-radius: var(--admin-radius-micro, 4px);
 }
 
 // 4. Interactive Inline Mutators Row
@@ -137,10 +135,11 @@ $text-muted: #8e8e93;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  padding: 0.4rem 0;
-  border-top: 1px solid $hairline-divider;
-  border-bottom: 1px solid $hairline-divider;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--admin-border-subtle, #eef0f3);
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
 }
 
 .repInfo {
@@ -148,20 +147,20 @@ $text-muted: #8e8e93;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.76rem;
-  color: $text-secondary;
+  color: var(--admin-text-secondary, #525965);
 }
 
 .repAvatar {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--admin-surface-inverse, #1f242f);
+  color: #ffffff;
   font-size: 0.58rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cccccc;
 }
 
 // 5. Quick Omnichannel Action Bar
@@ -175,7 +174,8 @@ $text-muted: #8e8e93;
 .actionBtn {
   min-height: 44px;
   padding: 0 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-btn, sans-serif);
   font-size: 0.78rem;
   font-weight: 600;
   display: inline-flex;
@@ -183,7 +183,7 @@ $text-muted: #8e8e93;
   justify-content: center;
   gap: 0.4rem;
   text-decoration: none;
-  border: 1px solid transparent;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
@@ -191,6 +191,7 @@ $text-muted: #8e8e93;
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
   }
 
   &:active:not(:disabled) {
@@ -198,7 +199,7 @@ $text-muted: #8e8e93;
   }
 
   &:focus-visible {
-    outline: 2px solid $marca-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 
@@ -209,35 +210,37 @@ $text-muted: #8e8e93;
 }
 
 .callBtn {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: #ffffff;
+  border-color: var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
 
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: var(--admin-surface-hover, #f8fafc);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 }
 
 .whatsappBtn {
-  background: rgba(37, 211, 102, 0.1);
-  border-color: rgba(37, 211, 102, 0.28);
-  color: #25d366;
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  border-color: var(--admin-status-emerald-border, #a7f3d0);
+  color: var(--admin-status-emerald-text, #065f46);
 
   &:hover:not(:disabled) {
-    background: rgba(37, 211, 102, 0.18);
-    border-color: rgba(37, 211, 102, 0.45);
+    background: #d1fae5;
+    border-color: #6ee7b7;
   }
 }
 
 .drawerBtn {
-  background: rgba(255, 97, 0, 0.1);
-  border-color: rgba(255, 97, 0, 0.25);
-  color: $marca-orange;
-  padding: 0 0.85rem;
+  background: var(--admin-accent-lemon, #eefb87);
+  border-color: var(--admin-border-strong, #1f242f);
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 1rem;
 
   &:hover {
-    background: rgba(255, 97, 0, 0.18);
-    border-color: rgba(255, 97, 0, 0.45);
+    background: var(--admin-accent-lemon-hover, #e4f375);
   }
 }

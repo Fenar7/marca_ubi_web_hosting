@@ -62,6 +62,7 @@ export interface LeadsWorkspaceClientProps {
   availableSources?: FilterDropdownOption[];
   availableAssignees?: FilterDropdownOption[];
   availableStatuses?: InlineStatusOption[];
+  userRole?: string;
 }
 
 function formatCurrency(amount: number): string {
@@ -95,6 +96,7 @@ function LeadsWorkspaceContent({
   availableSources: initialSources,
   availableAssignees: initialAssignees,
   availableStatuses: initialStatuses,
+  userRole,
 }: LeadsWorkspaceClientProps): React.ReactElement {
   const searchParams = useSearchParams();
 
@@ -320,7 +322,7 @@ function LeadsWorkspaceContent({
         map.set(lead.lead_source_id, {
           id: lead.lead_source_id,
           label: lead.lead_source_name,
-          colorCode: lead.lead_source_color || '#ff6100',
+          colorCode: lead.lead_source_color || '#1f242f',
         });
       }
     }
@@ -363,7 +365,7 @@ function LeadsWorkspaceContent({
           id: lead.status_id,
           name: lead.status_name,
           bucket: lead.bucket,
-          color_code: lead.status_color || '#ff6100',
+          color_code: lead.status_color || '#1f242f',
         });
       }
     }
@@ -820,14 +822,16 @@ function LeadsWorkspaceContent({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            className={styles.batchReassignTriggerBtn}
-            onClick={() => setIsBatchReassignOpen(true)}
-            aria-label="Launch batch reassignment modal"
-          >
-            Batch Reassign Overdue Leads
-          </button>
+          {userRole !== 'viewer' && (
+            <button
+              type="button"
+              className={styles.batchReassignTriggerBtn}
+              onClick={() => setIsBatchReassignOpen(true)}
+              aria-label="Launch batch reassignment modal"
+            >
+              Batch Reassign Overdue Leads
+            </button>
+          )}
         </div>
       )}
 
@@ -858,7 +862,7 @@ function LeadsWorkspaceContent({
               </p>
             </div>
           </div>
-          {filteredLeads.length > 0 && (
+          {filteredLeads.length > 0 && userRole !== 'viewer' && (
             <button
               type="button"
               className={styles.convertTriggerBtn}
@@ -894,6 +898,7 @@ function LeadsWorkspaceContent({
         availableStatuses={resolvedStatuses}
         onStatusChange={handleInlineStatusChange}
         onPriorityChange={handleInlinePriorityChange}
+        userRole={userRole}
       />
 
       {/* Slide-over Client 360 Degree Dossier Drawer */}

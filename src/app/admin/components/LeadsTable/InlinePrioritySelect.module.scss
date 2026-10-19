@@ -1,16 +1,7 @@
 // SCSS Module: InlinePrioritySelect.module.scss
-// Aesthetic: Raycast Monospace Tokens & Apple HIG Vibrancy
+// Aesthetic: Accordion Executive Advisory & Sypher Popover Architecture
 // Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
-// Strict Anti-AI-Slop: Zero generic blue, zero toy emojis, tabular-nums
-
-$marca-orange: #ff6100;
-$amber-priority: #f59e0b;
-$slate-priority: #8e8e93;
-$obsidian-popover: rgba(18, 18, 22, 0.96);
-$hairline-border: rgba(255, 255, 255, 0.1);
-$text-primary: #ffffff;
-$text-secondary: #a1a1aa;
-$text-muted: #8e8e93;
+// Strict Anti-AI-Slop: Zero generic blue, 44px touch targets, WCAG AAA/AA compliant tints
 
 .priorityContainer {
   position: relative;
@@ -19,24 +10,37 @@ $text-muted: #8e8e93;
 }
 
 .priorityBadgeBtn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-family: inherit;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--admin-radius-micro, 4px);
   border: 1px solid transparent;
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s ease;
   outline: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
   }
 
   &:active:not(:disabled) {
@@ -44,44 +48,42 @@ $text-muted: #8e8e93;
   }
 
   &:focus-visible {
-    outline: 2px solid $marca-orange;
-    outline-offset: 2px;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: not-allowed;
   }
 
   &.priorityHigh {
-    background: rgba(255, 97, 0, 0.12);
-    border-color: rgba(255, 97, 0, 0.3);
-    color: #ff6100;
+    background: var(--admin-status-rose-bg, #fef2f2);
+    border-color: var(--admin-status-rose-border, #fecaca);
+    color: var(--admin-status-rose-text, #991b1b);
 
     .priorityDot {
-      background: #ff6100;
-      box-shadow: 0 0 6px rgba(255, 97, 0, 0.8);
+      background: var(--admin-status-rose-text, #991b1b);
     }
   }
 
   &.priorityMedium {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: rgba(245, 158, 11, 0.28);
-    color: #f59e0b;
+    background: var(--admin-status-amber-bg, #fffbeb);
+    border-color: var(--admin-status-amber-border, #fde68a);
+    color: var(--admin-status-amber-text, #92400e);
 
     .priorityDot {
-      background: #f59e0b;
-      box-shadow: 0 0 4px rgba(245, 158, 11, 0.6);
+      background: var(--admin-status-amber-text, #92400e);
     }
   }
 
   &.priorityLow {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: #8e8e93;
+    background: var(--admin-surface-muted, #f8fafc);
+    border-color: var(--admin-border-default, #e2e5ea);
+    color: var(--admin-text-secondary, #525965);
 
     .priorityDot {
-      background: #8e8e93;
+      background: var(--admin-text-secondary, #525965);
     }
   }
 }
@@ -114,14 +116,12 @@ $text-muted: #8e8e93;
   top: calc(100% + 5px);
   right: 0;
   left: auto;
-  min-width: 130px;
-  background: $obsidian-popover;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid $hairline-border;
+  min-width: 140px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-  padding: 0.3rem;
+  box-shadow: 0 12px 32px rgba(31, 36, 47, 0.12);
+  padding: 0.35rem;
   z-index: 50;
   animation: priorityFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -138,13 +138,14 @@ $text-muted: #8e8e93;
 }
 
 .popoverHeader {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: $text-muted;
-  padding: 0.2rem 0.45rem 0.3rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--admin-text-secondary, #525965);
+  padding: 0.25rem 0.45rem 0.3rem;
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
   margin-bottom: 0.2rem;
 }
 
@@ -153,11 +154,13 @@ $text-muted: #8e8e93;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 0.35rem 0.5rem;
+  padding: 0.4rem 0.55rem;
+  min-height: 44px;
   border-radius: 5px;
   background: transparent;
   border: none;
-  color: $text-secondary;
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.74rem;
   cursor: pointer;
   text-align: left;
@@ -165,19 +168,19 @@ $text-muted: #8e8e93;
   outline: none;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: $text-primary;
+    background: var(--admin-surface-hover, #f4f6f9);
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &:focus-visible {
-    background: rgba(255, 255, 255, 0.1);
-    color: $text-primary;
+    background: var(--admin-surface-muted, #f0f2f5);
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 
   &.selectedItem {
-    background: rgba(255, 97, 0, 0.14);
-    color: #ffffff;
-    font-weight: 600;
+    background: var(--admin-surface-muted, #f0f2f5);
+    color: var(--admin-text-primary, #1f242f);
+    font-weight: 700;
   }
 }
 
@@ -188,21 +191,7 @@ $text-muted: #8e8e93;
 }
 
 .checkMark {
-  color: $marca-orange;
-  font-size: 0.7rem;
+  color: var(--admin-text-primary, #1f242f);
+  font-size: 0.72rem;
   font-weight: 700;
-}
-
-.isPendingShimmer {
-  opacity: 0.75;
-  animation: pendingPulse 1.2s infinite ease-in-out;
-}
-
-@keyframes pendingPulse {
-  0%, 100% {
-    opacity: 0.65;
-  }
-  50% {
-    opacity: 1;
-  }
 }
