@@ -1,3 +1,10 @@
+/**
+ * @file settings.module.scss
+ * @description Layout and Commercial Authorization Matrix styles for /admin/settings.
+ *              Strictly complies with WCAG AA 4.5:1 contrast standards.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .container {
   display: flex;
   flex-direction: column;
@@ -82,7 +89,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #71717a;
+    color: #a1a1aa; /* Elevated to meet WCAG AA contrast */
   }
 }
 
@@ -106,52 +113,8 @@
   font-weight: 700;
 }
 
+/* R-25: Elevated contrast from #555555 (2.53:1 fail) to #a1a1aa (7.37:1 pass) */
 .dashMark {
-  color: #555555;
-}
-
-.auditSection {
-  background: #111111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 1.5rem;
-}
-
-.auditList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.auditRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
-  font-size: 0.82rem;
-  gap: 1rem;
-}
-
-.auditAction {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #ff6100;
-  background: rgba(255, 97, 0, 0.1);
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-}
-
-.auditEmail {
-  color: #ffffff;
+  color: #a1a1aa;
   font-weight: 500;
-}
-
-.auditTime {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  font-size: 0.7rem;
-  color: #71717a;
 }

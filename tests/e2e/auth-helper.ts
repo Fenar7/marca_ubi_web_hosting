@@ -32,7 +32,7 @@ export async function ensureAuthenticatedSession(
     if (await emailInput.isVisible()) {
       const email = role === 'admin' ? 'admin@marcaubi.com' : 'matrix_exec1@marcaubi.com';
       await emailInput.fill(email);
-      await passwordInput.fill('AdminSecurePassword2026!');
+      await passwordInput.fill('Password@123');
       await submitButton.click();
 
       // Wait for navigation back to target administrative enclave

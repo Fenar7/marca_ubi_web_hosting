@@ -11,6 +11,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/app/lib/supabase/middleware';
 import { sanitizeRedirectUrl } from '@/app/lib/auth-redirect';
+import type { CrmTabKey, CrmUserRole } from '@/types/crm';
+import { ROLE_DEFAULT_TABS } from '@/types/crm';
 
 /**
  * Propagates mutated session cookies from the Supabase session adapter onto a redirection response.
@@ -66,7 +68,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   const isAuthRoute = pathname === '/admin/login';
   const isAdminRoute = (pathname === '/admin' || pathname.startsWith('/admin/')) && !isAuthRoute;
-  const isTeamGovernanceRoute = pathname === '/admin/team' || pathname.startsWith('/admin/team/');
 
   // Scenario 1: Unauthenticated visitor attempting to access protected administrative enclaves
   if (isAdminRoute && !user) {
@@ -147,18 +148,50 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return createRedirectResponse(destinationUrl, supabaseResponse);
   }
 
-  // Scenario 4: Role-based Edge route gating for Team Governance (/admin/team)
-  if (isTeamGovernanceRoute && user) {
-    const userRole =
+  // Scenario 4: Granular Tab & Role-based Edge Route Gating
+  if (isAdminRoute && user) {
+    // SEC-02: Enforce app_metadata as the sole source of truth for authorization claims (role & allowed_tabs)
+    // Client-side user_metadata is excluded to prevent tampering via client auth.updateUser() calls
+    const userRole = (
       (user.app_metadata?.role as string | undefined) ||
-      (user.user_metadata?.role as string | undefined);
+      'viewer'
+    ) as CrmUserRole;
 
-    // Only 'admin' and 'sales_manager' are authorized to access team governance routes
-    if (userRole !== 'admin' && userRole !== 'sales_manager') {
-      const forbiddenUrl = new URL('/admin', request.url);
-      forbiddenUrl.searchParams.set('error', 'unauthorized_role_access');
+    const userAllowedTabs = user.app_metadata?.allowed_tabs as string[] | undefined;
 
-      return createRedirectResponse(forbiddenUrl, supabaseResponse);
+    // Canonical route-to-tab permission mapping
+    const ROUTE_TAB_MAP: Array<{ prefix: string; tabKey: CrmTabKey }> = [
+      { prefix: '/admin/team', tabKey: 'users' },
+      { prefix: '/admin/users', tabKey: 'users' },
+      { prefix: '/admin/analytics', tabKey: 'analytics' },
+      { prefix: '/admin/ingestion', tabKey: 'ingestion' },
+      { prefix: '/admin/settings', tabKey: 'settings' },
+      { prefix: '/admin/leads', tabKey: 'leads' },
+      { prefix: '/admin/deals', tabKey: 'deals' },
+      { prefix: '/admin/works', tabKey: 'works' },
+      { prefix: '/admin/tasks', tabKey: 'tasks' },
+    ];
+
+    const matchingRoute = ROUTE_TAB_MAP.find((m) =>
+      pathname === m.prefix || pathname.startsWith(`${m.prefix}/`)
+    );
+
+    if (matchingRoute) {
+      let isPermitted = false;
+
+      if (Array.isArray(userAllowedTabs)) {
+        isPermitted = userAllowedTabs.includes(matchingRoute.tabKey);
+      } else {
+        const defaultRoleTabs = ROLE_DEFAULT_TABS[userRole];
+        isPermitted = defaultRoleTabs ? Boolean(defaultRoleTabs[matchingRoute.tabKey]) : false;
+      }
+
+      if (!isPermitted) {
+        const forbiddenUrl = new URL('/admin', request.url);
+        forbiddenUrl.searchParams.set('error', 'unauthorized_role_access');
+
+        return createRedirectResponse(forbiddenUrl, supabaseResponse);
+      }
     }
   }
 

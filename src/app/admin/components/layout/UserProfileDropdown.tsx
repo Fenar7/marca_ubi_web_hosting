@@ -10,16 +10,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { logoutAction } from '@/app/actions/auth';
-import type { CrmUserRole } from '@/types/crm';
+import type { CurrentUserSession } from '@/types/crm';
 import styles from './UserProfileDropdown.module.scss';
 
-export interface CurrentUserSession {
-  id: string;
-  name: string;
-  email: string;
-  role: CrmUserRole;
-  jobTitle: string;
-}
+export type { CurrentUserSession };
 
 interface UserProfileDropdownProps {
   currentUser: CurrentUserSession;
@@ -55,7 +49,8 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
   }, [isOpen]);
 
   // Extract up to 2 uppercase monogram initials
-  const initials = currentUser.name
+  const displayName = currentUser.name || currentUser.fullName || 'Staff Member';
+  const initials = displayName
     .split(' ')
     .filter(Boolean)
     .map((n) => n[0])

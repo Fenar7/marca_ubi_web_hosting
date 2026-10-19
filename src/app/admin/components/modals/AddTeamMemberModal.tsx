@@ -13,10 +13,12 @@
 
 import React, { useState, useEffect, useTransition, useCallback } from 'react';
 import { createTeamUser } from '@/app/actions/team';
-import type { CrmUserRole } from '@/types/crm';
+import type { CrmUserRole, CrmTabKey } from '@/types/crm';
+import { ROLE_DEFAULT_TABS } from '@/types/crm';
 import { generateHighEntropyPassword, isDrawerDirty } from '@/app/lib/team-utils';
 import type { ProvisionedCredentialsPayload } from '@/app/admin/(workspace)/team/components/CredentialRevealModal';
 import { useModalAnimation } from './useModalAnimation';
+import { PERMISSION_ENCLAVES, getInitialAllowedTabs } from '@/app/lib/team-permissions-config';
 import styles from './AddTeamMemberModal.module.scss';
 
 export interface AddTeamMemberModalProps {
@@ -44,6 +46,7 @@ export function AddTeamMemberModal({
   const [phone, setPhone] = useState('');
   const [tempPassword, setTempPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [allowedTabs, setAllowedTabs] = useState<CrmTabKey[]>(getInitialAllowedTabs('sales_executive'));
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -61,14 +64,49 @@ export function AddTeamMemberModal({
       setPhone('');
       setTempPassword(generateHighEntropyPassword());
       setShowPassword(false);
+      setAllowedTabs(getInitialAllowedTabs('sales_executive'));
       setFormErrors({});
       setGeneralError(null);
       setShowDiscardPrompt(false);
     }
   }, [isOpen]);
 
+  const handleRoleChange = (newRole: CrmUserRole) => {
+    setRole(newRole);
+    setAllowedTabs(getInitialAllowedTabs(newRole));
+  };
+
+  const handleToggleTab = (tabKey: CrmTabKey) => {
+    setAllowedTabs((prev) =>
+      prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]
+    );
+  };
+
+  const handleSelectAllTabs = () => {
+    setAllowedTabs([
+      'command_center',
+      'leads',
+      'deals',
+      'works',
+      'tasks',
+      'users',
+      'analytics',
+      'ingestion',
+      'settings',
+    ]);
+  };
+
+  const handleResetToRoleDefaults = () => {
+    setAllowedTabs(getInitialAllowedTabs(role));
+  };
+
   // Determine whether the form contains unsaved modifications
-  const isDirty = isDrawerDirty(fullName, email, jobTitle, phone, role);
+  const defaultTabs = getInitialAllowedTabs(role);
+  const areTabsModified =
+    allowedTabs.length !== defaultTabs.length ||
+    !allowedTabs.every((t) => defaultTabs.includes(t));
+
+  const isDirty = isDrawerDirty(fullName, email, jobTitle, phone, role) || areTabsModified;
 
   const requestClose = useCallback(() => {
     if (isDirty) {
@@ -136,6 +174,7 @@ export function AddTeamMemberModal({
           jobTitle: jobTitle.trim(),
           phone: phone.trim() || null,
           tempPassword,
+          allowedTabs,
         };
 
         const result = await createTeamUser(payload);
@@ -149,15 +188,18 @@ export function AddTeamMemberModal({
         }
 
         // Broadcast custom event for optimistic roster synchronization across workspaces
+        // F-04: Include real provisioned UUID in event detail so optimistic mutations work immediately
         window.dispatchEvent(
           new CustomEvent('team-member-created', {
             detail: {
+              id: result.data?.id,
               credentials: {
                 fullName,
                 email,
                 role,
                 jobTitle,
                 tempPassword,
+                allowedTabs,
               },
             },
           })
@@ -170,6 +212,7 @@ export function AddTeamMemberModal({
           role: payload.role,
           jobTitle: payload.jobTitle,
           tempPassword: payload.tempPassword,
+          allowedTabs: payload.allowedTabs,
         });
 
         onClose();
@@ -272,7 +315,7 @@ export function AddTeamMemberModal({
                 name="role"
                 className={styles.select}
                 value={role}
-                onChange={(e) => setRole(e.target.value as CrmUserRole)}
+                onChange={(e) => handleRoleChange(e.target.value as CrmUserRole)}
                 disabled={isPending}
               >
                 <option value="sales_executive">Sales Executive</option>
@@ -316,6 +359,97 @@ export function AddTeamMemberModal({
               placeholder="+971 50 000 0000"
               disabled={isPending}
             />
+          </div>
+
+          {/* Granular Tab Access Permissions Matrix */}
+          <div className={styles.permissionsSection}>
+            <div className={styles.permissionsHeader}>
+              <div className={styles.permissionsTitleGroup}>
+                <span className={styles.permissionsTitle}>Workspace Tab Permissions</span>
+                <span className={styles.permissionsSubtitle}>
+                  Authorize specific functional tabs for this staff member ({allowedTabs.length}/9 Active)
+                </span>
+              </div>
+              <div className={styles.permissionsQuickActions}>
+                <button
+                  type="button"
+                  className={styles.quickActionBtn}
+                  onClick={handleSelectAllTabs}
+                  disabled={isPending}
+                  title="Grant access to all 9 tabs"
+                >
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  className={styles.quickActionBtn}
+                  onClick={handleResetToRoleDefaults}
+                  disabled={isPending}
+                  title="Reset to role-based baseline"
+                >
+                  Reset Defaults
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.enclavesContainer}>
+              {PERMISSION_ENCLAVES.map((enclave) => (
+                <div key={enclave.enclaveTitle} className={styles.enclaveCard}>
+                  <div className={styles.enclaveHeader}>
+                    <span className={styles.enclaveName}>{enclave.enclaveTitle}</span>
+                    <span className={styles.enclaveBadge}>
+                      {enclave.tabs.filter((t) => allowedTabs.includes(t.key)).length}/{enclave.tabs.length} Authorized
+                    </span>
+                  </div>
+
+                  <div className={styles.tabsGrid}>
+                    {enclave.tabs.map((tab) => {
+                      const isChecked = allowedTabs.includes(tab.key);
+                      return (
+                        <div
+                          key={tab.key}
+                          className={`${styles.tabCard} ${isChecked ? styles.tabCardActive : ''}`}
+                          onClick={() => !isPending && handleToggleTab(tab.key)}
+                          onKeyDown={(e) => {
+                            if (e.key === ' ' || e.key === 'Enter') {
+                              e.preventDefault();
+                              if (!isPending) handleToggleTab(tab.key);
+                            }
+                          }}
+                          role="checkbox"
+                          aria-checked={isChecked}
+                          tabIndex={0}
+                          aria-label={`${tab.label} (${tab.route})`}
+                        >
+                          <div className={styles.customCheckbox} aria-hidden="true">
+                            {isChecked && (
+                              <svg
+                                className={styles.checkIcon}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className={styles.tabMeta}>
+                            <div className={styles.tabLabel}>
+                              <span>{tab.label}</span>
+                              <span className={styles.tabRoute}>{tab.route}</span>
+                            </div>
+                            <span className={styles.tabHint}>{tab.hint}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Generated Temporary Password Section */}

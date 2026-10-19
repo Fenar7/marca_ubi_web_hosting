@@ -13,12 +13,13 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
 import { SALES_REP_CAPACITY_LIMIT } from '@/app/lib/team-schemas';
-import type { CrmUserRole, TeamMemberRosterItem } from '@/types/crm';
+import { getInitialAllowedTabs } from '@/app/lib/team-permissions-config';
+import type { CrmTabKey, CrmUserRole, TeamMemberRosterItem } from '@/types/crm';
 import { TeamWorkspaceClient } from './components/TeamWorkspaceClient';
 import styles from './team.module.scss';
 
 export const metadata: Metadata = {
-  title: 'Team Directory | Marca Ubi Enterprise CRM',
+  title: 'User Management & Access Control | Marca Ubi Enterprise CRM',
   robots: {
     index: false,
     follow: false,
@@ -52,7 +53,7 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   // Retrieve authenticated caller profile
   const { data: callerProfile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, role, status')
+    .select('id, role, status, allowed_tabs')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -65,8 +66,13 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   }
 
   const role = callerProfile.role as CrmUserRole;
+  const allowedTabs = callerProfile.allowed_tabs as string[] | undefined;
 
-  if (role !== 'admin' && role !== 'sales_manager') {
+  const hasUsersAccess = Array.isArray(allowedTabs)
+    ? allowedTabs.includes('users')
+    : role === 'admin' || role === 'sales_manager';
+
+  if (!hasUsersAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 
@@ -81,10 +87,15 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
 
   const totalActiveDeals = roster.reduce((acc, m) => acc + (m.active_deals_count || 0), 0);
   const totalPortfolioValue = roster.reduce((acc, m) => acc + (m.total_deal_value || 0), 0);
-
-  const repsAtCapacity = roster.filter((m) => m.role === 'sales_executive' && m.active_deals_count >= SALES_REP_CAPACITY_LIMIT).length;
-  const executiveCount = roster.filter((m) => m.role === 'sales_executive').length;
+  // F-06: Compute staff members with genuine custom tab overrides compared to role baseline
+  const customPermissionStaff = roster.filter((m) => {
+    if (!Array.isArray(m.allowed_tabs)) return false;
+    const defaults = getInitialAllowedTabs(m.role);
+    if (m.allowed_tabs.length !== defaults.length) return true;
+    return !m.allowed_tabs.every((tab) => defaults.includes(tab as CrmTabKey));
+  }).length;
   const adminCount = roster.filter((m) => m.role === 'admin').length;
+  const managerCount = roster.filter((m) => m.role === 'sales_manager').length;
 
   return (
     <div className={styles.workspace}>
@@ -92,9 +103,9 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.eyebrow}>Governance & Access Control</span>
-          <h1 className={styles.pageTitle}>Team Directory</h1>
+          <h1 className={styles.pageTitle}>User Management & Access Control</h1>
           <p className={styles.pageSubtitle}>
-            Manage team members, assign client portfolios, and update account permissions.
+            Manage agency personnel accounts, configure granular tab-level access permissions, and oversee team operations.
           </p>
         </div>
       </header>
@@ -122,19 +133,22 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
           </div>
         </div>
 
-        {/* KPI 2: Active Deals Load */}
+        {/* KPI 2: Tab Permissions Distribution */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Assigned Deals</span>
+            <span className={styles.kpiLabel}>Tab Governance</span>
             <div className={styles.kpiIcon}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
             </div>
           </div>
-          <div className={styles.kpiValue}>{totalActiveDeals}</div>
+          <div className={styles.kpiValue}>{customPermissionStaff}</div>
           <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailHighlight}>{executiveCount} Account Executives</span>
+            <span className={styles.kpiDetailHighlight}>Custom Tab Overrides</span>
+            <span>·</span>
+            <span>{totalStaff - customPermissionStaff} Default</span>
           </div>
         </div>
 
@@ -151,23 +165,25 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
           </div>
           <div className={styles.kpiValue}>{formatPortfolioValue(totalPortfolioValue)}</div>
           <div className={styles.kpiDetail}>
-            <span>Active Commercial Pipeline</span>
+            <span>{totalActiveDeals} Active Deals in Pipeline</span>
           </div>
         </div>
 
-        {/* KPI 4: Reps at Capacity & Governance */}
+        {/* KPI 4: Governance & Supervisory Enclave */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabelRow}>
-            <span className={styles.kpiLabel}>Reps at Capacity</span>
+            <span className={styles.kpiLabel}>Governance Tier</span>
             <div className={styles.kpiIcon}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
           </div>
-          <div className={styles.kpiValue}>{repsAtCapacity}</div>
+          <div className={styles.kpiValue}>{adminCount + managerCount}</div>
           <div className={styles.kpiDetail}>
-            <span>{adminCount} Active Administrators</span>
+            <span className={styles.kpiDetailEmerald}>{adminCount} Admins</span>
+            <span>·</span>
+            <span>{managerCount} Managers</span>
           </div>
         </div>
       </section>

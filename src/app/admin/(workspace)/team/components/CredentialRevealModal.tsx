@@ -18,6 +18,7 @@ export interface ProvisionedCredentialsPayload {
   role: string;
   jobTitle: string;
   tempPassword: string;
+  allowedTabs?: string[];
 }
 
 interface CredentialRevealModalProps {
@@ -96,7 +97,7 @@ export function CredentialRevealModal({
         : 'https://marcaubi.com/admin/login';
 
     const formattedPayload = [
-      'MARCA UBI ENTERPRISE CRM — TEMPORARY ACCESS CREDENTIALS',
+      'MARCA UBI ENTERPRISE CRM: TEMPORARY ACCESS CREDENTIALS',
       `Full Name: ${credentials.fullName}`,
       `Work Email: ${credentials.email}`,
       `Assigned Role: ${credentials.role.toUpperCase()}`,
@@ -145,14 +146,25 @@ export function CredentialRevealModal({
     }
   };
 
-  const handleDone = () => {
+  const handleDone = useCallback(() => {
     // Purge clipboard on modal dismissal for defense in depth
     if (copied) {
       purgeClipboard();
     }
     clearTimers();
     onClose();
-  };
+  }, [copied, purgeClipboard, clearTimers, onClose]);
+
+  // Escape key modal dismissal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleDone();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleDone]);
 
   return (
     <div
@@ -160,6 +172,11 @@ export function CredentialRevealModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="credential-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleDone();
+        }
+      }}
     >
       <div className={styles.modalCard}>
         <div className={styles.modalAlertBanner}>
