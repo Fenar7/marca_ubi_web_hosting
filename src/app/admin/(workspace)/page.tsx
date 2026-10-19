@@ -1,8 +1,8 @@
 /**
  * @file page.tsx
- * @description Executive Pipeline Command Center for the Marca Ubi Agency CRM (/admin).
- *              Renders real-time Stripe Scorecards, primary workflow quick-launch cards,
- *              and the live touchpoint and audit activity ledger.
+ * @description Executive Overview and Commercial Performance Dashboard for the Marca Ubi Agency CRM (/admin).
+ *              Renders real-time Sypher scorecards, Commercial Funnel Trinity navigation,
+ *              representative workload balancing, and the recent activity feed.
  * @module app/admin/(workspace)/page
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -10,6 +10,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { PipelineRpcMetrics } from '@/types/crm';
 import { KpiRibbon } from '@/app/admin/components/kpi';
@@ -18,7 +19,7 @@ import styles from './page.module.scss';
 import { ActivityRowItem } from './components/ActivityRowItem';
 
 export const metadata: Metadata = {
-  title: 'Executive Dashboard | Marca Ubi Enterprise CRM',
+  title: 'Executive Overview | Marca Ubi Enterprise CRM',
   robots: {
     index: false,
     follow: false,
@@ -46,7 +47,7 @@ function formatTimeAgo(isoDate: string): string {
 interface ActivityItem {
   id: string;
   type: string;
-  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue';
+  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral';
   description: string;
   actor: string;
   createdAt: string;
@@ -55,6 +56,14 @@ interface ActivityItem {
 
 export default async function AdminDashboardPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
+
+  // Invariant: Short-circuit unauthenticated calls before issuing telemetry queries
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/admin/login?next=%2Fadmin');
+  }
 
   // 1. Fetch Aggregated Pipeline Metrics via RPC or Direct Aggregation Fallback
   let rpcMetrics: PipelineRpcMetrics | null = null;
@@ -121,7 +130,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
     leadActs.forEach((act) => {
       const typeStr = (act.activity_type || 'update').replace(/_/g, ' ');
       const actorName = (act.profiles as { full_name?: string } | null)?.full_name || 'System';
-      let badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue' = 'neutral';
+      let badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' = 'neutral';
 
       if (act.activity_type === 'status_change') badgeStyle = 'emerald';
       else if (act.activity_type === 'call_logged' || act.activity_type === 'meeting_notes')
@@ -171,25 +180,42 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
 
   return (
     <div className={styles.container}>
-      {/* Executive Dashboard Header */}
+      {/* Executive Overview Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Overview</span>
-          <h1 className={styles.pageTitle}>Executive Dashboard</h1>
+          <span className={styles.eyebrow}>Executive Overview</span>
+          <h1 className={styles.pageTitle}>Commercial Performance.</h1>
           <p className={styles.pageSubtitle}>
-            Key metrics, team workload, and recent client activity across the agency.
+            Key commercial metrics, representative capacity, and recent touchpoints across the agency.
           </p>
         </div>
 
-        <div className={styles.headerMeta}>
+        <div className={styles.headerActions}>
           <div className={styles.nodeBadge}>
             <span className={styles.nodeDot} />
-            <span>System Online / Verified Secure</span>
+            <span>Operational Status: Active</span>
           </div>
+          <Link href="/admin/leads" className={styles.newLeadBtn} title="Review inbound inquiries and create deals">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Inbound Leads</span>
+          </Link>
         </div>
       </header>
 
-      {/* Dark Luxury Executive KPI Ribbon */}
+      {/* Sypher Master Executive KPI Ribbon */}
       <KpiRibbon initialData={rpcMetrics} />
 
       {/* Commercial Rep Workload Balancing & SLA Oversight */}
@@ -199,9 +225,9 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
       <section className={styles.funnelDistributionSection} aria-label="Commercial Funnel Trinity Overview">
         <div className={styles.sectionHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Commercial Pipeline Velocity</h2>
+            <h2 className={styles.sectionTitle}>Commercial Funnel Trinity.</h2>
             <p className={styles.sectionDescription}>
-              Real-time account distribution across the three agency operational workspaces.
+              Real-time account distribution across Discovery, Negotiation, and Production workspaces.
             </p>
           </div>
         </div>
@@ -287,7 +313,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
       {/* Recent Activity */}
       <section className={styles.activitySection} aria-label="Recent Operational Activity">
         <div className={styles.ledgerHeader}>
-          <h2 className={styles.ledgerTitle}>Recent Activity</h2>
+          <h2 className={styles.ledgerTitle}>Recent Activity.</h2>
           <div className={styles.liveFeedIndicator}>
             <span className={styles.liveFeedDot} />
             <span>Real-time Stream</span>

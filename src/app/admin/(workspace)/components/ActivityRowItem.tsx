@@ -14,7 +14,7 @@ import styles from '../page.module.scss';
 export interface ActivityRowItemProps {
   id: string;
   type: string;
-  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue';
+  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral';
   description: string;
   actor: string;
   timeAgo: string;
@@ -36,7 +36,7 @@ export function ActivityRowItem({
       ? styles.badgeAmber
       : badgeStyle === 'orange'
       ? styles.badgeOrange
-      : styles.badgeNeutral || styles.badgeBlue;
+      : styles.badgeNeutral;
 
   const handleClick = (): void => {
     if (leadId && typeof window !== 'undefined') {
@@ -57,7 +57,10 @@ export function ActivityRowItem({
       onKeyDown={
         isClickable
           ? (e) => {
-              if (e.key === 'Enter') handleClick();
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+              }
             }
           : undefined
       }
@@ -77,7 +80,7 @@ export function ActivityRowItem({
               height="12"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#ff6100"
+              stroke="currentColor"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"

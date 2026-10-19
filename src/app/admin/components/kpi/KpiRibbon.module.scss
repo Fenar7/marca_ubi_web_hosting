@@ -1,8 +1,11 @@
 /**
  * @file KpiRibbon.module.scss
- * @description Dark luxury styling tokens and responsive grid layout for the Executive KPI Ribbon.
- *              Implements Stripe Scorecards archetype, Apple HIG glass vibrancy, tabular numerals,
- *              specular card highlights, and hairline divider separations.
+ * @description Master Executive KPI Ribbon styles conforming to the Sypher SaaS analytics
+ *              and Accordion Executive Advisory design system:
+ *              - Pure white elevated scorecards (#ffffff) with crisp 1px borders (#e2e5ea)
+ *              - Tabular numerals (font-variant-numeric: tabular-nums) in high-contrast charcoal (#1f242f)
+ *              - Accessible 44px interactive touch targets and WCAG AAA contrast
+ *              - Zero AI slop: zero muddy drop shadows, zero glow blur, zero generic blue (#2563eb)
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -24,7 +27,7 @@
   @media (max-width: 640px) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
 }
 
@@ -36,12 +39,12 @@
 }
 
 .engineEyebrow {
-  font-family: var(--font-graphik), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #ff6100;
+  color: var(--admin-text-secondary, #525965);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -51,13 +54,13 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #22c55e;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+  background-color: var(--admin-status-emerald-dot, #10b981);
 }
 
 .lastUpdatedLabel {
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.75rem;
-  color: #7c7c7c;
+  color: var(--admin-text-secondary, #525965);
   font-feature-settings: 'tnum' 1;
   font-variant-numeric: tabular-nums;
 }
@@ -66,10 +69,10 @@
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 9999px;
-  background: rgba(255, 97, 0, 0.12);
-  border: 1px solid rgba(255, 97, 0, 0.3);
-  color: #ff6100;
+  border-radius: var(--admin-radius-pill, 9999px);
+  background: rgba(238, 251, 135, 0.4);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  color: var(--admin-text-primary, #1f242f);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -89,76 +92,80 @@
 .currencyToggle {
   display: inline-flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
   padding: 2px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
 
 .currencyBtn {
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-family: var(--font-graphik), -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 0.75rem;
+  position: relative;
+  font-family: var(--font-admin-btn, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.6875rem;
   font-weight: 600;
-  color: #7c7c7c;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  min-height: 32px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary, #525965);
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  transition: all 0.15s ease;
+  user-select: none;
 
-  &:hover {
-    color: #ffffff;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
   }
 
-  &.currencyActive {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 6px rgba(0, 0, 0, 0.4);
+  &:hover:not(.currencyActive) {
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
-  }
-
-  &:active {
-    transform: scale(0.97);
   }
 }
 
+.currencyActive {
+  background: var(--admin-text-primary, #1f242f);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.12);
+}
+
 .refreshBtn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  height: 28px;
-  padding: 0 10px;
-  font-family: var(--font-graphik), -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #a1a1aa;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  height: 44px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-text-secondary, #525965);
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  transition: all 0.15s ease;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.15);
+  &:hover:not(:disabled) {
+    background: var(--admin-surface-hover, #f8fafc);
+    color: var(--admin-text-primary, #1f242f);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 
@@ -194,20 +201,24 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--admin-border-default, #e2e5ea);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 12px;
   overflow: hidden;
   min-height: 130px;
   background-clip: padding-box;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
 
   @media (max-width: 1200px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 768px) and (min-width: 541px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > :last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
   }
 
   @media (max-width: 540px) {
@@ -216,7 +227,7 @@
 }
 
 .kpiCard {
-  background: #000000;
+  background: var(--admin-card-bg, #ffffff);
   padding: 18px 20px;
   min-height: 130px;
   display: flex;
@@ -225,27 +236,26 @@
   position: relative;
   text-decoration: none;
   color: inherit;
-  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  transition: background-color 0.15s ease, transform 0.15s ease;
   overflow: hidden;
 
   &:hover {
-    background: #111114;
+    background: var(--admin-surface-hover, #f8fafc);
     cursor: pointer;
 
     .drilldownArrow {
       transform: translate(2px, -2px);
       opacity: 1;
-      color: #ff6100;
+      color: var(--admin-text-primary, #1f242f);
     }
 
     .kpiIcon {
-      color: #ffffff;
+      color: var(--admin-text-primary, #1f242f);
     }
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: -2px;
     z-index: 2;
   }
@@ -262,8 +272,7 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: #ff6100;
-      box-shadow: 0 0 12px rgba(255, 97, 0, 0.6);
+      background: var(--admin-status-rose-text, #991b1b);
     }
   }
 }
@@ -277,12 +286,12 @@
 }
 
 .kpiLabel {
-  font-family: var(--font-graphik), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #7c7c7c;
+  color: var(--admin-text-secondary, #525965);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -296,7 +305,7 @@
 }
 
 .kpiIcon {
-  color: #7c7c7c;
+  color: var(--admin-text-secondary, #525965);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -304,8 +313,8 @@
 }
 
 .drilldownArrow {
-  color: #7c7c7c;
-  opacity: 0.4;
+  color: var(--admin-text-secondary, #525965);
+  opacity: 0.5;
   transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
   display: flex;
   align-items: center;
@@ -320,11 +329,11 @@
 }
 
 .kpiValue {
-  font-family: var(--font-graphik), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: clamp(1.75rem, 2.5vw + 0.5rem, 2.75rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.05;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.025em;
@@ -333,7 +342,7 @@
 
 .kpiSubtext {
   font-size: 0.75rem;
-  color: #7c7c7c;
+  color: var(--admin-text-secondary, #525965);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -342,19 +351,19 @@
 }
 
 .positiveTrend {
-  color: #10b981;
-  font-weight: 500;
+  color: var(--admin-status-emerald-text, #065f46);
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 3px;
 }
 
 .neutralSubtext {
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
 }
 
 .urgentAlert {
-  color: #ff6100;
+  color: var(--admin-status-rose-text, #991b1b);
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -365,7 +374,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #ff6100;
+  background-color: var(--admin-status-rose-text, #991b1b);
   position: relative;
   flex-shrink: 0;
 
@@ -377,8 +386,8 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background-color: #ff6100;
-    opacity: 0.6;
+    background-color: var(--admin-status-rose-text, #991b1b);
+    opacity: 0.4;
     animation: alertPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
 }
@@ -386,23 +395,23 @@
 @keyframes alertPulse {
   0%, 100% {
     transform: scale(0.8);
-    opacity: 0.7;
+    opacity: 0.5;
   }
   50% {
-    transform: scale(2.0);
+    transform: scale(1.8);
     opacity: 0;
   }
 }
 
 .weightedValuationBadge {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.6875rem;
-  font-weight: 500;
+  font-weight: 600;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #a1a1aa;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -410,7 +419,7 @@
 }
 
 .skeletonCard {
-  background: #0e0e12;
+  background: var(--admin-card-bg, #ffffff);
   padding: 18px 20px;
   min-height: 130px;
   display: flex;
@@ -429,7 +438,7 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.04) 50%,
+      rgba(31, 36, 47, 0.04) 50%,
       transparent 100%
     );
     animation: shimmer 1.6s infinite ease-in-out;
@@ -446,21 +455,21 @@
   width: 70px;
   height: 12px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--admin-surface-muted, #f0f2f5);
 }
 
 .skeletonIcon {
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--admin-surface-muted, #f0f2f5);
 }
 
 .skeletonValue {
   width: 110px;
   height: 36px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface-muted, #f0f2f5);
   margin: 6px 0;
 }
 
@@ -468,7 +477,7 @@
   width: 130px;
   height: 12px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--admin-surface-muted, #f0f2f5);
 }
 
 @keyframes shimmer {
