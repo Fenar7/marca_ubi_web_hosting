@@ -309,7 +309,7 @@ export function BatchReassignModal({
               aria-label="Overdue candidate leads"
             >
               {candidateLeads.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#a1a1aa', fontSize: '13px' }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--admin-text-secondary, #525965)', fontSize: '13px' }}>
                   No overdue accounts match the current filter criteria.
                 </div>
               ) : (

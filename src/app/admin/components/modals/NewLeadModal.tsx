@@ -45,6 +45,7 @@ export function NewLeadModal({
 
   const [isPending, startTransition] = useTransition();
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const modalDialogRef = useRef<HTMLDivElement>(null);
 
   // Form Field State
   const [name, setName] = useState('');
@@ -70,14 +71,21 @@ export function NewLeadModal({
   // Unsaved changes modal state
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
 
-  // Fetch active team assignees when opening modal
+  // Fetch active team assignees when opening modal with error fallback
   useEffect(() => {
     if (isOpen) {
-      getActiveTeamAssignees().then((options) => {
-        setAssigneeOptions(options);
-      });
+      getActiveTeamAssignees()
+        .then((options) => {
+          setAssigneeOptions(options);
+        })
+        .catch((err) => {
+          console.error('[ASSIGN_FETCH_ERROR] Failed to load assignees:', err);
+          setAssigneeOptions([
+            { id: currentUser.id, fullName: currentUser.name || 'Current User', role: currentUser.role, email: currentUser.email || '' },
+          ]);
+        });
     }
-  }, [isOpen]);
+  }, [isOpen, currentUser.id, currentUser.name, currentUser.role]);
 
   // Reset form upon opening
   useEffect(() => {
@@ -125,7 +133,7 @@ export function NewLeadModal({
     }
   }, [isDirty, onClose]);
 
-  // Handle Escape key
+  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
@@ -133,6 +141,24 @@ export function NewLeadModal({
           setShowDiscardPrompt(false);
         } else {
           requestClose();
+        }
+        return;
+      }
+
+      if (event.key === 'Tab' && isOpen && modalDialogRef.current) {
+        const focusable = modalDialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
         }
       }
     };
@@ -213,6 +239,7 @@ export function NewLeadModal({
       aria-labelledby="new-lead-modal-title"
     >
       <div
+        ref={modalDialogRef}
         className={`${styles.modalDialog} ${isClosing ? styles.dialogClosing : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >

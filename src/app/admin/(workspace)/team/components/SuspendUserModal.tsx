@@ -11,7 +11,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { TeamMemberRosterItem, Profile } from '@/types/crm';
 import { suspendTeamUser } from '@/app/actions/team';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
@@ -33,6 +33,7 @@ export function SuspendUserModal({
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Reset state when modal opens for a new member
   useEffect(() => {
@@ -43,13 +44,41 @@ export function SuspendUserModal({
     }
   }, [isOpen, member?.id]);
 
-  // Handle Escape key to dismiss dialog safely
+  // Lock body scroll while open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isSubmitting) {
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
 
@@ -91,17 +120,18 @@ export function SuspendUserModal({
       aria-labelledby="suspend-modal-title"
       aria-describedby="suspend-modal-desc"
     >
-      <div className={styles.modalCard} style={{ maxWidth: '480px' }}>
+      <div ref={modalRef} className={styles.modalCard} style={{ maxWidth: '480px' }}>
         {/* Error notification banner */}
         {errorMessage && (
           <div
             style={{
               padding: '0.75rem 1rem',
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
+              background: 'var(--admin-status-rose-bg, #fef2f2)',
+              border: '1px solid var(--admin-status-rose-border, #fecaca)',
               borderRadius: '6px',
-              color: '#ef4444',
+              color: 'var(--admin-status-rose-text, #991b1b)',
               fontSize: '0.8rem',
+              fontWeight: 500,
               marginBottom: '1rem',
               lineHeight: 1.4,
             }}

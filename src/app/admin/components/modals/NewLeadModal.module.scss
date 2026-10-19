@@ -245,7 +245,8 @@
   gap: 0.25rem;
 }
 
-.requiredIndicator {
+.requiredIndicator,
+.requiredStar {
   color: var(--admin-status-rose-text, #991b1b);
   font-weight: 700;
 }
@@ -325,9 +326,35 @@
   font-weight: 500;
 }
 
-.fieldHelper {
+.fieldHelper,
+.fieldHint {
   font-size: 0.72rem;
   color: var(--admin-text-secondary, #525965);
+}
+
+.inputWithBadge {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .input {
+    width: 100%;
+    padding-right: 5.5rem;
+  }
+}
+
+.valuationBadge {
+  position: absolute;
+  right: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--admin-status-emerald-text, #065f46);
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  border: 1px solid var(--admin-status-emerald-border, #a7f3d0);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 
 .modalFooter {

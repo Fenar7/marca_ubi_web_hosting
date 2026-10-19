@@ -104,18 +104,22 @@ export function ClientDossierDrawer({
   // Ensure body scroll lock is restored if component unmounts unexpectedly while open
   useEffect(() => {
     return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     };
   }, []);
 
-  // Load complete lead dossier from Server Action
+  // Load complete lead dossier from Server Action with cancellation guard
   const loadDossier = useCallback(
-    async (id: string) => {
+    async (id: string, getIsCurrent?: () => boolean) => {
       setIsLoading(true);
       setFetchError(null);
       try {
         const response = await getLeadDetails(id);
+        if (getIsCurrent && !getIsCurrent()) return;
         if (!response.success || !response.data?.lead) {
           setFetchError(response.error || 'Failed to load deal record from database.');
           return;
@@ -153,14 +157,18 @@ export function ClientDossierDrawer({
           updated_at: raw.updated_at,
         };
 
+        if (getIsCurrent && !getIsCurrent()) return;
         setLead(normalized);
         setActivities(response.data.activities || []);
       } catch (err) {
+        if (getIsCurrent && !getIsCurrent()) return;
         setFetchError(
           err instanceof Error ? err.message : 'An unexpected exception occurred while retrieving the dossier.'
         );
       } finally {
-        setIsLoading(false);
+        if (!getIsCurrent || getIsCurrent()) {
+          setIsLoading(false);
+        }
       }
     },
     []
@@ -178,9 +186,14 @@ export function ClientDossierDrawer({
   );
 
   useEffect(() => {
+    let isCurrent = true;
     if (isOpen && leadId) {
-      loadDossier(leadId);
+      setLead(null);
+      loadDossier(leadId, () => isCurrent);
     }
+    return () => {
+      isCurrent = false;
+    };
   }, [isOpen, leadId, loadDossier]);
 
   // Keyboard accessibility: Escape key dismissal and focus trapping loop (WCAG 2.1 AA)
@@ -283,7 +296,11 @@ export function ClientDossierDrawer({
             )}
 
             <h2 className={styles.headerCompany}>
-              {lead?.company ? `${lead.company}.` : lead?.name ? `${lead.name}.` : 'Commercial Deal Dossier.'}
+              {lead?.company
+                ? `${lead.company.replace(/\.+$/, '')}.`
+                : lead?.name
+                ? `${lead.name.replace(/\.+$/, '')}.`
+                : 'Commercial Deal Dossier.'}
             </h2>
 
             {lead && (
@@ -323,6 +340,7 @@ export function ClientDossierDrawer({
               <button
                 type="button"
                 onClick={() => {
+                  onClose();
                   if (typeof window !== 'undefined') {
                     window.dispatchEvent(
                       new CustomEvent('open-convert-lead-modal', {

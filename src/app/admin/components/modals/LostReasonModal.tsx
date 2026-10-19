@@ -260,8 +260,9 @@ export function LostReasonModal({
                   <span
                     style={{
                       fontSize: '0.72rem',
-                      color: lostNotes.trim().length >= 10 ? '#10b981' : '#ef4444',
-                      fontFamily: 'ui-monospace, monospace',
+                      color: lostNotes.trim().length >= 10 ? 'var(--admin-status-emerald-text, #065f46)' : 'var(--admin-status-rose-text, #991b1b)',
+                      fontFamily: 'var(--font-admin-code, monospace)',
+                      fontWeight: 600,
                     }}
                   >
                     {lostNotes.trim().length}/10 chars

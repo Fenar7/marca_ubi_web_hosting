@@ -197,7 +197,15 @@
   gap: 0.35rem;
 }
 
-.label {
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.label,
+.fieldLabel {
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -208,13 +216,30 @@
   gap: 0.25rem;
 }
 
-.requiredIndicator {
+.requiredIndicator,
+.required {
   color: var(--admin-status-rose-text, #991b1b);
 }
 
+.livePreviewPill {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--admin-status-emerald-text, #065f46);
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  border: 1px solid var(--admin-status-emerald-border, #a7f3d0);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
 .input,
+.textInput,
 .select,
-.textarea {
+.selectInput,
+.textarea,
+.textareaInput {
+  width: 100%;
   min-height: 44px;
   padding: 0.6rem 0.85rem;
   background: var(--admin-card-bg, #ffffff);
@@ -223,6 +248,7 @@
   color: var(--admin-text-primary, #1f242f);
   font-size: 0.85rem;
   outline: none;
+  box-sizing: border-box;
   transition: all 140ms ease;
 
   &::placeholder {
@@ -234,26 +260,36 @@
     box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 
+  &.hasPrefix,
+  &.currencyPadding {
+    padding-left: 2rem;
+  }
+
+  &.hasError,
   &.error {
     border-color: var(--admin-status-rose-text, #991b1b);
     background: var(--admin-status-rose-bg, #fef2f2);
   }
 }
 
-.textarea {
+.textarea,
+.textareaInput {
   min-height: 72px;
   resize: vertical;
   line-height: 1.5;
   font-family: inherit;
 }
 
-.currencyInputGroup {
+.currencyInputGroup,
+.inputWrapper {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
-.currencySymbol {
+.currencySymbol,
+.inputPrefix {
   position: absolute;
   left: 0.85rem;
   font-size: 0.85rem;
@@ -272,7 +308,8 @@
   font-weight: 500;
 }
 
-.helperText {
+.helperText,
+.fieldHint {
   font-size: 0.72rem;
   color: var(--admin-text-secondary, #525965);
 }

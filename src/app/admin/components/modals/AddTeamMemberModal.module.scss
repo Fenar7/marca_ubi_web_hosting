@@ -341,16 +341,94 @@
 
 .permissionsHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.permissionsTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .permissionsTitle {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--admin-text-primary, #1f242f);
+}
+
+.permissionsSubtitle {
+  font-size: 0.72rem;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.permissionsQuickActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quickActionBtn {
+  min-height: 44px;
+  padding: 0 0.85rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.enclavesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.enclaveCard {
+  background: var(--admin-surface-muted, #f7f8fa);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.enclaveHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.enclaveName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-primary, #1f242f);
+}
+
+.enclaveBadge {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #525965);
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
 }
 
 .tabsGrid {
@@ -363,13 +441,14 @@
   }
 }
 
+.tabCard,
 .tabCheckboxCard {
   min-height: 44px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.65rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--admin-surface-muted, #f0f2f5);
+  padding: 0.65rem 0.75rem;
+  background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
   cursor: pointer;
@@ -377,18 +456,127 @@
 
   &:hover {
     background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
+  &.tabCardActive,
   &.tabSelected {
     border-color: var(--admin-border-strong, #1f242f);
-    background: var(--admin-card-bg, #ffffff);
+    background: #ffffff;
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 }
 
-.tabName {
+.customCheckbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-surface-muted, #f0f2f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+
+  .tabCardActive & {
+    background: var(--admin-accent-lemon, #eefb87);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.checkIcon {
+  width: 12px;
+  height: 12px;
+  color: var(--admin-accent-lemon-ink, #1f242f);
+}
+
+.tabMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.tabLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+}
+
+.tabRoute {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.68rem;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.tabHint {
+  font-size: 0.7rem;
+  color: var(--admin-text-secondary, #525965);
+  line-height: 1.35;
+}
+
+.passwordGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.passwordInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  @media (max-width: 540px) {
+    flex-wrap: wrap;
+  }
+}
+
+.passwordInput {
+  flex: 1;
+  min-height: 44px;
+  padding: 0.6rem 0.85rem;
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  color: var(--admin-text-primary, #1f242f);
+  outline: none;
+}
+
+.passwordActionBtn {
+  min-height: 44px;
+  padding: 0 1rem;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.passwordHint {
+  font-size: 0.72rem;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0;
 }
 
 .modalFooter {

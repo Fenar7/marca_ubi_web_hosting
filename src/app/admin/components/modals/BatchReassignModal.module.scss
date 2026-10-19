@@ -128,6 +128,10 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .statItem {
@@ -156,7 +160,8 @@
   font-family: var(--font-admin-code, monospace);
 }
 
-.tableContainer {
+.tableContainer,
+.sectionHeader {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -168,7 +173,8 @@
   justify-content: space-between;
 }
 
-.sectionLabel {
+.sectionLabel,
+.sectionTitle {
   font-size: 12px;
   font-weight: 700;
   color: var(--admin-text-primary, #1f242f);
@@ -176,7 +182,8 @@
   letter-spacing: 0.05em;
 }
 
-.selectAllBtn {
+.selectAllBtn,
+.selectAllButton {
   min-height: 44px;
   padding: 0 12px;
   background: transparent;
@@ -197,7 +204,8 @@
   }
 }
 
-.tableScrollArea {
+.tableScrollArea,
+.leadsListContainer {
   max-height: 220px;
   overflow-y: auto;
   border: 1px solid var(--admin-border-default, #e2e5ea);
@@ -220,7 +228,8 @@
   font-size: 13px;
 }
 
-.dealRow {
+.dealRow,
+.leadRow {
   display: grid;
   grid-template-columns: 36px 1fr 100px 90px;
   align-items: center;
@@ -228,6 +237,11 @@
   border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
   cursor: pointer;
   transition: background-color 0.15s ease;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 30px 1fr;
+    gap: 8px;
+  }
 
   &:last-child {
     border-bottom: none;
@@ -237,7 +251,8 @@
     background-color: var(--admin-surface-hover, #f4f6f9);
   }
 
-  &.rowSelected {
+  &.rowSelected,
+  &.selected {
     background-color: var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.35));
   }
 }
@@ -249,7 +264,8 @@
   cursor: pointer;
 }
 
-.dealNameMeta {
+.dealNameMeta,
+.leadDetails {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -257,7 +273,9 @@
   padding-right: 8px;
 }
 
-.dealName {
+.dealName,
+.leadHeadline,
+.leadName {
   font-size: 13px;
   font-weight: 600;
   color: var(--admin-text-primary, #1f242f);
@@ -266,7 +284,8 @@
   text-overflow: ellipsis;
 }
 
-.dealSubmeta {
+.dealSubmeta,
+.leadCompany {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -274,7 +293,8 @@
   color: var(--admin-text-secondary, #525965);
 }
 
-.dealIdCode {
+.dealIdCode,
+.leadIdToken {
   font-family: var(--font-admin-code, monospace);
   font-size: 11px;
   font-weight: 600;
@@ -291,7 +311,8 @@
   padding-right: 8px;
 }
 
-.overdueCell {
+.overdueCell,
+.leadTrailing {
   display: flex;
   justify-content: flex-end;
 }
@@ -352,7 +373,8 @@
   }
 }
 
-.errorMessage {
+.errorMessage,
+.errorBanner {
   padding: 10px 14px;
   border-radius: 8px;
   background-color: var(--admin-status-rose-bg, #fef2f2);

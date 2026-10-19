@@ -157,13 +157,15 @@
   gap: 1rem;
 }
 
-.leadMetaGroup {
+.leadMetaGroup,
+.leadDetails {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.leadCodeBadge {
+.leadCodeBadge,
+.leadCode {
   font-family: var(--font-admin-code, monospace);
   font-size: 0.72rem;
   font-weight: 600;
@@ -175,14 +177,16 @@
   width: fit-content;
 }
 
-.leadNameTitle {
+.leadNameTitle,
+.leadClient {
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--admin-text-primary, #1f242f);
   margin: 0;
 }
 
-.leadCompanySubtitle {
+.leadCompanySubtitle,
+.leadScope {
   font-size: 0.78rem;
   color: var(--admin-text-secondary, #525965);
   margin: 0;
@@ -203,7 +207,8 @@
   font-weight: 600;
 }
 
-.estimateValue {
+.estimateValue,
+.estimateAmount {
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--admin-status-emerald-text, #065f46);
@@ -223,7 +228,8 @@
   gap: 0.85rem;
 }
 
-.formField {
+.formField,
+.formGroup {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -238,13 +244,21 @@
   gap: 0.3rem;
 }
 
-.currencyInputGroup {
+.requiredIndicator,
+.requiredMark {
+  color: var(--admin-status-rose-text, #991b1b);
+  font-weight: 700;
+}
+
+.currencyInputGroup,
+.inputWrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.currencySymbol {
+.currencySymbol,
+.currencyPrefix {
   position: absolute;
   left: 0.85rem;
   color: var(--admin-text-secondary, #525965);
@@ -253,10 +267,12 @@
   pointer-events: none;
 }
 
-.inputField {
+.inputField,
+.currencyInput {
   width: 100%;
   min-height: 44px;
   padding: 0.55rem 0.85rem;
+  padding-left: 2rem;
   background-color: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
@@ -280,7 +296,8 @@
   padding-left: 2rem;
 }
 
-.selectField {
+.selectField,
+.selectInput {
   width: 100%;
   min-height: 44px;
   padding: 0.55rem 0.85rem;
@@ -300,7 +317,8 @@
   }
 }
 
-.textareaField {
+.textareaField,
+.textareaInput {
   width: 100%;
   min-height: 72px;
   padding: 0.6rem 0.85rem;

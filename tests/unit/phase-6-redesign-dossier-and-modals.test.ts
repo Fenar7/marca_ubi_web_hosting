@@ -274,4 +274,108 @@ describe('Phase 6 Redesign: Dossier Drawer & Centered Modals Suite', () => {
       assert.ok(content.includes('aria-modal="true"'));
     });
   });
+
+  describe('7. CSS Module Class Synchronization & Style Invariants', () => {
+    it('verifies ConvertLeadToDealModal styles match TSX references', () => {
+      const scss = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/modals/ConvertLeadToDealModal.module.scss'),
+        'utf8'
+      );
+      const required = ['leadDetails', 'leadCode', 'leadClient', 'leadScope', 'estimateAmount', 'formGroup', 'requiredMark', 'inputWrapper', 'currencyPrefix', 'currencyInput', 'selectInput', 'textareaInput'];
+      for (const cls of required) {
+        assert.ok(scss.includes(cls), `Missing class ${cls} in ConvertLeadToDealModal.module.scss`);
+      }
+    });
+
+    it('verifies BatchReassignModal styles match TSX references', () => {
+      const scss = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/modals/BatchReassignModal.module.scss'),
+        'utf8'
+      );
+      const required = ['dealRow', 'selected', 'leadDetails', 'leadHeadline', 'leadIdToken', 'leadName', 'leadCompany', 'leadTrailing', 'leadsListContainer', 'sectionHeader', 'sectionTitle', 'selectAllButton', 'errorBanner'];
+      for (const cls of required) {
+        assert.ok(scss.includes(cls), `Missing class ${cls} in BatchReassignModal.module.scss`);
+      }
+    });
+
+    it('verifies StageModals styles match StageTransition, Celebration and Lost modals', () => {
+      const scss = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/modals/StageModals.module.scss'),
+        'utf8'
+      );
+      const required = ['labelRow', 'fieldLabel', 'required', 'livePreviewPill', 'inputWrapper', 'inputPrefix', 'textInput', 'selectInput', 'textareaInput', 'hasPrefix', 'hasError', 'fieldHint'];
+      for (const cls of required) {
+        assert.ok(scss.includes(cls), `Missing class ${cls} in StageModals.module.scss`);
+      }
+    });
+
+    it('verifies AddTeamMemberModal styles match enclaves, tabs, and password references', () => {
+      const scss = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/modals/AddTeamMemberModal.module.scss'),
+        'utf8'
+      );
+      const required = ['permissionsTitleGroup', 'permissionsSubtitle', 'permissionsQuickActions', 'quickActionBtn', 'enclavesContainer', 'enclaveCard', 'enclaveHeader', 'enclaveName', 'enclaveBadge', 'tabCard', 'customCheckbox', 'checkIcon', 'tabMeta', 'tabLabel', 'tabRoute', 'tabHint', 'passwordGroup', 'passwordInputWrapper', 'passwordInput', 'passwordActionBtn', 'passwordHint'];
+      for (const cls of required) {
+        assert.ok(scss.includes(cls), `Missing class ${cls} in AddTeamMemberModal.module.scss`);
+      }
+    });
+
+    it('verifies NewLeadModal styles match inputWithBadge and valuationBadge', () => {
+      const scss = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/modals/NewLeadModal.module.scss'),
+        'utf8'
+      );
+      const required = ['requiredStar', 'fieldHint', 'inputWithBadge', 'valuationBadge'];
+      for (const cls of required) {
+        assert.ok(scss.includes(cls), `Missing class ${cls} in NewLeadModal.module.scss`);
+      }
+    });
+  });
+
+  describe('8. Cyclical Tab Key Focus Trapping & Accessibility Verification', () => {
+    it('verifies NewLeadModal implements Tab focus trapping', () => {
+      const content = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/modals/NewLeadModal.tsx'),
+        'utf8'
+      );
+      assert.ok(content.includes('e.key === \'Tab\'') || content.includes('event.key === \'Tab\''));
+      assert.ok(content.includes('focusable'));
+    });
+
+    it('verifies AddTeamMemberModal implements Tab focus trapping', () => {
+      const content = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/modals/AddTeamMemberModal.tsx'),
+        'utf8'
+      );
+      assert.ok(content.includes('e.key === \'Tab\'') || content.includes('event.key === \'Tab\''));
+      assert.ok(content.includes('focusable'));
+    });
+
+    it('verifies CredentialRevealModal implements Tab focus trapping & scroll locking', () => {
+      const content = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/CredentialRevealModal.tsx'),
+        'utf8'
+      );
+      assert.ok(content.includes('e.key === \'Tab\''));
+      assert.ok(content.includes('document.body.style.overflow = \'hidden\''));
+    });
+
+    it('verifies SuspendUserModal implements Tab focus trapping & scroll locking', () => {
+      const content = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/SuspendUserModal.tsx'),
+        'utf8'
+      );
+      assert.ok(content.includes('e.key === \'Tab\''));
+      assert.ok(content.includes('document.body.style.overflow = \'hidden\''));
+    });
+
+    it('verifies ClientDossierDrawer implements Tab focus trapping', () => {
+      const content = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx'),
+        'utf8'
+      );
+      assert.ok(content.includes('e.key === \'Tab\''));
+      assert.ok(content.includes('focusableElements'));
+    });
+  });
 });
