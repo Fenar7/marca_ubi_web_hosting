@@ -299,7 +299,7 @@ export function LeadsDataGrid({
               id: lead.status_id,
               name: lead.status_name,
               bucket: lead.bucket,
-              color_code: lead.status_color || '#ff6100',
+              color_code: lead.status_color || '#1f242f',
             };
 
             const followUpText = lead.next_follow_up

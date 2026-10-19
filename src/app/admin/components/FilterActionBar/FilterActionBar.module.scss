@@ -1,16 +1,7 @@
 // SCSS Module: FilterActionBar.module.scss
-// Aesthetic: Apple HIG Vibrancy & Linear Fluid Controls
+// Aesthetic: Accordion Executive Advisory & Sypher Light Controls
 // Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
-// Strict Anti-AI-Slop: Zero generic blue, zero toy emojis, tabular-nums
-
-$marca-orange: #ff6100;
-$obsidian-base: #111111;
-$obsidian-popover: rgba(18, 18, 22, 0.95);
-$hairline-border: rgba(255, 255, 255, 0.08);
-$hairline-active: rgba(255, 97, 0, 0.4);
-$text-primary: #ffffff;
-$text-secondary: #a1a1aa;
-$text-muted: #8e8e93;
+// Strict Anti-AI-Slop: Zero generic blue, zero drop shadows, 44px touch targets, tabular-nums
 
 .filterActionBar {
   display: flex;
@@ -40,9 +31,9 @@ $text-muted: #8e8e93;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid $hairline-border;
-  border-radius: 10px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
   padding: 0.25rem;
   overflow-x: auto;
   max-width: 100%;
@@ -57,11 +48,13 @@ $text-muted: #8e8e93;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 7px;
+  min-height: 44px;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--admin-radius-pill, 9999px);
   background: transparent;
   border: 1px solid transparent;
-  color: $text-secondary;
+  color: var(--admin-text-secondary, #525965);
+  font-family: var(--font-admin-btn, sans-serif);
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
@@ -70,8 +63,8 @@ $text-muted: #8e8e93;
   user-select: none;
 
   &:hover {
-    color: $text-primary;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--admin-text-primary, #1f242f);
+    background: var(--admin-surface-hover, #f4f6f9);
   }
 
   &:active {
@@ -79,63 +72,63 @@ $text-muted: #8e8e93;
   }
 
   &:focus-visible {
-    outline: 2px solid $marca-orange;
-    outline-offset: -2px;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: -1px;
   }
 
   &.activeTab {
-    background: rgba(255, 97, 0, 0.12);
-    color: $text-primary;
-    border-color: rgba(255, 97, 0, 0.3);
+    background: var(--admin-text-primary, #1f242f);
+    color: #ffffff;
+    border-color: var(--admin-border-strong, #1f242f);
+    font-weight: 700;
 
     .tabCount {
-      background: $marca-orange;
+      background: rgba(255, 255, 255, 0.2);
       color: #ffffff;
     }
   }
 
   &.urgentTab {
-    border-color: rgba(255, 97, 0, 0.3);
+    border-color: var(--admin-status-rose-text, #991b1b);
 
     &.hasOverdue {
-      animation: tabAlertGlow 2.5s infinite ease-in-out;
+      animation: tabAlertPulse 2.5s infinite ease-in-out;
     }
 
     &.activeTab {
-      border-color: rgba(255, 97, 0, 0.6);
-      background: rgba(255, 97, 0, 0.16);
+      border-color: var(--admin-border-strong, #1f242f);
+      background: var(--admin-text-primary, #1f242f);
     }
   }
 }
 
-@keyframes tabAlertGlow {
+@keyframes tabAlertPulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 97, 0, 0);
+    box-shadow: 0 0 0 0 rgba(153, 27, 27, 0);
   }
   50% {
-    box-shadow: 0 0 10px 1px rgba(255, 97, 0, 0.35);
+    box-shadow: 0 0 0 2px rgba(153, 27, 27, 0.25);
   }
 }
 
 .tabCount {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  font-size: 0.64rem;
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 0.12rem 0.38rem;
+  padding: 0.12rem 0.4rem;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #cccccc;
+  background: var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: 'tnum' 1;
 }
 
 .urgentPulseDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: $marca-orange;
-  box-shadow: 0 0 6px rgba(255, 97, 0, 0.8);
+  background: var(--admin-status-rose-text, #991b1b);
   animation: dotPulse 1.8s infinite ease-in-out;
   flex-shrink: 0;
 }
@@ -161,17 +154,18 @@ $text-muted: #8e8e93;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: $obsidian-base;
-  border: 1px solid $hairline-border;
-  border-radius: 8px;
-  padding: 0.4rem 0.75rem;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  padding: 0.4rem 0.85rem;
+  min-height: 44px;
   min-width: 250px;
   position: relative;
   transition: all 0.15s ease;
 
   &:focus-within {
-    border-color: rgba(255, 97, 0, 0.5);
-    box-shadow: 0 0 0 1px rgba(255, 97, 0, 0.3);
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 
   @media (max-width: 640px) {
@@ -181,7 +175,7 @@ $text-muted: #8e8e93;
 }
 
 .searchIcon {
-  color: $text-muted;
+  color: var(--admin-text-secondary, #525965);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -191,32 +185,34 @@ $text-muted: #8e8e93;
 .searchInput {
   background: transparent;
   border: none;
-  color: $text-primary;
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.82rem;
   width: 100%;
   outline: none;
 
   &::placeholder {
-    color: $text-muted;
+    color: var(--admin-text-secondary, #525965);
+    opacity: 0.8;
   }
 }
 
 .clearSearchBtn {
   background: transparent;
   border: none;
-  color: $text-muted;
+  color: var(--admin-text-secondary, #525965);
   font-size: 0.75rem;
   cursor: pointer;
-  padding: 0.1rem 0.25rem;
-  border-radius: 3px;
+  padding: 0.2rem 0.35rem;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
 
   &:hover {
-    color: $text-primary;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--admin-text-primary, #1f242f);
+    background: var(--admin-surface-muted, #f0f2f5);
   }
 }
 
@@ -229,38 +225,41 @@ $text-muted: #8e8e93;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  background: $obsidian-base;
-  border: 1px solid $hairline-border;
-  border-radius: 8px;
-  padding: 0.42rem 0.75rem;
-  color: $text-secondary;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  padding: 0.42rem 0.85rem;
+  min-height: 44px;
+  color: var(--admin-text-secondary, #525965);
+  font-family: var(--font-admin-btn, sans-serif);
   font-size: 0.78rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: $text-primary;
-    border-color: rgba(255, 255, 255, 0.16);
+    background: var(--admin-surface-hover, #f8fafc);
+    color: var(--admin-text-primary, #1f242f);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &.activeFilter {
-    background: rgba(255, 97, 0, 0.08);
-    border-color: $hairline-active;
-    color: $text-primary;
+    background: var(--admin-surface-muted, #f0f2f5);
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
+    font-weight: 700;
   }
 
   &:focus-visible {
-    outline: 2px solid $marca-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
   }
 }
 
 .dropdownChevron {
   font-size: 0.65rem;
-  color: $text-muted;
+  color: var(--admin-text-secondary, #525965);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
@@ -270,7 +269,7 @@ $text-muted: #8e8e93;
   transform: rotate(180deg);
 }
 
-// 5. Apple HIG Vibrancy Popover Menu
+// 5. Sypher Pure White Popover Menu
 .popoverMenu {
   position: absolute;
   top: calc(100% + 6px);
@@ -279,12 +278,10 @@ $text-muted: #8e8e93;
   max-width: 320px;
   max-height: 320px;
   overflow-y: auto;
-  background: $obsidian-popover;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 10px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 32px rgba(31, 36, 47, 0.12);
   padding: 0.4rem;
   z-index: 40;
   animation: popoverFade 0.15s cubic-bezier(0.16, 1, 0.3, 1);
@@ -294,7 +291,7 @@ $text-muted: #8e8e93;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--admin-border-default, #e2e5ea);
     border-radius: 2px;
   }
 
@@ -312,13 +309,14 @@ $text-muted: #8e8e93;
 }
 
 .popoverHeader {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: $text-muted;
-  padding: 0.3rem 0.65rem 0.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--admin-text-secondary, #525965);
+  padding: 0.35rem 0.65rem 0.4rem;
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
   margin-bottom: 0.25rem;
 }
 
@@ -327,25 +325,27 @@ $text-muted: #8e8e93;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 0.45rem 0.65rem;
+  padding: 0.5rem 0.65rem;
+  min-height: 44px;
   border-radius: 6px;
   background: transparent;
   border: none;
-  color: $text-secondary;
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.78rem;
   cursor: pointer;
   text-align: left;
   transition: all 0.12s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: $text-primary;
+    background: var(--admin-surface-hover, #f4f6f9);
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &.selectedItem {
-    background: rgba(255, 97, 0, 0.15);
-    color: $text-primary;
-    font-weight: 600;
+    background: var(--admin-surface-muted, #f0f2f5);
+    color: var(--admin-text-primary, #1f242f);
+    font-weight: 700;
   }
 }
 
@@ -359,13 +359,13 @@ $text-muted: #8e8e93;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--admin-surface-inverse, #1f242f);
+  color: #ffffff;
   font-size: 0.6rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cccccc;
 }
 
 .sourceColorDot {
@@ -376,7 +376,7 @@ $text-muted: #8e8e93;
 }
 
 .checkMark {
-  color: $marca-orange;
+  color: var(--admin-text-primary, #1f242f);
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -388,15 +388,16 @@ $text-muted: #8e8e93;
   gap: 0.5rem;
   flex-wrap: wrap;
   padding: 0.45rem 0.75rem;
-  background: rgba(255, 97, 0, 0.05);
-  border: 1px solid rgba(255, 97, 0, 0.2);
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
   font-size: 0.76rem;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
 }
 
 .activeFiltersLabel {
-  color: $marca-orange;
-  font-weight: 600;
+  color: var(--admin-text-secondary, #525965);
+  font-weight: 700;
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -409,18 +410,18 @@ $text-muted: #8e8e93;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: $text-primary;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
   font-size: 0.74rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--admin-radius-pill, 9999px);
 }
 
 .chipRemoveBtn {
   background: transparent;
   border: none;
-  color: $marca-orange;
+  color: var(--admin-text-secondary, #525965);
   font-size: 0.7rem;
   cursor: pointer;
   padding: 0;
@@ -429,14 +430,14 @@ $text-muted: #8e8e93;
   transition: color 0.12s ease;
 
   &:hover {
-    color: #ffffff;
+    color: var(--admin-text-primary, #1f242f);
   }
 }
 
 .clearAllBtn {
   background: transparent;
   border: none;
-  color: $text-secondary;
+  color: var(--admin-text-secondary, #525965);
   font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
@@ -445,6 +446,6 @@ $text-muted: #8e8e93;
   transition: color 0.12s ease;
 
   &:hover {
-    color: $marca-orange;
+    color: var(--admin-text-primary, #1f242f);
   }
 }

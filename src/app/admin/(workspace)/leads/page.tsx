@@ -156,7 +156,7 @@ export default async function AdminLeadsPage(
     id: s.id,
     name: s.name,
     bucket: s.bucket as FunnelBucket,
-    color_code: s.color_code || '#ff6100',
+    color_code: s.color_code || '#1f242f',
     sort_order: s.sort_order,
   }));
 
@@ -189,7 +189,7 @@ export default async function AdminLeadsPage(
       priority: l.priority || 'Medium',
       status_id: l.status_id,
       status_name: statusData?.name || 'Active Deal',
-      status_color: statusData?.color_code || '#ff6100',
+      status_color: statusData?.color_code || '#1f242f',
       bucket: statusData?.bucket || 'open',
       assigned_to: l.assigned_to,
       assigned_to_name:
@@ -208,10 +208,10 @@ export default async function AdminLeadsPage(
       {/* Workspace Header & Operational Context */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Commercial Pipeline & Staging</span>
-          <h1 className={styles.pageTitle}>Deals & Inquiries</h1>
+          <span className={styles.eyebrow}>Stage 01: Inbound Discovery</span>
+          <h1 className={styles.pageTitle}>Inbound Leads.</h1>
           <p className={styles.pageSubtitle}>
-            Track incoming inquiries, negotiate high-ticket proposals, and manage deal progression.
+            Triage incoming briefs, evaluate client scope, and advance qualified opportunities to negotiation.
           </p>
         </div>
       </header>

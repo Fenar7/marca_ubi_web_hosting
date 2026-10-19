@@ -406,7 +406,11 @@ export function DealsWorkspaceClient({
             onClick={() => setSelectedAssigneeId(null)}
             aria-label="Clear representative filter"
           >
-            Clear Rep Filter ✕
+            Clear Filter
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       )}
@@ -426,7 +430,7 @@ export function DealsWorkspaceClient({
                     <div className={styles.columnIdentity}>
                       <span
                         className={styles.columnStatusDot}
-                        style={{ backgroundColor: stage.color_code || '#ff6100' }}
+                        style={{ backgroundColor: stage.color_code || '#1f242f' }}
                         aria-hidden="true"
                       />
                       <h2 className={styles.columnTitle}>{stage.name}</h2>
@@ -521,7 +525,9 @@ export function DealsWorkspaceClient({
                                 onKeyDown={(e) => e.stopPropagation()}
                                 aria-label={`Move ${deal.lead_id} to previous stage`}
                               >
-                                ◀
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <polyline points="15 18 9 12 15 6" />
+                                </svg>
                               </button>
                               <button
                                 type="button"
@@ -535,7 +541,9 @@ export function DealsWorkspaceClient({
                                 onKeyDown={(e) => e.stopPropagation()}
                                 aria-label={`Advance ${deal.lead_id} to next stage`}
                               >
-                                ▶
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <polyline points="9 18 15 12 9 6" />
+                                </svg>
                               </button>
                             </div>
                           </div>
