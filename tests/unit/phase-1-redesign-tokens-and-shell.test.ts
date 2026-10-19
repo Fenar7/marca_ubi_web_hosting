@@ -190,4 +190,49 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
       assert.strictEqual(content.includes('[data-admin-root="true"]'), false);
     });
   });
+
+  describe('6. Shell Accessibility, Touch Targets & CSS Module Synchronization', () => {
+    it('enforces 44px minimum touch targets in tokens.scss mixins (Rule R-03)', () => {
+      const tokensScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/tokens.scss');
+      const content = fs.readFileSync(tokensScssPath, 'utf8');
+      assert.ok(content.includes('min-height: 44px;'));
+      assert.strictEqual(content.includes('min-height: 42px;'), false);
+      assert.strictEqual(content.includes('min-height: 36px;'), false);
+      assert.strictEqual(content.includes('// =========================================='), false);
+    });
+
+    it('verifies UserProfileDropdown.module.scss contains all required JSX bindings', () => {
+      const dropdownScssPath = path.resolve(
+        process.cwd(),
+        'src/app/admin/components/layout/UserProfileDropdown.module.scss'
+      );
+      assert.strictEqual(fs.existsSync(dropdownScssPath), true);
+      const content = fs.readFileSync(dropdownScssPath, 'utf8');
+      assert.ok(content.includes('.menuEmail'));
+      assert.ok(content.includes('.menuTitle'));
+      assert.ok(content.includes('.divider'));
+      assert.ok(content.includes('.menuSection'));
+      assert.ok(content.includes('.menuInfoRow'));
+      assert.ok(content.includes('.infoKey'));
+      assert.ok(content.includes('.infoVal'));
+      assert.ok(content.includes('.infoValGreen'));
+      assert.ok(content.includes('.signOutButton'));
+    });
+
+    it('verifies AdminMobileDrawer.module.scss contains all required drawer classes', () => {
+      const drawerScssPath = path.resolve(
+        process.cwd(),
+        'src/app/admin/components/layout/AdminMobileDrawer.module.scss'
+      );
+      assert.strictEqual(fs.existsSync(drawerScssPath), true);
+      const content = fs.readFileSync(drawerScssPath, 'utf8');
+      assert.ok(content.includes('.drawer'));
+      assert.ok(content.includes('.drawerOpen'));
+      assert.ok(content.includes('.activePill'));
+      assert.ok(content.includes('.systemStatusBlock'));
+      assert.ok(content.includes('.statusDot'));
+      assert.ok(content.includes('.newLeadBtn'));
+      assert.ok(content.includes('visibility: hidden;'));
+    });
+  });
 });

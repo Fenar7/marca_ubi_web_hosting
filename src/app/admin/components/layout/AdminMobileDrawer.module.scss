@@ -2,6 +2,7 @@
  * @file AdminMobileDrawer.module.scss
  * @description Mobile Off-Canvas Drawer Navigation styling for Marca Ubi CRM.
  *              Strictly adheres to Accordion & Sypher light palette tokens.
+ *              Eliminates off-canvas focus leakage and enforces 44px touch targets.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -35,12 +36,16 @@
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
   overflow: hidden;
+}
 
-  &Open {
-    transform: translateX(0);
-  }
+.drawerOpen {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .drawerHeader {
@@ -120,7 +125,7 @@
 }
 
 .quickActionBox {
-  padding: 0 1rem 1rem;
+  padding: 1rem 1rem 0.5rem;
 }
 
 .newLeadBtn {
@@ -178,6 +183,7 @@
 }
 
 .navItem {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -218,6 +224,16 @@
   .itemLabel {
     color: #ffffff;
   }
+}
+
+.activePill {
+  position: absolute;
+  left: -0.65rem;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background-color: var(--admin-accent-lemon, #eefb87);
+  border-radius: 0 4px 4px 0;
 }
 
 .iconWrapper {
@@ -269,6 +285,42 @@
   padding: 1rem 1.25rem;
   border-top: 1px solid var(--admin-border-default, #e2e5ea);
   background: #ffffff;
+}
+
+.systemStatusBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--admin-status-emerald-dot, #10b981);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+  flex-shrink: 0;
+}
+
+.statusText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.statusLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  line-height: 1.2;
+}
+
+.statusSub {
+  font-size: 0.65rem;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .userBlock {

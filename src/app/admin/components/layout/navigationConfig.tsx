@@ -4,7 +4,7 @@
  * @architecture Defines the unified 9-tab navigation taxonomy organized into 3 logical enclaves:
  *               Commercial Pipeline, Agency Operations, and System Governance.
  *               Enforces granular tab-level authorization gating based on authenticated user allowed_tabs
- *               and provides calibrated SVG icons adhering to the Marca Ubi Dark Luxury tokens.
+ *               and provides calibrated SVG icons adhering to the Accordion & Sypher minimal design tokens.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 

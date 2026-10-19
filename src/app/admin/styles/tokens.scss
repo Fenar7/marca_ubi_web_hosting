@@ -73,9 +73,7 @@
   --admin-shadow-modal: 0 24px 60px rgba(31, 36, 47, 0.16);
 }
 
-// ==========================================
-// Reusable SASS Mixins for Accordion Design
-// ==========================================
+// Standardized interactive pill mixins honoring 44px touch targets (Rule R-03) and Accordion geometry.
 
 // Primary Signature Accordion Pill Button (#eefb87 fill, 1px solid #1f242f border)
 @mixin accordionPillPrimary {
@@ -83,8 +81,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  height: 42px;
-  min-height: 42px;
+  height: 44px;
+  min-height: 44px;
   padding: 0 1.5rem;
   background-color: var(--admin-accent-lemon);
   border: 1px solid var(--admin-border-strong);
@@ -128,8 +126,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  height: 42px;
-  min-height: 42px;
+  height: 44px;
+  min-height: 44px;
   padding: 0 1.5rem;
   background-color: var(--admin-card-bg);
   border: 1px solid var(--admin-border-strong);
@@ -171,8 +169,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  height: 36px;
-  min-height: 36px;
+  height: 44px;
+  min-height: 44px;
   padding: 0 1rem;
   background-color: var(--admin-surface-muted);
   border: 1px solid var(--admin-border-default);

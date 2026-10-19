@@ -7,7 +7,7 @@
 .breadcrumbNav {
   display: flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 44px;
 }
 
 .breadcrumbList {
@@ -28,6 +28,10 @@
 }
 
 .rootLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.25rem 0.35rem;
   color: var(--admin-text-secondary, #525965);
   text-decoration: none;
   font-size: 0.75rem;
@@ -43,7 +47,7 @@
   &:focus-visible {
     outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
   }
 }
 
@@ -55,6 +59,10 @@
 }
 
 .breadcrumbLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.25rem 0.35rem;
   color: var(--admin-text-secondary, #525965);
   text-decoration: none;
   font-size: 0.8rem;
@@ -68,7 +76,7 @@
   &:focus-visible {
     outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
   }
 }
 
