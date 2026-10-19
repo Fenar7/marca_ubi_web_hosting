@@ -10,11 +10,12 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
+import { sanitizeRedirectUrl } from '../../src/app/lib/auth-redirect';
+import { ResetPasswordSchema } from '../../src/app/lib/team-schemas';
 
 describe('Phase 1 Brand Upgrade: Authentication Portal & Typography Hygiene Suite', () => {
   const loginScssPath = path.resolve(process.cwd(), 'src/app/admin/login/login.module.scss');
   const loginFormPath = path.resolve(process.cwd(), 'src/app/admin/login/LoginForm.tsx');
-  const loginPagePath = path.resolve(process.cwd(), 'src/app/admin/login/page.tsx');
   const resetScssPath = path.resolve(process.cwd(), 'src/app/admin/reset-password/reset-password.module.scss');
   const resetFormPath = path.resolve(process.cwd(), 'src/app/admin/reset-password/ResetPasswordForm.tsx');
   const resetPagePath = path.resolve(process.cwd(), 'src/app/admin/reset-password/page.tsx');
@@ -132,7 +133,6 @@ describe('Phase 1 Brand Upgrade: Authentication Portal & Typography Hygiene Suit
 
   describe('5. Security & Authorization Input Boundaries (CWE-601, CWE-284)', () => {
     it('verifies sanitizeRedirectUrl rejects external open redirect vectors (CWE-601)', () => {
-      const { sanitizeRedirectUrl } = require('../../src/app/lib/auth-redirect');
       assert.strictEqual(sanitizeRedirectUrl('https://evil.com'), '/admin');
       assert.strictEqual(sanitizeRedirectUrl('http://attacker.com/malicious'), '/admin');
       assert.strictEqual(sanitizeRedirectUrl('//evil.com/phish'), '/admin');
@@ -142,14 +142,12 @@ describe('Phase 1 Brand Upgrade: Authentication Portal & Typography Hygiene Suit
     });
 
     it('verifies sanitizeRedirectUrl preserves valid internal CRM routes with parameters', () => {
-      const { sanitizeRedirectUrl } = require('../../src/app/lib/auth-redirect');
       assert.strictEqual(sanitizeRedirectUrl('/admin/deals?bucket=potential'), '/admin/deals?bucket=potential');
       assert.strictEqual(sanitizeRedirectUrl('/admin/leads?assigned_to=123'), '/admin/leads?assigned_to=123');
       assert.strictEqual(sanitizeRedirectUrl('/admin/works'), '/admin/works');
     });
 
     it('verifies ResetPasswordSchema strictly enforces 12+ character complexity and symbols (CWE-284)', () => {
-      const { ResetPasswordSchema } = require('../../src/app/lib/team-schemas');
       const invalidShort = ResetPasswordSchema.safeParse({
         newPassword: 'Short1!',
         confirmPassword: 'Short1!',

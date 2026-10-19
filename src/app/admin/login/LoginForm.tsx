@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useActionState, useEffect, useState, useTransition } from 'react';
+import React, { useActionState, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { loginAction } from '@/app/actions/auth';
 import { sanitizeRedirectUrl } from '@/app/lib/auth-redirect';
@@ -30,14 +30,17 @@ export function LoginForm(): React.ReactElement {
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
-  const [, startTransition] = useTransition();
+  const [prevServerLockout, setPrevServerLockout] = useState<number | undefined>(undefined);
 
-  // Initialize and tick lockout countdown when returned from server action
-  useEffect(() => {
-    if (state?.remainingLockoutSeconds && state.remainingLockoutSeconds > 0) {
-      setLockoutSeconds(state.remainingLockoutSeconds);
-    }
-  }, [state?.remainingLockoutSeconds]);
+  // Synchronize server-provided lockout seconds without cascading effect renders (React 19 pattern)
+  if (
+    state?.remainingLockoutSeconds &&
+    state.remainingLockoutSeconds > 0 &&
+    state.remainingLockoutSeconds !== prevServerLockout
+  ) {
+    setPrevServerLockout(state.remainingLockoutSeconds);
+    setLockoutSeconds(state.remainingLockoutSeconds);
+  }
 
   useEffect(() => {
     if (lockoutSeconds <= 0) return;
@@ -52,9 +55,7 @@ export function LoginForm(): React.ReactElement {
   // Execute full navigation upon successful authentication to persist cookie session
   useEffect(() => {
     if (state?.success && state?.redirectTo) {
-      startTransition(() => {
-        window.location.href = state.redirectTo as string;
-      });
+      window.location.href = state.redirectTo as string;
     }
   }, [state?.success, state?.redirectTo]);
 
