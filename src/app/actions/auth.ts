@@ -10,7 +10,6 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/app/lib/supabase/server';
 import { sanitizeRedirectUrl } from '@/app/lib/auth-redirect';
@@ -320,11 +319,21 @@ export async function resetTemporaryPassword(
   }
 }
 
+export interface LogoutActionResult {
+  success: boolean;
+  redirectTo: string;
+}
+
 /**
- * Terminates the active administrative session across all Supabase cookies and redirects to /admin/login.
+ * Terminates the active administrative session across all Supabase cookies and clears authentication context.
+ * Returns structured navigation target to allow the client to execute a hard browser window navigation,
+ * completely purging the client-side RSC cache and in-memory heap to prevent state leaks.
  */
-export async function logoutAction(): Promise<void> {
+export async function logoutAction(): Promise<LogoutActionResult> {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect('/admin/login');
+  return {
+    success: true,
+    redirectTo: '/admin/login',
+  };
 }

@@ -22,6 +22,8 @@ export function AdminRootClientProvider({
   fontVariables,
 }: AdminRootClientProviderProps): React.ReactElement {
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+
     // Flag documentElement to disable public custom orange cursor and enforce system native cursors
     document.documentElement.setAttribute('data-admin-route', 'true');
 
@@ -34,6 +36,7 @@ export function AdminRootClientProvider({
     );
 
     return () => {
+      if (typeof document === 'undefined') return;
       document.documentElement.removeAttribute('data-admin-route');
     };
   }, []);

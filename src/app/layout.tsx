@@ -47,11 +47,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={graphik.variable}>
+    <html lang="en" className={graphik.variable} suppressHydrationWarning>
       <head>
         <link rel="preload" as="image" href="/hero/marca-ubi-logo.png" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <SmoothScrollProvider>
           {children}
         </SmoothScrollProvider>

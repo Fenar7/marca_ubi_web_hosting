@@ -27,7 +27,7 @@ export default function AdminLoginPage(): React.ReactElement {
       <Suspense
         fallback={
           <div className={styles.cardContainer}>
-            <div className={styles.brandHeader}>
+            <header className={styles.brandHeader}>
               <div className={styles.brandLogoWrap}>
                 <img
                   src="/hero/marca-ubi-logo.png"
@@ -41,7 +41,7 @@ export default function AdminLoginPage(): React.ReactElement {
               <p className={styles.brandSubtitle}>
                 Enter your agency credentials to access the CRM console
               </p>
-            </div>
+            </header>
             <div
               style={{
                 display: 'flex',

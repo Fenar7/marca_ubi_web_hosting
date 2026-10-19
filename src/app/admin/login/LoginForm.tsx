@@ -137,7 +137,7 @@ export function LoginForm(): React.ReactElement {
         </div>
       )}
 
-      <form action={formAction} className={styles.form}>
+      <form action={formAction} className={styles.form} suppressHydrationWarning>
         <input type="hidden" name="next" value={nextParam} />
 
         <div className={styles.fieldGroup}>
@@ -155,6 +155,7 @@ export function LoginForm(): React.ReactElement {
               aria-invalid={Boolean(displayError)}
               placeholder="name@marcaubi.com"
               className={styles.input}
+              suppressHydrationWarning
             />
           </div>
         </div>
@@ -174,6 +175,7 @@ export function LoginForm(): React.ReactElement {
               aria-invalid={Boolean(displayError)}
               placeholder="••••••••••••••••"
               className={`${styles.input} ${styles.inputWithToggle}`}
+              suppressHydrationWarning
             />
             <button
               type="button"
