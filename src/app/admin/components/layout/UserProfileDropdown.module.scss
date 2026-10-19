@@ -204,18 +204,24 @@
   cursor: pointer;
   transition: all 0.15s ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #fee2e2;
     border-color: #fca5a5;
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: scale(0.98);
   }
 
   &:focus-visible {
     outline: 2px solid var(--admin-status-rose-text, #991b1b);
     outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 
   svg {

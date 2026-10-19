@@ -343,7 +343,7 @@ export function ResetPasswordForm(): React.ReactElement {
             <span>Updating Credentials...</span>
           </>
         ) : (
-          <span>Establish Permanent Password</span>
+          <span>Set New Password</span>
         )}
       </button>
     </form>

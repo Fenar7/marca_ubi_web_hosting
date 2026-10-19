@@ -21,7 +21,32 @@ interface UserProfileDropdownProps {
 
 export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+
+    try {
+      // Purge modal/body scroll locks and admin route document flags before teardown
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        document.documentElement.removeAttribute('data-admin-route');
+      }
+
+      // Invalidate server-side Supabase session cookies
+      const res = await logoutAction();
+
+      // Force clean browser heap flush and router cache purge via hard navigation
+      window.location.href = res?.redirectTo || '/admin/login';
+    } catch {
+      // Defensive fallback ensuring user is never stranded on network failure
+      window.location.href = '/admin/login';
+    }
+  };
 
   // Close popover on click outside or escape key
   useEffect(() => {
@@ -119,8 +144,14 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
 
           <div className={styles.divider} />
 
-          <form action={logoutAction} className={styles.logoutForm}>
-            <button type="submit" className={styles.signOutButton} role="menuitem">
+          <form onSubmit={handleLogout} className={styles.logoutForm}>
+            <button
+              type="submit"
+              disabled={isLoggingOut}
+              aria-busy={isLoggingOut}
+              className={styles.signOutButton}
+              role="menuitem"
+            >
               <svg
                 width="14"
                 height="14"
@@ -136,7 +167,7 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
-              <span>Sign Out of CRM</span>
+              <span>{isLoggingOut ? 'Signing out...' : 'Sign Out of CRM'}</span>
             </button>
           </form>
         </div>
