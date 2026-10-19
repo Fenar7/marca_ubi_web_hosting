@@ -257,6 +257,8 @@
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.75rem;
   color: #a1a1aa;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .submissionRight {

@@ -114,7 +114,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     brief_payload: (lead.brief_payload as Record<string, unknown>) || null,
   }));
 
-  // 5. Fetch recent ingestion and deduplication activities
+  // Fetch recent ingestion and deduplication activities
   const { data: ingestionActivities } = await supabase
     .from('lead_activities')
     .select('id, activity_type, description, created_at')

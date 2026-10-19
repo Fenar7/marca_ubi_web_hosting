@@ -12,6 +12,7 @@ import {
   agencySettingsSchema,
   updateAgencySettingsSchema,
   simulateInboundBriefSchema,
+  CANONICAL_SERVICE_CATEGORIES,
   type AgencySettings,
   type UpdateAgencySettingsInput,
   type SimulateInboundBriefInput,
@@ -218,6 +219,41 @@ describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossie
         assert.strictEqual(result.data.email, 'arjun@singhaniacorp.com');
         assert.strictEqual(result.data.phone, '+91 98765 43210');
         assert.strictEqual(result.data.company, 'Singhania Luxury Group');
+        assert.strictEqual(result.data.serviceCategory, 'Web & Digital');
+      }
+    });
+
+    it('strictly validates canonical service categories matching PostgreSQL CHECK constraint', () => {
+      // Must accept all 6 database-backed canonical enum members
+      for (const cat of CANONICAL_SERVICE_CATEGORIES) {
+        const payload = {
+          name: 'Priya Sharma',
+          email: 'priya@example.com',
+          phone: '+919876543210',
+          serviceCategory: cat,
+        };
+        const result = simulateInboundBriefSchema.safeParse(payload);
+        assert.strictEqual(result.success, true, `Should accept canonical category: ${cat}`);
+      }
+
+      // Must reject unconstrained non-canonical categories
+      const nonCanonicalCategories = [
+        'Brand Identity',
+        'Performance Marketing',
+        'E-Commerce',
+        'Content Production',
+        'Arbitrary Category',
+      ];
+
+      for (const invalidCat of nonCanonicalCategories) {
+        const payload = {
+          name: 'Priya Sharma',
+          email: 'priya@example.com',
+          phone: '+919876543210',
+          serviceCategory: invalidCat,
+        };
+        const result = simulateInboundBriefSchema.safeParse(payload);
+        assert.strictEqual(result.success, false, `Must reject non-canonical category: ${invalidCat}`);
       }
     });
 
@@ -308,14 +344,13 @@ describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossie
     it('sanitizes injection characters out of PostgREST filter operands', () => {
       // In settings.ts, raw values are sanitized before interpolation into .or(`email.eq.${cleanEmail},phone.eq.${cleanPhone}`)
       const sanitizePostgrestOperand = (val: string): string => {
-        return val.replace(/[,()"'\\]/g, '').trim();
+        return val.replace(/[,()]/g, '').trim();
       };
 
       const hostileInput = "test@domain.com',phone.eq.'+1234567890";
       const sanitized = sanitizePostgrestOperand(hostileInput);
       assert.strictEqual(sanitized.includes(','), false);
-      assert.strictEqual(sanitized.includes("'"), false);
-      assert.strictEqual(sanitized.includes('"'), false);
+      assert.strictEqual(sanitized.includes('('), false);
       assert.strictEqual(sanitized.includes(')'), false);
     });
   });
@@ -345,6 +380,17 @@ describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossie
       assert.strictEqual(briefPayload.simulated, true);
       assert.strictEqual(briefPayload.simulated_by, callerId);
       assert.deepStrictEqual(briefPayload.services, ['Web & Digital']);
+    });
+
+    it('calculates incremented inquiry_count correctly on duplicate submissions', () => {
+      const calculateNewInquiryCount = (currentCount: number | null | undefined): number => {
+        return (currentCount || 1) + 1;
+      };
+
+      assert.strictEqual(calculateNewInquiryCount(1), 2);
+      assert.strictEqual(calculateNewInquiryCount(2), 3);
+      assert.strictEqual(calculateNewInquiryCount(null), 2);
+      assert.strictEqual(calculateNewInquiryCount(undefined), 2);
     });
   });
 

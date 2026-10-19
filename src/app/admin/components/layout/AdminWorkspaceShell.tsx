@@ -25,7 +25,7 @@ import type { CurrentUserSession } from './UserProfileDropdown';
 import styles from './AdminWorkspace.module.scss';
 
 // Backward compatibility aliases for existing imports and assertions
-export { LeadDetailModal as LeadDetailDrawer } from '@/app/admin/components/modals/LeadDetailModal';
+export { ClientDossierDrawer as LeadDetailDrawer } from '@/app/admin/components/DossierDrawer';
 export { NewLeadModal as NewLeadDrawer } from '@/app/admin/components/modals/NewLeadModal';
 export { AddTeamMemberModal as AddTeamMemberDrawer } from '@/app/admin/components/modals/AddTeamMemberModal';
 
@@ -51,9 +51,10 @@ function LeadUrlSync({
     if (leadId) {
       if (
         typeof window !== 'undefined' &&
-        window.location.pathname.startsWith('/admin/leads')
+        (window.location.pathname.startsWith('/admin/leads') ||
+         window.location.pathname.startsWith('/admin/deals'))
       ) {
-        // Leads workspace mounts ClientDossierDrawer directly; dispatch open-lead-drawer
+        // Leads and Deals workspaces mount ClientDossierDrawer directly; dispatch open-lead-drawer
         window.dispatchEvent(
           new CustomEvent('open-lead-drawer', { detail: { leadId } })
         );
@@ -137,10 +138,11 @@ export function AdminWorkspaceShell({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
-        // If already on /admin/leads, the LeadsWorkspaceClient mounts ClientDossierDrawer directly
+        // If already on /admin/leads or /admin/deals, those workspaces mount ClientDossierDrawer directly
         if (
           typeof window !== 'undefined' &&
-          window.location.pathname.startsWith('/admin/leads')
+          (window.location.pathname.startsWith('/admin/leads') ||
+           window.location.pathname.startsWith('/admin/deals'))
         ) {
           return;
         }

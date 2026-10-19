@@ -54,6 +54,17 @@ export const updateAgencySettingsSchema = agencySettingsSchema.omit({
   updated_by: true,
 });
 
+export const CANONICAL_SERVICE_CATEGORIES = [
+  'Branding',
+  'Web & Digital',
+  'Mobile Apps',
+  'UI/UX Design',
+  'Full-Suite Advisory',
+  'Other',
+] as const;
+
+export type CanonicalServiceCategory = (typeof CANONICAL_SERVICE_CATEGORIES)[number];
+
 export const simulateInboundBriefSchema = z.object({
   name: z
     .string()
@@ -76,10 +87,7 @@ export const simulateInboundBriefSchema = z.object({
     .optional()
     .default('Simulated Organization'),
   serviceCategory: z
-    .string()
-    .trim()
-    .max(50, 'Service category cannot exceed 50 characters')
-    .optional()
+    .enum(CANONICAL_SERVICE_CATEGORIES)
     .default('Web & Digital'),
   budgetBracket: z
     .string()

@@ -299,7 +299,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
     // 3. Query existing lead within the configured window using parameterized / sanitized matching
     let query = supabase
       .from('leads')
-      .select('id, lead_id, name, created_at')
+      .select('id, lead_id, name, created_at, inquiry_count')
       .gte('created_at', windowStart);
 
     // Sanitize string to prevent PostgREST AST injection (commas or parentheses in input)
@@ -325,6 +325,16 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
 
     if (existingLeads && existingLeads.length > 0) {
       const existing = existingLeads[0];
+
+      // Increment inquiry_count on leads table
+      await supabase
+        .from('leads')
+        .update({
+          inquiry_count: ((existing.inquiry_count as number) || 1) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id);
+
       // Append duplicate inquiry activity record
       const { error: actError } = await supabase.from('lead_activities').insert({
         lead_id: existing.id,

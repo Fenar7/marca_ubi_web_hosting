@@ -161,12 +161,13 @@ export function SettingsWorkspaceClient({
             <label htmlFor="lead_response_sla" className={styles.configLabel}>
               Lead Response SLA (Minutes)
             </label>
-            <p className={styles.configHelp}>
+            <p id="lead_response_sla_help" className={styles.configHelp}>
               Target window for sales representatives to make first contact with a new inbound brief.
             </p>
             <div className={styles.inputWrap}>
               <input
                 id="lead_response_sla"
+                aria-describedby="lead_response_sla_help"
                 type="number"
                 min="5"
                 max="1440"
@@ -191,12 +192,13 @@ export function SettingsWorkspaceClient({
             <label htmlFor="followup_grace_period" className={styles.configLabel}>
               Follow-up Grace Interval (Hours)
             </label>
-            <p className={styles.configHelp}>
+            <p id="followup_grace_period_help" className={styles.configHelp}>
               Buffer duration after scheduled touchpoint time before an overdue escalation alert triggers.
             </p>
             <div className={styles.inputWrap}>
               <input
                 id="followup_grace_period"
+                aria-describedby="followup_grace_period_help"
                 type="number"
                 min="0"
                 max="72"
@@ -221,12 +223,13 @@ export function SettingsWorkspaceClient({
             <label htmlFor="stale_deal_threshold" className={styles.configLabel}>
               Stale Deal Inactivity Alert (Days)
             </label>
-            <p className={styles.configHelp}>
+            <p id="stale_deal_threshold_help" className={styles.configHelp}>
               Number of days without an activity touchpoint before an active proposal is marked as stalled.
             </p>
             <div className={styles.inputWrap}>
               <input
                 id="stale_deal_threshold"
+                aria-describedby="stale_deal_threshold_help"
                 type="number"
                 min="1"
                 max="90"
@@ -251,12 +254,13 @@ export function SettingsWorkspaceClient({
             <label htmlFor="dedup_window" className={styles.configLabel}>
               Smart Merge Window (Hours)
             </label>
-            <p className={styles.configHelp}>
+            <p id="dedup_window_help" className={styles.configHelp}>
               Inquiries from the same phone or email within this window merge into the existing timeline.
             </p>
             <div className={styles.inputWrap}>
               <input
                 id="dedup_window"
+                aria-describedby="dedup_window_help"
                 type="number"
                 min="1"
                 max="168"
@@ -281,12 +285,13 @@ export function SettingsWorkspaceClient({
             <label htmlFor="bot_rate_limit" className={styles.configLabel}>
               Spam Shield Request Cap (Req/Min)
             </label>
-            <p className={styles.configHelp}>
+            <p id="bot_rate_limit_help" className={styles.configHelp}>
               Maximum rate-limited brief submissions permitted per IP address within 60 seconds.
             </p>
             <div className={styles.inputWrap}>
               <input
                 id="bot_rate_limit"
+                aria-describedby="bot_rate_limit_help"
                 type="number"
                 min="5"
                 max="120"
@@ -311,12 +316,13 @@ export function SettingsWorkspaceClient({
             <label htmlFor="notification_email" className={styles.configLabel}>
               Executive Alert Notification Email
             </label>
-            <p className={styles.configHelp}>
+            <p id="notification_email_help" className={styles.configHelp}>
               Destination address for critical security escalations, offboarding alerts, and SLA breaches.
             </p>
             <div className={styles.inputWrap}>
               <input
                 id="notification_email"
+                aria-describedby="notification_email_help"
                 type="email"
                 disabled={!isAdmin || isPending}
                 placeholder="executive@marcaubi.com"

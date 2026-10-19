@@ -9,7 +9,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition, useEffect, useRef } from 'react';
+import React, { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { simulateInboundBriefAction } from '@/app/actions/settings';
 import styles from './IngestionWorkspaceClient.module.scss';
 
@@ -82,6 +82,11 @@ export function IngestionWorkspaceClient({
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  const handleCloseModal = useCallback(() => {
+    setIsSimulateModalOpen(false);
+    triggerBtnRef.current?.focus();
+  }, []);
+
   // Focus management and keyboard accessibility for modal
   useEffect(() => {
     if (isSimulateModalOpen) {
@@ -91,7 +96,7 @@ export function IngestionWorkspaceClient({
 
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
-          setIsSimulateModalOpen(false);
+          handleCloseModal();
           return;
         }
 
@@ -121,7 +126,7 @@ export function IngestionWorkspaceClient({
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [isSimulateModalOpen]);
+  }, [isSimulateModalOpen, handleCloseModal]);
 
   const handleTogglePayload = (id: string) => {
     setExpandedPayloadId((prev) => (prev === id ? null : id));
@@ -245,6 +250,7 @@ export function IngestionWorkspaceClient({
                         className={styles.dealIdToken}
                         onClick={() => handleOpenLeadDrawer(sub.id)}
                         title="View deal in Client 360 Dossier"
+                        aria-label={`Open Client 360 Dossier for ${sub.lead_id}`}
                       >
                         {sub.lead_id}
                       </button>
@@ -356,7 +362,7 @@ export function IngestionWorkspaceClient({
         <div
           className={styles.modalOverlay}
           onClick={(e) => {
-            if (e.target === e.currentTarget) setIsSimulateModalOpen(false);
+            if (e.target === e.currentTarget) handleCloseModal();
           }}
           role="dialog"
           aria-modal="true"
@@ -370,7 +376,7 @@ export function IngestionWorkspaceClient({
               <button
                 type="button"
                 className={styles.modalCloseBtn}
-                onClick={() => setIsSimulateModalOpen(false)}
+                onClick={handleCloseModal}
                 aria-label="Close modal"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -454,10 +460,11 @@ export function IngestionWorkspaceClient({
                     className={styles.fieldSelect}
                   >
                     <option value="Web & Digital">Web & Digital</option>
-                    <option value="Brand Identity">Brand Identity</option>
-                    <option value="Performance Marketing">Performance Marketing</option>
-                    <option value="E-Commerce">E-Commerce</option>
-                    <option value="Content Production">Content Production</option>
+                    <option value="Branding">Branding</option>
+                    <option value="Mobile Apps">Mobile Apps</option>
+                    <option value="UI/UX Design">UI/UX Design</option>
+                    <option value="Full-Suite Advisory">Full-Suite Advisory</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
@@ -492,7 +499,7 @@ export function IngestionWorkspaceClient({
                 <button
                   type="button"
                   className={styles.cancelBtn}
-                  onClick={() => setIsSimulateModalOpen(false)}
+                  onClick={handleCloseModal}
                 >
                   Close
                 </button>
