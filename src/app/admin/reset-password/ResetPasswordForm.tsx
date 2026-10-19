@@ -117,12 +117,14 @@ export function ResetPasswordForm(): React.ReactElement {
             autoComplete="new-password"
             required
             disabled={isPending || Boolean(successMessage)}
+            aria-invalid={Boolean(errorMessage || (newPassword.length > 0 && !criteria.minLength))}
           />
           <button
             type="button"
             className={styles.toggleButton}
             onClick={() => setShowNewPassword((prev) => !prev)}
             aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
+            disabled={isPending || Boolean(successMessage)}
             tabIndex={0}
           >
             <svg
@@ -164,7 +166,10 @@ export function ResetPasswordForm(): React.ReactElement {
               criteria.minLength ? styles.criteriaDotMet : ''
             }`}
           />
-          <span>At least 12 characters</span>
+          <span>
+            At least 12 characters
+            <span className="sr-only"> ({criteria.minLength ? 'Requirement met' : 'Requirement pending'})</span>
+          </span>
         </div>
 
         <div
@@ -177,7 +182,10 @@ export function ResetPasswordForm(): React.ReactElement {
               criteria.hasUpper ? styles.criteriaDotMet : ''
             }`}
           />
-          <span>Uppercase letter (A-Z)</span>
+          <span>
+            Uppercase letter (A-Z)
+            <span className="sr-only"> ({criteria.hasUpper ? 'Requirement met' : 'Requirement pending'})</span>
+          </span>
         </div>
 
         <div
@@ -190,7 +198,10 @@ export function ResetPasswordForm(): React.ReactElement {
               criteria.hasLower ? styles.criteriaDotMet : ''
             }`}
           />
-          <span>Lowercase letter (a-z)</span>
+          <span>
+            Lowercase letter (a-z)
+            <span className="sr-only"> ({criteria.hasLower ? 'Requirement met' : 'Requirement pending'})</span>
+          </span>
         </div>
 
         <div
@@ -203,7 +214,10 @@ export function ResetPasswordForm(): React.ReactElement {
               criteria.hasNumber ? styles.criteriaDotMet : ''
             }`}
           />
-          <span>Numeric digit (0-9)</span>
+          <span>
+            Numeric digit (0-9)
+            <span className="sr-only"> ({criteria.hasNumber ? 'Requirement met' : 'Requirement pending'})</span>
+          </span>
         </div>
 
         <div
@@ -216,7 +230,10 @@ export function ResetPasswordForm(): React.ReactElement {
               criteria.hasSymbol ? styles.criteriaDotMet : ''
             }`}
           />
-          <span>Special symbol (!@#$)</span>
+          <span>
+            Special symbol (!@#$)
+            <span className="sr-only"> ({criteria.hasSymbol ? 'Requirement met' : 'Requirement pending'})</span>
+          </span>
         </div>
 
         <div
@@ -229,7 +246,10 @@ export function ResetPasswordForm(): React.ReactElement {
               criteria.passwordsMatch ? styles.criteriaDotMet : ''
             }`}
           />
-          <span>Passwords match</span>
+          <span>
+            Passwords match
+            <span className="sr-only"> ({criteria.passwordsMatch ? 'Requirement met' : 'Requirement pending'})</span>
+          </span>
         </div>
       </div>
 
@@ -254,12 +274,14 @@ export function ResetPasswordForm(): React.ReactElement {
             autoComplete="new-password"
             required
             disabled={isPending || Boolean(successMessage)}
+            aria-invalid={Boolean(errorMessage || (confirmPassword.length > 0 && !criteria.passwordsMatch))}
           />
           <button
             type="button"
             className={styles.toggleButton}
             onClick={() => setShowConfirmPassword((prev) => !prev)}
             aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+            disabled={isPending || Boolean(successMessage)}
             tabIndex={0}
           >
             <svg

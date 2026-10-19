@@ -50,8 +50,11 @@ export default function AdminLoginPage(): React.ReactElement {
                 alignItems: 'center',
                 padding: '3rem 0',
               }}
+              role="status"
+              aria-label="Loading authentication portal"
             >
               <div className={styles.btnSpinner} aria-hidden="true" />
+              <span className="sr-only">Loading authentication portal...</span>
             </div>
           </div>
         }

@@ -13,12 +13,14 @@
 import React, { useActionState, useEffect, useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { loginAction } from '@/app/actions/auth';
+import { sanitizeRedirectUrl } from '@/app/lib/auth-redirect';
 import type { LoginActionResult } from '@/types/crm';
 import styles from './login.module.scss';
 
 export function LoginForm(): React.ReactElement {
   const searchParams = useSearchParams();
-  const nextParam = searchParams.get('next') || '/admin';
+  const rawNext = searchParams.get('next') || searchParams.get('callbackUrl');
+  const nextParam = sanitizeRedirectUrl(rawNext, '/admin');
   const urlError = searchParams.get('error');
 
   const [state, formAction, isPending] = useActionState<LoginActionResult | null, FormData>(
@@ -67,6 +69,9 @@ export function LoginForm(): React.ReactElement {
         break;
       case 'unauthorized_role_access':
         displayError = 'Your account does not possess the required privileges for that resource.';
+        break;
+      case 'profile_not_found':
+        displayError = 'Corporate profile could not be located. Contact agency administration.';
         break;
       case 'session_expired':
         displayError = 'Administrative session has expired. Please re-authenticate.';
@@ -155,6 +160,7 @@ export function LoginForm(): React.ReactElement {
               autoComplete="email"
               required
               disabled={isPending || isLocked}
+              aria-invalid={Boolean(displayError)}
               placeholder="name@marcaubi.com"
               className={styles.input}
             />
@@ -173,6 +179,7 @@ export function LoginForm(): React.ReactElement {
               autoComplete="current-password"
               required
               disabled={isPending || isLocked}
+              aria-invalid={Boolean(displayError)}
               placeholder="••••••••••••••••"
               className={`${styles.input} ${styles.inputWithToggle}`}
             />
@@ -181,6 +188,7 @@ export function LoginForm(): React.ReactElement {
               className={styles.togglePasswordBtn}
               onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
+              disabled={isPending || isLocked}
               tabIndex={0}
             >
               {showPassword ? (

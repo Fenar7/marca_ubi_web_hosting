@@ -492,9 +492,14 @@ export async function suspendTeamUser(
       );
     }
 
-    // Harden session invalidation by banning the user in Supabase Auth
+    // Harden session invalidation by banning the user in Supabase Auth and updating app_metadata
+    const { data: authUserData } = await adminClient.auth.admin.getUserById(sanitizedUserId);
     await adminClient.auth.admin.updateUserById(sanitizedUserId, {
       ban_duration: '876000h',
+      app_metadata: {
+        ...(authUserData?.user?.app_metadata || {}),
+        status: 'suspended',
+      },
     });
 
     // 6. Database Status Transition to 'suspended' (Package 4.1.3)
@@ -631,13 +636,23 @@ export async function setTeamUserStatus(
           signOutError.message
         );
       }
+      const { data: authUserData } = await adminClient.auth.admin.getUserById(targetUserId);
       await adminClient.auth.admin.updateUserById(targetUserId, {
         ban_duration: '876000h',
+        app_metadata: {
+          ...(authUserData?.user?.app_metadata || {}),
+          status: 'suspended',
+        },
       });
     } else if (newStatus === 'active') {
       // Unban account in Supabase Auth upon reactivation
+      const { data: authUserData } = await adminClient.auth.admin.getUserById(targetUserId);
       await adminClient.auth.admin.updateUserById(targetUserId, {
         ban_duration: 'none',
+        app_metadata: {
+          ...(authUserData?.user?.app_metadata || {}),
+          status: 'active',
+        },
       });
     }
 

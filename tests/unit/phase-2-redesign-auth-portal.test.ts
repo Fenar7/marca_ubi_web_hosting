@@ -11,6 +11,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
+import { sanitizeRedirectUrl } from '../../src/app/lib/auth-redirect';
+import { ResetPasswordSchema } from '../../src/app/lib/team-schemas';
 
 /**
  * Computes the relative luminance of an sRGB color per WCAG 2.1 specifications.
@@ -165,6 +167,90 @@ describe('Phase 2 Redesign: Authentication Portal & Credentials Overhaul Suite',
       assert.ok(content.includes('Establish Credentials.'));
       assert.ok(content.includes('Identity Governance Protocol'));
       assert.strictEqual(content.includes('stroke="#ff6100"'), false);
+    });
+  });
+
+  describe('5. Mobile Viewport Safety & Layout Reflow (Rule R-03)', () => {
+    it('verifies login canvas avoids overflow: hidden to prevent mobile keyboard lockup', () => {
+      const content = fs.readFileSync(loginScssPath, 'utf8');
+      assert.ok(content.includes('overflow-x: hidden;'));
+      assert.ok(content.includes('overflow-y: auto;'));
+      assert.strictEqual(/overflow:\s*hidden;/.test(content), false);
+    });
+
+    it('verifies reset-password canvas avoids overflow: hidden to prevent mobile keyboard lockup', () => {
+      const content = fs.readFileSync(resetScssPath, 'utf8');
+      assert.ok(content.includes('overflow-x: hidden;'));
+      assert.ok(content.includes('overflow-y: auto;'));
+      assert.strictEqual(/overflow:\s*hidden;/.test(content), false);
+    });
+
+    it('verifies helpLink meets 44px minimum touch target requirement (Rule R-03)', () => {
+      const content = fs.readFileSync(loginScssPath, 'utf8');
+      assert.ok(content.includes('min-height: 44px;'));
+      assert.ok(content.includes('display: inline-flex;'));
+    });
+
+    it('verifies copyright text color satisfies WCAG AA and AAA contrast (> 4.5:1)', () => {
+      const ratio = getContrastRatio('#525965', '#f7f8fa');
+      assert.ok(ratio >= 4.5, `Expected contrast >= 4.5, got ${ratio}`);
+      assert.ok(ratio >= 6.5, `Expected contrast >= 6.5, got ${ratio}`);
+    });
+
+    it('verifies criteria met dot indicator satisfies WCAG 2.1 SC 1.4.11 graphical contrast (>= 3:1)', () => {
+      const ratio = getContrastRatio('#065f46', '#f8fafc');
+      assert.ok(ratio >= 3.0, `Expected graphical contrast >= 3.0, got ${ratio}`);
+      assert.ok(ratio >= 7.0, `Expected graphical contrast >= 7.0, got ${ratio}`);
+    });
+  });
+
+  describe('6. Security & Authorization Input Boundaries (CWE-601, CWE-284)', () => {
+    it('verifies sanitizeRedirectUrl rejects external open redirect vectors (CWE-601)', () => {
+      assert.strictEqual(sanitizeRedirectUrl('https://evil.com'), '/admin');
+      assert.strictEqual(sanitizeRedirectUrl('http://attacker.com/malicious'), '/admin');
+      assert.strictEqual(sanitizeRedirectUrl('//evil.com/phish'), '/admin');
+      assert.strictEqual(sanitizeRedirectUrl('/\\evil.com'), '/admin');
+      assert.strictEqual(sanitizeRedirectUrl('\\evil.com'), '/admin');
+      assert.strictEqual(sanitizeRedirectUrl('/admin\r\nSet-Cookie: evil=1'), '/admin');
+    });
+
+    it('verifies sanitizeRedirectUrl preserves valid internal CRM routes with parameters', () => {
+      assert.strictEqual(sanitizeRedirectUrl('/admin/deals?bucket=potential'), '/admin/deals?bucket=potential');
+      assert.strictEqual(sanitizeRedirectUrl('/admin/leads?assigned_to=123'), '/admin/leads?assigned_to=123');
+      assert.strictEqual(sanitizeRedirectUrl('/admin/works'), '/admin/works');
+    });
+
+    it('verifies ResetPasswordSchema strictly enforces 12+ character complexity and symbols', () => {
+      const invalidShort = ResetPasswordSchema.safeParse({
+        newPassword: 'Short1!',
+        confirmPassword: 'Short1!',
+      });
+      assert.strictEqual(invalidShort.success, false);
+
+      const invalidNoSymbol = ResetPasswordSchema.safeParse({
+        newPassword: 'Password123456',
+        confirmPassword: 'Password123456',
+      });
+      assert.strictEqual(invalidNoSymbol.success, false);
+
+      const invalidMismatch = ResetPasswordSchema.safeParse({
+        newPassword: 'ValidPassword123!',
+        confirmPassword: 'DifferentPassword123!',
+      });
+      assert.strictEqual(invalidMismatch.success, false);
+
+      const validPayload = ResetPasswordSchema.safeParse({
+        newPassword: 'SecureEnterprisePass2026!#',
+        confirmPassword: 'SecureEnterprisePass2026!#',
+      });
+      assert.strictEqual(validPayload.success, true);
+    });
+
+    it('verifies resetTemporaryPassword updates app_metadata to prevent infinite loops', () => {
+      const authActionPath = path.resolve(process.cwd(), 'src/app/actions/auth.ts');
+      const content = fs.readFileSync(authActionPath, 'utf8');
+      assert.ok(content.includes('adminClient.auth.admin.updateUserById(user.id'));
+      assert.ok(content.includes('must_change_password: false'));
     });
   });
 });

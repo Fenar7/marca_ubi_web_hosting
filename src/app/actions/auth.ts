@@ -248,7 +248,7 @@ export async function resetTemporaryPassword(
   const { newPassword } = parseResult.data;
 
   try {
-    // 1. Update Auth identity password and reset metadata flag
+    // 1. Update Auth identity password and reset user_metadata flag
     const { error: updateAuthError } = await supabase.auth.updateUser({
       password: newPassword,
       data: {
@@ -263,8 +263,22 @@ export async function resetTemporaryPassword(
       };
     }
 
-    // 2. Clear must_change_password flag in public.profiles
     const adminClient = getAdminClient();
+
+    // 2. Clear must_change_password flag in Supabase Auth app_metadata (requires service_role admin privileges)
+    // Invariant: middleware.ts inspects user.app_metadata.must_change_password to gate /admin routes.
+    const { error: appMetaError } = await adminClient.auth.admin.updateUserById(user.id, {
+      app_metadata: {
+        ...(user.app_metadata ?? {}),
+        must_change_password: false,
+      },
+    });
+
+    if (appMetaError) {
+      console.warn('[PASSWORD_RESET_WARNING] Failed to update app_metadata.must_change_password:', appMetaError.message);
+    }
+
+    // 3. Clear must_change_password flag in public.profiles
     const { error: profileError } = await adminClient
       .from('profiles')
       .update({
