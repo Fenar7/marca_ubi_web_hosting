@@ -41,6 +41,10 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
     .eq('id', user.id)
     .maybeSingle();
 
+  if (profile?.status !== 'active') {
+    redirect('/admin/login?error=account_suspended');
+  }
+
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
@@ -83,8 +87,8 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Governance & Operational Hardening</span>
-          <h1 className={styles.pageTitle}>System Settings & Governance</h1>
+          <span className={styles.eyebrow}>Operational Governance</span>
+          <h1 className={styles.pageTitle}>Operational Governance & Settings.</h1>
           <p className={styles.pageSubtitle}>
             Configure operational SLAs, lead alert grace periods, bot rate limits, and inspect immutable audit trails.
           </p>
@@ -100,7 +104,7 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
 
       {/* Role Authorization Matrix */}
       <section className={styles.matrixCard}>
-        <h2 className={styles.sectionTitle}>Commercial Authorization Matrix</h2>
+        <h2 className={styles.sectionTitle}>Commercial Authorization Matrix.</h2>
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead className={styles.tableHead}>
@@ -115,16 +119,41 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
             <tbody>
               <tr className={styles.tableRow}>
                 <td className={styles.roleName}>Administrator</td>
-                <td className={styles.checkMark}>✓ Full Access</td>
-                <td className={styles.checkMark}>✓ Create / Suspend</td>
-                <td className={styles.checkMark}>✓ Atomic Batch</td>
+                <td className={styles.checkMark}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Full Access</span>
+                </td>
+                <td className={styles.checkMark}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Create / Suspend</span>
+                </td>
+                <td className={styles.checkMark}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Atomic Batch</span>
+                </td>
                 <td className={styles.dashMark}>Global Scope</td>
               </tr>
               <tr className={styles.tableRow}>
                 <td className={styles.roleName}>Sales Manager</td>
-                <td className={styles.checkMark}>✓ Full Access</td>
+                <td className={styles.checkMark}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Full Access</span>
+                </td>
                 <td className={styles.dashMark}>Restricted: Read-Only</td>
-                <td className={styles.checkMark}>✓ Atomic Batch</td>
+                <td className={styles.checkMark}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Atomic Batch</span>
+                </td>
                 <td className={styles.dashMark}>Global Scope</td>
               </tr>
               <tr className={styles.tableRow}>
@@ -132,11 +161,21 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
                 <td className={styles.dashMark}>Sandboxed</td>
                 <td className={styles.dashMark}>Restricted</td>
                 <td className={styles.dashMark}>Restricted</td>
-                <td className={styles.checkMark}>✓ Isolated RLS</td>
+                <td className={styles.checkMark}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Isolated RLS</span>
+                </td>
               </tr>
               <tr className={styles.tableRow}>
                 <td className={styles.roleName}>Viewer</td>
-                <td className={styles.checkMark}>✓ Read-Only</td>
+                <td className={styles.checkMark}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Read-Only</span>
+                </td>
                 <td className={styles.dashMark}>Restricted</td>
                 <td className={styles.dashMark}>Restricted</td>
                 <td className={styles.dashMark}>Global Read-Only</td>

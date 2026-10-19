@@ -47,6 +47,10 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     .eq('id', user.id)
     .maybeSingle();
 
+  if (profile?.status !== 'active') {
+    redirect('/admin/login?error=account_suspended');
+  }
+
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
@@ -135,8 +139,8 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Form Gateway & Website Inquiries</span>
-          <h1 className={styles.pageTitle}>Website Inquiries & Intake Console</h1>
+          <span className={styles.eyebrow}>Ingestion Protocols</span>
+          <h1 className={styles.pageTitle}>Inbound Lead Ingestion Protocols.</h1>
           <p className={styles.pageSubtitle}>
             Monitor inbound inquiries, inspect raw webhook JSON brief payloads, and simulate test submissions.
           </p>
@@ -153,7 +157,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
 
       {/* Deduplication & Ingestion Governance Protocol */}
       <section className={styles.sectionBox}>
-        <h2 className={styles.sectionTitle}>Automated Deduplication Protocol</h2>
+        <h2 className={styles.sectionTitle}>Automated Deduplication Protocol.</h2>
         <div className={styles.ruleList}>
           <div className={styles.ruleItem}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

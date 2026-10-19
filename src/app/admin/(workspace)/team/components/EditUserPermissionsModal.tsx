@@ -172,7 +172,7 @@ export function EditUserPermissionsModal({
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>Governance & RBAC</span>
             <h2 id="edit-permissions-modal-title" className={styles.modalTitle}>
-              Configure Tab Permissions
+              Configure Tab Permissions.
             </h2>
           </div>
           <button
@@ -181,7 +181,10 @@ export function EditUserPermissionsModal({
             onClick={requestClose}
             aria-label="Close tab permissions modal"
           >
-            <span>✕</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
             <kbd className={styles.escBadge}>Esc</kbd>
           </button>
         </div>

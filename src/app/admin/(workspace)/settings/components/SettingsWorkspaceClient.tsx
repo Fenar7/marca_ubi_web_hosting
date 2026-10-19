@@ -113,7 +113,7 @@ export function SettingsWorkspaceClient({
       <section className={styles.settingsSection} aria-label="Operational SLAs and Alerts">
         <div className={styles.sectionHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Operational SLAs & Automated Alert Thresholds</h2>
+            <h2 className={styles.sectionTitle}>Operational SLAs & Automated Alert Thresholds.</h2>
             <p className={styles.sectionSubtitle}>
               Calibrate agency response speed, follow-up grace intervals, and spam defense parameters.
             </p>
@@ -339,7 +339,7 @@ export function SettingsWorkspaceClient({
       <section className={styles.auditSection} aria-label="System Governance Audit Ledger">
         <div className={styles.auditHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Security & Governance Audit Trail</h2>
+            <h2 className={styles.sectionTitle}>Security & Governance Audit Trail.</h2>
             <p className={styles.sectionSubtitle}>
               Immutable cryptographic ledger tracking administrative mutations and permission updates.
             </p>
@@ -361,27 +361,42 @@ export function SettingsWorkspaceClient({
         </div>
 
         {filteredLogs.length === 0 ? (
-          <div className={styles.emptyLogs}>
+          <div className={styles.emptyState}>
             <span>No administrative audit events found matching query.</span>
           </div>
         ) : (
-          <div className={styles.logList}>
-            {filteredLogs.map((log) => (
-              <div key={log.id} className={styles.logItem}>
-                <div className={styles.logLeft}>
-                  <span className={styles.logBadge}>{log.action.replace(/_/g, ' ')}</span>
-                  <span className={styles.logTarget}>{log.target_user_email}</span>
-                </div>
-                <time className={styles.logDate}>
-                  {new Date(log.created_at).toLocaleString('en-IN', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </time>
-              </div>
-            ))}
+          <div className={styles.tableWrapper}>
+            <table className={styles.auditTable}>
+              <thead className={styles.tableHead}>
+                <tr>
+                  <th>Action</th>
+                  <th>Target Email</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLogs.map((log) => (
+                  <tr key={log.id} className={styles.tableRow}>
+                    <td>
+                      <span className={styles.actionBadge}>{log.action.replace(/_/g, ' ')}</span>
+                    </td>
+                    <td>
+                      <span className={styles.targetEmail}>{log.target_user_email}</span>
+                    </td>
+                    <td>
+                      <time className={styles.timestamp}>
+                        {new Date(log.created_at).toLocaleString('en-IN', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </time>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </section>

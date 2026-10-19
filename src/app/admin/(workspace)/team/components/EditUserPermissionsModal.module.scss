@@ -1,8 +1,9 @@
 /**
  * @file EditUserPermissionsModal.module.scss
- * @description Apple HIG Vibrancy & Marca Ubi Dark Luxury styling tokens for the
- *              Granular Tab Permissions Governance Modal (580px).
- * @tokens #0b0b0b, #111114, #141418, #ff6100, #a1a1aa, tabular-nums
+ * @description Accordion / Sypher light styling tokens for the
+ *              Granular Tab Permissions Governance Modal dialog (580px).
+ *              Enforces pure white surfaces, hairline borders, Accordion Lemon Yellow pill CTA,
+ *              and 44px minimum touch targets.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -14,16 +15,16 @@
   }
   100% {
     opacity: 1;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 }
 
 @keyframes backdropFadeOut {
   0% {
     opacity: 1;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   100% {
     opacity: 0;
@@ -62,9 +63,9 @@
   align-items: center;
   justify-content: center;
   padding: clamp(1rem, 2.5vw, 2rem);
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(31, 36, 47, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   overflow: hidden;
   animation: backdropFadeIn 0.22s ease-out forwards;
 
@@ -82,13 +83,10 @@
   width: 100%;
   max-width: 580px;
   max-height: min(90vh, 840px);
-  background: #111114;
+  background: var(--admin-card-bg, #ffffff);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 32px 80px -12px rgba(0, 0, 0, 0.85),
-    0 0 0 1px rgba(255, 255, 255, 0.06),
-    inset 0 1px 1px rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  box-shadow: 0 24px 60px rgba(31, 36, 47, 0.16);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -109,11 +107,11 @@
 
 .modalHeader {
   padding: 1.25rem 1.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #141418;
+  background: var(--admin-card-bg, #ffffff);
   flex-shrink: 0;
 }
 
@@ -128,14 +126,15 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ff6100;
+  color: var(--admin-text-secondary, #525965);
 }
 
 .modalTitle {
-  font-size: 1.15rem;
+  font-family: var(--font-admin-primary, 'MessinaSans', sans-serif);
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   margin: 0;
 }
 
@@ -146,32 +145,33 @@
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
-  color: #cccccc;
-  font-size: 0.85rem;
+  color: var(--admin-text-secondary, #525965);
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
   }
 }
 
 .escBadge {
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.62rem;
-  background: rgba(255, 255, 255, 0.08);
+  font-family: var(--font-admin-code, 'MessinaSansMono', monospace);
+  color: var(--admin-text-secondary, #525965);
+  background: var(--admin-surface-muted, #f0f2f5);
   border-radius: 3px;
-  padding: 1px 4px;
-  color: #a1a1aa;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
 }
 
 .modalBody {
@@ -186,17 +186,9 @@
     width: 6px;
   }
 
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--admin-border-default, #e2e5ea);
     border-radius: 3px;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.25);
-    }
   }
 
   @media (max-width: 640px) {
@@ -210,8 +202,8 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.2rem;
-  background: #141418;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 10px;
 }
 
@@ -219,14 +211,14 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 97, 0, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
-  border: 1px solid rgba(255, 97, 0, 0.35);
+  background: var(--admin-surface-inverse, #1f242f);
+  border: 1px solid var(--admin-border-strong, #1f242f);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.88rem;
-  color: #ff6100;
+  color: var(--admin-text-inverse, #ffffff);
   letter-spacing: 0.04em;
   flex-shrink: 0;
 }
@@ -247,9 +239,10 @@
 }
 
 .userName {
+  font-family: var(--font-admin-primary, 'MessinaSans', sans-serif);
   font-size: 0.94rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
 }
 
 .roleBadge {
@@ -259,14 +252,14 @@
   text-transform: uppercase;
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
-  background: rgba(255, 97, 0, 0.12);
-  color: #ff6100;
-  border: 1px solid rgba(255, 97, 0, 0.25);
+  background: var(--admin-card-bg, #ffffff);
+  color: var(--admin-text-primary, #1f242f);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
 }
 
 .userEmail {
   font-size: 0.76rem;
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
 }
 
 /* Informational Callout */
@@ -275,10 +268,10 @@
   align-items: flex-start;
   gap: 0.65rem;
   padding: 0.85rem 1rem;
-  background: rgba(255, 97, 0, 0.08);
-  border: 1px solid rgba(255, 97, 0, 0.25);
+  background: var(--admin-status-amber-bg, #fffbeb);
+  border: 1px solid var(--admin-status-amber-border, #fde68a);
   border-radius: 8px;
-  color: #ff914d;
+  color: var(--admin-status-amber-text, #92400e);
   font-size: 0.78rem;
   line-height: 1.45;
 }
@@ -293,10 +286,10 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.75rem 1rem;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: var(--admin-status-rose-bg, #fef2f2);
+  border: 1px solid var(--admin-status-rose-border, #fecaca);
   border-radius: 8px;
-  color: #ef4444;
+  color: var(--admin-status-rose-text, #991b1b);
   font-size: 0.82rem;
   font-weight: 500;
 }
@@ -309,9 +302,9 @@
 }
 
 .enclaveCard {
-  background: #0d0d10;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 10px;
   padding: 0.9rem;
   display: flex;
   flex-direction: column;
@@ -329,17 +322,17 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #ff6100;
+  color: var(--admin-text-primary, #1f242f);
 }
 
 .enclaveBadge {
   font-size: 0.66rem;
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  color: #a1a1aa;
-  background: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-admin-code, 'MessinaSansMono', monospace);
+  color: var(--admin-text-secondary, #525965);
+  background: var(--admin-card-bg, #ffffff);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
 }
 
 .tabsGrid {
@@ -358,32 +351,32 @@
   gap: 0.65rem;
   padding: 0.7rem 0.8rem;
   min-height: 44px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
 
   &:hover:not(.tabCardLocked) {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.14);
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &.tabCardActive {
-    background: rgba(255, 97, 0, 0.08);
-    border-color: rgba(255, 97, 0, 0.4);
-    box-shadow: 0 0 12px rgba(255, 97, 0, 0.1);
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 
   &.tabCardLocked {
     opacity: 0.75;
     cursor: not-allowed;
     border-style: dashed;
+    background: var(--admin-surface-muted, #f0f2f5);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -392,8 +385,8 @@
   width: 18px;
   height: 18px;
   border-radius: 4px;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  background: transparent;
+  border: 1.5px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-card-bg, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,15 +395,15 @@
   transition: all 0.15s ease;
 
   .tabCardActive & {
-    background: #ff6100;
-    border-color: #ff6100;
+    background: var(--admin-surface-inverse, #1f242f);
+    border-color: var(--admin-surface-inverse, #1f242f);
   }
 }
 
 .checkIcon {
   width: 12px;
   height: 12px;
-  color: #ffffff;
+  color: var(--admin-text-inverse, #ffffff);
 }
 
 .tabMeta {
@@ -424,7 +417,7 @@
 .tabLabel {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -433,30 +426,30 @@
 .lockedPill {
   font-size: 0.62rem;
   font-weight: 700;
-  color: #ff914d;
-  background: rgba(255, 97, 0, 0.12);
-  border: 1px solid rgba(255, 97, 0, 0.25);
+  color: var(--admin-status-amber-text, #92400e);
+  background: var(--admin-status-amber-bg, #fffbeb);
+  border: 1px solid var(--admin-status-amber-border, #fde68a);
   border-radius: 3px;
   padding: 0 0.35rem;
 }
 
 .tabRoute {
   font-size: 0.68rem;
-  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-  color: #a1a1aa;
+  font-family: var(--font-admin-code, 'MessinaSansMono', monospace);
+  color: var(--admin-text-secondary, #525965);
 }
 
 .tabHint {
   font-size: 0.68rem;
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
   line-height: 1.3;
 }
 
 /* Modal Footer */
 .modalFooter {
   padding: 1rem 1.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: #141418;
+  border-top: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-card-bg, #ffffff);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -471,11 +464,11 @@
 }
 
 .quickActionBtn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 5px;
-  color: #a1a1aa;
-  font-size: 0.72rem;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 6px;
+  color: var(--admin-text-primary, #1f242f);
+  font-size: 0.74rem;
   font-weight: 600;
   padding: 0.35rem 0.85rem;
   min-height: 44px;
@@ -486,13 +479,12 @@
   transition: all 0.15s ease;
 
   &:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
   }
 
@@ -510,10 +502,10 @@
 .cancelButton {
   min-height: 44px;
   padding: 0 1.25rem;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  color: #cccccc;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 9999px;
+  color: var(--admin-text-primary, #1f242f);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -523,12 +515,12 @@
   transition: all 0.15s ease;
 
   &:hover {
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.25);
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 
   &:active {
@@ -539,26 +531,31 @@
 .submitButton {
   min-height: 44px;
   padding: 0 1.5rem;
-  background: #ff6100;
-  border: 1px solid #ff6100;
-  border-radius: 6px;
-  color: #ffffff;
+  background: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: 9999px;
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
+  transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #e05500;
+    background: var(--admin-accent-lemon-hover, #e4f375);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
   }
 
   &:focus-visible {
-    outline: 2px solid #ffffff;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 
   &:active:not(:disabled) {
@@ -566,7 +563,7 @@
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }

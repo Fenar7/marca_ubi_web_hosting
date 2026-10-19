@@ -184,13 +184,13 @@ export function LeadReassignmentWizardModal({
             gap: '0.85rem',
             padding: '0.85rem 1rem',
             borderRadius: '6px',
-            background: 'rgba(255, 97, 0, 0.08)',
-            border: '1px solid rgba(255, 97, 0, 0.3)',
+            background: 'var(--admin-surface-muted, #f0f2f5)',
+            border: '1px solid var(--admin-border-default, #e2e5ea)',
             marginBottom: '1.25rem',
           }}
         >
           <svg
-            style={{ color: '#ff6100', flexShrink: 0, marginTop: '0.15rem' }}
+            style={{ color: 'var(--admin-text-primary, #1f242f)', flexShrink: 0, marginTop: '0.15rem' }}
             width="22"
             height="22"
             viewBox="0 0 24 24"
@@ -209,11 +209,11 @@ export function LeadReassignmentWizardModal({
           <div>
             <h3
               id="reassign-wizard-title"
-              style={{ margin: '0 0 0.25rem 0', fontSize: '0.96rem', fontWeight: 700, color: '#ffffff' }}
+              style={{ margin: '0 0 0.25rem 0', fontSize: '0.96rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}
             >
-              Pipeline Lead Reassignment Wizard
+              Pipeline Lead Reassignment Wizard.
             </h3>
-            <p id="reassign-wizard-desc" className={styles.modalAlertText} style={{ color: '#dddddd' }}>
+            <p id="reassign-wizard-desc" className={styles.modalAlertText} style={{ color: 'var(--admin-text-secondary, #525965)' }}>
               Transferring active commercial portfolio from <strong>{sourceMember.full_name}</strong> to a designated active representative.
             </p>
           </div>
@@ -226,8 +226,8 @@ export function LeadReassignmentWizardModal({
             alignItems: 'center',
             gap: '0.85rem',
             padding: '0.75rem 1rem',
-            background: '#09090b',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'var(--admin-surface-muted, #f0f2f5)',
+            border: '1px solid var(--admin-border-default, #e2e5ea)',
             borderRadius: '6px',
             marginBottom: '1.25rem',
           }}
@@ -236,10 +236,10 @@ export function LeadReassignmentWizardModal({
             {getInitials(sourceMember.full_name)}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#ffffff' }}>
+            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--admin-text-primary, #1f242f)' }}>
               {sourceMember.full_name}
             </span>
-            <span style={{ fontSize: '0.75rem', color: '#888888' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary, #525965)' }}>
               {sourceMember.email} · {sourceMember.job_title}
             </span>
           </div>
@@ -280,7 +280,7 @@ export function LeadReassignmentWizardModal({
                   <div className={styles.wizardStageLeft}>
                     <span
                       className={styles.wizardStageDot}
-                      style={{ backgroundColor: stage.color_code || '#ff6100' }}
+                      style={{ backgroundColor: stage.color_code || '#1f242f' }}
                     />
                     <span className={styles.wizardStageName}>{stage.status_name}</span>
                   </div>
@@ -302,17 +302,25 @@ export function LeadReassignmentWizardModal({
         {!isLoadingInventory && activeCount === 0 && (
           <div
             style={{
-              padding: '1rem',
-              background: 'rgba(34, 197, 94, 0.08)',
-              border: '1px solid rgba(34, 197, 94, 0.25)',
-              borderRadius: '6px',
-              color: '#22c55e',
-              fontSize: '0.82rem',
+              padding: '0.85rem 1.15rem',
+              background: 'var(--admin-status-emerald-bg, #ecfdf5)',
+              border: '1px solid var(--admin-status-emerald-border, #a7f3d0)',
+              borderRadius: '8px',
+              color: 'var(--admin-status-emerald-text, #065f46)',
+              fontSize: '0.84rem',
               marginBottom: '1.25rem',
               lineHeight: 1.5,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.55rem',
             }}
           >
-            ✓ <strong>Zero Active Deals:</strong> This representative has no active commercial deals requiring reassignment. Converted and lost accounts remain untouched to preserve historical ownership records.
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: '0.15rem' }}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>
+              <strong>Zero Active Deals:</strong> This representative has no active commercial deals requiring reassignment. Converted and lost accounts remain untouched to preserve historical ownership records.
+            </span>
           </div>
         )}
 

@@ -76,6 +76,18 @@ export function WorksWorkspaceClient({
     setWorks(initialWorks);
   }, [initialWorks]);
 
+  // Handle Escape key dismissal for directorial assignment modal
+  useEffect(() => {
+    if (!assigningWork) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setAssigningWork(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [assigningWork]);
+
   const isViewer = userRole === 'viewer';
   const canAssignDirectors = userRole === 'admin' || userRole === 'sales_manager';
 
@@ -600,7 +612,7 @@ export function WorksWorkspaceClient({
           >
             <div className={styles.directorModalHeader}>
               <h3 id="assign-directors-title" className={styles.directorModalTitle}>
-                Assign Project Directors
+                Assign Project Directors.
               </h3>
               <button
                 type="button"
