@@ -3,6 +3,7 @@
  * @description Mandatory First-Login Password Reset Interface (/admin/reset-password).
  *              Protected by Next.js 16 Edge Middleware and Server Component authentication.
  *              Enforces security invariants requiring provisioned users to establish permanent credentials.
+ *              Strictly conforms to Accordion Executive Advisory & Sypher design system tokens.
  * @module app/admin/reset-password/page
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -49,7 +50,7 @@ export default async function ResetPasswordPage(): Promise<React.ReactElement> {
       <section className={styles.cardContainer}>
         <header className={styles.brandHeader}>
           <div className={styles.securityBadge}>
-            <span className={styles.securityBadgeDot} />
+            <span className={styles.securityBadgeDot} aria-hidden="true" />
             <span>Identity Governance Protocol</span>
           </div>
           <div className={styles.brandLogoWrap}>
@@ -61,7 +62,7 @@ export default async function ResetPasswordPage(): Promise<React.ReactElement> {
               height={38}
             />
           </div>
-          <h1 className={styles.title}>Establish Credentials</h1>
+          <h1 className={styles.title}>Establish Credentials.</h1>
           <p className={styles.subtitle}>Account Security Invariant</p>
 
           <div className={styles.policyNotice}>
@@ -71,7 +72,7 @@ export default async function ResetPasswordPage(): Promise<React.ReactElement> {
                 height="14"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#ff6100"
+                stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"

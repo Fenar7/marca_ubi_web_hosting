@@ -1,8 +1,9 @@
 /**
  * @file LoginForm.tsx
- * @description Interactive client-side component for the Marca Ubi Luxury Admin Login Portal.
+ * @description Interactive client-side component for the Marca Ubi Executive Login Portal.
  *              Integrates React 19 useActionState, brute-force lockout countdowns,
  *              password visibility toggles, and WCAG AA aria-live error announcements.
+ *              Strictly conforms to the Accordion Executive Advisory & Sypher design system.
  * @module admin/login/LoginForm
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -89,22 +90,25 @@ export function LoginForm(): React.ReactElement {
       <header className={styles.brandHeader}>
         <div className={styles.brandBadge}>
           <span className={styles.brandBadgeDot} aria-hidden="true" />
-          <span>Internal Access</span>
+          <span>Executive Access</span>
         </div>
         <div className={styles.brandLogoWrap}>
           <img
             src="/hero/marca-ubi-logo.png"
             alt="Marca Ubi."
             className={styles.brandLogo}
-            width={190}
-            height={40}
+            width={180}
+            height={38}
           />
         </div>
-        <p className={styles.brandSubtitle}>Enterprise Sales Intelligence</p>
+        <h1 className={styles.brandTitle}>Executive Portal.</h1>
+        <p className={styles.brandSubtitle}>Enterprise Administration</p>
 
         <div className={styles.portalNotice}>
-          <p className={styles.portalNoticeTitle}>Restricted Agency Portal</p>
-          <p className={styles.portalNoticeText}>Authorized personnel only. Access monitored and logged.</p>
+          <p className={styles.portalNoticeTitle}>Commercial Authentication</p>
+          <p className={styles.portalNoticeText}>
+            Protected by enterprise multi-factor authentication and role-based access control.
+          </p>
         </div>
       </header>
 
@@ -242,7 +246,7 @@ export function LoginForm(): React.ReactElement {
               >
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
-              <span>Authenticate into Workspace</span>
+              <span>Authenticate Session</span>
             </>
           )}
         </button>
@@ -254,7 +258,7 @@ export function LoginForm(): React.ReactElement {
           className={styles.helpLink}
           tabIndex={0}
         >
-          Need assistance with credentials? Contact Agency Directorate
+          Need assistance with credentials? Contact Agency Administration
         </a>
       </div>
 
@@ -273,7 +277,7 @@ export function LoginForm(): React.ReactElement {
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
-        <span>Protected by Hardware TLS 1.3 & Encrypted Session JWT</span>
+        <span>Protected by enterprise MFA & TLS 1.3 encryption.</span>
       </div>
 
       <footer className={styles.copyright}>
