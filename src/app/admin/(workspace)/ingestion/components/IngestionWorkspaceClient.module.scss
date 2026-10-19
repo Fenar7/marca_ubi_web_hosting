@@ -54,6 +54,10 @@
     outline-offset: 2px;
   }
 
+  &:active {
+    transform: scale(0.98);
+  }
+
   svg {
     flex-shrink: 0;
   }
@@ -94,7 +98,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #71717a;
+  color: #a1a1aa;
 }
 
 .telemetryVal {
@@ -215,13 +219,26 @@
   background: rgba(255, 97, 0, 0.1);
   border: 1px solid rgba(255, 97, 0, 0.25);
   border-radius: 6px;
-  padding: 0.3rem 0.6rem;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
     background: rgba(255, 97, 0, 0.2);
     border-color: #ff6100;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
@@ -239,7 +256,7 @@
 .clientContact {
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.75rem;
-  color: #71717a;
+  color: #a1a1aa;
 }
 
 .submissionRight {
@@ -267,7 +284,7 @@
 .timestamp {
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.75rem;
-  color: #71717a;
+  color: #a1a1aa;
 }
 
 .inspectBtn {
@@ -294,6 +311,10 @@
   &:focus-visible {
     outline: 2px solid #ff6100;
     outline-offset: 2px;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
@@ -342,6 +363,11 @@
 
   &:focus-visible {
     outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
@@ -403,10 +429,11 @@
     color: #fbbf24;
   }
 
+  /* R-01: Zero Generic Blue: Marca Ubi Luxury Slate/Zinc token */
   &.system {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    color: #60a5fa;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #d4d4d8;
   }
 
   &.default {
@@ -432,7 +459,7 @@
 .emptyState {
   padding: 2.5rem 1rem;
   text-align: center;
-  color: #71717a;
+  color: #a1a1aa;
   font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.01);
   border: 1px dashed rgba(255, 255, 255, 0.08);
@@ -536,6 +563,10 @@
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
+  &::placeholder {
+    color: #71717a;
+  }
+
   &:focus {
     border-color: #ff6100;
     box-shadow: 0 0 0 1px #ff6100;
@@ -569,10 +600,20 @@
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.06);
     color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
@@ -587,10 +628,20 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 0 16px rgba(255, 97, 0, 0.3);
+  transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
     background: #ff731a;
     box-shadow: 0 0 22px rgba(255, 97, 0, 0.45);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
   }
 
   &:disabled {

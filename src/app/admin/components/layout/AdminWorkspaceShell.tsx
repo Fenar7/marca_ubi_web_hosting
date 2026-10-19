@@ -15,7 +15,6 @@ import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
 import { NewLeadModal } from '@/app/admin/components/modals/NewLeadModal';
-import { LeadDetailModal } from '@/app/admin/components/modals/LeadDetailModal';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { AddTeamMemberModal } from '@/app/admin/components/modals/AddTeamMemberModal';
 import {
@@ -76,8 +75,6 @@ export function AdminWorkspaceShell({
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState<boolean>(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState<boolean>(false);
-  const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
-  const [isLeadModalOpen, setIsLeadModalOpen] = useState<boolean>(false);
   const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] = useState<ProvisionedCredentialsPayload | null>(null);
@@ -105,30 +102,6 @@ export function AdminWorkspaceShell({
       }
       return next;
     });
-  }, []);
-
-  const handleOpenLead = useCallback((id: string) => {
-    setActiveLeadId(id);
-    setIsLeadModalOpen(true);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('leadId') !== id) {
-        url.searchParams.set('leadId', id);
-        window.history.replaceState({}, '', url.pathname + url.search);
-      }
-    }
-  }, []);
-
-  const handleCloseLeadModal = useCallback(() => {
-    setIsLeadModalOpen(false);
-    setActiveLeadId(null);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (url.searchParams.has('leadId')) {
-        url.searchParams.delete('leadId');
-        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-      }
-    }
   }, []);
 
   const handleOpenDrawer = useCallback((id: string) => {
@@ -164,18 +137,14 @@ export function AdminWorkspaceShell({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
-        if (e.type === 'open-lead-drawer') {
-          // If already on /admin/leads, the LeadsWorkspaceClient mounts ClientDossierDrawer directly
-          if (
-            typeof window !== 'undefined' &&
-            window.location.pathname.startsWith('/admin/leads')
-          ) {
-            return;
-          }
-          handleOpenDrawer(id);
-        } else {
-          handleOpenLead(id);
+        // If already on /admin/leads, the LeadsWorkspaceClient mounts ClientDossierDrawer directly
+        if (
+          typeof window !== 'undefined' &&
+          window.location.pathname.startsWith('/admin/leads')
+        ) {
+          return;
         }
+        handleOpenDrawer(id);
       }
     };
 
@@ -185,7 +154,7 @@ export function AdminWorkspaceShell({
       window.removeEventListener('open-lead-modal', handleOpenLeadEvent);
       window.removeEventListener('open-lead-drawer', handleOpenLeadEvent);
     };
-  }, [handleOpenLead, handleOpenDrawer]);
+  }, [handleOpenDrawer]);
 
   // Listen to open-new-lead-modal and open-new-lead-drawer custom events dispatched by quick action buttons
   useEffect(() => {
@@ -313,20 +282,6 @@ export function AdminWorkspaceShell({
         <LeadUrlSync onLeadIdFound={handleOpenDrawer} />
       </Suspense>
 
-      {/* Centered Client 360 Lead Detail Dossier Modal (re-exported as LeadDetailDrawer) */}
-      <LeadDetailModal
-        leadId={activeLeadId}
-        isOpen={isLeadModalOpen}
-        onClose={handleCloseLeadModal}
-        currentUser={currentUser}
-        onLeadUpdated={() => {
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(
-              new CustomEvent('lead-data-mutated', { detail: activeLeadId })
-            );
-          }
-        }}
-      />
 
       {/* Slide-over Client 360 Degree Dossier Drawer (Unified across all CRM workspaces) */}
       <ClientDossierDrawer

@@ -346,6 +346,7 @@ export function SettingsWorkspaceClient({
             <input
               type="text"
               placeholder="Search audit actions or emails..."
+              aria-label="Search audit actions or emails"
               value={auditSearch}
               onChange={(e) => setAuditSearch(e.target.value)}
               className={styles.searchInput}

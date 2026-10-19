@@ -123,22 +123,22 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
               <tr className={styles.tableRow}>
                 <td className={styles.roleName}>Sales Manager</td>
                 <td className={styles.checkMark}>✓ Full Access</td>
-                <td className={styles.dashMark}>— Read-Only</td>
+                <td className={styles.dashMark}>Restricted: Read-Only</td>
                 <td className={styles.checkMark}>✓ Atomic Batch</td>
                 <td className={styles.dashMark}>Global Scope</td>
               </tr>
               <tr className={styles.tableRow}>
                 <td className={styles.roleName}>Sales Executive</td>
-                <td className={styles.dashMark}>— Sandboxed</td>
-                <td className={styles.dashMark}>— Restricted</td>
-                <td className={styles.dashMark}>— Restricted</td>
+                <td className={styles.dashMark}>Sandboxed</td>
+                <td className={styles.dashMark}>Restricted</td>
+                <td className={styles.dashMark}>Restricted</td>
                 <td className={styles.checkMark}>✓ Isolated RLS</td>
               </tr>
               <tr className={styles.tableRow}>
                 <td className={styles.roleName}>Viewer</td>
                 <td className={styles.checkMark}>✓ Read-Only</td>
-                <td className={styles.dashMark}>— Restricted</td>
-                <td className={styles.dashMark}>— Restricted</td>
+                <td className={styles.dashMark}>Restricted</td>
+                <td className={styles.dashMark}>Restricted</td>
                 <td className={styles.dashMark}>Global Read-Only</td>
               </tr>
             </tbody>

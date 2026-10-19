@@ -1,7 +1,7 @@
 /**
  * @file agency-settings-schemas.ts
  * @description Zod validation schemas and TypeScript types for Agency Operational Settings,
- *              SLAs, Alert Grace Periods, and Ingestion Security Configurations.
+ *              SLAs, Alert Grace Periods, Ingestion Security, and Inbound Brief Simulation.
  * @module app/lib/agency-settings-schemas
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -41,8 +41,7 @@ export const agencySettingsSchema = z.object({
     .max(120, 'Rate limit cannot exceed 120 requests per minute')
     .default(10),
   notification_email: z
-    .string()
-    .email('Invalid notification email address')
+    .union([z.string().email('Invalid notification email address'), z.literal('')])
     .nullable()
     .optional(),
   updated_at: z.string().optional(),
@@ -55,5 +54,47 @@ export const updateAgencySettingsSchema = agencySettingsSchema.omit({
   updated_by: true,
 });
 
+export const simulateInboundBriefSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, 'Client name must be at least 2 characters')
+    .max(100, 'Client name cannot exceed 100 characters'),
+  email: z
+    .string()
+    .trim()
+    .email('Invalid client email address')
+    .max(120, 'Email cannot exceed 120 characters'),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+?[0-9\s\-()]{7,20}$/, 'Invalid phone number format'),
+  company: z
+    .string()
+    .trim()
+    .max(100, 'Company cannot exceed 100 characters')
+    .optional()
+    .default('Simulated Organization'),
+  serviceCategory: z
+    .string()
+    .trim()
+    .max(50, 'Service category cannot exceed 50 characters')
+    .optional()
+    .default('Web & Digital'),
+  budgetBracket: z
+    .string()
+    .trim()
+    .max(50, 'Budget bracket cannot exceed 50 characters')
+    .optional()
+    .default('₹15L - ₹25L'),
+  message: z
+    .string()
+    .trim()
+    .max(2000, 'Message cannot exceed 2000 characters')
+    .optional()
+    .default('Simulated inbound creative brief submission.'),
+});
+
 export type AgencySettings = z.infer<typeof agencySettingsSchema>;
 export type UpdateAgencySettingsInput = z.infer<typeof updateAgencySettingsSchema>;
+export type SimulateInboundBriefInput = z.infer<typeof simulateInboundBriefSchema>;

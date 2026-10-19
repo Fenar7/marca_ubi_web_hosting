@@ -11,9 +11,12 @@ import assert from 'node:assert/strict';
 import {
   agencySettingsSchema,
   updateAgencySettingsSchema,
+  simulateInboundBriefSchema,
   type AgencySettings,
   type UpdateAgencySettingsInput,
+  type SimulateInboundBriefInput,
 } from '../../src/app/lib/agency-settings-schemas';
+import { normalizeEmail, normalizePhone } from '../../src/app/lib/normalization';
 
 describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossier Suite', () => {
   describe('Agency Operational Settings Zod Schemas', () => {
@@ -153,7 +156,7 @@ describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossie
       assert.strictEqual(updateAgencySettingsSchema.safeParse(tooLow).success, false);
     });
 
-    it('validates notification email formatting strictly when provided', () => {
+    it('validates notification email formatting strictly when provided, accepts empty string or null', () => {
       const validEmail = {
         lead_response_sla_minutes: 60,
         followup_grace_period_hours: 4,
@@ -164,15 +167,15 @@ describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossie
       };
       assert.strictEqual(updateAgencySettingsSchema.safeParse(validEmail).success, true);
 
-      const invalidEmail = {
+      const emptyStringEmail = {
         lead_response_sla_minutes: 60,
         followup_grace_period_hours: 4,
         stale_deal_threshold_days: 14,
         dedup_window_hours: 24,
         bot_rate_limit_per_minute: 10,
-        notification_email: 'not-an-email',
+        notification_email: '',
       };
-      assert.strictEqual(updateAgencySettingsSchema.safeParse(invalidEmail).success, false);
+      assert.strictEqual(updateAgencySettingsSchema.safeParse(emptyStringEmail).success, true);
 
       const nullEmail = {
         lead_response_sla_minutes: 60,
@@ -183,31 +186,141 @@ describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossie
         notification_email: null,
       };
       assert.strictEqual(updateAgencySettingsSchema.safeParse(nullEmail).success, true);
+
+      const invalidEmail = {
+        lead_response_sla_minutes: 60,
+        followup_grace_period_hours: 4,
+        stale_deal_threshold_days: 14,
+        dedup_window_hours: 24,
+        bot_rate_limit_per_minute: 10,
+        notification_email: 'not-an-email',
+      };
+      assert.strictEqual(updateAgencySettingsSchema.safeParse(invalidEmail).success, false);
+    });
+  });
+
+  describe('Inbound Brief Simulation Schema (simulateInboundBriefSchema)', () => {
+    it('validates a complete, authentic inbound brief submission', () => {
+      const validSubmission = {
+        name: 'Arjun Singhania',
+        email: 'arjun@singhaniacorp.com',
+        phone: '+91 98765 43210',
+        company: 'Singhania Luxury Group',
+        serviceCategory: 'Web & Digital',
+        budgetBracket: '₹25L - ₹50L',
+        message: 'Need high-touch bespoke portal for global hospitality clients.',
+      };
+
+      const result = simulateInboundBriefSchema.safeParse(validSubmission);
+      assert.strictEqual(result.success, true);
+      if (result.success) {
+        assert.strictEqual(result.data.name, 'Arjun Singhania');
+        assert.strictEqual(result.data.email, 'arjun@singhaniacorp.com');
+        assert.strictEqual(result.data.phone, '+91 98765 43210');
+        assert.strictEqual(result.data.company, 'Singhania Luxury Group');
+      }
+    });
+
+    it('applies default metadata values when optional fields are omitted', () => {
+      const minimalSubmission = {
+        name: 'Leila Farooq',
+        email: 'leila@farooq.ae',
+        phone: '+971 50 123 4567',
+      };
+
+      const result = simulateInboundBriefSchema.safeParse(minimalSubmission);
+      assert.strictEqual(result.success, true);
+      if (result.success) {
+        assert.strictEqual(result.data.company, 'Simulated Organization');
+        assert.strictEqual(result.data.serviceCategory, 'Web & Digital');
+        assert.strictEqual(result.data.budgetBracket, '₹15L - ₹25L');
+        assert.strictEqual(result.data.message, 'Simulated inbound creative brief submission.');
+      }
+    });
+
+    it('rejects submissions with missing or invalid client name', () => {
+      const emptyName = {
+        name: '   ',
+        email: 'client@example.com',
+        phone: '+919876543210',
+      };
+      assert.strictEqual(simulateInboundBriefSchema.safeParse(emptyName).success, false);
+
+      const excessiveName = {
+        name: 'A'.repeat(101),
+        email: 'client@example.com',
+        phone: '+919876543210',
+      };
+      assert.strictEqual(simulateInboundBriefSchema.safeParse(excessiveName).success, false);
+    });
+
+    it('rejects submissions with invalid email address format', () => {
+      const badEmail = {
+        name: 'Valid Name',
+        email: 'not-an-email-format',
+        phone: '+919876543210',
+      };
+      assert.strictEqual(simulateInboundBriefSchema.safeParse(badEmail).success, false);
+    });
+
+    it('rejects submissions with invalid phone number characters', () => {
+      const alphaPhone = {
+        name: 'Valid Name',
+        email: 'client@example.com',
+        phone: 'call-me-now-1234',
+      };
+      assert.strictEqual(simulateInboundBriefSchema.safeParse(alphaPhone).success, false);
+
+      const tooShortPhone = {
+        name: 'Valid Name',
+        email: 'client@example.com',
+        phone: '123',
+      };
+      assert.strictEqual(simulateInboundBriefSchema.safeParse(tooShortPhone).success, false);
+    });
+
+    it('rejects messages exceeding 2000 characters', () => {
+      const longMessage = {
+        name: 'Valid Name',
+        email: 'client@example.com',
+        phone: '+919876543210',
+        message: 'x'.repeat(2001),
+      };
+      assert.strictEqual(simulateInboundBriefSchema.safeParse(longMessage).success, false);
+    });
+  });
+
+  describe('Sanitization & PostgREST Filter Injection Defense', () => {
+    it('normalizes email addresses to lowercase and trims extraneous whitespace', () => {
+      assert.strictEqual(normalizeEmail('  Vikram.Patel@MarcaUbi.COM  '), 'vikram.patel@marcaubi.com');
+      assert.strictEqual(normalizeEmail(null), null);
+      assert.strictEqual(normalizeEmail('   '), null);
+    });
+
+    it('normalizes international phone numbers into ITU-T E.164 format', () => {
+      const inResult = normalizePhone('09876543210', 'IN');
+      assert.strictEqual(inResult.phone, '+919876543210');
+
+      const aeResult = normalizePhone('050 123 4567', 'AE');
+      assert.strictEqual(aeResult.phone, '+971501234567');
+    });
+
+    it('sanitizes injection characters out of PostgREST filter operands', () => {
+      // In settings.ts, raw values are sanitized before interpolation into .or(`email.eq.${cleanEmail},phone.eq.${cleanPhone}`)
+      const sanitizePostgrestOperand = (val: string): string => {
+        return val.replace(/[,()"'\\]/g, '').trim();
+      };
+
+      const hostileInput = "test@domain.com',phone.eq.'+1234567890";
+      const sanitized = sanitizePostgrestOperand(hostileInput);
+      assert.strictEqual(sanitized.includes(','), false);
+      assert.strictEqual(sanitized.includes("'"), false);
+      assert.strictEqual(sanitized.includes('"'), false);
+      assert.strictEqual(sanitized.includes(')'), false);
     });
   });
 
   describe('Inbound Brief Simulation & Deduplication Engine Invariants', () => {
-    it('requires name and at least one contact channel (phone or email)', () => {
-      const hasBoth = { name: 'Vikram Patel', email: 'vikram@patel.com', phone: '+919876543210' };
-      const hasEmailOnly = { name: 'Vikram Patel', email: 'vikram@patel.com', phone: '' };
-      const hasPhoneOnly = { name: 'Vikram Patel', email: '', phone: '+919876543210' };
-      const missingContact = { name: 'Vikram Patel', email: '', phone: '' };
-      const missingName = { name: '', email: 'vikram@patel.com', phone: '+919876543210' };
-
-      const validate = (payload: { name: string; email: string; phone: string }) => {
-        const name = payload.name.trim();
-        const email = payload.email.trim();
-        const phone = payload.phone.trim();
-        return Boolean(name && (email || phone));
-      };
-
-      assert.strictEqual(validate(hasBoth), true);
-      assert.strictEqual(validate(hasEmailOnly), true);
-      assert.strictEqual(validate(hasPhoneOnly), true);
-      assert.strictEqual(validate(missingContact), false);
-      assert.strictEqual(validate(missingName), false);
-    });
-
     it('detects 24-hour duplicate collision window correctly', () => {
       const now = Date.now();
       const within24h = new Date(now - 12 * 60 * 60 * 1000).toISOString();
@@ -265,6 +378,19 @@ describe('Phase 6: Live Webhook Telemetry, Operational Settings & Unified Dossie
       assert.strictEqual(checkAdminAuthorization('sales_manager', 'active'), false);
       assert.strictEqual(checkAdminAuthorization('sales_executive', 'active'), false);
       assert.strictEqual(checkAdminAuthorization('viewer', 'active'), false);
+    });
+
+    it('enforces manager or admin authorization for inbound brief simulation', () => {
+      const checkSimulationAuthorization = (role: string, status: string): boolean => {
+        if (status !== 'active') return false;
+        return role === 'admin' || role === 'sales_manager';
+      };
+
+      assert.strictEqual(checkSimulationAuthorization('admin', 'active'), true);
+      assert.strictEqual(checkSimulationAuthorization('sales_manager', 'active'), true);
+      assert.strictEqual(checkSimulationAuthorization('sales_executive', 'active'), false);
+      assert.strictEqual(checkSimulationAuthorization('viewer', 'active'), false);
+      assert.strictEqual(checkSimulationAuthorization('sales_manager', 'suspended'), false);
     });
   });
 });

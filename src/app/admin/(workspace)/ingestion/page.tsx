@@ -58,23 +58,23 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  // Calculate 24-hour window timestamp
+  // Calculate dynamic deduplication window baseline
   const window24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  // 1. Fetch 24h inbound leads volume
+  // Aggregate verified inquiry volume within active rolling window
   const { count: inboundCount } = await supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', window24h);
 
-  // 2. Fetch 24h duplicate inquiry smart merges
+  // Aggregate duplicate smart merges logged during identical window
   const { count: dedupCount } = await supabase
     .from('lead_activities')
     .select('*', { count: 'exact', head: true })
     .eq('activity_type', 'duplicate_inquiry')
     .gte('created_at', window24h);
 
-  // 3. Fetch agency operational settings
+  // Retrieve calibrated operational settings for rate limiting and dedup thresholds
   const settingsResult = await getAgencySettingsAction();
   const settings = settingsResult.data || {
     id: 'default' as const,
@@ -91,10 +91,10 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     dedupMerges24h: dedupCount ?? 0,
     dedupWindowHours: settings.dedup_window_hours,
     botRateLimit: settings.bot_rate_limit_per_minute,
-    endpointHealth: '200 OK — Active',
+    endpointHealth: '200 OK: Active',
   };
 
-  // 4. Fetch recent inbound submissions with brief payloads
+  // Hydrate recent inbound brief submissions with raw payload structures
   const { data: recentLeads } = await supabase
     .from('leads')
     .select('id, lead_id, name, company, email, phone, service_category, expected_value, created_at, brief_payload')

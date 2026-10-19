@@ -79,19 +79,48 @@ export function IngestionWorkspaceClient({
   } | null>(null);
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const triggerBtnRef = useRef<HTMLButtonElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Keyboard accessibility for modal
+  // Focus management and keyboard accessibility for modal
   useEffect(() => {
-    if (!isSimulateModalOpen) return;
+    if (isSimulateModalOpen) {
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 50);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsSimulateModalOpen(false);
-      }
-    };
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setIsSimulateModalOpen(false);
+          return;
+        }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+        if (e.key === 'Tab' && modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
   }, [isSimulateModalOpen]);
 
   const handleTogglePayload = (id: string) => {
@@ -136,6 +165,7 @@ export function IngestionWorkspaceClient({
         </div>
         {canSimulate && (
           <button
+            ref={triggerBtnRef}
             type="button"
             className={styles.simulateTriggerBtn}
             onClick={() => {
@@ -241,6 +271,7 @@ export function IngestionWorkspaceClient({
                           className={styles.inspectBtn}
                           onClick={() => handleTogglePayload(sub.id)}
                           aria-expanded={isExpanded}
+                          aria-controls={`payload-viewer-${sub.id}`}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                             <polyline points={isExpanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
@@ -252,7 +283,7 @@ export function IngestionWorkspaceClient({
                   </div>
 
                   {isExpanded && hasPayload && (
-                    <div className={styles.payloadViewer}>
+                    <div id={`payload-viewer-${sub.id}`} className={styles.payloadViewer}>
                       <div className={styles.payloadHeader}>
                         <span className={styles.payloadTitle}>Raw Webhook Brief Payload (JSON)</span>
                         <button
@@ -369,6 +400,7 @@ export function IngestionWorkspaceClient({
                 <div className={styles.fieldGroup}>
                   <label htmlFor="sim-name" className={styles.fieldLabel}>Client Name *</label>
                   <input
+                    ref={nameInputRef}
                     id="sim-name"
                     type="text"
                     required

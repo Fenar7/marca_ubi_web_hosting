@@ -82,6 +82,10 @@
     outline-offset: 2px;
   }
 
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -115,6 +119,10 @@
   &:focus-visible {
     outline: 2px solid #ffffff;
     outline-offset: 2px;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
   }
 
   &:disabled {
@@ -252,7 +260,7 @@
   min-height: 44px;
 
   &:disabled {
-    color: #71717a;
+    color: #a1a1aa;
     cursor: not-allowed;
   }
 }
@@ -269,11 +277,11 @@
   min-height: 44px;
 
   &::placeholder {
-    color: #52525b;
+    color: #71717a;
   }
 
   &:disabled {
-    color: #71717a;
+    color: #a1a1aa;
     cursor: not-allowed;
   }
 }
@@ -282,7 +290,7 @@
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #71717a;
+  color: #a1a1aa; /* Elevated to meet WCAG AA */
   user-select: none;
 }
 
@@ -341,14 +349,14 @@
   min-height: 44px;
 
   &::placeholder {
-    color: #52525b;
+    color: #71717a;
   }
 }
 
 .emptyLogs {
   padding: 2.5rem 1rem;
   text-align: center;
-  color: #71717a;
+  color: #a1a1aa; /* Elevated to meet WCAG AA */
   font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.01);
   border: 1px dashed rgba(255, 255, 255, 0.08);
