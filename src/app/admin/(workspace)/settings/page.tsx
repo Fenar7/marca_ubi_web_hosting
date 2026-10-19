@@ -41,6 +41,10 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
     .eq('id', user.id)
     .maybeSingle();
 
+  if (profile?.status !== 'active') {
+    redirect('/admin/login?error=account_suspended');
+  }
+
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 

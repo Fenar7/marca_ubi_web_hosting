@@ -400,7 +400,7 @@ export function CommercialDirectoryTable({
                     </td>
 
                     {/* Job Title */}
-                    <td className={styles.td} style={{ color: '#cccccc' }}>
+                    <td className={styles.td} style={{ color: 'var(--admin-text-secondary, #525965)' }}>
                       {member.job_title}
                     </td>
 
@@ -593,10 +593,10 @@ export function CommercialDirectoryTable({
             }}
           >
             <div className={styles.modalCard} style={{ maxWidth: '440px' }}>
-              <h3 id="role-modal-title" style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700 }}>
-                Modify Governance Role
+              <h3 id="role-modal-title" style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}>
+                Modify Governance Role.
               </h3>
-              <p style={{ fontSize: '0.82rem', color: '#888888', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--admin-text-secondary, #525965)', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
                 Update access permissions and database RLS boundaries for{' '}
                 <strong>{targetMemberForRole.full_name}</strong> ({targetMemberForRole.email}).
               </p>
@@ -775,8 +775,8 @@ export function CommercialDirectoryTable({
                 <path d="M12 16h.01" />
               </svg>
               <div>
-                <h3 id="reactivate-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>
-                  Reactivate Commercial Personnel
+                <h3 id="reactivate-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.92rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}>
+                  Reactivate Commercial Personnel.
                 </h3>
                 <p className={styles.modalAlertText}>
                   Reactivating <strong>{memberToActivate.full_name}</strong> will restore their login access and pipeline permissions across the platform.

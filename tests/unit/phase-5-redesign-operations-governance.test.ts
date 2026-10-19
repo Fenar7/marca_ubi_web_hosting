@@ -100,16 +100,22 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
     });
   });
 
-  describe('2. Total Eradication of Legacy #ff6100 Brand Accent', () => {
+  describe('2. Total Eradication of Legacy #ff6100 Brand Accent & Orange RGBA', () => {
     for (const relPath of phase5Files) {
-      it(`verifies 0 occurrences of #ff6100 in ${relPath}`, () => {
+      it(`verifies 0 occurrences of #ff6100 or rgb(255, 97, 0) in ${relPath}`, () => {
         const fullPath = path.resolve(process.cwd(), relPath);
         const content = fs.readFileSync(fullPath, 'utf8');
-        const hasLegacyOrange = /ff6100/i.test(content);
+        const hasLegacyOrangeHex = /ff6100/i.test(content);
+        const hasLegacyOrangeRgb = /255\s*,\s*97\s*,\s*0/i.test(content);
         assert.equal(
-          hasLegacyOrange,
+          hasLegacyOrangeHex,
           false,
           `Found legacy orange #ff6100 in ${relPath}`
+        );
+        assert.equal(
+          hasLegacyOrangeRgb,
+          false,
+          `Found legacy orange rgba(255, 97, 0, ...) in ${relPath}`
         );
       });
     }
@@ -226,39 +232,43 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
   });
 
   describe('6. Security & Role Authorization Gates Integrity', () => {
-    it('verifies /admin/works enforces authentication and role redirection', () => {
+    it('verifies /admin/works enforces authentication, active status, and role redirection', () => {
       const content = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/works/page.tsx'),
         'utf8'
       );
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fworks\')'));
+      assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
       assert.ok(content.includes('hasWorksAccess'));
     });
 
-    it('verifies /admin/team enforces admin/sales_manager role gating', () => {
+    it('verifies /admin/team enforces admin/sales_manager role gating and active status', () => {
       const content = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/page.tsx'),
         'utf8'
       );
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fteam\')'));
+      assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
       assert.ok(content.includes('hasUsersAccess'));
     });
 
-    it('verifies /admin/settings enforces administrative gating', () => {
+    it('verifies /admin/settings enforces administrative gating and active status', () => {
       const content = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/settings/page.tsx'),
         'utf8'
       );
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fsettings\')'));
+      assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
       assert.ok(content.includes('hasSettingsAccess'));
     });
 
-    it('verifies /admin/ingestion enforces administrative gating', () => {
+    it('verifies /admin/ingestion enforces administrative gating and active status', () => {
       const content = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/ingestion/page.tsx'),
         'utf8'
       );
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fingestion\')'));
+      assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
       assert.ok(content.includes('hasIngestionAccess'));
     });
   });

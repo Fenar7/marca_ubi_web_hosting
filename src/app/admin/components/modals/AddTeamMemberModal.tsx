@@ -198,7 +198,6 @@ export function AddTeamMemberModal({
                 email,
                 role,
                 jobTitle,
-                tempPassword,
                 allowedTabs,
               },
             },

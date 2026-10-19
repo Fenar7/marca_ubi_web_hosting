@@ -11,7 +11,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { ClientWorkItem, CrmUserRole } from '@/types/crm';
+import { type ClientWorkItem, type CrmUserRole, ROLE_DEFAULT_TABS } from '@/types/crm';
 import { WorksWorkspaceClient } from './WorksWorkspaceClient';
 import styles from './works.module.scss';
 
@@ -40,12 +40,16 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
     .eq('id', user.id)
     .maybeSingle();
 
+  if (profile?.status !== 'active') {
+    redirect('/admin/login?error=account_suspended');
+  }
+
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
   const hasWorksAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('works')
-    : true;
+    : ROLE_DEFAULT_TABS[role]?.works ?? false;
 
   if (!hasWorksAccess) {
     redirect('/admin?error=unauthorized_role_access');

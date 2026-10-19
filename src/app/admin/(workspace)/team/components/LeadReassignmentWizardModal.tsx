@@ -184,8 +184,8 @@ export function LeadReassignmentWizardModal({
             gap: '0.85rem',
             padding: '0.85rem 1rem',
             borderRadius: '6px',
-            background: 'rgba(255, 97, 0, 0.08)',
-            border: '1px solid rgba(255, 97, 0, 0.3)',
+            background: 'var(--admin-surface-muted, #f0f2f5)',
+            border: '1px solid var(--admin-border-default, #e2e5ea)',
             marginBottom: '1.25rem',
           }}
         >
