@@ -18,7 +18,7 @@ import styles from './page.module.scss';
 import { ActivityRowItem } from './components/ActivityRowItem';
 
 export const metadata: Metadata = {
-  title: 'Executive Command Center | Marca Ubi Enterprise CRM',
+  title: 'Executive Dashboard | Marca Ubi Enterprise CRM',
   robots: {
     index: false,
     follow: false,
@@ -46,7 +46,7 @@ function formatTimeAgo(isoDate: string): string {
 interface ActivityItem {
   id: string;
   type: string;
-  badgeStyle: 'orange' | 'emerald' | 'amber' | 'blue';
+  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue';
   description: string;
   actor: string;
   createdAt: string;
@@ -102,17 +102,13 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
     };
   }
 
-  // 2. Fetch Commercial Personnel Metrics
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, status, role');
+  // 2. Fetch Active Client Works Delivery Count for Funnel Trinity Overview
+  const { count: activeWorksCount } = await supabase
+    .from('client_works')
+    .select('*', { count: 'exact', head: true })
+    .neq('delivery_stage', 'delivered');
 
-  const staffList = profiles || [];
-  const totalStaff = staffList.length;
-  const activeStaff = staffList.filter((p) => p.status === 'active').length;
-  const suspendedStaff = staffList.filter((p) => p.status === 'suspended').length;
-
-  // 3. Fetch Recent Activity Ledger (Combining lead_activities and team_audit_logs)
+  // 3. Fetch Recent Activity (Combining lead_activities and team_audit_logs)
   const activities: ActivityItem[] = [];
 
   const { data: leadActs } = await supabase
@@ -125,7 +121,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
     leadActs.forEach((act) => {
       const typeStr = (act.activity_type || 'update').replace(/_/g, ' ');
       const actorName = (act.profiles as { full_name?: string } | null)?.full_name || 'System';
-      let badgeStyle: 'orange' | 'emerald' | 'amber' | 'blue' = 'blue';
+      let badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue' = 'neutral';
 
       if (act.activity_type === 'status_change') badgeStyle = 'emerald';
       else if (act.activity_type === 'call_logged' || act.activity_type === 'meeting_notes')
@@ -169,15 +165,19 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
   );
   const displayActivities = activities.slice(0, 6);
 
+  const inboundPendingCount = rpcMetrics?.open_leads_count || 0;
+  const activeNegotiationCount = rpcMetrics?.potential_leads_count || 0;
+  const productionWorksCount = activeWorksCount || 0;
+
   return (
     <div className={styles.container}>
-      {/* Executive Command Header */}
+      {/* Executive Dashboard Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Sales Intelligence & Pipeline Ops</span>
-          <h1 className={styles.pageTitle}>Executive Command Center</h1>
+          <span className={styles.eyebrow}>Overview</span>
+          <h1 className={styles.pageTitle}>Executive Dashboard</h1>
           <p className={styles.pageSubtitle}>
-            Global deal velocity, commercial team directory, and real-time lead capture and webhook processing.
+            Key metrics, team workload, and recent client activity across the agency.
           </p>
         </div>
 
@@ -195,105 +195,87 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
       {/* Commercial Rep Workload Balancing & SLA Oversight */}
       <ManagerWorkloadCard />
 
-      {/* 4 Feature Quick-Launch Hub */}
-      <section className={styles.quickLaunchSection} aria-label="Feature Quick-Launch Cards">
+      {/* Commercial Funnel Trinity Pipeline Velocity Hub */}
+      <section className={styles.funnelDistributionSection} aria-label="Commercial Funnel Trinity Overview">
         <div className={styles.sectionHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Commercial Workspaces</h2>
+            <h2 className={styles.sectionTitle}>Commercial Pipeline Velocity</h2>
             <p className={styles.sectionDescription}>
-              Direct navigation into dedicated operational enclaves and audit modules.
+              Real-time account distribution across the three agency operational workspaces.
             </p>
           </div>
         </div>
 
-        <div className={styles.quickLaunchGrid}>
-          {/* Card 1: Commercial Directory */}
-          <Link href="/admin/team" className={styles.launchCard}>
-            <div className={styles.cardIconWrapper}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+        <div className={styles.funnelCardsGrid}>
+          {/* Card 1: Inbound Leads */}
+          <Link href="/admin/leads" className={styles.funnelCard} title="Open Inbound Leads Triage Workspace">
+            <div className={styles.funnelCardHeader}>
+              <span className={styles.funnelPillarStep}>Stage 01</span>
+              <span className={styles.funnelEnclaveBadge}>Discovery</span>
             </div>
-            <div className={styles.launchCardContent}>
-              <h3 className={styles.launchCardTitle}>Commercial Directory</h3>
-              <p className={styles.launchCardDesc}>
-                Staff roster, capacity caps, role governance, and portfolio reassignment.
+            <div className={styles.funnelCardBody}>
+              <h3 className={styles.funnelCardTitle}>Inbound Leads</h3>
+              <p className={styles.funnelCardDesc}>
+                Raw briefs & inquiries awaiting discovery qualification and deal conversion.
               </p>
+              <div className={styles.funnelMetricRow}>
+                <span className={styles.funnelMetricValue}>{inboundPendingCount}</span>
+                <span className={styles.funnelMetricLabel}>Inquiries Pending</span>
+              </div>
             </div>
-            <div className={styles.launchCardFooter}>
-              <span className={styles.launchActionLabel}>View Team Directory</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.launchArrow} aria-hidden="true">
+            <div className={styles.funnelCardFooter}>
+              <span>Open Leads Workspace</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
             </div>
           </Link>
 
-          {/* Card 2: Leads Workspace */}
-          <Link href="/admin/leads" className={styles.launchCard}>
-            <div className={styles.cardIconWrapper}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
+          {/* Card 2: Pipeline Deals */}
+          <Link href="/admin/deals" className={styles.funnelCard} title="Open Pipeline Deals Kanban Workspace">
+            <div className={styles.funnelCardHeader}>
+              <span className={styles.funnelPillarStep}>Stage 02</span>
+              <span className={`${styles.funnelEnclaveBadge} ${styles.enclaveOrange}`}>Negotiation</span>
             </div>
-            <div className={styles.launchCardContent}>
-              <h3 className={styles.launchCardTitle}>Pipeline Deals</h3>
-              <p className={styles.launchCardDesc}>
-                Interactive deal pipeline, bucket filtering, valuations, and owner assignments.
+            <div className={styles.funnelCardBody}>
+              <h3 className={styles.funnelCardTitle}>Pipeline Deals</h3>
+              <p className={styles.funnelCardDesc}>
+                Active commercial proposals, interactive stage progression, and contract negotiations.
               </p>
+              <div className={styles.funnelMetricRow}>
+                <span className={styles.funnelMetricValue}>{activeNegotiationCount}</span>
+                <span className={styles.funnelMetricLabel}>Active Deals</span>
+              </div>
             </div>
-            <div className={styles.launchCardFooter}>
-              <span className={styles.launchActionLabel}>Inspect Deals</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.launchArrow} aria-hidden="true">
+            <div className={styles.funnelCardFooter}>
+              <span>Open Deals Kanban</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
             </div>
           </Link>
 
-          {/* Card 3: Follow-up Queue */}
-          <Link href="/admin/tasks" className={styles.launchCard}>
-            <div className={styles.cardIconWrapper}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
+          {/* Card 3: Client Works */}
+          <Link href="/admin/works" className={styles.funnelCard} title="Open Client Works & Deliverables Workspace">
+            <div className={styles.funnelCardHeader}>
+              <span className={styles.funnelPillarStep}>Stage 03</span>
+              <span className={`${styles.funnelEnclaveBadge} ${styles.enclaveEmerald}`}>Production</span>
             </div>
-            <div className={styles.launchCardContent}>
-              <h3 className={styles.launchCardTitle}>Follow-up Queue</h3>
-              <p className={styles.launchCardDesc}>
-                Overdue and scheduled prospect touchpoints with direct outreach coordinates.
+            <div className={styles.funnelCardBody}>
+              <h3 className={styles.funnelCardTitle}>Client Works</h3>
+              <p className={styles.funnelCardDesc}>
+                Post-conversion client creative deliverables, milestone completions, and delivery health.
               </p>
+              <div className={styles.funnelMetricRow}>
+                <span className={styles.funnelMetricValue}>{productionWorksCount}</span>
+                <span className={styles.funnelMetricLabel}>Active Deliverables</span>
+              </div>
             </div>
-            <div className={styles.launchCardFooter}>
-              <span className={styles.launchActionLabel}>Review Tasks</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.launchArrow} aria-hidden="true">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </div>
-          </Link>
-
-          {/* Card 4: Webhook Ingestion Telemetry */}
-          <Link href="/admin/ingestion" className={styles.launchCard}>
-            <div className={styles.cardIconWrapper}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="4 17 10 11 4 5" />
-                <line x1="12" y1="19" x2="20" y2="19" />
-              </svg>
-            </div>
-            <div className={styles.launchCardContent}>
-              <h3 className={styles.launchCardTitle}>Ingestion Telemetry</h3>
-              <p className={styles.launchCardDesc}>
-                Webhook endpoint health, rate-limiting stats, and deduplication diagnostics.
-              </p>
-            </div>
-            <div className={styles.launchCardFooter}>
-              <span className={styles.launchActionLabel}>Monitor Feed</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.launchArrow} aria-hidden="true">
+            <div className={styles.funnelCardFooter}>
+              <span>Open Works Tracker</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
@@ -302,10 +284,10 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
         </div>
       </section>
 
-      {/* Live Activity & Audit Ledger */}
+      {/* Recent Activity */}
       <section className={styles.activitySection} aria-label="Recent Operational Activity">
         <div className={styles.ledgerHeader}>
-          <h2 className={styles.ledgerTitle}>Recent Activity Ledger</h2>
+          <h2 className={styles.ledgerTitle}>Recent Activity</h2>
           <div className={styles.liveFeedIndicator}>
             <span className={styles.liveFeedDot} />
             <span>Real-time Stream</span>

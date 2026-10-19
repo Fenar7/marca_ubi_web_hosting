@@ -14,7 +14,7 @@ import styles from '../page.module.scss';
 export interface ActivityRowItemProps {
   id: string;
   type: string;
-  badgeStyle: 'orange' | 'emerald' | 'amber' | 'blue';
+  badgeStyle: 'orange' | 'emerald' | 'amber' | 'neutral' | 'blue';
   description: string;
   actor: string;
   timeAgo: string;
@@ -36,7 +36,7 @@ export function ActivityRowItem({
       ? styles.badgeAmber
       : badgeStyle === 'orange'
       ? styles.badgeOrange
-      : styles.badgeBlue;
+      : styles.badgeNeutral || styles.badgeBlue;
 
   const handleClick = (): void => {
     if (leadId && typeof window !== 'undefined') {
@@ -71,7 +71,21 @@ export function ActivityRowItem({
         <span className={styles.activityActor}>{actor}</span>
         <span className={styles.activityTime}>{timeAgo}</span>
         {isClickable && (
-          <span style={{ fontSize: '0.75rem', color: '#ff6100', marginLeft: '0.25rem' }}>↗</span>
+          <span className={styles.externalIndicator} aria-hidden="true">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#ff6100"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </span>
         )}
       </div>
     </div>

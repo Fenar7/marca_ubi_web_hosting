@@ -344,7 +344,7 @@ function KpiRibbonContent({
               </span>
             ) : undefined
           }
-          href="/admin/leads?bucket=potential"
+          href="/admin/deals?bucket=potential"
           titleTooltip={`Unweighted Potential Value: ${formatFullCurrency(metrics.potentialValue, currency)}`}
           icon={
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -367,7 +367,7 @@ function KpiRibbonContent({
               <span>{metrics.convertedLeads} Closed Won</span>
             </span>
           }
-          href="/admin/leads?bucket=converted"
+          href="/admin/deals?bucket=converted"
           titleTooltip={`Cumulative Converted Revenue: ${formatFullCurrency(metrics.convertedRevenue, currency)}`}
           icon={
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -391,7 +391,7 @@ function KpiRibbonContent({
               Studio Benchmark 12.0%
             </span>
           }
-          href="/admin/leads?bucket=converted"
+          href="/admin/deals?bucket=converted"
           titleTooltip={`Studio Conversion Rate: ${metrics.conversionRate.toFixed(1)}% (Excluding invalid submissions)`}
           icon={
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -420,7 +420,7 @@ function KpiRibbonContent({
             )
           }
           isAlert={metrics.overdueCount > 0}
-          href={metrics.overdueCount > 0 ? '/admin/leads?bucket=open' : '/admin/leads'}
+          href={metrics.overdueCount > 0 ? '/admin/leads?bucket=overdue' : '/admin/leads'}
           titleTooltip={
             metrics.overdueCount > 0
               ? `${metrics.overdueCount} overdue touchpoints require immediate attention`

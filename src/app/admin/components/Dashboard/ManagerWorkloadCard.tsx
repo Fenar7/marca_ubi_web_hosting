@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useEffect, useTransition } from 'react';
+import Link from 'next/link';
 import { getManagerWorkloadDataAction } from '@/app/actions/workloadActions';
 import type {
   ManagerWorkloadData,
@@ -145,32 +146,40 @@ export function ManagerWorkloadCard({
 
       {/* Global Card Metrics Ribbon */}
       <div className={styles.kpiSummaryRow}>
-        <div className={styles.summaryMetric}>
-          <span className={styles.metricLabel}>Active Representatives</span>
-          <span className={styles.metricValue}>{totals.totalActiveReps}</span>
-        </div>
+        <Link href="/admin/team" className={styles.summaryMetricLink} title="Inspect Commercial Personnel Directory">
+          <div className={styles.summaryMetric}>
+            <span className={styles.metricLabel}>Active Representatives</span>
+            <span className={styles.metricValue}>{totals.totalActiveReps}</span>
+          </div>
+        </Link>
 
-        <div className={styles.summaryMetric}>
-          <span className={styles.metricLabel}>Managed Active Pipeline</span>
-          <span className={styles.metricValue}>
-            {formatCurrency(totals.totalPipelineValue)}
-          </span>
-        </div>
+        <Link href="/admin/deals" className={styles.summaryMetricLink} title="View all Managed Pipeline Deals">
+          <div className={styles.summaryMetric}>
+            <span className={styles.metricLabel}>Managed Active Pipeline</span>
+            <span className={styles.metricValue}>
+              {formatCurrency(totals.totalPipelineValue)}
+            </span>
+          </div>
+        </Link>
 
-        <div className={styles.summaryMetric}>
-          <span className={styles.metricLabel}>Total Overdue Deals</span>
-          <span className={styles.metricValue}>
-            {totals.totalOverdueDeals}
-          </span>
-        </div>
+        <Link href="/admin/leads?bucket=overdue" className={styles.summaryMetricLink} title="Filter Leads by Overdue Touchpoints">
+          <div className={styles.summaryMetric}>
+            <span className={styles.metricLabel}>Total Overdue Deals</span>
+            <span className={styles.metricValue}>
+              {totals.totalOverdueDeals}
+            </span>
+          </div>
+        </Link>
 
-        <div className={styles.summaryMetric}>
-          <span className={styles.metricLabel}>Critical Overdue (&gt;72h)</span>
-          <span className={`${styles.metricValue} ${totals.totalCriticalOverdue > 0 ? styles.criticalAlert : ''}`}>
-            {totals.totalCriticalOverdue > 0 && <span className={styles.pulseDot} aria-hidden="true" />}
-            {totals.totalCriticalOverdue}
-          </span>
-        </div>
+        <Link href="/admin/leads?bucket=overdue" className={styles.summaryMetricLink} title="Filter Critical Overdue Deals (>72h)">
+          <div className={styles.summaryMetric}>
+            <span className={styles.metricLabel}>Critical Overdue (&gt;72h)</span>
+            <span className={`${styles.metricValue} ${totals.totalCriticalOverdue > 0 ? styles.criticalAlert : ''}`}>
+              {totals.totalCriticalOverdue > 0 && <span className={styles.pulseDot} aria-hidden="true" />}
+              {totals.totalCriticalOverdue}
+            </span>
+          </div>
+        </Link>
       </div>
 
       {/* Representatives Workload Rows */}
@@ -182,8 +191,12 @@ export function ManagerWorkloadCard({
         ) : (
           data.reps.map((rep) => (
             <div key={rep.userId} className={styles.repRow} role="listitem">
-              {/* Rep Identity */}
-              <div className={styles.repProfileCol}>
+              {/* Rep Identity Link */}
+              <Link
+                href={`/admin/deals?assigned_to=${encodeURIComponent(rep.userId)}`}
+                className={styles.repProfileLink}
+                title={`Inspect deals managed by ${rep.fullName}`}
+              >
                 <div className={styles.avatar} aria-hidden="true">
                   {rep.avatarInitials}
                 </div>
@@ -194,16 +207,20 @@ export function ManagerWorkloadCard({
                   </div>
                   <span className={styles.repEmail}>{rep.email}</span>
                 </div>
-              </div>
+              </Link>
 
               {/* Rep Telemetry Stats */}
               <div className={styles.repStatsCol}>
-                <div className={styles.statItem}>
+                <Link
+                  href={`/admin/deals?assigned_to=${encodeURIComponent(rep.userId)}`}
+                  className={styles.statItemLink}
+                  title={`View ${rep.activeDealsCount} active deals for ${rep.fullName}`}
+                >
                   <span className={styles.statLabel}>Active Deals</span>
                   <span className={styles.statValue}>
                     {rep.activeDealsCount} ({formatCurrency(rep.totalPipelineValue)})
                   </span>
-                </div>
+                </Link>
 
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Win Velocity</span>
@@ -218,19 +235,31 @@ export function ManagerWorkloadCard({
                     ) : (
                       <>
                         {rep.amberCount > 0 && (
-                          <span className={styles.pillAmber} title={`${rep.amberCount} deal(s) overdue <24h`}>
+                          <Link
+                            href={`/admin/leads?assigned_to=${encodeURIComponent(rep.userId)}&bucket=overdue`}
+                            className={styles.pillAmber}
+                            title={`${rep.amberCount} deal(s) overdue <24h — Click to filter leads`}
+                          >
                             {rep.amberCount} &lt;24h
-                          </span>
+                          </Link>
                         )}
                         {rep.orangeCount > 0 && (
-                          <span className={styles.pillOrange} title={`${rep.orangeCount} deal(s) overdue 24-72h`}>
+                          <Link
+                            href={`/admin/leads?assigned_to=${encodeURIComponent(rep.userId)}&bucket=overdue`}
+                            className={styles.pillOrange}
+                            title={`${rep.orangeCount} deal(s) overdue 24-72h — Click to filter leads`}
+                          >
                             {rep.orangeCount} 1-3d
-                          </span>
+                          </Link>
                         )}
                         {rep.criticalCount > 0 && (
-                          <span className={styles.pillRed} title={`${rep.criticalCount} deal(s) critical >72h`}>
+                          <Link
+                            href={`/admin/leads?assigned_to=${encodeURIComponent(rep.userId)}&bucket=overdue`}
+                            className={styles.pillRed}
+                            title={`${rep.criticalCount} deal(s) critical >72h — Click to filter leads`}
+                          >
                             {rep.criticalCount} &gt;3d
-                          </span>
+                          </Link>
                         )}
                       </>
                     )}

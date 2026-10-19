@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
 import { updateLeadStatusInlineAction } from '@/app/actions/leadInlineActions';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
@@ -73,17 +74,39 @@ export function DealsWorkspaceClient({
   statuses = [],
   userRole,
 }: DealsWorkspaceClientProps): React.ReactElement {
+  const searchParams = useSearchParams();
+  const bucketParam = searchParams.get('bucket');
+  const assignedToParam = searchParams.get('assigned_to');
+  const searchParam = searchParams.get('search') || searchParams.get('q') || '';
+
+  const initialBucket: 'all' | 'open' | 'potential' | 'converted' =
+    bucketParam === 'potential' || bucketParam === 'converted' || bucketParam === 'open'
+      ? bucketParam
+      : 'all';
+
   const [deals, setDeals] = useState<HydratedDealItem[]>(initialDeals);
 
   // Synchronize state when server hydration updates
   useEffect(() => {
     setDeals(initialDeals);
   }, [initialDeals]);
+
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted'>('all');
+  const [searchTerm, setSearchTerm] = useState(searchParam);
+  const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted'>(initialBucket);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assignedToParam);
   const [sortField, setSortField] = useState<SortField>('expected_value');
   const [sortAscending, setSortAscending] = useState(false);
+
+  // Synchronize with URL search parameters on route navigation
+  useEffect(() => {
+    if (bucketParam && ['open', 'potential', 'converted'].includes(bucketParam)) {
+      setSelectedBucket(bucketParam as 'open' | 'potential' | 'converted');
+    }
+    if (assignedToParam !== null) {
+      setSelectedAssigneeId(assignedToParam);
+    }
+  }, [bucketParam, assignedToParam]);
 
   // Drawer and modal state
   const [activeDrawerDealId, setActiveDrawerDealId] = useState<string | null>(null);
@@ -118,9 +141,12 @@ export function DealsWorkspaceClient({
       const matchesBucket =
         selectedBucket === 'all' || deal.status_bucket === selectedBucket;
 
-      return matchesSearch && matchesBucket;
+      const matchesAssignee =
+        !selectedAssigneeId || deal.assigned_to === selectedAssigneeId;
+
+      return matchesSearch && matchesBucket && matchesAssignee;
     });
-  }, [deals, searchTerm, selectedBucket]);
+  }, [deals, searchTerm, selectedBucket, selectedAssigneeId]);
 
   // Sorted deals for Table view
   const sortedTableDeals = useMemo(() => {
@@ -353,6 +379,22 @@ export function DealsWorkspaceClient({
         </div>
       </div>
 
+      {selectedAssigneeId && (
+        <div className={styles.activeFilterNotice}>
+          <span>
+            Filtering by Representative: <strong>{deals.find((d) => d.assigned_to === selectedAssigneeId)?.assigned_to_name || 'Assigned Representative'}</strong>
+          </span>
+          <button
+            type="button"
+            className={styles.clearFilterBtn}
+            onClick={() => setSelectedAssigneeId(null)}
+            aria-label="Clear representative filter"
+          >
+            Clear Rep Filter ✕
+          </button>
+        </div>
+      )}
+
       {/* KANBAN BOARD VIEW */}
       {viewMode === 'kanban' && (
         <div className={styles.kanbanBoardContainer} aria-label="Interactive Deals Kanban Board">
@@ -501,42 +543,84 @@ export function DealsWorkspaceClient({
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('lead_id')}
             >
-              Deal Ref {sortField === 'lead_id' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Deal Ref{' '}
+              {sortField === 'lead_id' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('name')}
             >
-              Client & Company {sortField === 'name' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Client & Company{' '}
+              {sortField === 'name' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('status_name')}
             >
-              Stage {sortField === 'status_name' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Stage{' '}
+              {sortField === 'status_name' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('expected_value')}
             >
-              Contract Valuation {sortField === 'expected_value' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Contract Valuation{' '}
+              {sortField === 'expected_value' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('priority')}
             >
-              Priority {sortField === 'priority' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Priority{' '}
+              {sortField === 'priority' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <button
               type="button"
               className={styles.sortableHeaderCol}
               onClick={() => handleToggleSort('assigned_to_name')}
             >
-              Representative {sortField === 'assigned_to_name' && <span className={styles.sortArrow}>{sortAscending ? '▲' : '▼'}</span>}
+              Representative{' '}
+              {sortField === 'assigned_to_name' && (
+                <span className={styles.sortArrow} aria-hidden="true">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                  </svg>
+                </span>
+              )}
             </button>
             <span className={styles.colAction}>Action</span>
           </div>

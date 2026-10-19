@@ -110,12 +110,29 @@
   }
 }
 
+.summaryMetricLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: -2px;
+  }
+}
+
 .summaryMetric {
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
+  height: 100%;
 
   &:last-child {
     border-right: none;
@@ -218,6 +235,57 @@
   min-width: 240px;
 }
 
+.repProfileLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  border-radius: 8px;
+  padding: 4px;
+  margin: -4px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+
+    .repName span:first-child {
+      color: #ff6100;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
+}
+
+.statItemLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 6px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+
+    .statValue {
+      color: #ff6100;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
+}
+
 .avatar {
   width: 36px;
   height: 36px;
@@ -314,6 +382,32 @@
   padding: 2px 7px;
   border-radius: 9999px;
   font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  &:hover {
+    background-color: rgba(245, 158, 11, 0.25);
+    border-color: #f59e0b;
+    transform: scale(1.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+  }
 }
 
 .pillOrange {
@@ -326,6 +420,32 @@
   padding: 2px 7px;
   border-radius: 9999px;
   font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  &:hover {
+    background-color: rgba(255, 97, 0, 0.28);
+    border-color: #ff6100;
+    transform: scale(1.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
 }
 
 .pillRed {
@@ -339,6 +459,32 @@
   border-radius: 9999px;
   font-variant-numeric: tabular-nums;
   animation: pulseGlow 2s infinite ease-in-out;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  &:hover {
+    background-color: rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+    transform: scale(1.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ef4444;
+    outline-offset: 2px;
+  }
 }
 
 .pillClear {
