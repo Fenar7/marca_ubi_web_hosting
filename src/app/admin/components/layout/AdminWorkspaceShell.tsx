@@ -22,7 +22,7 @@ import {
   type ProvisionedCredentialsPayload,
 } from '@/app/admin/(workspace)/team/components/CredentialRevealModal';
 import type { CurrentUserSession } from './UserProfileDropdown';
-import styles from './AdminWorkspace.module.scss';
+import styles from './admin-shell.module.scss';
 
 // Backward compatibility aliases for existing imports and assertions
 export { ClientDossierDrawer as LeadDetailDrawer } from '@/app/admin/components/DossierDrawer';
