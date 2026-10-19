@@ -106,19 +106,9 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
   const { count: activeWorksCount } = await supabase
     .from('client_works')
     .select('*', { count: 'exact', head: true })
-    .neq('stage', 'delivered');
+    .neq('delivery_stage', 'delivered');
 
-  // 3. Fetch Commercial Personnel Metrics
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, status, role');
-
-  const staffList = profiles || [];
-  const totalStaff = staffList.length;
-  const activeStaff = staffList.filter((p) => p.status === 'active').length;
-  const suspendedStaff = staffList.filter((p) => p.status === 'suspended').length;
-
-  // 4. Fetch Recent Activity (Combining lead_activities and team_audit_logs)
+  // 3. Fetch Recent Activity (Combining lead_activities and team_audit_logs)
   const activities: ActivityItem[] = [];
 
   const { data: leadActs } = await supabase

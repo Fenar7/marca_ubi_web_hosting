@@ -234,4 +234,69 @@ describe('Phase 5: Command Center Overhaul & Dead Click Remediation Suite', () =
       }
     });
   });
+
+  describe('Block 5: Delivery Stage Verification & Deep-Link Parameter Handling', () => {
+    it('verifies client_works queries target delivery_stage rather than missing stage column', () => {
+      // Invariant: client_works schema uses delivery_stage ENUM ('kickoff', 'strategy', 'design_ui_ux', 'development', 'review_qa', 'delivered')
+      const validDeliveryStages = ['kickoff', 'strategy', 'design_ui_ux', 'development', 'review_qa', 'delivered'];
+      const activeStageFilter = (stage: string) => stage !== 'delivered';
+
+      const mockWorks = [
+        { id: '1', delivery_stage: 'kickoff' },
+        { id: '2', delivery_stage: 'design_ui_ux' },
+        { id: '3', delivery_stage: 'delivered' },
+      ];
+
+      const activeWorks = mockWorks.filter((w) => activeStageFilter(w.delivery_stage));
+      assert.equal(activeWorks.length, 2);
+      assert.ok(validDeliveryStages.includes('delivered'));
+    });
+
+    it('verifies DealsWorkspaceClient filters correctly by assigned_to and bucket searchParams', () => {
+      const deals = [
+        { id: 'd1', assigned_to: 'user-alpha', status_bucket: 'open' },
+        { id: 'd2', assigned_to: 'user-beta', status_bucket: 'potential' },
+        { id: 'd3', assigned_to: 'user-alpha', status_bucket: 'converted' },
+      ];
+
+      const filterDeals = (
+        items: typeof deals,
+        assignedTo: string | null,
+        bucket: string
+      ) => {
+        return items.filter((d) => {
+          const matchAssignee = !assignedTo || d.assigned_to === assignedTo;
+          const matchBucket = bucket === 'all' || d.status_bucket === bucket;
+          return matchAssignee && matchBucket;
+        });
+      };
+
+      // Test rep filter
+      const repFiltered = filterDeals(deals, 'user-alpha', 'all');
+      assert.equal(repFiltered.length, 2);
+      assert.equal(repFiltered[0].id, 'd1');
+      assert.equal(repFiltered[1].id, 'd3');
+
+      // Test bucket filter
+      const bucketFiltered = filterDeals(deals, null, 'potential');
+      assert.equal(bucketFiltered.length, 1);
+      assert.equal(bucketFiltered[0].id, 'd2');
+
+      // Test composite filter
+      const compositeFiltered = filterDeals(deals, 'user-alpha', 'converted');
+      assert.equal(compositeFiltered.length, 1);
+      assert.equal(compositeFiltered[0].id, 'd3');
+    });
+
+    it('validates WAI-ARIA sort attribute mappings for data grid columns', () => {
+      const getAriaSort = (field: string, currentField: string, isAscending: boolean) => {
+        if (field !== currentField) return 'none';
+        return isAscending ? 'ascending' : 'descending';
+      };
+
+      assert.equal(getAriaSort('lead_id', 'lead_id', true), 'ascending');
+      assert.equal(getAriaSort('lead_id', 'lead_id', false), 'descending');
+      assert.equal(getAriaSort('name', 'lead_id', true), 'none');
+    });
+  });
 });

@@ -151,6 +151,8 @@ export function LeadsDataGrid({
         <div className={styles.tableHeader} role="row">
           <button
             type="button"
+            role="columnheader"
+            aria-sort={sortField === 'lead_id' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('lead_id')}
             aria-label={`Sort by Deal ID, currently ${sortField === 'lead_id' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
@@ -167,6 +169,8 @@ export function LeadsDataGrid({
 
           <button
             type="button"
+            role="columnheader"
+            aria-sort={sortField === 'name' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('name')}
             aria-label={`Sort by Client & Organization, currently ${sortField === 'name' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
@@ -183,6 +187,8 @@ export function LeadsDataGrid({
 
           <button
             type="button"
+            role="columnheader"
+            aria-sort={sortField === 'service_category' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('service_category')}
             aria-label={`Sort by Service Scope, currently ${sortField === 'service_category' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
@@ -199,6 +205,8 @@ export function LeadsDataGrid({
 
           <button
             type="button"
+            role="columnheader"
+            aria-sort={sortField === 'status_name' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('status_name')}
             aria-label={`Sort by Funnel Stage, currently ${sortField === 'status_name' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
@@ -215,6 +223,8 @@ export function LeadsDataGrid({
 
           <button
             type="button"
+            role="columnheader"
+            aria-sort={sortField === 'expected_value' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('expected_value')}
             aria-label={`Sort by Expected Valuation, currently ${sortField === 'expected_value' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
@@ -231,6 +241,8 @@ export function LeadsDataGrid({
 
           <button
             type="button"
+            role="columnheader"
+            aria-sort={sortField === 'assigned_to_name' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('assigned_to_name')}
             aria-label={`Sort by Representative, currently ${sortField === 'assigned_to_name' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
@@ -247,6 +259,8 @@ export function LeadsDataGrid({
 
           <button
             type="button"
+            role="columnheader"
+            aria-sort={sortField === 'priority' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('priority')}
             aria-label={`Sort by Priority Tier, currently ${sortField === 'priority' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
@@ -444,6 +458,19 @@ export function LeadsDataGrid({
 
                     {/* Quick Hover Action Strip */}
                     <div className={styles.rowQuickActions} onClick={(e) => e.stopPropagation()}>
+                      {lead.phone && (
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className={styles.actionBtn}
+                          onClick={(e) => e.stopPropagation()}
+                          title={`Direct Phone Call: ${lead.phone}`}
+                          aria-label={`Call ${lead.name} at ${lead.phone}`}
+                        >
+                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                          </svg>
+                        </a>
+                      )}
                       <button
                         type="button"
                         className={styles.actionBtn}
