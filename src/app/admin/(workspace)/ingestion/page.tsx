@@ -1,8 +1,9 @@
 /**
  * @file page.tsx
- * @description Webhook Telemetry & Deduplication Monitor Workspace (/admin/ingestion).
- *              Renders real-time telemetry on the `/api/sales-funnel/ingest` pipeline endpoint,
- *              deduplication collision windows, and recent ingestion activities.
+ * @description Website Inquiries & Webhook Ingestion Workspace (/admin/ingestion).
+ *              Server Component role-gated to authorized staff.
+ *              Fetches authentic database telemetry, recent brief submissions with JSON payloads,
+ *              and renders the interactive IngestionWorkspaceClient console.
  * @module app/admin/(workspace)/ingestion/page
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -11,7 +12,14 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
+import { getAgencySettingsAction } from '@/app/actions/settings';
 import type { CrmUserRole } from '@/types/crm';
+import {
+  IngestionWorkspaceClient,
+  type IngestionTelemetryData,
+  type InboundSubmissionItem,
+  type IngestionActivityItem,
+} from './components/IngestionWorkspaceClient';
 import styles from './ingestion.module.scss';
 
 export const metadata: Metadata = {
@@ -50,7 +58,63 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  // Query recent webhook and deduplication activities
+  // Calculate 24-hour window timestamp
+  const window24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  // 1. Fetch 24h inbound leads volume
+  const { count: inboundCount } = await supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', window24h);
+
+  // 2. Fetch 24h duplicate inquiry smart merges
+  const { count: dedupCount } = await supabase
+    .from('lead_activities')
+    .select('*', { count: 'exact', head: true })
+    .eq('activity_type', 'duplicate_inquiry')
+    .gte('created_at', window24h);
+
+  // 3. Fetch agency operational settings
+  const settingsResult = await getAgencySettingsAction();
+  const settings = settingsResult.data || {
+    id: 'default' as const,
+    lead_response_sla_minutes: 60,
+    followup_grace_period_hours: 4,
+    stale_deal_threshold_days: 14,
+    dedup_window_hours: 24,
+    bot_rate_limit_per_minute: 10,
+    notification_email: 'executive@marcaubi.com',
+  };
+
+  const telemetry: IngestionTelemetryData = {
+    inboundCount24h: inboundCount ?? 0,
+    dedupMerges24h: dedupCount ?? 0,
+    dedupWindowHours: settings.dedup_window_hours,
+    botRateLimit: settings.bot_rate_limit_per_minute,
+    endpointHealth: '200 OK — Active',
+  };
+
+  // 4. Fetch recent inbound submissions with brief payloads
+  const { data: recentLeads } = await supabase
+    .from('leads')
+    .select('id, lead_id, name, company, email, phone, service_category, expected_value, created_at, brief_payload')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const submissions: InboundSubmissionItem[] = (recentLeads || []).map((lead) => ({
+    id: lead.id,
+    lead_id: lead.lead_id,
+    name: lead.name,
+    company: lead.company,
+    email: lead.email,
+    phone: lead.phone,
+    service_category: lead.service_category || 'Web & Digital',
+    expected_value: Number(lead.expected_value) || 0,
+    created_at: lead.created_at,
+    brief_payload: (lead.brief_payload as Record<string, unknown>) || null,
+  }));
+
+  // 5. Fetch recent ingestion and deduplication activities
   const { data: ingestionActivities } = await supabase
     .from('lead_activities')
     .select('id, activity_type, description, created_at')
@@ -58,51 +122,36 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     .order('created_at', { ascending: false })
     .limit(8);
 
-  const logs = ingestionActivities || [];
+  const activities: IngestionActivityItem[] = (ingestionActivities || []).map((act) => ({
+    id: act.id,
+    activity_type: act.activity_type,
+    description: act.description,
+    created_at: act.created_at,
+  }));
+
+  const canSimulate = role === 'admin' || role === 'sales_manager';
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.eyebrow}>Form Gateway & Website Inquiries</span>
-          <h1 className={styles.pageTitle}>Website Inquiries & Form Capture</h1>
+          <h1 className={styles.pageTitle}>Website Inquiries & Intake Console</h1>
           <p className={styles.pageSubtitle}>
-            Monitor incoming form submissions from the website, automatic duplicate protection, and intake health.
+            Monitor inbound inquiries, inspect raw webhook JSON brief payloads, and simulate test submissions.
           </p>
         </div>
       </header>
 
-      {/* Telemetry Status Ribbon */}
-      <section className={styles.statusRibbon} aria-label="Ingestion Endpoint Status">
-        <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>Endpoint Health</span>
-          <div className={styles.telemetryVal}>
-            <span className={styles.dotGreen} />
-            <span>200 OK — Active</span>
-          </div>
-          <span className={styles.telemetrySub}>
-            <span className={styles.codeBox}>POST /api/sales-funnel/ingest</span>
-          </span>
-        </div>
+      {/* Interactive Ingestion Workspace Client Component */}
+      <IngestionWorkspaceClient
+        telemetry={telemetry}
+        recentSubmissions={submissions}
+        recentActivities={activities}
+        canSimulate={canSimulate}
+      />
 
-        <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>Deduplication Window</span>
-          <div className={styles.telemetryVal}>24-Hour Smart Merge</div>
-          <span className={styles.telemetrySub}>
-            Matches normalized phone or lowercase email
-          </span>
-        </div>
-
-        <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>Rate Limiter Perimeter</span>
-          <div className={styles.telemetryVal}>Automated Spam Shield Active</div>
-          <span className={styles.telemetrySub}>
-            10 req/min burst protection via Upstash/In-Memory
-          </span>
-        </div>
-      </section>
-
-      {/* Deduplication & Ingestion Governance Rules */}
+      {/* Deduplication & Ingestion Governance Protocol */}
       <section className={styles.sectionBox}>
         <h2 className={styles.sectionTitle}>Automated Deduplication Protocol</h2>
         <div className={styles.ruleList}>
@@ -127,36 +176,10 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>
-              <strong>Repeat Inquiry Tracking:</strong> Duplicate inquiries within the 24-hour window update `inquiry_count` and append an immutable touchpoint record to `lead_activities` without resetting deal stages.
+              <strong>Repeat Inquiry Tracking:</strong> Duplicate inquiries within the {settings.dedup_window_hours}-hour window update `inquiry_count` and append an immutable touchpoint record to `lead_activities` without resetting deal stages.
             </span>
           </div>
         </div>
-      </section>
-
-      {/* Live Ingestion Log Feed */}
-      <section className={styles.sectionBox}>
-        <h2 className={styles.sectionTitle}>Recent Inbound Submissions</h2>
-        {logs.length === 0 ? (
-          <div className={styles.emptyState}>
-            <span>No incoming webhook ingestion events logged recently.</span>
-          </div>
-        ) : (
-          <div className={styles.logList}>
-            {logs.map((log) => (
-              <div key={log.id} className={styles.logRow}>
-                <span className={styles.logDesc}>{log.description}</span>
-                <span className={styles.logTime}>
-                  {new Date(log.created_at).toLocaleString('en-IN', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );

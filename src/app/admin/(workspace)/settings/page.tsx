@@ -2,7 +2,8 @@
  * @file page.tsx
  * @description Security & System Governance Workspace (/admin/settings).
  *              Server Component role-gated strictly to `admin` accounts.
- *              Renders the commercial authorization matrix and tamper-proof team audit ledger.
+ *              Integrates the Operational SLA Calibration Console,
+ *              Commercial Authorization Matrix, and Tamper-Proof Audit Trail.
  * @module app/admin/(workspace)/settings/page
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -11,7 +12,9 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
+import { getAgencySettingsAction } from '@/app/actions/settings';
 import type { CrmUserRole } from '@/types/crm';
+import { SettingsWorkspaceClient } from './components/SettingsWorkspaceClient';
 import styles from './settings.module.scss';
 
 export const metadata: Metadata = {
@@ -50,26 +53,50 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
     redirect('/admin?error=unauthorized_role_access');
   }
 
+  // Fetch operational settings via server action
+  const settingsResult = await getAgencySettingsAction();
+  const initialSettings = settingsResult.data || {
+    id: 'default' as const,
+    lead_response_sla_minutes: 60,
+    followup_grace_period_hours: 4,
+    stale_deal_threshold_days: 14,
+    dedup_window_hours: 24,
+    bot_rate_limit_per_minute: 10,
+    notification_email: 'executive@marcaubi.com',
+  };
+
   // Fetch audit log entries
   const { data: auditLogs } = await supabase
     .from('team_audit_logs')
     .select('id, action, target_user_email, created_at')
     .order('created_at', { ascending: false })
-    .limit(10);
+    .limit(20);
 
-  const logs = auditLogs || [];
+  const logs = (auditLogs || []).map((log) => ({
+    id: log.id,
+    action: log.action || 'system_mutation',
+    target_user_email: log.target_user_email || 'system@marcaubi.com',
+    created_at: log.created_at || new Date().toISOString(),
+  }));
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Governance & System Hardening</span>
-          <h1 className={styles.pageTitle}>Security & Access Governance</h1>
+          <span className={styles.eyebrow}>Governance & Operational Hardening</span>
+          <h1 className={styles.pageTitle}>System Settings & Governance</h1>
           <p className={styles.pageSubtitle}>
-            Cryptographic authentication state, role-based access control matrix, and administrative audit trails.
+            Configure operational SLAs, lead alert grace periods, bot rate limits, and inspect immutable audit trails.
           </p>
         </div>
       </header>
+
+      {/* Interactive Settings and SLA Governance Workspace */}
+      <SettingsWorkspaceClient
+        initialSettings={initialSettings}
+        auditLogs={logs}
+        userRole={role}
+      />
 
       {/* Role Authorization Matrix */}
       <section className={styles.matrixCard}>
@@ -117,35 +144,6 @@ export default async function AdminSettingsPage(): Promise<React.ReactElement> {
             </tbody>
           </table>
         </div>
-      </section>
-
-      {/* Tamper-Proof Audit Log */}
-      <section className={styles.auditSection}>
-        <h2 className={styles.sectionTitle}>Immutable Administrative Audit Log</h2>
-        {logs.length === 0 ? (
-          <div style={{ color: '#71717a', fontSize: '0.85rem' }}>
-            No administrative events recorded in the ledger yet.
-          </div>
-        ) : (
-          <div className={styles.auditList}>
-            {logs.map((log) => (
-              <div key={log.id} className={styles.auditRow}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span className={styles.auditAction}>{log.action}</span>
-                  <span className={styles.auditEmail}>{log.target_user_email}</span>
-                </div>
-                <span className={styles.auditTime}>
-                  {new Date(log.created_at).toLocaleString('en-IN', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );
