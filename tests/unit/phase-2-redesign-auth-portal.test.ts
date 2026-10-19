@@ -63,10 +63,10 @@ describe('Phase 2 Redesign: Authentication Portal & Credentials Overhaul Suite',
       assert.ok(Math.abs(ratio - 7.10) < 0.2);
     });
 
-    it('verifies primary button ink #1f242f on Lemon Yellow #eefb87 exceeds WCAG AAA (>= 7:1)', () => {
-      const ratio = getContrastRatio('#1f242f', '#eefb87');
+    it('verifies primary button ink #ffffff on Obsidian #0f172a exceeds WCAG AAA (>= 7:1)', () => {
+      const ratio = getContrastRatio('#ffffff', '#0f172a');
       assert.ok(ratio >= 7, `Expected contrast >= 7, got ${ratio}`);
-      assert.ok(Math.abs(ratio - 13.92) < 0.2);
+      assert.ok(ratio > 15, `Expected high AAA contrast, got ${ratio}`);
     });
 
     it('proves white text #ffffff on Lemon Yellow #eefb87 strictly FAILS (< 4.5:1)', () => {
@@ -89,20 +89,23 @@ describe('Phase 2 Redesign: Authentication Portal & Credentials Overhaul Suite',
   });
 
   describe('2. Login Portal Architecture & Token Hygiene (/admin/login)', () => {
-    it('verifies login.module.scss purges legacy obsidian (#0b0b0b) and brand orange (#ff6100)', () => {
+    it('verifies login.module.scss purges legacy obsidian (#0b0b0b) and legacy radial gradients', () => {
       const content = fs.readFileSync(loginScssPath, 'utf8');
       assert.strictEqual(content.includes('#0b0b0b'), false);
-      assert.strictEqual(content.includes('#ff6100'), false);
       assert.strictEqual(content.includes('radial-gradient'), false);
     });
 
-    it('verifies login.module.scss adopts Accordion Lemon Yellow and Sypher light canvas', () => {
+    it('verifies brand logo preserves authentic colors and does NOT have filter: brightness(0)', () => {
       const content = fs.readFileSync(loginScssPath, 'utf8');
-      assert.ok(content.includes('--admin-canvas-bg'));
-      assert.ok(content.includes('--admin-card-bg'));
-      assert.ok(content.includes('--admin-accent-lemon'));
-      assert.ok(content.includes('--admin-border-strong'));
-      assert.ok(content.includes('border-radius: var(--admin-radius-pill, 9999px);'));
+      assert.strictEqual(content.includes('filter: brightness(0)'), false);
+      assert.strictEqual(content.includes('filter: brightness(0);'), false);
+    });
+
+    it('verifies submit button uses obsidian #0f172a, not lemon yellow #eefb87', () => {
+      const content = fs.readFileSync(loginScssPath, 'utf8');
+      assert.ok(content.includes('background-color: #0f172a;'));
+      assert.strictEqual(content.includes('#eefb87'), false);
+      assert.strictEqual(content.includes('--admin-accent-lemon'), false);
     });
 
     it('enforces 48px input height and 44px minimum touch targets (Rule R-03)', () => {
@@ -121,19 +124,17 @@ describe('Phase 2 Redesign: Authentication Portal & Credentials Overhaul Suite',
   });
 
   describe('3. Password Reset Portal Architecture (/admin/reset-password)', () => {
-    it('verifies reset-password.module.scss purges legacy obsidian (#0b0b0b) and brand orange (#ff6100)', () => {
+    it('verifies reset-password.module.scss purges legacy obsidian (#0b0b0b) and legacy radial gradients', () => {
       const content = fs.readFileSync(resetScssPath, 'utf8');
       assert.strictEqual(content.includes('#0b0b0b'), false);
-      assert.strictEqual(content.includes('#ff6100'), false);
       assert.strictEqual(content.includes('radial-gradient'), false);
     });
 
-    it('verifies reset-password.module.scss adopts Accordion Lemon Yellow pill submit button', () => {
+    it('verifies reset-password.module.scss adopts Obsidian #0f172a submit button, not lemon yellow #eefb87', () => {
       const content = fs.readFileSync(resetScssPath, 'utf8');
-      assert.ok(content.includes('background-color: var(--admin-accent-lemon, #eefb87);'));
-      assert.ok(content.includes('border: 1px solid var(--admin-border-strong, #1f242f);'));
-      assert.ok(content.includes('border-radius: var(--admin-radius-pill, 9999px);'));
-      assert.ok(content.includes('color: var(--admin-accent-lemon-ink, #1f242f);'));
+      assert.ok(content.includes('background-color: #0f172a;'));
+      assert.strictEqual(content.includes('#eefb87'), false);
+      assert.strictEqual(content.includes('--admin-accent-lemon'), false);
     });
 
     it('enforces 48px height on password inputs and 44px on visibility toggles (Rule R-03)', () => {
@@ -146,27 +147,31 @@ describe('Phase 2 Redesign: Authentication Portal & Credentials Overhaul Suite',
   });
 
   describe('4. Anti-Slop Vocabulary & Editorial Copywriting Cleansing', () => {
-    it('verifies LoginForm.tsx purges military jargon ("Internal Access", "Restricted Agency Portal")', () => {
+    it('verifies LoginForm.tsx purges military jargon and pseudo-security copy', () => {
       const content = fs.readFileSync(loginFormPath, 'utf8');
       assert.strictEqual(content.includes('Internal Access'), false);
       assert.strictEqual(content.includes('Restricted Agency Portal'), false);
       assert.strictEqual(content.includes('Access monitored and logged.'), false);
+      assert.strictEqual(content.includes('Executive Access'), false);
+      assert.strictEqual(content.includes('Commercial Authentication'), false);
+      assert.strictEqual(content.includes('Authenticate Session'), false);
+      assert.strictEqual(content.includes('Protected by enterprise MFA'), false);
     });
 
-    it('verifies LoginForm.tsx displays authoritative executive terminology', () => {
+    it('verifies LoginForm.tsx displays authoritative human agency terminology', () => {
       const content = fs.readFileSync(loginFormPath, 'utf8');
-      assert.ok(content.includes('Executive Access'));
-      assert.ok(content.includes('Executive Portal.'));
-      assert.ok(content.includes('Enterprise Administration'));
-      assert.ok(content.includes('Commercial Authentication'));
-      assert.ok(content.includes('Authenticate Session'));
+      assert.ok(content.includes('Sign in to Marca Ubi'));
+      assert.ok(content.includes('Enter your agency credentials to access the CRM console'));
+      assert.ok(content.includes('Sign In'));
+      assert.ok(content.includes('Need assistance with credentials? Contact Agency Administration'));
     });
 
-    it('verifies reset-password page.tsx displays editorial period and governance phrasing', () => {
+    it('verifies reset-password page.tsx displays clean heading and purges fake governance phrasing', () => {
       const content = fs.readFileSync(resetPagePath, 'utf8');
-      assert.ok(content.includes('Establish Credentials.'));
-      assert.ok(content.includes('Identity Governance Protocol'));
-      assert.strictEqual(content.includes('stroke="#ff6100"'), false);
+      assert.ok(content.includes('Set New Password'));
+      assert.ok(content.includes('Please choose a strong permanent password for your account'));
+      assert.strictEqual(content.includes('Identity Governance Protocol'), false);
+      assert.strictEqual(content.includes('Mandatory Initial Credential Rotation'), false);
     });
   });
 

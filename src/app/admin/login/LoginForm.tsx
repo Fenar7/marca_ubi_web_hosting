@@ -1,9 +1,9 @@
 /**
  * @file LoginForm.tsx
- * @description Interactive client-side component for the Marca Ubi Executive Login Portal.
+ * @description Interactive client-side component for the Marca Ubi CRM Authentication Portal.
  *              Integrates React 19 useActionState, brute-force lockout countdowns,
  *              password visibility toggles, and WCAG AA aria-live error announcements.
- *              Strictly conforms to the Accordion Executive Advisory & Sypher design system.
+ *              Strictly conforms to modern luxury SaaS architecture and Marca Ubi design tokens.
  * @module admin/login/LoginForm
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -93,10 +93,6 @@ export function LoginForm(): React.ReactElement {
   return (
     <div className={styles.cardContainer}>
       <header className={styles.brandHeader}>
-        <div className={styles.brandBadge}>
-          <span className={styles.brandBadgeDot} aria-hidden="true" />
-          <span>Executive Access</span>
-        </div>
         <div className={styles.brandLogoWrap}>
           <img
             src="/hero/marca-ubi-logo.png"
@@ -106,15 +102,10 @@ export function LoginForm(): React.ReactElement {
             height={38}
           />
         </div>
-        <h1 className={styles.brandTitle}>Executive Portal.</h1>
-        <p className={styles.brandSubtitle}>Enterprise Administration</p>
-
-        <div className={styles.portalNotice}>
-          <p className={styles.portalNoticeTitle}>Commercial Authentication</p>
-          <p className={styles.portalNoticeText}>
-            Protected by enterprise multi-factor authentication and role-based access control.
-          </p>
-        </div>
+        <h1 className={styles.brandTitle}>Sign in to Marca Ubi</h1>
+        <p className={styles.brandSubtitle}>
+          Enter your agency credentials to access the CRM console
+        </p>
       </header>
 
       {displayError && (
@@ -235,27 +226,12 @@ export function LoginForm(): React.ReactElement {
           {isPending ? (
             <>
               <span className={styles.btnSpinner} aria-hidden="true" />
-              <span>Authenticating...</span>
+              <span>Signing in...</span>
             </>
           ) : isLocked ? (
             <span>Locked ({lockoutSeconds}s)</span>
           ) : (
-            <>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-              <span>Authenticate Session</span>
-            </>
+            <span>Sign In</span>
           )}
         </button>
       </form>
@@ -268,24 +244,6 @@ export function LoginForm(): React.ReactElement {
         >
           Need assistance with credentials? Contact Agency Administration
         </a>
-      </div>
-
-      <div className={styles.securityFooter}>
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        <span>Protected by enterprise MFA & TLS 1.3 encryption.</span>
       </div>
 
       <footer className={styles.copyright}>
