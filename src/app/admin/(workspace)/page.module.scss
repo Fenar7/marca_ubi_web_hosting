@@ -1,0 +1,451 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 1.5rem;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff6100;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.pageTitle {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 0.4rem;
+}
+
+.pageSubtitle {
+  font-size: 0.88rem;
+  color: #a1a1aa;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nodeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #22c55e;
+}
+
+.nodeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.sectionDescription {
+  font-size: 0.8rem;
+  color: #71717a;
+  margin: 0.2rem 0 0;
+}
+
+.funnelDistributionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.funnelCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.funnelCard {
+  background: #111115;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 180px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 97, 0, 0.4);
+    background: #15151c;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+
+    .funnelCardFooter svg {
+      transform: translateX(3px);
+      color: #ff6100;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: translateY(0px) scale(0.99);
+  }
+}
+
+.funnelCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.funnelPillarStep {
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.funnelEnclaveBadge {
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d4d4d8;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.enclaveOrange {
+  background: rgba(255, 97, 0, 0.12);
+  color: #ff6100;
+  border-color: rgba(255, 97, 0, 0.28);
+}
+
+.enclaveEmerald {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+.funnelCardBody {
+  flex: 1;
+}
+
+.funnelCardTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.35rem;
+}
+
+.funnelCardDesc {
+  font-size: 0.78rem;
+  color: #a1a1aa;
+  line-height: 1.45;
+  margin: 0 0 1rem;
+}
+
+.funnelMetricRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.funnelMetricValue {
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.funnelMetricLabel {
+  font-size: 0.75rem;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.funnelCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #71717a;
+
+  svg {
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* Recent Activity Ledger */
+.activitySection {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.ledgerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ledgerTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.liveFeedIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #22c55e;
+}
+
+.liveFeedDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: radarPulse 2s infinite;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  gap: 1rem;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+.activityRowClickable {
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba(255, 97, 0, 0.35);
+    background: rgba(255, 255, 255, 0.05);
+
+    .activityDesc {
+      color: #ff6100;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: -2px;
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.activityLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.activityBadge {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.badgeOrange {
+  background: rgba(255, 97, 0, 0.12);
+  color: #ff6100;
+  border: 1px solid rgba(255, 97, 0, 0.25);
+}
+
+.badgeEmerald {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.badgeAmber {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badgeNeutral,
+.badgeBlue {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cccccc;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.externalIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.25rem;
+}
+
+.activityDesc {
+  font-size: 0.82rem;
+  color: #e4e4e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: 640px) {
+    white-space: normal;
+  }
+}
+
+.activityRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.activityActor {
+  font-size: 0.75rem;
+  color: #a1a1aa;
+}
+
+.activityTime {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.7rem;
+  color: #71717a;
+}
+
+.emptyState {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #71717a;
+  font-size: 0.85rem;
+}
+
+@keyframes radarPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+}

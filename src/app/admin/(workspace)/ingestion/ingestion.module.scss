@@ -1,0 +1,96 @@
+/**
+ * @file ingestion.module.scss
+ * @description Layout and Automated Deduplication Protocol styling for /admin/ingestion.
+ *              Strictly complies with WCAG AA 4.5:1 contrast standards.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 1.5rem;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff6100;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.pageTitle {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 0.4rem;
+}
+
+.pageSubtitle {
+  font-size: 0.88rem;
+  color: #a1a1aa;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sectionBox {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem;
+}
+
+.ruleList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ruleItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 0.84rem;
+  color: #cccccc;
+  line-height: 1.5;
+
+  svg {
+    color: #ff6100;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+}

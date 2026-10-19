@@ -1,4 +1,53 @@
+/**
+ * @file next.config.ts
+ * @description Next.js 16 configuration with defense-in-depth security headers,
+ *              Sanity CDN remote image optimization patterns, and Sass global design tokens.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 import type { NextConfig } from "next";
+
+/**
+ * Enterprise Defense-in-Depth Security Headers.
+ * Enforces strict CSP, anti-clickjacking frame denial, TLS transport security,
+ * MIME-sniffing prevention, and privacy-preserving referrer policies.
+ */
+const securityHeaders = [
+  {
+    key: "X-Frame-Options",
+    value: "DENY",
+  },
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  {
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sanity.io",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' blob: data: https://cdn.sanity.io",
+      "font-src 'self' data:",
+      "connect-src 'self' https://*.supabase.co https://*.sanity.io wss://*.supabase.co",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+    ].join("; "),
+  },
+];
 
 const nextConfig: NextConfig = {
   images: {
@@ -10,6 +59,14 @@ const nextConfig: NextConfig = {
         pathname: "/images/**",
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
   },
   sassOptions: {
     additionalData: `

@@ -1,0 +1,839 @@
+/**
+ * @file crm.ts
+ * @description Enterprise TypeScript domain definitions and database models for the
+ *              Marca Ubi Agency CRM & Sales Intelligence Platform.
+ * @architecture Mirrors the PostgreSQL 15+ relational schema in `supabase/migrations/`.
+ *               Enforces strict compile-time type safety across Server Actions, API routes,
+ *               and UI client components.
+ */
+
+/**
+ * Domain Enums & Union Types
+ */
+
+/**
+ * Commercial authorization roles determining RLS access boundaries across the CRM.
+ * - `admin`: Full system control, user provisioning, permanent deletion, global analytics.
+ * - `sales_manager`: Global pipeline inspection, deal reassignment, stage approvals.
+ * - `sales_executive`: Isolated row access to assigned deals, touchpoint logging, stage advancement.
+ * - `viewer`: Read-only financial/audit inspection across the commercial pipeline.
+ */
+export type CrmUserRole = 'admin' | 'sales_manager' | 'sales_executive' | 'viewer';
+
+/**
+ * Operational state of an agency staff account.
+ */
+export type ProfileAccountStatus = 'active' | 'suspended' | 'invited';
+
+/**
+ * Commercial macro-bucket classifying pipeline health and revenue aggregation.
+ */
+export type FunnelBucket = 'open' | 'potential' | 'converted' | 'lost';
+
+/**
+ * Client deal priority indicator styled with Marca Ubi design tokens.
+ */
+export type LeadPriority = 'High' | 'Medium' | 'Low';
+
+/**
+ * Preferred communication coordinate for high-ticket prospective client outreach.
+ */
+export type PreferredChannel = 'Phone' | 'WhatsApp' | 'Email' | 'Meeting';
+
+/**
+ * Commercial service categorization for incoming agency engagements.
+ */
+export type ServiceCategory =
+  | 'Branding'
+  | 'Web & Digital'
+  | 'Mobile Apps'
+  | 'UI/UX Design'
+  | 'Full-Suite Advisory'
+  | 'Other';
+
+/**
+ * Omnichannel touchpoint classification captured in the immutable lead activities ledger.
+ */
+export type LeadActivityType =
+  | 'status_change'
+  | 'priority_change'
+  | 'reassignment'
+  | 'call_logged'
+  | 'email_sent'
+  | 'meeting_held'
+  | 'whatsapp_sent'
+  | 'meeting_notes'
+  | 'note_added'
+  | 'follow_up_scheduled'
+  | 'system_event'
+  | 'field_update'
+  | 'duplicate_inquiry';
+
+/**
+ * Administrative governance actions recorded in the tamper-proof team audit log.
+ */
+export type TeamAuditAction =
+  | 'user_created'
+  | 'role_changed'
+  | 'user_suspended'
+  | 'user_activated'
+  | 'leads_bulk_reassigned'
+  | 'password_reset_dispatched'
+  | 'password_reset_completed'
+  | 'permissions_updated';
+
+/**
+ * Relational Entity Models
+ */
+
+/**
+ * Agency team member profile mirroring `public.profiles` and linked to `auth.users(id)`.
+ */
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: CrmUserRole;
+  job_title: string;
+  phone: string | null;
+  status: ProfileAccountStatus;
+  avatar_url: string | null;
+  invited_by: string | null;
+  last_login_at: string | null;
+  must_change_password: boolean;
+  allowed_tabs?: string[];
+  feature_permissions?: FeaturePermissions;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Hydrated team member directory item joined with active commercial metrics.
+ * Powers the Commercial Personnel Directory table (/admin/team).
+ */
+export interface TeamMemberRosterItem extends Profile {
+  active_deals_count: number;
+  total_deal_value: number;
+  invited_by_name?: string | null;
+}
+
+
+/**
+ * Catalog entry for commercial lead acquisition channels mirroring `public.lead_sources`.
+ */
+export interface LeadSource {
+  id: string;
+  name: string;
+  color_code: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+/**
+ * Pipeline stage definition mirroring `public.funnel_statuses`.
+ */
+export interface FunnelStatus {
+  id: string;
+  name: string;
+  bucket: FunnelBucket;
+  color_code: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+/**
+ * Primary commercial lead dossier mirroring `public.leads`.
+ * Stores company background, primary decision maker coordinates, deal valuation,
+ * and current funnel stage.
+ */
+export interface Lead {
+  id: string;
+  lead_id: string;
+  name: string;
+  company: string | null;
+  company_website: string | null;
+  industry: string | null;
+  phone: string | null;
+  email: string | null;
+  preferred_channel: PreferredChannel;
+  lead_source_id: string;
+  source_detail: string | null;
+  service_category: ServiceCategory;
+  budget_bracket: string | null;
+  priority: LeadPriority;
+  status_id: string;
+  assigned_to: string | null;
+  expected_value: number;
+  next_follow_up: string | null;
+  lost_reason: string | null;
+  revisit_date: string | null;
+  notes: string | null;
+  brief_payload: Record<string, unknown>;
+  inquiry_count: number;
+  created_at: string;
+  converted_at: string | null;
+  updated_at: string;
+}
+
+/**
+ * Hydrated lead record joining foreign key references for high-performance UI data grids.
+ */
+export interface LeadWithRelations extends Lead {
+  lead_source?: LeadSource;
+  status?: FunnelStatus;
+  assignee?: Profile | null;
+}
+
+/**
+ * Append-only customer touchpoint or stage transition entry mirroring `public.lead_activities`.
+ */
+export interface LeadActivity {
+  id: string;
+  lead_id: string;
+  actor_id: string | null;
+  activity_type: LeadActivityType;
+  description: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+/**
+ * Essential commercial staff profile coordinates joined for touchpoint display.
+ */
+export interface ActivityActor {
+  id: string;
+  full_name: string;
+  role: CrmUserRole;
+  avatar_url?: string | null;
+  email?: string | null;
+}
+
+/**
+ * Hydrated touchpoint record including actor details for timeline display.
+ */
+export interface LeadActivityWithActor extends LeadActivity {
+  actor?: ActivityActor | Profile | null;
+  actor_name: string;
+  actor_role: string;
+}
+
+/**
+ * Tamper-proof administrative governance log entry mirroring `public.team_audit_logs`.
+ */
+export interface TeamAuditLog {
+  id: string;
+  actor_id: string | null;
+  action: TeamAuditAction;
+  target_user_email: string;
+  details: Record<string, unknown>;
+  created_at: string;
+}
+
+/**
+ * Mutation Payloads (Insert / Update Types)
+ */
+
+/**
+ * Base attributes for lead creation shared across all ingestion channels.
+ */
+export interface BaseLeadInput {
+  name: string;
+  company?: string | null;
+  company_website?: string | null;
+  industry?: string | null;
+  preferred_channel?: PreferredChannel;
+  lead_source_id: string;
+  source_detail?: string | null;
+  service_category?: ServiceCategory;
+  budget_bracket?: string | null;
+  priority?: LeadPriority;
+  status_id: string;
+  assigned_to?: string | null;
+  expected_value?: number;
+  next_follow_up?: string | null;
+  notes?: string | null;
+  brief_payload?: Record<string, unknown>;
+}
+
+/**
+ * Payload required to insert a new lead record via webhook or manual drawer.
+ * Statically enforces at compile-time that at least one reachable contact coordinate
+ * (non-nullable phone or non-nullable email) is provided, aligning with `chk_lead_contact_info`.
+ */
+export type CreateLeadInput = BaseLeadInput & (
+  | { phone: string; email?: string | null }
+  | { email: string; phone?: string | null }
+);
+
+/**
+ * Allowed fields for partial updates to an active deal.
+ */
+export interface UpdateLeadInput {
+  name?: string;
+  company?: string | null;
+  company_website?: string | null;
+  industry?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  preferred_channel?: PreferredChannel;
+  lead_source_id?: string;
+  source_detail?: string | null;
+  service_category?: ServiceCategory;
+  budget_bracket?: string | null;
+  priority?: LeadPriority;
+  status_id?: string;
+  assigned_to?: string | null;
+  expected_value?: number;
+  next_follow_up?: string | null;
+  lost_reason?: string | null;
+  revisit_date?: string | null;
+  notes?: string | null;
+  brief_payload?: Record<string, unknown>;
+  converted_at?: string | null;
+}
+
+/**
+ * Payload for logging an interaction or manual note on a deal.
+ */
+export interface CreateLeadActivityInput {
+  lead_id: string;
+  actor_id?: string | null;
+  activity_type: LeadActivityType;
+  description: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Executive Analytics & KPI Schemas
+ */
+
+/**
+ * Aggregated commercial pipeline metrics powering the Executive KPI Ribbon.
+ * Supports both standard and camelCase/underscore representations for client-server compatibility.
+ */
+export interface PipelineKpis {
+  total_leads: number;
+  potential_count?: number;
+  total_potential_value: number;
+  stage_weighted_pipeline_value?: number;
+  converted_count?: number;
+  total_converted_revenue: number;
+  lost_count?: number;
+  conversion_rate: number;
+  overdue_follow_ups_count: number;
+  overdue_count?: number;
+}
+
+/**
+ * Raw commercial metrics payload returned by the `get_pipeline_kpis` PostgreSQL RPC function.
+ * Reflects single-round-trip database aggregation with division-by-zero, spam-exclusion,
+ * and role-scoping guards.
+ */
+export interface PipelineRpcMetrics {
+  total_leads_count: number;
+  total_leads?: number;
+  open_leads_count: number;
+  potential_leads_count: number;
+  potential_count?: number;
+  potential_pipeline_value: number;
+  potential_value?: number;
+  stage_weighted_pipeline_value?: number;
+  converted_leads_count: number;
+  converted_count?: number;
+  converted_revenue_value: number;
+  converted_value?: number;
+  lost_leads_count: number;
+  lost_count?: number;
+  disqualified_leads_count?: number;
+  overdue_follow_ups_count: number;
+  overdue_count?: number;
+  conversion_rate_percentage: number;
+  conversion_rate?: number;
+}
+
+/**
+ * Filter parameters for querying pipeline KPIs via API and stored procedure.
+ */
+export interface KpiQueryParams {
+  startDate?: string | null;
+  endDate?: string | null;
+  sourceId?: string | null;
+  assigneeId?: string | null;
+  targetUserId?: string | null;
+}
+
+/**
+ * Structured API response envelope for GET /api/sales-funnel/kpis.
+ */
+export interface KpiApiResponseEnvelope {
+  success: boolean;
+  data?: PipelineRpcMetrics;
+  error?: string;
+  details?: Record<string, string>;
+  meta?: {
+    startDate: string | null;
+    endDate: string | null;
+    sourceId: string | null;
+    assigneeId: string | null;
+    cachedAt: string;
+    executionTimeMs?: number;
+  };
+}
+
+/**
+ * Distribution of active deals across funnel statuses for pipeline visualization.
+ */
+export interface StatusFunnelBreakdown {
+  status_id: string;
+  status_name: string;
+  bucket: FunnelBucket;
+  color_code: string;
+  sort_order: number;
+  deal_count: number;
+  total_value: number;
+}
+
+/**
+ * Payload required to provision a new team member via createTeamUser Server Action.
+ */
+export interface CreateTeamUserInput {
+  fullName: string;
+  email: string;
+  role: CrmUserRole;
+  jobTitle: string;
+  phone?: string | null;
+  tempPassword: string;
+}
+
+/**
+ * Standard server action result envelope for team administrative mutations.
+ */
+export interface TeamActionResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  validationErrors?: Record<string, string>;
+}
+
+/**
+ * Action result envelope returned by the administrative login Server Action.
+ * Encapsulates redirection path, progressive rate limiting lockout metrics, and error feedback.
+ */
+export interface LoginActionResult {
+  success: boolean;
+  error?: string;
+  redirectTo?: string;
+  remainingLockoutSeconds?: number;
+  isLocked?: boolean;
+}
+
+/**
+ * Action result envelope returned by the mandatory password rotation Server Action.
+ * Encapsulates operation status, form-level error message, and granular field validation issues.
+ */
+export interface ResetPasswordResult {
+  success: boolean;
+  error?: string;
+  validationErrors?: Record<string, string>;
+}
+
+/**
+ * Breakdown of active deals across individual pipeline stages for a specific sales representative.
+ */
+export interface StageDealBreakdown {
+  status_id: string;
+  status_name: string;
+  bucket: FunnelBucket;
+  color_code: string;
+  sort_order: number;
+  deal_count: number;
+  total_value: number;
+}
+
+/**
+ * Lightweight dossier of an active deal managed by a departing or offboarded representative.
+ */
+export interface ActiveDealSummary {
+  id: string;
+  lead_id: string;
+  name: string;
+  company: string | null;
+  expected_value: number;
+  status_name: string;
+  priority: LeadPriority;
+  next_follow_up: string | null;
+  created_at: string;
+}
+
+/**
+ * Aggregated active commercial inventory dossier for a sales representative used by the Reassignment Wizard.
+ */
+export interface RepDealInventory {
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  user_role: CrmUserRole;
+  user_status: ProfileAccountStatus;
+  active_deals_count: number;
+  cumulative_pipeline_value: number;
+  overdue_follow_ups_count: number;
+  stage_breakdown: StageDealBreakdown[];
+  deals: ActiveDealSummary[];
+}
+
+/**
+ * Input payload supplied to the atomic batch lead reassignment engine.
+ */
+export interface LeadReassignmentInput {
+  sourceUserId: string;
+  destinationUserId: string;
+  transferReason: string;
+}
+
+/**
+ * Enriched execution summary returned by public.execute_atomic_lead_reassignment.
+ */
+export interface AtomicReassignmentResult {
+  success: boolean;
+  reassigned_count: number;
+  total_value: number;
+  affected_lead_ids: string[];
+  source_user_id?: string;
+  destination_user_id?: string;
+  message: string;
+}
+
+/**
+ * Lightweight representative option for commercial assignee dropdown selectors.
+ */
+export interface AssigneeOption {
+  id: string;
+  fullName: string;
+  email: string;
+  role: CrmUserRole;
+}
+
+/**
+ * Standard server action result envelope for commercial lead mutations.
+ * Provides typed payload delivery, error messages, and validation feedback.
+ */
+export interface LeadActionResult<T = unknown> {
+  success: boolean;
+  leadId?: string;
+  id?: string;
+  error?: string;
+  data?: T;
+  validationErrors?: Record<string, string>;
+  lead?: LeadWithRelations;
+  activities?: LeadActivityWithActor[];
+  availableStatuses?: FunnelStatus[];
+  availableAssignees?: AssigneeOption[];
+  funnelStatuses?: FunnelStatus[];
+  teamAssignees?: AssigneeOption[];
+}
+
+/**
+ * Comprehensive 360-degree commercial lead dossier payload powering LeadDetailDrawer.
+ * Encapsulates full deal coordinates, related stage & source entities, creative brief payload,
+ * chronological interaction ledger, and available dropdown options for atomic mutations.
+ */
+export interface LeadDetailPayload {
+  lead: LeadWithRelations;
+  activities: LeadActivityWithActor[];
+  availableStatuses: FunnelStatus[];
+  availableAssignees: AssigneeOption[];
+  funnelStatuses?: FunnelStatus[];
+  teamAssignees?: AssigneeOption[];
+}
+
+/**
+ * Mutation payload for updating a deal's funnel stage, handling terminal bucket timestamps
+ * and optional transition notes.
+ */
+export interface UpdateLeadStatusPayload {
+  leadId: string;
+  newStatusId: string;
+  lostReason?: string | null;
+  note?: string | null;
+}
+
+/**
+ * Mutation payload for recording an omnichannel customer touchpoint or scheduled follow-up
+ * into the immutable lead activities ledger.
+ */
+export interface AddLeadTouchpointPayload {
+  leadId: string;
+  activityType:
+    | 'call_logged'
+    | 'email_sent'
+    | 'meeting_held'
+    | 'meeting_notes'
+    | 'whatsapp_sent'
+    | 'note_added'
+    | 'follow_up_scheduled';
+  description: string;
+  nextFollowUp?: string | null;
+}
+
+/**
+ * Mutation payload for single-deal commercial representative reassignment.
+ * Strictly gated to administrators and sales managers.
+ */
+export interface UpdateLeadAssigneePayload {
+  leadId: string;
+  newAssigneeId: string;
+  note?: string | null;
+}
+
+/**
+ * Mutation payload for updating commercial deal valuation parameters, priority tier,
+ * and high-level engagement notes.
+ */
+export interface UpdateLeadDealParametersPayload {
+  leadId: string;
+  expectedValue?: number;
+  priority?: LeadPriority;
+  notes?: string | null;
+}
+
+/**
+ * Granular Tab & Capability Permission System
+ */
+
+export type CrmTabKey =
+  | 'command_center'
+  | 'leads'
+  | 'deals'
+  | 'works'
+  | 'tasks'
+  | 'users'
+  | 'analytics'
+  | 'ingestion'
+  | 'settings';
+
+export type TabPermissions = Record<CrmTabKey, boolean>;
+
+export type CrmFeatureKey =
+  | 'can_view_financials'
+  | 'can_export_data'
+  | 'can_reassign_leads'
+  | 'can_delete_records'
+  | 'can_manage_team';
+
+export type FeaturePermissions = Record<CrmFeatureKey, boolean>;
+
+export interface TabMetadata {
+  key: CrmTabKey;
+  label: string;
+  route: string;
+  description: string;
+  iconName: string;
+}
+
+export const CRM_TAB_REGISTRY: TabMetadata[] = [
+  {
+    key: 'command_center',
+    label: 'Command Center',
+    route: '/admin',
+    description: 'Executive dashboard overview, quick actions, and high-level KPI ribbon.',
+    iconName: 'LayoutDashboard',
+  },
+  {
+    key: 'leads',
+    label: 'Inbound Leads',
+    route: '/admin/leads',
+    description: 'Raw inbound brief submissions, discovery queue, and qualification triage.',
+    iconName: 'Inbox',
+  },
+  {
+    key: 'deals',
+    label: 'Pipeline Deals',
+    route: '/admin/deals',
+    description: 'Commercial deal kanban/table, client proposals, and status advancement.',
+    iconName: 'Kanban',
+  },
+  {
+    key: 'works',
+    label: 'Client Works',
+    route: '/admin/works',
+    description: 'Active client deliverables, milestone tracking, and creative project health.',
+    iconName: 'FolderGit2',
+  },
+  {
+    key: 'tasks',
+    label: 'Follow-up Tasks',
+    route: '/admin/tasks',
+    description: 'Follow-up task scheduler, touchpoint logs, and client call reminders.',
+    iconName: 'Clock',
+  },
+  {
+    key: 'users',
+    label: 'User Management',
+    route: '/admin/team',
+    description: 'Staff directory, role assignments, tab permission matrix, and offboarding.',
+    iconName: 'Users',
+  },
+  {
+    key: 'analytics',
+    label: 'Executive Analytics',
+    route: '/admin/analytics',
+    description: 'Revenue performance graphs, deal conversion cohorts, and pipeline forecasting.',
+    iconName: 'BarChart2',
+  },
+  {
+    key: 'ingestion',
+    label: 'Website Inquiries',
+    route: '/admin/ingestion',
+    description: 'Incoming website brief submissions, deduplication logs, and triage queue.',
+    iconName: 'Webhook',
+  },
+  {
+    key: 'settings',
+    label: 'Security & Settings',
+    route: '/admin/settings',
+    description: 'Agency security policies, API integrations, and system audit logs.',
+    iconName: 'Shield',
+  },
+];
+
+export const ROLE_DEFAULT_TABS: Record<CrmUserRole, TabPermissions> = {
+  admin: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: true,
+    users: true,
+    analytics: true,
+    ingestion: true,
+    settings: true,
+  },
+  sales_manager: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: true,
+    users: true,
+    analytics: true,
+    ingestion: true,
+    settings: false,
+  },
+  sales_executive: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: true,
+    users: false,
+    analytics: false,
+    ingestion: false,
+    settings: false,
+  },
+  viewer: {
+    command_center: true,
+    leads: true,
+    deals: true,
+    works: true,
+    tasks: false,
+    users: false,
+    analytics: true,
+    ingestion: false,
+    settings: false,
+  },
+};
+
+export const ROLE_DEFAULT_FEATURES: Record<CrmUserRole, FeaturePermissions> = {
+  admin: {
+    can_view_financials: true,
+    can_export_data: true,
+    can_reassign_leads: true,
+    can_delete_records: true,
+    can_manage_team: true,
+  },
+  sales_manager: {
+    can_view_financials: true,
+    can_export_data: true,
+    can_reassign_leads: true,
+    can_delete_records: false,
+    can_manage_team: false,
+  },
+  sales_executive: {
+    can_view_financials: false,
+    can_export_data: false,
+    can_reassign_leads: false,
+    can_delete_records: false,
+    can_manage_team: false,
+  },
+  viewer: {
+    can_view_financials: true,
+    can_export_data: false,
+    can_reassign_leads: false,
+    can_delete_records: false,
+    can_manage_team: false,
+  },
+};
+
+/**
+ * Client Works & Post-Conversion Project Delivery Models
+ */
+
+export type ClientWorkDeliveryStage =
+  | 'kickoff'
+  | 'strategy'
+  | 'design_ui_ux'
+  | 'development'
+  | 'review_qa'
+  | 'delivered';
+
+export type ClientWorkHealthStatus =
+  | 'on_track'
+  | 'at_risk'
+  | 'blocked'
+  | 'completed';
+
+export interface ClientWorkMilestone {
+  id: string;
+  title: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  completed_at?: string | null;
+}
+
+export interface ClientWorkItem {
+  id: string;
+  project_code: string;
+  lead_id: string;
+  client_name: string;
+  company: string | null;
+  service_scope: string;
+  contract_value: number;
+  delivery_stage: ClientWorkDeliveryStage;
+  health_status: ClientWorkHealthStatus;
+  creative_lead_id: string | null;
+  tech_lead_id: string | null;
+  milestones: ClientWorkMilestone[];
+  target_delivery_date: string | null;
+  kickoff_date: string;
+  created_at: string;
+  updated_at: string;
+  creative_lead?: { full_name: string } | null;
+  tech_lead?: { full_name: string } | null;
+}
+
+/**
+ * Authenticated active session telemetry for administrative and CRM workspaces.
+ */
+export interface CurrentUserSession {
+  id: string;
+  name: string;
+  fullName?: string;
+  email: string;
+  role: CrmUserRole;
+  jobTitle?: string;
+  allowed_tabs?: string[];
+  feature_permissions?: FeaturePermissions;
+}
+
+
+

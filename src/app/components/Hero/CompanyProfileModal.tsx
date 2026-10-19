@@ -288,58 +288,84 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
     setIsSubmitting(true);
     setSubmitError(null);
 
-    try {
-      const response = await fetch("/api/company-profile-submissions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...sanitizeCompanyProfileSubmission(formData),
-          submissionId: submissionIdRef.current || crypto.randomUUID(),
-        }),
-      });
+    const submissionId = submissionIdRef.current || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `modal-${Date.now()}`);
+    const sanitized = sanitizeCompanyProfileSubmission(formData);
 
-      const responseBody = (await response.json()) as {
-        ok?: boolean;
-        message?: string;
-        errors?: CompanyProfileSubmissionErrors;
-      };
+    const combinedNotes = [
+      sanitized.businessType ? `Business Type: ${sanitized.businessType}` : "",
+      sanitized.instagramId ? `Instagram: ${sanitized.instagramId}` : "",
+      sanitized.message ? `Inquiry Note: ${sanitized.message}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
-      if (!response.ok || !responseBody.ok) {
-        if (response.status === 400 && responseBody.errors) {
-          setFormErrors(responseBody.errors);
+    const crmPayload = {
+      name: sanitized.name.trim(),
+      email: sanitized.email.trim() || undefined,
+      phone: sanitized.phone.trim() || undefined,
+      company: sanitized.businessType.trim() || undefined,
+      company_website: sanitized.website.trim() || undefined,
+      source_name: "Modal Company Profile",
+      source_detail: "Hero Company Profile Download Modal",
+      notes: combinedNotes || undefined,
+      brief_payload: {
+        businessType: sanitized.businessType,
+        instagramId: sanitized.instagramId,
+        website: sanitized.website,
+        message: sanitized.message,
+        submissionId,
+      },
+    };
 
-          const firstInvalidField = COMPANY_PROFILE_SUBMISSION_FIELD_ORDER.find(
-            (field) => responseBody.errors?.[field],
-          );
+    // Resilient submission with exponential backoff retry for network interruptions
+    let attempt = 0;
+    const maxAttempts = 3;
+    let success = false;
 
-          if (firstInvalidField) {
-            window.requestAnimationFrame(() => {
-              const firstInvalidElement = document.getElementById(
-                `company-profile-${firstInvalidField}`,
-              );
-              if (firstInvalidElement instanceof HTMLElement) {
-                firstInvalidElement.focus();
-              }
-            });
-          }
+    while (attempt < maxAttempts && !success) {
+      attempt++;
+      try {
+        const response = await fetch("/api/sales-funnel/ingest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Idempotency-Key": submissionId,
+          },
+          body: JSON.stringify(crmPayload),
+        });
+
+        if (!response.ok) {
+          const errData = (await response.json().catch(() => ({}))) as { error?: string };
+          throw new Error(errData.error || `Server responded with status ${response.status}`);
         }
 
-        setSubmitError(
-          responseBody.message ||
-            "We could not save your details right now. Please try again in a moment.",
-        );
-        setIsSubmitting(false);
-        return;
-      }
+        success = true;
 
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      triggerProfileDownload();
-    } catch {
-      setIsSubmitting(false);
-      setSubmitError("We could not save your details right now. Please try again in a moment.");
+        // Asynchronous non-blocking sync to Google Sheets & Sanity via legacy route
+        fetch("/api/company-profile-submissions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...sanitized,
+            submissionId,
+          }),
+        }).catch((syncErr: unknown) => {
+          console.warn("[LEGACY_SYNC_WARNING] Background sheets sync failed:", syncErr);
+        });
+
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        triggerProfileDownload();
+      } catch (err: unknown) {
+        if (attempt >= maxAttempts) {
+          const message = err instanceof Error ? err.message : "We could not save your details right now. Please try again.";
+          setSubmitError(message);
+          setIsSubmitting(false);
+        } else {
+          // Exponential backoff delay before retry (300ms, 600ms)
+          await new Promise((resolve) => setTimeout(resolve, attempt * 300));
+        }
+      }
     }
   };
 

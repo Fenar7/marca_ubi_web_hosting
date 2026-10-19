@@ -1,0 +1,120 @@
+/**
+ * @file settings.module.scss
+ * @description Layout and Commercial Authorization Matrix styles for /admin/settings.
+ *              Strictly complies with WCAG AA 4.5:1 contrast standards.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 1.5rem;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff6100;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.pageTitle {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 0.4rem;
+}
+
+.pageSubtitle {
+  font-size: 0.88rem;
+  color: #a1a1aa;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.matrixCard {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tableHead {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  th {
+    padding: 0.75rem 1rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #a1a1aa; /* Elevated to meet WCAG AA contrast */
+  }
+}
+
+.tableRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+  td {
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    color: #cccccc;
+  }
+}
+
+.roleName {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.checkMark {
+  color: #22c55e;
+  font-weight: 700;
+}
+
+/* R-25: Elevated contrast from #555555 (2.53:1 fail) to #a1a1aa (7.37:1 pass) */
+.dashMark {
+  color: #a1a1aa;
+  font-weight: 500;
+}

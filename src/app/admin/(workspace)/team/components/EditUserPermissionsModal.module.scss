@@ -1,0 +1,572 @@
+/**
+ * @file EditUserPermissionsModal.module.scss
+ * @description Apple HIG Vibrancy & Marca Ubi Dark Luxury styling tokens for the
+ *              Granular Tab Permissions Governance Modal (580px).
+ * @tokens #0b0b0b, #111114, #141418, #ff6100, #a1a1aa, tabular-nums
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@keyframes backdropFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+@keyframes backdropFadeOut {
+  0% {
+    opacity: 1;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  100% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+}
+
+@keyframes modalEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalExit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  animation: backdropFadeIn 0.22s ease-out forwards;
+
+  &.overlayClosing {
+    animation: backdropFadeOut 0.18s ease-in forwards;
+  }
+
+  @media (max-width: 640px) {
+    padding: 0;
+    align-items: flex-end;
+  }
+}
+
+.modalDialog {
+  width: 100%;
+  max-width: 580px;
+  max-height: min(90vh, 840px);
+  background: #111114;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 32px 80px -12px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.14);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  animation: modalEntrance 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  &.dialogClosing {
+    animation: modalExit 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  @media (max-width: 640px) {
+    max-width: 100vw;
+    max-height: 94vh;
+    border-radius: 16px 16px 0 0;
+    margin-top: auto;
+  }
+}
+
+.modalHeader {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #141418;
+  flex-shrink: 0;
+}
+
+.headerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff6100;
+}
+
+.modalTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.closeButton {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #cccccc;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+}
+
+.escBadge {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.62rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: #a1a1aa;
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 1.25rem 1rem;
+  }
+}
+
+/* User Identity Dossier Strip */
+.userDossierStrip {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  background: #141418;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.userAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 97, 0, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 97, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #ff6100;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.userNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.userName {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.roleBadge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255, 97, 0, 0.12);
+  color: #ff6100;
+  border: 1px solid rgba(255, 97, 0, 0.25);
+}
+
+.userEmail {
+  font-size: 0.76rem;
+  color: #a1a1aa;
+}
+
+/* Informational Callout */
+.selfLockoutAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 97, 0, 0.08);
+  border: 1px solid rgba(255, 97, 0, 0.25);
+  border-radius: 8px;
+  color: #ff914d;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.alertIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.errorAlert {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+/* Enclaves Section */
+.enclavesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.enclaveCard {
+  background: #0d0d10;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.enclaveHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.enclaveName {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ff6100;
+}
+
+.enclaveBadge {
+  font-size: 0.66rem;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  color: #a1a1aa;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tabsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.55rem;
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tabCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.7rem 0.8rem;
+  min-height: 44px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+
+  &:hover:not(.tabCardLocked) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  &.tabCardActive {
+    background: rgba(255, 97, 0, 0.08);
+    border-color: rgba(255, 97, 0, 0.4);
+    box-shadow: 0 0 12px rgba(255, 97, 0, 0.1);
+  }
+
+  &.tabCardLocked {
+    opacity: 0.75;
+    cursor: not-allowed;
+    border-style: dashed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 2px;
+  }
+}
+
+.customCheckbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+
+  .tabCardActive & {
+    background: #ff6100;
+    border-color: #ff6100;
+  }
+}
+
+.checkIcon {
+  width: 12px;
+  height: 12px;
+  color: #ffffff;
+}
+
+.tabMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.tabLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lockedPill {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #ff914d;
+  background: rgba(255, 97, 0, 0.12);
+  border: 1px solid rgba(255, 97, 0, 0.25);
+  border-radius: 3px;
+  padding: 0 0.35rem;
+}
+
+.tabRoute {
+  font-size: 0.68rem;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  color: #a1a1aa;
+}
+
+.tabHint {
+  font-size: 0.68rem;
+  color: #a1a1aa;
+  line-height: 1.3;
+}
+
+/* Modal Footer */
+.modalFooter {
+  padding: 1rem 1.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #141418;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quickActionBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+  color: #a1a1aa;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  min-height: 44px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 1px;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cancelButton {
+  min-height: 44px;
+  padding: 0 1.25rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #cccccc;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.submitButton {
+  min-height: 44px;
+  padding: 0 1.5rem;
+  background: #ff6100;
+  border: 1px solid #ff6100;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #e05500;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
