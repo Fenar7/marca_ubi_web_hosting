@@ -130,8 +130,8 @@ export function SuspendUserModal({
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
           <div>
-            <h3 id="suspend-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-              Confirm Account Offboarding & Suspension
+            <h3 id="suspend-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}>
+              Confirm Account Offboarding & Suspension.
             </h3>
             <p id="suspend-modal-desc" className={styles.modalAlertText}>
               Suspending <strong>{member.full_name}</strong> will terminate all active authentication sessions immediately across all devices and block database permissions via Row Level Security.
@@ -146,8 +146,8 @@ export function SuspendUserModal({
             alignItems: 'center',
             gap: '0.85rem',
             padding: '0.75rem 1rem',
-            background: '#0b0b0d',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'var(--admin-surface-muted, #f0f2f5)',
+            border: '1px solid var(--admin-border-subtle, #e2e5ea)',
             borderRadius: '6px',
             marginBottom: '1rem',
           }}
@@ -156,10 +156,10 @@ export function SuspendUserModal({
             {getInitials(member.full_name)}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#ffffff' }}>
+            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--admin-text-primary, #1f242f)' }}>
               {member.full_name}
             </span>
-            <span style={{ fontSize: '0.75rem', color: '#888888' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary, #525965)' }}>
               {member.email} · {member.job_title}
             </span>
           </div>

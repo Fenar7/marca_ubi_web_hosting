@@ -308,11 +308,11 @@ function NegotiationModalInner({
               </span>
             </div>
             <h2 id="negotiation-modal-title" className={styles.modalTitle}>
-              Advance to Negotiation
+              Stage Transition.
             </h2>
             {dealName && (
               <p className={styles.modalSubtitle}>
-                Structuring commercial deal parameters for <strong style={{ color: '#ffffff' }}>{dealName}</strong>.
+                Structuring commercial deal parameters for <strong style={{ color: 'var(--admin-text-primary, #1f242f)' }}>{dealName}</strong>.
               </p>
             )}
           </div>

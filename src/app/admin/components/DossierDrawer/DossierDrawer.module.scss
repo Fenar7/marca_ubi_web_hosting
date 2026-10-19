@@ -1,31 +1,35 @@
 /**
  * @file DossierDrawer.module.scss
- * @description Dark Luxury SCSS Module for Client 360° Sliding Drawer Shell & Organization Dossier.
- *              Enforces Apple HIG Vibrancy, Linear fluid card physics, and Raycast monospace tokens.
+ * @description Accordion PE Advisory & Sypher Minimalist Light Canvas styling module
+ *              for Client 360° Sliding Drawer Shell & Organization Dossier.
+ *              Enforces pure white card surfaces, hairline specular borders (#e2e5ea),
+ *              high-contrast primary ink (#1f242f), secondary slate (#525965),
+ *              and signature Accordion Lemon Yellow pill action controls.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-$black: #000000;
-$obsidian-deep: #0a0a0c;
-$surface-card: #121216;
-$surface-hover: #18181e;
-$border-specular: rgba(255, 255, 255, 0.08);
-$border-subtle: rgba(255, 255, 255, 0.05);
-$cta-orange: #ff6100;
-$cta-orange-subtle: rgba(255, 97, 0, 0.12);
-$text-primary: #ffffff;
-$text-secondary: #a1a1aa;
-$text-muted: #71717a;
-$font-mono: 'SF Mono', 'Fira Code', Menlo, Consolas, Monaco, monospace;
+$canvas-bg: var(--admin-canvas-bg, #f7f8fa);
+$surface-card: var(--admin-card-bg, #ffffff);
+$surface-muted: var(--admin-surface-muted, #f0f2f5);
+$surface-hover: var(--admin-surface-hover, #f4f6f9);
+$border-specular: var(--admin-border-default, #e2e5ea);
+$border-subtle: var(--admin-border-subtle, #f0f2f5);
+$border-strong: var(--admin-border-strong, #1f242f);
+$accent-lemon: var(--admin-accent-lemon, #eefb87);
+$accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
+$text-primary: var(--admin-text-primary, #1f242f);
+$text-secondary: var(--admin-text-secondary, #525965);
+$text-muted: var(--admin-text-muted, #8a92a0);
+$font-mono: var(--font-admin-code, 'SF Mono', 'Fira Code', Menlo, Consolas, Monaco, monospace);
 $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .drawerOverlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(31, 36, 47, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: flex-end;
   opacity: 1;
@@ -41,9 +45,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   width: min(840px, 100vw);
   height: 100vh;
   height: 100dvh;
-  background: $obsidian-deep;
+  background: $surface-card;
   border-left: 1px solid $border-specular;
-  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8), inset 1px 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: -16px 0 48px rgba(31, 36, 47, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -67,9 +71,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   justify-content: space-between;
   padding: 1.25rem 1.75rem;
   border-bottom: 1px solid $border-specular;
-  background: rgba(14, 14, 18, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: $surface-card;
   flex-shrink: 0;
   gap: 1rem;
 }
@@ -89,8 +91,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   letter-spacing: 0.04em;
   padding: 0.35rem 0.65rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: $surface-muted;
+  border: 1px solid $border-specular;
   color: $text-primary;
   cursor: pointer;
   display: inline-flex;
@@ -99,8 +101,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: $surface-hover;
+    border-color: $border-strong;
   }
 }
 
@@ -122,8 +124,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   font-weight: 500;
   padding: 0.25rem 0.6rem;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid $border-specular;
+  background: $surface-muted;
+  color: $text-primary;
 }
 
 .statusDot {
@@ -142,23 +145,28 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .convertHeaderBtn {
   min-height: 44px;
-  padding: 0 0.85rem;
+  padding: 0 1.25rem;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.45rem;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 97, 0, 0.4);
-  background: linear-gradient(135deg, #ff6100 0%, #e05500 100%);
-  color: #000000;
+  border-radius: 9999px;
+  border: 1px solid $border-strong;
+  background: $accent-lemon;
+  color: $text-primary;
+  font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.8rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(255, 97, 0, 0.35);
+  box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
   transition: all 0.15s ease;
 
   &:hover {
-    background: linear-gradient(135deg, #ff751a 0%, #eb5e00 100%);
-    box-shadow: 0 4px 14px rgba(255, 97, 0, 0.45);
+    background: $accent-lemon-hover;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
   }
 
   &:active {
@@ -166,29 +174,33 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid $border-strong;
     outline-offset: 2px;
   }
 }
 
 .scheduleHeaderBtn {
   min-height: 44px;
-  padding: 0 0.85rem;
+  padding: 0 1.25rem;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.45rem;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 97, 0, 0.35);
-  background: rgba(255, 97, 0, 0.08);
-  color: #ff6100;
+  border-radius: 9999px;
+  border: 1px solid $border-strong;
+  background: $surface-card;
+  color: $text-primary;
+  font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(255, 97, 0, 0.16);
-    border-color: rgba(255, 97, 0, 0.5);
+    background: $surface-hover;
+    transform: translateY(-1px);
   }
 }
 
@@ -198,17 +210,17 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 9999px;
+  border: 1px solid $border-specular;
+  background: transparent;
   color: $text-secondary;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
     color: $text-primary;
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: $surface-hover;
+    border-color: $border-strong;
   }
 
   svg {
@@ -222,6 +234,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem 1.75rem;
+  background: $canvas-bg;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
@@ -243,20 +256,20 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .sectionCard {
   background: $surface-card;
   border: 1px solid $border-specular;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
 }
 
 .sectionTitle {
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: $text-muted;
+  color: $text-secondary;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -264,7 +277,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   svg {
     width: 14px;
     height: 14px;
-    color: $cta-orange;
+    color: $text-primary;
   }
 }
 
@@ -319,9 +332,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   letter-spacing: 0.04em;
   padding: 0.15rem 0.45rem;
   border-radius: 9999px;
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: var(--admin-status-amber-bg, #fffbeb);
+  color: var(--admin-status-amber-text, #92400e);
+  border: 1px solid var(--admin-status-amber-border, #fde68a);
   line-height: 1;
 }
 
@@ -333,12 +346,12 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .avatarInitials {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: rgba(255, 97, 0, 0.15);
-  border: 1px solid rgba(255, 97, 0, 0.35);
-  color: $cta-orange;
+  background: $surface-muted;
+  border: 1px solid $border-specular;
+  color: $text-primary;
   font-size: 0.65rem;
   font-weight: 600;
   display: inline-flex;
@@ -350,16 +363,15 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .externalLink {
-  color: $cta-orange;
+  color: $text-primary;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  text-decoration: none;
+  text-decoration: underline;
   transition: opacity 0.15s ease;
 
   &:hover {
     opacity: 0.8;
-    text-decoration: underline;
   }
 
   svg {
@@ -383,7 +395,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   justify-content: center;
   gap: 0.5rem;
   padding: 0.6rem 1rem;
-  border-radius: 10px;
+  border-radius: 9999px;
   font-size: 0.82rem;
   font-weight: 500;
   text-decoration: none;
@@ -401,24 +413,24 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &.callBtn {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: $surface-card;
+    border-color: $border-specular;
     color: $text-primary;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.25);
+      background: $surface-hover;
+      border-color: $border-strong;
     }
   }
 
   &.waBtn {
-    background: rgba(37, 211, 102, 0.1);
-    border-color: rgba(37, 211, 102, 0.25);
-    color: #25d366;
+    background: var(--admin-status-emerald-bg, #ecfdf5);
+    border-color: var(--admin-status-emerald-border, #a7f3d0);
+    color: var(--admin-status-emerald-text, #065f46);
 
     &:hover {
-      background: rgba(37, 211, 102, 0.18);
-      border-color: rgba(37, 211, 102, 0.4);
+      background: #d1fae5;
+      border-color: #6ee7b7;
     }
   }
 
@@ -439,9 +451,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 0.75rem;
   font-weight: 500;
   padding: 0.35rem 0.7rem;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  background: $surface-muted;
+  border: 1px solid $border-specular;
   color: $text-primary;
 }
 
@@ -449,16 +461,16 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .valuationBadge {
   font-family: $font-mono;
   font-size: 0.95rem;
-  font-weight: 600;
-  color: #34c759;
+  font-weight: 700;
+  color: var(--admin-status-emerald-text, #065f46);
   letter-spacing: 0.02em;
 }
 
 /* Raw Brief Accordion */
 .briefAccordion {
-  border: 1px solid $border-subtle;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid $border-specular;
+  border-radius: 10px;
+  background: $surface-muted;
   overflow: hidden;
 }
 
@@ -478,13 +490,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   transition: background 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: $surface-hover;
   }
 
   svg {
     width: 14px;
     height: 14px;
-    color: $text-muted;
+    color: $text-secondary;
     transition: transform 0.2s $ease-spring;
   }
 
@@ -495,12 +507,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .accordionContent {
   padding: 0.75rem 1rem 1rem;
-  border-top: 1px solid $border-subtle;
+  border-top: 1px solid $border-specular;
   font-size: 0.8rem;
   color: $text-secondary;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  background: $surface-card;
 }
 
 .briefEntry {
@@ -513,7 +526,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: $text-muted;
+  color: $text-secondary;
+  font-weight: 600;
 }
 
 .briefVal {
@@ -543,8 +557,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .spinner {
   width: 28px;
   height: 28px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: $cta-orange;
+  border: 2px solid $border-specular;
+  border-top-color: $border-strong;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -561,7 +575,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid $border-specular;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   display: flex;
   flex-direction: column;
 }
@@ -569,8 +583,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .composerTabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid $border-subtle;
-  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid $border-specular;
+  background: $surface-muted;
 }
 
 .composerTab {
@@ -583,7 +597,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: $text-muted;
+  color: $text-secondary;
   font-size: 0.76rem;
   font-weight: 500;
   cursor: pointer;
@@ -596,14 +610,15 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:hover {
-    color: $text-secondary;
-    background: rgba(255, 255, 255, 0.02);
+    color: $text-primary;
+    background: $surface-hover;
   }
 
   &.activeTab {
     color: $text-primary;
-    border-bottom-color: $cta-orange;
-    background: rgba(255, 97, 0, 0.05);
+    border-bottom-color: $border-strong;
+    background: $surface-card;
+    font-weight: 600;
   }
 }
 
@@ -638,27 +653,28 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .composerSelect,
 .composerInput {
-  min-height: 38px;
+  min-height: 44px;
   padding: 0.45rem 0.75rem;
-  background: $obsidian-deep;
+  background: $surface-card;
   border: 1px solid $border-specular;
-  border-radius: 6px;
+  border-radius: 8px;
   color: $text-primary;
   font-size: 0.8rem;
   outline: none;
   transition: border-color 0.15s ease;
 
   &:focus {
-    border-color: $cta-orange;
+    border-color: $border-strong;
+    box-shadow: 0 0 0 1px $border-strong;
   }
 }
 
 .composerTextarea {
   min-height: 80px;
   padding: 0.6rem 0.75rem;
-  background: $obsidian-deep;
+  background: $surface-card;
   border: 1px solid $border-specular;
-  border-radius: 6px;
+  border-radius: 8px;
   color: $text-primary;
   font-size: 0.82rem;
   line-height: 1.5;
@@ -668,7 +684,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   transition: border-color 0.15s ease;
 
   &:focus {
-    border-color: $cta-orange;
+    border-color: $border-strong;
+    box-shadow: 0 0 0 1px $border-strong;
   }
 
   &::placeholder {
@@ -683,12 +700,12 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .presetBtn {
-  min-height: 38px;
-  padding: 0.25rem 0.6rem;
-  background: $obsidian-deep;
+  min-height: 44px;
+  padding: 0.25rem 0.75rem;
+  background: $surface-muted;
   border: 1px solid $border-specular;
-  border-radius: 6px;
-  color: $text-secondary;
+  border-radius: 9999px;
+  color: $text-primary;
   font-size: 0.74rem;
   font-family: $font-mono;
   font-weight: 500;
@@ -697,13 +714,15 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
     color: $text-primary;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: $border-strong;
+    background: $surface-hover;
   }
 
   &.activePreset {
-    background: $cta-orange-subtle;
-    border-color: $cta-orange;
-    color: $cta-orange;
+    background: $accent-lemon;
+    border-color: $border-strong;
+    color: $text-primary;
+    font-weight: 600;
   }
 }
 
@@ -714,30 +733,30 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tagPillBtn {
-  min-height: 24px;
-  padding: 0.1rem 0.45rem;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid $border-subtle;
-  color: $text-muted;
+  min-height: 44px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: $surface-muted;
+  border: 1px solid $border-specular;
+  color: $text-secondary;
   font-size: 0.68rem;
   font-family: $font-mono;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    color: $cta-orange;
-    border-color: rgba(255, 97, 0, 0.3);
-    background: $cta-orange-subtle;
+    color: $text-primary;
+    border-color: $border-strong;
+    background: $surface-hover;
   }
 }
 
 .composerError {
   padding: 0.5rem 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--admin-status-rose-bg, #fef2f2);
+  border: 1px solid var(--admin-status-rose-border, #fecaca);
   border-radius: 6px;
-  color: #ef4444;
+  color: var(--admin-status-rose-text, #991b1b);
   font-size: 0.76rem;
   line-height: 1.4;
 }
@@ -755,36 +774,41 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hintWarning {
-  color: #f59e0b;
+  color: var(--admin-status-amber-text, #92400e);
 }
 
 .hintReady {
-  color: $text-muted;
+  color: $text-secondary;
 }
 
 .submitTouchpointBtn {
   min-height: 44px;
-  padding: 0 1.25rem;
+  padding: 0 1.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: $cta-orange;
-  border: none;
-  border-radius: 6px;
+  background: $accent-lemon;
+  border: 1px solid $border-strong;
+  border-radius: 9999px;
   color: $text-primary;
+  font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.8rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
   transition: all 0.15s ease;
 
   &:hover:not(.disabled) {
-    background: #e05500;
-    box-shadow: 0 0 15px rgba(255, 97, 0, 0.4);
+    background: $accent-lemon-hover;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
   }
 
   &.disabled {
-    opacity: 0.4;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 }
@@ -792,8 +816,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .miniSpinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid rgba(31, 36, 47, 0.3);
+  border-top-color: $text-primary;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -836,7 +860,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $obsidian-deep;
+  background: $surface-card;
   border: 1px solid $border-specular;
 
   svg {
@@ -846,33 +870,33 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glyphCall {
-  color: #34c759;
-  border-color: rgba(52, 199, 89, 0.3);
-  background: rgba(52, 199, 89, 0.1);
+  color: var(--admin-status-emerald-text, #065f46);
+  border-color: var(--admin-status-emerald-border, #a7f3d0);
+  background: var(--admin-status-emerald-bg, #ecfdf5);
 }
 
 .glyphWhatsApp {
-  color: #25d366;
-  border-color: rgba(37, 211, 102, 0.3);
-  background: rgba(37, 211, 102, 0.1);
+  color: var(--admin-status-emerald-text, #065f46);
+  border-color: var(--admin-status-emerald-border, #a7f3d0);
+  background: var(--admin-status-emerald-bg, #ecfdf5);
 }
 
 .glyphMeeting {
-  color: #a855f7;
-  border-color: rgba(168, 85, 247, 0.3);
-  background: rgba(168, 85, 247, 0.1);
+  color: #6366f1;
+  border-color: #c7d2fe;
+  background: #eef2ff;
 }
 
 .glyphSystem {
-  color: $cta-orange;
-  border-color: rgba(255, 97, 0, 0.3);
-  background: $cta-orange-subtle;
+  color: $text-primary;
+  border-color: $border-specular;
+  background: $surface-muted;
 }
 
 .glyphNote {
-  color: #f59e0b;
-  border-color: rgba(245, 158, 11, 0.3);
-  background: rgba(245, 158, 11, 0.1);
+  color: var(--admin-status-amber-text, #92400e);
+  border-color: var(--admin-status-amber-border, #fde68a);
+  background: var(--admin-status-amber-bg, #fffbeb);
 }
 
 .timelineCard {
@@ -883,11 +907,11 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   transition: border-color 0.15s ease;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.14);
+    border-color: $border-strong;
   }
 }
 
@@ -918,18 +942,18 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .activityLabel {
   font-size: 0.68rem;
-  color: $text-muted;
+  color: $text-secondary;
 }
 
 .timestamp {
   font-size: 0.72rem;
-  color: $text-muted;
+  color: $text-secondary;
   font-family: $font-mono;
 }
 
 .timelineBody {
   font-size: 0.82rem;
-  color: #e4e4e7;
+  color: $text-primary;
   line-height: 1.5;
   word-break: break-word;
 }
@@ -939,8 +963,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0 0.35rem;
   margin: 0 0.15rem;
   border-radius: 4px;
-  background: $cta-orange-subtle;
-  color: $cta-orange;
+  background: $surface-muted;
+  color: $text-primary;
   font-family: $font-mono;
   font-size: 0.78rem;
   font-weight: 500;
@@ -951,9 +975,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0 0.35rem;
   margin: 0 0.15rem;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid $border-subtle;
-  color: #fbbf24;
+  background: $surface-muted;
+  border: 1px solid $border-specular;
+  color: var(--admin-status-amber-text, #92400e);
   font-family: $font-mono;
   font-size: 0.76rem;
 }
@@ -972,8 +996,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   gap: 0.35rem;
   padding: 0.2rem 0.5rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid $border-subtle;
+  background: $surface-muted;
+  border: 1px solid $border-specular;
   color: $text-secondary;
   font-size: 0.7rem;
   font-family: $font-mono;
@@ -981,14 +1005,14 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   svg {
     width: 11px;
     height: 11px;
-    color: $text-muted;
+    color: $text-secondary;
   }
 }
 
 .outcomePill {
-  background: rgba(52, 199, 89, 0.1);
-  border-color: rgba(52, 199, 89, 0.25);
-  color: #34c759;
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  border-color: var(--admin-status-emerald-border, #a7f3d0);
+  color: var(--admin-status-emerald-text, #065f46);
 }
 
 .timelineEmptyContainer {
@@ -1008,12 +1032,12 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid $border-subtle;
+  background: $surface-muted;
+  border: 1px solid $border-specular;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $text-muted;
+  color: $text-secondary;
 
   svg {
     width: 20px;
@@ -1030,7 +1054,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .emptySubtitle {
   font-size: 0.78rem;
-  color: $text-muted;
+  color: $text-secondary;
   line-height: 1.4;
   max-width: 300px;
   margin: 0;

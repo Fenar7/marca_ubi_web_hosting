@@ -192,11 +192,11 @@ export function LostReasonModal({
               </span>
             </div>
             <h2 id="lost-modal-title" className={styles.modalTitle}>
-              Close Deal as Lost
+              Close Deal as Lost.
             </h2>
             {dealName && (
               <p className={styles.modalSubtitle}>
-                Attributing commercial loss for <strong style={{ color: '#ffffff' }}>{dealName}</strong>.
+                Attributing commercial loss for <strong style={{ color: 'var(--admin-text-primary, #1f242f)' }}>{dealName}</strong>.
               </p>
             )}
           </div>

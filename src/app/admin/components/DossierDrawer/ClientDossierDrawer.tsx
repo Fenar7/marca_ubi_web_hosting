@@ -137,7 +137,7 @@ export function ClientDossierDrawer({
           priority: (raw.priority as LeadDossierData['priority']) || 'Medium',
           status_id: raw.status_id,
           status_name: raw.status?.name || 'In Review',
-          status_color: raw.status?.color_code || '#ff6100',
+          status_color: raw.status?.color_code || '#1f242f',
           bucket: (raw.status?.bucket as LeadDossierData['bucket']) || 'open',
           assigned_to: raw.assigned_to,
           assigned_to_name: raw.assignee?.full_name || 'Unassigned',
@@ -224,17 +224,27 @@ export function ClientDossierDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleCopyDealId = (e: React.MouseEvent) => {
+  const handleCopyDealId = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!lead) return;
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard
-        .writeText(lead.lead_id)
-        .then(() => {
-          setCopiedId(true);
-          setTimeout(() => setCopiedId(false), 2000);
-        })
-        .catch(() => {});
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(lead.lead_id);
+      } else if (typeof document !== 'undefined') {
+        const textArea = document.createElement('textarea');
+        textArea.value = lead.lead_id;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    } catch {
+      // Non-blocking clipboard fallback handling
     }
   };
 
@@ -273,7 +283,7 @@ export function ClientDossierDrawer({
             )}
 
             <h2 className={styles.headerCompany}>
-              {lead?.company || lead?.name || 'Commercial Deal Dossier'}
+              {lead?.company ? `${lead.company}.` : lead?.name ? `${lead.name}.` : 'Commercial Deal Dossier.'}
             </h2>
 
             {lead && (
@@ -291,8 +301,8 @@ export function ClientDossierDrawer({
                       gap: '0.25rem',
                       marginLeft: '0.35rem',
                       paddingLeft: '0.35rem',
-                      borderLeft: '1px solid rgba(255, 255, 255, 0.15)',
-                      color: '#10b981',
+                      borderLeft: '1px solid var(--admin-border-default, #e2e5ea)',
+                      color: 'var(--admin-status-emerald-text, #065f46)',
                       fontSize: '0.72rem',
                     }}
                     title="Deal Converted: Immutable to non-admin roles"
@@ -371,7 +381,7 @@ export function ClientDossierDrawer({
           </div>
         ) : fetchError ? (
           <div className={styles.loadingContainer}>
-            <p style={{ color: '#ff4d4f' }}>{fetchError}</p>
+            <p style={{ color: 'var(--admin-status-rose-text, #991b1b)' }}>{fetchError}</p>
             {leadId && (
               <button
                 type="button"
@@ -469,7 +479,7 @@ export function ClientDossierDrawer({
                     <span className={styles.fieldLabel} style={{ display: 'block', marginBottom: '0.35rem' }}>
                       Executive Deal Notes
                     </span>
-                    <p style={{ fontSize: '0.82rem', color: '#e4e4e7', lineHeight: 1.5, margin: 0 }}>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--admin-text-primary, #1f242f)', lineHeight: 1.5, margin: 0 }}>
                       {lead.notes}
                     </p>
                   </div>

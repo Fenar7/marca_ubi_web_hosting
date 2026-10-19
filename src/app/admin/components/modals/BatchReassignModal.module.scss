@@ -1,6 +1,12 @@
-// SCSS Module: BatchReassignModal.module.scss
-// Brand: Marca Ubi Dark Luxury Enterprise CRM
-// Rationale: Frosted modal with multi-select overdue deals table, destination picker, and 44px tap targets.
+/**
+ * @file BatchReassignModal.module.scss
+ * @description Accordion PE Advisory & Sypher Minimalist Light Canvas styling module
+ *              for the Centered Batch Reassign Overdue Leads Modal (680px).
+ *              Enforces pure white card surfaces, hairline specular borders (#e2e5ea),
+ *              high-contrast primary ink (#1f242f), secondary slate (#525965),
+ *              44px touch targets, and signature Accordion Lemon Yellow CTA pill buttons.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
 
 .modalOverlay {
   position: fixed;
@@ -9,9 +15,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(31, 36, 47, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 16px;
   animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
@@ -27,11 +33,10 @@
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  background-color: #121216;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.85),
-              0 0 0 1px rgba(255, 255, 255, 0.04);
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(31, 36, 47, 0.16);
   overflow: hidden;
   animation: scaleUpCard 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
@@ -47,7 +52,8 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 20px 24px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  background-color: var(--admin-card-bg, #ffffff);
 }
 
 .headerTitleGroup {
@@ -57,25 +63,25 @@
 }
 
 .eyebrow {
-  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-family: var(--font-admin-code, monospace);
   font-size: 11px;
-  font-weight: 600;
-  color: #ff6100;
+  font-weight: 700;
+  color: var(--admin-text-secondary, #525965);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .modalTitle {
   font-size: 18px;
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
   letter-spacing: -0.02em;
   margin: 0;
 }
 
 .modalSubtitle {
   font-size: 13px;
-  color: #a1a1aa;
+  color: var(--admin-text-secondary, #525965);
   margin: 0;
 }
 
@@ -87,84 +93,139 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  color: #a1a1aa;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 9999px;
+  color: var(--admin-text-primary, #1f242f);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.16);
+    color: var(--admin-text-primary, #1f242f);
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 }
 
 .modalBody {
-  flex: 1;
-  overflow-y: auto;
   padding: 20px 24px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background-color: var(--admin-canvas-bg, #f7f8fa);
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--admin-border-default, #e2e5ea);
+    border-radius: 3px;
+  }
 }
 
-.sectionHeader {
+.statsBar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.statItem {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 10px;
 }
 
-.sectionTitle {
-  font-size: 13px;
+.statLabel {
+  font-size: 11px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--admin-text-secondary, #525965);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.selectCounter {
-  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 12px;
-  color: #a1a1aa;
+.statValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-admin-code, monospace);
 }
 
-.selectAllButton {
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tableHeaderBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.selectAllBtn {
+  min-height: 44px;
+  padding: 0 12px;
   background: transparent;
-  border: none;
-  color: #ff6100;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 9999px;
+  color: var(--admin-text-primary, #1f242f);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
 
   &:hover {
-    background-color: rgba(255, 97, 0, 0.1);
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 }
 
-.leadsListContainer {
-  max-height: 240px;
+.tableScrollArea {
+  max-height: 220px;
   overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  background-color: rgba(10, 10, 12, 0.5);
-  display: flex;
-  flex-direction: column;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 10px;
+  background-color: var(--admin-card-bg, #ffffff);
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--admin-border-default, #e2e5ea);
+    border-radius: 3px;
+  }
 }
 
-.leadRow {
-  display: flex;
+.emptyState {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--admin-text-secondary, #525965);
+  font-size: 13px;
+}
+
+.dealRow {
+  display: grid;
+  grid-template-columns: 36px 1fr 100px 90px;
   align-items: center;
-  gap: 12px;
   padding: 10px 14px;
-  min-height: 44px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
   cursor: pointer;
   transition: background-color 0.15s ease;
 
@@ -173,74 +234,66 @@
   }
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--admin-surface-hover, #f4f6f9);
   }
 
-  &.selected {
-    background-color: rgba(255, 97, 0, 0.06);
+  &.rowSelected {
+    background-color: var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.35));
   }
 }
 
 .checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: #ff6100;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--admin-border-strong, #1f242f);
   cursor: pointer;
-  flex-shrink: 0;
 }
 
-.leadDetails {
-  flex: 1;
-  min-width: 0;
+.dealNameMeta {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  padding-right: 8px;
 }
 
-.leadHeadline {
+.dealName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dealSubmeta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  overflow: hidden;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--admin-text-secondary, #525965);
 }
 
-.leadIdToken {
-  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+.dealIdCode {
+  font-family: var(--font-admin-code, monospace);
   font-size: 11px;
   font-weight: 600;
-  color: #a1a1aa;
-}
-
-.leadName {
-  font-size: 13px;
-  font-weight: 500;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.leadCompany {
-  font-size: 12px;
-  color: #71717a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.leadTrailing {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+  color: var(--admin-text-primary, #1f242f);
 }
 
 .dealValue {
-  font-family: var(--font-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-admin-code, monospace);
+  text-align: right;
+  padding-right: 8px;
+}
+
+.overdueCell {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .formGroup {
@@ -250,57 +303,63 @@
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #e4e4e7;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .selectInput {
   min-height: 44px;
   height: 44px;
-  width: 100%;
   padding: 0 12px;
-  background-color: #18181f;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
-  color: #ffffff;
-  font-size: 14px;
+  color: var(--admin-text-primary, #1f242f);
+  font-size: 13px;
   outline: none;
-  transition: border-color 0.2s ease;
+  cursor: pointer;
+  transition: all 0.15s ease;
 
   &:focus {
-    border-color: #ff6100;
-    box-shadow: 0 0 0 2px rgba(255, 97, 0, 0.2);
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 }
 
 .textarea {
-  min-height: 72px;
-  width: 100%;
+  min-height: 68px;
   padding: 10px 12px;
-  background-color: #18181f;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.4;
   resize: vertical;
   outline: none;
-  transition: border-color 0.2s ease;
+  font-family: inherit;
+  transition: all 0.15s ease;
 
   &:focus {
-    border-color: #ff6100;
-    box-shadow: 0 0 0 2px rgba(255, 97, 0, 0.2);
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 }
 
-.errorBanner {
+.errorMessage {
   padding: 10px 14px;
   border-radius: 8px;
-  background-color: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  background-color: var(--admin-status-rose-bg, #fef2f2);
+  border: 1px solid var(--admin-status-rose-border, #fecaca);
+  color: var(--admin-status-rose-text, #991b1b);
   font-size: 13px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -312,46 +371,56 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  background-color: rgba(10, 10, 12, 0.4);
+  border-top: 1px solid var(--admin-border-default, #e2e5ea);
+  background-color: var(--admin-card-bg, #ffffff);
 }
 
 .cancelButton {
   min-height: 44px;
-  padding: 0 18px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  color: #e4e4e7;
+  height: 44px;
+  padding: 0 1.5rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: 9999px;
+  color: var(--admin-text-primary, #1f242f);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--admin-surface-hover, #f4f6f9);
   }
 }
 
 .submitButton {
   min-height: 44px;
-  padding: 0 20px;
-  background: #ff6100;
-  border: 1px solid #ff6100;
-  border-radius: 8px;
-  color: #ffffff;
+  height: 44px;
+  padding: 0 1.5rem;
+  background: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: 9999px;
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 13px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
+  transition: all 0.15s ease;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
 
   &:hover:not(:disabled) {
-    background: #e05500;
-    box-shadow: 0 0 14px rgba(255, 97, 0, 0.4);
+    background: var(--admin-accent-lemon-hover, #e4f375);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
   }
 
   &:disabled {
@@ -364,8 +433,8 @@
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid rgba(31, 36, 47, 0.3);
+  border-top-color: var(--admin-text-primary, #1f242f);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

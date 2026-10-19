@@ -243,7 +243,7 @@ export function AddTeamMemberModal({
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>User Governance</span>
             <h2 id="add-team-modal-title" className={styles.modalTitle}>
-              Add Team Member
+              Provision Commercial Personnel.
             </h2>
           </div>
           <button
@@ -252,7 +252,20 @@ export function AddTeamMemberModal({
             onClick={requestClose}
             aria-label="Close add team member modal"
           >
-            <span>✕</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
             <kbd className={styles.escBadge}>Esc</kbd>
           </button>
         </div>

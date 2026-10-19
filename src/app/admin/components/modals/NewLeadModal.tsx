@@ -179,19 +179,24 @@ export function NewLeadModal({
     }
 
     startTransition(async () => {
-      const result = await createManualLead(parsed.data);
-      if (!result.success) {
-        setGeneralError(result.error || 'Failed to initialize prospective lead record.');
-        return;
-      }
+      try {
+        const result = await createManualLead(parsed.data);
+        if (!result.success) {
+          setGeneralError(result.error || 'Failed to initialize prospective lead record.');
+          return;
+        }
 
-      // Signal success to the workspace shell and close modal
-      window.dispatchEvent(
-        new CustomEvent('lead-created', {
-          detail: { leadId: result.leadId, id: result.id },
-        })
-      );
-      onClose();
+        // Signal success to the workspace shell and close modal
+        window.dispatchEvent(
+          new CustomEvent('lead-created', {
+            detail: { leadId: result.leadId, id: result.id },
+          })
+        );
+        onClose();
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'An unexpected network error occurred while initializing lead.';
+        setGeneralError(msg);
+      }
     });
   };
 
@@ -216,7 +221,7 @@ export function NewLeadModal({
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>Commercial Intake</span>
             <h2 id="new-lead-modal-title" className={styles.modalTitle}>
-              + New Client Engagement
+              New Prospective Commercial Lead.
             </h2>
           </div>
           <button
@@ -225,7 +230,20 @@ export function NewLeadModal({
             onClick={requestClose}
             aria-label="Close modal"
           >
-            <span>✕</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
             <kbd className={styles.escBadge}>Esc</kbd>
           </button>
         </div>

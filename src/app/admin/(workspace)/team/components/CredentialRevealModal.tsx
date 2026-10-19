@@ -197,8 +197,8 @@ export function CredentialRevealModal({
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
           <div>
-            <h3 id="credential-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.88rem', fontWeight: 700 }}>
-              One-Time Credential Reveal
+            <h3 id="credential-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}>
+              One-Time Credential Reveal.
             </h3>
             <p className={styles.modalAlertText}>
               These temporary credentials are displayed strictly once. They are never stored in plain text or
