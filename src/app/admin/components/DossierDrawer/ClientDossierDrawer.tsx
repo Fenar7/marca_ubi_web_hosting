@@ -104,18 +104,22 @@ export function ClientDossierDrawer({
   // Ensure body scroll lock is restored if component unmounts unexpectedly while open
   useEffect(() => {
     return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     };
   }, []);
 
-  // Load complete lead dossier from Server Action
+  // Load complete lead dossier from Server Action with cancellation guard
   const loadDossier = useCallback(
-    async (id: string) => {
+    async (id: string, getIsCurrent?: () => boolean) => {
       setIsLoading(true);
       setFetchError(null);
       try {
         const response = await getLeadDetails(id);
+        if (getIsCurrent && !getIsCurrent()) return;
         if (!response.success || !response.data?.lead) {
           setFetchError(response.error || 'Failed to load deal record from database.');
           return;
@@ -137,7 +141,7 @@ export function ClientDossierDrawer({
           priority: (raw.priority as LeadDossierData['priority']) || 'Medium',
           status_id: raw.status_id,
           status_name: raw.status?.name || 'In Review',
-          status_color: raw.status?.color_code || '#ff6100',
+          status_color: raw.status?.color_code || '#1f242f',
           bucket: (raw.status?.bucket as LeadDossierData['bucket']) || 'open',
           assigned_to: raw.assigned_to,
           assigned_to_name: raw.assignee?.full_name || 'Unassigned',
@@ -153,14 +157,18 @@ export function ClientDossierDrawer({
           updated_at: raw.updated_at,
         };
 
+        if (getIsCurrent && !getIsCurrent()) return;
         setLead(normalized);
         setActivities(response.data.activities || []);
       } catch (err) {
+        if (getIsCurrent && !getIsCurrent()) return;
         setFetchError(
           err instanceof Error ? err.message : 'An unexpected exception occurred while retrieving the dossier.'
         );
       } finally {
-        setIsLoading(false);
+        if (!getIsCurrent || getIsCurrent()) {
+          setIsLoading(false);
+        }
       }
     },
     []
@@ -178,9 +186,14 @@ export function ClientDossierDrawer({
   );
 
   useEffect(() => {
+    let isCurrent = true;
     if (isOpen && leadId) {
-      loadDossier(leadId);
+      setLead(null);
+      loadDossier(leadId, () => isCurrent);
     }
+    return () => {
+      isCurrent = false;
+    };
   }, [isOpen, leadId, loadDossier]);
 
   // Keyboard accessibility: Escape key dismissal and focus trapping loop (WCAG 2.1 AA)
@@ -224,17 +237,27 @@ export function ClientDossierDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleCopyDealId = (e: React.MouseEvent) => {
+  const handleCopyDealId = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!lead) return;
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard
-        .writeText(lead.lead_id)
-        .then(() => {
-          setCopiedId(true);
-          setTimeout(() => setCopiedId(false), 2000);
-        })
-        .catch(() => {});
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(lead.lead_id);
+      } else if (typeof document !== 'undefined') {
+        const textArea = document.createElement('textarea');
+        textArea.value = lead.lead_id;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    } catch {
+      // Non-blocking clipboard fallback handling
     }
   };
 
@@ -273,7 +296,11 @@ export function ClientDossierDrawer({
             )}
 
             <h2 className={styles.headerCompany}>
-              {lead?.company || lead?.name || 'Commercial Deal Dossier'}
+              {lead?.company
+                ? `${lead.company.replace(/\.+$/, '')}.`
+                : lead?.name
+                ? `${lead.name.replace(/\.+$/, '')}.`
+                : 'Commercial Deal Dossier.'}
             </h2>
 
             {lead && (
@@ -291,8 +318,8 @@ export function ClientDossierDrawer({
                       gap: '0.25rem',
                       marginLeft: '0.35rem',
                       paddingLeft: '0.35rem',
-                      borderLeft: '1px solid rgba(255, 255, 255, 0.15)',
-                      color: '#10b981',
+                      borderLeft: '1px solid var(--admin-border-default, #e2e5ea)',
+                      color: 'var(--admin-status-emerald-text, #065f46)',
                       fontSize: '0.72rem',
                     }}
                     title="Deal Converted: Immutable to non-admin roles"
@@ -313,6 +340,7 @@ export function ClientDossierDrawer({
               <button
                 type="button"
                 onClick={() => {
+                  onClose();
                   if (typeof window !== 'undefined') {
                     window.dispatchEvent(
                       new CustomEvent('open-convert-lead-modal', {
@@ -371,7 +399,7 @@ export function ClientDossierDrawer({
           </div>
         ) : fetchError ? (
           <div className={styles.loadingContainer}>
-            <p style={{ color: '#ff4d4f' }}>{fetchError}</p>
+            <p style={{ color: 'var(--admin-status-rose-text, #991b1b)' }}>{fetchError}</p>
             {leadId && (
               <button
                 type="button"
@@ -469,7 +497,7 @@ export function ClientDossierDrawer({
                     <span className={styles.fieldLabel} style={{ display: 'block', marginBottom: '0.35rem' }}>
                       Executive Deal Notes
                     </span>
-                    <p style={{ fontSize: '0.82rem', color: '#e4e4e7', lineHeight: 1.5, margin: 0 }}>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--admin-text-primary, #1f242f)', lineHeight: 1.5, margin: 0 }}>
                       {lead.notes}
                     </p>
                   </div>

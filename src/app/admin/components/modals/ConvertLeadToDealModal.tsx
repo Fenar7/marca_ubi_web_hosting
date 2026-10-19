@@ -159,22 +159,26 @@ export function ConvertLeadToDealModal({
     setErrorMsg(null);
 
     startTransition(async () => {
-      const res = await convertInboundLeadToDealAction({
-        leadId: lead.id,
-        targetStatusId: targetStatusId || undefined,
-        expectedValue,
-        assignedTo: assignedTo || null,
-        priority,
-        notes: notes.trim() || null,
-      });
+      try {
+        const res = await convertInboundLeadToDealAction({
+          leadId: lead.id,
+          targetStatusId: targetStatusId || undefined,
+          expectedValue,
+          assignedTo: assignedTo || null,
+          priority,
+          notes: notes.trim() || null,
+        });
 
-      if (!res.success) {
-        setErrorMsg(res.error || 'Failed to convert lead to deal.');
-      } else {
-        if (onSuccess) {
-          onSuccess(lead.id);
+        if (!res.success) {
+          setErrorMsg(res.error || 'Failed to convert lead to deal.');
+        } else {
+          if (onSuccess) {
+            onSuccess(lead.id);
+          }
+          onClose();
         }
-        onClose();
+      } catch (err: unknown) {
+        setErrorMsg(err instanceof Error ? err.message : 'An unexpected network error occurred while converting lead.');
       }
     });
   };
@@ -201,7 +205,7 @@ export function ConvertLeadToDealModal({
           <div className={styles.titleArea}>
             <span className={styles.eyebrow}>Speed-to-Lead Triage</span>
             <h2 id="convert-deal-heading" className={styles.modalHeading}>
-              Convert to Pipeline Deal
+              Convert Lead to Deal.
             </h2>
           </div>
           <button

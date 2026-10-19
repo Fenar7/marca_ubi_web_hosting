@@ -139,7 +139,7 @@ export function ConvertedCelebrationModal({
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const colors = ['#ff6100', '#10b981', '#fbbf24', '#ffffff', '#38bdf8'];
+    const colors = ['#eefb87', '#10b981', '#fbbf24', '#ffffff', '#38bdf8'];
     const particles: Particle[] = [];
     const count = 75;
 
@@ -316,11 +316,11 @@ export function ConvertedCelebrationModal({
               </span>
             </div>
             <h2 id="converted-modal-title" className={styles.modalTitle}>
-              Convert Deal to Won Client
+              Convert Deal to Won Client.
             </h2>
             {dealName && (
               <p className={styles.modalSubtitle}>
-                Finalizing agency engagement agreement for <strong style={{ color: '#ffffff' }}>{dealName}</strong>.
+                Finalizing agency engagement agreement for <strong style={{ color: 'var(--admin-text-primary, #1f242f)' }}>{dealName}</strong>.
               </p>
             )}
           </div>
