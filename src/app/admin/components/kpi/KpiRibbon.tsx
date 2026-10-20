@@ -310,6 +310,7 @@ function KpiRibbonContent({
           id="total-leads"
           label="Total Leads"
           value={metrics.totalLeads.toLocaleString()}
+          ariaLabel={`Total Leads: ${metrics.totalLeads.toLocaleString()} inquiries recorded, ${metrics.activeLeads} active in pipeline`}
           subtext={
             <span className={styles.neutralSubtext}>
               {metrics.activeLeads} Active in Pipeline
@@ -329,6 +330,7 @@ function KpiRibbonContent({
           id="potential-value"
           label="Potential Value"
           value={formatKpiCurrency(metrics.potentialValue, currency)}
+          ariaLabel={`Potential Pipeline Value: ${formatKpiCurrency(metrics.potentialValue, currency)}${metrics.stageWeightedValue > 0 ? `, weighted valuation ${formatKpiCurrency(metrics.stageWeightedValue, currency)}` : ''}`}
           secondaryBadge={
             metrics.stageWeightedValue > 0 ? (
               <span
@@ -361,6 +363,7 @@ function KpiRibbonContent({
           id="converted-revenue"
           label="Converted Revenue"
           value={formatKpiCurrency(metrics.convertedRevenue, currency)}
+          ariaLabel={`Converted Revenue: ${formatKpiCurrency(metrics.convertedRevenue, currency)}, ${metrics.convertedLeads} deals won`}
           subtext={
             <span className={styles.positiveTrend}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -388,14 +391,17 @@ function KpiRibbonContent({
           id="conversion-rate"
           label="Conversion Rate"
           value={`${metrics.conversionRate.toFixed(1)}%`}
+          ariaLabel={`Studio Conversion Rate: ${metrics.conversionRate.toFixed(1)}%, studio benchmark 12.0%`}
           secondaryBadge={
             <div
               className={styles.microMeterTrack}
               title={`Conversion Rate: ${metrics.conversionRate.toFixed(1)}% | Studio Benchmark: 12.0%`}
               role="progressbar"
-              aria-valuenow={metrics.conversionRate}
+              aria-label="Studio conversion rate progress against 12% benchmark"
+              aria-valuenow={Math.min(20, Math.max(0, Number(metrics.conversionRate.toFixed(1))))}
               aria-valuemin={0}
               aria-valuemax={20}
+              aria-valuetext={`${metrics.conversionRate.toFixed(1)}%`}
             >
               <div
                 className={styles.microMeterFill}
@@ -411,15 +417,27 @@ function KpiRibbonContent({
           subtext={
             <div className={styles.conversionMetricsRow}>
               <span className={styles.neutralSubtext}>Benchmark 12.0%</span>
-              <span
-                className={
-                  metrics.conversionRate >= 12
-                    ? styles.positiveTrend
-                    : styles.neutralSubtext
-                }
-              >
-                {metrics.conversionRate >= 12 ? '↑ Above Target' : 'Pacing to Target'}
-              </span>
+              {metrics.conversionRate >= 12 ? (
+                <span className={styles.positiveTrend}>
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <line x1="12" y1="19" x2="12" y2="5" />
+                    <polyline points="5 12 12 5 19 12" />
+                  </svg>
+                  <span>Above Target</span>
+                </span>
+              ) : (
+                <span className={styles.neutralSubtext}>Pacing to Target</span>
+              )}
             </div>
           }
           href="/admin/deals?bucket=converted"
@@ -438,6 +456,7 @@ function KpiRibbonContent({
           id="overdue-followups"
           label="Overdue Follow-ups"
           value={metrics.overdueCount}
+          ariaLabel={`Overdue Follow-ups: ${metrics.overdueCount}${metrics.overdueCount > 0 ? '. Immediate Action Required' : '. All follow-ups current'}`}
           subtext={
             metrics.overdueCount > 0 ? (
               <span className={styles.urgentAlert}>

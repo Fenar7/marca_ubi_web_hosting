@@ -85,9 +85,14 @@
   font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 0.6875rem;
   font-weight: 600;
-  height: 38px;
-  min-height: 38px;
-  padding: 0 12px;
+  height: 40px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--admin-radius-pill, 9999px);
   border: none;
   background: transparent;
@@ -95,6 +100,17 @@
   cursor: pointer;
   user-select: none;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    min-height: 44px;
+    height: 100%;
+  }
 
   &:hover:not(.currencyActive) {
     color: var(--admin-text-primary, #1f242f);
@@ -178,12 +194,23 @@
   border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: var(--admin-radius-card, 16px);
   overflow: hidden;
-  min-height: 140px;
+  min-height: 156px;
   background-clip: padding-box;
   box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
 
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  @media (max-width: 1200px) and (min-width: 769px) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+
+    > :nth-child(1),
+    > :nth-child(2),
+    > :nth-child(3) {
+      grid-column: span 2;
+    }
+
+    > :nth-child(4),
+    > :nth-child(5) {
+      grid-column: span 3;
+    }
   }
 
   @media (max-width: 768px) and (min-width: 541px) {
@@ -203,10 +230,9 @@
 .kpiCard {
   background: var(--admin-card-bg, #ffffff);
   padding: 20px 22px;
-  min-height: 140px;
+  min-height: 156px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   position: relative;
   text-decoration: none;
   color: inherit;
@@ -326,7 +352,7 @@
 
 .drilldownArrow {
   color: var(--admin-text-secondary, #525965);
-  opacity: 0.4;
+  opacity: 0.7;
   transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
   display: flex;
   align-items: center;
@@ -403,7 +429,7 @@
 
 .microMeterFill {
   height: 100%;
-  background-color: var(--admin-status-emerald-dot, #10b981);
+  background-color: var(--admin-status-emerald-text, #047857);
   border-radius: 9999px;
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -434,6 +460,7 @@
   gap: 6px;
   flex-wrap: wrap;
   line-height: 1.35;
+  margin-top: auto;
 }
 
 .positiveTrend {
@@ -493,10 +520,9 @@
 .skeletonCard {
   background: var(--admin-card-bg, #ffffff);
   padding: 20px 22px;
-  min-height: 140px;
+  min-height: 156px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   position: relative;
   overflow: hidden;
 
@@ -515,6 +541,35 @@
     );
     animation: shimmer 1.6s infinite ease-in-out;
   }
+}
+
+.skeletonToolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeletonCurrencyToggle {
+  width: 120px;
+  height: 44px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  background: var(--admin-surface-muted, #f0f2f5);
+}
+
+.skeletonRefreshBtn {
+  width: 96px;
+  height: 44px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  background: var(--admin-surface-muted, #f0f2f5);
+}
+
+.skeletonSecondaryBadge {
+  width: 96px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  margin-top: 4px;
+  margin-bottom: 6px;
 }
 
 .skeletonHeader {
@@ -550,6 +605,7 @@
   height: 12px;
   border-radius: 4px;
   background: var(--admin-surface-muted, #f0f2f5);
+  margin-top: auto;
 }
 
 @keyframes shimmer {

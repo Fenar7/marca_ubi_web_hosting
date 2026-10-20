@@ -45,7 +45,9 @@ export function KpiCard({
   ariaLabel,
 }: KpiCardProps): React.ReactElement {
   const cardTitle = titleTooltip || `${label}: ${value}`;
-  const accessibleLabel = ariaLabel || `${label}, value: ${value}`;
+  const accessibleLabel =
+    ariaLabel ||
+    `${label}: ${value}${isAlert ? '. Action Required' : ''}`;
 
   return (
     <Link
