@@ -775,6 +775,7 @@ function LeadsWorkspaceContent({
     <>
       {/* High-Performance Multi-Filter Action Bar */}
       <FilterActionBar
+        scope="leads"
         counts={counts}
         selectedBucket={selectedBucket}
         searchQuery={searchQuery}

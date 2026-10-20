@@ -42,7 +42,8 @@ type SortField =
   | 'status_name'
   | 'expected_value'
   | 'assigned_to_name'
-  | 'priority';
+  | 'priority'
+  | 'next_follow_up';
 
 function formatCurrency(amount: number): string {
   if (!amount || amount <= 0) return '₹0';
@@ -96,6 +97,12 @@ export function LeadsDataGrid({
         return sortAscending ? aW - bW : bW - aW;
       }
 
+      if (sortField === 'next_follow_up') {
+        const aDate = a.next_follow_up ? new Date(a.next_follow_up).getTime() : 0;
+        const bDate = b.next_follow_up ? new Date(b.next_follow_up).getTime() : 0;
+        return sortAscending ? aDate - bDate : bDate - aDate;
+      }
+
       const aStr = String(aVal || '').toLowerCase();
       const bStr = String(bVal || '').toLowerCase();
       if (aStr < bStr) return sortAscending ? -1 : 1;
@@ -121,7 +128,7 @@ export function LeadsDataGrid({
     }
   };
 
-  const handleCopyDealId = (leadIdStr: string, e: React.MouseEvent): void => {
+  const handleCopyLeadId = (leadIdStr: string, e: React.MouseEvent): void => {
     e.stopPropagation();
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(leadIdStr);
@@ -150,7 +157,7 @@ export function LeadsDataGrid({
         aria-label="Commercial Pipeline Data Grid"
         tabIndex={0}
       >
-        {/* Sticky Table Header (7 Columns) with Sort Controls */}
+        {/* Sticky Table Header (9 Dedicated Columns) with Sort Controls */}
         <div className={styles.tableHeader} role="row">
           <button
             type="button"
@@ -158,9 +165,9 @@ export function LeadsDataGrid({
             aria-sort={sortField === 'lead_id' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
             className={styles.sortableHeaderCol}
             onClick={() => handleToggleSort('lead_id')}
-            aria-label={`Sort by Deal ID, currently ${sortField === 'lead_id' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+            aria-label={`Sort by Lead ID, currently ${sortField === 'lead_id' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
           >
-            <span>Deal ID</span>
+            <span>Lead ID</span>
             {sortField === 'lead_id' && (
               <span className={styles.sortArrow} aria-hidden="true">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -268,7 +275,7 @@ export function LeadsDataGrid({
             onClick={() => handleToggleSort('priority')}
             aria-label={`Sort by Priority Tier, currently ${sortField === 'priority' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
           >
-            <span>Priority & Touchpoint</span>
+            <span>Priority</span>
             {sortField === 'priority' && (
               <span className={styles.sortArrow} aria-hidden="true">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -277,6 +284,28 @@ export function LeadsDataGrid({
               </span>
             )}
           </button>
+
+          <button
+            type="button"
+            role="columnheader"
+            aria-sort={sortField === 'next_follow_up' ? (sortAscending ? 'ascending' : 'descending') : 'none'}
+            className={styles.sortableHeaderCol}
+            onClick={() => handleToggleSort('next_follow_up')}
+            aria-label={`Sort by Next SLA Touchpoint, currently ${sortField === 'next_follow_up' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
+          >
+            <span>Next SLA</span>
+            {sortField === 'next_follow_up' && (
+              <span className={styles.sortArrow} aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </span>
+            )}
+          </button>
+
+          <div className={styles.headerColActions} role="columnheader">
+            <span>Actions</span>
+          </div>
         </div>
 
         {/* Dynamic Virtualized Rows Viewport */}
@@ -329,22 +358,22 @@ export function LeadsDataGrid({
                     handleRowClick(lead.id);
                   }
                 }}
-                aria-label={`Deal ${lead.lead_id}: ${lead.name}`}
+                aria-label={`Lead ${lead.lead_id}: ${lead.name}`}
               >
-                {/* Col 1: Deal ID Monospace Token */}
+                {/* Col 1: Lead ID Monospace Token */}
                 <div>
                   <button
                     type="button"
-                    onClick={(e) => handleCopyDealId(lead.lead_id, e)}
+                    onClick={(e) => handleCopyLeadId(lead.lead_id, e)}
                     onKeyDown={(e) => {
                       e.stopPropagation();
                       if (e.key === 'Enter' || e.key === ' ') {
-                        handleCopyDealId(lead.lead_id, e as unknown as React.MouseEvent);
+                        handleCopyLeadId(lead.lead_id, e as unknown as React.MouseEvent);
                       }
                     }}
                     className={styles.leadIdToken}
-                    title="Click to copy Deal ID"
-                    aria-label={`Copy Deal ID ${lead.lead_id}`}
+                    title="Click to copy Lead ID"
+                    aria-label={`Copy Lead ID ${lead.lead_id}`}
                   >
                     {isCopied ? (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -403,41 +432,21 @@ export function LeadsDataGrid({
                   </div>
                 </div>
 
-                {/* Col 7: Inline Priority Selector & Next Touchpoint */}
-                <div className={styles.priorityTouchpointCol}>
+                {/* Col 7: Inline Priority Selector */}
+                <div className={styles.priorityCol}>
                   <InlinePrioritySelect
                     leadId={lead.id}
                     currentPriority={lead.priority}
                     onPriorityChange={onPriorityChange}
                     disabled={userRole === 'viewer'}
                   />
-                  <div className={styles.touchpointGroup}>
-                    {lead.bucket === 'open' && userRole !== 'viewer' && (
-                      <button
-                        type="button"
-                        className={styles.rowConvertBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (typeof window !== 'undefined') {
-                            window.dispatchEvent(
-                              new CustomEvent('open-convert-lead-modal', {
-                                detail: { leadId: lead.id },
-                              })
-                            );
-                          }
-                        }}
-                        title="1-Click Convert Inbound Lead to Pipeline Deal"
-                        aria-label={`Convert ${lead.lead_id} to pipeline deal`}
-                      >
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                        </svg>
-                        <span>Convert</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className={styles.touchpointDate}
+                </div>
+
+                {/* Col 8: Next SLA Touchpoint */}
+                <div className={styles.slaCol}>
+                  <button
+                    type="button"
+                    className={styles.touchpointDate}
                       disabled={userRole === 'viewer'}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -473,9 +482,51 @@ export function LeadsDataGrid({
                       bucket={lead.bucket}
                       variant="short"
                     />
+                </div>
 
-                    {/* Quick Hover Action Strip */}
-                    <div className={styles.rowQuickActions} onClick={(e) => e.stopPropagation()}>
+                {/* Col 9: Action Controls Strip */}
+                <div className={styles.actionsCol} onClick={(e) => e.stopPropagation()}>
+                  {lead.bucket === 'open' && userRole !== 'viewer' ? (
+                    <button
+                      type="button"
+                      className={styles.rowConvertBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (typeof window !== 'undefined') {
+                          window.dispatchEvent(
+                            new CustomEvent('open-convert-lead-modal', {
+                              detail: { leadId: lead.id },
+                            })
+                          );
+                        }
+                      }}
+                      title="1-Click Convert Inbound Lead to Pipeline Deal"
+                      aria-label={`Convert ${lead.lead_id} to pipeline deal`}
+                    >
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                      <span>Convert</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.rowInspectBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRowClick(lead.id);
+                      }}
+                      title="Inspect Client Dossier"
+                      aria-label={`Inspect dossier for ${lead.lead_id}`}
+                    >
+                      <span>View</span>
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
+                  )}
+
+                  <div className={styles.rowQuickActions}>
                       {lead.phone && (
                         <a
                           href={`tel:${lead.phone}`}
@@ -507,7 +558,6 @@ export function LeadsDataGrid({
                     </div>
                   </div>
                 </div>
-              </div>
             );
           })}
         </div>

@@ -9,13 +9,19 @@
   flex-direction: column;
 }
 
+// Dedicated 9-Column Collision-Free Grid Metrics
+// 1: Lead ID | 2: Client & Org | 3: Service Scope | 4: Funnel Stage | 5: Expected Value | 6: Representative | 7: Priority | 8: Next SLA | 9: Actions
+$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 110px;
+$grid-min-width: 1095px;
+
 // Desktop & Tablet Virtualized View
 .virtualScrollContainer {
   width: 100%;
   background: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: var(--admin-radius-card, 12px);
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
   box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   max-height: calc(100vh - 280px);
   min-height: 400px;
@@ -39,7 +45,8 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 14% 22% 14% 14% 12% 14% 10%;
+  grid-template-columns: $grid-columns;
+  min-width: $grid-min-width;
   align-items: center;
   gap: 0.5rem;
   background: var(--admin-surface-muted, #f0f2f5);
@@ -49,6 +56,7 @@
   top: 0;
   z-index: 20;
   box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  box-sizing: border-box;
 }
 
 .thCell {
@@ -104,9 +112,24 @@
   transition: color 0.15s ease;
 }
 
+.headerColActions {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  user-select: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
 .virtualViewport {
   position: relative;
   width: 100%;
+  min-width: $grid-min-width;
   z-index: 1;
 }
 
@@ -115,9 +138,10 @@
   top: 0;
   left: 0;
   width: 100%;
+  min-width: $grid-min-width;
   height: 72px;
   display: grid;
-  grid-template-columns: 14% 22% 14% 14% 12% 14% 10%;
+  grid-template-columns: $grid-columns;
   align-items: center;
   gap: 0.5rem;
   padding: 0 1.25rem;
@@ -242,18 +266,72 @@
   flex-shrink: 0;
 }
 
-.priorityTouchpointCol {
+.priorityCol {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.slaCol {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   align-items: flex-start;
+  min-width: 0;
 }
 
-.touchpointGroup {
+.actionsCol {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.rowInspectBtn {
+  position: relative;
+  min-height: 28px;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--admin-radius-pill, 9999px);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-surface-card, #ffffff);
+  color: var(--admin-text-secondary, #525965);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.15s ease;
+  user-select: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
+    background: var(--admin-surface-hover, #f8fafc);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
 }
 
 .touchpointDate {

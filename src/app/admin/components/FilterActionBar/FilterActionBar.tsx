@@ -58,6 +58,8 @@ export interface FilterActionBarProps {
   onPriorityChange: (priority: string | null) => void;
   onStageClear: () => void;
   onClearAll: () => void;
+  /** Optional workspace context to dynamically label tabs ('leads' | 'deals') */
+  scope?: 'leads' | 'deals';
   /** Optional custom class name */
   className?: string;
 }
@@ -100,8 +102,17 @@ export function FilterActionBar({
   onPriorityChange,
   onStageClear,
   onClearAll,
+  scope = 'deals',
   className,
 }: FilterActionBarProps): React.ReactElement {
+  const bucketTabs: readonly BucketTabConfig[] = [
+    { id: 'all', label: scope === 'leads' ? 'All Inquiries' : 'All Deals' },
+    { id: 'open', label: 'Open' },
+    { id: 'potential', label: 'Potential' },
+    { id: 'converted', label: 'Won' },
+    { id: 'lost', label: 'Lost' },
+    { id: 'overdue', label: 'Overdue Today', isUrgent: true },
+  ];
   const [localSearch, setLocalSearch] = useState<string>(searchQuery);
   const [activeDropdown, setActiveDropdown] = useState<'source' | 'assignee' | 'priority' | null>(null);
   const [, startTransition] = useTransition();
@@ -199,7 +210,7 @@ export function FilterActionBar({
       <div className={styles.controlsRow}>
         {/* Pipeline Bucket Segmented Navigation Tabs */}
         <div className={styles.bucketTabs} role="tablist" aria-label="Pipeline Stages">
-          {BUCKET_TABS.map((tab) => {
+          {bucketTabs.map((tab) => {
             const count = counts[tab.id] ?? 0;
             const isSelected = selectedBucket === tab.id;
             const isOverdueTab = tab.id === 'overdue';
@@ -507,7 +518,7 @@ export function FilterActionBar({
 
           {selectedBucket !== 'all' && (
             <span className={styles.filterChip}>
-              Bucket: {BUCKET_TABS.find((t) => t.id === selectedBucket)?.label || selectedBucket}
+              Bucket: {bucketTabs.find((t) => t.id === selectedBucket)?.label || selectedBucket}
               <button
                 type="button"
                 onClick={() => onBucketChange('all')}
