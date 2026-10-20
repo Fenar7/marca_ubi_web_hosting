@@ -76,6 +76,8 @@ export function BatchReassignModal({
   useEffect(() => {
     if (isOpen) {
       setSelectedLeadIds(candidateLeads.map((l) => l.id));
+      setDestinationUserId('');
+      setReassignReason('Portfolio rebalancing due to overdue touchpoints');
       setErrorMessage(null);
     }
   }, [isOpen, candidateLeads.length, preselectedSourceRepId]);
@@ -106,7 +108,7 @@ export function BatchReassignModal({
       if (e.key === 'Tab') {
         if (!containerRef.current) return;
         const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         const first = focusableElements[0];
         const last = focusableElements[focusableElements.length - 1];
@@ -131,7 +133,7 @@ export function BatchReassignModal({
     const focusTimer = setTimeout(() => {
       if (containerRef.current) {
         const firstFocusable = containerRef.current.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         firstFocusable?.focus();
       }

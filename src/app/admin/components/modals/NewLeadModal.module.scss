@@ -4,7 +4,7 @@
  *              Centered New Prospective Commercial Lead Creation Modal (680px).
  *              Enforces pure white card surfaces, 1px specular borders (#e2e5ea),
  *              high-contrast primary ink (#1f242f), secondary slate (#525965),
- *              44px minimum touch targets, and signature Accordion Lemon Yellow CTA pill buttons.
+ *              44px minimum touch targets, Obsidian #0f172a primary buttons, and Marca Ubi Modern Luxury tokens.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -72,6 +72,11 @@
 
   &.overlayClosing {
     animation: backdropFadeOut 0.18s ease-in forwards;
+  }
+
+  @media (max-width: 640px) {
+    padding: 0;
+    align-items: flex-end;
   }
 }
 

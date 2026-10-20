@@ -197,14 +197,18 @@ export function AdminWorkspaceShell({
         e.preventDefault();
         toggleSidebar();
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'l') {
+        const target = e.target as HTMLElement | null;
+        if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
         e.preventDefault();
         if (currentUser.role !== 'viewer') {
-          setIsNewLeadModalOpen((prev) => !prev);
+          setIsNewLeadModalOpen(true);
         }
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'm') {
+        const target = e.target as HTMLElement | null;
+        if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
         e.preventDefault();
         if (currentUser.role === 'admin') {
-          setIsAddMemberModalOpen((prev) => !prev);
+          setIsAddMemberModalOpen(true);
         }
       }
     };

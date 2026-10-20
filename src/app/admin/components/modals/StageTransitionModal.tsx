@@ -59,6 +59,8 @@ export function StageTransitionModal({
   currentExpectedValue = 0,
   onSuccess,
 }: StageTransitionModalProps): React.ReactElement | null {
+  if (!isOpen) return null;
+
   // If target stage is Lost, delegate to LostReasonModal
   if (targetStatus.bucket === 'lost' || targetStatus.name.toLowerCase() === 'lost') {
     return (
@@ -92,6 +94,7 @@ export function StageTransitionModal({
   if (targetStatus.name.toLowerCase() === 'on hold') {
     return (
       <OnHoldModal
+        isOpen={isOpen}
         leadId={leadId}
         leadName={dealName}
         company={dealIdCode}
@@ -187,7 +190,7 @@ function NegotiationModalInner({
 
       if (e.key === 'Tab' && containerRef.current) {
         const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         if (focusableElements.length === 0) return;
 

@@ -4,7 +4,7 @@
  *              for the Centered Batch Reassign Overdue Leads Modal (680px).
  *              Enforces pure white card surfaces, hairline specular borders (#e2e5ea),
  *              high-contrast primary ink (#1f242f), secondary slate (#525965),
- *              44px touch targets, and signature Accordion Lemon Yellow CTA pill buttons.
+ *              44px touch targets, Obsidian #0f172a primary buttons, and Marca Ubi Modern Luxury tokens.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -233,14 +233,28 @@
   display: grid;
   grid-template-columns: 36px 1fr 100px 90px;
   align-items: center;
+  min-height: 44px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
   cursor: pointer;
   transition: background-color 0.15s ease;
 
   @media (max-width: 600px) {
-    grid-template-columns: 30px 1fr;
+    grid-template-columns: 32px 1fr;
     gap: 8px;
+
+    .leadTrailing {
+      grid-column: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .dealValue {
+      text-align: left;
+      padding-right: 0;
+    }
   }
 
   &:last-child {
@@ -459,8 +473,8 @@
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(31, 36, 47, 0.3);
-  border-top-color: var(--admin-text-primary, #1f242f);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
