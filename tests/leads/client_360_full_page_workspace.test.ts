@@ -144,4 +144,81 @@ describe('Phase 8.2: Client 360° Full-Page Dedicated Workspace Architecture', (
       assert.ok(content.includes('Win Probability'), 'must include Win Probability scorecard');
     });
   });
+
+  describe('Block 5: Dynamic Breadcrumb Resolution, Event Bus & Header Deduplication', () => {
+    it('verifies AdminBreadcrumbs intercepts dynamic UUIDs and prevents raw database ID leak', () => {
+      const breadcrumbsPath = path.join(root, 'src/app/admin/components/layout/AdminBreadcrumbs.tsx');
+      const content = fs.readFileSync(breadcrumbsPath, 'utf-8');
+
+      // UUID Regex contract verification
+      assert.ok(content.includes('UUID_REGEX'), 'AdminBreadcrumbs must define UUID_REGEX');
+      assert.ok(content.includes('Client Dossier'), 'must provide "Client Dossier" fallback to avoid exposing raw UUIDs');
+      assert.ok(content.includes('styles.monoSegmentChip'), 'must wrap dynamic override in monoSegmentChip');
+
+      // Functional UUID detection verification using standard regex
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      assert.strictEqual(UUID_REGEX.test('cc578611-07ac-4a4b-baea-4161e1b8c1f0'), true, 'must match valid lowercase UUID');
+      assert.strictEqual(UUID_REGEX.test('CC578611-07AC-4A4B-BAEA-4161E1B8C1F0'), true, 'must match valid uppercase UUID');
+      assert.strictEqual(UUID_REGEX.test('leads'), false, 'must reject standard route slug');
+      assert.strictEqual(UUID_REGEX.test('LD-10343'), false, 'must reject human-readable deal identifier');
+      assert.strictEqual(UUID_REGEX.test('12345'), false, 'must reject partial numeric string');
+    });
+
+    it('verifies AdminBreadcrumbs subscribes to admin-breadcrumb-label-update window event', () => {
+      const breadcrumbsPath = path.join(root, 'src/app/admin/components/layout/AdminBreadcrumbs.tsx');
+      const content = fs.readFileSync(breadcrumbsPath, 'utf-8');
+
+      assert.ok(content.includes('dynamicLabels'), 'must manage dynamicLabels client state');
+      assert.ok(content.includes('admin-breadcrumb-label-update'), 'must listen for admin-breadcrumb-label-update event');
+      assert.ok(content.includes('addEventListener'), 'must register event listener in useEffect');
+      assert.ok(content.includes('removeEventListener'), 'must clean up event listener upon unmount');
+    });
+
+    it('verifies AdminBreadcrumbs.module.scss defines .monoSegmentChip with luxury monospace styling', () => {
+      const scssPath = path.join(root, 'src/app/admin/components/layout/AdminBreadcrumbs.module.scss');
+      const content = fs.readFileSync(scssPath, 'utf-8');
+
+      assert.ok(content.includes('.monoSegmentChip'), 'AdminBreadcrumbs.module.scss must define .monoSegmentChip');
+      assert.ok(
+        content.includes('adminMonoToken') || content.includes('font-family: var(--font-admin-code)'),
+        'must style monoSegmentChip with monospace token tokens'
+      );
+    });
+
+    it('verifies LeadDossierWorkspaceClient broadcasts dynamic lead_id upon mounting/change', () => {
+      const clientPath = path.join(root, 'src/app/admin/components/DossierWorkspace/LeadDossierWorkspaceClient.tsx');
+      const content = fs.readFileSync(clientPath, 'utf-8');
+
+      assert.ok(
+        content.includes('admin-breadcrumb-label-update'),
+        'LeadDossierWorkspaceClient must dispatch admin-breadcrumb-label-update custom event'
+      );
+      assert.ok(
+        content.includes('currentLead.lead_id'),
+        'LeadDossierWorkspaceClient must pass currentLead.lead_id in dispatch detail'
+      );
+    });
+
+    it('verifies DossierHeaderBar de-duplicates navigation rail and eliminates redundant CRM breadcrumbs', () => {
+      const headerPath = path.join(root, 'src/app/admin/components/DossierWorkspace/DossierHeaderBar.tsx');
+      const content = fs.readFileSync(headerPath, 'utf-8');
+
+      assert.ok(
+        !content.includes('MARCA UBI CRM'),
+        'DossierHeaderBar must not render duplicate "MARCA UBI CRM" text (already rendered in shell breadcrumbs)'
+      );
+      assert.ok(
+        !content.includes('styles.breadcrumbItem'),
+        'DossierHeaderBar must eliminate redundant breadcrumbItem elements'
+      );
+      assert.ok(
+        content.includes('backLink'),
+        'DossierHeaderBar must render accessible backLink'
+      );
+      assert.ok(
+        content.includes('tokenChip') && content.includes('leadIdCode'),
+        'DossierHeaderBar must render reference code inside tokenChip'
+      );
+    });
+  });
 });

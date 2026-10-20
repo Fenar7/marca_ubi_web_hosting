@@ -3,10 +3,10 @@
 /**
  * @file IngestionBriefMatrix.tsx
  * @description Expansive questionnaire matrix displaying parsed incoming client project briefs.
- *              Surfaces structured discovery parameters with:
- *              - Domain-mapped human-friendly labels.
+ *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
+ *              - Domain-mapped human-friendly labels with refined executive slate styling.
  *              - Zero text truncation (absolute preservation of technical coordinates and client prose).
- *              - Notion-callout aesthetics for long-form project narratives and creative inspirations.
+ *              - Light Notion-callout aesthetics with high-contrast charcoal ink and left border accent.
  *              - Interactive external link chips for uploaded references or case studies.
  * @module components/DossierWorkspace/IngestionBriefMatrix
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -46,7 +46,7 @@ function isHttpUrl(value: string): boolean {
  */
 function renderBriefNode(value: unknown): React.ReactNode {
   if (value === null || value === undefined || value === '') {
-    return <span style={{ color: '#6b7280', fontStyle: 'italic' }}>Not specified</span>;
+    return <span className={styles.briefEmptyText}>Not specified</span>;
   }
 
   // Handle single string URL
@@ -72,7 +72,7 @@ function renderBriefNode(value: unknown): React.ReactNode {
   // Handle array of strings or links
   if (Array.isArray(value)) {
     if (value.length === 0) {
-      return <span style={{ color: '#6b7280', fontStyle: 'italic' }}>None provided</span>;
+      return <span className={styles.briefEmptyText}>None provided</span>;
     }
 
     return (
@@ -118,19 +118,7 @@ function renderBriefNode(value: unknown): React.ReactNode {
   // Handle nested object
   if (typeof value === 'object') {
     return (
-      <pre
-        style={{
-          margin: 0,
-          padding: '8px 12px',
-          background: 'rgba(0,0,0,0.4)',
-          borderRadius: 8,
-          fontSize: 12,
-          fontFamily: 'var(--font-admin-code, monospace)',
-          color: '#e2e8f0',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-all',
-        }}
-      >
+      <pre className={styles.briefJsonBlock}>
         {JSON.stringify(value, null, 2)}
       </pre>
     );

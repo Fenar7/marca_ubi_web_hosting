@@ -391,8 +391,7 @@ export function RapidTouchpointComposer({
                     key={tag}
                     type="button"
                     onClick={() => handleAppendTag(tag)}
-                    className={styles.badgePill}
-                    style={{ cursor: 'pointer', background: '#1c1c22' }}
+                    className={styles.tagPillBtn}
                   >
                     {tag}
                   </button>

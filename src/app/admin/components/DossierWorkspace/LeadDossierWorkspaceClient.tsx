@@ -5,7 +5,8 @@
  * @description Master interactive Client 360° Lead/Deal Dossier Workspace client component.
  *              Integrates:
  *              - 7:5 asymmetric operational grid (desktop) collapsing to a fluid stack (< 768px).
- *              - Deep obsidian surface palette (#050505 bg, #0e0e11 surface, #141418 elevated, #ff6100 accents).
+ *              - Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture.
+ *              - Anti-glare light canvas (var(--admin-canvas-bg)) and crisp pure white cards.
  *              - Real-time commercial KPI ribbon (Expected Valuation, Priority SLA, Win Probability).
  *              - Zero-truncation contact coordinates with RFC 3966 tel: and WhatsApp wa.me deep links.
  *              - Notion-callout aesthetic for Original Ingestion Briefs and Executive Deal Notes.
@@ -17,7 +18,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useTransition, useCallback, useMemo } from 'react';
 import type {
   LeadWithRelations,
   LeadActivityWithActor,
@@ -83,7 +84,7 @@ function normalizeToDossier(
       id: raw.status_id,
       name: 'Inbound Inquiry',
       bucket: 'open' as FunnelBucket,
-      color_code: '#ff6100',
+      color_code: 'var(--admin-status-amber-dot, #f59e0b)',
       sort_order: 1,
       is_active: true,
       created_at: raw.created_at,
@@ -195,6 +196,20 @@ export function LeadDossierWorkspaceClient({
   const [isConvertToDealOpen, setIsConvertToDealOpen] = useState<boolean>(false);
   const [isGuardedTransitionOpen, setIsGuardedTransitionOpen] = useState<boolean>(false);
   const [guardedTargetStatus, setGuardedTargetStatus] = useState<FunnelStatus | null>(null);
+
+  // Synchronize dynamic lead reference code (e.g. 'LD-10343') with top shell breadcrumbs
+  useEffect(() => {
+    if (typeof window !== 'undefined' && currentLead.lead_id) {
+      window.dispatchEvent(
+        new CustomEvent('admin-breadcrumb-label-update', {
+          detail: {
+            path: window.location.pathname,
+            label: currentLead.lead_id,
+          },
+        })
+      );
+    }
+  }, [currentLead.lead_id]);
 
   // 3. Computed Coordinates & Telephony Links
   const telUri = useMemo(() => sanitizeTelUri(currentLead.phone), [currentLead.phone]);
@@ -349,7 +364,7 @@ export function LeadDossierWorkspaceClient({
       converted_at: new Date().toISOString(),
       status_id: convertedStatus?.id || prev.status_id,
       status_name: convertedStatus?.name || 'Deal Converted',
-      status_color: convertedStatus?.color_code || '#22c55e',
+      status_color: convertedStatus?.color_code || 'var(--admin-status-emerald-dot, #10b981)',
     }));
     setIsConvertToDealOpen(false);
   }, [funnelStatuses]);
@@ -481,7 +496,7 @@ export function LeadDossierWorkspaceClient({
                     </svg>
                   </a>
                 ) : (
-                  <span className={styles.contactValueUntruncated} style={{ color: '#6b7280' }}>
+                  <span className={styles.contactEmptyValue}>
                     Not Provided
                   </span>
                 )}
@@ -522,7 +537,7 @@ export function LeadDossierWorkspaceClient({
                   )}
 
                   {!telUri && !whatsAppUri && (
-                    <span className={styles.contactValueUntruncated} style={{ color: '#6b7280' }}>
+                    <span className={styles.contactEmptyValue}>
                       No phone coordinate provided
                     </span>
                   )}
@@ -545,7 +560,7 @@ export function LeadDossierWorkspaceClient({
                     <span className={styles.contactValueUntruncated}>{currentLead.email}</span>
                   </a>
                 ) : (
-                  <span className={styles.contactValueUntruncated} style={{ color: '#6b7280' }}>
+                  <span className={styles.contactEmptyValue}>
                     No email address registered
                   </span>
                 )}

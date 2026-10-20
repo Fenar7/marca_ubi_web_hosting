@@ -1,8 +1,10 @@
 /**
  * @file not-found.module.scss
- * @description Bespoke styling for 404 Deal Dossier Not Found surface with Dark Luxury tokens.
+ * @description Bespoke styling for 404 Deal Dossier Not Found surface with Accordion light tokens.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
+
+@use '../../../styles/tokens.scss' as *;
 
 .notFoundRoot {
   width: 100%;
@@ -12,50 +14,50 @@
   justify-content: center;
   padding: 2rem;
   box-sizing: border-box;
-  background-color: #050505;
+  background-color: var(--admin-canvas-bg, #f7f8fa);
 }
 
 .notFoundCard {
   max-width: 520px;
   width: 100%;
-  background: #0e0e11;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
   padding: 2.5rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 36px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
 }
 
 .statusPill {
   display: inline-block;
   padding: 0.25rem 0.65rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
-  font-family: "SF Mono", "Fira Code", monospace;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-code, monospace);
   font-size: 0.76rem;
   font-weight: 600;
-  color: #9ca3af;
+  color: var(--admin-text-primary, #1f242f);
   margin-bottom: 1.25rem;
 }
 
 .title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-admin-primary, sans-serif);
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   margin: 0 0 0.75rem;
   letter-spacing: -0.02em;
 }
 
 .description {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-admin-primary, sans-serif);
   font-size: 0.92rem;
   line-height: 1.55;
-  color: #8e95a0;
+  color: var(--admin-text-secondary, #525965);
   margin: 0 0 2rem;
 }
 
@@ -68,45 +70,14 @@
 }
 
 .primaryBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem 1.25rem;
-  background: linear-gradient(135deg, #ff6100 0%, #e05500 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  @include accordionPillPrimary;
   text-decoration: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 12px rgba(255, 97, 0, 0.22);
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: linear-gradient(135deg, #ff741a 0%, #eb5b00 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 16px rgba(255, 97, 0, 0.32);
-    transform: translateY(-1px);
-  }
 }
 
 .secondaryBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem 1.25rem;
-  background: rgba(255, 255, 255, 0.04);
-  color: #f4f4f5;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  @include accordionPillSecondary;
   text-decoration: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-  }
+  font-size: 0.78rem;
+  letter-spacing: normal;
+  text-transform: none;
 }

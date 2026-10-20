@@ -1,42 +1,40 @@
 /**
  * @file LeadDossierWorkspace.module.scss
- * @description Master luxury SCSS module for Client 360° Lead and Deal Dossier Workspace.
- *              Enforces the Marca Ubi Dark Luxury Design Tokens (Rule R-29, DESIGN.md):
- *              - Deep obsidian canvas foundation (#050505)
- *              - Low-reflectance card surfaces (#0e0e11) and elevated popovers (#141418)
+ * @description Master SCSS module for Client 360° Lead and Deal Dossier Workspace.
+ *              Enforces the Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
+ *              - Anti-glare light canvas foundation (var(--admin-canvas-bg, #f7f8fa))
+ *              - Crisp pure white card surfaces (var(--admin-card-bg, #ffffff)) with 1px hairline border
  *              - 7:5 asymmetric operational grid (desktop) collapsing to a fluid stack (< 768px)
- *              - Specular top highlights: inset 0 1px 0 rgba(255, 255, 255, 0.1)
- *              - Brand accent: Marca Orange (#ff6100)
+ *              - Signature Accordion Lemon Pill primary action (#eefb87) with high-contrast charcoal border
  *              - Zero text truncation on contact coordinates (emails, phones, domains)
  *              - Single-line duration buttons with grid-template-columns: repeat(5, 1fr)
- *              - Notion-callout aesthetic for Original Ingestion Briefs and Executive Deal Notes
+ *              - Light Notion-callout aesthetic for Original Ingestion Briefs and Executive Deal Notes
  *              - Sticky rapid touchpoint composer in the 5fr operational column
- *              - Sticky bottom action dock on mobile (< 768px) with 44px tap targets
+ *              - Minimalist Stat Pods with 44px circular tinted icon chips (Emerald, Amber, Slate)
+ *              - Frosted light glass bottom action dock on mobile (< 768px) with 44px tap targets
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-// Design Tokens & Surface Physics
-$canvas-bg: #050505;
-$surface-card: #0e0e11;
-$surface-elevated: #141418;
-$surface-hover: #1c1c22;
-$surface-callout: rgba(255, 255, 255, 0.03);
+@use '../../styles/tokens.scss' as *;
 
-$border-hairline: 1px solid rgba(255, 255, 255, 0.08);
-$border-specular: 1px solid rgba(255, 255, 255, 0.12);
-$border-accent: 1px solid rgba(255, 97, 0, 0.35);
+// Surface & Typography Aliases mapped from CRM Design Tokens
+$canvas-bg: var(--admin-canvas-bg, #f7f8fa);
+$surface-card: var(--admin-card-bg, #ffffff);
+$surface-elevated: var(--admin-surface-muted, #f0f2f5);
+$surface-hover: var(--admin-surface-hover, #f4f6f9);
+$surface-callout: var(--admin-surface-muted, #f8fafc);
 
-$brand-orange: #ff6100;
-$brand-orange-hover: #e05500;
-$brand-orange-glow: rgba(255, 97, 0, 0.22);
-$brand-gradient: linear-gradient(135deg, #ff6100 0%, #e05500 100%);
+$border-hairline: 1px solid var(--admin-border-default, #e2e5ea);
+$border-subtle: 1px solid var(--admin-border-subtle, #eef0f3);
+$border-strong: 1px solid var(--admin-border-strong, #1f242f);
+$brand-accent: var(--admin-accent-brand, #ff6100);
 
-$text-primary: #ffffff;
-$text-secondary: #9ca3af;
-$text-muted: #8e95a0;
+$text-primary: var(--admin-text-primary, #1f242f);
+$text-secondary: var(--admin-text-secondary, #525965);
+$text-muted: var(--admin-text-muted, #6b7280);
 
-$font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-$font-mono: "SF Mono", "Fira Code", Menlo, Monaco, Consolas, monospace;
+$font-sans: var(--font-admin-primary, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+$font-mono: var(--font-admin-code, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
 $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 // 1. Workspace Outer Envelopes
@@ -68,7 +66,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   gap: 16px;
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: $border-hairline;
+  border-bottom: $border-subtle;
 }
 
 .headerTopRow {
@@ -83,43 +81,31 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 600;
-  color: $text-muted;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $text-secondary;
 }
 
 .backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: $surface-card;
-  border: $border-hairline;
-  color: $text-secondary;
-  font-size: 12px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.15s ease;
+  @include accordionPillGhost;
+  height: 36px;
   min-height: 36px;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: normal;
+  text-transform: none;
 
-  &:hover {
-    color: $text-primary;
-    background: $surface-elevated;
-    border-color: rgba(255, 255, 255, 0.18);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $brand-orange;
-    outline-offset: 2px;
+  svg {
+    width: 14px;
+    height: 14px;
+    color: currentColor;
+    flex-shrink: 0;
   }
 }
 
 .breadcrumbSeparator {
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--admin-border-default, #e2e5ea);
   user-select: none;
 }
 
@@ -128,22 +114,17 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tokenChip {
+  @include adminMonoToken;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  background: $surface-elevated;
-  border: $border-hairline;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 10px;
   border-radius: 6px;
-  font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: $text-primary;
   cursor: pointer;
-  transition: all 0.15s ease;
   position: relative;
-  min-height: 28px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 
   svg {
     width: 13px;
@@ -153,8 +134,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:hover {
-    background: $surface-hover;
-    border-color: rgba(255, 255, 255, 0.22);
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
 
     svg {
       color: $text-primary;
@@ -166,7 +147,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:focus-visible {
-    outline: 2px solid $brand-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -176,8 +157,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   top: -26px;
   left: 50%;
   transform: translateX(-50%);
-  background: $brand-orange;
-  color: #000000;
+  background: var(--admin-border-strong, #1f242f);
+  color: #ffffff;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -234,18 +215,18 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 44px;
   padding: 0 16px;
   background: $surface-card;
-  border: $border-specular;
-  border-radius: 9999px;
+  border: $border-hairline;
+  border-radius: var(--admin-radius-pill, 9999px);
   color: $text-primary;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s $ease-spring;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.15s $ease-spring;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
 
   &:hover {
-    background: $surface-elevated;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: $surface-hover;
+    border-color: var(--admin-border-strong, #1f242f);
     transform: translateY(-1px);
   }
 
@@ -254,7 +235,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:focus-visible {
-    outline: 2px solid $brand-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -283,11 +264,11 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   left: 0;
   z-index: 100;
   min-width: 220px;
-  background: $surface-elevated;
-  border: $border-specular;
+  background: $surface-card;
+  border: $border-hairline;
   border-radius: 12px;
   padding: 6px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 32px rgba(31, 36, 47, 0.12);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -310,82 +291,33 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
+    background: $surface-hover;
     color: $text-primary;
   }
 
   &.activeOption {
     color: $text-primary;
-    background: rgba(255, 97, 0, 0.12);
+    background: $surface-elevated;
     font-weight: 600;
   }
 
   &:focus-visible {
-    outline: 2px solid $brand-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: -1px;
   }
 }
 
-// 4. Primary & Secondary Specular Action Buttons (WCAG 44px)
+// 4. Primary & Secondary Action Buttons (WCAG 44px)
 
 .btnConvertDeal {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 44px;
-  min-height: 44px;
-  padding: 0 18px;
-  background: $brand-gradient;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 13.5px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  box-shadow: 0 10px 24px rgba(255, 97, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 0.2s $ease-spring;
-
-  &:hover {
-    box-shadow: 0 14px 32px rgba(255, 97, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  &:focus-visible {
-    outline: 2px solid #ffffff;
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
+  @include accordionPillPrimary;
 }
 
 .btnSecondaryAction {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 44px;
-  min-height: 44px;
-  padding: 0 16px;
-  background: $surface-card;
-  border: $border-specular;
-  border-radius: 10px;
-  color: $text-primary;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.2s $ease-spring;
+  @include accordionPillSecondary;
+  font-size: 0.78rem;
+  letter-spacing: normal;
+  text-transform: none;
 
   svg {
     width: 15px;
@@ -394,28 +326,12 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
     transition: color 0.15s ease;
   }
 
-  &:hover {
-    background: $surface-elevated;
-    border-color: rgba(255, 255, 255, 0.22);
-    color: #ffffff;
-    transform: translateY(-1px);
-
-    svg {
-      color: #ffffff;
-    }
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $brand-orange;
-    outline-offset: 2px;
+  &:hover svg {
+    color: $text-primary;
   }
 }
 
-// 5. Commercial KPI Ribbon (3 Stripe Scorecards)
+// 5. Commercial KPI Ribbon (3 Minimalist Stat Pods)
 
 .kpiRibbonGrid {
   display: grid;
@@ -435,16 +351,16 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   border: $border-hairline;
   border-radius: 16px;
   padding: 20px 24px;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
-  transition: all 0.22s $ease-spring;
+  gap: 14px;
+  transition: all 0.2s $ease-spring;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.08);
     transform: translateY(-1px);
   }
 }
@@ -453,7 +369,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+}
+
+.scorecardLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .scorecardLabel {
@@ -478,6 +400,40 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   color: $text-primary;
 }
 
+// 44px circular tinted icon chips for Minimalist Stat Pods
+.statPodIconChip {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.chipEmerald {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.chipAmber {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.chipSlate {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+}
+
 .scorecardValue {
   font-size: clamp(24px, 2.2vw, 30px);
   font-weight: 700;
@@ -500,7 +456,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .momentumTrack {
   width: 100%;
   height: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--admin-border-subtle, #eef0f3);
   border-radius: 9999px;
   overflow: hidden;
   margin-top: 4px;
@@ -509,7 +465,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .momentumFill {
   height: 100%;
   border-radius: 9999px;
-  background: $brand-gradient;
+  background: var(--admin-border-strong, #1f242f);
   transition: width 0.6s $ease-spring;
 }
 
@@ -561,7 +517,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   border: $border-hairline;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   box-sizing: border-box;
 
   @media (max-width: 768px) {
@@ -590,7 +546,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   svg {
     width: 17px;
     height: 17px;
-    color: $brand-orange;
+    color: $text-secondary;
     flex-shrink: 0;
   }
 }
@@ -640,6 +596,12 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   text-overflow: clip;
 }
 
+.contactEmptyValue {
+  font-size: 14px;
+  color: var(--admin-text-muted, #6b7280);
+  font-style: italic;
+}
+
 .contactCoordinateRow {
   display: flex;
   align-items: center;
@@ -652,7 +614,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: $surface-elevated;
+  background: var(--admin-surface-muted, #f8fafc);
   border: $border-hairline;
   border-radius: 8px;
   color: $text-primary;
@@ -668,18 +630,22 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   svg {
     width: 14px;
     height: 14px;
-    color: $brand-orange;
+    color: $text-secondary;
     flex-shrink: 0;
   }
 
   &:hover {
     background: $surface-hover;
-    border-color: rgba(255, 97, 0, 0.4);
-    color: #ffffff;
+    border-color: var(--admin-border-strong, #1f242f);
+    color: $text-primary;
+
+    svg {
+      color: $text-primary;
+    }
   }
 
   &:focus-visible {
-    outline: 2px solid $brand-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -698,15 +664,39 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   letter-spacing: 0.02em;
 }
 
-// 9. Notion-Callout Aesthetic (Briefs & Executive Deal Notes)
+.tagPillBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+// 9. Light Notion-Callout Aesthetic (Briefs & Executive Deal Notes)
 
 .notionCallout {
   position: relative;
-  background: $surface-callout;
-  border-left: 2px solid $brand-orange;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--admin-surface-muted, #f8fafc);
+  border: $border-hairline;
+  border-left: 3px solid var(--admin-border-strong, #1f242f);
   border-radius: 0 12px 12px 0;
   padding: 16px 20px;
   margin-top: 8px;
@@ -716,7 +706,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .notionCalloutQuote {
   font-size: 13.5px;
   line-height: 1.62;
-  color: #e5e7eb;
+  color: $text-primary;
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
@@ -748,7 +738,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .briefMatrixItem {
-  background: $surface-elevated;
+  background: var(--admin-card-bg, #ffffff);
   border: $border-hairline;
   border-radius: 12px;
   padding: 14px 16px;
@@ -788,7 +778,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: $brand-orange;
+  color: $text-primary;
   text-decoration: underline;
   text-underline-offset: 3px;
   font-weight: 500;
@@ -798,11 +788,31 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
     width: 12px;
     height: 12px;
     flex-shrink: 0;
+    color: $text-secondary;
   }
 
   &:hover {
-    color: #ffffff;
+    color: $text-secondary;
   }
+}
+
+.briefEmptyText {
+  color: var(--admin-text-muted, #6b7280);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.briefJsonBlock {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: var(--font-admin-code, monospace);
+  color: var(--admin-text-primary, #1f242f);
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .briefEmptyBanner {
@@ -811,8 +821,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   color: $text-muted;
   font-size: 13px;
   line-height: 1.5;
-  background: $surface-callout;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface-muted, #f8fafc);
+  border: 1px dashed var(--admin-border-default, #cbd5e1);
   border-radius: 12px;
 }
 
@@ -826,7 +836,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   border: $border-hairline;
   border-radius: 16px;
   padding: 22px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   box-sizing: border-box;
 
   @media (max-width: 1024px) {
@@ -838,7 +848,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
-  background: $surface-elevated;
+  background: var(--admin-surface-muted, #f0f2f5);
   padding: 4px;
   border-radius: 10px;
   border: $border-hairline;
@@ -863,25 +873,26 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   svg {
     width: 14px;
     height: 14px;
+    color: currentColor;
   }
 
   &:hover {
     color: $text-primary;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(31, 36, 47, 0.04);
   }
 
   &.activeTab {
     background: $surface-card;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    color: $text-primary;
+    box-shadow: 0 1px 4px rgba(31, 36, 47, 0.08);
 
     svg {
-      color: $brand-orange;
+      color: $text-primary;
     }
   }
 
   &:focus-visible {
-    outline: 2px solid $brand-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
   }
 }
@@ -901,7 +912,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .composerSelect {
   width: 100%;
   height: 40px;
-  background: $surface-elevated;
+  background: $surface-card;
   border: $border-hairline;
   border-radius: 8px;
   padding: 0 12px;
@@ -910,16 +921,16 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus {
-    border-color: $brand-orange;
-    box-shadow: 0 0 0 2px $brand-orange-glow;
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 2px rgba(31, 36, 47, 0.1);
   }
 
   option {
-    background: #141418;
-    color: #ffffff;
+    background: #ffffff;
+    color: #1f242f;
   }
 }
 
@@ -934,7 +945,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   font-family: $font-mono;
   font-size: 11px;
   font-weight: 600;
-  color: $brand-orange;
+  color: $text-primary;
   font-variant-numeric: tabular-nums;
 }
 
@@ -947,7 +958,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .presetBtn {
   height: 38px;
-  background: $surface-elevated;
+  background: $surface-card;
   border: $border-hairline;
   border-radius: 8px;
   color: $text-secondary;
@@ -961,18 +972,18 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   &:hover {
     color: $text-primary;
     background: $surface-hover;
-    border-color: rgba(255, 255, 255, 0.18);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &.activePreset {
-    background: rgba(255, 97, 0, 0.15);
-    border-color: $brand-orange;
-    color: $brand-orange;
+    background: var(--admin-accent-lemon, #eefb87);
+    border: 1px solid var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
     font-weight: 700;
   }
 
   &:focus-visible {
-    outline: 2px solid $brand-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
   }
 }
@@ -980,7 +991,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .composerTextarea {
   width: 100%;
   min-height: 85px;
-  background: $surface-elevated;
+  background: $surface-card;
   border: $border-hairline;
   border-radius: 8px;
   padding: 10px 12px;
@@ -991,24 +1002,24 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
   resize: vertical;
   box-sizing: border-box;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &::placeholder {
     color: $text-muted;
   }
 
   &:focus {
-    border-color: $brand-orange;
-    box-shadow: 0 0 0 2px $brand-orange-glow;
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 2px rgba(31, 36, 47, 0.1);
   }
 }
 
 .composerErrorBanner {
   padding: 8px 12px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--admin-status-rose-bg, #fef2f2);
+  border: 1px solid var(--admin-status-rose-border, #fecaca);
   border-radius: 6px;
-  color: #fca5a5;
+  color: var(--admin-status-rose-text, #991b1b);
   font-size: 12px;
   line-height: 1.4;
 }
@@ -1020,18 +1031,18 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   gap: 8px;
   height: 44px;
   min-height: 44px;
-  background: $brand-gradient;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--admin-border-strong, #1f242f);
+  border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 10px;
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(255, 97, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.1);
   transition: all 0.2s $ease-spring;
 
   &:hover:not(:disabled) {
-    box-shadow: 0 12px 28px rgba(255, 97, 0, 0.45);
+    background: #333d4e;
     transform: translateY(-1px);
   }
 
@@ -1040,13 +1051,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
     box-shadow: none;
   }
 
   &:focus-visible {
-    outline: 2px solid #ffffff;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -1064,7 +1075,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   align-items: center;
   justify-content: space-between;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: $border-subtle;
 
   &:last-child {
     border-bottom: none;
@@ -1073,8 +1084,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .followUpCountdownCard {
-  background: rgba(255, 97, 0, 0.06);
-  border: $border-accent;
+  background: var(--admin-surface-muted, #f8fafc);
+  border: $border-hairline;
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -1093,13 +1104,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .followUpTimeTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: $text-primary;
 }
 
 .followUpRelativeBadge {
   font-family: $font-mono;
   font-size: 11px;
-  color: $brand-orange;
+  color: var(--admin-status-emerald-text, #065f46);
   font-weight: 600;
 }
 
@@ -1117,11 +1128,11 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
     background: $surface-hover;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid $brand-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 }
 
@@ -1141,7 +1152,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
     top: 6px;
     bottom: 6px;
     width: 2px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--admin-border-default, #e2e5ea);
   }
 }
 
@@ -1159,27 +1170,29 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: $surface-elevated;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: $surface-card;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.05);
 
   svg {
     width: 10px;
     height: 10px;
-    color: $brand-orange;
+    color: $text-secondary;
   }
 }
 
 .timelineCard {
-  background: $surface-elevated;
+  background: $surface-card;
   border: $border-hairline;
   border-radius: 12px;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.03);
 }
 
 .timelineHeader {
@@ -1199,8 +1212,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(255, 97, 0, 0.15);
-  color: $brand-orange;
+  background: $surface-elevated;
+  border: $border-hairline;
+  color: $text-primary;
   font-family: $font-mono;
   font-size: 10px;
   font-weight: 700;
@@ -1231,17 +1245,17 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 .timelineBodyText {
   font-size: 13px;
   line-height: 1.5;
-  color: #e5e7eb;
+  color: $text-primary;
 }
 
 .mentionHighlight {
-  color: #60a5fa;
+  color: #1d4ed8;
   font-weight: 600;
 }
 
 .tagHighlight {
-  color: $brand-orange;
-  font-weight: 600;
+  color: $text-primary;
+  font-weight: 700;
 }
 
 .timelineEmptyState {
@@ -1260,13 +1274,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   right: 0;
   z-index: 50;
   display: none;
-  background: rgba(14, 14, 17, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: $border-hairline;
   padding: 12px 16px;
   gap: 8px;
-  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 -4px 16px rgba(31, 36, 47, 0.08);
 
   @media (max-width: 768px) {
     display: flex;
@@ -1277,35 +1291,18 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .mobileDockBtn {
   flex: 1;
-  height: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 10px;
-  font-size: 12.5px;
-  font-weight: 600;
   text-decoration: none;
-  cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
-
-  &:active {
-    transform: scale(0.97);
-  }
 
   &.mobilePrimary {
-    background: $brand-gradient;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(255, 97, 0, 0.35);
+    @include accordionPillPrimary;
   }
 
   &.mobileSecondary {
-    background: $surface-elevated;
-    border: $border-hairline;
-    color: $text-primary;
+    @include accordionPillSecondary;
+    font-size: 0.78rem;
+    letter-spacing: normal;
+    text-transform: none;
   }
 }
 

@@ -3,12 +3,12 @@
 /**
  * @file DossierHeaderBar.tsx
  * @description Master navigation and primary action header bar for the Client 360° Workspace.
- *              Integrates:
+ *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
  *              - Back navigation targeting /admin/leads or /admin/deals based on operational context.
- *              - Accessible breadcrumbs with a Raycast monospace copy token chip.
+ *              - Raycast monospace copy token chip alongside clean ghost back button.
  *              - Editorial entity heading with mandatory trailing period (e.g. 'Morar Group 8500.').
- *              - Status selector pill with semantic radar dot and animated stage dropdown.
- *              - High-contrast specular primary action buttons meeting WCAG 44px minimum tap targets.
+ *              - Status selector pill with semantic radar dot and elevated dropdown menu.
+ *              - Accordion Lemon Yellow primary action button meeting WCAG 44px minimum tap targets.
  * @module components/DossierWorkspace/DossierHeaderBar
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -107,26 +107,21 @@ export function DossierHeaderBar({
   const entityTitle = (companyName?.trim() || contactName.trim() || 'Private Client') + '.';
   const backTarget = workspaceMode === 'deals' ? '/admin/deals' : '/admin/leads';
   const backLabel = workspaceMode === 'deals' ? 'Back to Deals' : 'Back to Leads';
-  const breadcrumbSection = workspaceMode === 'deals' ? 'Deals Pipeline' : 'Inbound Leads';
 
   return (
     <header className={styles.headerBar}>
-      {/* 1. Navigation Rail & Breadcrumbs */}
+      {/* 1. Concise Navigation Rail & Raycast Token Chip */}
       <div className={styles.headerTopRow}>
         <div className={styles.breadcrumbsNav}>
           <Link href={backTarget} className={styles.backLink} aria-label={`Return to ${backLabel}`}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 14, height: 14 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <line x1="19" y1="12" x2="5" y2="12" />
               <polyline points="12 19 5 12 12 5" />
             </svg>
             <span>{backLabel}</span>
           </Link>
 
-          <span className={styles.breadcrumbSeparator}>/</span>
-          <span className={styles.breadcrumbItem}>MARCA UBI CRM</span>
-          <span className={styles.breadcrumbSeparator}>/</span>
-          <span className={styles.breadcrumbItem}>{breadcrumbSection}</span>
-          <span className={styles.breadcrumbSeparator}>/</span>
+          <span className={styles.breadcrumbSeparator} aria-hidden="true">/</span>
 
           {/* Raycast Monospace Token Chip */}
           <button
@@ -167,7 +162,7 @@ export function DossierHeaderBar({
             >
               <span
                 className={styles.radarDot}
-                style={{ backgroundColor: currentStatus.color_code || '#ff6100' }}
+                style={{ backgroundColor: currentStatus.color_code || 'var(--admin-status-emerald-dot, #10b981)' }}
                 aria-hidden="true"
               />
               <span>{currentStatus.name}</span>
@@ -200,13 +195,13 @@ export function DossierHeaderBar({
                             width: 6,
                             height: 6,
                             borderRadius: '50%',
-                            backgroundColor: st.color_code || '#9ca3af',
+                            backgroundColor: st.color_code || 'var(--admin-text-muted, #6b7280)',
                             display: 'inline-block',
                           }}
                         />
                         <span>{st.name}</span>
                       </span>
-                      <span style={{ fontSize: 10, textTransform: 'uppercase', color: '#6b7280' }}>
+                      <span style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--admin-text-muted, #6b7280)' }}>
                         {st.bucket}
                       </span>
                     </button>
