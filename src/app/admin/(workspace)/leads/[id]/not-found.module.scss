@@ -1,0 +1,83 @@
+/**
+ * @file not-found.module.scss
+ * @description Bespoke styling for 404 Lead Dossier Not Found surface with Accordion light tokens.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@use '../../../styles/tokens.scss' as *;
+
+.notFoundRoot {
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+  background-color: var(--admin-canvas-bg, #f7f8fa);
+}
+
+.notFoundCard {
+  max-width: 520px;
+  width: 100%;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+}
+
+.statusPill {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  margin-bottom: 1.25rem;
+}
+
+.title {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0 0 2rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.primaryBtn {
+  @include accordionPillPrimary;
+  text-decoration: none;
+}
+
+.secondaryBtn {
+  @include accordionPillSecondary;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: normal;
+  text-transform: none;
+}

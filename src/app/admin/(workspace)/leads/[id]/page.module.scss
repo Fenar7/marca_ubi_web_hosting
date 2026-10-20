@@ -1,0 +1,70 @@
+/**
+ * @file page.module.scss
+ * @description Dedicated styles for the Lead Dossier dynamic route error and boundary states.
+ *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@use '../../../styles/tokens.scss' as *;
+
+.deniedWrapper {
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+  background-color: var(--admin-canvas-bg, #f7f8fa);
+}
+
+.deniedCard {
+  max-width: 520px;
+  width: 100%;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
+  padding: 2.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+}
+
+.deniedBadge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  background: var(--admin-status-rose-bg, #fef2f2);
+  border: 1px solid var(--admin-status-rose-border, #fecaca);
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-status-rose-text, #991b1b);
+  margin-bottom: 1rem;
+}
+
+.deniedTitle {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.deniedMessage {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0 0 1.75rem;
+}
+
+.returnBtn {
+  @include accordionPillPrimary;
+  text-decoration: none;
+}

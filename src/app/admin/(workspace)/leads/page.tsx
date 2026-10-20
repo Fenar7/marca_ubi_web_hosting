@@ -44,7 +44,10 @@ export default async function AdminLeadsPage(
   props: AdminLeadsPageProps
 ): Promise<React.ReactElement> {
   // Await Next.js 16 dynamic search parameters
-  await (props.searchParams ? props.searchParams : Promise.resolve(undefined));
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
+  if (resolvedSearchParams?.leadId) {
+    redirect(`/admin/leads/${resolvedSearchParams.leadId}`);
+  }
   const supabase = await createClient();
 
   const {

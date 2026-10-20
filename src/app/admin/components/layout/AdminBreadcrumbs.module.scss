@@ -4,6 +4,8 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
+@use '../../styles/tokens.scss' as *;
+
 .breadcrumbNav {
   display: flex;
   align-items: center;
@@ -85,4 +87,11 @@
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.monoSegmentChip {
+  @include adminMonoToken;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
 }
