@@ -517,7 +517,7 @@ export function LeadsDataGrid({
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                 >
-                  {lead.bucket === 'open' && userRole !== 'viewer' ? (
+                  {lead.bucket === 'open' && userRole !== 'viewer' && (
                     <button
                       type="button"
                       className={styles.rowConvertBtn}
@@ -551,23 +551,23 @@ export function LeadsDataGrid({
                       </svg>
                       <span>Convert</span>
                     </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className={styles.rowInspectBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRowClick(lead.id);
-                      }}
-                      title="Inspect Client Dossier"
-                      aria-label={`Inspect dossier for ${lead.lead_id}`}
-                    >
-                      <span>View</span>
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </button>
                   )}
+
+                  <button
+                    type="button"
+                    className={styles.rowInspectBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRowClick(lead.id);
+                    }}
+                    title="Open Client Dossier & Touchpoint Notes"
+                    aria-label={`Inspect dossier for ${lead.lead_id}`}
+                  >
+                    <span>View</span>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
 
                   <div className={styles.rowQuickActions}>
                     {lead.phone && (

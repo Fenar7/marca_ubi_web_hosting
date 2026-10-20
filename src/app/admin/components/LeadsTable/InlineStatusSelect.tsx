@@ -46,6 +46,7 @@ export function InlineStatusSelect({
   disabled = false,
 }: InlineStatusSelectProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [openUpward, setOpenUpward] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -83,6 +84,15 @@ export function InlineStatusSelect({
   const handleToggle = (e: React.MouseEvent): void => {
     e.stopPropagation();
     if (disabled) return;
+    if (!isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 270 && rect.top > 200) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
     setIsOpen((prev) => !prev);
   };
 
@@ -158,7 +168,9 @@ export function InlineStatusSelect({
     });
   };
 
-  const statusColor = optimisticStatus.color_code || '#1f242f';
+  const rawColor = optimisticStatus.color_code?.toLowerCase().trim();
+  const isWhite = !rawColor || rawColor === '#ffffff' || rawColor === '#fff' || rawColor === 'white';
+  const statusColor = isWhite ? '#475569' : optimisticStatus.color_code || '#1f242f';
 
   return (
     <div
@@ -202,7 +214,7 @@ export function InlineStatusSelect({
 
       {isOpen && (
         <div
-          className={styles.popoverMenu}
+          className={`${styles.popoverMenu} ${openUpward ? styles.popoverMenuUp : ''}`}
           role="listbox"
           aria-label="Select pipeline stage"
         >
@@ -210,7 +222,9 @@ export function InlineStatusSelect({
           {availableStatuses.map((status) => {
             const isSelected = status.id === optimisticStatus.id;
             const isGuarded = status.bucket === 'converted' || status.bucket === 'lost';
-            const itemColor = status.color_code || '#1f242f';
+            const rawItemColor = status.color_code?.toLowerCase().trim();
+            const isItemWhite = !rawItemColor || rawItemColor === '#ffffff' || rawItemColor === '#fff' || rawItemColor === 'white';
+            const itemColor = isItemWhite ? '#475569' : status.color_code || '#1f242f';
 
             return (
               <button

@@ -16,6 +16,7 @@ import type { CrmUserRole, FunnelBucket, PipelineRpcMetrics } from '@/types/crm'
 import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
+import { NewLeadHeaderButton } from './NewLeadHeaderButton';
 import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBar';
 import styles from './leads.module.scss';
 
@@ -213,6 +214,9 @@ export default async function AdminLeadsPage(
           <p className={styles.pageSubtitle}>
             Triage incoming briefs, evaluate client scope, and advance qualified opportunities to negotiation.
           </p>
+        </div>
+        <div className={styles.headerRight}>
+          <NewLeadHeaderButton userRole={role} />
         </div>
       </header>
 

@@ -22,6 +22,8 @@ import {
   updateLeadAssigneeSchema,
   updateLeadDealParametersSchema,
   convertLeadToDealSchema,
+  updateLeadDetailsSchema,
+  type UpdateLeadDetailsInput,
 } from '@/app/lib/lead-schemas';
 import type {
   CrmUserRole,
@@ -1434,4 +1436,174 @@ export async function convertInboundLeadToDealAction(
     return { success: false, error: message };
   }
 }
+/**
+ * Updates comprehensive commercial engagement scope, contact coordinates,
+ * deal valuation, priority tier, and client notes from the Client 360° Dossier Drawer.
+ *
+ * @param input Raw payload validated against updateLeadDetailsSchema
+ * @returns {Promise<LeadActionResult>} Operation outcome
+ */
+export async function updateLeadDetailsAction(
+  input: UpdateLeadDetailsInput
+): Promise<LeadActionResult> {
+  try {
+    const validationResult = updateLeadDetailsSchema.safeParse(input);
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0];
+      return {
+        success: false,
+        error: firstIssue ? firstIssue.message : 'Invalid lead details parameters.',
+      };
+    }
 
+    const data = validationResult.data;
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Active CRM session required to modify lead details.',
+      };
+    }
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      return {
+        success: false,
+        error: 'Caller profile could not be verified in the agency directory.',
+      };
+    }
+
+    if (callerProfile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Account suspended: Inactive personnel cannot modify lead parameters.',
+      };
+    }
+
+    if (callerProfile.role === 'viewer') {
+      return {
+        success: false,
+        error: 'Privilege Violation: Read-only personnel cannot modify lead parameters.',
+      };
+    }
+
+    const { data: currentLead, error: leadError } = await supabase
+      .from('leads')
+      .select('id, assigned_to, converted_at, name, company')
+      .eq('id', data.leadId)
+      .maybeSingle();
+
+    if (leadError || !currentLead) {
+      return {
+        success: false,
+        error: 'Lead record not found or inaccessible.',
+      };
+    }
+
+    if (currentLead.converted_at && callerProfile.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
+      };
+    }
+
+    if (callerProfile.role === 'sales_executive' && currentLead.assigned_to !== user.id) {
+      return {
+        success: false,
+        error: 'Privilege Violation: Sales executives may only edit leads assigned to their portfolio.',
+      };
+    }
+
+    const updatePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.name !== undefined) {
+      updatePayload.name = data.name.trim();
+    }
+    if (data.company !== undefined) {
+      updatePayload.company = data.company && data.company.trim().length > 0 ? data.company.trim() : null;
+    }
+    if (data.companyWebsite !== undefined) {
+      updatePayload.company_website = data.companyWebsite && data.companyWebsite.trim().length > 0 ? data.companyWebsite.trim() : null;
+    }
+    if (data.industry !== undefined) {
+      updatePayload.industry = data.industry && data.industry.trim().length > 0 ? data.industry.trim() : null;
+    }
+    if (data.email !== undefined) {
+      updatePayload.email = data.email && data.email.trim().length > 0 ? normalizeEmail(data.email) : null;
+    }
+    if (data.phone !== undefined) {
+      const phoneNorm = data.phone && data.phone.trim().length > 0 ? normalizePhone(data.phone) : null;
+      updatePayload.phone = phoneNorm ? phoneNorm.phone : null;
+    }
+    if (data.preferredChannel !== undefined) {
+      updatePayload.preferred_channel = data.preferredChannel;
+    }
+    if (data.serviceCategory !== undefined) {
+      updatePayload.service_category = data.serviceCategory;
+    }
+    if (data.budgetBracket !== undefined) {
+      updatePayload.budget_bracket = data.budgetBracket && data.budgetBracket.trim().length > 0 ? data.budgetBracket.trim() : null;
+    }
+    if (data.expectedValue !== undefined) {
+      updatePayload.expected_value = data.expectedValue;
+    }
+    if (data.priority !== undefined) {
+      updatePayload.priority = data.priority;
+    }
+    if (data.notes !== undefined) {
+      updatePayload.notes = data.notes && data.notes.trim().length > 0 ? sanitizeHtml(data.notes.trim()) : null;
+    }
+
+    const { error: updateError } = await supabase
+      .from('leads')
+      .update(updatePayload)
+      .eq('id', data.leadId);
+
+    if (updateError) {
+      return {
+        success: false,
+        error: `Lead details update rejected: ${updateError.message}`,
+      };
+    }
+
+    // Immutable audit ledger entry
+    await supabase.from('lead_activities').insert({
+      lead_id: data.leadId,
+      actor_id: user.id,
+      activity_type: 'note',
+      description: `Lead details & commercial scope updated by ${callerProfile.full_name}`,
+      metadata: {
+        updated_fields: Object.keys(updatePayload).filter((k) => k !== 'updated_at'),
+        updated_at: updatePayload.updated_at,
+      },
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+
+    return {
+      success: true,
+      leadId: data.leadId,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Internal failure while updating lead details.';
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}

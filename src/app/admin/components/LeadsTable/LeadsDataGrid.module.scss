@@ -26,6 +26,8 @@ $grid-min-width: 1125px;
   max-height: calc(100vh - 280px);
   min-height: 400px;
   position: relative;
+  z-index: 1;
+  isolation: isolate;
   -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {

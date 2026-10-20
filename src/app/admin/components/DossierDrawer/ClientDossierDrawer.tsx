@@ -15,6 +15,7 @@ import { OrganizationDossier } from './OrganizationDossier';
 import { QuickActionComposer } from './QuickActionComposer';
 import { ActivityTimeline } from './ActivityTimeline';
 import { FollowUpScheduler } from '../Scheduler';
+import { EditLeadModal } from '@/app/admin/components/modals';
 import styles from './DossierDrawer.module.scss';
 
 export interface LeadDossierData {
@@ -71,6 +72,7 @@ export function ClientDossierDrawer({
   const [shouldRender, setShouldRender] = useState<boolean>(isOpen);
   const [copiedId, setCopiedId] = useState<boolean>(false);
   const [isSchedulerOpen, setIsSchedulerOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -362,6 +364,21 @@ export function ClientDossierDrawer({
             {lead && (
               <button
                 type="button"
+                onClick={() => setIsEditModalOpen(true)}
+                className={styles.editScopeHeaderBtn}
+                title="Edit Commercial Scope & Details"
+                aria-label={`Edit details for ${lead.lead_id}`}
+              >
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                <span>Edit Scope</span>
+              </button>
+            )}
+            {lead && (
+              <button
+                type="button"
                 onClick={() => setIsSchedulerOpen(true)}
                 className={styles.scheduleHeaderBtn}
                 title="Schedule Precision Follow-up Touchpoint"
@@ -492,16 +509,21 @@ export function ClientDossierDrawer({
                   </div>
                 </div>
 
-                {lead.notes && (
-                  <div style={{ marginTop: '0.75rem' }}>
-                    <span className={styles.fieldLabel} style={{ display: 'block', marginBottom: '0.35rem' }}>
-                      Executive Deal Notes
-                    </span>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--admin-text-primary, #1f242f)', lineHeight: 1.5, margin: 0 }}>
-                      {lead.notes}
-                    </p>
+                <div style={{ marginTop: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                    <span className={styles.fieldLabel}>Executive Deal Notes</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditModalOpen(true)}
+                      style={{ background: 'none', border: 'none', color: 'var(--admin-text-secondary, #525965)', cursor: 'pointer', fontSize: '0.72rem', textDecoration: 'underline' }}
+                    >
+                      {lead.notes ? 'Edit Notes' : '+ Add Notes'}
+                    </button>
                   </div>
-                )}
+                  <p style={{ fontSize: '0.82rem', color: lead.notes ? 'var(--admin-text-primary, #1f242f)' : 'var(--admin-text-secondary, #525965)', fontStyle: lead.notes ? 'normal' : 'italic', lineHeight: 1.5, margin: 0 }}>
+                    {lead.notes || 'No executive notes recorded for this engagement.'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -512,6 +534,20 @@ export function ClientDossierDrawer({
         )}
       </aside>
 
+      {lead && isEditModalOpen && (
+        <EditLeadModal
+          isOpen={isEditModalOpen}
+          lead={lead}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={(updated: Partial<LeadDossierData>) => {
+            setLead((prev) => (prev ? { ...prev, ...updated } : null));
+            if (leadId) {
+              loadDossier(leadId);
+            }
+            onLeadUpdated?.();
+          }}
+        />
+      )}
       {lead && isSchedulerOpen && (
         <FollowUpScheduler
           leadId={lead.id}
