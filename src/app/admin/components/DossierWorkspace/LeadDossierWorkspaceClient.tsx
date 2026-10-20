@@ -225,9 +225,7 @@ export function LeadDossierWorkspaceClient({
 
   const isConverted = currentLead.bucket === 'converted' || Boolean(currentLead.converted_at);
 
-  // -------------------------------------------------------------------------
   // Handlers: Activity Logging & Optimistic State Updates
-  // -------------------------------------------------------------------------
 
   const handleActivityLogged = useCallback((newActivity: LeadActivityWithActor) => {
     setActivities((prev) => [newActivity, ...prev]);

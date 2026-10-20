@@ -1,6 +1,6 @@
 /**
  * @file page.module.scss
- * @description Dedicated styles for the Pipeline Deal dynamic route boundary states.
+ * @description Dedicated styles for the Deal Dossier dynamic route error and boundary states with Dark Luxury tokens.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -12,51 +12,52 @@
   justify-content: center;
   padding: 2rem;
   box-sizing: border-box;
+  background-color: #050505;
 }
 
 .deniedCard {
   max-width: 520px;
   width: 100%;
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-card, 12px);
+  background: #0e0e11;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   padding: 2.25rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(31, 36, 47, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 36px rgba(0, 0, 0, 0.45);
 }
 
 .deniedBadge {
   display: inline-block;
   padding: 0.25rem 0.65rem;
-  background: #fef3f2;
-  border: 1px solid #fee4e2;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   border-radius: 9999px;
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #b42318;
+  color: #f87171;
   margin-bottom: 1rem;
 }
 
 .deniedTitle {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--admin-text-primary, #1f242f);
+  color: #ffffff;
   margin: 0 0 0.75rem;
   letter-spacing: -0.02em;
 }
 
 .deniedMessage {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 0.9rem;
   line-height: 1.55;
-  color: var(--admin-text-secondary, #525965);
+  color: #8e95a0;
   margin: 0 0 1.75rem;
 }
 
@@ -65,17 +66,19 @@
   align-items: center;
   justify-content: center;
   padding: 0.65rem 1.25rem;
-  background: var(--admin-text-primary, #1f242f);
+  background: linear-gradient(135deg, #ff6100 0%, #e05500 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   color: #ffffff;
-  font-family: var(--font-admin-sans, sans-serif);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   text-decoration: none;
-  min-height: 44px;
-  transition: opacity 0.15s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 12px rgba(255, 97, 0, 0.22);
+  transition: all 0.15s ease;
 
   &:hover {
-    opacity: 0.9;
+    background: linear-gradient(135deg, #ff741a 0%, #eb5b00 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 16px rgba(255, 97, 0, 0.32);
+    transform: translateY(-1px);
   }
 }
