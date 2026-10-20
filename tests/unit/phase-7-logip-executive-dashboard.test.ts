@@ -65,11 +65,12 @@ describe('Phase 7: Logip-Inspired Executive Overview Dashboard Ground-Up Archite
       assert.ok(content.includes('Win Velocity'), 'Must show Win Velocity pod');
     });
 
-    it('verifies MinimalistStatPods has hairline divider logic and tabular numbers', () => {
+    it('verifies MinimalistStatPods renders 3 independent separated card containers with tabular numbers', () => {
       const scss = fs.readFileSync(path.resolve(process.cwd(), statPodsScssPath), 'utf8');
       assert.ok(scss.includes('tabular-nums'), 'Must enforce tabular-nums on numeric values');
       assert.ok(scss.includes('.podItem'), 'Must define .podItem layout');
       assert.ok(scss.includes('.statPodsContainer'), 'Must define .statPodsContainer layout');
+      assert.ok(scss.includes('gap: 1.25rem'), 'Container must have grid gap for separated cards');
     });
   });
 

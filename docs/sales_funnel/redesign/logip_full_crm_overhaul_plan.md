@@ -23,7 +23,7 @@ Even though `/admin` was overhauled in Phase 7, when you opened the CRM or click
 
 | Feature / Widget | Current Code (`Screenshot 2026-10-20 124647.png`) | Logip Reference (`original-f0a51857256dd5802cfc7a47a6f070a2.webp`) |
 | :--- | :--- | :--- |
-| **Top Metric Display** | Bulky, boxed-off 5-card ribbon (`KpiRibbon`) taking up massive vertical space | Single floating white card with **3 horizontal pods** separated by faint 1px hairline dividers |
+| **Top Metric Display** | Bulky, boxed-off 5-card ribbon (`KpiRibbon`) taking up massive vertical space | **3 separate independent card containers** (not joined), each with its own rounded border, white surface, and generous grid gap |
 | **Performance Area Graph** | **Completely missing** on `/admin/leads` and previously on `/admin` | **Prominent dual-curve SVG area chart** with gradient glow fill, hover tracking, and dark tooltip capsule |
 | **Workspace Architecture** | 1-column table layout with harsh borders | **3-column fluid grid** (Navigation Rail + Main Canvas + Right Intelligence Rail) |
 | **Right Intelligence Rail** | None; dead white space | User profile spotlight card, live chronological activity feed, attachment preview cards, and quick composer |
@@ -76,12 +76,13 @@ Ensure `/admin` serves as the primary home of the CRM platform:
    - Personalized greeting: `Hello, [User Name]`
    - Subtitle: `Track team progress here. You almost reach a goal!`
    - Live date capsule pill: `20 Oct, 2026 📅`
-2. **Minimalist Stat Pods**:
-   - Single white card container (`border-radius: 16px; border: 1px solid #e2e5ea;`) with 3 horizontal pods:
-     * **Finished / Converted:** Trophy icon in emerald chip | `1,257 Closed Won (↑ +8.4%)`
-     * **Tracked / Active:** Currency/timer icon in amber chip | `₹ 50.12 Cr (3,771 Active)`
-     * **Efficiency / Velocity:** Pulse icon in slate chip | `12.5% Win Velocity (↑ +0.5%)`
-   - Hairline vertical 1px dividers between pods.
+2. **Independent Floating Metric Cards (Separated Containers)**:
+   - Replaces the joined single-card design with **3 distinct, standalone card containers** separated by `gap: 1.25rem`:
+     * Each card has its own `background: #ffffff; border: 1px solid #e2e5ea; border-radius: 16px; box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04); padding: 1.25rem 1.5rem;`
+     * Smooth hover transition with slight lift (`transform: translateY(-1px); box-shadow: 0 4px 12px rgba(31, 36, 47, 0.06);`)
+     * **Card 1: Converted Revenue:** Mint trophy circular chip | `₹ 17.15 Cr` | `1,257 Closed Won (↑ +8.4%)`
+     * **Card 2: Active Pipeline:** Amber currency circular chip | `₹ 50.12 Cr` | `W: ₹ 26.86 Cr (3,771 Active)`
+     * **Card 3: Conversion Velocity:** Slate pulse circular chip | `12.5%` | `Benchmark 12.0% (↑ +0.5%)`
 3. **Performance Dual-Curve Area Graph**:
    - Dual Bézier curves:
      * **This Month:** Marca Orange (`#ff6100`) with soft translucent glow gradient.

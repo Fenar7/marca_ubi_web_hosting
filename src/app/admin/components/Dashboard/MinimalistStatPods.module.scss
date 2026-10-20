@@ -8,12 +8,12 @@
 .statPodsContainer {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
-  overflow: hidden;
+  gap: 1.25rem;
   margin-bottom: 1.75rem;
+
+  @media (max-width: 1080px) {
+    gap: 1rem;
+  }
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -23,33 +23,18 @@
 .podItem {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.15rem;
   padding: 1.25rem 1.5rem;
-  position: relative;
-  transition: background-color 0.15s ease;
-
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 20%;
-    bottom: 20%;
-    width: 1px;
-    background-color: var(--admin-border-default, #e2e5ea);
-
-    @media (max-width: 900px) {
-      display: none;
-    }
-  }
-
-  @media (max-width: 900px) {
-    &:not(:last-child) {
-      border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
-    }
-  }
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background-color: var(--admin-surface-hover, #f8fafc);
+    background-color: var(--admin-surface-hover, #ffffff);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.06);
+    transform: translateY(-1px);
   }
 }
 

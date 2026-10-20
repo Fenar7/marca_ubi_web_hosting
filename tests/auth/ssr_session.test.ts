@@ -18,7 +18,8 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 import { validateEnv, getEnv } from '../../src/app/lib/env';
 import { createClient as createBrowserClient } from '../../src/app/lib/supabase/client';
 import { updateSession } from '../../src/app/lib/supabase/middleware';
-import { sanitizeRedirectUrl, GET as handleAuthCallback } from '../../src/app/api/auth/callback/route';
+import { sanitizeRedirectUrl } from '../../src/app/lib/auth-redirect';
+import { GET as handleAuthCallback } from '../../src/app/api/auth/callback/route';
 
 describe('Marca Ubi CRM — Supabase SSR Authentication & Session Engine (Sprint 2.1)', () => {
   it('verifies live runtime environment schema validation passes', () => {
