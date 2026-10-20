@@ -290,9 +290,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .cardIdBadge {
+  position: relative;
   font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.72rem;
   font-weight: 600;
@@ -302,6 +304,52 @@
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  outline: none;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #e4e7ec);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.cardMetaPills {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.velocityBadge {
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #525965);
+  background-color: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-subtle, #eef0f3);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .cardClientBlock {
@@ -331,12 +379,33 @@
 
 .cardValueRow {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   background-color: var(--admin-surface-muted, #f8fafc);
   border-radius: 6px;
-  padding: 0.35rem 0.6rem;
+  padding: 0.45rem 0.65rem;
   border: 1px solid var(--admin-border-subtle, #eef0f3);
+  gap: 0.5rem;
+}
+
+.valuationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cardSlaBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cardSlaDate {
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #525965);
+  font-variant-numeric: tabular-nums;
 }
 
 .cardValueLabel {
@@ -400,6 +469,45 @@
   gap: 0.4rem;
 }
 
+.cardOmniBtn {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-secondary, #525965);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
 .stageMoveBtn {
   background-color: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
@@ -414,7 +522,7 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: var(--admin-accent-lemon, #eefb87);
+    background-color: var(--admin-surface-hover, #f4f6f9);
     border-color: var(--admin-border-strong, #1f242f);
   }
 
@@ -452,8 +560,8 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 120px 2.2fr 1.4fr 1.5fr 1fr 1.5fr 110px;
-  min-width: 860px;
+  grid-template-columns: 95px minmax(180px, 1.8fr) 130px 140px 105px 140px 130px 125px;
+  min-width: 1045px;
   padding: 0.85rem 1.25rem;
   background-color: var(--admin-surface-muted, #f0f2f5);
   border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
@@ -504,8 +612,8 @@
 
 .dealRow {
   display: grid;
-  grid-template-columns: 120px 2.2fr 1.4fr 1.5fr 1fr 1.5fr 110px;
-  min-width: 860px;
+  grid-template-columns: 95px minmax(180px, 1.8fr) 130px 140px 105px 140px 130px 125px;
+  min-width: 1045px;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
   align-items: center;
@@ -535,9 +643,24 @@
 .colValue,
 .colPriority,
 .colOwner,
+.colSla,
 .colAction {
   display: flex;
   align-items: center;
+}
+
+.colSla {
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.slaDateText {
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.72rem;
+  color: var(--admin-text-secondary, #525965);
+  font-variant-numeric: tabular-nums;
 }
 
 .colAction {
@@ -640,26 +763,29 @@
 }
 
 .inspectButton {
-  background-color: var(--admin-accent-lemon, #eefb87);
-  border: 1px solid var(--admin-border-strong, #1f242f);
+  position: relative;
+  background-color: var(--admin-surface-card, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: var(--admin-radius-pill, 9999px);
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: var(--admin-text-secondary, #525965);
   font-family: var(--font-admin-btn, sans-serif);
   font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.45rem 0.95rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
   min-height: 44px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   justify-content: center;
   transition: all 0.15s ease;
   user-select: none;
+  white-space: nowrap;
 
   &:hover {
-    background-color: var(--admin-accent-lemon-hover, #e4f375);
+    background-color: var(--admin-surface-hover, #f8fafc);
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &:active {
