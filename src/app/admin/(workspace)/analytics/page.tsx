@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
-import { KpiRibbon } from '@/app/admin/components/kpi';
+import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
 import styles from './analytics.module.scss';
 
 export const metadata: Metadata = {
@@ -141,7 +141,7 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
       </header>
 
       {/* Dark Luxury Executive KPI Ribbon */}
-      <KpiRibbon initialData={rpcMetrics} />
+      <MinimalistStatPods metrics={rpcMetrics} />
 
       {/* Funnel Stage Breakdown */}
       <section className={styles.breakdownSection} aria-label="Funnel Stage Distribution">

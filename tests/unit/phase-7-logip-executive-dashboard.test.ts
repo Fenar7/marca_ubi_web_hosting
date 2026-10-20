@@ -6,7 +6,8 @@
  *              active pipeline, win velocity), PerformanceChart (interactive dual-curve SVG area chart),
  *              CurrentDealsTable (account list, SLA badges, status pills), and ExecutiveActivityRail
  *              (user profile spotlight, live activity feed, quick note composer with signature Lemon Yellow CTA).
- *              Also validates sidebar brand container unclipped sizing and zero AI slop.
+ *              Also validates sidebar brand container unclipped sizing and zero AI slop,
+ *              plus platform-wide eradication of the legacy 5-card ribbon across all CRM pages.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -28,6 +29,9 @@ describe('Phase 7: Logip-Inspired Executive Overview Dashboard Ground-Up Archite
   const activityRailScssPath = 'src/app/admin/components/Dashboard/ExecutiveActivityRail.module.scss';
   const sidebarTsxPath = 'src/app/admin/components/layout/AdminSidebar.tsx';
   const sidebarScssPath = 'src/app/admin/components/layout/AdminSidebar.module.scss';
+  const leadsPageTsxPath = 'src/app/admin/(workspace)/leads/page.tsx';
+  const dealsPageTsxPath = 'src/app/admin/(workspace)/deals/page.tsx';
+  const analyticsPageTsxPath = 'src/app/admin/(workspace)/analytics/page.tsx';
 
   describe('1. 3-Column Logip Dashboard Canvas Architecture', () => {
     it('verifies page.tsx imports and renders all 4 Logip dashboard components', () => {
@@ -178,6 +182,26 @@ describe('Phase 7: Logip-Inspired Executive Overview Dashboard Ground-Up Archite
         const content = fs.readFileSync(path.resolve(process.cwd(), relPath), 'utf8');
         assert.ok(!content.includes(': any'), `Found : any in ${relPath}`);
       }
+    });
+  });
+
+  describe('8. Platform-Wide 5-Card Ribbon Eradication', () => {
+    it('verifies leads/page.tsx has completely eradicated KpiRibbon and mounts MinimalistStatPods', () => {
+      const content = fs.readFileSync(path.resolve(process.cwd(), leadsPageTsxPath), 'utf8');
+      assert.ok(!content.includes('<KpiRibbon'), 'KpiRibbon must not be rendered in leads/page.tsx');
+      assert.ok(content.includes('MinimalistStatPods'), 'MinimalistStatPods must be mounted in leads/page.tsx');
+    });
+
+    it('verifies deals/page.tsx has completely eradicated KpiRibbon and mounts MinimalistStatPods', () => {
+      const content = fs.readFileSync(path.resolve(process.cwd(), dealsPageTsxPath), 'utf8');
+      assert.ok(!content.includes('<KpiRibbon'), 'KpiRibbon must not be rendered in deals/page.tsx');
+      assert.ok(content.includes('MinimalistStatPods'), 'MinimalistStatPods must be mounted in deals/page.tsx');
+    });
+
+    it('verifies analytics/page.tsx has completely eradicated KpiRibbon and mounts MinimalistStatPods', () => {
+      const content = fs.readFileSync(path.resolve(process.cwd(), analyticsPageTsxPath), 'utf8');
+      assert.ok(!content.includes('<KpiRibbon'), 'KpiRibbon must not be rendered in analytics/page.tsx');
+      assert.ok(content.includes('MinimalistStatPods'), 'MinimalistStatPods must be mounted in analytics/page.tsx');
     });
   });
 });
