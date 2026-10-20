@@ -30,21 +30,23 @@ export function LeadsTableSkeleton({
       aria-label="Loading commercial pipeline deals"
       aria-busy="true"
     >
-      {/* Table Head Skeleton */}
+      {/* Table Head Skeleton (9 Dedicated Columns) */}
       <div className={styles.tableHeadSkeleton} aria-hidden="true">
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '60px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '50px' }} />
         <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '110px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '80px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '70px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '90px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '85px' }} />
         <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '75px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '75px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '80px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '85px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '60px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '65px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '55px' }} />
       </div>
 
-      {/* Row Shimmer Skeletons (Fixed 72px Height) */}
+      {/* Row Shimmer Skeletons (Fixed 72px Height across 9 Columns) */}
       {rows.map((idx) => (
         <div key={idx} className={styles.skeletonRow} aria-hidden="true">
-          {/* Column 1: Deal ID Pill */}
+          {/* Column 1: Deal / Lead ID Pill */}
           <div>
             <div className={`${styles.shimmerBox} ${styles.dealIdPill}`} />
           </div>
@@ -76,9 +78,19 @@ export function LeadsTableSkeleton({
             <div className={`${styles.shimmerBox} ${styles.repNameBar}`} />
           </div>
 
-          {/* Column 7: Next Touchpoint */}
+          {/* Column 7: Priority Tier */}
+          <div>
+            <div className={`${styles.shimmerBox} ${styles.priorityPill}`} />
+          </div>
+
+          {/* Column 8: Next SLA Touchpoint */}
           <div>
             <div className={`${styles.shimmerBox} ${styles.touchpointBar}`} />
+          </div>
+
+          {/* Column 9: Action Controls Strip */}
+          <div>
+            <div className={`${styles.shimmerBox} ${styles.actionButtonSkeleton}`} />
           </div>
         </div>
       ))}

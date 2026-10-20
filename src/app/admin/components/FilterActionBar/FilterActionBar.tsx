@@ -58,6 +58,8 @@ export interface FilterActionBarProps {
   onPriorityChange: (priority: string | null) => void;
   onStageClear: () => void;
   onClearAll: () => void;
+  /** Optional workspace context to dynamically label tabs ('leads' | 'deals') */
+  scope?: 'leads' | 'deals';
   /** Optional custom class name */
   className?: string;
 }
@@ -67,15 +69,6 @@ interface BucketTabConfig {
   label: string;
   isUrgent?: boolean;
 }
-
-const BUCKET_TABS: readonly BucketTabConfig[] = [
-  { id: 'all', label: 'All Deals' },
-  { id: 'open', label: 'Open' },
-  { id: 'potential', label: 'Potential' },
-  { id: 'converted', label: 'Won' },
-  { id: 'lost', label: 'Lost' },
-  { id: 'overdue', label: 'Overdue Today', isUrgent: true },
-] as const;
 
 const PRIORITY_OPTIONS: readonly FilterDropdownOption[] = [
   { id: 'High', label: 'High Priority', colorCode: '#991b1b' },
@@ -100,8 +93,18 @@ export function FilterActionBar({
   onPriorityChange,
   onStageClear,
   onClearAll,
+  scope = 'deals',
   className,
 }: FilterActionBarProps): React.ReactElement {
+  const itemTypeLabel = scope === 'leads' ? 'inquiries' : 'deals';
+  const bucketTabs: readonly BucketTabConfig[] = [
+    { id: 'all', label: scope === 'leads' ? 'All Inquiries' : 'All Deals' },
+    { id: 'open', label: 'Open' },
+    { id: 'potential', label: 'Potential' },
+    { id: 'converted', label: 'Won' },
+    { id: 'lost', label: 'Lost' },
+    { id: 'overdue', label: 'Overdue Today', isUrgent: true },
+  ];
   const [localSearch, setLocalSearch] = useState<string>(searchQuery);
   const [activeDropdown, setActiveDropdown] = useState<'source' | 'assignee' | 'priority' | null>(null);
   const [, startTransition] = useTransition();
@@ -199,7 +202,7 @@ export function FilterActionBar({
       <div className={styles.controlsRow}>
         {/* Pipeline Bucket Segmented Navigation Tabs */}
         <div className={styles.bucketTabs} role="tablist" aria-label="Pipeline Stages">
-          {BUCKET_TABS.map((tab) => {
+          {bucketTabs.map((tab) => {
             const count = counts[tab.id] ?? 0;
             const isSelected = selectedBucket === tab.id;
             const isOverdueTab = tab.id === 'overdue';
@@ -221,7 +224,7 @@ export function FilterActionBar({
               >
                 {hasOverdueLeads && <span className={styles.urgentPulseDot} aria-hidden="true" />}
                 <span>{tab.label}</span>
-                <span className={styles.tabCount} aria-label={`${count} deals`}>
+                <span className={styles.tabCount} aria-label={`${count} ${itemTypeLabel}`}>
                   {count}
                 </span>
               </button>
@@ -248,9 +251,9 @@ export function FilterActionBar({
                   handleClearSearch();
                 }
               }}
-              placeholder="Search deals, company, rep..."
+              placeholder={`Search ${itemTypeLabel}, company, rep...`}
               className={styles.searchInput}
-              aria-label="Search commercial pipeline"
+              aria-label={`Search commercial ${itemTypeLabel}`}
             />
             {localSearch.length > 0 && (
               <button
@@ -507,7 +510,7 @@ export function FilterActionBar({
 
           {selectedBucket !== 'all' && (
             <span className={styles.filterChip}>
-              Bucket: {BUCKET_TABS.find((t) => t.id === selectedBucket)?.label || selectedBucket}
+              Bucket: {bucketTabs.find((t) => t.id === selectedBucket)?.label || selectedBucket}
               <button
                 type="button"
                 onClick={() => onBucketChange('all')}

@@ -3,25 +3,34 @@
 // Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
 // Strict Anti-AI-Slop: Zero cumulative layout shift (CLS < 0.01), 72px fixed row height
 
+// Dedicated 9-Column Collision-Free Grid Metrics matching LeadsDataGrid.module.scss
+$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 140px;
+$grid-min-width: 1125px;
+
 .skeletonWrapper {
   background: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: var(--admin-radius-card, 12px);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   width: 100%;
 }
 
 .tableHeadSkeleton {
   display: grid;
-  grid-template-columns: 14% 22% 14% 14% 12% 14% 10%;
+  grid-template-columns: $grid-columns;
+  min-width: $grid-min-width;
+  min-height: 44px;
+  height: 44px;
   align-items: center;
   background: var(--admin-surface-muted, #f0f2f5);
   border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
   padding: 0.85rem 1.25rem;
   gap: 0.5rem;
+  box-sizing: border-box;
 
-  @media (max-width: 900px) {
+  @media (max-width: 768px) {
     display: none;
   }
 }
@@ -34,20 +43,23 @@
 
 .skeletonRow {
   display: grid;
-  grid-template-columns: 14% 22% 14% 14% 12% 14% 10%;
+  grid-template-columns: $grid-columns;
+  min-width: $grid-min-width;
   align-items: center;
   height: 72px;
   padding: 0 1.25rem;
   gap: 0.5rem;
   border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
+  box-sizing: border-box;
 
   &:last-child {
     border-bottom: none;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 768px) {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     height: auto;
     padding: 1rem;
     gap: 0.65rem;
@@ -139,8 +151,22 @@
   height: 13px;
 }
 
-// Column 7: Next Touchpoint Monospace Date Skeleton
+// Column 7: Priority Pill Skeleton
+.priorityPill {
+  width: 70px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+// Column 8: Next SLA Touchpoint Date Skeleton
 .touchpointBar {
-  width: 60px;
+  width: 65px;
   height: 13px;
+}
+
+// Column 9: Action Controls Skeleton
+.actionButtonSkeleton {
+  width: 75px;
+  height: 26px;
+  border-radius: 9999px;
 }
