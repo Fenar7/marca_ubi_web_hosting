@@ -13,7 +13,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
-import { KpiRibbon } from '@/app/admin/components/kpi';
+import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
 import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBar';
@@ -217,7 +217,7 @@ export default async function AdminLeadsPage(
       </header>
 
       {/* Dark Luxury Executive KPI Ribbon with Reactive URL Filter Recalculation */}
-      <KpiRibbon initialData={rpcMetrics} syncWithUrlParams={true} />
+      <MinimalistStatPods metrics={rpcMetrics} />
 
       {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
       <Suspense fallback={<LeadsTableSkeleton rowCount={8} />}>

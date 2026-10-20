@@ -12,9 +12,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
 import { sanitizeRedirectUrl } from '@/app/lib/auth-redirect';
 
-export { sanitizeRedirectUrl };
-
-
 /**
  * Handles GET requests to `/api/auth/callback`.
  * Exchanges authorization code for an active session and redirects to sanitized destination.

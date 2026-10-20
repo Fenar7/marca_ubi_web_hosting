@@ -1,95 +1,108 @@
 /**
  * @file page.module.scss
  * @description Master Executive Overview styles for the Marca Ubi CRM dashboard (/admin).
- *              Fully refactored to the Accordion Executive Advisory & Sypher SaaS Architecture:
- *              - Soft neutral canvas (#f7f8fa) with pure white floating cards (#ffffff)
- *              - Accordion Lemon Yellow pill CTA button (#eefb87, 1px solid #1f242f)
- *              - Sypher high-density typography with tabular numerals (tabular-nums)
- *              - WCAG AAA contrast compliance and zero AI slop / drop shadows
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ *              Directly benchmarked against Logip (original-f0a51857256dd5802cfc7a47a6f070a2.webp).
+ *              Features 3-column fluid grid, personalized greeting header, floating stat pods,
+ *              interactive performance area chart, active deals list, and right intelligence rail.
+ *              Preserves Signature Accordion Lemon Yellow (#eefb87 / #e4f375) pill buttons.
  */
 
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+.dashboardContainer {
   width: 100%;
+  background-color: var(--admin-canvas-bg, #f7f8fa);
+  max-width: 1720px;
+  margin: 0 auto;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
-  padding-bottom: 1.5rem;
-  gap: 1.5rem;
+/* 2-Column Responsive Workspace Grid (Logip Layout) */
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.75rem;
+  align-items: start;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
+  @media (max-width: 1280px) {
+    grid-template-columns: 1fr 300px;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 1080px) {
+    grid-template-columns: 1fr;
   }
 }
 
-.headerLeft {
+.mainCanvas {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-.eyebrow {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--admin-text-secondary, #525965);
-  display: block;
-  margin-bottom: 0.35rem;
-}
-
-.pageTitle {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 1.85rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  color: var(--admin-text-primary, #1f242f);
-  margin: 0 0 0.4rem;
-}
-
-.pageSubtitle {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 0.88rem;
-  color: var(--admin-text-secondary, #525965);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.headerActions {
+.rightRail {
   display: flex;
-  align-items: center;
-  gap: 0.85rem;
+  flex-direction: column;
+  position: sticky;
+  top: 80px;
+
+  @media (max-width: 1080px) {
+    position: static;
+  }
+}
+
+/* Greeting Header (Logip Matching) */
+.greetingHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
-.nodeBadge {
+.greetingMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.greetingTitle {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.greetingSubtitle {
+  font-size: 0.88rem;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dateCapsule {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--admin-radius-pill, 9999px);
-  background: var(--admin-status-emerald-bg, #ecfdf5);
-  border: 1px solid var(--admin-status-emerald-border, #a7f3d0);
-  font-size: 0.75rem;
+  gap: 0.5rem;
+  padding: 0.45rem 0.95rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 9999px;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  font-size: 0.78rem;
   font-weight: 600;
-  color: var(--admin-status-emerald-text, #065f46);
+  color: var(--admin-text-primary, #1f242f);
+  white-space: nowrap;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: var(--admin-text-secondary, #6b7280);
+  }
 }
 
-.nodeDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--admin-status-emerald-dot, #10b981);
-}
-
+/* Signature Accordion Lemon Yellow Action Pill Button */
 .newLeadBtn {
   display: inline-flex;
   align-items: center;
@@ -110,11 +123,13 @@
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
-  user-select: none;
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
     background-color: var(--admin-accent-lemon-hover, #e4f375);
+    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.12);
+    transform: translateY(-1px);
   }
 
   &:active {
@@ -125,363 +140,4 @@
     outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
-}
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sectionTitle {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--admin-text-primary, #1f242f);
-  margin: 0;
-}
-
-.sectionDescription {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 0.82rem;
-  color: var(--admin-text-secondary, #525965);
-  margin: 0.2rem 0 0;
-}
-
-.funnelDistributionSection {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
-}
-
-.funnelCardsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.funnelCard {
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 14px;
-  padding: 1.5rem;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 180px;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
-  position: relative;
-  overflow: hidden;
-
-  &:hover {
-    transform: translateY(-2px);
-    border-color: var(--admin-border-strong, #1f242f);
-    box-shadow: 0 12px 28px rgba(31, 36, 47, 0.06);
-
-    .funnelCardFooter svg {
-      transform: translateX(3px);
-      color: var(--admin-text-primary, #1f242f);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--admin-border-strong, #1f242f);
-    outline-offset: 2px;
-  }
-
-  &:active {
-    transform: translateY(0px) scale(0.99);
-  }
-}
-
-.funnelCardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.funnelPillarStep {
-  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--admin-text-secondary, #525965);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.funnelEnclaveBadge {
-  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--admin-radius-pill, 9999px);
-  background: var(--admin-surface-muted, #f0f2f5);
-  color: var(--admin-text-primary, #1f242f);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-}
-
-.enclaveOrange {
-  background: var(--admin-status-amber-bg, #fffbeb);
-  color: var(--admin-status-amber-text, #92400e);
-  border-color: var(--admin-status-amber-border, #fde68a);
-}
-
-.enclaveEmerald {
-  background: var(--admin-status-emerald-bg, #ecfdf5);
-  color: var(--admin-status-emerald-text, #065f46);
-  border-color: var(--admin-status-emerald-border, #a7f3d0);
-}
-
-.funnelCardBody {
-  flex: 1;
-}
-
-.funnelCardTitle {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #1f242f);
-  margin: 0 0 0.35rem;
-}
-
-.funnelCardDesc {
-  font-size: 0.8rem;
-  color: var(--admin-text-secondary, #525965);
-  line-height: 1.45;
-  margin: 0 0 1rem;
-}
-
-.funnelMetricRow {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.funnelMetricValue {
-  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 1.65rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #1f242f);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.funnelMetricLabel {
-  font-size: 0.75rem;
-  color: var(--admin-text-secondary, #525965);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.funnelCardFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 1.25rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--admin-border-subtle, #eef0f3);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--admin-text-secondary, #525965);
-
-  svg {
-    transition: transform 0.2s ease, color 0.2s ease;
-  }
-}
-
-/* Recent Activity Ledger */
-.activitySection {
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 14px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
-}
-
-.ledgerHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
-}
-
-.ledgerTitle {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #1f242f);
-  margin: 0;
-}
-
-.liveFeedIndicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--admin-status-emerald-text, #065f46);
-}
-
-.liveFeedDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--admin-status-emerald-dot, #10b981);
-}
-
-.activityList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.activityRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 44px;
-  padding: 0.75rem 1rem;
-  background: #ffffff;
-  border: 1px solid var(--admin-border-subtle, #eef0f3);
-  border-radius: 8px;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  gap: 1rem;
-
-  &:hover {
-    background: var(--admin-surface-hover, #f8fafc);
-    border-color: var(--admin-border-default, #e2e5ea);
-  }
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-.activityRowClickable {
-  cursor: pointer;
-
-  &:hover {
-    border-color: var(--admin-border-strong, #1f242f);
-    background: var(--admin-surface-hover, #f8fafc);
-
-    .activityDesc {
-      color: var(--admin-text-primary, #1f242f);
-      text-decoration: underline;
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--admin-border-strong, #1f242f);
-    outline-offset: -2px;
-  }
-
-  &:active {
-    transform: scale(0.99);
-  }
-}
-
-.activityLeft {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  min-width: 0;
-}
-
-.activityBadge {
-  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.badgeOrange {
-  background: rgba(238, 251, 135, 0.35);
-  color: var(--admin-text-primary, #1f242f);
-  border: 1px solid var(--admin-border-strong, #1f242f);
-}
-
-.badgeEmerald {
-  background: var(--admin-status-emerald-bg, #ecfdf5);
-  color: var(--admin-status-emerald-text, #065f46);
-  border: 1px solid var(--admin-status-emerald-border, #a7f3d0);
-}
-
-.badgeAmber {
-  background: var(--admin-status-amber-bg, #fffbeb);
-  color: var(--admin-status-amber-text, #92400e);
-  border: 1px solid var(--admin-status-amber-border, #fde68a);
-}
-
-.badgeNeutral {
-  background: var(--admin-surface-muted, #f8fafc);
-  color: var(--admin-text-secondary, #525965);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-}
-
-.externalIndicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0.25rem;
-  color: var(--admin-text-secondary, #525965);
-}
-
-.activityDesc {
-  font-size: 0.82rem;
-  color: var(--admin-text-primary, #1f242f);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  @media (max-width: 640px) {
-    white-space: normal;
-  }
-}
-
-.activityRight {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
-}
-
-.activityActor {
-  font-size: 0.75rem;
-  color: var(--admin-text-secondary, #525965);
-}
-
-.activityTime {
-  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 0.7rem;
-  color: var(--admin-text-secondary, #525965);
-  font-variant-numeric: tabular-nums;
-}
-
-.emptyState {
-  padding: 2.5rem 1rem;
-  text-align: center;
-  color: var(--admin-text-secondary, #525965);
-  font-size: 0.85rem;
 }

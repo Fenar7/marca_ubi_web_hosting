@@ -107,30 +107,19 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
       assert.ok(scss.includes('border-radius: var(--admin-radius-pill') || scss.includes('border-radius: 9999px'));
     });
 
-    it('verifies Accordion editorial period on major display headings in page.tsx', () => {
-      const tsx = fs.readFileSync(pageTsxPath, 'utf8');
-      assert.ok(tsx.includes('Commercial Performance.'));
-      assert.ok(tsx.includes('Commercial Funnel Trinity.'));
-      assert.ok(tsx.includes('Recent Activity.'));
-    });
-
     it('verifies purge of military/hacker jargon in page.tsx', () => {
       const tsx = fs.readFileSync(pageTsxPath, 'utf8');
       assert.strictEqual(tsx.includes('Command Center'), false);
       assert.strictEqual(tsx.includes('Activity Ledger'), false);
       assert.strictEqual(tsx.includes('Pipeline Ops'), false);
-      assert.ok(tsx.includes('Executive Overview'));
-      assert.ok(tsx.includes('Recent Activity.'));
     });
 
-    it('verifies 3-stage Commercial Funnel Trinity structure in page.tsx', () => {
+    it('verifies Phase 7 Logip architectural components mounted in page.tsx', () => {
       const tsx = fs.readFileSync(pageTsxPath, 'utf8');
-      assert.ok(tsx.includes('Stage 01'));
-      assert.ok(tsx.includes('Discovery'));
-      assert.ok(tsx.includes('Stage 02'));
-      assert.ok(tsx.includes('Negotiation'));
-      assert.ok(tsx.includes('Stage 03'));
-      assert.ok(tsx.includes('Production'));
+      assert.ok(tsx.includes('MinimalistStatPods'));
+      assert.ok(tsx.includes('PerformanceChart'));
+      assert.ok(tsx.includes('CurrentDealsTable'));
+      assert.ok(tsx.includes('ExecutiveActivityRail'));
     });
   });
 

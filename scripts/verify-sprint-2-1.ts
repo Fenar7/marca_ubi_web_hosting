@@ -20,7 +20,7 @@ import { validateEnv, getEnv } from '../src/app/lib/env';
 import { createClient as createServerClient } from '../src/app/lib/supabase/server';
 import { createClient as createBrowserClient } from '../src/app/lib/supabase/client';
 import { updateSession } from '../src/app/lib/supabase/middleware';
-import { sanitizeRedirectUrl } from '../src/app/api/auth/callback/route';
+import { sanitizeRedirectUrl } from '../src/app/lib/auth-redirect';
 
 async function runSprint21Verification() {
   console.log('------------------------------------------------------------');

@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
-import { KpiRibbon } from '@/app/admin/components/kpi';
+import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
 import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable';
 import { DealsWorkspaceClient, type HydratedDealItem } from './DealsWorkspaceClient';
 import styles from './deals.module.scss';
@@ -176,7 +176,7 @@ export default async function AdminDealsPage(
       </header>
 
       <section className={styles.kpiContainer} aria-label="Pipeline Metrics">
-        <KpiRibbon initialData={initialKpis} />
+        <MinimalistStatPods metrics={initialKpis} />
       </section>
 
       {/* Main Deals Grid with Filter Controls */}
