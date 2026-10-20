@@ -3,7 +3,7 @@
 // Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
 // Strict Anti-AI-Slop: Zero generic blue, zero drop shadows, 44px touch targets, tabular-nums
 
-$backdrop-bg: rgba(15, 23, 42, 0.45);
+$backdrop-bg: rgba(0, 0, 0, 0.6);
 $modal-bg: #ffffff;
 $border-color: var(--admin-border-default, #e2e5ea);
 $border-strong: var(--admin-border-strong, #1f242f);
@@ -38,7 +38,7 @@ $accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
   background: $modal-bg;
   border: 1px solid $border-color;
   border-radius: 16px;
-  box-shadow: 0 24px 64px rgba(31, 36, 47, 0.16), 0 4px 12px rgba(31, 36, 47, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -89,6 +89,7 @@ $accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
 }
 
 .closeButton {
+  position: relative;
   width: 32px;
   height: 32px;
   min-height: 32px;
@@ -101,6 +102,18 @@ $accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
 
   &:hover {
     background: $surface-muted;
@@ -226,6 +239,7 @@ $accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
 }
 
 .cancelButton {
+  position: relative;
   min-height: 38px;
   padding: 0 1rem;
   border-radius: 8px;
@@ -238,6 +252,18 @@ $accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
   cursor: pointer;
   transition: all 0.15s ease;
 
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
   &:hover {
     background: var(--admin-surface-muted, #f0f2f5);
     color: $text-primary;
@@ -246,6 +272,7 @@ $accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
 }
 
 .saveButton {
+  position: relative;
   min-height: 38px;
   padding: 0 1.25rem;
   border-radius: 8px;
@@ -261,10 +288,21 @@ $accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
   gap: 0.4rem;
   transition: all 0.15s ease;
 
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
   &:hover:not(:disabled) {
     background: $accent-lemon-hover;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.08);
   }
 
   &:active:not(:disabled) {

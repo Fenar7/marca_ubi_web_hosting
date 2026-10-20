@@ -509,18 +509,19 @@ export function ClientDossierDrawer({
                   </div>
                 </div>
 
-                <div style={{ marginTop: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <div className={styles.notesSection}>
+                  <div className={styles.notesHeaderRow}>
                     <span className={styles.fieldLabel}>Executive Deal Notes</span>
                     <button
                       type="button"
                       onClick={() => setIsEditModalOpen(true)}
-                      style={{ background: 'none', border: 'none', color: 'var(--admin-text-secondary, #525965)', cursor: 'pointer', fontSize: '0.72rem', textDecoration: 'underline' }}
+                      className={styles.editNotesInlineBtn}
+                      aria-label="Edit executive deal notes"
                     >
                       {lead.notes ? 'Edit Notes' : '+ Add Notes'}
                     </button>
                   </div>
-                  <p style={{ fontSize: '0.82rem', color: lead.notes ? 'var(--admin-text-primary, #1f242f)' : 'var(--admin-text-secondary, #525965)', fontStyle: lead.notes ? 'normal' : 'italic', lineHeight: 1.5, margin: 0 }}>
+                  <p className={`${styles.notesContentText} ${!lead.notes ? styles.emptyNotes : ''}`}>
                     {lead.notes || 'No executive notes recorded for this engagement.'}
                   </p>
                 </div>

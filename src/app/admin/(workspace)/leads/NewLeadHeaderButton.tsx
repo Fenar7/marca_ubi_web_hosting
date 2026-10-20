@@ -8,7 +8,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styles from './leads.module.scss';
 
 export interface NewLeadHeaderButtonProps {
@@ -17,31 +17,20 @@ export interface NewLeadHeaderButtonProps {
 
 export function NewLeadHeaderButton({ userRole }: NewLeadHeaderButtonProps): React.ReactElement | null {
   const isViewer = userRole === 'viewer';
+  const [shortcutText, setShortcutText] = useState('⌘L');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+      const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent || navigator.platform);
+      setShortcutText(isMac ? '⌘L' : 'Ctrl+L');
+    }
+  }, []);
 
   const handleOpenModal = useCallback(() => {
     if (typeof window !== 'undefined' && !isViewer) {
       window.dispatchEvent(new CustomEvent('open-new-lead-modal'));
     }
   }, [isViewer]);
-
-  // Global ⌘L / Ctrl+L keyboard shortcut listener for instantaneous intake
-  useEffect(() => {
-    if (isViewer) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'l' && !e.shiftKey && !e.altKey) {
-        // Only intercept if not currently typing in an input/textarea
-        const activeTag = document.activeElement?.tagName?.toLowerCase();
-        if (activeTag === 'input' || activeTag === 'textarea') return;
-
-        e.preventDefault();
-        handleOpenModal();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isViewer, handleOpenModal]);
 
   if (isViewer) {
     return null;
@@ -52,8 +41,8 @@ export function NewLeadHeaderButton({ userRole }: NewLeadHeaderButtonProps): Rea
       type="button"
       className={styles.newLeadHeaderBtn}
       onClick={handleOpenModal}
-      title="Log new prospective engagement (⌘L)"
-      aria-label="Log new prospective engagement"
+      title={`Log New Lead (${shortcutText})`}
+      aria-label="Log New Lead"
     >
       <svg
         width="13"
@@ -70,7 +59,7 @@ export function NewLeadHeaderButton({ userRole }: NewLeadHeaderButtonProps): Rea
         <line x1="5" y1="12" x2="19" y2="12" />
       </svg>
       <span>+ Log New Lead</span>
-      <kbd className={styles.leadShortcutBadge}>⌘L</kbd>
+      <kbd className={styles.leadShortcutBadge}>{shortcutText}</kbd>
     </button>
   );
 }

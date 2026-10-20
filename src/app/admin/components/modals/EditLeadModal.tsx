@@ -51,10 +51,9 @@ export function EditLeadModal({
     exitDurationMs: 180,
   });
 
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Form Fields
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
@@ -99,6 +98,55 @@ export function EditLeadModal({
     }
   }, [lead, isOpen]);
 
+  // Keyboard accessibility: Escape key dismissal (WCAG 2.1 AA)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isPending) {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isPending, onClose]);
+
+  // Focus Trapping: Confines keyboard Tab navigation to modal dialog when open
+  useEffect(() => {
+    if (!isOpen || !dialogRef.current) return;
+    const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusables.length > 0) {
+      focusables[0].focus();
+    }
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      const elements = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (elements.length === 0) return;
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleTabKey);
+    return () => window.removeEventListener('keydown', handleTabKey);
+  }, [isOpen]);
+
+  /**
+   * Dispatches the atomic lead parameter update through updateLeadDetailsAction.
+   * Enforces non-destructive rollbacks on failure and updates local drawer cache optimistically.
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!lead) return;
@@ -174,6 +222,7 @@ export function EditLeadModal({
       aria-label="Edit Commercial Scope & Lead Details"
     >
       <div
+        ref={dialogRef}
         className={`${styles.modalDialog} ${isClosing ? styles.closing : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >
@@ -203,7 +252,6 @@ export function EditLeadModal({
             </div>
           )}
 
-          {/* Section 1: Contact Coordinates */}
           <div className={styles.sectionHeading}>Contact Coordinates</div>
           <div className={styles.formGrid}>
             <div className={styles.fieldGroup}>
@@ -268,7 +316,6 @@ export function EditLeadModal({
             </div>
           </div>
 
-          {/* Section 2: Organization & Market */}
           <div className={styles.sectionHeading}>Organization & Market</div>
           <div className={styles.formGrid}>
             <div className={styles.fieldGroup}>
@@ -314,7 +361,6 @@ export function EditLeadModal({
             </div>
           </div>
 
-          {/* Section 3: Commercial Engagement Scope */}
           <div className={styles.sectionHeading}>Commercial Scope & Terms</div>
           <div className={styles.formGrid}>
             <div className={styles.fieldGroup}>

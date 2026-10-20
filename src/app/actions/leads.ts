@@ -1500,7 +1500,7 @@ export async function updateLeadDetailsAction(
 
     const { data: currentLead, error: leadError } = await supabase
       .from('leads')
-      .select('id, assigned_to, converted_at, name, company')
+      .select('id, assigned_to, converted_at, name, company, email, phone')
       .eq('id', data.leadId)
       .maybeSingle();
 
@@ -1525,28 +1525,43 @@ export async function updateLeadDetailsAction(
       };
     }
 
+    // Enforce PostgreSQL chk_lead_contact_info constraint: at least one coordinate must be preserved
+    const finalEmail = data.email !== undefined
+      ? (data.email && data.email.trim().length > 0 ? normalizeEmail(data.email) : null)
+      : currentLead.email;
+    const finalPhone = data.phone !== undefined
+      ? (data.phone && data.phone.trim().length > 0 ? (normalizePhone(data.phone)?.phone || null) : null)
+      : currentLead.phone;
+
+    if (!finalEmail && !finalPhone) {
+      return {
+        success: false,
+        error: 'Invariant Violation: A lead must retain at least one valid contact coordinate (email or phone).',
+      };
+    }
+
     const updatePayload: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 
     if (data.name !== undefined) {
-      updatePayload.name = data.name.trim();
+      const trimmed = data.name.trim();
+      updatePayload.name = sanitizeHtml(trimmed) ?? trimmed;
     }
     if (data.company !== undefined) {
-      updatePayload.company = data.company && data.company.trim().length > 0 ? data.company.trim() : null;
+      updatePayload.company = data.company && data.company.trim().length > 0 ? sanitizeHtml(data.company.trim()) : null;
     }
     if (data.companyWebsite !== undefined) {
-      updatePayload.company_website = data.companyWebsite && data.companyWebsite.trim().length > 0 ? data.companyWebsite.trim() : null;
+      updatePayload.company_website = data.companyWebsite && data.companyWebsite.trim().length > 0 ? sanitizeHtml(data.companyWebsite.trim()) : null;
     }
     if (data.industry !== undefined) {
-      updatePayload.industry = data.industry && data.industry.trim().length > 0 ? data.industry.trim() : null;
+      updatePayload.industry = data.industry && data.industry.trim().length > 0 ? sanitizeHtml(data.industry.trim()) : null;
     }
     if (data.email !== undefined) {
-      updatePayload.email = data.email && data.email.trim().length > 0 ? normalizeEmail(data.email) : null;
+      updatePayload.email = finalEmail;
     }
     if (data.phone !== undefined) {
-      const phoneNorm = data.phone && data.phone.trim().length > 0 ? normalizePhone(data.phone) : null;
-      updatePayload.phone = phoneNorm ? phoneNorm.phone : null;
+      updatePayload.phone = finalPhone;
     }
     if (data.preferredChannel !== undefined) {
       updatePayload.preferred_channel = data.preferredChannel;
@@ -1555,7 +1570,7 @@ export async function updateLeadDetailsAction(
       updatePayload.service_category = data.serviceCategory;
     }
     if (data.budgetBracket !== undefined) {
-      updatePayload.budget_bracket = data.budgetBracket && data.budgetBracket.trim().length > 0 ? data.budgetBracket.trim() : null;
+      updatePayload.budget_bracket = data.budgetBracket && data.budgetBracket.trim().length > 0 ? sanitizeHtml(data.budgetBracket.trim()) : null;
     }
     if (data.expectedValue !== undefined) {
       updatePayload.expected_value = data.expectedValue;
@@ -1579,17 +1594,21 @@ export async function updateLeadDetailsAction(
       };
     }
 
-    // Immutable audit ledger entry
-    await supabase.from('lead_activities').insert({
+    // Immutable audit ledger entry - strictly enforces PostgreSQL CHECK constraint ('field_update')
+    const { error: activityError } = await supabase.from('lead_activities').insert({
       lead_id: data.leadId,
       actor_id: user.id,
-      activity_type: 'note',
+      activity_type: 'field_update',
       description: `Lead details & commercial scope updated by ${callerProfile.full_name}`,
       metadata: {
         updated_fields: Object.keys(updatePayload).filter((k) => k !== 'updated_at'),
         updated_at: updatePayload.updated_at,
       },
     });
+
+    if (activityError) {
+      console.error('[updateLeadDetailsAction] Activity ledger append failed:', activityError);
+    }
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
