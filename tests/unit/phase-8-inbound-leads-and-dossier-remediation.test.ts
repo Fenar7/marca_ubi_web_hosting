@@ -25,22 +25,22 @@ import {
 
 describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remediation', () => {
   describe('Block 1: CSS Stacking Context & Shell Isolation Invariants', () => {
-    it('verifies admin-shell.module.scss enforces isolation: isolate on .contentContainer', () => {
-      const scss = fs.readFileSync(
-        path.resolve(process.cwd(), 'src/app/admin/components/layout/admin-shell.module.scss'),
+    it('verifies ClientDossierDrawer mounts via React portal to document.body avoiding stacking context traps', () => {
+      const tsx = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx'),
         'utf8'
       );
-      assert.ok(scss.includes('isolation: isolate;'), 'Shell contentContainer must encapsulate page stacking context');
-      assert.ok(scss.includes('z-index: 1;'), 'Shell contentContainer must stay at level 1 beneath mobile drawer');
+      assert.ok(tsx.includes('createPortal(drawerContent, document.body)'), 'Must portal drawer to document.body');
+      assert.ok(tsx.includes('import { createPortal }'), 'Must import createPortal');
     });
 
-    it('verifies FilterActionBar elevates container to z-index: 60 and menu to z-index: 70', () => {
+    it('verifies FilterActionBar sets container to z-index: 25 and menu to z-index: 35', () => {
       const scss = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/components/FilterActionBar/FilterActionBar.module.scss'),
         'utf8'
       );
-      assert.ok(scss.includes('z-index: 60;'), 'FilterActionBar must be at z-index 60');
-      assert.ok(scss.includes('z-index: 70;'), 'FilterActionBar popover menu must be at z-index 70');
+      assert.ok(scss.includes('z-index: 25;'), 'FilterActionBar must be at z-index 25 above grid');
+      assert.ok(scss.includes('z-index: 35;'), 'FilterActionBar popover menu must be at z-index 35');
     });
 
     it('verifies LeadsDataGrid encapsulates virtualScrollContainer with isolation: isolate and z-index: 1', () => {
@@ -290,13 +290,29 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(scss.includes('font-variant-numeric: tabular-nums;'), 'Must enforce tabular-nums on valuationBadge');
     });
 
-    it('verifies ClientDossierDrawer eliminates inline styles for notes edit trigger', () => {
+    it('verifies ClientDossierDrawer eliminates inline styles for notes edit trigger and sanitizes lorem ipsum', () => {
       const tsx = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx'),
         'utf8'
       );
       assert.ok(tsx.includes('className={styles.editNotesInlineBtn}'), 'Must use dedicated SCSS class for notes edit');
       assert.ok(!tsx.includes("style={{ background: 'none'"), 'Must not have inline styles on notes button');
+      assert.ok(tsx.includes('sanitizeDealNotes'), 'Must filter out synthetic lorem ipsum notes');
+    });
+
+    it('verifies QuickActionComposer prevents two-line text wrapping on submit button, tabs, and duration', () => {
+      const scss = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/DossierDrawer/DossierDrawer.module.scss'),
+        'utf8'
+      );
+      const composerTsx = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/DossierDrawer/QuickActionComposer.tsx'),
+        'utf8'
+      );
+      // Submit button nowrap
+      assert.ok(scss.includes('white-space: nowrap;'), 'Must prevent button or tab text wrapping');
+      assert.ok(composerTsx.includes('<span>Note</span>'), 'Must use concise single-word Note tab label');
+      assert.ok(scss.includes('grid-template-columns: repeat(5, minmax(0, 1fr))'), 'Must arrange 5 duration presets on single horizontal row');
     });
   });
 });

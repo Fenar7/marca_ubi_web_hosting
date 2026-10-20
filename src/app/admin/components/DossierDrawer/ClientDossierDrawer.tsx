@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { getLeadDetails } from '@/app/actions/leads';
 import type { LeadActivityWithActor } from '@/types/crm';
 import { OrganizationDossier } from './OrganizationDossier';
@@ -57,6 +58,15 @@ export interface ClientDossierDrawerProps {
   onLeadUpdated?: () => void;
 }
 
+function sanitizeDealNotes(notes: string | null | undefined): string | null {
+  if (!notes) return null;
+  const trimmed = notes.trim();
+  if (/^(possimus|lorem|ipsum|consectetur|adipiscing)/i.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
+}
+
 export function ClientDossierDrawer({
   leadId,
   isOpen,
@@ -64,6 +74,7 @@ export function ClientDossierDrawer({
   initialLead,
   onLeadUpdated,
 }: ClientDossierDrawerProps): React.ReactElement | null {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [lead, setLead] = useState<LeadDossierData | null>(initialLead || null);
   const [activities, setActivities] = useState<LeadActivityWithActor[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -76,6 +87,10 @@ export function ClientDossierDrawer({
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Animation lifecycle and body scroll lock
   useEffect(() => {
@@ -265,7 +280,9 @@ export function ClientDossierDrawer({
 
   if (!shouldRender) return null;
 
-  return (
+  const activeNotes = sanitizeDealNotes(lead?.notes);
+
+  const drawerContent = (
     <div
       className={`${styles.drawerOverlay} ${isClosing ? styles.closing : ''}`}
       onClick={(e) => {
@@ -518,11 +535,11 @@ export function ClientDossierDrawer({
                       className={styles.editNotesInlineBtn}
                       aria-label="Edit executive deal notes"
                     >
-                      {lead.notes ? 'Edit Notes' : '+ Add Notes'}
+                      {activeNotes ? 'Edit Notes' : '+ Add Notes'}
                     </button>
                   </div>
-                  <p className={`${styles.notesContentText} ${!lead.notes ? styles.emptyNotes : ''}`}>
-                    {lead.notes || 'No executive notes recorded for this engagement.'}
+                  <p className={`${styles.notesContentText} ${!activeNotes ? styles.emptyNotes : ''}`}>
+                    {activeNotes || 'No executive notes recorded for this engagement. Click "+ Add Notes" to record strategic client takeaways.'}
                   </p>
                 </div>
               </div>
@@ -567,4 +584,10 @@ export function ClientDossierDrawer({
       )}
     </div>
   );
+
+  if (typeof window !== 'undefined' && mounted) {
+    return createPortal(drawerContent, document.body);
+  }
+
+  return drawerContent;
 }
