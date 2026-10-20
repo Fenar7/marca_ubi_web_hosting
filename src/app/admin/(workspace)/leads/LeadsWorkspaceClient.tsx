@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
 import {
   FilterActionBar,
@@ -98,7 +98,17 @@ function LeadsWorkspaceContent({
   availableStatuses: initialStatuses,
   userRole,
 }: LeadsWorkspaceClientProps): React.ReactElement {
+  const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Listen for manual lead creations to refresh workspace data
+  useEffect(() => {
+    const handleLeadCreated = () => {
+      router.refresh();
+    };
+    window.addEventListener('lead-created', handleLeadCreated);
+    return () => window.removeEventListener('lead-created', handleLeadCreated);
+  }, [router]);
 
   // Local state initialized with server-hydrated leads for optimistic in-memory reconciliation
   const [leads, setLeads] = useState<HydratedLeadItem[]>(initialLeads);

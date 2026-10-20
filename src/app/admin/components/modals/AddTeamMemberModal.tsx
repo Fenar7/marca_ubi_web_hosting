@@ -39,6 +39,8 @@ export function AddTeamMemberModal({
 
   const [isPending, startTransition] = useTransition();
   const modalRef = useRef<HTMLDivElement>(null);
+  const promptKeepBtnRef = useRef<HTMLButtonElement>(null);
+  const promptDiscardBtnRef = useRef<HTMLButtonElement>(null);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -112,6 +114,9 @@ export function AddTeamMemberModal({
   const requestClose = useCallback(() => {
     if (isDirty) {
       setShowDiscardPrompt(true);
+      setTimeout(() => {
+        promptKeepBtnRef.current?.focus();
+      }, 50);
     } else {
       onClose();
     }
@@ -129,20 +134,32 @@ export function AddTeamMemberModal({
         return;
       }
 
-      if (event.key === 'Tab' && isOpen && modalRef.current) {
-        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
+      if (event.key === 'Tab' && isOpen) {
+        if (showDiscardPrompt) {
+          event.preventDefault();
+          if (document.activeElement === promptKeepBtnRef.current) {
+            promptDiscardBtnRef.current?.focus();
+          } else {
+            promptKeepBtnRef.current?.focus();
+          }
+          return;
+        }
 
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
         }
       }
     };
@@ -550,7 +567,6 @@ export function AddTeamMemberModal({
         <div
           className={styles.promptOverlay}
           onClick={() => setShowDiscardPrompt(false)}
-          aria-hidden="true"
         >
           <div
             className={styles.promptModal}
@@ -567,6 +583,7 @@ export function AddTeamMemberModal({
             </p>
             <div className={styles.promptActions}>
               <button
+                ref={promptKeepBtnRef}
                 type="button"
                 className={styles.promptKeepBtn}
                 onClick={() => setShowDiscardPrompt(false)}
@@ -574,6 +591,7 @@ export function AddTeamMemberModal({
                 Keep Editing
               </button>
               <button
+                ref={promptDiscardBtnRef}
                 type="button"
                 className={styles.promptDiscardBtn}
                 onClick={() => {

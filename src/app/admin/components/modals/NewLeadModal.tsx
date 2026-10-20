@@ -46,6 +46,8 @@ export function NewLeadModal({
   const [isPending, startTransition] = useTransition();
   const nameInputRef = useRef<HTMLInputElement>(null);
   const modalDialogRef = useRef<HTMLDivElement>(null);
+  const promptKeepBtnRef = useRef<HTMLButtonElement>(null);
+  const promptDiscardBtnRef = useRef<HTMLButtonElement>(null);
 
   // Form Field State
   const [name, setName] = useState('');
@@ -122,12 +124,20 @@ export function NewLeadModal({
     email.trim().length > 0 ||
     phone.trim().length > 0 ||
     notes.trim().length > 0 ||
-    (typeof expectedValue === 'number' && expectedValue !== 500000)
+    (typeof expectedValue === 'number' && expectedValue !== 500000) ||
+    preferredChannel !== 'Phone' ||
+    serviceCategory !== 'Web & Digital' ||
+    budgetBracket !== '₹5L - ₹15L' ||
+    priority !== 'Medium' ||
+    (currentUser.role !== 'sales_executive' && assignedTo !== currentUser.id)
   );
 
   const requestClose = useCallback(() => {
     if (isDirty) {
       setShowDiscardPrompt(true);
+      setTimeout(() => {
+        promptKeepBtnRef.current?.focus();
+      }, 50);
     } else {
       onClose();
     }
@@ -145,20 +155,32 @@ export function NewLeadModal({
         return;
       }
 
-      if (event.key === 'Tab' && isOpen && modalDialogRef.current) {
-        const focusable = modalDialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
+      if (event.key === 'Tab' && isOpen) {
+        if (showDiscardPrompt) {
+          event.preventDefault();
+          if (document.activeElement === promptKeepBtnRef.current) {
+            promptDiscardBtnRef.current?.focus();
+          } else {
+            promptKeepBtnRef.current?.focus();
+          }
+          return;
+        }
 
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
+        if (modalDialogRef.current) {
+          const focusable = modalDialogRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
         }
       }
     };
@@ -216,6 +238,15 @@ export function NewLeadModal({
         window.dispatchEvent(
           new CustomEvent('lead-created', {
             detail: { leadId: result.leadId, id: result.id },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('crm-toast', {
+            detail: {
+              type: 'success',
+              title: 'Lead Created',
+              description: `Prospective lead "${name}" has been recorded.`,
+            },
           })
         );
         onClose();
@@ -598,7 +629,6 @@ export function NewLeadModal({
         <div
           className={styles.promptOverlay}
           onClick={() => setShowDiscardPrompt(false)}
-          aria-hidden="true"
         >
           <div
             className={styles.promptModal}
@@ -615,6 +645,7 @@ export function NewLeadModal({
             </p>
             <div className={styles.promptActions}>
               <button
+                ref={promptKeepBtnRef}
                 type="button"
                 className={styles.promptKeepBtn}
                 onClick={() => setShowDiscardPrompt(false)}
@@ -622,6 +653,7 @@ export function NewLeadModal({
                 Keep Editing
               </button>
               <button
+                ref={promptDiscardBtnRef}
                 type="button"
                 className={styles.promptDiscardBtn}
                 onClick={() => {

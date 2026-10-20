@@ -28,6 +28,8 @@ export const OnHoldModal: React.FC<OnHoldModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  if (!isOpen) return null;
+
   // Tomorrow's date string as minimum allowed revisit date
   const tomorrowStr = (() => {
     const d = new Date();
@@ -58,7 +60,7 @@ export const OnHoldModal: React.FC<OnHoldModalProps> = ({
 
       if (e.key === 'Tab' && containerRef.current) {
         const focusable = containerRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         if (focusable.length === 0) return;
 
@@ -97,35 +99,41 @@ export const OnHoldModal: React.FC<OnHoldModalProps> = ({
     }
 
     startTransition(async () => {
-      const result = await transitionToOnHoldAction({
-        leadId,
-        revisitDate,
-        reason,
-        parkingNotes: parkingNotes.trim() || null,
-      });
+      try {
+        const result = await transitionToOnHoldAction({
+          leadId,
+          revisitDate,
+          reason,
+          parkingNotes: parkingNotes.trim() || null,
+        });
 
-      if (!result.success) {
-        setErrorMessage(result.error || 'Failed to place deal on hold.');
-        return;
-      }
+        if (!result.success) {
+          setErrorMessage(result.error || 'Failed to place deal on hold.');
+          return;
+        }
 
-      if (onSuccess && result.data?.revisitDate) {
-        onSuccess(result.data.revisitDate);
-      }
+        if (onSuccess && result.data?.revisitDate) {
+          onSuccess(result.data.revisitDate);
+        }
 
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('crm-toast', {
-            detail: {
-              type: 'warning',
-              title: 'Deal Placed On Hold',
-              description: `Overdue alerts suppressed until ${revisitDate}.`,
-            },
-          })
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('crm-toast', {
+              detail: {
+                type: 'warning',
+                title: 'Deal Placed On Hold',
+                description: `Overdue alerts suppressed until ${revisitDate}.`,
+              },
+            })
+          );
+        }
+
+        onClose();
+      } catch (err: unknown) {
+        setErrorMessage(
+          err instanceof Error ? err.message : 'An unexpected error occurred while placing deal on hold.'
         );
       }
-
-      onClose();
     });
   };
 
@@ -135,6 +143,9 @@ export const OnHoldModal: React.FC<OnHoldModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="onhold-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isPending) onClose();
+      }}
     >
       <div className={styles.modalContainer} ref={containerRef}>
         <header className={styles.modalHeader}>
@@ -159,6 +170,7 @@ export const OnHoldModal: React.FC<OnHoldModalProps> = ({
           </button>
         </header>
 
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <div className={styles.modalBody}>
           <div className={styles.alertNoticeBanner}>
             <svg
@@ -253,14 +265,14 @@ export const OnHoldModal: React.FC<OnHoldModalProps> = ({
             Cancel
           </button>
           <button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
             disabled={isPending}
             className={styles.submitButton}
           >
             {isPending ? 'Updating...' : 'Confirm On Hold Status'}
           </button>
         </footer>
+        </form>
       </div>
     </div>
   );
