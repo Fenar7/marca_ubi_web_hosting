@@ -6,7 +6,7 @@
  *              Executes reactive filter synchronization against Next.js useSearchParams,
  *              manages AbortController request cancellation for race condition prevention,
  *              powers the dual-currency toggle (INR ₹ / USD $), and renders the 5 canonical
- *              Stripe Scorecard cards with zero layout shift.
+ *              Logip x Sypher Scorecards with micro-meters and zero layout shift.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -303,7 +303,7 @@ function KpiRibbonContent({
         </div>
       </div>
 
-      {/* 5 Canonical Stripe Scorecards Grid */}
+      {/* 5 Canonical Logip x Sypher Scorecards Grid */}
       <div className={styles.kpiGrid}>
         {/* Card 1: Total Leads */}
         <KpiCard
@@ -318,7 +318,7 @@ function KpiRibbonContent({
           href="/admin/leads"
           titleTooltip={`Total Leads: ${metrics.totalLeads} inquiries recorded`}
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
           }
@@ -329,25 +329,27 @@ function KpiRibbonContent({
           id="potential-value"
           label="Potential Value"
           value={formatKpiCurrency(metrics.potentialValue, currency)}
-          subtext={
-            <span className={styles.neutralSubtext}>
-              {metrics.potentialLeads} Active Negotiations
-            </span>
-          }
           secondaryBadge={
             metrics.stageWeightedValue > 0 ? (
               <span
                 className={styles.weightedValuationBadge}
                 title={`Stage-Weighted Valuation: ${formatFullCurrency(metrics.stageWeightedValue, currency)} (Win-rate weighted forecast)`}
               >
-                W: {formatKpiCurrency(metrics.stageWeightedValue, currency)}
+                <span className={styles.weightedPrefix}>W:</span>
+                <span className={styles.weightedAmount}>{formatKpiCurrency(metrics.stageWeightedValue, currency)}</span>
+                <span className={styles.weightedSuffix}>weighted</span>
               </span>
             ) : undefined
+          }
+          subtext={
+            <span className={styles.neutralSubtext}>
+              {metrics.potentialLeads} Active Negotiations
+            </span>
           }
           href="/admin/deals?bucket=potential"
           titleTooltip={`Unweighted Potential Value: ${formatFullCurrency(metrics.potentialValue, currency)}`}
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="1" x2="12" y2="23" />
               <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
             </svg>
@@ -370,7 +372,7 @@ function KpiRibbonContent({
           href="/admin/deals?bucket=converted"
           titleTooltip={`Cumulative Converted Revenue: ${formatFullCurrency(metrics.convertedRevenue, currency)}`}
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
               <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
               <path d="M4 22h16" />
@@ -386,15 +388,44 @@ function KpiRibbonContent({
           id="conversion-rate"
           label="Conversion Rate"
           value={`${metrics.conversionRate.toFixed(1)}%`}
+          secondaryBadge={
+            <div
+              className={styles.microMeterTrack}
+              title={`Conversion Rate: ${metrics.conversionRate.toFixed(1)}% | Studio Benchmark: 12.0%`}
+              role="progressbar"
+              aria-valuenow={metrics.conversionRate}
+              aria-valuemin={0}
+              aria-valuemax={20}
+            >
+              <div
+                className={styles.microMeterFill}
+                style={{ width: `${Math.min(100, Math.max(4, (metrics.conversionRate / 20) * 100))}%` }}
+              />
+              <div
+                className={styles.microMeterBenchmark}
+                style={{ left: '60%' }}
+                title="Studio Benchmark: 12.0%"
+              />
+            </div>
+          }
           subtext={
-            <span className={styles.neutralSubtext}>
-              Studio Benchmark 12.0%
-            </span>
+            <div className={styles.conversionMetricsRow}>
+              <span className={styles.neutralSubtext}>Benchmark 12.0%</span>
+              <span
+                className={
+                  metrics.conversionRate >= 12
+                    ? styles.positiveTrend
+                    : styles.neutralSubtext
+                }
+              >
+                {metrics.conversionRate >= 12 ? '↑ Above Target' : 'Pacing to Target'}
+              </span>
+            </div>
           }
           href="/admin/deals?bucket=converted"
           titleTooltip={`Studio Conversion Rate: ${metrics.conversionRate.toFixed(1)}% (Excluding invalid submissions)`}
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="19" y1="5" x2="5" y2="19" />
               <circle cx="6.5" cy="6.5" r="2.5" />
               <circle cx="17.5" cy="17.5" r="2.5" />
@@ -427,7 +458,7 @@ function KpiRibbonContent({
               : 'Zero overdue follow-ups across the agency pipeline'
           }
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
