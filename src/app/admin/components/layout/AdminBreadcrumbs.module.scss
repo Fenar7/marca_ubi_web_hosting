@@ -4,7 +4,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-@use '../../styles/tokens.scss' as *;
+@use '../../styles/mixins.scss' as *;
 
 .breadcrumbNav {
   display: flex;
