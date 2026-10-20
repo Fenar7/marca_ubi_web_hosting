@@ -197,6 +197,9 @@ export async function updateLeadStatusInlineAction(
     }
 
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -363,6 +366,9 @@ export async function updateLeadPriorityInlineAction(
     }
 
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,

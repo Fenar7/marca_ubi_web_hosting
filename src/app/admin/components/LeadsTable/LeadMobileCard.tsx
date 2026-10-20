@@ -10,6 +10,7 @@
  */
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
 import { InlinePrioritySelect } from './InlinePrioritySelect';
@@ -51,6 +52,7 @@ export function LeadMobileCard({
   userRole,
   className,
 }: LeadMobileCardProps): React.ReactElement {
+  const router = useRouter();
   const [copied, setCopied] = useState<boolean>(false);
 
   const handleCopyLeadId = (e: React.MouseEvent): void => {
@@ -63,11 +65,7 @@ export function LeadMobileCard({
   };
 
   const handleCardClick = (): void => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', { detail: { leadId: lead.id } })
-      );
-    }
+    router.push(`/admin/leads/${lead.id}`);
   };
 
   const repInitials = (lead.assigned_to_name || 'Unassigned')

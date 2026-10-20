@@ -1,0 +1,109 @@
+/**
+ * @file not-found.module.scss
+ * @description Bespoke styling for 404 Deal Not Found surface.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.notFoundRoot {
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.notFoundCard {
+  max-width: 520px;
+  width: 100%;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-card, 12px);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(31, 36, 47, 0.06);
+}
+
+.statusPill {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 9999px;
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #525965);
+  margin-bottom: 1.25rem;
+}
+
+.title {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0 0 2rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  background: var(--admin-text-primary, #1f242f);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  min-height: 44px;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  min-height: 44px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-text-secondary, #525965);
+  }
+}

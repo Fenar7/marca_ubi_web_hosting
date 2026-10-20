@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
@@ -72,6 +72,7 @@ export function AdminWorkspaceShell({
   children,
   dueTasksCount,
 }: AdminWorkspaceShellProps): React.ReactElement {
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState<boolean>(false);
@@ -138,15 +139,9 @@ export function AdminWorkspaceShell({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
-        // If already on /admin/leads or /admin/deals, those workspaces mount ClientDossierDrawer directly
-        if (
-          typeof window !== 'undefined' &&
-          (window.location.pathname.startsWith('/admin/leads') ||
-           window.location.pathname.startsWith('/admin/deals'))
-        ) {
-          return;
-        }
-        handleOpenDrawer(id);
+        const isDeals = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin/deals');
+        const targetRoute = isDeals ? ('/admin/deals/' + id) : ('/admin/leads/' + id);
+        router.push(targetRoute);
       }
     };
 
@@ -156,7 +151,7 @@ export function AdminWorkspaceShell({
       window.removeEventListener('open-lead-modal', handleOpenLeadEvent);
       window.removeEventListener('open-lead-drawer', handleOpenLeadEvent);
     };
-  }, [handleOpenDrawer]);
+  }, [router]);
 
   // Listen to open-new-lead-modal and open-new-lead-drawer custom events dispatched by quick action buttons
   useEffect(() => {

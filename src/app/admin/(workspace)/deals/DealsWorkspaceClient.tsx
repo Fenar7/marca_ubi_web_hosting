@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
 import { updateLeadStatusInlineAction } from '@/app/actions/leadInlineActions';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
@@ -101,6 +101,7 @@ export function DealsWorkspaceClient({
   userRole,
 }: DealsWorkspaceClientProps): React.ReactElement {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const bucketParam = searchParams.get('bucket');
   const assignedToParam = searchParams.get('assigned_to');
   const searchParam = searchParams.get('search') || searchParams.get('q') || '';
@@ -236,8 +237,8 @@ export function DealsWorkspaceClient({
   };
 
   const handleInspectDeal = (dealId: string): void => {
-    setActiveDrawerDealId(dealId);
-    setIsDrawerOpen(true);
+    router.push(`/admin/deals/${dealId}`);
+
   };
 
   const handleCloseDrawer = (): void => {

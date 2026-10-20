@@ -11,6 +11,7 @@
  */
 
 import React, { useRef, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
@@ -64,6 +65,7 @@ export function LeadsDataGrid({
   userRole,
   className,
 }: LeadsDataGridProps): React.ReactElement {
+  const router = useRouter();
   const parentRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('lead_id');
@@ -126,11 +128,7 @@ export function LeadsDataGrid({
   });
 
   const handleRowClick = (leadId: string): void => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', { detail: { leadId } })
-      );
-    }
+    router.push(`/admin/leads/${leadId}`);
   };
 
   const handleCopyLeadId = (leadIdStr: string, e: React.MouseEvent): void => {

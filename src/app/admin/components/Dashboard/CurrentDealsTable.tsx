@@ -132,7 +132,7 @@ export const CurrentDealsTable: React.FC<CurrentDealsTableProps> = ({ deals }) =
           return (
             <Link
               key={deal.id}
-              href={`/admin/leads?leadId=${deal.id}`}
+              href={`/admin/deals/${deal.id}`}
               className={styles.dealRow}
               title={`Open ${deal.name} details`}
             >

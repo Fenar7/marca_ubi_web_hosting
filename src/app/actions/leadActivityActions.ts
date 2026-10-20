@@ -171,6 +171,9 @@ export async function logLeadActivityAction(
 
     // 7. Revalidate leads workspace cache
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     // 8. Construct hydrated outcome entity
     const hydratedResult: LeadActivityWithActor = {

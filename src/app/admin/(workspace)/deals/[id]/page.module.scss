@@ -1,0 +1,81 @@
+/**
+ * @file page.module.scss
+ * @description Dedicated styles for the Pipeline Deal dynamic route boundary states.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.deniedWrapper {
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.deniedCard {
+  max-width: 520px;
+  width: 100%;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-card, 12px);
+  padding: 2.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(31, 36, 47, 0.06);
+}
+
+.deniedBadge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  background: #fef3f2;
+  border: 1px solid #fee4e2;
+  border-radius: 9999px;
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b42318;
+  margin-bottom: 1rem;
+}
+
+.deniedTitle {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.deniedMessage {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0 0 1.75rem;
+}
+
+.returnBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  background: var(--admin-text-primary, #1f242f);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  min-height: 44px;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
