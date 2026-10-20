@@ -4,8 +4,8 @@
 // Strict Anti-AI-Slop: Zero cumulative layout shift (CLS < 0.01), 72px fixed row height
 
 // Dedicated 9-Column Collision-Free Grid Metrics matching LeadsDataGrid.module.scss
-$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 110px;
-$grid-min-width: 1095px;
+$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 140px;
+$grid-min-width: 1125px;
 
 .skeletonWrapper {
   background: #ffffff;
@@ -21,6 +21,8 @@ $grid-min-width: 1095px;
   display: grid;
   grid-template-columns: $grid-columns;
   min-width: $grid-min-width;
+  min-height: 44px;
+  height: 44px;
   align-items: center;
   background: var(--admin-surface-muted, #f0f2f5);
   border-bottom: 1px solid var(--admin-border-default, #e2e5ea);

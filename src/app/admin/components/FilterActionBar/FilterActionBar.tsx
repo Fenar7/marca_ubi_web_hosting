@@ -70,15 +70,6 @@ interface BucketTabConfig {
   isUrgent?: boolean;
 }
 
-const BUCKET_TABS: readonly BucketTabConfig[] = [
-  { id: 'all', label: 'All Deals' },
-  { id: 'open', label: 'Open' },
-  { id: 'potential', label: 'Potential' },
-  { id: 'converted', label: 'Won' },
-  { id: 'lost', label: 'Lost' },
-  { id: 'overdue', label: 'Overdue Today', isUrgent: true },
-] as const;
-
 const PRIORITY_OPTIONS: readonly FilterDropdownOption[] = [
   { id: 'High', label: 'High Priority', colorCode: '#991b1b' },
   { id: 'Medium', label: 'Medium Priority', colorCode: '#92400e' },
@@ -105,6 +96,7 @@ export function FilterActionBar({
   scope = 'deals',
   className,
 }: FilterActionBarProps): React.ReactElement {
+  const itemTypeLabel = scope === 'leads' ? 'inquiries' : 'deals';
   const bucketTabs: readonly BucketTabConfig[] = [
     { id: 'all', label: scope === 'leads' ? 'All Inquiries' : 'All Deals' },
     { id: 'open', label: 'Open' },
@@ -232,7 +224,7 @@ export function FilterActionBar({
               >
                 {hasOverdueLeads && <span className={styles.urgentPulseDot} aria-hidden="true" />}
                 <span>{tab.label}</span>
-                <span className={styles.tabCount} aria-label={`${count} deals`}>
+                <span className={styles.tabCount} aria-label={`${count} ${itemTypeLabel}`}>
                   {count}
                 </span>
               </button>
@@ -259,9 +251,9 @@ export function FilterActionBar({
                   handleClearSearch();
                 }
               }}
-              placeholder="Search deals, company, rep..."
+              placeholder={`Search ${itemTypeLabel}, company, rep...`}
               className={styles.searchInput}
-              aria-label="Search commercial pipeline"
+              aria-label={`Search commercial ${itemTypeLabel}`}
             />
             {localSearch.length > 0 && (
               <button

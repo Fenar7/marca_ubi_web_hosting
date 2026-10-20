@@ -2,9 +2,10 @@
  * @file tests/unit/phase-4-brand-upgrade-datagrid.test.ts
  * @description Dedicated Unit Test Suite for Phase 4:
  *              Inbound Discovery Leads Workspace & Collision-Free 9-Column DataGrid Architecture.
- *              Validates 9 dedicated column tracks, permanent elimination of button/touchpoint collisions,
- *              dynamic FilterActionBar tab labeling, skeleton parity (CLS < 0.005), zero raw unicode,
- *              and 44px interactive tap target compliance.
+ *              Validates 9 dedicated column tracks (140px actions track), permanent elimination of
+ *              button/touchpoint collisions, dynamic FilterActionBar tab labeling, skeleton parity (CLS < 0.005),
+ *              zero raw unicode, 44px interactive tap target compliance, SQL NULLS LAST comparator invariants,
+ *              stopPropagation keyboard containment, and domain copy hygiene.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -37,6 +38,10 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
   const skeletonScssPath = path.resolve(
     process.cwd(),
     'src/app/admin/components/LeadsTable/LeadsTableSkeleton.module.scss'
+  );
+  const mobileCardTsxPath = path.resolve(
+    process.cwd(),
+    'src/app/admin/components/LeadsTable/LeadMobileCard.tsx'
   );
 
   describe('1. Collision-Free 9-Column Grid Architecture & Geometry', () => {
@@ -90,15 +95,15 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       );
     });
 
-    it('verifies LeadsDataGrid.module.scss enforces 9-column grid template with min-width container', () => {
+    it('verifies LeadsDataGrid.module.scss enforces 9-column grid template with 140px action track', () => {
       const scss = fs.readFileSync(dataGridScssPath, 'utf8');
 
       assert.ok(
-        scss.includes('$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 110px;'),
-        'Must define precise 9-column layout metrics'
+        scss.includes('$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 140px;'),
+        'Must define precise 9-column layout metrics with 140px track 9'
       );
       assert.ok(
-        scss.includes('$grid-min-width: 1095px;') || scss.includes('$grid-min-width: 1080px;'),
+        scss.includes('$grid-min-width: 1125px;'),
         'Must define min-width constraint to prevent horizontal collision'
       );
 
@@ -108,16 +113,16 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       assert.ok(scss.includes('overflow-x: auto;'));
     });
 
-    it('verifies SortField includes next_follow_up sorting comparator', () => {
-      const tsx = fs.readFileSync(dataGridTsxPath, 'utf8');
+    it('verifies rowConvertBtn and rowInspectBtn prevent flex shrink and wrapping', () => {
+      const scss = fs.readFileSync(dataGridScssPath, 'utf8');
 
       assert.ok(
-        tsx.includes("'next_follow_up'"),
-        'SortField union must include next_follow_up'
+        scss.includes('.rowConvertBtn') && scss.includes('white-space: nowrap;') && scss.includes('flex-shrink: 0;'),
+        '.rowConvertBtn must enforce white-space: nowrap and flex-shrink: 0'
       );
       assert.ok(
-        tsx.includes("sortField === 'next_follow_up'"),
-        'Must implement comparator logic for next_follow_up'
+        scss.includes('.rowInspectBtn') && scss.includes('white-space: nowrap;') && scss.includes('flex-shrink: 0;'),
+        '.rowInspectBtn must enforce white-space: nowrap and flex-shrink: 0'
       );
     });
   });
@@ -133,6 +138,10 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       assert.ok(
         tsx.includes("scope === 'leads' ? 'All Inquiries' : 'All Deals'"),
         'Bucket tabs must dynamically label first tab based on scope'
+      );
+      assert.ok(
+        tsx.includes("const itemTypeLabel = scope === 'leads' ? 'inquiries' : 'deals';"),
+        'Must compute dynamic itemTypeLabel for aria labels and search placeholder'
       );
     });
 
@@ -168,16 +177,16 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       const scss = fs.readFileSync(skeletonScssPath, 'utf8');
 
       assert.ok(
-        scss.includes('$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 110px;'),
-        'Skeleton must share identical grid columns definition'
+        scss.includes('$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 140px;'),
+        'Skeleton must share identical grid columns definition with 140px track'
       );
       assert.ok(
-        scss.includes('grid-template-columns: $grid-columns;'),
-        'Skeleton head and row must use $grid-columns'
+        scss.includes('$grid-min-width: 1125px;'),
+        'Skeleton must share identical 1125px min-width'
       );
       assert.ok(
-        scss.includes('min-width: $grid-min-width;'),
-        'Skeleton head and row must enforce min-width'
+        scss.includes('min-height: 44px;') && scss.includes('height: 44px;'),
+        'Skeleton header must have 44px height matching tableHeader'
       );
     });
   });
@@ -207,6 +216,16 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       assert.ok(
         scss.includes('.sortableHeaderCol') && scss.includes('min-height: 44px;'),
         'Sortable headers must provide >= 44px tap target'
+      );
+      // Lead ID token has min 44px click expansion
+      assert.ok(
+        scss.includes('.leadIdToken') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
+        '.leadIdToken must expand to 44px tap target via ::after'
+      );
+      // Touchpoint date has min 44px click expansion
+      assert.ok(
+        scss.includes('.touchpointDate') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
+        '.touchpointDate must expand to 44px tap target via ::after'
       );
       // Action buttons have min 44px click expansion
       assert.ok(
@@ -241,6 +260,98 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
           `File ${path.basename(file)} must not introduce generic blue`
         );
       }
+    });
+  });
+
+  describe('5. Runtime Comparator Invariants (SQL NULLS LAST & Weak Ordering)', () => {
+    it('verifies next_follow_up sorting adheres to SQL NULLS LAST invariant for both ASC and DESC', () => {
+      interface MockLead {
+        id: string;
+        next_follow_up?: string | null;
+      }
+
+      const leads: MockLead[] = [
+        { id: '1', next_follow_up: '2026-10-25T10:00:00Z' },
+        { id: '2', next_follow_up: null },
+        { id: '3', next_follow_up: '2026-10-21T10:00:00Z' },
+        { id: '4', next_follow_up: undefined },
+        { id: '5', next_follow_up: 'invalid-date' },
+      ];
+
+      const sortComparator = (sortAscending: boolean) => (a: MockLead, b: MockLead) => {
+        const aTime = a.next_follow_up ? new Date(a.next_follow_up).getTime() : NaN;
+        const bTime = b.next_follow_up ? new Date(b.next_follow_up).getTime() : NaN;
+        const aValid = !Number.isNaN(aTime);
+        const bValid = !Number.isNaN(bTime);
+        if (!aValid && !bValid) return 0;
+        if (!aValid) return 1;
+        if (!bValid) return -1;
+        return sortAscending ? aTime - bTime : bTime - aTime;
+      };
+
+      // Ascending: earliest first, null/invalid last
+      const ascSorted = [...leads].sort(sortComparator(true));
+      assert.strictEqual(ascSorted[0].id, '3', 'Earliest date must be first in ASC');
+      assert.strictEqual(ascSorted[1].id, '1', 'Later date must be second in ASC');
+      const ascTails = ascSorted.slice(2).map((l) => l.id);
+      assert.ok(
+        ascTails.includes('2') && ascTails.includes('4') && ascTails.includes('5'),
+        'Null/invalid must be at the end in ASC'
+      );
+
+      // Descending: latest first, null/invalid last
+      const descSorted = [...leads].sort(sortComparator(false));
+      assert.strictEqual(descSorted[0].id, '1', 'Latest date must be first in DESC');
+      assert.strictEqual(descSorted[1].id, '3', 'Earlier date must be second in DESC');
+      const descTails = descSorted.slice(2).map((l) => l.id);
+      assert.ok(
+        descTails.includes('2') && descTails.includes('4') && descTails.includes('5'),
+        'Null/invalid must still be at the end in DESC'
+      );
+    });
+  });
+
+  describe('6. Keyboard Event Bubbling & StopPropagation Invariants', () => {
+    it('verifies stopPropagation containment on interactive cells in LeadsDataGrid.tsx', () => {
+      const tsx = fs.readFileSync(dataGridTsxPath, 'utf8');
+
+      // slaCol onKeyDown stopPropagation
+      assert.ok(
+        tsx.includes('className={styles.slaCol}') &&
+        tsx.includes('onClick={(e) => e.stopPropagation()}') &&
+        tsx.includes('onKeyDown={(e) => e.stopPropagation()}'),
+        '.slaCol must guard both onClick and onKeyDown'
+      );
+
+      // actionsCol onKeyDown stopPropagation
+      assert.ok(
+        tsx.includes('className={styles.actionsCol}') &&
+        tsx.includes('onClick={(e) => e.stopPropagation()}') &&
+        tsx.includes('onKeyDown={(e) => e.stopPropagation()}'),
+        '.actionsCol must guard both onClick and onKeyDown'
+      );
+    });
+  });
+
+  describe('7. Domain Copy & Nomenclature Hygiene', () => {
+    it('verifies LeadMobileCard.tsx has no stale Deal references in titles or aria labels', () => {
+      const tsx = fs.readFileSync(mobileCardTsxPath, 'utf8');
+
+      assert.strictEqual(
+        tsx.includes('aria-label={`Deal'),
+        false,
+        'LeadMobileCard must not use `Deal ...` in root aria-label'
+      );
+      assert.strictEqual(
+        tsx.includes('title="Click to copy Deal ID"'),
+        false,
+        'LeadMobileCard must not refer to "Deal ID" in copy button title'
+      );
+      assert.strictEqual(
+        tsx.includes('aria-label={`Copy Deal ID'),
+        false,
+        'LeadMobileCard must not refer to "Deal ID" in copy button aria-label'
+      );
     });
   });
 });

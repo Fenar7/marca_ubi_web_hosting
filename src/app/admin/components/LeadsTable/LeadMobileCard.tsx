@@ -53,7 +53,7 @@ export function LeadMobileCard({
 }: LeadMobileCardProps): React.ReactElement {
   const [copied, setCopied] = useState<boolean>(false);
 
-  const handleCopyDealId = (e: React.MouseEvent): void => {
+  const handleCopyLeadId = (e: React.MouseEvent): void => {
     e.stopPropagation();
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(lead.lead_id);
@@ -110,23 +110,23 @@ export function LeadMobileCard({
           handleCardClick();
         }
       }}
-      aria-label={`Deal ${lead.lead_id}: ${lead.name} from ${lead.company || 'Private Client'}`}
+      aria-label={`Lead ${lead.lead_id}: ${lead.name} from ${lead.company || 'Private Client'}`}
     >
-      {/* 1. Header: Deal ID, Timestamp, and Expected Valuation */}
+      {/* 1. Header: Lead ID, Timestamp, and Expected Valuation */}
       <div className={styles.cardHeader}>
         <div className={styles.headerLeft}>
           <button
             type="button"
-            onClick={handleCopyDealId}
+            onClick={handleCopyLeadId}
             onKeyDown={(e) => {
               e.stopPropagation();
               if (e.key === 'Enter' || e.key === ' ') {
-                handleCopyDealId(e as unknown as React.MouseEvent);
+                handleCopyLeadId(e as unknown as React.MouseEvent);
               }
             }}
             className={styles.leadIdToken}
-            title="Click to copy Deal ID"
-            aria-label={`Copy Deal ID ${lead.lead_id}`}
+            title="Click to copy Lead ID"
+            aria-label={`Copy Lead ID ${lead.lead_id}`}
           >
             {copied ? (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

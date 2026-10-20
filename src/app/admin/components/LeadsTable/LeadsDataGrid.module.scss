@@ -11,8 +11,8 @@
 
 // Dedicated 9-Column Collision-Free Grid Metrics
 // 1: Lead ID | 2: Client & Org | 3: Service Scope | 4: Funnel Stage | 5: Expected Value | 6: Representative | 7: Priority | 8: Next SLA | 9: Actions
-$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 110px;
-$grid-min-width: 1095px;
+$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 140px;
+$grid-min-width: 1125px;
 
 // Desktop & Tablet Virtualized View
 .virtualScrollContainer {
@@ -173,6 +173,7 @@ $grid-min-width: 1095px;
 
 // Columns Specific Styling
 .leadIdToken {
+  position: relative;
   font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.72rem;
   font-weight: 600;
@@ -187,6 +188,18 @@ $grid-min-width: 1095px;
   gap: 0.35rem;
   transition: all 0.15s ease;
   outline: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
 
   &:hover {
     background: var(--admin-surface-hover, #e4e7ec);
@@ -303,6 +316,8 @@ $grid-min-width: 1095px;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s ease;
   user-select: none;
 
@@ -335,6 +350,7 @@ $grid-min-width: 1095px;
 }
 
 .touchpointDate {
+  position: relative;
   font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.68rem;
   color: var(--admin-text-secondary, #525965);
@@ -345,6 +361,18 @@ $grid-min-width: 1095px;
   text-align: left;
   cursor: pointer;
   transition: color 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
 
   &:hover {
     color: var(--admin-text-primary, #1f242f);
@@ -406,6 +434,8 @@ $grid-min-width: 1095px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -446,6 +476,7 @@ $grid-min-width: 1095px;
   transition: opacity 0.15s ease, transform 0.15s ease;
 
   @media (min-width: 1024px) {
+    display: none;
     opacity: 0;
     pointer-events: none;
     transform: translateX(4px);
@@ -454,6 +485,9 @@ $grid-min-width: 1095px;
 
 .virtualRow:hover .rowQuickActions,
 .virtualRow:focus-within .rowQuickActions {
+  @media (min-width: 1024px) {
+    display: flex;
+  }
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0);

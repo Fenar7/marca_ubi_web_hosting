@@ -98,9 +98,14 @@ export function LeadsDataGrid({
       }
 
       if (sortField === 'next_follow_up') {
-        const aDate = a.next_follow_up ? new Date(a.next_follow_up).getTime() : 0;
-        const bDate = b.next_follow_up ? new Date(b.next_follow_up).getTime() : 0;
-        return sortAscending ? aDate - bDate : bDate - aDate;
+        const aTime = a.next_follow_up ? new Date(a.next_follow_up).getTime() : NaN;
+        const bTime = b.next_follow_up ? new Date(b.next_follow_up).getTime() : NaN;
+        const aValid = !Number.isNaN(aTime);
+        const bValid = !Number.isNaN(bTime);
+        if (!aValid && !bValid) return 0;
+        if (!aValid) return 1; // SQL NULLS LAST standard: null/invalid dates always sort to bottom
+        if (!bValid) return -1;
+        return sortAscending ? aTime - bTime : bTime - aTime;
       }
 
       const aStr = String(aVal || '').toLowerCase();
@@ -443,13 +448,34 @@ export function LeadsDataGrid({
                 </div>
 
                 {/* Col 8: Next SLA Touchpoint */}
-                <div className={styles.slaCol}>
+                <div
+                  className={styles.slaCol}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
                   <button
                     type="button"
                     className={styles.touchpointDate}
-                      disabled={userRole === 'viewer'}
-                      onClick={(e) => {
-                        e.stopPropagation();
+                    disabled={userRole === 'viewer'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (userRole === 'viewer') return;
+                      if (typeof window !== 'undefined') {
+                        window.dispatchEvent(
+                          new CustomEvent('open-scheduler-modal', {
+                            detail: {
+                              leadId: lead.id,
+                              leadName: lead.name,
+                              company: lead.company,
+                              currentFollowUpDate: lead.next_follow_up,
+                            },
+                          })
+                        );
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === 'Enter' || e.key === ' ') {
                         if (userRole === 'viewer') return;
                         if (typeof window !== 'undefined') {
                           window.dispatchEvent(
@@ -463,16 +489,17 @@ export function LeadsDataGrid({
                             })
                           );
                         }
-                      }}
-                      title={
-                        userRole === 'viewer'
-                          ? 'Read-only access'
-                          : lead.next_follow_up
-                          ? `Next Touchpoint: ${new Date(lead.next_follow_up).toLocaleString()} (Click to reschedule)`
-                          : 'Click to schedule next touchpoint'
                       }
-                      aria-label={`Schedule follow-up for ${lead.company || lead.name}`}
-                    >
+                    }}
+                    title={
+                      userRole === 'viewer'
+                        ? 'Read-only access'
+                        : lead.next_follow_up
+                        ? `Next Touchpoint: ${new Date(lead.next_follow_up).toLocaleString()} (Click to reschedule)`
+                        : 'Click to schedule next touchpoint'
+                    }
+                    aria-label={`Schedule follow-up for ${lead.company || lead.name}`}
+                  >
                       {followUpText}
                     </button>
                     <OverdueBadge
@@ -485,7 +512,11 @@ export function LeadsDataGrid({
                 </div>
 
                 {/* Col 9: Action Controls Strip */}
-                <div className={styles.actionsCol} onClick={(e) => e.stopPropagation()}>
+                <div
+                  className={styles.actionsCol}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
                   {lead.bucket === 'open' && userRole !== 'viewer' ? (
                     <button
                       type="button"
@@ -498,6 +529,18 @@ export function LeadsDataGrid({
                               detail: { leadId: lead.id },
                             })
                           );
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(
+                              new CustomEvent('open-convert-lead-modal', {
+                                detail: { leadId: lead.id },
+                              })
+                            );
+                          }
                         }
                       }}
                       title="1-Click Convert Inbound Lead to Pipeline Deal"
@@ -527,35 +570,21 @@ export function LeadsDataGrid({
                   )}
 
                   <div className={styles.rowQuickActions}>
-                      {lead.phone && (
-                        <a
-                          href={`tel:${lead.phone}`}
-                          className={styles.actionBtn}
-                          onClick={(e) => e.stopPropagation()}
-                          title={`Direct Phone Call: ${lead.phone}`}
-                          aria-label={`Call ${lead.name} at ${lead.phone}`}
-                        >
-                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                          </svg>
-                        </a>
-                      )}
-                      <button
-                        type="button"
+                    {lead.phone && (
+                      <a
+                        href={`tel:${lead.phone}`}
                         className={styles.actionBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRowClick(lead.id);
-                        }}
-                        title="Inspect Client Dossier"
-                        aria-label={`Inspect dossier for ${lead.lead_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        title={`Direct Phone Call: ${lead.phone}`}
+                        aria-label={`Call ${lead.name} at ${lead.phone}`}
                       >
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                          <circle cx="12" cy="12" r="3" />
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                         </svg>
-                      </button>
-                    </div>
+                      </a>
+                    )}
+                  </div>
                   </div>
                 </div>
             );
