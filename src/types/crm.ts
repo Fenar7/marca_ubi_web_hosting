@@ -831,6 +831,7 @@ export interface CurrentUserSession {
   email: string;
   role: CrmUserRole;
   jobTitle?: string;
+  avatarUrl?: string | null;
   allowed_tabs?: string[];
   feature_permissions?: FeaturePermissions;
 }

@@ -61,10 +61,6 @@ export function AdminSidebar({
             alt="Marca Ubi."
             className={styles.brandLogo}
           />
-          <div className={styles.brandMeta}>
-            <span className={styles.brandTitle}>Marca Ubi</span>
-            <span className={styles.systemTag}>CRM Portal</span>
-          </div>
         </Link>
         <button
           type="button"

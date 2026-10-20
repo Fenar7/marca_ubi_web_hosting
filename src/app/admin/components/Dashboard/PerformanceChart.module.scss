@@ -1,0 +1,182 @@
+/**
+ * @file PerformanceChart.module.scss
+ * @description Interactive Dual-Month Performance Area Chart inspired by Logip (original-f0a51857256dd5802cfc7a47a6f070a2.webp).
+ *              Features native SVG Bézier area curves, soft Marca Orange (#ff6100) gradient fill,
+ *              refined Slate comparison line, and an interactive obsidian floating tooltip capsule.
+ */
+
+.chartCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  margin-bottom: 1.75rem;
+  position: relative;
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.chartTitle {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.legendGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+
+  &.orange {
+    background-color: #ff6100;
+  }
+
+  &.slate {
+    background-color: #94a3b8;
+  }
+}
+
+.filterSelect {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-surface-muted, #f8fafc);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f1f5f9);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.svgWrapper {
+  width: 100%;
+  position: relative;
+  overflow: visible;
+}
+
+.chartSvg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  display: block;
+}
+
+.axisText {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 10px;
+  fill: var(--admin-text-secondary, #6b7280);
+}
+
+.gridLine {
+  stroke: var(--admin-border-default, #f1f5f9);
+  stroke-width: 1;
+}
+
+.activeLine {
+  stroke: #cbd5e1;
+  stroke-dasharray: 4 4;
+  stroke-width: 1.5;
+}
+
+.activeCircleOrange {
+  fill: #ff6100;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+}
+
+.activeCircleSlate {
+  fill: #94a3b8;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+}
+
+/* Floating Dark Obsidian Tooltip Capsule (Logip Aesthetic) */
+.tooltipCapsule {
+  position: absolute;
+  top: 15px;
+  pointer-events: none;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 20;
+  transform: translateX(-50%);
+  transition: left 0.08s ease-out;
+  white-space: nowrap;
+}
+
+.tooltipDate {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #f8fafc;
+  margin-bottom: 2px;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltipLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #94a3b8;
+}
+
+.tooltipValue {
+  font-weight: 600;
+  color: #ffffff;
+  font-family: var(--font-admin-code, monospace);
+}

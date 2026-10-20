@@ -1,0 +1,375 @@
+/**
+ * @file ExecutiveActivityRail.module.scss
+ * @description Executive Intelligence & Activity Rail for the Executive Overview Dashboard.
+ *              Directly benchmarked against Logip's right column (original-f0a51857256dd5802cfc7a47a6f070a2.webp).
+ *              Houses the User Profile Spotlight card, quick communication actions, live chronological timeline,
+ *              attachment cards, and an interactive quick-note composer with Signature Lemon Yellow button.
+ */
+
+.railContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* 1. Profile Spotlight Card */
+.profileCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+}
+
+.avatarContainer {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.avatarImage {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(31, 36, 47, 0.1);
+}
+
+.avatarFallback {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 2px solid #ffffff;
+  color: var(--admin-text-primary, #1f242f);
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(31, 36, 47, 0.1);
+}
+
+.onlineBadge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #10b981;
+  border: 2px solid #ffffff;
+}
+
+.userName {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  margin: 0;
+}
+
+.userHandle {
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary, #525965);
+  margin-top: 2px;
+  margin-bottom: 1rem;
+}
+
+.quickActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.actionIconBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--admin-surface-muted, #f8fafc);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-secondary, #525965);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #ffffff;
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+/* 2. Activity Feed Card */
+.activityCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.activityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.activityTitle {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  margin: 0;
+}
+
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.activityItem {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.actorAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: var(--admin-text-primary, #1f242f);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+}
+
+.itemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.actorName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+}
+
+.itemTime {
+  font-size: 0.7rem;
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.itemAction {
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary, #525965);
+  line-height: 1.35;
+}
+
+.messageBubble {
+  background: #f8fafc;
+  border: 1px solid #e2e5ea;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.75rem;
+  color: var(--admin-text-primary, #1f242f);
+  line-height: 1.4;
+  position: relative;
+}
+
+.attachmentCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e5ea;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.attachmentInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.attachmentIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: #ff6100;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.attachmentText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.attachmentName {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachmentSize {
+  font-size: 0.65rem;
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+/* 3. Quick Note Composer with Signature Lemon Yellow Action */
+.composerBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+}
+
+.composerInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.78rem;
+  color: var(--admin-text-primary, #1f242f);
+  outline: none;
+  resize: none;
+
+  &::placeholder {
+    color: var(--admin-text-secondary, #8a92a0);
+  }
+}
+
+.composerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--admin-border-default, #e2e5ea);
+}
+
+.composerTools {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.composerToolBtn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: var(--admin-text-primary, #1f242f);
+  }
+}
+
+// Signature Accordion Lemon Yellow Post Note CTA
+.postNoteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 0.85rem;
+  background-color: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.06);
+  transition: all 0.12s ease;
+
+  &:hover {
+    background-color: var(--admin-accent-lemon-hover, #e4f375);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
