@@ -114,7 +114,7 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              <span>+ New Lead</span>
+              <span>New Lead</span>
             </button>
           )}
 
@@ -141,7 +141,7 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
                 <line x1="20" y1="8" x2="20" y2="14" />
                 <line x1="23" y1="11" x2="17" y2="11" />
               </svg>
-              <span>+ Add Member</span>
+              <span>Add Member</span>
             </button>
           )}
         </div>

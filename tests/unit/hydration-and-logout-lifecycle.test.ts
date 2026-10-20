@@ -143,7 +143,7 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
 
   describe('4. Input Autofill Shielding & Suspense Semantic Tag Synchronization', () => {
     it('verifies LoginForm.tsx inputs and form declare suppressHydrationWarning', () => {
-      const content = fs.readFileSync(loginFormPath, 'utf8');
+      const content = fs.readFileSync(loginFormPath, 'utf8').replace(/\r\n/g, '\n');
       assert.ok(
         content.includes('<form action={formAction} className={styles.form} suppressHydrationWarning>'),
         'Login form must declare suppressHydrationWarning'

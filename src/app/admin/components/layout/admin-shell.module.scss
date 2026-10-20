@@ -26,19 +26,22 @@
   flex-direction: column;
   min-width: 0;
   margin-left: var(--sidebar-width, 260px);
-  transition: margin-left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  width: calc(100% - var(--sidebar-width, 260px));
+  transition: margin-left 0.22s cubic-bezier(0.16, 1, 0.3, 1), width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 
   @media (max-width: 1024px) {
     margin-left: 0;
+    width: 100%;
   }
 }
 
 .contentContainer {
   flex: 1;
   padding: 2rem 2.5rem 4rem;
-  max-width: 1680px;
+  max-width: 1720px;
   width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 
   @media (max-width: 1024px) {
     padding: 1.5rem 1.25rem 3rem;

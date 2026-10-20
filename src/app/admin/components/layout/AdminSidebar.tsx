@@ -61,12 +61,10 @@ export function AdminSidebar({
             alt="Marca Ubi."
             className={styles.brandLogo}
           />
-          {!isCollapsed && (
-            <div className={styles.brandMeta}>
-              <span className={styles.brandTitle}>Marca Ubi</span>
-              <span className={styles.systemTag}>CRM Portal</span>
-            </div>
-          )}
+          <div className={styles.brandMeta}>
+            <span className={styles.brandTitle}>Marca Ubi</span>
+            <span className={styles.systemTag}>CRM Portal</span>
+          </div>
         </Link>
         <button
           type="button"
@@ -120,7 +118,7 @@ export function AdminSidebar({
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            {!isCollapsed && <span>New Lead</span>}
+            <span className={styles.newLeadBtnText}>New Lead</span>
           </button>
         </div>
       )}
@@ -136,9 +134,7 @@ export function AdminSidebar({
 
           return (
             <div key={group.groupTitle} className={styles.navGroup}>
-              {!isCollapsed && (
-                <div className={styles.groupHeading}>{group.groupTitle}</div>
-              )}
+              <div className={styles.groupHeading}>{group.groupTitle}</div>
               <ul className={styles.navList}>
                 {authorizedItems.map((item) => {
                   const active = isRouteActive(item.href);
@@ -161,16 +157,14 @@ export function AdminSidebar({
                         <div className={styles.iconWrapper}>
                           {item.icon({ active })}
                         </div>
-                        {!isCollapsed && (
-                          <div className={styles.itemContent}>
-                            <span className={styles.itemLabel}>{item.label}</span>
-                            {badgeInfo && (
-                              <span className={`${styles.badge} ${badgeVariantClass}`}>
-                                {badgeInfo.text}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <div className={styles.itemContent}>
+                          <span className={styles.itemLabel}>{item.label}</span>
+                          {badgeInfo && (
+                            <span className={`${styles.badge} ${badgeVariantClass}`}>
+                              {badgeInfo.text}
+                            </span>
+                          )}
+                        </div>
                         {active && <span className={styles.activePill} />}
                       </Link>
                     </li>
@@ -189,12 +183,10 @@ export function AdminSidebar({
           title={`Authenticated as ${currentUser.email} (${formattedRole})`}
         >
           <span className={styles.statusDot} aria-hidden="true" />
-          {!isCollapsed && (
-            <div className={styles.statusText}>
-              <span className={styles.statusLabel}>{formattedRole}</span>
-              <span className={styles.statusSub}>{currentUser.email}</span>
-            </div>
-          )}
+          <div className={styles.statusText}>
+            <span className={styles.statusLabel}>{formattedRole}</span>
+            <span className={styles.statusSub}>{currentUser.email}</span>
+          </div>
         </div>
       </div>
     </aside>
