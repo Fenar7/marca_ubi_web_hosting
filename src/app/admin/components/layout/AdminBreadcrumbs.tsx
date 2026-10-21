@@ -7,7 +7,8 @@
  * @architecture Extracts URL segments via `usePathname()`, correlates segments against
  *               commercial route mappings, intercepts dynamic UUID parameters, and subscribes to
  *               custom window events for client-level label overrides (e.g. 'LD-10343' or 'DEAL-1004').
- *               Guarantees that raw 36-character database UUIDs are never exposed in the user-facing DOM.
+ *               On root executive overview (/admin), renders a clean workspace context capsule rather than
+ *               redundant breadcrumb slop.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -77,6 +78,18 @@ export function AdminBreadcrumbs(): React.ReactElement {
       }
     };
   }, []);
+
+  // On root executive overview, render a clean workspace status capsule rather than redundant breadcrumbs
+  if (segments.length <= 1 && (segments[0] === 'admin' || !segments[0])) {
+    return (
+      <nav aria-label="Workspace Context" className={styles.breadcrumbNav}>
+        <div className={styles.commandContextPill}>
+          <span className={styles.radarDot} aria-hidden="true" />
+          <span className={styles.contextLabel}>Executive Command Center</span>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav aria-label="Breadcrumb Navigation" className={styles.breadcrumbNav}>

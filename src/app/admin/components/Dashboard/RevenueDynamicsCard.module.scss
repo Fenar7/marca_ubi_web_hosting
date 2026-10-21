@@ -1,0 +1,296 @@
+/**
+ * @file RevenueDynamicsCard.module.scss
+ * @description Revenue Dynamics & Forecast visual chart styling benchmarked against MedTrackr
+ *              Report & Analytics and Apple HIG Glassmorphism. Features grouped vertical bars,
+ *              specular monotone Bézier curve overlay in Marca Orange, and dark obsidian tooltip.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.chartCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #eaecf0);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+}
+
+.chartHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.titleCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.82rem;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* Interactive Legend */
+.legendCluster {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.78rem;
+  color: #525965;
+  font-weight: 500;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease;
+
+  &.inactive {
+    opacity: 0.4;
+  }
+}
+
+.legendSwatchQuota {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background-color: #e9ecef;
+  border: 1px solid #cbd5e1;
+}
+
+.legendSwatchCash {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background-color: #0f172a;
+}
+
+.legendSwatchCurve {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background-color: var(--admin-accent-brand, #ff6100);
+  box-shadow: 0 1px 3px rgba(255, 97, 0, 0.4);
+}
+
+/* Period Dropdown Pill [ 6 Months ▾ ] */
+.periodDropdownWrapper {
+  position: relative;
+}
+
+.periodPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 34px;
+  padding: 0 0.85rem;
+  background-color: #ffffff;
+  border: 1px solid var(--admin-border-default, #eaecf0);
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1f242f;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+
+  svg {
+    color: #64748b;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  &.active {
+    border-color: #0f172a;
+
+    svg {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.periodMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 130px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #eaecf0);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  padding: 0.25rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+}
+
+.periodMenuItem {
+  padding: 0.45rem 0.75rem;
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #1f242f;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f1f5f9;
+  }
+
+  &.selected {
+    font-weight: 600;
+    color: var(--admin-accent-brand, #ff6100);
+    background-color: #fff4eb;
+  }
+}
+
+/* Canvas Area */
+.chartCanvasContainer {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  user-select: none;
+  touch-action: none;
+}
+
+.chartSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Dark Obsidian Glassmorphism Tooltip */
+.obsidianTooltip {
+  position: absolute;
+  top: 14px;
+  pointer-events: none;
+  z-index: 30;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.75rem 0.95rem;
+  color: #ffffff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: left 0.08s ease-out;
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltipMonth {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.02em;
+}
+
+.tooltipAttainmentPill {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltipRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  font-size: 0.75rem;
+}
+
+.tooltipLabel {
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tooltipValue {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-weight: 600;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Axis & Grid Labels */
+.axisText {
+  font-family: var(--font-admin-numeric, var(--font-admin-sans, sans-serif));
+  font-size: 11px;
+  fill: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.gridLine {
+  stroke: rgba(0, 0, 0, 0.06);
+  stroke-dasharray: 4 4;
+}
+
+.scrubRay {
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}

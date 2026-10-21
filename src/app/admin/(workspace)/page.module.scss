@@ -1,10 +1,11 @@
 /**
  * @file page.module.scss
  * @description Master Executive Overview styles for the Marca Ubi CRM dashboard (/admin).
- *              Directly benchmarked against Logip (original-f0a51857256dd5802cfc7a47a6f070a2.webp).
- *              Features 3-column fluid grid, personalized greeting header, floating stat pods,
- *              interactive performance area chart, active deals list, and right intelligence rail.
- *              Preserves Signature Accordion Lemon Yellow (#eefb87 / #e4f375) pill buttons.
+ *              Benchmarked against MedTrackr Report & Analytics architecture.
+ *              Features 100% full-width fluid canvas, 4-pod KPI ribbon, 60/40 mid-tier analytics grid
+ *              (Revenue Dynamics & Pipeline Allocation), and high-density commercial deals ledger.
+ *              Preserves Signature Accordion Lemon Yellow (#eefb87 / #e4f375) action pills.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .dashboardContainer {
@@ -12,132 +13,37 @@
   background-color: var(--admin-canvas-bg, #f7f8fa);
   max-width: 1720px;
   margin: 0 auto;
+  padding: 0 0 2rem 0;
 }
 
-/* 2-Column Responsive Workspace Grid (Logip Layout) */
-.dashboardGrid {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 1.75rem;
-  align-items: start;
+/* 100% Full-Width Fluid Canvas */
+.fluidCanvas {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  gap: 1.5rem;
 
-  @media (max-width: 1280px) {
-    grid-template-columns: 1fr 300px;
+  @media (min-width: 768px) {
+    gap: 1.75rem;
+  }
+}
+
+/* Mid-Tier Analytics Grid (60% / 40% Split: Dynamics & Allocation) */
+.midTierGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: 1fr;
     gap: 1.25rem;
   }
-
-  @media (max-width: 1080px) {
-    grid-template-columns: 1fr;
-  }
 }
 
-.mainCanvas {
-  display: flex;
-  flex-direction: column;
+/* Bottom Full-Width Section */
+.bottomSection {
+  width: 100%;
   min-width: 0;
-}
-
-.rightRail {
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 80px;
-
-  @media (max-width: 1080px) {
-    position: static;
-  }
-}
-
-/* Greeting Header (Logip Matching) */
-.greetingHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.greetingMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.greetingTitle {
-  font-family: var(--font-admin-primary, sans-serif);
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #1f242f);
-  letter-spacing: -0.025em;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.greetingSubtitle {
-  font-size: 0.88rem;
-  color: var(--admin-text-secondary, #525965);
-  margin: 0;
-  line-height: 1.4;
-}
-
-.dateCapsule {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.95rem;
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 9999px;
-  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--admin-text-primary, #1f242f);
-  white-space: nowrap;
-
-  svg {
-    width: 14px;
-    height: 14px;
-    color: var(--admin-text-secondary, #6b7280);
-  }
-}
-
-/* Signature Accordion Lemon Yellow Action Pill Button */
-.newLeadBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  height: 44px;
-  min-height: 44px;
-  padding: 0 1.25rem;
-  background-color: var(--admin-accent-lemon, #eefb87);
-  border: 1px solid var(--admin-border-strong, #1f242f);
-  border-radius: var(--admin-radius-pill, 9999px);
-  color: var(--admin-accent-lemon-ink, #1f242f);
-  font-family: var(--font-admin-btn, sans-serif);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover {
-    background-color: var(--admin-accent-lemon-hover, #e4f375);
-    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.12);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--admin-border-strong, #1f242f);
-    outline-offset: 2px;
-  }
 }

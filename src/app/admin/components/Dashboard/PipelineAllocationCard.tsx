@@ -1,0 +1,191 @@
+'use client';
+
+/**
+ * @file PipelineAllocationCard.tsx
+ * @description Pipeline Stage Allocation card for Executive Overview benchmarked against MedTrackr Spending Overview.
+ *              Displays headline active valuation with trend badge, multi-segment horizontal progress bar
+ *              (Discovery Sky Blue #74c0fc, Proposal Lavender #b197fc, Negotiation Amber #ffd43b,
+ *              Review Emerald #69db7c, Won Marca Orange #ff6100), and a 2-column key-value breakdown.
+ * @module admin/components/Dashboard/PipelineAllocationCard
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+import React from 'react';
+import type { PipelineStageAllocationItem } from './types';
+import styles from './PipelineAllocationCard.module.scss';
+
+export interface StageAllocationItem {
+  id: string;
+  name: string;
+  color: string;
+  dealCount: number;
+  amount: number;       // In integer Paise or Rupees
+  formattedAmount: string;
+  percentage: number;   // e.g. 24.0
+}
+
+export interface PipelineAllocationCardProps {
+  /** Optional headline valuation in Rupees (defaults to ₹14.82 Cr) */
+  totalValuation?: number;
+  /** Total pipeline value alias matching domain contract */
+  totalPipelineValue?: number;
+  /** MoM delta percentage */
+  momDeltaPercentage?: number;
+  /** Custom stage allocation breakdown supporting both domain models */
+  stages?: (StageAllocationItem | PipelineStageAllocationItem)[];
+}
+
+/**
+ * Default stage allocation data reflecting high-ticket agency operations
+ * and matching MedTrackr's pastel aesthetic palette.
+ */
+const DEFAULT_STAGES: StageAllocationItem[] = [
+  {
+    id: 'stage-discovery',
+    name: 'Discovery',
+    color: '#74c0fc', // Sky Blue
+    dealCount: 14,
+    amount: 35500000,
+    formattedAmount: '₹3.55 Cr',
+    percentage: 24.0,
+  },
+  {
+    id: 'stage-proposal',
+    name: 'Proposal Sent',
+    color: '#b197fc', // Lavender
+    dealCount: 18,
+    amount: 47400000,
+    formattedAmount: '₹4.74 Cr',
+    percentage: 32.0,
+  },
+  {
+    id: 'stage-negotiation',
+    name: 'Negotiation',
+    color: '#ffd43b', // Amber
+    dealCount: 9,
+    amount: 32600000,
+    formattedAmount: '₹3.26 Cr',
+    percentage: 22.0,
+  },
+  {
+    id: 'stage-review',
+    name: 'Contract Review',
+    color: '#69db7c', // Mint Emerald
+    dealCount: 6,
+    amount: 20800000,
+    formattedAmount: '₹2.08 Cr',
+    percentage: 14.0,
+  },
+  {
+    id: 'stage-won',
+    name: 'Closed Won',
+    color: '#ff6100', // Signature Marca Orange
+    dealCount: 4,
+    amount: 11900000,
+    formattedAmount: '₹1.19 Cr',
+    percentage: 8.0,
+  },
+];
+
+function formatRupees(amount: number): string {
+  if (!amount || amount <= 0) return '₹0';
+  if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`;
+  if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
+  return `₹${amount.toLocaleString('en-IN')}`;
+}
+
+export const PipelineAllocationCard: React.FC<PipelineAllocationCardProps> = ({
+  totalValuation,
+  totalPipelineValue,
+  momDeltaPercentage = 12.4,
+  stages = DEFAULT_STAGES,
+}) => {
+  const activeTotal = totalPipelineValue ?? totalValuation ?? 0;
+  const formattedHeadline = formatRupees(activeTotal);
+
+  // Normalize incoming stages regardless of whether they conform to StageAllocationItem or PipelineStageAllocationItem
+  const normalizedStages: StageAllocationItem[] = (stages && stages.length > 0 ? stages : DEFAULT_STAGES).map((st) => {
+    const isDomainModel = 'stageId' in st;
+    const id = isDomainModel ? st.stageId : st.id;
+    const name = isDomainModel ? st.stageName : st.name;
+    const color = isDomainModel ? st.colorCode : st.color;
+    const amount = isDomainModel ? st.totalValue : st.amount;
+    const percentage = isDomainModel ? st.percentageOfPipeline : st.percentage;
+    const formattedAmount = isDomainModel ? formatRupees(st.totalValue) : st.formattedAmount;
+    return {
+      id,
+      name,
+      color,
+      dealCount: st.dealCount,
+      amount,
+      formattedAmount,
+      percentage,
+    };
+  });
+
+  return (
+    <div className={styles.cardContainer} aria-label="Pipeline Stage Allocation Overview">
+      {/* Header */}
+      <div className={styles.cardHeader}>
+        <h2 className={styles.title}>Pipeline Stage Allocation</h2>
+        <p className={styles.subtitle}>Distribution across active conversion milestones</p>
+      </div>
+
+      {/* Headline Valuation */}
+      <div className={styles.headlineBlock}>
+        <span className={styles.headlineValuation}>{formattedHeadline}</span>
+        <div className={styles.trendBadge} aria-label={`${momDeltaPercentage.toFixed(1)}% increase Month over Month`}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+          <span>+{momDeltaPercentage.toFixed(1)}% MoM</span>
+        </div>
+      </div>
+
+      {/* Multi-Segment Horizontal Progress Bar */}
+      <div
+        className={styles.progressBarWrapper}
+        role="progressbar"
+        aria-label="Pipeline distribution by stage"
+      >
+        {normalizedStages.map((stage) => (
+          <div
+            key={stage.id}
+            className={styles.barSegment}
+            style={{
+              width: `${stage.percentage}%`,
+              backgroundColor: stage.color,
+            }}
+            title={`${stage.name}: ${stage.percentage}% (${stage.formattedAmount})`}
+          />
+        ))}
+      </div>
+
+      {/* 2-Column Key-Value Breakdown */}
+      <div className={styles.breakdownGrid} role="list" aria-label="Pipeline stages detail list">
+        {normalizedStages.map((stage) => (
+          <div key={stage.id} className={styles.stageRow} role="listitem">
+            <div className={styles.stageInfoLeft}>
+              <span
+                className={styles.stageDot}
+                style={{ backgroundColor: stage.color }}
+                aria-hidden="true"
+              />
+              <div className={styles.stageTitleCluster}>
+                <span className={styles.stageName}>{stage.name}</span>
+                <span className={styles.dealCountBadge}>
+                  {stage.dealCount} deals
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.stageFiguresRight}>
+              <span className={styles.stageAmount}>{stage.formattedAmount}</span>
+              <span className={styles.stageShare}>{stage.percentage.toFixed(1)}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
