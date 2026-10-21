@@ -94,13 +94,14 @@
 }
 
 .podValue {
-  font-family: var(--font-admin-primary, sans-serif);
+  font-family: var(--font-admin-numeric);
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--admin-text-primary, #1f242f);
   line-height: 1.1;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'cv01' 1;
 }
 
 .podSubtext {
@@ -116,9 +117,11 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  font-family: var(--font-admin-numeric);
   font-size: 0.72rem;
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'cv01' 1;
 
   &.positive {
     color: #059669;
@@ -130,7 +133,7 @@
 }
 
 .weightedBadge {
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-numeric);
   font-size: 0.68rem;
   font-weight: 600;
   padding: 0.15rem 0.4rem;
@@ -138,4 +141,6 @@
   border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 4px;
   color: var(--admin-text-primary, #1f242f);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'cv01' 1;
 }

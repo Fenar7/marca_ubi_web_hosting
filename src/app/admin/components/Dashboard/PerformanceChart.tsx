@@ -15,6 +15,7 @@ import styles from './PerformanceChart.module.scss';
 
 interface DataPoint {
   day: string;
+  weekday: string;
   fullDate: string;
   thisMonthVal: number;
   lastMonthVal: number;
@@ -28,13 +29,13 @@ interface Point2D {
 }
 
 const PERFORMANCE_DATA: DataPoint[] = [
-  { day: '01', fullDate: '01 Oct 2026', thisMonthVal: 65, lastMonthVal: 48, thisMonthFormatted: '₹1.15 Cr', lastMonthFormatted: '₹82L' },
-  { day: '02', fullDate: '02 Oct 2026', thisMonthVal: 82, lastMonthVal: 55, thisMonthFormatted: '₹1.48 Cr', lastMonthFormatted: '₹95L' },
-  { day: '03', fullDate: '03 Oct 2026', thisMonthVal: 110, lastMonthVal: 72, thisMonthFormatted: '₹1.92 Cr', lastMonthFormatted: '₹1.25 Cr' },
-  { day: '04', fullDate: '04 Oct 2026', thisMonthVal: 95, lastMonthVal: 80, thisMonthFormatted: '₹1.65 Cr', lastMonthFormatted: '₹1.38 Cr' },
-  { day: '05', fullDate: '05 Oct 2026', thisMonthVal: 135, lastMonthVal: 90, thisMonthFormatted: '₹2.41 Cr', lastMonthFormatted: '₹1.55 Cr' },
-  { day: '06', fullDate: '06 Oct 2026', thisMonthVal: 120, lastMonthVal: 78, thisMonthFormatted: '₹2.12 Cr', lastMonthFormatted: '₹1.32 Cr' },
-  { day: '07', fullDate: '07 Oct 2026', thisMonthVal: 145, lastMonthVal: 88, thisMonthFormatted: '₹2.65 Cr', lastMonthFormatted: '₹1.50 Cr' },
+  { day: '01', weekday: 'Thu', fullDate: 'Thu, 01 Oct 2026', thisMonthVal: 65, lastMonthVal: 48, thisMonthFormatted: '₹ 1.15 Cr', lastMonthFormatted: '₹ 82 L' },
+  { day: '02', weekday: 'Fri', fullDate: 'Fri, 02 Oct 2026', thisMonthVal: 82, lastMonthVal: 55, thisMonthFormatted: '₹ 1.48 Cr', lastMonthFormatted: '₹ 95 L' },
+  { day: '03', weekday: 'Sat', fullDate: 'Sat, 03 Oct 2026', thisMonthVal: 110, lastMonthVal: 72, thisMonthFormatted: '₹ 1.92 Cr', lastMonthFormatted: '₹ 1.25 Cr' },
+  { day: '04', weekday: 'Sun', fullDate: 'Sun, 04 Oct 2026', thisMonthVal: 95, lastMonthVal: 80, thisMonthFormatted: '₹ 1.65 Cr', lastMonthFormatted: '₹ 1.38 Cr' },
+  { day: '05', weekday: 'Mon', fullDate: 'Mon, 05 Oct 2026', thisMonthVal: 135, lastMonthVal: 90, thisMonthFormatted: '₹ 2.41 Cr', lastMonthFormatted: '₹ 1.55 Cr' },
+  { day: '06', weekday: 'Tue', fullDate: 'Tue, 06 Oct 2026', thisMonthVal: 120, lastMonthVal: 78, thisMonthFormatted: '₹ 2.12 Cr', lastMonthFormatted: '₹ 1.32 Cr' },
+  { day: '07', weekday: 'Wed', fullDate: 'Wed, 07 Oct 2026', thisMonthVal: 145, lastMonthVal: 88, thisMonthFormatted: '₹ 2.65 Cr', lastMonthFormatted: '₹ 1.50 Cr' },
 ];
 
 /**
@@ -115,9 +116,9 @@ function generateMonotoneBezierPath(points: Point2D[]): string {
 }
 
 export const PerformanceChart: React.FC = () => {
-  const [activeIdx, setActiveIdx] = useState<number>(2);
+  const [activeIdx, setActiveIdx] = useState<number>(5);
   const [isHovered, setIsHovered] = useState<boolean>(true);
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('01-07 Oct');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('7D');
   const svgRef = useRef<SVGSVGElement>(null);
   const gradIdOrange = useId();
   const gradIdSlate = useId();
@@ -207,6 +208,12 @@ export const PerformanceChart: React.FC = () => {
 
   const tooltipLeftPercent = (activeCoordOrange.x / totalCanvasWidth) * 100;
 
+  // Dynamic vertical clearance: flip tooltip below marker if in upper 40% (y < 85)
+  const isPeakInUpperRange = activeCoordOrange.y < 85;
+  const tooltipTopStyle = isPeakInUpperRange
+    ? `${((activeCoordOrange.y + 18) / 220) * 100}%`
+    : '14px';
+
   const variancePct = activePoint.lastMonthVal > 0
     ? ((activePoint.thisMonthVal - activePoint.lastMonthVal) / activePoint.lastMonthVal) * 100
     : 0;
@@ -223,31 +230,50 @@ export const PerformanceChart: React.FC = () => {
   return (
     <div className={styles.chartCard} aria-label="Commercial Performance Trends">
       <div className={styles.chartHeader}>
-        <div className={styles.headerTitleGroup}>
-          <h2 className={styles.chartTitle}>Performance</h2>
-          <div className={styles.legendGroup}>
-            <div className={styles.legendItem}>
-              <span className={`${styles.legendDot} ${styles.orange}`} />
-              <span>This month</span>
-            </div>
-            <div className={styles.legendItem}>
-              <span className={`${styles.legendDot} ${styles.slate}`} />
-              <span>Last month</span>
-            </div>
+        <div className={styles.headerPrimaryInfo}>
+          <div className={styles.headerTitleRow}>
+            <h2 className={styles.chartTitle}>Performance</h2>
+            <span className={styles.headerVelocityBadge} aria-label={`Performance velocity: ${formattedVariance}`}>
+              ▲ {formattedVariance}
+            </span>
+          </div>
+          <div className={styles.headerMetricHeadline}>
+            <span className={styles.metricVal}>{activePoint.thisMonthFormatted}</span>
+            <span className={styles.metricContext}>Inspection: {activePoint.fullDate}</span>
           </div>
         </div>
 
-        <button
-          type="button"
-          className={styles.filterSelect}
-          onClick={() => setSelectedPeriod((prev) => (prev === '01-07 Oct' ? 'Last 30 Days' : '01-07 Oct'))}
-          aria-label="Filter performance date range"
-        >
-          <span>{selectedPeriod}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
+        <div className={styles.headerControlsGroup}>
+          <div className={styles.segmentedControl} role="group" aria-label="Time range selector">
+            {(['7D', '30D', '90D', '1Y'] as const).map((period) => (
+              <button
+                key={period}
+                type="button"
+                className={`${styles.segmentBtn} ${styles.filterSelect} ${
+                  selectedPeriod === period ? styles.segmentActive : ''
+                }`}
+                onClick={() => setSelectedPeriod(period)}
+                aria-pressed={selectedPeriod === period}
+                aria-label={`Filter range ${period}`}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.legendCapsules}>
+            <div className={`${styles.legendCapsule} ${styles.legendItem}`}>
+              <span className={styles.luminousDotOrange} />
+              <span className={styles.legendText}>This Month:</span>
+              <span className={styles.legendValue}>{activePoint.thisMonthFormatted}</span>
+            </div>
+            <div className={`${styles.legendCapsule} ${styles.legendItem}`}>
+              <span className={styles.dashedDotSlate} />
+              <span className={styles.legendText}>Last Month:</span>
+              <span className={styles.legendValue}>{activePoint.lastMonthFormatted}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div
@@ -271,12 +297,15 @@ export const PerformanceChart: React.FC = () => {
           onTouchMove={handleTouchMove}
         >
           <defs>
+            <filter id="orangeGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#ff6100" floodOpacity="0.5" />
+            </filter>
             <linearGradient id={gradIdOrange} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff6100" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#ff6100" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#ff6100" stopOpacity="0.08" />
+              <stop offset="70%" stopColor="#ff6100" stopOpacity="0.0" />
             </linearGradient>
             <linearGradient id={gradIdSlate} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.12" />
+              <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.005" />
               <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.0" />
             </linearGradient>
           </defs>
@@ -301,12 +330,25 @@ export const PerformanceChart: React.FC = () => {
             </React.Fragment>
           ))}
 
+          {isHovered && activeCoordOrange && (
+            <rect
+              x={activeCoordOrange.x - 26}
+              y={originY - 6}
+              width={52}
+              height={chartHeight + 12}
+              rx={6}
+              fill="rgba(241, 245, 249, 0.6)"
+              className={styles.activeColumnBackdrop}
+            />
+          )}
+
           <path d={areaPathLastMonth} fill={`url(#${gradIdSlate})`} />
           <path
             d={linePathLastMonth}
             fill="none"
             stroke="#94a3b8"
-            strokeWidth="2"
+            strokeWidth="1.75"
+            strokeDasharray="4 4"
             strokeLinecap="round"
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
@@ -323,19 +365,23 @@ export const PerformanceChart: React.FC = () => {
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
             shapeRendering="geometricPrecision"
+            filter="url(#orangeGlow)"
           />
 
           {PERFORMANCE_DATA.map((p, idx) => {
             const x = originX + idx * stepX;
+            const isActive = isHovered && idx === activeIdx;
             return (
               <text
                 key={p.day}
                 x={x}
                 y={baselineY + 20}
                 textAnchor="middle"
-                className={styles.axisText}
+                className={`${styles.axisText} ${isActive ? styles.axisTextActive : ''}`}
+                fill={isActive ? '#ff6100' : undefined}
+                fontWeight={isActive ? 700 : undefined}
               >
-                {p.day}
+                {`${p.weekday} ${p.day}`}
               </text>
             );
           })}
@@ -377,6 +423,7 @@ export const PerformanceChart: React.FC = () => {
             style={{
               left: `${tooltipLeftPercent}%`,
               transform: `translateX(-${tooltipLeftPercent}%)`,
+              top: tooltipTopStyle,
             }}
           >
             <span className={styles.tooltipDate}>{activePoint.fullDate}</span>

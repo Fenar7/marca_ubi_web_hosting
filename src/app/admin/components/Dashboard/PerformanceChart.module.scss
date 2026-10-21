@@ -1,6 +1,6 @@
 /**
  * @file PerformanceChart.module.scss
- * @description Interactive Dual-Month Performance Area Chart styling for Executive Overview.
+ * @description Executive Dual-Month Performance Area Chart styling for Executive Overview.
  *              Benchmarked against Logip modern SaaS architecture and Apple HIG Glassmorphism.
  *              Enforces tabular numeric typography with Plus Jakarta Sans tokens,
  *              high-contrast WCAG AA compliance, and radar pulse keyframe animations.
@@ -19,15 +19,27 @@
 
 .chartHeader {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 1.25rem;
   margin-bottom: 1.25rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
 }
 
-.headerTitleGroup {
+.headerPrimaryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.headerTitleRow {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.75rem;
 }
 
 .chartTitle {
@@ -39,23 +51,128 @@
   margin: 0;
 }
 
+.headerVelocityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-admin-numeric, var(--font-admin-sans));
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'cv01' 1;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  letter-spacing: -0.01em;
+}
+
+.headerMetricHeadline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.metricVal {
+  font-family: var(--font-admin-numeric, var(--font-admin-sans));
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'cv01' 1;
+}
+
+.metricContext {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.headerControlsGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+
+  @media (min-width: 768px) {
+    align-items: flex-end;
+  }
+}
+
+.segmentedControl {
+  display: inline-flex;
+  align-items: center;
+  background: var(--admin-surface-muted, #f1f5f9);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+}
+
+.segmentBtn {
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #525965);
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--admin-text-primary, #1f242f);
+  }
+
+  &.segmentActive {
+    background: #0f172a;
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6100;
+    outline-offset: 1px;
+  }
+}
+
+.filterSelect {
+  cursor: pointer;
+}
+
+.legendCapsules {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.legendCapsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--admin-text-secondary, #525965);
+  background: var(--admin-surface-muted, #f8fafc);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 6px;
+  padding: 0.2rem 0.55rem;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+}
+
 .legendGroup {
   display: flex;
   align-items: center;
   gap: 1rem;
-
-  @media (max-width: 640px) {
-    display: none;
-  }
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--admin-text-secondary, #525965);
 }
 
 .legendDot {
@@ -72,29 +189,31 @@
   }
 }
 
-.filterSelect {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.75rem;
+.luminousDotOrange {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ff6100;
+  box-shadow: 0 0 6px rgba(255, 97, 0, 0.65);
+}
+
+.dashedDotSlate {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #94a3b8;
+}
+
+.legendText {
+  font-weight: 500;
+}
+
+.legendValue {
+  font-family: var(--font-admin-numeric, var(--font-admin-sans));
   font-weight: 600;
   color: var(--admin-text-primary, #1f242f);
-  background: var(--admin-surface-muted, #f8fafc);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: var(--admin-surface-hover, #f1f5f9);
-    border-color: var(--admin-border-strong, #1f242f);
-  }
-
-  &:focus-visible {
-    outline: 2px solid #ff6100;
-    outline-offset: 2px;
-  }
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'cv01' 1;
 }
 
 .svgWrapper {
@@ -118,6 +237,11 @@
   cursor: crosshair;
 }
 
+.activeColumnBackdrop {
+  pointer-events: none;
+  transition: x 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .axisText {
   font-family: var(--font-admin-numeric, var(--font-admin-sans));
   font-size: 11px;
@@ -127,6 +251,12 @@
   letter-spacing: -0.015em;
   fill: var(--admin-text-secondary, #525965);
   user-select: none;
+  transition: fill 0.15s ease, font-weight 0.15s ease;
+
+  &.axisTextActive {
+    fill: #ff6100;
+    font-weight: 700;
+  }
 }
 
 .gridLine {
@@ -175,7 +305,6 @@
 /* Floating Dark Obsidian Tooltip Capsule with Apple HIG Glassmorphism */
 .tooltipCapsule {
   position: absolute;
-  top: 14px;
   pointer-events: none;
   background: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(16px);
@@ -188,7 +317,7 @@
   flex-direction: column;
   gap: 0.3rem;
   z-index: 20;
-  transition: left 0.08s ease-out;
+  transition: left 0.08s ease-out, top 0.12s ease-out;
   white-space: nowrap;
 }
 

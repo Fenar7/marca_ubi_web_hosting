@@ -111,7 +111,7 @@ export const adminNumeric = localFont({
       style: 'normal',
     },
   ],
-  variable: '--font-admin-numeric',
+  variable: '--font-admin-num-font',
   display: 'swap',
   fallback: ['system-ui', '-apple-system', 'SF Pro Display', 'sans-serif'],
 });

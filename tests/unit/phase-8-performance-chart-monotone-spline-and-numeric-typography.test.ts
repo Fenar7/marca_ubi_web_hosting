@@ -23,7 +23,7 @@ describe('Phase 8.4: Performance Chart Monotone Spline & Numeric Typography Arch
       assert.strictEqual(fs.existsSync(fontsPath), true);
       const content = fs.readFileSync(fontsPath, 'utf8');
       assert.ok(content.includes('export const adminNumeric = localFont('));
-      assert.ok(content.includes("variable: '--font-admin-numeric'"));
+      assert.ok(content.includes("variable: '--font-admin-num-font'"));
       assert.ok(content.includes("display: 'swap'"));
       assert.ok(content.includes('PlusJakartaSans-Medium.ttf'));
       assert.ok(content.includes('PlusJakartaSans-SemiBold.ttf'));
@@ -47,7 +47,7 @@ describe('Phase 8.4: Performance Chart Monotone Spline & Numeric Typography Arch
     it('verifies tokens.scss registers --font-admin-numeric scoped under [data-admin-root="true"]', () => {
       assert.strictEqual(fs.existsSync(tokensPath), true);
       const content = fs.readFileSync(tokensPath, 'utf8');
-      assert.ok(content.includes('--font-admin-numeric: var(--font-admin-numeric, var(--font-admin-sans))'));
+      assert.ok(content.includes('--font-admin-numeric: var(--font-admin-num-font), var(--font-admin-sans)'));
     });
   });
 
