@@ -40,11 +40,11 @@ describe('Phase 8.3: Client 360° Accordion Light Luxury Design System Audit', (
   );
 
   describe('Block 1: Master SCSS Token Architecture (LeadDossierWorkspace.module.scss)', () => {
-    it('verifies tokens.scss is imported via @use', () => {
+    it('verifies mixins.scss is imported via @use', () => {
       const content = fs.readFileSync(masterScssPath, 'utf-8');
       assert.ok(
-        content.includes("@use '../../styles/tokens.scss' as *;"),
-        'LeadDossierWorkspace.module.scss must import tokens.scss'
+        content.includes("@use '../../styles/mixins.scss' as *;"),
+        'LeadDossierWorkspace.module.scss must import mixins.scss'
       );
     });
 

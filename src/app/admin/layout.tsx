@@ -8,7 +8,7 @@
 
 import React from 'react';
 import type { Metadata } from 'next';
-import { adminSans, adminButtonFont, adminMono } from './fonts';
+import { adminSans, adminButtonFont, adminMono, adminNumeric } from './fonts';
 import './styles/tokens.scss';
 import { AdminRootClientProvider } from './components/layout/AdminRootClientProvider';
 
@@ -24,7 +24,7 @@ export default function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
-  const fontVariables = `${adminSans.variable} ${adminButtonFont.variable} ${adminMono.variable}`;
+  const fontVariables = `${adminSans.variable} ${adminButtonFont.variable} ${adminMono.variable} ${adminNumeric.variable}`;
 
   return (
     <AdminRootClientProvider fontVariables={fontVariables}>

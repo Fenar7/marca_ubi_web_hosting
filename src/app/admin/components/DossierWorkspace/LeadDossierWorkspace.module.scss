@@ -15,7 +15,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-@use '../../styles/tokens.scss' as *;
+@use '../../styles/mixins.scss' as *;
 
 // Surface & Typography Aliases mapped from CRM Design Tokens
 $canvas-bg: var(--admin-canvas-bg, #f7f8fa);
