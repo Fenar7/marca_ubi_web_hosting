@@ -92,3 +92,26 @@ export const adminMono = localFont({
   display: 'swap',
   fallback: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
 });
+
+export const adminNumeric = localFont({
+  src: [
+    {
+      path: '../../../public/fonts/PlusJakartaSans/PlusJakartaSans-Medium.ttf',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../../public/fonts/PlusJakartaSans/PlusJakartaSans-SemiBold.ttf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../../../public/fonts/PlusJakartaSans/PlusJakartaSans-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-admin-numeric',
+  display: 'swap',
+  fallback: ['system-ui', '-apple-system', 'SF Pro Display', 'sans-serif'],
+});
