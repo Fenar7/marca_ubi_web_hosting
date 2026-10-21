@@ -2,9 +2,10 @@
 
 /**
  * @file AdminHeader.tsx
- * @description Apple HIG Frosted Glass top utility rail for the Marca Ubi CRM Workspace Shell.
- * @architecture Encapsulates dynamic breadcrumbs, responsive mobile hamburger toggle,
- *               omni-search trigger, contextual quick actions, and user identity popover.
+ * @description Notion-Caliber 48px top navigation rail for the Marca Ubi CRM Workspace Shell.
+ * @architecture Encapsulates dynamic 3-tier breadcrumbs, responsive mobile drawer toggle,
+ *               32px omni-search trigger, refined 32px sentence-case quick action triggers,
+ *               and a minimalist 32px user identity popover.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -36,7 +37,7 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
 
   return (
     <header className={styles.header}>
-      {/* Left: Mobile Toggle & Dynamic Breadcrumbs */}
+      {/* Left: Mobile Toggle & Dynamic Hierarchical Breadcrumbs */}
       <div className={styles.headerLeft}>
         <button
           type="button"
@@ -45,8 +46,8 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
           aria-label="Open mobile navigation menu"
         >
           <svg
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -64,7 +65,7 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
         <AdminBreadcrumbs />
       </div>
 
-      {/* Right: Search, Quick Actions & User Capsule */}
+      {/* Right: Search, Quick Actions & User Identity */}
       <div className={styles.headerRight}>
         {/* Omni Search Trigger */}
         <button
@@ -74,8 +75,8 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
           title="Search deals, clients, or reps (⌘K)"
         >
           <svg
-            width="14"
-            height="14"
+            width="13"
+            height="13"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -101,8 +102,8 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
               title="Log new prospective engagement"
             >
               <svg
-                width="13"
-                height="13"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -126,8 +127,8 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
               title="Provision new commercial personnel"
             >
               <svg
-                width="13"
-                height="13"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"

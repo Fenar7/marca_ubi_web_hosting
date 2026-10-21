@@ -2,13 +2,15 @@
 
 /**
  * @file UserProfileDropdown.tsx
- * @description Apple HIG Vibrancy frosted glass user identity capsule and session termination popover.
- * @architecture Displays authenticated credentials, cryptographic security tier telemetry,
- *               and routes session invalidation through Server Action `logoutAction`.
+ * @description Executive Notion-Caliber 32px user profile trigger and rich popover flyout.
+ * @architecture Replaces cluttered, truncated pill capsules with an ultra-minimal 32px trigger
+ *               and a high-density 260px popover containing credentials, workspace tier telemetry,
+ *               security audit access, command palette shortcuts, and authenticated session termination.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { logoutAction } from '@/app/actions/auth';
 import type { CurrentUserSession } from '@/types/crm';
 import styles from './UserProfileDropdown.module.scss';
@@ -20,8 +22,8 @@ interface UserProfileDropdownProps {
 }
 
 export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): React.ReactElement {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -73,17 +75,30 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
     };
   }, [isOpen]);
 
-  // Extract up to 2 uppercase monogram initials
-  const displayName = currentUser.name || currentUser.fullName || 'Staff Member';
-  const initials = displayName
-    .split(' ')
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase() || 'MU';
+  const rawName = currentUser.name || currentUser.fullName || 'Admin';
 
-  const roleFormatted = currentUser.role.replace(/_/g, ' ');
+  // Sanitize name for 32px trigger: remove redundant organizational prefix "Marca Ubi " if present
+  const triggerName = rawName.replace(/^marca\s+ubi\s+/i, '').trim() || 'Admin';
+
+  // Compute up to 2 uppercase monogram initials
+  const initials =
+    rawName
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase() || 'MU';
+
+  const roleFormatted = currentUser.role
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  const handleOpenCommandPalette = (): void => {
+    setIsOpen(false);
+    window.dispatchEvent(new CustomEvent('open-command-palette'));
+  };
 
   return (
     <div className={styles.container} ref={containerRef}>
@@ -93,16 +108,13 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
         className={styles.userTrigger}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        title={`Authenticated as ${currentUser.name} (${currentUser.role})`}
+        title={`Authenticated as ${rawName} (${roleFormatted})`}
       >
-        <div className={styles.avatarPill}>{initials}</div>
-        <div className={styles.identityDetails}>
-          <span className={styles.userName}>{currentUser.name}</span>
-          <span className={styles.roleChip}>{roleFormatted}</span>
-        </div>
+        <span className={styles.triggerAvatar} aria-hidden="true">
+          {initials}
+        </span>
+        <span className={styles.userName}>{triggerName}</span>
         <svg
-          width="12"
-          height="12"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -118,32 +130,115 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
 
       {isOpen && (
         <div className={styles.dropdownMenu} role="menu" aria-label="User Account Options">
-          <div className={styles.menuHeader}>
-            <span className={styles.menuEmail}>{currentUser.email}</span>
-            <span className={styles.menuTitle}>{currentUser.jobTitle}</span>
-          </div>
-
-          <div className={styles.divider} />
-
-          <div className={styles.menuSection}>
-            <div className={styles.menuInfoRow}>
-              <span className={styles.infoKey}>User ID</span>
-              <span className={styles.infoVal}>
-                {currentUser.id.length > 8 ? `${currentUser.id.substring(0, 8)}...` : currentUser.id}
+          {/* User Identity Header */}
+          <div className={styles.identityHeader}>
+            <div className={styles.headerAvatar} aria-hidden="true">
+              {initials}
+            </div>
+            <div className={styles.headerMeta}>
+              <div className={styles.fullNameRow}>
+                <span className={styles.fullName} title={rawName}>
+                  {rawName}
+                </span>
+                <span className={styles.roleBadge}>{roleFormatted}</span>
+              </div>
+              <span className={styles.userEmail} title={currentUser.email}>
+                {currentUser.email}
               </span>
             </div>
-            <div className={styles.menuInfoRow}>
-              <span className={styles.infoKey}>Security Tier</span>
-              <span className={styles.infoValGreen}>TLS 1.3 / Edge Guarded</span>
-            </div>
-            <div className={styles.menuInfoRow}>
-              <span className={styles.infoKey}>Auth Role</span>
-              <span className={styles.infoVal}>{roleFormatted}</span>
-            </div>
+          </div>
+
+          {/* Workspace Status Row */}
+          <div className={styles.workspaceStatusRow}>
+            <span className={styles.workspaceName}>
+              <span className={styles.statusDot} aria-hidden="true" />
+              Marca Ubi Enterprise
+            </span>
+            <span className={styles.planBadge}>Titanium</span>
           </div>
 
           <div className={styles.divider} />
 
+          {/* Core Navigation Items */}
+          <Link
+            href="/admin/settings"
+            className={styles.menuItem}
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+          >
+            <span className={styles.menuItemContent}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>Personal Profile</span>
+            </span>
+          </Link>
+
+          <Link
+            href="/admin/settings"
+            className={styles.menuItem}
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+          >
+            <span className={styles.menuItemContent}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Workspace Settings</span>
+            </span>
+          </Link>
+
+          <Link
+            href="/admin/settings"
+            className={styles.menuItem}
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+          >
+            <span className={styles.menuItemContent}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <span>Audit & Security Logs</span>
+            </span>
+          </Link>
+
+          <div className={styles.divider} />
+
+          {/* Productivity & Shortcuts */}
+          <button
+            type="button"
+            className={styles.menuItem}
+            role="menuitem"
+            onClick={handleOpenCommandPalette}
+          >
+            <span className={styles.menuItemContent}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <span>Command Palette</span>
+            </span>
+            <kbd className={styles.menuKbd}>⌘K</kbd>
+          </button>
+
+          <div className={styles.menuItem} role="menuitem">
+            <span className={styles.menuItemContent}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span>Release Notes</span>
+            </span>
+            <span className={styles.versionBadge}>v2.4</span>
+          </div>
+
+          <div className={styles.divider} />
+
+          {/* Sign Out Action */}
           <form onSubmit={handleLogout} className={styles.logoutForm}>
             <button
               type="submit"
@@ -167,7 +262,7 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
-              <span>{isLoggingOut ? 'Signing out...' : 'Sign Out of CRM'}</span>
+              <span>{isLoggingOut ? 'Signing out...' : 'Sign Out'}</span>
             </button>
           </form>
         </div>
