@@ -376,6 +376,8 @@ export default async function AdminDashboardPage(
             stages={dynamicStages}
             deltaPercentage={executiveKpis.pipelineDeltaPercentage}
             cadenceLabel={bounds.cadenceLabel}
+            conversionWinRate={executiveKpis.conversionWinRate}
+            averageSalesCycleDays={executiveKpis.averageSalesCycleDays}
           />
         </section>
 
