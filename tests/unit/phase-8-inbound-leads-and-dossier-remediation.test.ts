@@ -315,4 +315,64 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(scss.includes('grid-template-columns: repeat(5, minmax(0, 1fr))'), 'Must arrange 5 duration presets on single horizontal row');
     });
   });
+
+  describe('Block 7: User Management Canonical Route & Query Parameter Harmonization', () => {
+    it('verifies /admin/user-management page exists and redirects cleanly to /admin/team', () => {
+      const pagePath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/user-management/page.tsx');
+      assert.ok(fs.existsSync(pagePath), 'User management canonical route page.tsx must exist on disk');
+      const tsx = fs.readFileSync(pagePath, 'utf8');
+      assert.ok(tsx.includes("redirect('/admin/team')"), 'Must redirect cleanly to /admin/team');
+    });
+
+    it('verifies src/middleware.ts registers /admin/user-management in ROUTE_TAB_MAP with tabKey: users', () => {
+      const middlewarePath = path.resolve(process.cwd(), 'src/middleware.ts');
+      const code = fs.readFileSync(middlewarePath, 'utf8');
+      assert.ok(
+        code.includes("{ prefix: '/admin/user-management', tabKey: 'users' }"),
+        'Edge middleware must include /admin/user-management in ROUTE_TAB_MAP'
+      );
+    });
+
+    it('verifies AdminBreadcrumbs maps user-management to Administration and User Management', () => {
+      const breadcrumbPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminBreadcrumbs.tsx');
+      const code = fs.readFileSync(breadcrumbPath, 'utf8');
+      assert.ok(code.includes("'user-management': 'Administration'"), 'SECTION_MAP must map user-management');
+      assert.ok(code.includes("'user-management': 'User Management'"), 'ROUTE_NAME_MAP must map user-management');
+      assert.ok(code.includes("users: 'Administration'"), 'SECTION_MAP must map users');
+      assert.ok(code.includes("users: 'User Management'"), 'ROUTE_NAME_MAP must map users');
+    });
+
+    it('verifies LeadsWorkspaceClient hydrates drawer from both canonical id and legacy leadId', () => {
+      const clientPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx');
+      const code = fs.readFileSync(clientPath, 'utf8');
+      assert.ok(
+        code.includes("searchParams.get('id') || searchParams.get('leadId')"),
+        'LeadsWorkspaceClient must hydrate active drawer lead ID from id or leadId'
+      );
+      assert.ok(code.includes("url.searchParams.delete('id')"), 'handleCloseDrawer must delete id from searchParams');
+      assert.ok(code.includes("url.searchParams.delete('leadId')"), 'handleCloseDrawer must delete leadId from searchParams');
+    });
+
+    it('verifies AdminWorkspaceShell LeadUrlSync harmonizes both id and leadId parameters', () => {
+      const shellPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminWorkspaceShell.tsx');
+      const code = fs.readFileSync(shellPath, 'utf8');
+      assert.ok(
+        code.includes("searchParams.get('id') || searchParams.get('leadId')"),
+        'AdminWorkspaceShell LeadUrlSync must check id or leadId'
+      );
+    });
+
+    it('verifies AdminLeadsPageProps and AdminDealsPageProps support canonical id parameter', () => {
+      const leadsPage = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/page.tsx'),
+        'utf8'
+      );
+      const dealsPage = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/deals/page.tsx'),
+        'utf8'
+      );
+      assert.ok(leadsPage.includes('id?: string;'), 'AdminLeadsPageProps must accept id');
+      assert.ok(dealsPage.includes('id?: string;'), 'AdminDealsPageProps must accept id');
+    });
+  });
 });

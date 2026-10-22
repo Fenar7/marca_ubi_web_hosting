@@ -47,7 +47,7 @@ function LeadUrlSync({
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const leadId = searchParams.get('leadId');
+    const leadId = searchParams.get('id') || searchParams.get('leadId');
     if (leadId) {
       if (
         typeof window !== 'undefined' &&
@@ -56,7 +56,7 @@ function LeadUrlSync({
       ) {
         // Leads and Deals workspaces mount ClientDossierDrawer directly; dispatch open-lead-drawer
         window.dispatchEvent(
-          new CustomEvent('open-lead-drawer', { detail: { leadId } })
+          new CustomEvent('open-lead-drawer', { detail: { leadId, id: leadId } })
         );
       } else {
         onLeadIdFound(leadId);

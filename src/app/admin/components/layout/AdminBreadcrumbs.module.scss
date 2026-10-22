@@ -154,7 +154,8 @@
 
 /* Raycast Monospace Token Chip for Dossier / Lead / Deal Codes */
 .monoSegmentChip {
-  font-family: var(--font-admin-code, 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, monospace);
+  @include adminMonoToken;
+  font-family: var(--font-admin-code);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;

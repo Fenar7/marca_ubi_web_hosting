@@ -163,6 +163,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     const ROUTE_TAB_MAP: Array<{ prefix: string; tabKey: CrmTabKey }> = [
       { prefix: '/admin/team', tabKey: 'users' },
       { prefix: '/admin/users', tabKey: 'users' },
+      { prefix: '/admin/user-management', tabKey: 'users' },
       { prefix: '/admin/analytics', tabKey: 'analytics' },
       { prefix: '/admin/ingestion', tabKey: 'ingestion' },
       { prefix: '/admin/settings', tabKey: 'settings' },

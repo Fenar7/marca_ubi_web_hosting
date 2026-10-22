@@ -30,20 +30,24 @@ export const metadata: Metadata = {
 
 interface AdminLeadsPageProps {
   searchParams?: Promise<{
+    id?: string;
+    leadId?: string;
     stage?: string;
     assigned_to?: string;
     bucket?: string;
-    leadId?: string;
     source?: string;
     priority?: string;
     search?: string;
+    action?: string;
   }>;
 }
 
 export default async function AdminLeadsPage(
   props: AdminLeadsPageProps
 ): Promise<React.ReactElement> {
-  // Await Next.js 16 dynamic search parameters
+  // Await Next.js 16 dynamic search parameters.
+  // Note: Deep links with ?id= seamlessly hydrate the in-context Client 360 Slide-over
+  // Drawer within LeadsWorkspaceClient, while legacy ?leadId= redirects to the dedicated full-page workspace.
   const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
   if (resolvedSearchParams?.leadId) {
     redirect(`/admin/leads/${resolvedSearchParams.leadId}`);
