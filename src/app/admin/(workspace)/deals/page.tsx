@@ -27,6 +27,9 @@ export const metadata: Metadata = {
 
 interface AdminDealsPageProps {
   searchParams?: Promise<{
+    id?: string;
+    dealId?: string;
+    leadId?: string;
     stage?: string;
     assigned_to?: string;
     source?: string;
@@ -38,7 +41,11 @@ interface AdminDealsPageProps {
 export default async function AdminDealsPage(
   props: AdminDealsPageProps
 ): Promise<React.ReactElement> {
-  await (props.searchParams ? props.searchParams : Promise.resolve(undefined));
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
+  const targetDealId = resolvedSearchParams?.id || resolvedSearchParams?.dealId || resolvedSearchParams?.leadId;
+  if (targetDealId) {
+    redirect(`/admin/deals/${targetDealId}`);
+  }
   const supabase = await createClient();
 
   const {

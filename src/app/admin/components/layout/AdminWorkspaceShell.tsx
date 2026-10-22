@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
@@ -47,7 +47,7 @@ function LeadUrlSync({
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const leadId = searchParams.get('leadId');
+    const leadId = searchParams.get('id') || searchParams.get('leadId');
     if (leadId) {
       if (
         typeof window !== 'undefined' &&
@@ -56,7 +56,7 @@ function LeadUrlSync({
       ) {
         // Leads and Deals workspaces mount ClientDossierDrawer directly; dispatch open-lead-drawer
         window.dispatchEvent(
-          new CustomEvent('open-lead-drawer', { detail: { leadId } })
+          new CustomEvent('open-lead-drawer', { detail: { leadId, id: leadId } })
         );
       } else {
         onLeadIdFound(leadId);
@@ -72,6 +72,7 @@ export function AdminWorkspaceShell({
   children,
   dueTasksCount,
 }: AdminWorkspaceShellProps): React.ReactElement {
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState<boolean>(false);
@@ -80,6 +81,19 @@ export function AdminWorkspaceShell({
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] = useState<ProvisionedCredentialsPayload | null>(null);
   const [isCredentialModalOpen, setIsCredentialModalOpen] = useState<boolean>(false);
+  const pathname = usePathname();
+
+  // Reset active drawers, modals, and body scroll lock upon inter-workspace navigation
+  useEffect(() => {
+    setIsDrawerOpen(false);
+    setActiveDrawerLeadId(null);
+    setIsNewLeadModalOpen(false);
+    setIsAddMemberModalOpen(false);
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+  }, [pathname]);
 
   // Restore sidebar collapse preference from localStorage upon client hydration
   useEffect(() => {
@@ -138,15 +152,9 @@ export function AdminWorkspaceShell({
           ? customEvt.detail
           : customEvt.detail?.leadId;
       if (id) {
-        // If already on /admin/leads or /admin/deals, those workspaces mount ClientDossierDrawer directly
-        if (
-          typeof window !== 'undefined' &&
-          (window.location.pathname.startsWith('/admin/leads') ||
-           window.location.pathname.startsWith('/admin/deals'))
-        ) {
-          return;
-        }
-        handleOpenDrawer(id);
+        const isDeals = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin/deals');
+        const targetRoute = isDeals ? ('/admin/deals/' + id) : ('/admin/leads/' + id);
+        router.push(targetRoute);
       }
     };
 
@@ -156,7 +164,7 @@ export function AdminWorkspaceShell({
       window.removeEventListener('open-lead-modal', handleOpenLeadEvent);
       window.removeEventListener('open-lead-drawer', handleOpenLeadEvent);
     };
-  }, [handleOpenDrawer]);
+  }, [router]);
 
   // Listen to open-new-lead-modal and open-new-lead-drawer custom events dispatched by quick action buttons
   useEffect(() => {

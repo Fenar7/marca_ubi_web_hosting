@@ -113,10 +113,15 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
       assert.ok(content.includes('--admin-radius-pill: 9999px'));
     });
 
-    it('declares the Accordion button mixins in tokens.scss', () => {
-      const content = fs.readFileSync(tokensScssPath, 'utf8');
-      assert.ok(content.includes('@mixin accordionPillPrimary'));
-      assert.ok(content.includes('@mixin accordionPillSecondary'));
+    it('declares the Accordion button mixins in mixins.scss and forwards them in tokens.scss', () => {
+      const tokensContent = fs.readFileSync(tokensScssPath, 'utf8');
+      assert.ok(tokensContent.includes("@forward './mixins';"));
+
+      const mixinsScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/mixins.scss');
+      assert.strictEqual(fs.existsSync(mixinsScssPath), true);
+      const mixinsContent = fs.readFileSync(mixinsScssPath, 'utf8');
+      assert.ok(mixinsContent.includes('@mixin accordionPillPrimary'));
+      assert.ok(mixinsContent.includes('@mixin accordionPillSecondary'));
     });
   });
 
@@ -192,9 +197,9 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
   });
 
   describe('6. Shell Accessibility, Touch Targets & CSS Module Synchronization', () => {
-    it('enforces 44px minimum touch targets in tokens.scss mixins (Rule R-03)', () => {
-      const tokensScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/tokens.scss');
-      const content = fs.readFileSync(tokensScssPath, 'utf8');
+    it('enforces 44px minimum touch targets in mixins.scss (Rule R-03)', () => {
+      const mixinsScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/mixins.scss');
+      const content = fs.readFileSync(mixinsScssPath, 'utf8');
       assert.ok(content.includes('min-height: 44px;'));
       assert.strictEqual(content.includes('min-height: 42px;'), false);
       assert.strictEqual(content.includes('min-height: 36px;'), false);

@@ -2,18 +2,20 @@
 
 /**
  * @file PerformanceChart.tsx
- * @description Interactive Dual-Month Performance Area Chart for the Executive Overview Dashboard.
- *              Directly benchmarked against Logip (original-f0a51857256dd5802cfc7a47a6f070a2.webp).
- *              Renders smooth Bézier area curves, interactive hover tracking, and a floating dark tooltip capsule.
+ * @description Interactive Dual-Month Commercial Performance Area Chart for Executive Overview.
+ *              Benchmarked against Logip executive analytics and Apple HIG precision standards.
+ *              Implements Fritsch-Carlson monotonic cubic Bézier curves (C¹ continuity, zero overshoot),
+ *              high-density tabular typography, and accessible keyboard and touch scrubbing.
  * @module app/admin/components/Dashboard/PerformanceChart
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useRef, useId } from 'react';
+import React, { useState, useRef, useId, useCallback } from 'react';
 import styles from './PerformanceChart.module.scss';
 
 interface DataPoint {
   day: string;
+  weekday: string;
   fullDate: string;
   thisMonthVal: number;
   lastMonthVal: number;
@@ -21,180 +23,369 @@ interface DataPoint {
   lastMonthFormatted: string;
 }
 
+interface Point2D {
+  x: number;
+  y: number;
+}
+
 const PERFORMANCE_DATA: DataPoint[] = [
-  { day: '01', fullDate: '01 Oct 2026', thisMonthVal: 65, lastMonthVal: 48, thisMonthFormatted: '₹1.15 Cr', lastMonthFormatted: '₹82L' },
-  { day: '02', fullDate: '02 Oct 2026', thisMonthVal: 82, lastMonthVal: 55, thisMonthFormatted: '₹1.48 Cr', lastMonthFormatted: '₹95L' },
-  { day: '03', fullDate: '03 Oct 2026', thisMonthVal: 110, lastMonthVal: 72, thisMonthFormatted: '₹1.92 Cr', lastMonthFormatted: '₹1.25 Cr' },
-  { day: '04', fullDate: '04 Oct 2026', thisMonthVal: 95, lastMonthVal: 80, thisMonthFormatted: '₹1.65 Cr', lastMonthFormatted: '₹1.38 Cr' },
-  { day: '05', fullDate: '05 Oct 2026', thisMonthVal: 135, lastMonthVal: 90, thisMonthFormatted: '₹2.41 Cr', lastMonthFormatted: '₹1.55 Cr' },
-  { day: '06', fullDate: '06 Oct 2026', thisMonthVal: 120, lastMonthVal: 78, thisMonthFormatted: '₹2.12 Cr', lastMonthFormatted: '₹1.32 Cr' },
-  { day: '07', fullDate: '07 Oct 2026', thisMonthVal: 145, lastMonthVal: 88, thisMonthFormatted: '₹2.65 Cr', lastMonthFormatted: '₹1.50 Cr' },
+  { day: '01', weekday: 'Thu', fullDate: 'Thu, 01 Oct 2026', thisMonthVal: 65, lastMonthVal: 48, thisMonthFormatted: '₹ 1.15 Cr', lastMonthFormatted: '₹ 82 L' },
+  { day: '02', weekday: 'Fri', fullDate: 'Fri, 02 Oct 2026', thisMonthVal: 82, lastMonthVal: 55, thisMonthFormatted: '₹ 1.48 Cr', lastMonthFormatted: '₹ 95 L' },
+  { day: '03', weekday: 'Sat', fullDate: 'Sat, 03 Oct 2026', thisMonthVal: 110, lastMonthVal: 72, thisMonthFormatted: '₹ 1.92 Cr', lastMonthFormatted: '₹ 1.25 Cr' },
+  { day: '04', weekday: 'Sun', fullDate: 'Sun, 04 Oct 2026', thisMonthVal: 95, lastMonthVal: 80, thisMonthFormatted: '₹ 1.65 Cr', lastMonthFormatted: '₹ 1.38 Cr' },
+  { day: '05', weekday: 'Mon', fullDate: 'Mon, 05 Oct 2026', thisMonthVal: 135, lastMonthVal: 90, thisMonthFormatted: '₹ 2.41 Cr', lastMonthFormatted: '₹ 1.55 Cr' },
+  { day: '06', weekday: 'Tue', fullDate: 'Tue, 06 Oct 2026', thisMonthVal: 120, lastMonthVal: 78, thisMonthFormatted: '₹ 2.12 Cr', lastMonthFormatted: '₹ 1.32 Cr' },
+  { day: '07', weekday: 'Wed', fullDate: 'Wed, 07 Oct 2026', thisMonthVal: 145, lastMonthVal: 88, thisMonthFormatted: '₹ 2.65 Cr', lastMonthFormatted: '₹ 1.50 Cr' },
 ];
 
+/**
+ * Fritsch-Carlson Monotone Cubic Spline to Bézier Path Generator.
+ * 
+ * Standard cubic spline interpolation produces unnatural oscillations and overshoot
+ * between non-linear discrete financial milestones. The Fritsch-Carlson algorithm
+ * restricts the Hermite derivatives (m_k) to guarantee monotonicity (zero overshoot)
+ * and C¹ continuity, then converts Hermite segments to equivalent cubic Bézier control points:
+ *   CP1 = (x_k + h_k / 3, y_k + (m_k * h_k) / 3)
+ *   CP2 = (x_{k+1} - h_k / 3, y_{k+1} - (m_{k+1} * h_k) / 3)
+ * 
+ * @param points Discrete cartesian coordinates ordered strictly along the x-axis
+ * @returns SVG cubic Bézier path definition string ('M ... C ...')
+ */
+function generateMonotoneBezierPath(points: Point2D[]): string {
+  const n = points.length;
+  if (n === 0) return '';
+  if (n === 1) return `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+
+  const dx: number[] = new Array(n - 1);
+  const dy: number[] = new Array(n - 1);
+  const secants: number[] = new Array(n - 1);
+
+  for (let i = 0; i < n - 1; i++) {
+    dx[i] = points[i + 1].x - points[i].x;
+    dy[i] = points[i + 1].y - points[i].y;
+    secants[i] = dx[i] !== 0 ? dy[i] / dx[i] : 0;
+  }
+
+  const m: number[] = new Array(n);
+  m[0] = secants[0];
+  for (let i = 1; i < n - 1; i++) {
+    if (secants[i - 1] * secants[i] <= 0) {
+      m[i] = 0;
+    } else {
+      m[i] = (secants[i - 1] + secants[i]) / 2;
+    }
+  }
+  m[n - 1] = secants[n - 2];
+
+  for (let i = 0; i < n - 1; i++) {
+    if (dy[i] === 0) {
+      m[i] = 0;
+      m[i + 1] = 0;
+      continue;
+    }
+
+    const alpha = m[i] / secants[i];
+    const beta = m[i + 1] / secants[i];
+
+    if (alpha < 0) m[i] = 0;
+    if (beta < 0) m[i + 1] = 0;
+
+    const hyp = Math.hypot(alpha, beta);
+    if (hyp > 3) {
+      const tau = 3 / hyp;
+      m[i] = tau * alpha * secants[i];
+      m[i + 1] = tau * beta * secants[i];
+    }
+  }
+
+  let path = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = points[i];
+    const p1 = points[i + 1];
+    const h = dx[i];
+
+    const cp1x = p0.x + h / 3;
+    const cp1y = p0.y + (m[i] * h) / 3;
+    const cp2x = p1.x - h / 3;
+    const cp2y = p1.y - (m[i + 1] * h) / 3;
+
+    path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`;
+  }
+
+  return path;
+}
+
 export const PerformanceChart: React.FC = () => {
-  const [activeIdx, setActiveIdx] = useState<number>(2); // Default to day 03 matching Logip screenshot
+  const [activeIdx, setActiveIdx] = useState<number>(5);
   const [isHovered, setIsHovered] = useState<boolean>(true);
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('01-07 Oct');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('7D');
   const svgRef = useRef<SVGSVGElement>(null);
   const gradIdOrange = useId();
   const gradIdSlate = useId();
 
-  // SVG Coordinates calculation
-  // Total canvas width: 600, height: 200, padding left: 45, right: 20, top: 20, bottom: 35
-  const chartWidth = 535;
-  const chartHeight = 145;
-  const originX = 45;
-  const originY = 20;
+  const totalCanvasWidth = 640;
+  const chartWidth = 552;
+  const chartHeight = 150;
+  const originX = 64;
+  const originY = 24;
+  const baselineY = 174;
+  const maxVal = 160;
 
   const pointsCount = PERFORMANCE_DATA.length;
   const stepX = chartWidth / (pointsCount - 1);
-  const maxVal = 160;
 
-  const coordsThisMonth = PERFORMANCE_DATA.map((p, i) => {
+  const coordsThisMonth: Point2D[] = PERFORMANCE_DATA.map((p, i) => {
     const x = originX + i * stepX;
     const y = originY + chartHeight - (p.thisMonthVal / maxVal) * chartHeight;
     return { x, y };
   });
 
-  const coordsLastMonth = PERFORMANCE_DATA.map((p, i) => {
+  const coordsLastMonth: Point2D[] = PERFORMANCE_DATA.map((p, i) => {
     const x = originX + i * stepX;
     const y = originY + chartHeight - (p.lastMonthVal / maxVal) * chartHeight;
     return { x, y };
   });
 
-  // Generate smooth cubic Bézier curve SVG path
-  const generatePath = (points: Array<{ x: number; y: number }>): string => {
-    if (points.length === 0) return '';
-    let d = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[i];
-      const p1 = points[i + 1];
-      const cx1 = p0.x + (p1.x - p0.x) / 2;
-      const cy1 = p0.y;
-      const cx2 = p0.x + (p1.x - p0.x) / 2;
-      const cy2 = p1.y;
-      d += ` C ${cx1} ${cy1}, ${cx2} ${cy2}, ${p1.x} ${p1.y}`;
-    }
-    return d;
-  };
+  const linePathThisMonth = generateMonotoneBezierPath(coordsThisMonth);
+  const linePathLastMonth = generateMonotoneBezierPath(coordsLastMonth);
 
-  const linePathThisMonth = generatePath(coordsThisMonth);
-  const linePathLastMonth = generatePath(coordsLastMonth);
-
-  const baselineY = originY + chartHeight;
-  const areaPathThisMonth = `${linePathThisMonth} L ${coordsThisMonth[coordsThisMonth.length - 1].x} ${baselineY} L ${coordsThisMonth[0].x} ${baselineY} Z`;
-  const areaPathLastMonth = `${linePathLastMonth} L ${coordsLastMonth[coordsLastMonth.length - 1].x} ${baselineY} L ${coordsLastMonth[0].x} ${baselineY} Z`;
+  const areaPathThisMonth = `${linePathThisMonth} L ${coordsThisMonth[coordsThisMonth.length - 1].x.toFixed(2)} ${baselineY} L ${coordsThisMonth[0].x.toFixed(2)} ${baselineY} Z`;
+  const areaPathLastMonth = `${linePathLastMonth} L ${coordsLastMonth[coordsLastMonth.length - 1].x.toFixed(2)} ${baselineY} L ${coordsLastMonth[0].x.toFixed(2)} ${baselineY} Z`;
 
   const activePoint = PERFORMANCE_DATA[activeIdx];
   const activeCoordOrange = coordsThisMonth[activeIdx];
   const activeCoordSlate = coordsLastMonth[activeIdx];
 
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const mouseX = ((e.clientX - rect.left) / rect.width) * 600;
-    
-    // Find closest index
+  const updateActiveFromCanvasX = useCallback((canvasX: number) => {
     let closestIdx = 0;
     let minDist = Infinity;
     coordsThisMonth.forEach((pt, idx) => {
-      const dist = Math.abs(pt.x - mouseX);
+      const dist = Math.abs(pt.x - canvasX);
       if (dist < minDist) {
         minDist = dist;
         closestIdx = idx;
       }
     });
-
     setActiveIdx(closestIdx);
     setIsHovered(true);
+  }, [coordsThisMonth]);
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    if (rect.width === 0) return;
+    const mouseX = ((e.clientX - rect.left) / rect.width) * totalCanvasWidth;
+    updateActiveFromCanvasX(mouseX);
   };
 
-  // Compute percentage left for tooltip capsule
-  const tooltipLeftPercent = ((activeCoordOrange.x) / 600) * 100;
+  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (!svgRef.current || e.touches.length === 0) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    if (rect.width === 0) return;
+    const touchX = ((e.touches[0].clientX - rect.left) / rect.width) * totalCanvasWidth;
+    updateActiveFromCanvasX(touchX);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      setActiveIdx((prev) => Math.min(prev + 1, pointsCount - 1));
+      setIsHovered(true);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      setActiveIdx((prev) => Math.max(prev - 1, 0));
+      setIsHovered(true);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setActiveIdx(0);
+      setIsHovered(true);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setActiveIdx(pointsCount - 1);
+      setIsHovered(true);
+    }
+  };
+
+  const tooltipLeftPercent = (activeCoordOrange.x / totalCanvasWidth) * 100;
+
+  // Dynamic vertical clearance: flip tooltip below marker if in upper 40% (y < 85)
+  const isPeakInUpperRange = activeCoordOrange.y < 85;
+  const tooltipTopStyle = isPeakInUpperRange
+    ? `${((activeCoordOrange.y + 18) / 220) * 100}%`
+    : '14px';
+
+  const variancePct = activePoint.lastMonthVal > 0
+    ? ((activePoint.thisMonthVal - activePoint.lastMonthVal) / activePoint.lastMonthVal) * 100
+    : 0;
+  const isVariancePositive = variancePct >= 0;
+  const formattedVariance = `${isVariancePositive ? '+' : ''}${variancePct.toFixed(1)}% vs last month`;
+
+  const yAxisTicks = [
+    { y: originY, label: '₹ 2.50 Cr' },
+    { y: originY + chartHeight * 0.28, label: '₹ 1.80 Cr' },
+    { y: originY + chartHeight * 0.60, label: '₹ 1.00 Cr' },
+    { y: baselineY, label: '₹ 0.00' },
+  ];
 
   return (
     <div className={styles.chartCard} aria-label="Commercial Performance Trends">
-      {/* Chart Header */}
       <div className={styles.chartHeader}>
-        <div className={styles.headerTitleGroup}>
-          <h2 className={styles.chartTitle}>Performance</h2>
-          <div className={styles.legendGroup}>
-            <div className={styles.legendItem}>
-              <span className={`${styles.legendDot} ${styles.orange}`} />
-              <span>This month</span>
-            </div>
-            <div className={styles.legendItem}>
-              <span className={`${styles.legendDot} ${styles.slate}`} />
-              <span>Last month</span>
-            </div>
+        <div className={styles.headerPrimaryInfo}>
+          <div className={styles.headerTitleRow}>
+            <h2 className={styles.chartTitle}>Performance</h2>
+            <span className={styles.headerVelocityBadge} aria-label={`Performance velocity: ${formattedVariance}`}>
+              ▲ {formattedVariance}
+            </span>
+          </div>
+          <div className={styles.headerMetricHeadline}>
+            <span className={styles.metricVal}>{activePoint.thisMonthFormatted}</span>
+            <span className={styles.metricContext}>Inspection: {activePoint.fullDate}</span>
           </div>
         </div>
 
-        <button
-          type="button"
-          className={styles.filterSelect}
-          onClick={() => setSelectedPeriod((prev) => (prev === '01-07 Oct' ? 'Last 30 Days' : '01-07 Oct'))}
-          aria-label="Filter performance date range"
-        >
-          <span>{selectedPeriod}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
+        <div className={styles.headerControlsGroup}>
+          <div className={styles.segmentedControl} role="group" aria-label="Time range selector">
+            {(['7D', '30D', '90D', '1Y'] as const).map((period) => (
+              <button
+                key={period}
+                type="button"
+                className={`${styles.segmentBtn} ${styles.filterSelect} ${
+                  selectedPeriod === period ? styles.segmentActive : ''
+                }`}
+                onClick={() => setSelectedPeriod(period)}
+                aria-pressed={selectedPeriod === period}
+                aria-label={`Filter range ${period}`}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.legendCapsules}>
+            <div className={`${styles.legendCapsule} ${styles.legendItem}`}>
+              <span className={styles.luminousDotOrange} />
+              <span className={styles.legendText}>This Month:</span>
+              <span className={styles.legendValue}>{activePoint.thisMonthFormatted}</span>
+            </div>
+            <div className={`${styles.legendCapsule} ${styles.legendItem}`}>
+              <span className={styles.dashedDotSlate} />
+              <span className={styles.legendText}>Last Month:</span>
+              <span className={styles.legendValue}>{activePoint.lastMonthFormatted}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* SVG Canvas Container */}
-      <div className={styles.svgWrapper}>
+      <div
+        className={styles.svgWrapper}
+        tabIndex={0}
+        role="region"
+        aria-label="Commercial Performance Trends interactive chart. Use horizontal arrow keys to inspect milestone days."
+        onKeyDown={handleKeyDown}
+      >
+        <div className={styles.srOnly} aria-live="polite" aria-atomic="true">
+          {activePoint.fullDate}: This month {activePoint.thisMonthFormatted}, Last month {activePoint.lastMonthFormatted}, variance {formattedVariance}
+        </div>
+
         <svg
           ref={svgRef}
-          viewBox="0 0 600 200"
+          viewBox="0 0 640 220"
           className={styles.chartSvg}
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsHovered(true)}
+          onTouchStart={handleTouchMove}
+          onTouchMove={handleTouchMove}
         >
           <defs>
+            <filter id="orangeGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#ff6100" floodOpacity="0.5" />
+            </filter>
             <linearGradient id={gradIdOrange} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff6100" stopOpacity="0.16" />
-              <stop offset="100%" stopColor="#ff6100" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#ff6100" stopOpacity="0.08" />
+              <stop offset="70%" stopColor="#ff6100" stopOpacity="0.0" />
             </linearGradient>
             <linearGradient id={gradIdSlate} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.1" />
+              <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.005" />
               <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
-          {/* Horizontal Gridlines & Y-Axis Labels */}
-          <line x1={originX} y1={originY} x2={originX + chartWidth} y2={originY} className={styles.gridLine} />
-          <text x="35" y={originY + 4} textAnchor="end" className={styles.axisText}>₹2.5Cr</text>
+          {yAxisTicks.map((tick) => (
+            <React.Fragment key={tick.label}>
+              <line
+                x1={originX}
+                y1={tick.y}
+                x2={originX + chartWidth}
+                y2={tick.y}
+                className={styles.gridLine}
+              />
+              <text
+                x="54"
+                y={tick.y + 4}
+                textAnchor="end"
+                className={styles.axisText}
+              >
+                {tick.label}
+              </text>
+            </React.Fragment>
+          ))}
 
-          <line x1={originX} y1={originY + chartHeight * 0.33} x2={originX + chartWidth} y2={originY + chartHeight * 0.33} className={styles.gridLine} />
-          <text x="35" y={originY + chartHeight * 0.33 + 4} textAnchor="end" className={styles.axisText}>₹1.6Cr</text>
+          {isHovered && activeCoordOrange && (
+            <rect
+              x={activeCoordOrange.x - 26}
+              y={originY - 6}
+              width={52}
+              height={chartHeight + 12}
+              rx={6}
+              fill="rgba(241, 245, 249, 0.6)"
+              className={styles.activeColumnBackdrop}
+            />
+          )}
 
-          <line x1={originX} y1={originY + chartHeight * 0.66} x2={originX + chartWidth} y2={originY + chartHeight * 0.66} className={styles.gridLine} />
-          <text x="35" y={originY + chartHeight * 0.66 + 4} textAnchor="end" className={styles.axisText}>₹80L</text>
-
-          <line x1={originX} y1={baselineY} x2={originX + chartWidth} y2={baselineY} className={styles.gridLine} />
-          <text x="35" y={baselineY + 4} textAnchor="end" className={styles.axisText}>0</text>
-
-          {/* Last Month Area & Stroke */}
           <path d={areaPathLastMonth} fill={`url(#${gradIdSlate})`} />
-          <path d={linePathLastMonth} fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d={linePathLastMonth}
+            fill="none"
+            stroke="#94a3b8"
+            strokeWidth="1.75"
+            strokeDasharray="4 4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            shapeRendering="geometricPrecision"
+          />
 
-          {/* This Month Area & Stroke (Marca Orange) */}
           <path d={areaPathThisMonth} fill={`url(#${gradIdOrange})`} />
-          <path d={linePathThisMonth} fill="none" stroke="#ff6100" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d={linePathThisMonth}
+            fill="none"
+            stroke="#ff6100"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            shapeRendering="geometricPrecision"
+            filter="url(#orangeGlow)"
+          />
 
-          {/* X-Axis Day Labels */}
           {PERFORMANCE_DATA.map((p, idx) => {
             const x = originX + idx * stepX;
+            const isActive = isHovered && idx === activeIdx;
             return (
-              <text key={p.day} x={x} y={baselineY + 18} textAnchor="middle" className={styles.axisText}>
-                {p.day}
+              <text
+                key={p.day}
+                x={x}
+                y={baselineY + 20}
+                textAnchor="middle"
+                className={`${styles.axisText} ${isActive ? styles.axisTextActive : ''}`}
+                fill={isActive ? '#ff6100' : undefined}
+                fontWeight={isActive ? 700 : undefined}
+              >
+                {`${p.weekday} ${p.day}`}
               </text>
             );
           })}
 
-          {/* Active Hover Indicators */}
           {isHovered && activeCoordOrange && (
             <>
               <line
@@ -204,17 +395,36 @@ export const PerformanceChart: React.FC = () => {
                 y2={baselineY}
                 className={styles.activeLine}
               />
-              <circle cx={activeCoordSlate.x} cy={activeCoordSlate.y} r="5" className={styles.activeCircleSlate} />
-              <circle cx={activeCoordOrange.x} cy={activeCoordOrange.y} r="6" className={styles.activeCircleOrange} />
+              <circle
+                cx={activeCoordSlate.x}
+                cy={activeCoordSlate.y}
+                r="4.5"
+                className={styles.activeCircleSlate}
+              />
+              <circle
+                cx={activeCoordOrange.x}
+                cy={activeCoordOrange.y}
+                r="12"
+                className={styles.activeHaloOrange}
+              />
+              <circle
+                cx={activeCoordOrange.x}
+                cy={activeCoordOrange.y}
+                r="5.5"
+                className={styles.activeCircleOrange}
+              />
             </>
           )}
         </svg>
 
-        {/* Floating Dark Obsidian Tooltip Capsule (Logip Matching) */}
         {isHovered && activePoint && (
           <div
             className={styles.tooltipCapsule}
-            style={{ left: `${tooltipLeftPercent}%` }}
+            style={{
+              left: `${tooltipLeftPercent}%`,
+              transform: `translateX(-${tooltipLeftPercent}%)`,
+              top: tooltipTopStyle,
+            }}
           >
             <span className={styles.tooltipDate}>{activePoint.fullDate}</span>
             <div className={styles.tooltipRow}>
@@ -230,6 +440,13 @@ export const PerformanceChart: React.FC = () => {
                 Last month:
               </span>
               <span className={styles.tooltipValue}>{activePoint.lastMonthFormatted}</span>
+            </div>
+            <div
+              className={`${styles.tooltipVariance} ${
+                isVariancePositive ? styles.variancePositive : styles.varianceNegative
+              }`}
+            >
+              <span>{formattedVariance}</span>
             </div>
           </div>
         )}

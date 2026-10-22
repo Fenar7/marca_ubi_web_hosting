@@ -16,4 +16,4 @@ export * from './AddTeamMemberModal';
 export * from './useModalAnimation';
 export { BatchReassignModal, type BatchReassignModalProps } from './BatchReassignModal';
 export * from './ConvertLeadToDealModal';
-
+export * from './EditLeadModal';

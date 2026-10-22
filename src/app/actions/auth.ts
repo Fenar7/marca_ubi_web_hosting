@@ -159,6 +159,31 @@ export async function loginAction(
     // Reset rate limiter on successful authentication
     resetRateLimit(rateLimitKey);
 
+    // SEC-03: Synchronize profile role and allowed_tabs into app_metadata if missing
+    // Ensures Next.js Edge Middleware has immediate, authoritative JWT claims for sub-millisecond route gating
+    try {
+      if (!data.user.app_metadata?.role || !data.user.app_metadata?.allowed_tabs) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, allowed_tabs')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (profile) {
+          const adminClient = getAdminClient();
+          await adminClient.auth.admin.updateUserById(data.user.id, {
+            app_metadata: {
+              ...(data.user.app_metadata || {}),
+              role: profile.role,
+              allowed_tabs: profile.allowed_tabs,
+            },
+          });
+        }
+      }
+    } catch {
+      // Non-blocking: edge middleware gracefully falls back to Server Component if admin client is restricted
+    }
+
     // Intercept mandatory first-login password rotation for newly provisioned personnel
     const mustChangePassword =
       data.user.app_metadata?.must_change_password === true ||

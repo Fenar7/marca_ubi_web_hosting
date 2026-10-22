@@ -59,6 +59,84 @@
   max-width: 720px;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.newLeadHeaderBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 1.15rem;
+  border-radius: 10px;
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  background: var(--admin-accent-lemon, #eefb87);
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background: var(--admin-accent-lemon-hover, #e4f375);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.leadShortcutBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(31, 36, 47, 0.1);
+  color: #1f242f;
+  margin-left: 0.2rem;
+  line-height: 1.2;
+}
+
 .controlsBar {
   display: flex;
   align-items: center;

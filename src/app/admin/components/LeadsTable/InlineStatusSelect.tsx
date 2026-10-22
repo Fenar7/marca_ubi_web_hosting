@@ -37,6 +37,25 @@ export interface InlineStatusSelectProps {
   disabled?: boolean;
 }
 
+/**
+ * Safely converts hex colors (including 3-digit shorthand) to rgba with explicit opacity
+ * to prevent invalid hex concatenation like #fff18.
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  let c = hex.replace('#', '').trim();
+  if (c.length === 3) {
+    c = c.split('').map((char) => char + char).join('');
+  }
+  if (c.length === 6) {
+    const num = parseInt(c, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return hex;
+}
+
 export function InlineStatusSelect({
   leadId,
   currentStatus,
@@ -46,6 +65,7 @@ export function InlineStatusSelect({
   disabled = false,
 }: InlineStatusSelectProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [openUpward, setOpenUpward] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -83,6 +103,21 @@ export function InlineStatusSelect({
   const handleToggle = (e: React.MouseEvent): void => {
     e.stopPropagation();
     if (disabled) return;
+    if (!isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const scrollParent = containerRef.current.closest(`.${styles.virtualScrollContainer}`) as HTMLElement | null;
+      let spaceBelow = window.innerHeight - rect.bottom;
+      if (scrollParent) {
+        const parentRect = scrollParent.getBoundingClientRect();
+        const spaceInsideParent = parentRect.bottom - rect.bottom;
+        spaceBelow = Math.min(spaceBelow, spaceInsideParent);
+      }
+      if (spaceBelow < 270 && rect.top > 200) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
     setIsOpen((prev) => !prev);
   };
 
@@ -158,7 +193,9 @@ export function InlineStatusSelect({
     });
   };
 
-  const statusColor = optimisticStatus.color_code || '#1f242f';
+  const rawColor = optimisticStatus.color_code?.toLowerCase().trim();
+  const isWhite = !rawColor || rawColor === '#ffffff' || rawColor === '#fff' || rawColor === 'white';
+  const statusColor = isWhite ? '#475569' : optimisticStatus.color_code || '#1f242f';
 
   return (
     <div
@@ -173,8 +210,8 @@ export function InlineStatusSelect({
         disabled={disabled}
         className={`${styles.statusPillBtn} ${isPending ? styles.isPendingShimmer : ''}`}
         style={{
-          background: `${statusColor}18`,
-          borderColor: `${statusColor}35`,
+          background: hexToRgba(statusColor, 0.1),
+          borderColor: hexToRgba(statusColor, 0.3),
           color: statusColor,
         }}
         aria-haspopup="listbox"
@@ -185,7 +222,7 @@ export function InlineStatusSelect({
           className={styles.statusDot}
           style={{
             background: statusColor,
-            boxShadow: `0 0 6px ${statusColor}80`,
+            boxShadow: `0 0 6px ${hexToRgba(statusColor, 0.5)}`,
           }}
           aria-hidden="true"
         />
@@ -202,7 +239,7 @@ export function InlineStatusSelect({
 
       {isOpen && (
         <div
-          className={styles.popoverMenu}
+          className={`${styles.popoverMenu} ${openUpward ? styles.popoverMenuUp : ''}`}
           role="listbox"
           aria-label="Select pipeline stage"
         >
@@ -210,7 +247,9 @@ export function InlineStatusSelect({
           {availableStatuses.map((status) => {
             const isSelected = status.id === optimisticStatus.id;
             const isGuarded = status.bucket === 'converted' || status.bucket === 'lost';
-            const itemColor = status.color_code || '#1f242f';
+            const rawItemColor = status.color_code?.toLowerCase().trim();
+            const isItemWhite = !rawItemColor || rawItemColor === '#ffffff' || rawItemColor === '#fff' || rawItemColor === 'white';
+            const itemColor = isItemWhite ? '#475569' : status.color_code || '#1f242f';
 
             return (
               <button

@@ -215,12 +215,13 @@
 }
 
 .dealValuation {
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-numeric);
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--admin-text-primary, #1f242f);
-  font-variant-numeric: tabular-nums;
-  min-width: 75px;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'cv01' 1;
+  min-width: 80px;
   text-align: right;
 }
 

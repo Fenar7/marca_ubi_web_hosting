@@ -125,7 +125,8 @@ function LeadsWorkspaceContent({
   const priorityParam = searchParams.get('priority');
   const stageParam = searchParams.get('stage');
 
-  const leadIdParam = searchParams.get('leadId');
+  // Deep-link query param resolution: supports both canonical ?id=<uuid> and legacy ?leadId=<uuid>
+  const leadIdParam = searchParams.get('id') || searchParams.get('leadId');
 
   const validBuckets: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
   const initialBucket: BucketTabId = validBuckets.includes(bucketParam as BucketTabId)
@@ -181,14 +182,15 @@ function LeadsWorkspaceContent({
     lead: null,
   });
 
-  // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
+  // Shallow URL Synchronizer for Client 360 drawer: preserves ?id=<uuid> for bookmarking & persistence
   const handleOpenDrawer = useCallback((id: string) => {
     setActiveDrawerLeadId(id);
     setIsDrawerOpen(true);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
-      if (url.searchParams.get('leadId') !== id) {
-        url.searchParams.set('leadId', id);
+      if (url.searchParams.get('id') !== id && url.searchParams.get('leadId') !== id) {
+        url.searchParams.set('id', id);
+        url.searchParams.delete('leadId');
         window.history.replaceState({}, '', url.pathname + url.search);
       }
     }
@@ -199,8 +201,20 @@ function LeadsWorkspaceContent({
     setActiveDrawerLeadId(null);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
+      let changed = false;
       if (url.searchParams.has('leadId')) {
         url.searchParams.delete('leadId');
+        changed = true;
+      }
+      if (url.searchParams.has('id')) {
+        url.searchParams.delete('id');
+        changed = true;
+      }
+      if (url.searchParams.has('action')) {
+        url.searchParams.delete('action');
+        changed = true;
+      }
+      if (changed) {
         window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
       }
     }
@@ -208,11 +222,11 @@ function LeadsWorkspaceContent({
 
   useEffect(() => {
     const handleOpenDrawerEvent = (e: Event): void => {
-      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
+      const customEvt = e as CustomEvent<{ leadId?: string; id?: string } | string>;
       const id =
         typeof customEvt.detail === 'string'
           ? customEvt.detail
-          : customEvt.detail?.leadId;
+          : customEvt.detail?.id || customEvt.detail?.leadId;
       if (id) {
         handleOpenDrawer(id);
       }
@@ -319,7 +333,14 @@ function LeadsWorkspaceContent({
     );
     setSelectedPriority(searchParams.get('priority') || null);
     setSelectedStageId(searchParams.get('stage') || null);
-  }, [searchParams]);
+
+    // Reactive synchronization for drawer state upon browser back/forward or deep-link parameter changes
+    const currentParamId = searchParams.get('id') || searchParams.get('leadId');
+    if (currentParamId && currentParamId !== activeDrawerLeadId) {
+      setActiveDrawerLeadId(currentParamId);
+      setIsDrawerOpen(true);
+    }
+  }, [searchParams, activeDrawerLeadId]);
 
   // Derive catalog dropdown options dynamically if not passed directly from server props
   const availableSources = useMemo<FilterDropdownOption[]>(() => {

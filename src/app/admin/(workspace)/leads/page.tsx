@@ -16,6 +16,7 @@ import type { CrmUserRole, FunnelBucket, PipelineRpcMetrics } from '@/types/crm'
 import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
+import { NewLeadHeaderButton } from './NewLeadHeaderButton';
 import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBar';
 import styles from './leads.module.scss';
 
@@ -29,21 +30,28 @@ export const metadata: Metadata = {
 
 interface AdminLeadsPageProps {
   searchParams?: Promise<{
+    id?: string;
+    leadId?: string;
     stage?: string;
     assigned_to?: string;
     bucket?: string;
-    leadId?: string;
     source?: string;
     priority?: string;
     search?: string;
+    action?: string;
   }>;
 }
 
 export default async function AdminLeadsPage(
   props: AdminLeadsPageProps
 ): Promise<React.ReactElement> {
-  // Await Next.js 16 dynamic search parameters
-  await (props.searchParams ? props.searchParams : Promise.resolve(undefined));
+  // Await Next.js 16 dynamic search parameters.
+  // Note: Deep links with ?id= seamlessly hydrate the in-context Client 360 Slide-over
+  // Drawer within LeadsWorkspaceClient, while legacy ?leadId= redirects to the dedicated full-page workspace.
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
+  if (resolvedSearchParams?.leadId) {
+    redirect(`/admin/leads/${resolvedSearchParams.leadId}`);
+  }
   const supabase = await createClient();
 
   const {
@@ -213,6 +221,9 @@ export default async function AdminLeadsPage(
           <p className={styles.pageSubtitle}>
             Triage incoming briefs, evaluate client scope, and advance qualified opportunities to negotiation.
           </p>
+        </div>
+        <div className={styles.headerRight}>
+          <NewLeadHeaderButton userRole={role} />
         </div>
       </header>
 

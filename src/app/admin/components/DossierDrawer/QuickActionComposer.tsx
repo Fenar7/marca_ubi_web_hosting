@@ -250,7 +250,7 @@ export function QuickActionComposer({
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
-          <span>Internal Note</span>
+          <span>Note</span>
         </button>
       </div>
 
@@ -259,38 +259,39 @@ export function QuickActionComposer({
         {/* Tab 1: Log Call Controls */}
         {activeTab === 'call' && (
           <div className={styles.composerFields}>
-            <div className={styles.composerRow}>
-              <div className={styles.composerFieldGroup}>
-                <label className={styles.fieldLabel}>Call Outcome</label>
-                <select
-                  value={callOutcome}
-                  onChange={(e) => setCallOutcome(e.target.value as typeof CALL_OUTCOMES[number])}
-                  className={styles.composerSelect}
-                >
-                  {CALL_OUTCOMES.map((outcome) => (
-                    <option key={outcome} value={outcome}>
-                      {outcome}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className={styles.composerFieldGroup}>
+              <label className={styles.fieldLabel}>Call Outcome</label>
+              <select
+                value={callOutcome}
+                onChange={(e) => setCallOutcome(e.target.value as typeof CALL_OUTCOMES[number])}
+                className={styles.composerSelect}
+              >
+                {CALL_OUTCOMES.map((outcome) => (
+                  <option key={outcome} value={outcome}>
+                    {outcome}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              <div className={styles.composerFieldGroup}>
-                <label className={styles.fieldLabel}>Duration</label>
-                <div className={styles.presetGroup}>
-                  {DURATION_PRESETS.map((p) => (
-                    <button
-                      key={p.label}
-                      type="button"
-                      onClick={() => setCallDurationSeconds(p.seconds)}
-                      className={`${styles.presetBtn} ${
-                        callDurationSeconds === p.seconds ? styles.activePreset : ''
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
+            <div className={styles.composerFieldGroup}>
+              <div className={styles.durationHeaderRow}>
+                <label className={styles.fieldLabel}>Call Duration</label>
+                <span className={styles.durationActiveBadge}>{Math.round(callDurationSeconds / 60)} min</span>
+              </div>
+              <div className={styles.presetGroup}>
+                {DURATION_PRESETS.map((p) => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => setCallDurationSeconds(p.seconds)}
+                    className={`${styles.presetBtn} ${
+                      callDurationSeconds === p.seconds ? styles.activePreset : ''
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
               </div>
             </div>
 

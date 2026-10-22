@@ -11,6 +11,7 @@
  */
 
 import React, { useRef, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
@@ -64,6 +65,7 @@ export function LeadsDataGrid({
   userRole,
   className,
 }: LeadsDataGridProps): React.ReactElement {
+  const router = useRouter();
   const parentRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('lead_id');
@@ -126,11 +128,7 @@ export function LeadsDataGrid({
   });
 
   const handleRowClick = (leadId: string): void => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', { detail: { leadId } })
-      );
-    }
+    router.push(`/admin/leads/${leadId}`);
   };
 
   const handleCopyLeadId = (leadIdStr: string, e: React.MouseEvent): void => {
@@ -517,7 +515,7 @@ export function LeadsDataGrid({
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                 >
-                  {lead.bucket === 'open' && userRole !== 'viewer' ? (
+                  {lead.bucket === 'open' && userRole !== 'viewer' && (
                     <button
                       type="button"
                       className={styles.rowConvertBtn}
@@ -551,23 +549,23 @@ export function LeadsDataGrid({
                       </svg>
                       <span>Convert</span>
                     </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className={styles.rowInspectBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRowClick(lead.id);
-                      }}
-                      title="Inspect Client Dossier"
-                      aria-label={`Inspect dossier for ${lead.lead_id}`}
-                    >
-                      <span>View</span>
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </button>
                   )}
+
+                  <button
+                    type="button"
+                    className={styles.rowInspectBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRowClick(lead.id);
+                    }}
+                    title="Open Client Dossier & Touchpoint Notes"
+                    aria-label={`Inspect dossier for ${lead.company || lead.name} (${lead.lead_id})`}
+                  >
+                    <span>View</span>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
 
                   <div className={styles.rowQuickActions}>
                     {lead.phone && (
