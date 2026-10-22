@@ -136,8 +136,8 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
         'Contract Review must use high-contrast Emerald #059669 (4.58:1 contrast against white)'
       );
       assert.ok(
-        pacTsx.includes('#2563eb'),
-        'Discovery must use high-contrast Electric Cobalt #2563eb'
+        pacTsx.includes('#0284c7'),
+        'Discovery must use Deep Ocean Sky #0284c7 (non-generic blue)'
       );
     });
 

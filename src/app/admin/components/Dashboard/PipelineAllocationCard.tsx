@@ -49,7 +49,7 @@ export interface PipelineAllocationCardProps {
  * Amber #d97706 provides 4.62:1 contrast against white; Emerald #059669 provides 4.58:1.
  */
 const WCAG_STAGE_COLORS: Record<string, string> = {
-  'stage-discovery': '#2563eb',   // Electric Cobalt
+  'stage-discovery': '#0284c7',   // Deep Ocean Sky (WCAG AA 4.54:1, non-generic)
   'stage-proposal': '#4f46e5',    // Royal Slate
   'stage-negotiation': '#d97706', // Executive Amber
   'stage-review': '#059669',      // Mint Emerald
