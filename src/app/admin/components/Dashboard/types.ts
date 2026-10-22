@@ -40,6 +40,13 @@ export interface ExecutiveDashboardKpis {
   conversionWinRate: number;
   benchmarkWinRate: number;
   winRateDeltaPercentage: number;
+
+  /** Active comparison cadence (e.g. 'WoW', 'MoM', 'QoQ', 'YoY') */
+  cadenceLabel?: string;
+  /** SLA on-track health percentage across active deals (defaults to 98.2%) */
+  slaOnTrackPercentage?: number;
+  /** Mean duration from discovery to conversion for won deals */
+  averageSalesCycleDays?: number;
 }
 
 /**
@@ -124,6 +131,7 @@ export interface ExecutiveMastheadProps {
 export interface ExecutiveKpiGridProps {
   kpis?: ExecutiveDashboardKpis;
   metrics?: PipelineRpcMetrics | null;
+  cadenceLabel?: string;
   onCardClick?: (metricKey: string) => void;
 }
 
@@ -132,8 +140,17 @@ export interface ExecutiveKpiGridProps {
  * Renders the dual-state bar chart (target vs collected) with overlaid monotone Bézier curves.
  */
 export interface RevenueDynamicsCardProps {
-  dataPoints?: RevenueDynamicsPoint[];
+  dataPoints?: Array<{
+    month: string;
+    fullPeriod: string;
+    quotaVal: number;
+    cashVal: number;
+    quotaFormatted: string;
+    cashFormatted: string;
+    attainmentPct: number;
+  }>;
   selectedPeriod?: string;
+  timeframe?: string;
   onPeriodChange?: (period: string) => void;
 }
 
@@ -144,7 +161,10 @@ export interface RevenueDynamicsCardProps {
 export interface PipelineAllocationCardProps {
   stages?: PipelineStageAllocationItem[];
   totalPipelineValue?: number;
+  totalValuation?: number;
   momDeltaPercentage?: number;
+  deltaPercentage?: number;
+  cadenceLabel?: string;
 }
 
 /**

@@ -6,6 +6,8 @@
  *              Benchmarked against MedTrackr Analytics & Accordion Executive Advisory.
  *              Features 14px pure white surfaces, soft pastel icon chips (Sky Blue, Mint Green,
  *              Lavender, Warm Amber), circular action buttons `( > )`, and Plus Jakarta Sans tabular figures.
+ *              Dynamically adjusts period-over-period delta indicators (WoW, MoM, QoQ, YoY)
+ *              and dynamically renders SLA on-track health and sales cycle metrics.
  * @module admin/components/Dashboard/ExecutiveKpiGrid
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -20,6 +22,8 @@ export interface ExecutiveKpiGridProps {
   kpis?: ExecutiveDashboardKpis;
   /** Aggregated pipeline telemetry provided by Server Action or RPC */
   metrics?: PipelineRpcMetrics | null;
+  /** Optional comparison cadence label (e.g. 'WoW', 'MoM', 'QoQ', 'YoY') */
+  cadenceLabel?: string;
   /** Optional interactive selection callback per metric card */
   onCardClick?: (metricKey: string) => void;
 }
@@ -36,6 +40,7 @@ function formatCurrency(amount: number): string {
 export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({
   kpis,
   metrics,
+  cadenceLabel: explicitCadence,
   onCardClick,
 }) => {
   // Extract and calculate calibrated agency financial invariants
@@ -45,10 +50,17 @@ export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({
   const closedCount = kpis?.convertedDealsCount ?? metrics?.converted_leads_count ?? 14;
   const activeCount = kpis?.activeDealsCount ?? 24;
   const winRate = kpis?.conversionWinRate ?? metrics?.conversion_rate_percentage ?? 28.6;
+
+  // Dynamic cadence and period-over-period velocity deltas
+  const cadence = explicitCadence || kpis?.cadenceLabel || 'MoM';
   const pipelineDelta = kpis?.pipelineDeltaPercentage ?? 14.2;
   const revenueDelta = kpis?.revenueDeltaPercentage ?? 8.4;
   const dealsDelta = kpis?.dealsDeltaPercentage ?? 5.1;
   const winRateDelta = kpis?.winRateDeltaPercentage ?? 2.3;
+
+  // Dynamic operational telemetry footers
+  const slaOnTrack = kpis?.slaOnTrackPercentage ?? 98.2;
+  const avgSalesCycle = kpis?.averageSalesCycleDays ?? 18.4;
 
   return (
     <section className={styles.gridContainer} aria-label="Executive Key Performance Indicators">
@@ -95,11 +107,20 @@ export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({
           <span className={styles.kpiLabel}>Total Active Pipeline</span>
           <div className={styles.metricRow}>
             <span className={styles.kpiValue}>{formatCurrency(pipelineValuation)}</span>
-            <span className={`${styles.deltaPill} ${styles.positive}`}>
+            <span
+              className={`${styles.deltaPill} ${
+                pipelineDelta >= 0 ? styles.positive : styles.negative
+              }`}
+            >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="18 15 12 9 6 15" />
+                {pipelineDelta >= 0 ? (
+                  <polyline points="18 15 12 9 6 15" />
+                ) : (
+                  <polyline points="6 9 12 15 18 9" />
+                )}
               </svg>
-              +{pipelineDelta.toFixed(1)}% MoM
+              {pipelineDelta >= 0 ? '+' : ''}
+              {pipelineDelta.toFixed(1)}% {cadence}
             </span>
           </div>
         </div>
@@ -151,11 +172,20 @@ export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({
           <span className={styles.kpiLabel}>Cash Collected</span>
           <div className={styles.metricRow}>
             <span className={styles.kpiValue}>{formatCurrency(cashCollected)}</span>
-            <span className={`${styles.deltaPill} ${styles.positive}`}>
+            <span
+              className={`${styles.deltaPill} ${
+                revenueDelta >= 0 ? styles.positive : styles.negative
+              }`}
+            >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="18 15 12 9 6 15" />
+                {revenueDelta >= 0 ? (
+                  <polyline points="18 15 12 9 6 15" />
+                ) : (
+                  <polyline points="6 9 12 15 18 9" />
+                )}
               </svg>
-              +{revenueDelta.toFixed(1)}% QoQ
+              {revenueDelta >= 0 ? '+' : ''}
+              {revenueDelta.toFixed(1)}% {cadence}
             </span>
           </div>
         </div>
@@ -209,18 +239,27 @@ export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({
           <span className={styles.kpiLabel}>Active Client Accounts</span>
           <div className={styles.metricRow}>
             <span className={styles.kpiValue}>{activeCount.toLocaleString('en-IN')}</span>
-            <span className={`${styles.deltaPill} ${styles.positive}`}>
+            <span
+              className={`${styles.deltaPill} ${
+                dealsDelta >= 0 ? styles.positive : styles.negative
+              }`}
+            >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="18 15 12 9 6 15" />
+                {dealsDelta >= 0 ? (
+                  <polyline points="18 15 12 9 6 15" />
+                ) : (
+                  <polyline points="6 9 12 15 18 9" />
+                )}
               </svg>
-              +{dealsDelta.toFixed(1)}% MoM
+              {dealsDelta >= 0 ? '+' : ''}
+              {dealsDelta.toFixed(1)}% {cadence}
             </span>
           </div>
         </div>
 
         <div className={styles.cardFooter}>
           <span className={styles.radarPulse} aria-hidden="true" />
-          <span>98.2% SLA On-Track</span>
+          <span>{slaOnTrack.toFixed(1)}% SLA On-Track</span>
         </div>
       </div>
 
@@ -265,17 +304,26 @@ export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({
           <span className={styles.kpiLabel}>Win Conversion Velocity</span>
           <div className={styles.metricRow}>
             <span className={styles.kpiValue}>{winRate.toFixed(1)}%</span>
-            <span className={`${styles.deltaPill} ${styles.positive}`}>
+            <span
+              className={`${styles.deltaPill} ${
+                winRateDelta >= 0 ? styles.positive : styles.negative
+              }`}
+            >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="18 15 12 9 6 15" />
+                {winRateDelta >= 0 ? (
+                  <polyline points="18 15 12 9 6 15" />
+                ) : (
+                  <polyline points="6 9 12 15 18 9" />
+                )}
               </svg>
-              +{winRateDelta.toFixed(1)}% YoY
+              {winRateDelta >= 0 ? '+' : ''}
+              {winRateDelta.toFixed(1)}% {cadence}
             </span>
           </div>
         </div>
 
         <div className={styles.cardFooter}>
-          <span>Avg Sales Cycle: 18.4 Days</span>
+          <span>Avg Sales Cycle: {avgSalesCycle.toFixed(1)} Days</span>
         </div>
       </div>
     </section>

@@ -6,6 +6,7 @@
  *              Displays headline active valuation with trend badge, multi-segment horizontal progress bar
  *              (Discovery Sky Blue #74c0fc, Proposal Lavender #b197fc, Negotiation Amber #ffd43b,
  *              Review Emerald #69db7c, Won Marca Orange #ff6100), and a 2-column key-value breakdown.
+ *              Supports dynamic stage allocation arrays and dynamic comparison cadences (WoW, MoM, QoQ, YoY).
  * @module admin/components/Dashboard/PipelineAllocationCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -29,8 +30,12 @@ export interface PipelineAllocationCardProps {
   totalValuation?: number;
   /** Total pipeline value alias matching domain contract */
   totalPipelineValue?: number;
-  /** MoM delta percentage */
+  /** Legacy MoM delta percentage */
   momDeltaPercentage?: number;
+  /** Dynamic delta percentage */
+  deltaPercentage?: number;
+  /** Dynamic cadence label (e.g. 'WoW', 'MoM', 'QoQ', 'YoY') */
+  cadenceLabel?: string;
   /** Custom stage allocation breakdown supporting both domain models */
   stages?: (StageAllocationItem | PipelineStageAllocationItem)[];
 }
@@ -96,10 +101,13 @@ export const PipelineAllocationCard: React.FC<PipelineAllocationCardProps> = ({
   totalValuation,
   totalPipelineValue,
   momDeltaPercentage = 12.4,
+  deltaPercentage,
+  cadenceLabel = 'MoM',
   stages = DEFAULT_STAGES,
 }) => {
   const activeTotal = totalPipelineValue ?? totalValuation ?? 6840000;
   const formattedHeadline = formatRupees(activeTotal);
+  const activeDelta = deltaPercentage ?? momDeltaPercentage;
 
   // Normalize incoming stages regardless of whether they conform to StageAllocationItem or PipelineStageAllocationItem
   const normalizedStages: StageAllocationItem[] = (stages && stages.length > 0 ? stages : DEFAULT_STAGES).map((st) => {
@@ -132,11 +140,18 @@ export const PipelineAllocationCard: React.FC<PipelineAllocationCardProps> = ({
       {/* Headline Valuation */}
       <div className={styles.headlineBlock}>
         <span className={styles.headlineValuation}>{formattedHeadline}</span>
-        <div className={styles.trendBadge} aria-label={`${momDeltaPercentage.toFixed(1)}% increase Month over Month`}>
+        <div
+          className={styles.trendBadge}
+          aria-label={`${activeDelta >= 0 ? '+' : ''}${activeDelta.toFixed(1)}% ${cadenceLabel}`}
+        >
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <polyline points="18 15 12 9 6 15" />
+            {activeDelta >= 0 ? (
+              <polyline points="18 15 12 9 6 15" />
+            ) : (
+              <polyline points="6 9 12 15 18 9" />
+            )}
           </svg>
-          <span>+{momDeltaPercentage.toFixed(1)}% MoM</span>
+          <span>{activeDelta >= 0 ? '+' : ''}{activeDelta.toFixed(1)}% {cadenceLabel}</span>
         </div>
       </div>
 

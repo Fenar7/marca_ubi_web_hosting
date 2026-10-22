@@ -5,14 +5,23 @@
  * @description Executive Overview Masthead for the Marca Ubi Agency CRM (/admin).
  *              Establishes high-level dashboard intent, timeframe selection, report extraction,
  *              and lead generation triggers with strict WCAG AA 44px minimum touch targets.
+ *              Synchronizes timeframe mutations directly with Next.js App Router URL searchParams
+ *              (?timeframe=7d | 30d | 90d | quarter | year) using non-blocking React 19 transitions.
  * @module admin/components/Dashboard/ExecutiveMasthead
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useTransition } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import {
+  timeframeToSlug,
+  slugToTimeframeLabel,
+} from '@/app/admin/lib/timeframeUtils';
 import styles from './ExecutiveMasthead.module.scss';
 
 export interface ExecutiveMastheadProps {
+  /** Optional active timeframe passed from Server Component */
+  selectedTimeframe?: string;
   /** Optional initial active timeframe window */
   initialDateRange?: string;
   /** Notification hook triggered upon timeframe mutation */
@@ -32,14 +41,32 @@ const TIMEFRAME_OPTIONS = [
 ];
 
 export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
+  selectedTimeframe,
   initialDateRange = 'Last 30 Days',
   onDateRangeChange,
   onExport,
   onNewLead,
 }) => {
-  const [selectedRange, setSelectedRange] = useState<string>(initialDateRange);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  // Resolve current active timeframe from URL search parameters, falling back to selectedTimeframe or initialDateRange
+  const urlTimeframeParam = searchParams.get('timeframe');
+  const activeSlug = timeframeToSlug(urlTimeframeParam || selectedTimeframe || initialDateRange);
+  const activeLabel = slugToTimeframeLabel(activeSlug);
+
+  const [selectedRange, setSelectedRange] = useState<string>(activeLabel);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Keep local state in sync when URL query parameter updates externally.
+   */
+  useEffect(() => {
+    setSelectedRange(activeLabel);
+  }, [activeLabel]);
 
   /**
    * Closes the interactive date range menu when clicks occur beyond its boundary.
@@ -58,10 +85,21 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
     };
   }, [isDropdownOpen]);
 
+  /**
+   * Synchronizes timeframe selection to URL query parameters and invokes callback.
+   */
   const handleSelectRange = (range: string) => {
     setSelectedRange(range);
     setIsDropdownOpen(false);
     onDateRangeChange?.(range);
+
+    const targetSlug = timeframeToSlug(range);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('timeframe', targetSlug);
+
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    });
   };
 
   /**
@@ -101,17 +139,19 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
       </div>
 
       <div className={styles.actionsCluster}>
-        {/* Date Range Dropdown Pill */}
+        {/* Date Range Dropdown with URL Query Synchronization */}
         <div className={styles.dropdownWrapper} ref={dropdownRef}>
           <button
             type="button"
-            className={`${styles.dateRangePill} ${isDropdownOpen ? styles.active : ''}`}
-            onClick={() => setIsDropdownOpen((prev) => !prev)}
-            aria-haspopup="true"
+            className={styles.dropdownTrigger}
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             aria-expanded={isDropdownOpen}
-            aria-label={`Select date range. Currently ${selectedRange}`}
+            aria-haspopup="menu"
+            aria-busy={isPending}
+            aria-label={`Select dashboard timeframe. Currently active: ${selectedRange}`}
           >
             <svg
+              className={styles.calendarIcon}
               width="15"
               height="15"
               viewBox="0 0 24 24"
@@ -199,19 +239,19 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          <span>Export</span>
+          <span>Export Report</span>
         </button>
 
-        {/* Signature Accordion Lemon Yellow Action Pill Button */}
+        {/* Primary New Lead Trigger Button */}
         <button
           type="button"
           className={styles.newLeadBtn}
           onClick={handleNewLeadClick}
-          aria-label="Create new commercial lead"
+          aria-label="Create a new commercial lead dossier"
         >
           <svg
-            width="14"
-            height="14"
+            width="15"
+            height="15"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

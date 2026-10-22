@@ -451,4 +451,111 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(code.includes('adminClient.auth.admin.updateUserById'), 'Must synchronize via adminClient');
     });
   });
+  describe('Block 10: Timeframe Query Synchronization & Dynamic Telemetry Invariants', () => {
+    it('verifies timeframeToSlug and slugToTimeframeLabel mappings across all supported periods', async () => {
+      const { timeframeToSlug, slugToTimeframeLabel } = await import(
+        '../../src/app/admin/lib/timeframeUtils'
+      );
+      assert.equal(timeframeToSlug('Last 7 Days'), '7d');
+      assert.equal(timeframeToSlug('7d'), '7d');
+      assert.equal(timeframeToSlug('Last 30 Days'), '30d');
+      assert.equal(timeframeToSlug(undefined), '30d');
+      assert.equal(timeframeToSlug(null), '30d');
+      assert.equal(timeframeToSlug('Last 90 Days'), '90d');
+      assert.equal(timeframeToSlug('This Quarter'), 'quarter');
+      assert.equal(timeframeToSlug('This Year'), 'year');
+
+      assert.equal(slugToTimeframeLabel('7d'), 'Last 7 Days');
+      assert.equal(slugToTimeframeLabel('30d'), 'Last 30 Days');
+      assert.equal(slugToTimeframeLabel('90d'), 'Last 90 Days');
+      assert.equal(slugToTimeframeLabel('quarter'), 'This Quarter');
+      assert.equal(slugToTimeframeLabel('year'), 'This Year');
+    });
+
+    it('verifies resolveTimeframeBounds calculates precise intervals and cadences', async () => {
+      const { resolveTimeframeBounds } = await import(
+        '../../src/app/admin/lib/timeframeUtils'
+      );
+      const ref = new Date('2026-10-22T12:00:00Z');
+
+      const b7d = resolveTimeframeBounds('7d', ref);
+      assert.equal(b7d.slug, '7d');
+      assert.equal(b7d.cadenceLabel, 'WoW');
+      assert.equal(b7d.intervalType, 'daily');
+      assert.equal(b7d.currentEnd.getTime() - b7d.currentStart.getTime(), 7 * 86400000);
+
+      const b30d = resolveTimeframeBounds('30d', ref);
+      assert.equal(b30d.slug, '30d');
+      assert.equal(b30d.cadenceLabel, 'MoM');
+      assert.equal(b30d.intervalType, 'weekly');
+      assert.equal(b30d.currentEnd.getTime() - b30d.currentStart.getTime(), 30 * 86400000);
+
+      const b90d = resolveTimeframeBounds('90d', ref);
+      assert.equal(b90d.slug, '90d');
+      assert.equal(b90d.cadenceLabel, 'QoQ');
+
+      const bQuarter = resolveTimeframeBounds('quarter', ref);
+      assert.equal(bQuarter.slug, 'quarter');
+      assert.equal(bQuarter.cadenceLabel, 'QoQ');
+
+      const bYear = resolveTimeframeBounds('year', ref);
+      assert.equal(bYear.slug, 'year');
+      assert.equal(bYear.cadenceLabel, 'YoY');
+    });
+
+    it('verifies calculateMetricDelta protects against IEEE 754 zero-division anomalies', async () => {
+      const { calculateMetricDelta } = await import(
+        '../../src/app/admin/lib/timeframeUtils'
+      );
+      assert.equal(calculateMetricDelta(100, 0), 100.0);
+      assert.equal(calculateMetricDelta(0, 0), 0.0);
+      assert.equal(calculateMetricDelta(150, 100), 50.0);
+      assert.equal(calculateMetricDelta(80, 100), -20.0);
+    });
+
+    it('verifies generateTimeframeSplinePoints synthesizes dynamic intervals', async () => {
+      const { generateTimeframeSplinePoints } = await import(
+        '../../src/app/admin/lib/timeframeUtils'
+      );
+      const p7d = generateTimeframeSplinePoints('7d', 480000);
+      assert.equal(p7d.length, 7);
+      assert.equal(p7d[0].month, 'Mon');
+
+      const p30d = generateTimeframeSplinePoints('30d', 4280000);
+      assert.equal(p30d.length, 5);
+      assert.equal(p30d[0].month, 'W1');
+
+      const p90d = generateTimeframeSplinePoints('90d', 11250000);
+      assert.equal(p90d.length, 3);
+
+      const pYear = generateTimeframeSplinePoints('year', 38400000);
+      assert.equal(pYear.length, 4);
+      assert.equal(pYear[0].month, 'Q1');
+    });
+
+    it('verifies ExecutiveMasthead binds URL query synchronization with React 19 transitions', () => {
+      const code = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ExecutiveMasthead.tsx'),
+        'utf8'
+      );
+      assert.ok(code.includes('useRouter'), 'Must import useRouter');
+      assert.ok(code.includes('useSearchParams'), 'Must import useSearchParams');
+      assert.ok(code.includes('useTransition'), 'Must import useTransition');
+      assert.ok(code.includes("params.set('timeframe', targetSlug);"), 'Must mutate timeframe query param');
+      assert.ok(code.includes('router.push('), 'Must push updated search parameters to router');
+    });
+
+    it('verifies page.tsx declares async searchParams and passes reactive props to all visual cards', () => {
+      const code = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/page.tsx'),
+        'utf8'
+      );
+      assert.ok(code.includes('searchParams?: Promise<{'), 'page.tsx must accept async searchParams');
+      assert.ok(code.includes('resolveTimeframeBounds'), 'Must resolve temporal boundaries');
+      assert.ok(code.includes('<ExecutiveMasthead selectedTimeframe={bounds.label} />'), 'Must pass active label to Masthead');
+      assert.ok(code.includes('cadenceLabel={bounds.cadenceLabel}'), 'Must pass dynamic cadence to KPI grid');
+      assert.ok(code.includes('dataPoints={revenueSplinePoints}'), 'Must pass dynamic spline points to RevenueDynamicsCard');
+      assert.ok(code.includes('stages={dynamicStages}'), 'Must pass dynamic stages array to PipelineAllocationCard');
+    });
+  });
 });

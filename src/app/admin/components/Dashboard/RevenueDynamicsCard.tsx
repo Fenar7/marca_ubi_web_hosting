@@ -6,6 +6,7 @@
  *              Integrates dual-state grouped vertical bars (Quota vs Actual Cash) and a Fritsch-Carlson
  *              monotone cubic Bézier spline curve in Marca Orange (#ff6100) ensuring C¹ continuity and zero overshoot.
  *              Interactive SVG scrub ray reveals a dark obsidian glassmorphism inspection tooltip.
+ *              Dynamically adapts to incoming timeframe telemetry points (daily, weekly, monthly intervals).
  * @module admin/components/Dashboard/RevenueDynamicsCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -21,6 +22,17 @@ export interface MonthlyRevenueMetric {
   quotaFormatted: string;
   cashFormatted: string;
   attainmentPct: number;
+}
+
+export interface RevenueDynamicsCardProps {
+  /** Dynamic time-series milestone points matching active timeframe */
+  dataPoints?: MonthlyRevenueMetric[];
+  /** Active timeframe window slug or label */
+  timeframe?: string;
+  /** Active period dropdown label */
+  selectedPeriod?: string;
+  /** Notification hook on period change */
+  onPeriodChange?: (period: string) => void;
 }
 
 interface Point2D {
@@ -161,10 +173,14 @@ function generateMonotoneBezierPath(points: Point2D[]): string {
   return path;
 }
 
-export const RevenueDynamicsCard: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('6 Months');
+export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
+  dataPoints: dynamicData,
+  timeframe,
+  selectedPeriod: initialPeriod = '6 Months',
+  onPeriodChange,
+}) => {
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(initialPeriod);
   const [isPeriodMenuOpen, setIsPeriodMenuOpen] = useState<boolean>(false);
-  const [activeIdx, setActiveIdx] = useState<number>(5);
   const [isScrubbing, setIsScrubbing] = useState<boolean>(false);
   const [showQuota, setShowQuota] = useState<boolean>(true);
   const [showCash, setShowCash] = useState<boolean>(true);
@@ -176,6 +192,15 @@ export const RevenueDynamicsCard: React.FC = () => {
   const gradOrangeId = useId();
   const glowFilterId = useId();
 
+  // Consume dynamic data points if provided; otherwise fallback to SIX_MONTH_DATA
+  const dataPoints = dynamicData && dynamicData.length > 0 ? dynamicData : SIX_MONTH_DATA;
+  const [activeIdx, setActiveIdx] = useState<number>(dataPoints.length - 1);
+
+  // Keep activeIdx within range whenever dataPoints change
+  useEffect(() => {
+    setActiveIdx(dataPoints.length - 1);
+  }, [dataPoints.length]);
+
   // SVG Geometry Dimensions
   const svgWidth = 720;
   const svgHeight = 280;
@@ -184,13 +209,18 @@ export const RevenueDynamicsCard: React.FC = () => {
   const chartTop = 24;
   const chartBottom = 230;
   const chartHeight = chartBottom - chartTop;
-  const maxMetricVal = 25; // ₹25 Lakhs ceiling for clean headroom
 
-  const dataPoints = SIX_MONTH_DATA;
-  const totalMonths = dataPoints.length;
-  const stepX = (chartRight - chartLeft) / totalMonths;
+  // Dynamically compute max ceiling based on largest metric
+  const calculatedMax = Math.max(
+    ...dataPoints.map((d) => Math.max(d.quotaVal, d.cashVal)),
+    5
+  );
+  const maxMetricVal = Math.ceil(calculatedMax * 1.25);
 
-  // Compute cartesian coordinates for monthly markers
+  const totalPoints = dataPoints.length;
+  const stepX = (chartRight - chartLeft) / totalPoints;
+
+  // Compute cartesian coordinates for markers
   const monthlySlots = dataPoints.map((item, i) => {
     const centerX = chartLeft + i * stepX + stepX / 2;
     const quotaY = chartBottom - (item.quotaVal / maxMetricVal) * chartHeight;
@@ -211,14 +241,17 @@ export const RevenueDynamicsCard: React.FC = () => {
   }));
 
   const bezierCurvePath = generateMonotoneBezierPath(curvePoints);
-  const areaPath = `${bezierCurvePath} L ${curvePoints[curvePoints.length - 1].x.toFixed(2)} ${chartBottom} L ${curvePoints[0].x.toFixed(2)} ${chartBottom} Z`;
+  const areaPath = curvePoints.length > 0
+    ? `${bezierCurvePath} L ${curvePoints[curvePoints.length - 1].x.toFixed(2)} ${chartBottom} L ${curvePoints[0].x.toFixed(2)} ${chartBottom} Z`
+    : '';
 
   // Active scrub point
-  const currentSlot = monthlySlots[activeIdx] || monthlySlots[monthlySlots.length - 1];
-  const currentMetric = dataPoints[activeIdx] || dataPoints[dataPoints.length - 1];
+  const safeIdx = Math.max(0, Math.min(activeIdx, dataPoints.length - 1));
+  const currentSlot = monthlySlots[safeIdx] || monthlySlots[monthlySlots.length - 1];
+  const currentMetric = dataPoints[safeIdx] || dataPoints[dataPoints.length - 1];
 
   // Tooltip dynamic left percentage
-  const tooltipLeftPercent = ((currentSlot.centerX) / svgWidth) * 100;
+  const tooltipLeftPercent = currentSlot ? (currentSlot.centerX / svgWidth) * 100 : 50;
 
   // Handle outside click for period dropdown
   useEffect(() => {
@@ -238,19 +271,18 @@ export const RevenueDynamicsCard: React.FC = () => {
     };
   }, [isPeriodMenuOpen]);
 
-  /**
-   * Translates client pointer coordinate to relative SVG scrub index.
-   */
+  // Pointer scrubbing handler across the SVG horizontal axis
   const handlePointerScrub = (clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const relX = clientX - rect.left;
-    const normalizedX = (relX / rect.width) * svgWidth;
+    const svgRelX = (relX / rect.width) * svgWidth;
 
     let closestIdx = 0;
-    let minDistance = Infinity;
+    let minDistance = Number.POSITIVE_INFINITY;
+
     monthlySlots.forEach((slot, idx) => {
-      const dist = Math.abs(slot.centerX - normalizedX);
+      const dist = Math.abs(slot.centerX - svgRelX);
       if (dist < minDistance) {
         minDistance = dist;
         closestIdx = idx;
@@ -261,6 +293,16 @@ export const RevenueDynamicsCard: React.FC = () => {
     setIsScrubbing(true);
   };
 
+  // Generate 5 dynamic horizontal grid levels
+  const gridFractions = [1, 0.8, 0.6, 0.4, 0.2, 0];
+  const gridLines = gridFractions.map((frac) => {
+    const val = Math.round(maxMetricVal * frac * 10) / 10;
+    return {
+      label: val === 0 ? '₹0' : `₹${val}L`,
+      y: chartBottom - frac * chartHeight,
+    };
+  });
+
   return (
     <div className={styles.chartCard} aria-label="Revenue Dynamics and Forecast Card">
       {/* Header */}
@@ -268,7 +310,7 @@ export const RevenueDynamicsCard: React.FC = () => {
         <div className={styles.titleCluster}>
           <h2 className={styles.title}>Revenue Dynamics & Forecast</h2>
           <p className={styles.subtitle}>
-            Monthly quota baseline vs actual cash collection & growth velocity.
+            Quota baseline vs actual cash collection & growth velocity{timeframe ? ` (${timeframe})` : ''}.
           </p>
         </div>
 
@@ -309,38 +351,37 @@ export const RevenueDynamicsCard: React.FC = () => {
             </div>
           </div>
 
-          {/* Period Dropdown */}
+          {/* Period Selector Dropdown */}
           <div className={styles.periodDropdownWrapper} ref={periodDropdownRef}>
             <button
               type="button"
-              className={`${styles.periodPill} ${isPeriodMenuOpen ? styles.active : ''}`}
-              onClick={() => setIsPeriodMenuOpen((prev) => !prev)}
-              aria-haspopup="true"
+              className={styles.periodDropdownTrigger}
+              onClick={() => setIsPeriodMenuOpen(!isPeriodMenuOpen)}
               aria-expanded={isPeriodMenuOpen}
-              aria-label={`Select timeframe. Currently ${selectedPeriod}`}
+              aria-haspopup="menu"
+              aria-label="Select revenue display period"
             >
               <span>{selectedPeriod}</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
 
             {isPeriodMenuOpen && (
               <div className={styles.periodMenu} role="menu">
-                {PERIOD_OPTIONS.map((period) => (
+                {PERIOD_OPTIONS.map((opt) => (
                   <button
-                    key={period}
+                    key={opt}
                     type="button"
                     role="menuitem"
-                    className={`${styles.periodMenuItem} ${
-                      period === selectedPeriod ? styles.selected : ''
-                    }`}
+                    className={`${styles.periodMenuItem} ${opt === selectedPeriod ? styles.selected : ''}`}
                     onClick={() => {
-                      setSelectedPeriod(period);
+                      setSelectedPeriod(opt);
                       setIsPeriodMenuOpen(false);
+                      onPeriodChange?.(opt);
                     }}
                   >
-                    {period}
+                    {opt}
                   </button>
                 ))}
               </div>
@@ -377,14 +418,7 @@ export const RevenueDynamicsCard: React.FC = () => {
           </defs>
 
           {/* Horizontal Grid Lines & Y-Axis Tabular Labels */}
-          {[
-            { label: '₹25L', y: chartBottom - (25 / maxMetricVal) * chartHeight },
-            { label: '₹20L', y: chartBottom - (20 / maxMetricVal) * chartHeight },
-            { label: '₹15L', y: chartBottom - (15 / maxMetricVal) * chartHeight },
-            { label: '₹10L', y: chartBottom - (10 / maxMetricVal) * chartHeight },
-            { label: '₹5L',  y: chartBottom - (5 / maxMetricVal) * chartHeight },
-            { label: '₹0',    y: chartBottom },
-          ].map((grid, idx) => (
+          {gridLines.map((grid, idx) => (
             <g key={`grid-${idx}`}>
               <line
                 x1={chartLeft}
@@ -408,51 +442,42 @@ export const RevenueDynamicsCard: React.FC = () => {
           {monthlySlots.map((slot, i) => {
             const barWidth = 14;
             const barGap = 4;
-            const isSelected = i === activeIdx;
+            const quotaBarX = slot.centerX - barWidth - barGap / 2;
+            const cashBarX = slot.centerX + barGap / 2;
+            const isHovered = i === safeIdx && isScrubbing;
 
             return (
-              <g key={`month-bars-${i}`}>
-                {/* Baseline Quota Bar */}
+              <g key={`bars-${i}`} className={isHovered ? styles.barGroupActive : styles.barGroup}>
+                {/* Quota Bar (Muted Cool Lavender Slate) */}
                 {showQuota && (
                   <rect
-                    x={slot.centerX - barWidth - barGap / 2}
+                    x={quotaBarX}
                     y={slot.quotaY}
                     width={barWidth}
-                    height={slot.quotaHeight}
+                    height={Math.max(2, slot.quotaHeight)}
                     rx={3}
-                    fill="#e9ecef"
-                    stroke="#cbd5e1"
-                    strokeWidth={isSelected ? 1.5 : 1}
-                    style={{ transition: 'opacity 0.2s ease' }}
+                    className={styles.barQuota}
                   />
                 )}
 
-                {/* Actual Cash Bar */}
+                {/* Actual Cash Bar (Crisp Slate Charcoal) */}
                 {showCash && (
                   <rect
-                    x={slot.centerX + barGap / 2}
+                    x={cashBarX}
                     y={slot.cashY}
                     width={barWidth}
-                    height={slot.cashHeight}
+                    height={Math.max(2, slot.cashHeight)}
                     rx={3}
-                    fill="#0f172a"
-                    style={{
-                      transition: 'opacity 0.2s ease, transform 0.15s ease',
-                      opacity: isSelected ? 1 : 0.92,
-                    }}
+                    className={styles.barCash}
                   />
                 )}
 
-                {/* X-Axis Month Label */}
+                {/* X-Axis Milestone Label */}
                 <text
                   x={slot.centerX}
-                  y={chartBottom + 22}
+                  y={chartBottom + 20}
                   textAnchor="middle"
-                  className={styles.axisText}
-                  style={{
-                    fontWeight: isSelected ? 700 : 500,
-                    fill: isSelected ? '#0f172a' : '#64748b',
-                  }}
+                  className={`${styles.xAxisLabel} ${isHovered ? styles.activeLabel : ''}`}
                 >
                   {dataPoints[i].month}
                 </text>
@@ -460,80 +485,86 @@ export const RevenueDynamicsCard: React.FC = () => {
             );
           })}
 
-          {/* Area Fill Under Monotone Spline */}
-          {showCurve && (
+          {/* Area Fill Under Spline Curve */}
+          {showCurve && areaPath && (
             <path
               d={areaPath}
               fill={`url(#${gradOrangeId})`}
-              style={{ transition: 'opacity 0.25s ease' }}
+              className={styles.splineArea}
             />
           )}
 
-          {/* Monotone Spline Curve (Fritsch-Carlson zero overshoot) */}
-          {showCurve && (
+          {/* Monotone Spline Curve Line */}
+          {showCurve && bezierCurvePath && (
             <path
               d={bezierCurvePath}
-              fill="none"
-              stroke="#ff6100"
-              strokeWidth="2.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              className={styles.splineLine}
               filter={`url(#${glowFilterId})`}
             />
           )}
 
-          {/* Interactive Scrub Ray & Markers */}
-          <line
-            x1={currentSlot.centerX}
-            y1={chartTop}
-            x2={currentSlot.centerX}
-            y2={chartBottom}
-            className={styles.scrubRay}
-          />
-
-          {/* Active Node on Curve */}
-          {showCurve && (
-            <g transform={`translate(${currentSlot.centerX}, ${currentSlot.cashY})`}>
-              <circle r="7" fill="#ffffff" stroke="#ff6100" strokeWidth="2.5" />
-              <circle r="3" fill="#ff6100" />
+          {/* Interactive Scrub Ray & Node */}
+          {currentSlot && showCurve && (
+            <g className={styles.scrubIndicator}>
+              <line
+                x1={currentSlot.centerX}
+                y1={chartTop}
+                x2={currentSlot.centerX}
+                y2={chartBottom}
+                className={styles.scrubRay}
+              />
+              <circle
+                cx={currentSlot.centerX}
+                cy={currentSlot.cashY}
+                r={5.5}
+                className={styles.scrubNodeOuter}
+              />
+              <circle
+                cx={currentSlot.centerX}
+                cy={currentSlot.cashY}
+                r={2.5}
+                className={styles.scrubNodeInner}
+              />
             </g>
           )}
         </svg>
 
-        {/* Dark Obsidian Glassmorphism Tooltip */}
-        <div
-          className={styles.obsidianTooltip}
-          style={{
-            left: `${tooltipLeftPercent}%`,
-          }}
-          role="status"
-          aria-live="polite"
-        >
-          <div className={styles.tooltipHeader}>
-            <span className={styles.tooltipMonth}>{currentMetric.fullPeriod}</span>
-            <span className={styles.tooltipAttainmentPill}>
-              {currentMetric.attainmentPct.toFixed(1)}% Attained
-            </span>
-          </div>
-
-          <div className={styles.tooltipRows}>
-            <div className={styles.tooltipRow}>
-              <span className={styles.tooltipLabel}>
-                <span className={styles.legendSwatchQuota} />
-                Quota Baseline
+        {/* Hover / Scrub Inspection Tooltip */}
+        {currentMetric && currentSlot && (
+          <div
+            className={styles.chartTooltip}
+            style={{
+              left: `${tooltipLeftPercent}%`,
+              transform: tooltipLeftPercent > 75 ? 'translateX(-100%)' : tooltipLeftPercent < 25 ? 'translateX(0)' : 'translateX(-50%)',
+            }}
+          >
+            <div className={styles.tooltipHeader}>
+              <span className={styles.tooltipPeriod}>{currentMetric.fullPeriod}</span>
+              <span
+                className={`${styles.tooltipAttainment} ${
+                  currentMetric.attainmentPct >= 100 ? styles.positiveAttainment : styles.negativeAttainment
+                }`}
+              >
+                {currentMetric.attainmentPct.toFixed(1)}% Attainment
               </span>
-              <span className={styles.tooltipValue}>{currentMetric.quotaFormatted}</span>
             </div>
 
-            <div className={styles.tooltipRow}>
-              <span className={styles.tooltipLabel}>
-                <span className={styles.legendSwatchCash} />
-                Actual Cash
-              </span>
-              <span className={styles.tooltipValue}>{currentMetric.cashFormatted}</span>
+            <div className={styles.tooltipRows}>
+              <div className={styles.tooltipRow}>
+                <span className={styles.tooltipLabel}>
+                  <span className={styles.dotQuota} /> Target Quota:
+                </span>
+                <span className={styles.tooltipVal}>{currentMetric.quotaFormatted}</span>
+              </div>
+              <div className={styles.tooltipRow}>
+                <span className={styles.tooltipLabel}>
+                  <span className={styles.dotCash} /> Actual Cash:
+                </span>
+                <span className={styles.tooltipVal}>{currentMetric.cashFormatted}</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
