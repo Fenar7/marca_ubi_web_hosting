@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminMobileDrawer } from './AdminMobileDrawer';
@@ -81,6 +81,19 @@ export function AdminWorkspaceShell({
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] = useState<ProvisionedCredentialsPayload | null>(null);
   const [isCredentialModalOpen, setIsCredentialModalOpen] = useState<boolean>(false);
+  const pathname = usePathname();
+
+  // Reset active drawers, modals, and body scroll lock upon inter-workspace navigation
+  useEffect(() => {
+    setIsDrawerOpen(false);
+    setActiveDrawerLeadId(null);
+    setIsNewLeadModalOpen(false);
+    setIsAddMemberModalOpen(false);
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+  }, [pathname]);
 
   // Restore sidebar collapse preference from localStorage upon client hydration
   useEffect(() => {

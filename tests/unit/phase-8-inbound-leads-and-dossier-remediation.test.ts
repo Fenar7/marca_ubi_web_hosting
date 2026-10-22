@@ -414,4 +414,41 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(code.includes('href="/admin"'), 'Must link to Workspace');
     });
   });
+
+  describe('Block 9: User Management Navigation, Scrim Stacking & RBAC Synchronization', () => {
+    it('verifies AdminSidebar.module.scss elevates .sidebar to z-index: 10000 above drawer scrims', () => {
+      const sidebarScssPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminSidebar.module.scss');
+      const scss = fs.readFileSync(sidebarScssPath, 'utf8');
+      assert.ok(scss.includes('z-index: 10000;'), 'AdminSidebar must have z-index: 10000');
+    });
+
+    it('verifies AdminMobileDrawer elevates backdrop and drawer above overlay drawers', () => {
+      const mobileScssPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminMobileDrawer.module.scss');
+      const scss = fs.readFileSync(mobileScssPath, 'utf8');
+      assert.ok(scss.includes('z-index: 10001;'), 'Backdrop must have z-index: 10001');
+      assert.ok(scss.includes('z-index: 10002;'), 'Drawer must have z-index: 10002');
+    });
+
+    it('verifies AdminWorkspaceShell monitors pathname changes to reset drawers and clear scroll locks', () => {
+      const shellPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminWorkspaceShell.tsx');
+      const code = fs.readFileSync(shellPath, 'utf8');
+      assert.ok(code.includes('usePathname'), 'AdminWorkspaceShell must consume usePathname');
+      assert.ok(code.includes('setIsDrawerOpen(false);'), 'Must reset drawer state on navigation');
+      assert.ok(code.includes("document.body.style.overflow = '';"), 'Must reset document overflow on navigation');
+    });
+
+    it('verifies src/middleware.ts checks hasExplicitAuthClaims to prevent false-positive role lockouts', () => {
+      const mwPath = path.resolve(process.cwd(), 'src/middleware.ts');
+      const code = fs.readFileSync(mwPath, 'utf8');
+      assert.ok(code.includes('hasExplicitAuthClaims'), 'Middleware must define hasExplicitAuthClaims check');
+      assert.ok(code.includes('if (matchingRoute && hasExplicitAuthClaims)'), 'Must guard only when explicit claims exist');
+    });
+
+    it('verifies src/app/actions/auth.ts synchronizes profiles role and allowed_tabs into app_metadata', () => {
+      const authPath = path.resolve(process.cwd(), 'src/app/actions/auth.ts');
+      const code = fs.readFileSync(authPath, 'utf8');
+      assert.ok(code.includes('SEC-03: Synchronize profile role and allowed_tabs into app_metadata'), 'auth.ts must include SEC-03 sync');
+      assert.ok(code.includes('adminClient.auth.admin.updateUserById'), 'Must synchronize via adminClient');
+    });
+  });
 });
