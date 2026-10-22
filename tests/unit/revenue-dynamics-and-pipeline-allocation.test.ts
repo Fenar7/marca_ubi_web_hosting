@@ -139,6 +139,11 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
         pacTsx.includes('#0284c7'),
         'Discovery must use Deep Ocean Sky #0284c7 (non-generic blue)'
       );
+      assert.strictEqual(
+        pacTsx.includes('#2563eb'),
+        false,
+        'PipelineAllocationCard must strictly prohibit generic AI blue #2563eb (Rule R-01)'
+      );
     });
 
     test('integrates bi-directional interactive hover illumination', () => {

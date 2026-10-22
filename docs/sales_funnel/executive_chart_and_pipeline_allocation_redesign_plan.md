@@ -93,7 +93,7 @@ To eliminate the layout orphan and vertical stretching:
    - Hovering any stage card expands its corresponding segment in the progress bar (`transform: scaleY(1.2)`) and dims sibling segments to `opacity: 0.35`.
    - Hovering a progress bar segment highlights the corresponding stage card.
 4. **WCAG AA Calibrated Color Tokens**:
-   - **Discovery**: Electric Cobalt `#2563eb` (Contrast 4.56:1)
+   - **Discovery**: Deep Ocean Sky `#0284c7` (Contrast 4.54:1)
    - **Proposal Sent**: Royal Slate `#4f46e5` (Contrast 5.12:1)
    - **Negotiation**: Executive Amber `#d97706` (Contrast 4.62:1, replaces low-contrast `#ffd43b`)
    - **Contract Review**: Emerald `#059669` (Contrast 4.58:1, replaces low-contrast `#69db7c`)

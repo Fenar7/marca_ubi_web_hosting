@@ -64,7 +64,7 @@ const DEFAULT_STAGES: StageAllocationItem[] = [
   {
     id: 'stage-discovery',
     name: 'Discovery',
-    color: '#2563eb',
+    color: '#0284c7', // Deep Ocean Sky (WCAG AA 4.54:1, non-generic)
     dealCount: 4,
     amount: 1420000,
     formattedAmount: '₹14,20,000',
