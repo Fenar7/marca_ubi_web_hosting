@@ -154,17 +154,29 @@ export interface RevenueDynamicsCardProps {
   onPeriodChange?: (period: string) => void;
 }
 
+export interface StageAllocationItem {
+  id: string;
+  name: string;
+  color: string;
+  dealCount: number;
+  amount: number;
+  formattedAmount: string;
+  percentage: number;
+}
+
 /**
  * Props contract for PipelineAllocationCard.
- * Renders the multi-segment horizontal bar and two-column key-value stage legend.
+ * Renders the multi-segment horizontal bar and balanced stage breakdown with conversion metrics.
  */
 export interface PipelineAllocationCardProps {
-  stages?: PipelineStageAllocationItem[];
+  stages?: (StageAllocationItem | PipelineStageAllocationItem)[];
   totalPipelineValue?: number;
   totalValuation?: number;
   momDeltaPercentage?: number;
   deltaPercentage?: number;
   cadenceLabel?: string;
+  conversionWinRate?: number;
+  averageSalesCycleDays?: number;
 }
 
 /**

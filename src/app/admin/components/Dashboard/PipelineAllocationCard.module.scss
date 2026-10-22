@@ -1,8 +1,9 @@
 /**
  * @file PipelineAllocationCard.module.scss
- * @description Pipeline Stage Allocation card styling benchmarked against MedTrackr Spending Overview.
- *              Features 14px capsule multi-segment progress bar, reference pastel tokens,
- *              and 2-column high-density key-value legend breakdown.
+ * @description Master styling for Pipeline Stage Allocation card benchmarked against MedTrackr Spending Overview.
+ *              Features 14px capsule multi-segment progress bar, symmetrical 2x2 active stage grid,
+ *              dedicated Closed Won conversion benchmark rail, and bi-directional hover illumination.
+ * @module admin/components/Dashboard/PipelineAllocationCard.module
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -14,7 +15,8 @@
   box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1.25rem;
   min-width: 0;
 }
 
@@ -22,7 +24,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin-bottom: 1.25rem;
 }
 
 .title {
@@ -46,7 +47,6 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
   flex-wrap: wrap;
 }
 
@@ -90,30 +90,41 @@
   overflow: hidden;
   display: flex;
   align-items: stretch;
-  margin-bottom: 1.5rem;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .barSegment {
   height: 100%;
   position: relative;
-  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: inset -1.5px 0 0 #ffffff;
+  cursor: pointer;
 
   &:last-child {
     box-shadow: none;
   }
+
+  &.segmentDimmed {
+    opacity: 0.35;
+  }
+
+  &.segmentActive {
+    opacity: 1;
+    transform: scaleY(1.2);
+    z-index: 2;
+    filter: brightness(1.08);
+  }
 }
 
-/* 2-Column Key-Value Breakdown */
+/* Symmetrical 2-Column Key-Value Breakdown for Active Milestones */
 .breakdownGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.85rem 1.25rem;
+  gap: 0.75rem 1rem;
 
   @media (max-width: 520px) {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    gap: 0.65rem;
   }
 }
 
@@ -121,38 +132,44 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.45rem 0.5rem;
+  padding: 0.5rem 0.65rem;
   border-radius: 8px;
-  transition: background-color 0.15s ease;
+  border: 1px solid transparent;
+  background-color: transparent;
+  transition: all 0.15s ease;
+  cursor: pointer;
 
-  &:hover {
+  &:hover,
+  &.stageRowActive {
     background-color: #f8fafc;
+    border-color: #e2e8f0;
   }
 }
 
 .stageInfoLeft {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.55rem;
   min-width: 0;
 }
 
 .stageDot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
 }
 
 .stageTitleCluster {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   min-width: 0;
 }
 
 .stageName {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--admin-text-primary, #1f242f);
   white-space: nowrap;
@@ -162,7 +179,7 @@
 
 .dealCountBadge {
   font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
   color: #64748b;
   background-color: #f1f5f9;
@@ -176,13 +193,13 @@
 .stageFiguresRight {
   display: flex;
   align-items: baseline;
-  gap: 0.6rem;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
 .stageAmount {
   font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--admin-text-primary, #0f172a);
   font-variant-numeric: tabular-nums lining-nums;
@@ -190,10 +207,98 @@
 
 .stageShare {
   font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: #64748b;
   font-variant-numeric: tabular-nums;
-  min-width: 38px;
+  min-width: 36px;
   text-align: right;
+}
+
+/* Dedicated Closed Won Conversion Benchmark Rail */
+.conversionBenchmarkRail {
+  margin-top: 0.25rem;
+  padding: 0.75rem 0.95rem;
+  background: linear-gradient(180deg, #fffcf9 0%, #fff9f5 100%);
+  border: 1px solid rgba(255, 97, 0, 0.18);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(255, 97, 0, 0.35);
+  }
+}
+
+.benchmarkLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.benchmarkWonBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--admin-accent-brand, #ff6100);
+  background: rgba(255, 97, 0, 0.08);
+  border: 1px solid rgba(255, 97, 0, 0.25);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+}
+
+.benchmarkWonDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--admin-accent-brand, #ff6100);
+  box-shadow: 0 0 6px rgba(255, 97, 0, 0.6);
+}
+
+.benchmarkDealsCount {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #525965;
+  font-variant-numeric: tabular-nums;
+}
+
+.benchmarkAmount {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.benchmarkRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.72rem;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.benchmarkTelemetryItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.benchmarkTelemetryVal {
+  font-weight: 600;
+  color: #0f172a;
 }

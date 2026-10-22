@@ -1,8 +1,9 @@
 /**
  * @file RevenueDynamicsCard.module.scss
- * @description Revenue Dynamics & Forecast visual chart styling benchmarked against MedTrackr
- *              Report & Analytics and Apple HIG Glassmorphism. Features grouped vertical bars,
- *              specular monotone Bézier curve overlay in Marca Orange, and dark obsidian tooltip.
+ * @description Master styling for Revenue Dynamics & Velocity analytics card benchmarked against MedTrackr.
+ *              Enforces pure white card surface with hairline boundaries, high-contrast grouped vertical bars,
+ *              specular monotone Bézier curve overlay in Marca Orange (#ff6100), and a floating dark obsidian tooltip.
+ * @module admin/components/Dashboard/RevenueDynamicsCard.module
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -86,7 +87,7 @@
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background-color: #e9ecef;
+  background-color: #e2e8f0;
   border: 1px solid #cbd5e1;
 }
 
@@ -110,7 +111,8 @@
   position: relative;
 }
 
-.periodPill {
+.periodPill,
+.periodDropdownTrigger {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -197,8 +199,77 @@
   overflow: visible;
 }
 
+/* Dual-State Grouped Vertical Bars */
+.barQuota {
+  fill: #e2e8f0;
+  transition: fill 0.15s ease, opacity 0.15s ease;
+
+  &:hover {
+    fill: #cbd5e1;
+  }
+}
+
+.barCash {
+  fill: #0f172a;
+  transition: fill 0.15s ease, opacity 0.15s ease;
+
+  &:hover {
+    fill: #1e293b;
+  }
+}
+
+.barGroup {
+  transition: opacity 0.15s ease;
+}
+
+.barGroupActive {
+  .barQuota {
+    fill: #cbd5e1;
+  }
+  .barCash {
+    fill: var(--admin-accent-brand, #ff6100);
+  }
+}
+
+/* Monotone Bézier Spline Curve & Subtle Area Gradient */
+.splineLine {
+  fill: none !important;
+  stroke: var(--admin-accent-brand, #ff6100);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.splineArea {
+  pointer-events: none;
+  opacity: 0.95;
+}
+
+/* Scrub Ray & Glowing Interactive Nodes */
+.scrubIndicator {
+  pointer-events: none;
+}
+
+.scrubRay {
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.scrubNodeOuter {
+  fill: #ffffff;
+  stroke: var(--admin-accent-brand, #ff6100);
+  stroke-width: 2.5;
+}
+
+.scrubNodeInner {
+  fill: var(--admin-accent-brand, #ff6100);
+}
+
 /* Dark Obsidian Glassmorphism Tooltip */
-.obsidianTooltip {
+.obsidianTooltip,
+.chartTooltip {
   position: absolute;
   top: 14px;
   pointer-events: none;
@@ -211,7 +282,6 @@
   padding: 0.75rem 0.95rem;
   color: #ffffff;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  transform: translateX(-50%);
   white-space: nowrap;
   display: flex;
   flex-direction: column;
@@ -228,6 +298,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.tooltipPeriod,
 .tooltipMonth {
   font-family: var(--font-admin-primary, sans-serif);
   font-size: 0.75rem;
@@ -236,16 +307,26 @@
   letter-spacing: 0.02em;
 }
 
+.tooltipAttainment,
 .tooltipAttainmentPill {
   font-family: var(--font-admin-numeric, sans-serif);
   font-size: 0.68rem;
   font-weight: 600;
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  padding: 0.1rem 0.4rem;
+  padding: 0.1rem 0.45rem;
   border-radius: 9999px;
   font-variant-numeric: tabular-nums;
+
+  &.positiveAttainment {
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &.negativeAttainment {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
 }
 
 .tooltipRows {
@@ -269,6 +350,23 @@
   gap: 0.35rem;
 }
 
+.dotQuota {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background-color: #cbd5e1;
+  display: inline-block;
+}
+
+.dotCash {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background-color: var(--admin-accent-brand, #ff6100);
+  display: inline-block;
+}
+
+.tooltipVal,
 .tooltipValue {
   font-family: var(--font-admin-numeric, sans-serif);
   font-weight: 600;
@@ -284,13 +382,21 @@
   font-variant-numeric: tabular-nums;
 }
 
+.xAxisLabel {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  fill: #64748b;
+  font-variant-numeric: tabular-nums;
+  transition: fill 0.15s ease, font-weight 0.15s ease;
+
+  &.activeLabel {
+    fill: #0f172a;
+    font-weight: 700;
+  }
+}
+
 .gridLine {
   stroke: rgba(0, 0, 0, 0.06);
   stroke-dasharray: 4 4;
-}
-
-.scrubRay {
-  stroke: #94a3b8;
-  stroke-width: 1.5;
-  stroke-dasharray: 3 3;
 }

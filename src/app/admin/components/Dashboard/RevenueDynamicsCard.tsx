@@ -6,7 +6,7 @@
  *              Integrates dual-state grouped vertical bars (Quota vs Actual Cash) and a Fritsch-Carlson
  *              monotone cubic Bézier spline curve in Marca Orange (#ff6100) ensuring C¹ continuity and zero overshoot.
  *              Interactive SVG scrub ray reveals a dark obsidian glassmorphism inspection tooltip.
- *              Dynamically adapts to incoming timeframe telemetry points (daily, weekly, monthly intervals).
+ *              Guarantees defensive inline SVG presentation fallbacks to eliminate W3C initial default black fills.
  * @module admin/components/Dashboard/RevenueDynamicsCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -101,10 +101,7 @@ const PERIOD_OPTIONS = ['3 Months', '6 Months', '12 Months', 'YTD'];
 
 /**
  * Fritsch-Carlson Monotone Cubic Spline to Bézier Path Generator.
- * 
- * Standard cubic spline interpolation produces unnatural oscillations and overshoot
- * between non-linear discrete financial milestones. The Fritsch-Carlson algorithm
- * restricts the Hermite derivatives (m_k) to guarantee monotonicity (zero overshoot)
+ * Restricts Hermite derivatives (m_k) to guarantee monotonicity (zero overshoot)
  * and C¹ continuity, then converts Hermite segments to equivalent cubic Bézier control points:
  *   CP1 = (x_k + h_k / 3, y_k + (m_k * h_k) / 3)
  *   CP2 = (x_{k+1} - h_k / 3, y_{k+1} - (m_{k+1} * h_k) / 3)
@@ -189,14 +186,17 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const periodDropdownRef = useRef<HTMLDivElement>(null);
 
-  const gradOrangeId = useId();
-  const glowFilterId = useId();
+  // Sanitize React 19 useId() tokens: Strip colons to form valid XML NCName identifiers
+  const rawId = useId();
+  const safeId = rawId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const gradOrangeId = `rdc-grad-${safeId}`;
+  const glowFilterId = `rdc-glow-${safeId}`;
 
   // Consume dynamic data points if provided; otherwise fallback to SIX_MONTH_DATA
   const dataPoints = dynamicData && dynamicData.length > 0 ? dynamicData : SIX_MONTH_DATA;
   const [activeIdx, setActiveIdx] = useState<number>(dataPoints.length - 1);
 
-  // Keep activeIdx within range whenever dataPoints change
+  // Synchronize active inspection node whenever time-series points update
   useEffect(() => {
     setActiveIdx(dataPoints.length - 1);
   }, [dataPoints.length]);
@@ -210,7 +210,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   const chartBottom = 230;
   const chartHeight = chartBottom - chartTop;
 
-  // Dynamically compute max ceiling based on largest metric
+  // Dynamically compute max ceiling based on largest metric with 25% headroom
   const calculatedMax = Math.max(
     ...dataPoints.map((d) => Math.max(d.quotaVal, d.cashVal)),
     5
@@ -220,7 +220,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   const totalPoints = dataPoints.length;
   const stepX = (chartRight - chartLeft) / totalPoints;
 
-  // Compute cartesian coordinates for markers
+  // Compute cartesian coordinates for bars and curve nodes
   const monthlySlots = dataPoints.map((item, i) => {
     const centerX = chartLeft + i * stepX + stepX / 2;
     const quotaY = chartBottom - (item.quotaVal / maxMetricVal) * chartHeight;
@@ -250,10 +250,11 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   const currentSlot = monthlySlots[safeIdx] || monthlySlots[monthlySlots.length - 1];
   const currentMetric = dataPoints[safeIdx] || dataPoints[dataPoints.length - 1];
 
-  // Tooltip dynamic left percentage
-  const tooltipLeftPercent = currentSlot ? (currentSlot.centerX / svgWidth) * 100 : 50;
+  // Tooltip dynamic left percentage clamped within card boundaries
+  const rawLeftPercent = currentSlot ? (currentSlot.centerX / svgWidth) * 100 : 50;
+  const clampedTooltipLeft = Math.max(12, Math.min(88, rawLeftPercent));
 
-  // Handle outside click for period dropdown
+  // Dismiss period dropdown on external mousedown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -293,7 +294,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
     setIsScrubbing(true);
   };
 
-  // Generate 5 dynamic horizontal grid levels
+  // Generate 6 horizontal grid levels
   const gridFractions = [1, 0.8, 0.6, 0.4, 0.2, 0];
   const gridLines = gridFractions.map((frac) => {
     const val = Math.round(maxMetricVal * frac * 10) / 10;
@@ -322,6 +323,12 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
               onClick={() => setShowQuota((prev) => !prev)}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowQuota((prev) => !prev);
+                }
+              }}
               aria-label="Toggle Target Quota series"
             >
               <span className={styles.legendSwatchQuota} />
@@ -333,6 +340,12 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
               onClick={() => setShowCash((prev) => !prev)}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowCash((prev) => !prev);
+                }
+              }}
               aria-label="Toggle Collected Cash series"
             >
               <span className={styles.legendSwatchCash} />
@@ -344,6 +357,12 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
               onClick={() => setShowCurve((prev) => !prev)}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowCurve((prev) => !prev);
+                }
+              }}
               aria-label="Toggle Growth Curve overlay"
             >
               <span className={styles.legendSwatchCurve} />
@@ -355,7 +374,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
           <div className={styles.periodDropdownWrapper} ref={periodDropdownRef}>
             <button
               type="button"
-              className={styles.periodDropdownTrigger}
+              className={styles.periodPill}
               onClick={() => setIsPeriodMenuOpen(!isPeriodMenuOpen)}
               aria-expanded={isPeriodMenuOpen}
               aria-haspopup="menu"
@@ -438,7 +457,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
             </g>
           ))}
 
-          {/* Grouped Vertical Bars */}
+          {/* Grouped Vertical Bars with Defensive Inline Fills */}
           {monthlySlots.map((slot, i) => {
             const barWidth = 14;
             const barGap = 4;
@@ -448,7 +467,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
 
             return (
               <g key={`bars-${i}`} className={isHovered ? styles.barGroupActive : styles.barGroup}>
-                {/* Quota Bar (Muted Cool Lavender Slate) */}
+                {/* Quota Bar (Muted Cool Lavender Slate #e2e8f0) */}
                 {showQuota && (
                   <rect
                     x={quotaBarX}
@@ -456,11 +475,12 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                     width={barWidth}
                     height={Math.max(2, slot.quotaHeight)}
                     rx={3}
+                    fill="#e2e8f0"
                     className={styles.barQuota}
                   />
                 )}
 
-                {/* Actual Cash Bar (Crisp Slate Charcoal) */}
+                {/* Actual Cash Bar (Crisp Slate Charcoal #0f172a) */}
                 {showCash && (
                   <rect
                     x={cashBarX}
@@ -468,6 +488,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                     width={barWidth}
                     height={Math.max(2, slot.cashHeight)}
                     rx={3}
+                    fill="#0f172a"
                     className={styles.barCash}
                   />
                 )}
@@ -485,25 +506,31 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
             );
           })}
 
-          {/* Area Fill Under Spline Curve */}
+          {/* Area Fill Under Spline Curve with Defensive presentation attribute */}
           {showCurve && areaPath && (
             <path
               d={areaPath}
               fill={`url(#${gradOrangeId})`}
+              stroke="none"
               className={styles.splineArea}
             />
           )}
 
-          {/* Monotone Spline Curve Line */}
+          {/* Monotone Spline Curve Line with Strict Inline fill="none" and stroke="#ff6100" */}
           {showCurve && bezierCurvePath && (
             <path
               d={bezierCurvePath}
+              fill="none"
+              stroke="#ff6100"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className={styles.splineLine}
               filter={`url(#${glowFilterId})`}
             />
           )}
 
-          {/* Interactive Scrub Ray & Node */}
+          {/* Interactive Scrub Ray & Node with Defensive Inline Presentation Attributes */}
           {currentSlot && showCurve && (
             <g className={styles.scrubIndicator}>
               <line
@@ -511,37 +538,44 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                 y1={chartTop}
                 x2={currentSlot.centerX}
                 y2={chartBottom}
+                stroke="#94a3b8"
+                strokeWidth={1.5}
+                strokeDasharray="3 3"
                 className={styles.scrubRay}
               />
               <circle
                 cx={currentSlot.centerX}
                 cy={currentSlot.cashY}
                 r={5.5}
+                fill="#ffffff"
+                stroke="#ff6100"
+                strokeWidth={2.5}
                 className={styles.scrubNodeOuter}
               />
               <circle
                 cx={currentSlot.centerX}
                 cy={currentSlot.cashY}
                 r={2.5}
+                fill="#ff6100"
                 className={styles.scrubNodeInner}
               />
             </g>
           )}
         </svg>
 
-        {/* Hover / Scrub Inspection Tooltip */}
+        {/* Hover / Scrub Inspection Tooltip (Positioned Absolutes in Obsidian Glassmorphism) */}
         {currentMetric && currentSlot && (
           <div
-            className={styles.chartTooltip}
+            className={styles.obsidianTooltip}
             style={{
-              left: `${tooltipLeftPercent}%`,
-              transform: tooltipLeftPercent > 75 ? 'translateX(-100%)' : tooltipLeftPercent < 25 ? 'translateX(0)' : 'translateX(-50%)',
+              left: `${clampedTooltipLeft}%`,
+              transform: clampedTooltipLeft > 70 ? 'translateX(-100%)' : clampedTooltipLeft < 30 ? 'translateX(0)' : 'translateX(-50%)',
             }}
           >
             <div className={styles.tooltipHeader}>
-              <span className={styles.tooltipPeriod}>{currentMetric.fullPeriod}</span>
+              <span className={styles.tooltipMonth}>{currentMetric.fullPeriod}</span>
               <span
-                className={`${styles.tooltipAttainment} ${
+                className={`${styles.tooltipAttainmentPill} ${
                   currentMetric.attainmentPct >= 100 ? styles.positiveAttainment : styles.negativeAttainment
                 }`}
               >
@@ -554,13 +588,13 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                 <span className={styles.tooltipLabel}>
                   <span className={styles.dotQuota} /> Target Quota:
                 </span>
-                <span className={styles.tooltipVal}>{currentMetric.quotaFormatted}</span>
+                <span className={styles.tooltipValue}>{currentMetric.quotaFormatted}</span>
               </div>
               <div className={styles.tooltipRow}>
                 <span className={styles.tooltipLabel}>
                   <span className={styles.dotCash} /> Actual Cash:
                 </span>
-                <span className={styles.tooltipVal}>{currentMetric.cashFormatted}</span>
+                <span className={styles.tooltipValue}>{currentMetric.cashFormatted}</span>
               </div>
             </div>
           </div>
