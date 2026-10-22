@@ -25,7 +25,7 @@ export interface StageAllocationItem {
 }
 
 export interface PipelineAllocationCardProps {
-  /** Optional headline valuation in Rupees (defaults to ₹14.82 Cr) */
+  /** Optional headline valuation in Rupees (defaults to ₹68,40,000) */
   totalValuation?: number;
   /** Total pipeline value alias matching domain contract */
   totalPipelineValue?: number;
@@ -36,62 +36,60 @@ export interface PipelineAllocationCardProps {
 }
 
 /**
- * Default stage allocation data reflecting high-ticket agency operations
- * and matching MedTrackr's pastel aesthetic palette.
+ * Default stage allocation data calibrated to authentic boutique agency pipeline
+ * totaling ₹68,40,000 across active operational milestones.
  */
 const DEFAULT_STAGES: StageAllocationItem[] = [
   {
     id: 'stage-discovery',
     name: 'Discovery',
     color: '#74c0fc', // Sky Blue
-    dealCount: 14,
-    amount: 35500000,
-    formattedAmount: '₹3.55 Cr',
-    percentage: 24.0,
+    dealCount: 4,
+    amount: 1420000,
+    formattedAmount: '₹14,20,000',
+    percentage: 20.8,
   },
   {
     id: 'stage-proposal',
     name: 'Proposal Sent',
     color: '#b197fc', // Lavender
-    dealCount: 18,
-    amount: 47400000,
-    formattedAmount: '₹4.74 Cr',
-    percentage: 32.0,
+    dealCount: 5,
+    amount: 2250000,
+    formattedAmount: '₹22,50,000',
+    percentage: 32.9,
   },
   {
     id: 'stage-negotiation',
     name: 'Negotiation',
     color: '#ffd43b', // Amber
-    dealCount: 9,
-    amount: 32600000,
-    formattedAmount: '₹3.26 Cr',
-    percentage: 22.0,
+    dealCount: 3,
+    amount: 1680000,
+    formattedAmount: '₹16,80,000',
+    percentage: 24.6,
   },
   {
     id: 'stage-review',
     name: 'Contract Review',
     color: '#69db7c', // Mint Emerald
-    dealCount: 6,
-    amount: 20800000,
-    formattedAmount: '₹2.08 Cr',
-    percentage: 14.0,
+    dealCount: 2,
+    amount: 940000,
+    formattedAmount: '₹9,40,000',
+    percentage: 13.7,
   },
   {
     id: 'stage-won',
     name: 'Closed Won',
     color: '#ff6100', // Signature Marca Orange
-    dealCount: 4,
-    amount: 11900000,
-    formattedAmount: '₹1.19 Cr',
+    dealCount: 2,
+    amount: 550000,
+    formattedAmount: '₹5,50,000',
     percentage: 8.0,
   },
 ];
 
 function formatRupees(amount: number): string {
   if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`;
-  if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }
 
 export const PipelineAllocationCard: React.FC<PipelineAllocationCardProps> = ({
@@ -100,7 +98,7 @@ export const PipelineAllocationCard: React.FC<PipelineAllocationCardProps> = ({
   momDeltaPercentage = 12.4,
   stages = DEFAULT_STAGES,
 }) => {
-  const activeTotal = totalPipelineValue ?? totalValuation ?? 0;
+  const activeTotal = totalPipelineValue ?? totalValuation ?? 6840000;
   const formattedHeadline = formatRupees(activeTotal);
 
   // Normalize incoming stages regardless of whether they conform to StageAllocationItem or PipelineStageAllocationItem

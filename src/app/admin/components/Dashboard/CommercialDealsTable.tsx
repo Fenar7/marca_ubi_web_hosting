@@ -36,7 +36,7 @@ export interface CommercialDealsTableProps {
 }
 
 /**
- * High-value default deals reflecting luxury brand engagements.
+ * Calibrated realistic active deals reflecting boutique luxury agency engagements.
  */
 const DEFAULT_DEALS: ActiveDealItem[] = [
   {
@@ -47,7 +47,7 @@ const DEFAULT_DEALS: ActiveDealItem[] = [
     serviceCategory: 'Branding',
     stageName: 'Negotiation',
     stageBucket: 'potential',
-    expectedValue: 4500000,
+    expectedValue: 650000,
     nextFollowUp: new Date(Date.now() - 4 * 3600000).toISOString(),
     priority: 'High',
     owner: 'Tariq Al-Mansoor',
@@ -60,7 +60,7 @@ const DEFAULT_DEALS: ActiveDealItem[] = [
     serviceCategory: 'Web & Digital',
     stageName: 'Proposal Sent',
     stageBucket: 'open',
-    expectedValue: 2800000,
+    expectedValue: 480000,
     nextFollowUp: new Date(Date.now() + 24 * 3600000).toISOString(),
     priority: 'Medium',
     owner: 'Sarah Chen',
@@ -73,7 +73,7 @@ const DEFAULT_DEALS: ActiveDealItem[] = [
     serviceCategory: 'Branding',
     stageName: 'Contract Review',
     stageBucket: 'potential',
-    expectedValue: 12000000,
+    expectedValue: 850000,
     nextFollowUp: new Date(Date.now() + 48 * 3600000).toISOString(),
     priority: 'High',
     owner: 'Elena Rostova',
@@ -86,7 +86,7 @@ const DEFAULT_DEALS: ActiveDealItem[] = [
     serviceCategory: 'Web & Digital',
     stageName: 'Discovery',
     stageBucket: 'open',
-    expectedValue: 3200000,
+    expectedValue: 520000,
     nextFollowUp: new Date(Date.now() + 72 * 3600000).toISOString(),
     priority: 'Low',
     owner: 'Marcus Vance',
@@ -99,7 +99,7 @@ const DEFAULT_DEALS: ActiveDealItem[] = [
     serviceCategory: 'Full-Suite Advisory',
     stageName: 'Negotiation',
     stageBucket: 'potential',
-    expectedValue: 8500000,
+    expectedValue: 1200000,
     nextFollowUp: new Date(Date.now() + 18 * 3600000).toISOString(),
     priority: 'High',
     owner: 'Tariq Al-Mansoor',
@@ -110,13 +110,7 @@ const CATEGORY_PILLS = ['All Deals', 'Branding', 'Web & Digital', 'Full-Suite Ad
 
 function formatRupees(amount: number): string {
   if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2)} Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }
 
 function getInitials(name: string): string {
@@ -133,7 +127,10 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All Deals');
+  const [activeMenuDealId, setActiveMenuDealId] = useState<string | null>(null);
+  const [copiedDealId, setCopiedDealId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const menuContainerRef = useRef<HTMLDivElement>(null);
 
   // Fallback to defaults if empty
   const rawDeals = deals.length > 0 ? deals : DEFAULT_DEALS;
@@ -149,6 +146,34 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Dismiss context menu on click outside or Escape key press
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        menuContainerRef.current &&
+        !menuContainerRef.current.contains(event.target as Node)
+      ) {
+        setActiveMenuDealId(null);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setActiveMenuDealId(null);
+      }
+    }
+
+    if (activeMenuDealId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [activeMenuDealId]);
 
   // Filter deals based on category and search query
   const filteredDeals = useMemo(() => {
@@ -173,12 +198,35 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
     });
   }, [rawDeals, selectedCategory, searchQuery]);
 
-  const handleActionClick = (e: React.MouseEvent, dealId: string) => {
+  const handleToggleMenu = (e: React.MouseEvent, dealId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    window.dispatchEvent(
-      new CustomEvent('open-lead-drawer', { detail: { id: dealId } })
-    );
+    setActiveMenuDealId((prev) => (prev === dealId ? null : dealId));
+  };
+
+  const handleCopyDealId = async (e: React.MouseEvent, leadId: string, dealId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(leadId);
+        setCopiedDealId(dealId);
+        setTimeout(() => setCopiedDealId(null), 2000);
+      }
+    } catch {
+      // Fallback if clipboard API permission is blocked in browser iframe
+    }
+  };
+
+  const handleOpenDossier = (e: React.MouseEvent, dealId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveMenuDealId(null);
+    if (onSelectDeal) {
+      onSelectDeal(dealId);
+    } else {
+      window.location.href = `/admin/leads?id=${dealId}`;
+    }
   };
 
   return (
@@ -383,27 +431,178 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                       </div>
                     </td>
 
-                    {/* Action */}
+                    {/* Action Column with Functional Context Dropdown */}
                     <td>
-                      <button
-                        type="button"
-                        className={styles.actionBtn}
-                        onClick={(e) => handleActionClick(e, deal.id)}
-                        aria-label={`Open context menu for ${deal.name}`}
+                      <div
+                        className={styles.actionCellContainer}
+                        ref={activeMenuDealId === deal.id ? menuContainerRef : null}
                       >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                        <button
+                          type="button"
+                          className={styles.actionBtn}
+                          onClick={(e) => handleToggleMenu(e, deal.id)}
+                          aria-label={`Open context menu for ${deal.name}`}
+                          aria-expanded={activeMenuDealId === deal.id}
+                          aria-haspopup="true"
                         >
-                          <circle cx="12" cy="12" r="1" />
-                          <circle cx="19" cy="12" r="1" />
-                          <circle cx="5" cy="12" r="1" />
-                        </svg>
-                      </button>
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="19" cy="12" r="1" />
+                            <circle cx="5" cy="12" r="1" />
+                          </svg>
+                        </button>
+
+                        {activeMenuDealId === deal.id && (
+                          <div
+                            className={styles.contextMenuDropdown}
+                            role="menu"
+                            aria-label={`Context options for ${deal.name}`}
+                          >
+                            <button
+                              type="button"
+                              className={styles.contextMenuItem}
+                              role="menuitem"
+                              onClick={(e) => handleOpenDossier(e, deal.id)}
+                            >
+                              <div className={styles.contextMenuLeft}>
+                                <svg
+                                  className={styles.contextMenuIcon}
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                  <line x1="16" y1="13" x2="8" y2="13" />
+                                  <line x1="16" y1="17" x2="8" y2="17" />
+                                  <polyline points="10 9 9 9 8 9" />
+                                </svg>
+                                <span>View Client Dossier</span>
+                              </div>
+                              <span className={styles.contextMenuBadge}>↵</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.contextMenuItem}
+                              role="menuitem"
+                              onClick={(e) => handleCopyDealId(e, deal.leadId, deal.id)}
+                            >
+                              <div className={styles.contextMenuLeft}>
+                                <svg
+                                  className={styles.contextMenuIcon}
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                </svg>
+                                <span>{copiedDealId === deal.id ? 'Copied to Clipboard!' : 'Copy Deal ID'}</span>
+                              </div>
+                              <span className={styles.contextMenuBadge}>{deal.leadId}</span>
+                            </button>
+
+                            <div className={styles.contextMenuDivider} role="separator" />
+
+                            <button
+                              type="button"
+                              className={styles.contextMenuItem}
+                              role="menuitem"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuDealId(null);
+                                window.location.href = `/admin/leads?id=${deal.id}&action=reassign`;
+                              }}
+                            >
+                              <div className={styles.contextMenuLeft}>
+                                <svg
+                                  className={styles.contextMenuIcon}
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                  <circle cx="9" cy="7" r="4" />
+                                  <path d="M19 8v6m3-3h-6" />
+                                </svg>
+                                <span>Reassign Deal Owner</span>
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.contextMenuItem}
+                              role="menuitem"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuDealId(null);
+                                window.location.href = `/admin/leads?id=${deal.id}&action=stage`;
+                              }}
+                            >
+                              <div className={styles.contextMenuLeft}>
+                                <svg
+                                  className={styles.contextMenuIcon}
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                                <span>Update Pipeline Stage</span>
+                              </div>
+                            </button>
+
+                            <div className={styles.contextMenuDivider} role="separator" />
+
+                            <button
+                              type="button"
+                              className={`${styles.contextMenuItem} ${styles.destructive}`}
+                              role="menuitem"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuDealId(null);
+                                window.location.href = `/admin/leads?id=${deal.id}&action=archive`;
+                              }}
+                            >
+                              <div className={styles.contextMenuLeft}>
+                                <svg
+                                  className={styles.contextMenuIcon}
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                                <span>Archive Deal</span>
+                              </div>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

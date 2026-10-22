@@ -16,8 +16,8 @@ import styles from './RevenueDynamicsCard.module.scss';
 export interface MonthlyRevenueMetric {
   month: string;
   fullPeriod: string;
-  quotaVal: number;       // In integer Lakhs (e.g. 150 = ₹1.5 Cr)
-  cashVal: number;        // In integer Lakhs (e.g. 182 = ₹1.82 Cr)
+  quotaVal: number;       // In Lakhs (e.g. 12.0 = ₹12 Lakhs)
+  cashVal: number;        // In Lakhs (e.g. 13.5 = ₹13.5 Lakhs)
   quotaFormatted: string;
   cashFormatted: string;
   attainmentPct: number;
@@ -32,56 +32,56 @@ const SIX_MONTH_DATA: MonthlyRevenueMetric[] = [
   {
     month: 'May',
     fullPeriod: 'May 2026',
-    quotaVal: 120,
-    cashVal: 135,
-    quotaFormatted: '₹1.20 Cr',
-    cashFormatted: '₹1.35 Cr',
+    quotaVal: 12.0,
+    cashVal: 13.5,
+    quotaFormatted: '₹12,00,000',
+    cashFormatted: '₹13,50,000',
     attainmentPct: 112.5,
   },
   {
     month: 'Jun',
     fullPeriod: 'Jun 2026',
-    quotaVal: 150,
-    cashVal: 148,
-    quotaFormatted: '₹1.50 Cr',
-    cashFormatted: '₹1.48 Cr',
-    attainmentPct: 98.7,
+    quotaVal: 14.0,
+    cashVal: 13.8,
+    quotaFormatted: '₹14,00,000',
+    cashFormatted: '₹13,80,000',
+    attainmentPct: 98.6,
   },
   {
     month: 'Jul',
     fullPeriod: 'Jul 2026',
-    quotaVal: 180,
-    cashVal: 210,
-    quotaFormatted: '₹1.80 Cr',
-    cashFormatted: '₹2.10 Cr',
-    attainmentPct: 116.7,
+    quotaVal: 15.0,
+    cashVal: 17.2,
+    quotaFormatted: '₹15,00,000',
+    cashFormatted: '₹17,20,000',
+    attainmentPct: 114.7,
   },
   {
     month: 'Aug',
     fullPeriod: 'Aug 2026',
-    quotaVal: 200,
-    cashVal: 245,
-    quotaFormatted: '₹2.00 Cr',
-    cashFormatted: '₹2.45 Cr',
-    attainmentPct: 122.5,
+    quotaVal: 16.0,
+    cashVal: 19.5,
+    quotaFormatted: '₹16,00,000',
+    cashFormatted: '₹19,50,000',
+    attainmentPct: 121.9,
   },
   {
     month: 'Sep',
     fullPeriod: 'Sep 2026',
-    quotaVal: 220,
-    cashVal: 230,
-    quotaFormatted: '₹2.20 Cr',
-    cashFormatted: '₹2.30 Cr',
-    attainmentPct: 104.5,
+    quotaVal: 16.5,
+    cashVal: 17.4,
+    quotaFormatted: '₹16,50,000',
+    cashFormatted: '₹17,40,000',
+    attainmentPct: 105.5,
   },
   {
     month: 'Oct',
     fullPeriod: 'Oct 2026',
-    quotaVal: 250,
-    cashVal: 285,
-    quotaFormatted: '₹2.50 Cr',
-    cashFormatted: '₹2.85 Cr',
-    attainmentPct: 114.0,
+    quotaVal: 18.0,
+    cashVal: 20.5,
+    quotaFormatted: '₹18,00,000',
+    cashFormatted: '₹20,50,000',
+    attainmentPct: 113.9,
   },
 ];
 
@@ -184,7 +184,7 @@ export const RevenueDynamicsCard: React.FC = () => {
   const chartTop = 24;
   const chartBottom = 230;
   const chartHeight = chartBottom - chartTop;
-  const maxMetricVal = 320; // 320 Lakhs = ₹3.2 Cr max y-scale
+  const maxMetricVal = 25; // ₹25 Lakhs ceiling for clean headroom
 
   const dataPoints = SIX_MONTH_DATA;
   const totalMonths = dataPoints.length;
@@ -378,10 +378,12 @@ export const RevenueDynamicsCard: React.FC = () => {
 
           {/* Horizontal Grid Lines & Y-Axis Tabular Labels */}
           {[
-            { label: '₹3.0 Cr', y: chartBottom - (300 / maxMetricVal) * chartHeight },
-            { label: '₹2.0 Cr', y: chartBottom - (200 / maxMetricVal) * chartHeight },
-            { label: '₹1.0 Cr', y: chartBottom - (100 / maxMetricVal) * chartHeight },
-            { label: '₹0', y: chartBottom },
+            { label: '₹25L', y: chartBottom - (25 / maxMetricVal) * chartHeight },
+            { label: '₹20L', y: chartBottom - (20 / maxMetricVal) * chartHeight },
+            { label: '₹15L', y: chartBottom - (15 / maxMetricVal) * chartHeight },
+            { label: '₹10L', y: chartBottom - (10 / maxMetricVal) * chartHeight },
+            { label: '₹5L',  y: chartBottom - (5 / maxMetricVal) * chartHeight },
+            { label: '₹0',    y: chartBottom },
           ].map((grid, idx) => (
             <g key={`grid-${idx}`}>
               <line
