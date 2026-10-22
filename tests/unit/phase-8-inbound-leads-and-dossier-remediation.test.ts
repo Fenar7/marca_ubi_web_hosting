@@ -375,4 +375,43 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(dealsPage.includes('id?: string;'), 'AdminDealsPageProps must accept id');
     });
   });
+
+  describe('Block 8: Decoupled Tailwind v4 & Sass Compilation Pipeline', () => {
+    it('verifies src/app/globals.css exists with native Tailwind v4 import and theme tokens', () => {
+      const cssPath = path.resolve(process.cwd(), 'src/app/globals.css');
+      assert.ok(fs.existsSync(cssPath), 'src/app/globals.css must exist');
+      const css = fs.readFileSync(cssPath, 'utf8');
+      assert.ok(css.includes('@import "tailwindcss";'), 'globals.css must import tailwindcss');
+      assert.ok(css.includes('@theme inline'), 'globals.css must define @theme inline block');
+      assert.ok(css.includes('--color-cta-orange: #ff6100;'), 'globals.css must map CTA orange');
+      assert.ok(css.includes('.type-display-giant'), 'globals.css must include typography utility classes');
+    });
+
+    it('verifies src/app/globals.scss is purged of Tailwind directives and enforces explicit .scss extensions', () => {
+      const scssPath = path.resolve(process.cwd(), 'src/app/globals.scss');
+      assert.ok(fs.existsSync(scssPath), 'src/app/globals.scss must exist');
+      const scss = fs.readFileSync(scssPath, 'utf8');
+      assert.ok(!scss.includes('@use "tailwindcss"'), 'globals.scss must not contain @use "tailwindcss"');
+      assert.ok(!scss.includes('@theme'), 'globals.scss must not contain @theme');
+      assert.ok(scss.includes('@import "./components/WorksSection/style.scss";'), 'WorksSection must have .scss extension');
+      assert.ok(scss.includes('@import "./components/Footer/style.scss";'), 'Footer must have .scss extension');
+    });
+
+    it('verifies src/app/layout.tsx imports both globals.css and globals.scss in sequence', () => {
+      const layoutPath = path.resolve(process.cwd(), 'src/app/layout.tsx');
+      const code = fs.readFileSync(layoutPath, 'utf8');
+      assert.ok(code.includes('import "./globals.css";'), 'layout.tsx must import globals.css');
+      assert.ok(code.includes('import "./globals.scss";'), 'layout.tsx must import globals.scss');
+    });
+
+    it('verifies canonical root not-found.tsx exists and provides dark luxury 404 boundary', () => {
+      const notFoundPath = path.resolve(process.cwd(), 'src/app/not-found.tsx');
+      assert.ok(fs.existsSync(notFoundPath), 'src/app/not-found.tsx must exist');
+      const code = fs.readFileSync(notFoundPath, 'utf8');
+      assert.ok(code.includes('RootNotFound'), 'Root not-found must export RootNotFound');
+      assert.ok(code.includes('404 • Resource Not Found'), 'Must render high-contrast 404 message');
+      assert.ok(code.includes('href="/"'), 'Must link to Studio Home');
+      assert.ok(code.includes('href="/admin"'), 'Must link to Workspace');
+    });
+  });
 });

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SmoothScrollProvider from "./components/SmoothScrollProvider/SmoothScrollProvider";
 import { graphik } from "./fonts";
+import "./globals.css";
 import "./globals.scss";
 
 const siteUrl =
