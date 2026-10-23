@@ -172,6 +172,7 @@ export interface StageAllocationItem {
   dropOffRatePct?: number;
   passThroughPct?: number;
   slaOnTrackPct?: number;
+  statusLabel?: string;
 }
 
 /**
@@ -187,6 +188,7 @@ export interface PipelineAllocationCardProps {
   cadenceLabel?: string;
   conversionWinRate?: number;
   averageSalesCycleDays?: number;
+  onStageActionClick?: (stageId: string) => void;
 }
 
 /**
