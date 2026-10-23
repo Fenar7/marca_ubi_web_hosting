@@ -21,7 +21,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest, NextResponse } from 'next/server';
-import { middleware, createRedirectResponse } from '../../src/middleware';
+import { proxy as middleware, createRedirectResponse } from '../../src/proxy';
 import { sanitizeRedirectUrl } from '../../src/app/lib/auth-redirect';
 import {
   checkRateLimit,

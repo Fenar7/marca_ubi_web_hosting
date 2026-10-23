@@ -1,10 +1,11 @@
 /**
- * @file middleware.ts
- * @description Next.js 16 Edge Middleware perimeter firewall and session synchronization engine.
+ * @file proxy.ts
+ * @description Next.js 16 Edge Proxy perimeter firewall and session synchronization engine.
  *              Intercepts administrative requests, cryptographically authenticates JWT claims against Supabase Auth,
  *              prevents circular redirect loops, propagates mutated session cookies across redirects,
  *              and enforces sub-millisecond edge role-based route gating for governance routes (/admin/team).
- * @module middleware
+ *              Conforms strictly to the Next.js 16 "proxy" specification (superseding legacy middleware.ts).
+ * @module proxy
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -46,7 +47,7 @@ export function createRedirectResponse(redirectUrl: URL, sourceResponse: NextRes
 }
 
 /**
- * Next.js Edge Middleware entry point.
+ * Next.js Edge Proxy entry point (Next.js 16 convention).
  * Intercepts `/admin/:path*` requests before server rendering.
  *
  * Security Lifecycle:
@@ -60,7 +61,7 @@ export function createRedirectResponse(redirectUrl: URL, sourceResponse: NextRes
  * @param {NextRequest} request The incoming HTTP request.
  * @returns {Promise<NextResponse>} The verified response or route guard redirection.
  */
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
 
   // Execute Supabase SSR session synchronization and cryptographic JWT validation
@@ -107,7 +108,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           redirectResponse.cookies.delete(cookie.name);
         }
       });
-
       return redirectResponse;
     }
 
@@ -196,6 +196,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   return supabaseResponse;
 }
+
+// Dual-export aliases for Next.js 16 proxy convention and backward compatibility
+export const middleware = proxy;
+export default proxy;
 
 export const config = {
   matcher: ['/admin', '/admin/:path*'],
