@@ -136,19 +136,24 @@ export interface ExecutiveKpiGridProps {
 }
 
 /**
+ * Monthly revenue and quota performance metric powering RevenueDynamicsCard.
+ */
+export interface MonthlyRevenueMetric {
+  month: string;
+  fullPeriod: string;
+  quotaVal: number;
+  cashVal: number;
+  quotaFormatted: string;
+  cashFormatted: string;
+  attainmentPct: number;
+}
+
+/**
  * Props contract for RevenueDynamicsCard.
  * Renders the dual-state bar chart (target vs collected) with overlaid monotone Bézier curves.
  */
 export interface RevenueDynamicsCardProps {
-  dataPoints?: Array<{
-    month: string;
-    fullPeriod: string;
-    quotaVal: number;
-    cashVal: number;
-    quotaFormatted: string;
-    cashFormatted: string;
-    attainmentPct: number;
-  }>;
+  dataPoints?: MonthlyRevenueMetric[];
   selectedPeriod?: string;
   timeframe?: string;
   onPeriodChange?: (period: string) => void;
@@ -156,12 +161,17 @@ export interface RevenueDynamicsCardProps {
 
 export interface StageAllocationItem {
   id: string;
+  code?: string;
   name: string;
   color: string;
   dealCount: number;
   amount: number;
   formattedAmount: string;
   percentage: number;
+  velocityDays?: number;
+  dropOffRatePct?: number;
+  passThroughPct?: number;
+  slaOnTrackPct?: number;
 }
 
 /**

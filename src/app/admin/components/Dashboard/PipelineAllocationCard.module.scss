@@ -1,8 +1,9 @@
 /**
  * @file PipelineAllocationCard.module.scss
- * @description Master styling for Pipeline Stage Allocation card benchmarked against MedTrackr Spending Overview.
- *              Features 14px capsule multi-segment progress bar, symmetrical 2x2 active stage grid,
- *              dedicated Closed Won conversion benchmark rail, and bi-directional hover illumination.
+ * @description Master styling for Executive Pipeline Stage Allocation & Velocity Engine.
+ *              Benchmarked against Attio Stepped Funnels and Linear Fluid Cards.
+ *              Features high-density 2x2 stage cards with 3px accent tokens, Raycast monospace badges,
+ *              stepped funnel flow ribbons, and a dedicated Closed Won conversion benchmark rail.
  * @module admin/components/Dashboard/PipelineAllocationCard.module
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -41,18 +42,25 @@
   margin: 0;
 }
 
-/* Headline Valuation Block */
+/* Headline Valuation & Velocity Telemetry Block */
 .headlineBlock {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.headlineLeft {
+  display: flex;
+  align-items: baseline;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .headlineValuation {
   font-family: var(--font-admin-numeric, var(--font-admin-sans, sans-serif));
-  font-size: 2rem;
+  font-size: 1.95rem;
   font-weight: 700;
   color: var(--admin-text-primary, #0f172a);
   letter-spacing: -0.035em;
@@ -81,156 +89,280 @@
   }
 }
 
-/* Multi-Segment Horizontal Progress Bar (MedTrackr Benchmark) */
-.progressBarWrapper {
+.headlineRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.activeDealsChip {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #334155;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+.cycleMetric {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stepped Milestone Funnel Flow Ribbon (Attio Benchmark) */
+.funnelRibbonWrapper {
   width: 100%;
-  height: 14px;
-  border-radius: 9999px;
-  background-color: #f1f3f5;
-  overflow: hidden;
   display: flex;
   align-items: stretch;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.barSegment {
-  height: 100%;
-  position: relative;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset -1.5px 0 0 #ffffff;
-  cursor: pointer;
-
-  &:last-child {
-    box-shadow: none;
-  }
-
-  &.segmentDimmed {
-    opacity: 0.35;
-  }
-
-  &.segmentActive {
-    opacity: 1;
-    transform: scaleY(1.2);
-    z-index: 2;
-    filter: brightness(1.08);
-  }
-}
-
-/* Symmetrical 2-Column Key-Value Breakdown for Active Milestones */
-.breakdownGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem 1rem;
-
-  @media (max-width: 520px) {
-    grid-template-columns: 1fr;
-    gap: 0.65rem;
-  }
-}
-
-.stageRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.65rem;
+  gap: 4px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  border: 1px solid transparent;
-  background-color: transparent;
-  transition: all 0.15s ease;
+  padding: 4px;
+  position: relative;
+}
+
+.funnelStep {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.4rem 0.6rem;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 0;
 
   &:hover,
-  &.stageRowActive {
-    background-color: #f8fafc;
-    border-color: #e2e8f0;
+  &.stepActive {
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    z-index: 2;
+  }
+
+  &.stepDimmed {
+    opacity: 0.4;
   }
 }
 
-.stageInfoLeft {
+.stepAccentBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.stepContent {
   display: flex;
-  align-items: center;
-  gap: 0.55rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-top: 3px;
   min-width: 0;
+  width: 100%;
 }
 
-.stageDot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
-}
-
-.stageTitleCluster {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-width: 0;
-}
-
-.stageName {
-  font-size: 0.8rem;
+.stepName {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.68rem;
   font-weight: 600;
-  color: var(--admin-text-primary, #1f242f);
+  color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.dealCountBadge {
+.stepShare {
   font-family: var(--font-admin-numeric, sans-serif);
   font-size: 0.68rem;
-  font-weight: 500;
+  font-weight: 700;
   color: #64748b;
-  background-color: #f1f5f9;
-  border: 1px solid #e2e5ea;
-  padding: 0.08rem 0.35rem;
-  border-radius: 4px;
-  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-.stageFiguresRight {
+.stepTransitionChevron {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* High-Density 2x2 Stage Cards Matrix (Linear Fluid Cards Benchmark) */
+.stageMatrixGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.stageCard {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 48px;
+
+  &:hover,
+  &.stageCardActive {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(31, 36, 47, 0.06);
+    background-color: #ffffff;
+  }
+
+  &.stageCardDimmed {
+    opacity: 0.45;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ff6100);
+    outline-offset: 2px;
+  }
+}
+
+.cardAccentToken {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-top-left-radius: 9px;
+  border-top-right-radius: 9px;
+}
+
+.cardHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
+  margin-top: 2px;
+  width: 100%;
+}
+
+.stageCodeChip {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   flex-shrink: 0;
 }
 
-.stageAmount {
-  font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 0.82rem;
+.cardStageName {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.88rem;
   font-weight: 700;
-  color: var(--admin-text-primary, #0f172a);
-  font-variant-numeric: tabular-nums lining-nums;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  line-height: 1.2;
 }
 
-.stageShare {
+.dealCountBadge {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.cardValuation {
   font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1.2;
+}
+
+.cardTelemetryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+}
+
+.cardShareVal {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-weight: 600;
   color: #64748b;
   font-variant-numeric: tabular-nums;
-  min-width: 36px;
-  text-align: right;
 }
 
-/* Dedicated Closed Won Conversion Benchmark Rail */
+.cardVelocityVal {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardMicroTrack {
+  width: 100%;
+  height: 3px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.cardMicroFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Dedicated Executive Closed Won Conversion Benchmark Rail */
 .conversionBenchmarkRail {
-  margin-top: 0.25rem;
-  padding: 0.75rem 0.95rem;
-  background: linear-gradient(180deg, #fffcf9 0%, #fff9f5 100%);
-  border: 1px solid rgba(255, 97, 0, 0.18);
+  background: rgba(255, 97, 0, 0.03);
+  border: 1px solid rgba(255, 97, 0, 0.22);
   border-radius: 10px;
+  padding: 0.7rem 0.9rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   flex-wrap: wrap;
-  transition: border-color 0.15s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: rgba(255, 97, 0, 0.35);
+    border-color: rgba(255, 97, 0, 0.4);
+    background: rgba(255, 97, 0, 0.05);
   }
 }
 
@@ -239,22 +371,23 @@
   align-items: center;
   gap: 0.65rem;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .benchmarkWonBadge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-family: var(--font-admin-primary, sans-serif);
+  font-family: var(--font-admin-code, monospace);
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--admin-accent-brand, #ff6100);
   background: rgba(255, 97, 0, 0.08);
   border: 1px solid rgba(255, 97, 0, 0.25);
-  padding: 0.15rem 0.5rem;
+  padding: 0.18rem 0.5rem;
   border-radius: 6px;
+  white-space: nowrap;
 }
 
 .benchmarkWonDot {
@@ -266,39 +399,79 @@
 }
 
 .benchmarkDealsCount {
-  font-family: var(--font-admin-numeric, sans-serif);
+  font-family: var(--font-admin-code, monospace);
   font-size: 0.72rem;
   font-weight: 600;
-  color: #525965;
+  color: #475569;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .benchmarkAmount {
   font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #0f172a;
   font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
 }
 
 .benchmarkRight {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 0.72rem;
-  color: #64748b;
-  font-variant-numeric: tabular-nums;
+  gap: 0.85rem;
+  flex-wrap: wrap;
 }
 
 .benchmarkTelemetryItem {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  font-size: 0.72rem;
   white-space: nowrap;
 }
 
+.benchmarkTelemetryLabel {
+  color: #64748b;
+  font-weight: 500;
+}
+
 .benchmarkTelemetryVal {
-  font-weight: 600;
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-weight: 700;
   color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.benchmarkDeltaPill {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.08rem 0.35rem;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.benchmarkActionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-accent-brand, #ff6100);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+
+  svg {
+    stroke-width: 2.2;
+  }
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
 }

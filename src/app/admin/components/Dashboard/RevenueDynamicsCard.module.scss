@@ -1,8 +1,9 @@
 /**
  * @file RevenueDynamicsCard.module.scss
- * @description Master styling for Revenue Dynamics & Velocity analytics card benchmarked against MedTrackr.
+ * @description Master styling for Revenue Dynamics & Velocity analytics card benchmarked against Stripe Scorecards and Ramp Obsidian HUD.
  *              Enforces pure white card surface with hairline boundaries, high-contrast grouped vertical bars,
- *              specular monotone Bézier curve overlay in Marca Orange (#ff6100), and a floating dark obsidian tooltip.
+ *              specular monotone Bézier curve overlay in Marca Orange (#ff6100), an Executive Header HUD Ribbon,
+ *              and a floating dark obsidian glassmorphism inspection tooltip.
  * @module admin/components/Dashboard/RevenueDynamicsCard.module
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -23,7 +24,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -100,97 +101,253 @@
 
 .legendSwatchCurve {
   width: 14px;
-  height: 3px;
-  border-radius: 2px;
+  height: 2.5px;
+  border-radius: 9999px;
   background-color: var(--admin-accent-brand, #ff6100);
-  box-shadow: 0 1px 3px rgba(255, 97, 0, 0.4);
 }
 
-/* Period Dropdown Pill [ 6 Months ▾ ] */
+/* Period Selector Dropdown Pill */
 .periodDropdownWrapper {
   position: relative;
 }
 
-.periodPill,
-.periodDropdownTrigger {
+.periodPill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  height: 34px;
-  padding: 0 0.85rem;
-  background-color: #ffffff;
-  border: 1px solid var(--admin-border-default, #eaecf0);
+  padding: 0.35rem 0.75rem;
   border-radius: 9999px;
-  font-size: 0.78rem;
+  border: 1px solid #eaecf0;
+  background: #ffffff;
+  color: #0f172a;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #1f242f;
   cursor: pointer;
   transition: all 0.15s ease;
-  outline: none;
 
   svg {
+    stroke-width: 2.2;
     color: #64748b;
     transition: transform 0.2s ease;
   }
 
   &:hover {
-    background-color: #f8fafc;
+    background: #f8fafc;
     border-color: #cbd5e1;
   }
 
-  &.active {
-    border-color: #0f172a;
-
+  &[aria-expanded="true"] {
+    border-color: var(--admin-accent-brand, #ff6100);
     svg {
       transform: rotate(180deg);
+      color: var(--admin-accent-brand, #ff6100);
     }
   }
 }
 
 .periodMenu {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   right: 0;
+  z-index: 40;
   min-width: 130px;
   background: #ffffff;
-  border: 1px solid var(--admin-border-default, #eaecf0);
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-  padding: 0.25rem;
-  z-index: 40;
+  padding: 0.35rem;
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
 .periodMenuItem {
-  padding: 0.45rem 0.75rem;
   border: none;
   background: transparent;
+  text-align: left;
+  padding: 0.45rem 0.65rem;
   font-size: 0.78rem;
   font-weight: 500;
-  color: #1f242f;
-  text-align: left;
+  color: #334155;
   border-radius: 6px;
   cursor: pointer;
+  transition: all 0.12s ease;
 
   &:hover {
-    background-color: #f1f5f9;
+    background: #f1f5f9;
+    color: #0f172a;
   }
 
   &.selected {
-    font-weight: 600;
+    background: rgba(255, 97, 0, 0.08);
     color: var(--admin-accent-brand, #ff6100);
-    background-color: #fff4eb;
+    font-weight: 600;
   }
 }
 
-/* Canvas Area */
+/* Executive Header HUD Ribbon (Stripe Scorecards Benchmark) */
+.hudRibbon {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0.85rem 1.15rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+
+  @media (max-width: 860px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hudMetricItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  position: relative;
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.5rem;
+    top: 15%;
+    bottom: 15%;
+    width: 1px;
+    background-color: #e2e8f0;
+
+    @media (max-width: 860px) {
+      display: none;
+    }
+  }
+}
+
+.hudMetricLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hudMetricValue {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.hudMetricSubValue {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hudAttainmentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &.positiveAttainment {
+    color: #065f46;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+  }
+
+  &.negativeAttainment {
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.hudVarianceCluster {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.hudVarianceToken {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1.1;
+  white-space: nowrap;
+
+  &.positiveVariance {
+    color: #059669;
+  }
+
+  &.negativeVariance {
+    color: #d97706;
+  }
+}
+
+.hudVarianceSubtitle {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+
+  &.positiveSubtitle {
+    color: #065f46;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+  }
+
+  &.negativeSubtitle {
+    color: #92400e;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+  }
+}
+
+/* SVG Chart Canvas */
 .chartCanvasContainer {
   position: relative;
   width: 100%;
   height: 280px;
-  user-select: none;
   touch-action: none;
+  cursor: crosshair;
+
+  @media (max-width: 520px) {
+    height: 230px;
+  }
 }
 
 .chartSvg {
@@ -199,148 +356,147 @@
   overflow: visible;
 }
 
-/* Dual-State Grouped Vertical Bars */
-.barQuota {
-  fill: #e2e8f0;
-  transition: fill 0.15s ease, opacity 0.15s ease;
+.gridLine {
+  stroke: rgba(0, 0, 0, 0.06);
+  stroke-dasharray: 4 4;
+}
 
-  &:hover {
-    fill: #cbd5e1;
+.axisText {
+  font-family: var(--font-admin-numeric, var(--font-admin-sans, sans-serif));
+  font-size: 11px;
+  fill: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.xAxisLabel {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  fill: #64748b;
+  font-variant-numeric: tabular-nums;
+  transition: fill 0.15s ease, font-weight 0.15s ease;
+
+  &.activeLabel {
+    fill: #0f172a;
+    font-weight: 700;
   }
 }
 
-.barCash {
-  fill: #0f172a;
-  transition: fill 0.15s ease, opacity 0.15s ease;
-
-  &:hover {
-    fill: #1e293b;
-  }
-}
-
+/* Vertical Pillar Bars */
 .barGroup {
   transition: opacity 0.15s ease;
 }
 
 .barGroupActive {
-  .barQuota {
-    fill: #cbd5e1;
-  }
   .barCash {
-    fill: var(--admin-accent-brand, #ff6100);
+    filter: drop-shadow(0 2px 8px rgba(255, 97, 0, 0.45));
   }
 }
 
-/* Monotone Bézier Spline Curve & Subtle Area Gradient */
+.barQuota {
+  transition: height 0.25s ease, y 0.25s ease;
+}
+
+.barCash {
+  transition: height 0.25s ease, y 0.25s ease, fill 0.15s ease;
+}
+
+/* Bézier Spline Line & Area Wash */
 .splineLine {
-  fill: none !important;
-  stroke: var(--admin-accent-brand, #ff6100);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
   pointer-events: none;
 }
 
 .splineArea {
   pointer-events: none;
-  opacity: 0.95;
 }
 
-/* Scrub Ray & Glowing Interactive Nodes */
-.scrubIndicator {
+/* Scrub Telemetry Group */
+.scrubGroup {
   pointer-events: none;
 }
 
 .scrubRay {
-  stroke: #94a3b8;
-  stroke-width: 1.5;
-  stroke-dasharray: 3 3;
+  pointer-events: none;
 }
 
 .scrubNodeOuter {
-  fill: #ffffff;
-  stroke: var(--admin-accent-brand, #ff6100);
-  stroke-width: 2.5;
+  transition: cx 0.08s ease, cy 0.08s ease;
+  filter: drop-shadow(0 0 6px rgba(255, 97, 0, 0.6));
 }
 
 .scrubNodeInner {
-  fill: var(--admin-accent-brand, #ff6100);
+  transition: cx 0.08s ease, cy 0.08s ease;
 }
 
-/* Dark Obsidian Glassmorphism Tooltip */
-.obsidianTooltip,
-.chartTooltip {
+/* Obsidian Glassmorphism Floating Inspection HUD (Ramp Benchmark) */
+.obsidianTooltip {
   position: absolute;
-  top: 14px;
-  pointer-events: none;
+  top: 15px;
   z-index: 30;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
-  padding: 0.75rem 0.95rem;
-  color: #ffffff;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  white-space: nowrap;
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  transition: left 0.08s ease-out;
+  gap: 0.5rem;
+  min-width: 200px;
+  transition: left 0.08s ease, transform 0.12s ease;
 }
 
 .tooltipHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 0.35rem;
+  gap: 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.45rem;
 }
 
-.tooltipPeriod,
 .tooltipMonth {
   font-family: var(--font-admin-primary, sans-serif);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #f8fafc;
-  letter-spacing: 0.02em;
+  color: #ffffff;
 }
 
-.tooltipAttainment,
 .tooltipAttainmentPill {
   font-family: var(--font-admin-numeric, sans-serif);
   font-size: 0.68rem;
   font-weight: 600;
-  padding: 0.1rem 0.45rem;
-  border-radius: 9999px;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
   font-variant-numeric: tabular-nums;
 
   &.positiveAttainment {
     color: #34d399;
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(16, 185, 129, 0.35);
   }
 
   &.negativeAttainment {
     color: #f87171;
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.18);
+    border: 1px solid rgba(239, 68, 68, 0.35);
   }
 }
 
 .tooltipRows {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.3rem;
 }
 
 .tooltipRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
-  font-size: 0.75rem;
+  gap: 1rem;
+  font-size: 0.74rem;
 }
 
 .tooltipLabel {
@@ -366,37 +522,38 @@
   display: inline-block;
 }
 
-.tooltipVal,
 .tooltipValue {
   font-family: var(--font-admin-numeric, sans-serif);
   font-weight: 600;
   color: #ffffff;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Axis & Grid Labels */
-.axisText {
-  font-family: var(--font-admin-numeric, var(--font-admin-sans, sans-serif));
-  font-size: 11px;
-  fill: #64748b;
-  font-variant-numeric: tabular-nums;
+.tooltipVarianceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-top: 0.35rem;
+  font-size: 0.72rem;
 }
 
-.xAxisLabel {
-  font-family: var(--font-admin-numeric, sans-serif);
-  font-size: 11px;
+.tooltipVarianceLabel {
+  color: #94a3b8;
   font-weight: 500;
-  fill: #64748b;
-  font-variant-numeric: tabular-nums;
-  transition: fill 0.15s ease, font-weight 0.15s ease;
-
-  &.activeLabel {
-    fill: #0f172a;
-    font-weight: 700;
-  }
 }
 
-.gridLine {
-  stroke: rgba(0, 0, 0, 0.06);
-  stroke-dasharray: 4 4;
+.tooltipVarianceVal {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  &.variancePositive {
+    color: #34d399;
+  }
+
+  &.varianceNegative {
+    color: #fbbf24;
+  }
 }
