@@ -28,7 +28,7 @@
   padding: 0.75rem 1rem;
   background: transparent;
   border: none;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
   font-family: inherit;
   font-size: 0.86rem;
   font-weight: 500;
@@ -74,13 +74,13 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   background: var(--admin-surface-muted, #f1f5f9);
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
   border: 1px solid var(--admin-border-subtle, #e2e5ea);
   transition: all 0.15s ease;
 }
 
 .tabButtonActive .counterBadge {
   background: rgba(255, 97, 0, 0.1);
-  color: #ea580c;
+  color: #c2410c;
   border-color: rgba(255, 97, 0, 0.25);
 }

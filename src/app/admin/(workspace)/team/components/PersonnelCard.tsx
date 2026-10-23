@@ -236,14 +236,25 @@ export function PersonnelCard({
           </button>
         )}
 
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={() => onOpenPermissionsModal(member)}
-          title="View full personnel dossier"
-        >
-          View Profile
-        </button>
+        {isAdmin && member.role !== 'sales_executive' && canEditAvatar ? (
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => onOpenAvatarModal(member)}
+            title="Update user profile photograph"
+          >
+            {member.avatar_url ? 'Change Photo' : 'Set Photo'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => onOpenPermissionsModal(member)}
+            title="View full personnel dossier"
+          >
+            View Profile
+          </button>
+        )}
       </div>
     </div>
   );
