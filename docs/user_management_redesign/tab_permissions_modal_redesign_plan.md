@@ -38,16 +38,16 @@ An exhaustive line-by-line inspection by the **Expert UI/UX Designer Agent** and
 
 ## 2. Redesign Architectural Pillars
 
-### Pillar 1: Header Geometry & 36px Circular Close Action
-- **Visual Design**: Replace the rectangular `<kbd>Esc</kbd>` button with a **pure circular button** (`width: 36px; height: 36px; border-radius: 50%`).
+### Pillar 1: Header Geometry & 44px Circular Close Action
+- **Visual Design**: Replace the rectangular `<kbd>Esc</kbd>` button with a **pure circular button** (`width: 44px; height: 44px; border-radius: 50%`). Size upgraded to 44px per Apple HIG minimum touch target — supersedes initial 36px draft.
 - **Icon**: Centered, balanced SVG `✕` (`width: 16px; height: 16px; stroke-width: 2`).
 - **Surfaces**: Hairline border (`#e2e5ea`), transparent background, soft hover state (`background: #f4f6f9; border-color: #cbd5e1; transform: scale(1.04)`).
 - **Accessibility**: Remove `<kbd>Esc</kbd>` from DOM (keyboard `Escape` listener remains fully active in React `useEffect`). Set `aria-label="Close modal (Esc)"` and `title="Close modal (Esc)"`.
 
-### Pillar 2: Footer Layout & Zero-Wrap 38px Standard
+### Pillar 2: Footer Layout & Zero-Wrap 44px Standard
 - **Modal Dialog Canvas**: Expand `max-width` from `580px` to **`620px`** (adding 40px of breathing room).
 - **Mandatory Non-Wrapping Invariant**: Apply `white-space: nowrap;` across all buttons (`.quickActionBtn`, `.cancelButton`, `.submitButton`).
-- **Standardized Rhythm**: Standardize all 4 buttons to **38px height** and **8px radius** (`border-radius: 8px`). Eliminates corner radius collisions between 6px, 9999px pills, and 16px modal borders.
+- **Standardized Rhythm**: Standardize all 4 buttons to **44px height** (Apple HIG minimum touch target — upgraded from initial 38px draft) and **8px radius** (`border-radius: 8px`). Eliminates corner radius collisions between 6px, 9999px pills, and 16px modal borders.
 - **Space Reclamation**: Convert `"SAVE PERMISSIONS"` to sentence-case `"Save Permissions"`, reducing primary button width from 215px to ~145px, freeing up 70px for `.footerLeft`.
 
 ### Pillar 3: Primary Action Brand Token Unification
@@ -85,7 +85,7 @@ An exhaustive line-by-line inspection by the **Expert UI/UX Designer Agent** and
 
 ### File 1: `src/app/admin/(workspace)/team/components/EditUserPermissionsModal.tsx`
 1. Add `avatarError` state and Next.js `Image` import.
-2. Update header close button: 36px circular button with SVG `✕`, removing `<kbd>Esc</kbd>`.
+2. Update header close button: 44px circular button with SVG `✕` (Apple HIG minimum touch target), removing `<kbd>Esc</kbd>`.
 3. Update user dossier strip: render `<Image />` when `avatar_url` is present.
 4. Refactor enclave card DOM: separate `.tabTitleRow` (title + locked pill) from `.tabHint` and `.tabRouteTag`.
 5. Update footer buttons: sentence-case `"Save Permissions"`, add `.btnSpinner` during `isPending`.
@@ -93,12 +93,12 @@ An exhaustive line-by-line inspection by the **Expert UI/UX Designer Agent** and
 
 ### File 2: `src/app/admin/(workspace)/team/components/EditUserPermissionsModal.module.scss`
 1. `.modalDialog`: `max-width: 620px; border-radius: 16px;`.
-2. `.closeButton`: `width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e2e5ea;`.
+2. `.closeButton`: `width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid #e2e5ea;`.
 3. `.tabsGrid`: `grid-template-columns: repeat(2, 1fr); gap: 0.65rem;`.
 4. `.tabCard`: pure `#ffffff` surface, 10px radius, `#ff6100` active state.
 5. `.customCheckbox`: 18px with `#ff6100` fill on active.
 6. `.modalFooter`: `padding: 0.85rem 1.75rem; justify-content: space-between;`.
-7. `.quickActionBtn`, `.cancelButton`, `.submitButton`: `height: 38px; border-radius: 8px; white-space: nowrap;`.
+7. `.quickActionBtn`, `.cancelButton`, `.submitButton`: `height: 44px; min-height: 44px; border-radius: 8px; white-space: nowrap;`.
 8. `.submitButton`: Marca Orange gradient (`#ff6100` to `#e05500`), white text, specular box-shadow.
 
 ---
@@ -113,6 +113,6 @@ An exhaustive line-by-line inspection by the **Expert UI/UX Designer Agent** and
 | **No Lemon Yellow** | 0 occurrences of `#eefb87` in `EditUserPermissionsModal.*` |
 | **No Text Wrapping** | "Select All", "Role Defaults", "Save Permissions" render strictly on 1 line |
 | **No Title Wrapping** | All 9 tab titles render on a single line |
-| **Circular Close Action**| 36px &times; 36px circle with centered `✕` |
+| **Circular Close Action**| 44px &times; 44px circle with centered `✕` (Apple HIG / Rule R-03) |
 | **Git Authorship** | `Fenar7 <86710532+Fenar7@users.noreply.github.com>` |
 | **Zero Merge Rule** | PR #78 remains strictly **OPEN** |

@@ -88,7 +88,10 @@ export function EditUserPermissionsModal({
   }
 
   const handleToggleTab = (tabKey: CrmTabKey) => {
-    // Admin self-lockout defense: prevent revoking users or settings on own account or any administrator
+    // All-admin immunity policy: users and settings tabs are immutable for the authenticated admin's
+    // own account (self-lockout prevention) AND for any other admin (peer-admin protection). This dual
+    // guard ensures no administrator can be stripped of core governance tabs by another admin,
+    // preventing privilege escalation through tab revocation across the RBAC boundary.
     const isTargetAdmin = targetMember.role === 'admin';
     if ((isSelf || isTargetAdmin) && (tabKey === 'users' || tabKey === 'settings')) {
       return;
@@ -170,7 +173,7 @@ export function EditUserPermissionsModal({
         className={`${styles.modalDialog} ${isClosing ? styles.dialogClosing : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >
-        {/* Modal Header with 36px Circular Close Action */}
+        {/* Modal Header with 44px Circular Close Action (Apple HIG minimum touch target) */}
         <div className={styles.modalHeader}>
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>Governance & RBAC</span>
