@@ -1,6 +1,6 @@
 /**
  * @file FilterControlToolbar.module.scss
- * @description PrimeStay-inspired luxury search, filter, and view toggling toolbar.
+ * @description PrimeStay-inspired light luxury search, filter, and view toggling toolbar.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -46,7 +46,7 @@
   left: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6a717d;
+  color: var(--admin-text-muted, #94a3b8);
   pointer-events: none;
 }
 
@@ -54,23 +54,23 @@
   width: 100%;
   height: 40px;
   padding: 0 2.5rem 0 2.4rem;
-  background: #0e1013;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
-  color: #ffffff;
+  color: var(--admin-text-primary, #0f172a);
   font-family: inherit;
   font-size: 0.84rem;
   transition: all 0.15s ease;
 
   &::placeholder {
-    color: #6a717d;
+    color: var(--admin-text-muted, #94a3b8);
   }
 
   &:focus {
     outline: none;
     border-color: #ff6100;
-    box-shadow: 0 0 0 1px #ff6100, 0 0 12px rgba(255, 97, 0, 0.2);
-    background: #121519;
+    box-shadow: 0 0 0 1px #ff6100, 0 0 8px rgba(255, 97, 0, 0.15);
+    background: #ffffff;
   }
 }
 
@@ -81,7 +81,7 @@
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #6a717d;
+  color: var(--admin-text-muted, #94a3b8);
   cursor: pointer;
   padding: 0.2rem;
   display: flex;
@@ -90,19 +90,20 @@
   border-radius: 4px;
 
   &:hover {
-    color: #ffffff;
+    color: var(--admin-text-primary, #0f172a);
   }
 }
 
 .selectDropdown {
   height: 40px;
-  padding: 0 2rem 0 0.85rem;
-  background: #0e1013 url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238a8f98' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 2.2rem 0 0.85rem;
+  background: var(--admin-card-bg, #ffffff) url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
-  color: #d1d5db;
+  color: var(--admin-text-primary, #1e293b);
   font-family: inherit;
   font-size: 0.82rem;
+  font-weight: 500;
   appearance: none;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -110,11 +111,12 @@
   &:focus {
     outline: none;
     border-color: #ff6100;
+    box-shadow: 0 0 0 1px #ff6100;
   }
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-    background-color: #121519;
+    border-color: var(--admin-border-strong, #1f242f);
+    background-color: var(--admin-surface-hover, #f8fafc);
   }
 }
 
@@ -131,8 +133,8 @@
 .viewModeToggle {
   display: inline-flex;
   align-items: center;
-  background: #0e1013;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--admin-surface-muted, #f1f5f9);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
   padding: 2px;
 }
@@ -146,12 +148,12 @@
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: #6a717d;
+  color: var(--admin-text-secondary, #64748b);
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    color: #ffffff;
+    color: var(--admin-text-primary, #0f172a);
   }
 
   &:focus-visible {
@@ -160,6 +162,7 @@
 }
 
 .viewModeActive {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: var(--admin-card-bg, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
 }

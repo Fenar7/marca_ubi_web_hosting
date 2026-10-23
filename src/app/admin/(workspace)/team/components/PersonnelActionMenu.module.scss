@@ -1,6 +1,7 @@
 /**
  * @file PersonnelActionMenu.module.scss
- * @description Contextual flyout popover for card secondary actions.
+ * @description PrimeStay-inspired contextual flyout popover for card secondary actions.
+ *              Crisp white surface, hairline border, obsidian text, and downward dropdown flow.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -13,19 +14,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 8px;
-  color: #8a8f98;
+  color: var(--admin-text-muted, #94a3b8);
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--admin-text-primary, #0f172a);
+    background: #f1f5f9;
+    border-color: #e2e5ea;
   }
 
   &:focus-visible {
@@ -36,12 +37,12 @@
 .popoverDropdown {
   position: absolute;
   right: 0;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   width: 200px;
-  background: #0e1013;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
   padding: 0.35rem;
   z-index: 100;
   animation: popoverFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
@@ -50,7 +51,7 @@
 @keyframes popoverFadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
@@ -67,7 +68,7 @@
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: #d1d5db;
+  color: var(--admin-text-primary, #1e293b);
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 500;
@@ -76,13 +77,13 @@
   transition: all 0.12s ease;
 
   svg {
-    color: #8a8f98;
+    color: #64748b;
     flex-shrink: 0;
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
-    color: #ffffff;
+    background: #f8fafc;
+    color: #0f172a;
 
     svg {
       color: #ff6100;
@@ -95,24 +96,24 @@
 }
 
 .destructiveItem {
-  color: #f87171;
+  color: #dc2626;
 
   svg {
-    color: #f87171;
+    color: #dc2626;
   }
 
   &:hover {
-    background: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
+    background: #fef2f2;
+    color: #b91c1c;
 
     svg {
-      color: #fca5a5;
+      color: #b91c1c;
     }
   }
 }
 
 .menuDivider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.07);
+  background: #f1f5f9;
   margin: 0.25rem 0;
 }

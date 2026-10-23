@@ -1,6 +1,6 @@
 /**
  * @file PersonnelCardGrid.module.scss
- * @description 4-column responsive grid container for personnel fluid cards.
+ * @description PrimeStay-inspired 4-column responsive grid container with light luxury empty state.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -30,28 +30,28 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 1.5rem;
-  background: #0e1013;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px dashed var(--admin-border-default, #e2e5ea);
   border-radius: 16px;
   text-align: center;
   margin-bottom: 2rem;
 }
 
 .emptyIcon {
-  color: #6a717d;
+  color: var(--admin-text-muted, #94a3b8);
   margin-bottom: 1rem;
 }
 
 .emptyTitle {
   font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
   margin: 0 0 0.5rem 0;
 }
 
 .emptyText {
   font-size: 0.85rem;
-  color: #8a8f98;
+  color: var(--admin-text-secondary, #64748b);
   max-width: 380px;
   margin: 0 0 1.25rem 0;
   line-height: 1.5;
@@ -59,17 +59,17 @@
 
 .resetButton {
   padding: 0.55rem 1.25rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #f8fafc;
+    border-color: #cbd5e1;
   }
 }

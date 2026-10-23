@@ -1,7 +1,9 @@
 /**
  * @file team-utils.ts
  * @description Utility functions for commercial personnel governance, high-entropy password generation,
- *              currency valuation formatting, and UI form state evaluation.
+ *              canonical currency valuation formatting, and UI form state evaluation.
+ *              Standardized across the Marca Ubi Admin CRM with full Indian Rupee representation
+ *              and 'en-IN' comma grouping.
  * @module lib/team-utils
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -59,20 +61,29 @@ export function generateHighEntropyPassword(): string {
 }
 
 /**
- * Formats monetary amounts into clean Indian Lakhs/Crores or base currency with tabular precision.
+ * Canonical currency formatter for commercial deal valuations.
+ * Standardized across the Marca Ubi Admin CRM with full Indian Rupee representation
+ * and 'en-IN' comma grouping (e.g. ₹68,40,000, ₹4,80,000).
  *
- * @param {number} value Raw numeric currency value.
- * @returns {string} Formatted currency string.
+ * @param {number} value Raw numeric currency value in Indian Rupees.
+ * @returns {string} Formatted full currency string.
  */
 export function formatDealValuation(value: number): string {
   if (!value || value <= 0) return '₹0';
-  if (value >= 10000000) {
-    return `₹${(value / 10000000).toFixed(1)}Cr`;
-  }
-  if (value >= 100000) {
-    return `₹${(value / 100000).toFixed(1)}L`;
-  }
-  return `₹${value.toLocaleString('en-IN')}`;
+  return `₹${Math.round(value).toLocaleString('en-IN')}`;
+}
+
+export const formatRupees = formatDealValuation;
+
+/**
+ * Formats numeral counts with standard 'en-IN' comma grouping.
+ *
+ * @param {number} count Numeric value.
+ * @returns {string} Formatted number string.
+ */
+export function formatNumber(count: number): string {
+  if (count === undefined || count === null || isNaN(count)) return '0';
+  return Math.round(count).toLocaleString('en-IN');
 }
 
 /**

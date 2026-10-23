@@ -768,7 +768,8 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
   // Fetch leads with status_id to compute active non-terminal deal metrics per representative
   const { data: leads, error: leadsError } = await supabase
     .from('leads')
-    .select('assigned_to, expected_value, status_id');
+    .select('assigned_to, expected_value, status_id')
+    .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true');
 
   if (leadsError) {
     return { success: false, error: `Failed to aggregate deal counts: ${leadsError.message}` };

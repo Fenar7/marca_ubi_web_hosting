@@ -4,7 +4,8 @@
  * @file PersonnelCard.tsx
  * @description PrimeStay-inspired luxury personnel fluid card.
  *              Displays circular photography avatar, online indicator, Raycast monospace role badge,
- *              deal telemetry scorecard, capacity meter, and dual-button access controls.
+ *              deal telemetry scorecard, capacity meter, top-right action menu, and symmetrical
+ *              dual-button bottom controls.
  * @module app/admin/team/components/PersonnelCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -13,6 +14,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import type { TeamMemberRosterItem, CrmUserRole } from '@/types/crm';
 import { SALES_REP_CAPACITY_LIMIT } from '@/app/lib/team-schemas';
+import { formatRupees, formatNumber, getInitials } from '@/app/lib/team-utils';
 import { PersonnelActionMenu } from './PersonnelActionMenu';
 import styles from './PersonnelCard.module.scss';
 
@@ -25,24 +27,6 @@ interface PersonnelCardProps {
   onOpenReassignmentModal: (member: TeamMemberRosterItem) => void;
   onOpenSuspendModal: (member: TeamMemberRosterItem) => void;
   onReactivateUser: (member: TeamMemberRosterItem) => void;
-}
-
-function formatPortfolioValue(value: number): string {
-  if (!value || value <= 0) return '₹0';
-  if (value >= 10000000) {
-    return `₹${(value / 10000000).toFixed(1)}Cr`;
-  }
-  if (value >= 100000) {
-    return `₹${(value / 100000).toFixed(1)}L`;
-  }
-  return `₹${value.toLocaleString('en-IN')}`;
-}
-
-function getInitials(name: string): string {
-  if (!name) return 'MU';
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function formatRoleName(role: string): string {
@@ -76,7 +60,7 @@ export function PersonnelCard({
   const canEditAvatar = isSelf || isAdmin;
   const isSuspended = member.status === 'suspended';
 
-  // Capacity calculations
+  // Capacity calculations for sales representatives
   const capacityPct = Math.min(
     100,
     Math.round(((member.active_deals_count || 0) / SALES_REP_CAPACITY_LIMIT) * 100)
@@ -98,6 +82,21 @@ export function PersonnelCard({
       tabIndex={0}
       aria-label={`Personnel card for ${member.full_name}`}
     >
+      {/* PrimeStay Top-Right Action Menu */}
+      <div className={styles.cardTopMenu}>
+        <PersonnelActionMenu
+          member={member}
+          canManageTeam={isAdmin}
+          canEditAvatar={canEditAvatar}
+          isSelf={isSelf}
+          onOpenAvatarModal={() => onOpenAvatarModal(member)}
+          onOpenPermissionsModal={() => onOpenPermissionsModal(member)}
+          onOpenReassignmentModal={() => onOpenReassignmentModal(member)}
+          onOpenSuspendModal={() => onOpenSuspendModal(member)}
+          onReactivateUser={() => onReactivateUser(member)}
+        />
+      </div>
+
       {/* Card Header: Avatar & Identity */}
       <div className={styles.cardHeader}>
         <div className={styles.avatarWrapper}>
@@ -106,8 +105,8 @@ export function PersonnelCard({
               src={member.avatar_url}
               alt={`${member.full_name}'s profile avatar`}
               className={styles.avatarImage}
-              width={56}
-              height={56}
+              width={52}
+              height={52}
               onError={() => setImageError(true)}
               unoptimized
             />
@@ -174,16 +173,18 @@ export function PersonnelCard({
         </span>
       </div>
 
-      {/* Telemetry Metrics Scorecard */}
+      {/* Telemetry Metrics Scorecard (Canonical en-IN currency and numbers) */}
       <div className={styles.metricsGrid}>
         <div className={styles.metricItem}>
           <span className={styles.metricLabel}>Active Deals</span>
-          <span className={styles.metricValue}>{member.active_deals_count ?? 0}</span>
+          <span className={styles.metricValue}>
+            {formatNumber(member.active_deals_count ?? 0)}
+          </span>
         </div>
         <div className={styles.metricItem}>
           <span className={styles.metricLabel}>Portfolio</span>
           <span className={styles.metricValue}>
-            {formatPortfolioValue(member.total_deal_value ?? 0)}
+            {formatRupees(member.total_deal_value ?? 0)}
           </span>
         </div>
       </div>
@@ -194,7 +195,7 @@ export function PersonnelCard({
           <div className={styles.capacityHeader}>
             <span>Workload Capacity</span>
             <span>
-              {member.active_deals_count}/{SALES_REP_CAPACITY_LIMIT} ({capacityPct}%)
+              {formatNumber(member.active_deals_count ?? 0)}/{SALES_REP_CAPACITY_LIMIT} ({capacityPct}%)
             </span>
           </div>
           <div className={styles.progressBarTrack}>
@@ -206,7 +207,7 @@ export function PersonnelCard({
         </div>
       )}
 
-      {/* Symmetrical Dual-Button Footer */}
+      {/* PrimeStay Symmetrical Dual-Button Footer (50% / 50% Grid) */}
       <div className={styles.cardFooter}>
         {isAdmin && member.role === 'sales_executive' ? (
           <button
@@ -243,18 +244,6 @@ export function PersonnelCard({
         >
           View Profile
         </button>
-
-        <PersonnelActionMenu
-          member={member}
-          canManageTeam={isAdmin}
-          canEditAvatar={canEditAvatar}
-          isSelf={isSelf}
-          onOpenAvatarModal={() => onOpenAvatarModal(member)}
-          onOpenPermissionsModal={() => onOpenPermissionsModal(member)}
-          onOpenReassignmentModal={() => onOpenReassignmentModal(member)}
-          onOpenSuspendModal={() => onOpenSuspendModal(member)}
-          onReactivateUser={() => onReactivateUser(member)}
-        />
       </div>
     </div>
   );

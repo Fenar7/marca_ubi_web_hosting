@@ -14,6 +14,7 @@ import { createClient } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
 import { SALES_REP_CAPACITY_LIMIT } from '@/app/lib/team-schemas';
 import { getInitialAllowedTabs } from '@/app/lib/team-permissions-config';
+import { formatRupees, formatNumber } from '@/app/lib/team-utils';
 import type { CrmTabKey, CrmUserRole, TeamMemberRosterItem } from '@/types/crm';
 import { TeamWorkspaceClient } from './components/TeamWorkspaceClient';
 import styles from './team.module.scss';
@@ -25,20 +26,6 @@ export const metadata: Metadata = {
     follow: false,
   },
 };
-
-/**
- * Formats monetary amounts into clean Indian Lakhs/Crores or base currency with tabular precision.
- */
-function formatPortfolioValue(value: number): string {
-  if (!value || value <= 0) return '₹0';
-  if (value >= 10000000) {
-    return `₹${(value / 10000000).toFixed(1)}Cr`;
-  }
-  if (value >= 100000) {
-    return `₹${(value / 100000).toFixed(1)}L`;
-  }
-  return `₹${value.toLocaleString('en-IN')}`;
-}
 
 export default async function AdminTeamPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
@@ -125,11 +112,11 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
               </svg>
             </div>
           </div>
-          <div className={styles.kpiValue}>{totalStaff}</div>
+          <div className={styles.kpiValue}>{formatNumber(totalStaff)}</div>
           <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailEmerald}>{activeStaff} Active</span>
+            <span className={styles.kpiDetailEmerald}>{formatNumber(activeStaff)} Active</span>
             <span>·</span>
-            <span>{suspendedStaff} Suspended</span>
+            <span>{formatNumber(suspendedStaff)} Suspended</span>
           </div>
         </div>
 
@@ -144,11 +131,11 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
               </svg>
             </div>
           </div>
-          <div className={styles.kpiValue}>{customPermissionStaff}</div>
+          <div className={styles.kpiValue}>{formatNumber(customPermissionStaff)}</div>
           <div className={styles.kpiDetail}>
             <span className={styles.kpiDetailHighlight}>Custom Tab Overrides</span>
             <span>·</span>
-            <span>{totalStaff - customPermissionStaff} Default</span>
+            <span>{formatNumber(totalStaff - customPermissionStaff)} Default</span>
           </div>
         </div>
 
@@ -163,9 +150,9 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
               </svg>
             </div>
           </div>
-          <div className={styles.kpiValue}>{formatPortfolioValue(totalPortfolioValue)}</div>
+          <div className={styles.kpiValue}>{formatRupees(totalPortfolioValue)}</div>
           <div className={styles.kpiDetail}>
-            <span>{totalActiveDeals} Active Deals in Pipeline</span>
+            <span>{formatNumber(totalActiveDeals)} Active Deals in Pipeline</span>
           </div>
         </div>
 
@@ -179,11 +166,11 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
               </svg>
             </div>
           </div>
-          <div className={styles.kpiValue}>{adminCount + managerCount}</div>
+          <div className={styles.kpiValue}>{formatNumber(adminCount + managerCount)}</div>
           <div className={styles.kpiDetail}>
-            <span className={styles.kpiDetailEmerald}>{adminCount} Admins</span>
+            <span className={styles.kpiDetailEmerald}>{formatNumber(adminCount)} Admins</span>
             <span>·</span>
-            <span>{managerCount} Managers</span>
+            <span>{formatNumber(managerCount)} Managers</span>
           </div>
         </div>
       </section>
