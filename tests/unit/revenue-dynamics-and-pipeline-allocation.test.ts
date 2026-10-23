@@ -1,8 +1,9 @@
 /**
  * @file revenue-dynamics-and-pipeline-allocation.test.ts
- * @description Unit tests verifying defensive SVG presentation attributes, safe XML identifiers,
- *              Executive Header HUD ribbon, Stepped Funnel Flow ribbon, high-density 2x2 stage cards matrix,
- *              dedicated Closed Won benchmark rail, and WCAG AA color tokens for RevenueDynamicsCard and PipelineAllocationCard.
+ * @description Unit tests verifying Logip-benchmarked dual-spline performance chart,
+ *              translucent gradient area wash, obsidian glassmorphic tooltip clamping,
+ *              continuous 8px segmented progress bar, borderless stage ledger rows,
+ *              zero nested bento cards, and strict anti-slop color tokens.
  * @module tests/unit/revenue-dynamics-and-pipeline-allocation
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -12,7 +13,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-describe('Executive Mid-Tier Analytics Remediation Engine', () => {
+describe('Logip-Benchmarked Mid-Tier Analytics Engine', () => {
   const rdcTsxPath = path.resolve(__dirname, '../../src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx');
   const rdcScssPath = path.resolve(__dirname, '../../src/app/admin/components/Dashboard/RevenueDynamicsCard.module.scss');
   const pacTsxPath = path.resolve(__dirname, '../../src/app/admin/components/Dashboard/PipelineAllocationCard.tsx');
@@ -23,30 +24,40 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
   const pacTsx = fs.readFileSync(pacTsxPath, 'utf8');
   const pacScss = fs.readFileSync(pacScssPath, 'utf8');
 
-  describe('Section 1: RevenueDynamicsCard Defensive SVG & Presentation Architecture', () => {
-    test('enforces defensive inline fill and stroke on spline curve path to prevent black blob anomaly', () => {
+  describe('Section 1: RevenueDynamicsCard Logip Performance Spline Architecture', () => {
+    test('enforces defensive inline fill and stroke on spline curve paths', () => {
       assert.ok(
         rdcTsx.includes('fill="none"'),
         'Spline curve path must explicitly declare fill="none" inline'
       );
       assert.ok(
-        rdcTsx.includes('stroke="#ff6100"'),
-        'Spline curve path must explicitly declare stroke="#ff6100" inline'
+        rdcTsx.includes('strokeWidth={2.5}'),
+        'Primary spline curve path must declare strokeWidth={2.5} inline'
       );
       assert.ok(
-        rdcTsx.includes('strokeWidth={2.5}'),
-        'Spline curve path must explicitly declare strokeWidth={2.5} inline'
+        rdcTsx.includes('strokeLinecap="round"'),
+        'Spline paths must specify rounded caps'
       );
     });
 
-    test('enforces architectural vertical gradients on Quota and Cash bars with defensive fallbacks', () => {
+    test('enforces dual-spline curves with translucent area wash and eliminates vertical bars', () => {
       assert.ok(
-        rdcTsx.includes('gradQuotaId') && rdcTsx.includes('gradCashId'),
-        'Target Quota and Actual Cash bars must bind to linear gradients'
+        rdcTsx.includes('cashSpline') && rdcTsx.includes('quotaSpline'),
+        'Must render dual splines for Realized Cash and Target Quota'
       );
       assert.ok(
-        rdcScss.includes('.barQuota') && rdcScss.includes('.barCash'),
-        'SCSS must declare .barQuota and .barCash'
+        rdcTsx.includes('cashAreaPath') && rdcScss.includes('.areaWashPath'),
+        'Must render translucent area wash path beneath primary curve'
+      );
+      assert.strictEqual(
+        rdcScss.includes('.barQuota') || rdcScss.includes('.barCash'),
+        false,
+        'Must completely eliminate heavy vertical pillar bars (.barQuota, .barCash)'
+      );
+      assert.strictEqual(
+        rdcScss.includes('.hudRibbon'),
+        false,
+        'Must eliminate noisy 4-cell HUD ribbon box'
       );
     });
 
@@ -56,12 +67,8 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
         'Must sanitize useId() string to strip colon delimiters for safe SVG gradient IDs'
       );
       assert.ok(
-        rdcTsx.includes('rdc-grad-'),
-        'Gradient ID must use rdc-grad- prefix'
-      );
-      assert.ok(
-        rdcTsx.includes('rdc-glow-'),
-        'Filter ID must use rdc-glow- prefix'
+        rdcTsx.includes('rdc-area-grad-'),
+        'Gradient ID must use rdc-area-grad- prefix'
       );
     });
 
@@ -84,84 +91,90 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
       );
     });
 
-    test('enforces Executive Header HUD Ribbon with cumulative telemetry', () => {
+    test('enforces clean integrated performance headline', () => {
       assert.ok(
-        rdcTsx.includes('styles.hudRibbon'),
-        'TSX must bind to styles.hudRibbon'
+        rdcTsx.includes('styles.headlineRow'),
+        'TSX must bind to styles.headlineRow'
       );
       assert.ok(
-        rdcTsx.includes('Cash Realized') && rdcTsx.includes('Target Quota') && rdcTsx.includes('Attainment Rate'),
-        'HUD Ribbon must display Cash Realized, Target Quota, and Attainment Rate'
+        rdcTsx.includes('styles.headlineCash'),
+        'Must render primary cash headline amount'
       );
       assert.ok(
-        rdcScss.includes('.hudRibbon'),
-        'SCSS must declare .hudRibbon styles'
+        rdcTsx.includes('styles.deltaPill'),
+        'Must render attainment delta pill'
       );
     });
   });
 
-  describe('Section 2: PipelineAllocationCard Symmetrical Architecture & WCAG Standards', () => {
-    test('enforces symmetrical 2x2 active stages partition eliminating layout orphans', () => {
-      assert.ok(
-        pacTsx.includes("normalizedStages.filter((s) => s.id !== 'stage-won'"),
-        'Must partition pipeline into active stages (excluding stage-won) to eliminate orphan layout hole'
+  describe('Section 2: PipelineAllocationCard Logip Borderless Stage Ledger Architecture', () => {
+    test('eliminates nested bento inception in favor of clean borderless rows', () => {
+      assert.strictEqual(
+        pacScss.includes('.stageMatrixGrid') || pacTsx.includes('stageMatrixGrid'),
+        false,
+        'Must strictly eliminate 2x2 nested cards matrix'
+      );
+      assert.strictEqual(
+        pacScss.includes('.conversionBenchmarkRail') || pacTsx.includes('conversionBenchmarkRail'),
+        false,
+        'Must eliminate separate conversion benchmark rail container'
       );
       assert.ok(
-        pacScss.includes('grid-template-columns: repeat(2, 1fr)'),
-        'SCSS must specify a 2-column grid for active stages'
-      );
-    });
-
-    test('enforces Stepped Milestone Funnel Flow Ribbon with pass-through telemetry', () => {
-      assert.ok(
-        pacTsx.includes('styles.funnelRibbonWrapper'),
-        'TSX must bind to styles.funnelRibbonWrapper'
+        pacTsx.includes('styles.stageLedgerList') && pacTsx.includes('styles.stageLedgerRow'),
+        'Must render clean borderless stage rows matching Logip Current Tasks architecture'
       );
       assert.ok(
-        pacTsx.includes('styles.funnelStep'),
-        'TSX must render individual funnel steps'
-      );
-      assert.ok(
-        pacScss.includes('.funnelRibbonWrapper'),
-        'SCSS must style .funnelRibbonWrapper'
+        pacScss.includes('.stageLedgerRow'),
+        'SCSS must define .stageLedgerRow'
       );
     });
 
-    test('enforces High-Density 2x2 Stage Cards with 3px accent tokens and Raycast deal badges', () => {
+    test('enforces single continuous 8px segmented progress bar', () => {
       assert.ok(
-        pacTsx.includes('styles.stageMatrixGrid'),
-        'TSX must bind to styles.stageMatrixGrid'
+        pacTsx.includes('styles.segmentedBarTrack') && pacTsx.includes('styles.segmentedBarSlice'),
+        'TSX must render continuous segmented progress bar track'
       );
       assert.ok(
-        pacTsx.includes('styles.cardAccentToken'),
-        'Stage cards must render top 3px solid accent tokens'
-      );
-      assert.ok(
-        pacTsx.includes('styles.dealCountBadge'),
-        'Stage cards must render deal count badges'
-      );
-      assert.ok(
-        pacTsx.includes('velocityDays'),
-        'Stage cards must display velocity in stage duration'
+        pacScss.includes('.segmentedBarTrack') && pacScss.includes('height: 8px'),
+        'SCSS must style .segmentedBarTrack with 8px height and rounded ends'
       );
     });
 
-    test('elevates Closed Won into a dedicated conversion benchmark rail', () => {
-      assert.ok(
-        pacTsx.includes('styles.conversionBenchmarkRail'),
-        'TSX must render dedicated .conversionBenchmarkRail footer'
+    test('eliminates faux-terminal bracketed badges in favor of natural typography', () => {
+      // Must not contain hardcoded bracketed chips like [DISC-01], [ 06 DEALS ], [ CLOSED WON ]
+      assert.strictEqual(
+        pacTsx.includes('[DISC-01]'),
+        false,
+        'Must eliminate bracketed codes like [DISC-01]'
+      );
+      assert.strictEqual(
+        pacTsx.includes('[ 06 DEALS ]'),
+        false,
+        'Must eliminate bracketed deal badges like [ 06 DEALS ]'
+      );
+      assert.strictEqual(
+        pacTsx.includes('[ CLOSED WON ]'),
+        false,
+        'Must eliminate bracketed [ CLOSED WON ]'
       );
       assert.ok(
-        pacTsx.includes('benchmarkWonDot'),
-        'Conversion rail must render pulsing radar status dot'
+        pacTsx.includes('stage.dealCount') && pacTsx.includes('deals'),
+        'Must render natural deal count: e.g. 6 deals'
+      );
+    });
+
+    test('enforces circular soft category avatars and micro progress tracks', () => {
+      assert.ok(
+        pacTsx.includes('styles.circularAvatar') && pacTsx.includes('styles.avatarDot'),
+        'Must render circular avatar with central glowing status dot'
       );
       assert.ok(
-        pacTsx.includes('conversionWinRate'),
-        'Conversion rail must display realized win rate percentage'
+        pacTsx.includes('styles.microProgressTrack') && pacTsx.includes('styles.microProgressFill'),
+        'Must render micro progress track for proportional share'
       );
       assert.ok(
-        pacTsx.includes('averageSalesCycleDays'),
-        'Conversion rail must display average cycle duration'
+        pacScss.includes('.circularAvatar') && pacScss.includes('border-radius: 50%'),
+        'Circular avatar must have 50% border radius'
       );
     });
 
@@ -210,11 +223,11 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
       );
       assert.ok(
         pacTsx.includes('tabIndex={0}'),
-        'Stage cards must support keyboard focus'
+        'Stage rows must support keyboard focus'
       );
       assert.ok(
         pacTsx.includes('role="listitem"'),
-        'Stage cards must announce as listitems for accessibility'
+        'Stage rows must announce as listitems for accessibility'
       );
     });
   });

@@ -2,17 +2,16 @@
 
 /**
  * @file RevenueDynamicsCard.tsx
- * @description Revenue Dynamics & Commercial Velocity Card benchmarked against Stripe Scorecards and Ramp Obsidian HUD.
- *              Integrates an Executive Telemetry HUD ribbon (Cumulative Realized Cash, Target Quota, Attainment Rate,
- *              Net Period Variance), dual-state vertical bars with subtle architectural gradients, a Fritsch-Carlson
- *              monotone cubic Bézier spline curve in Marca Orange (#ff6100) ensuring C¹ continuity and zero overshoot,
- *              and an interactive obsidian glassmorphic inspection HUD with collision boundary clamping.
- *              Guarantees defensive inline SVG presentation fallbacks to eliminate W3C initial default black fills.
+ * @description Revenue Dynamics & Performance Engine benchmarked against the Logip luxury dashboard.
+ *              Eliminates noisy HUD ribbon boxes and clashing vertical pillar bars in favor of
+ *              pure dual-spline continuous Bézier geometry, translucent area wash, minimalist
+ *              Cartesian gridlines, and a sleek dark obsidian floating inspection tooltip.
+ *              Strictly enforces Fritsch-Carlson C¹ continuity with zero polynomial overshoot.
  * @module admin/components/Dashboard/RevenueDynamicsCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useRef, useId, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useId, useEffect, useMemo, useCallback } from 'react';
 import type { MonthlyRevenueMetric } from './types';
 export type { MonthlyRevenueMetric } from './types';
 import styles from './RevenueDynamicsCard.module.scss';
@@ -94,8 +93,8 @@ const PERIOD_OPTIONS = ['3 Months', '6 Months', '12 Months', 'YTD'];
 
 /**
  * Fritsch-Carlson Monotone Cubic Spline to Bézier Path Generator.
- * Restricts Hermite derivatives (m_k) to guarantee monotonicity (zero overshoot)
- * and C¹ continuity, then converts Hermite segments to equivalent cubic Bézier control points:
+ * Computes monotonic Hermite derivatives to eliminate artificial polynomial oscillation,
+ * then maps Hermite tangents directly to cubic Bézier control points:
  *   CP1 = (x_k + h_k / 3, y_k + (m_k * h_k) / 3)
  *   CP2 = (x_{k+1} - h_k / 3, y_{k+1} - (m_{k+1} * h_k) / 3)
  */
@@ -164,8 +163,8 @@ function generateMonotoneBezierPath(points: Point2D[]): string {
 }
 
 function formatLakhsCurrency(valInLakhs: number): string {
-  const rupees = Math.round(valInLakhs * 100000);
-  return `₹${rupees.toLocaleString('en-IN')}`;
+  const absoluteRupees = Math.round(valInLakhs * 100000);
+  return `₹${absoluteRupees.toLocaleString('en-IN')}`;
 }
 
 export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
@@ -176,92 +175,80 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>(initialPeriod);
   const [isPeriodMenuOpen, setIsPeriodMenuOpen] = useState<boolean>(false);
-  const [showQuota, setShowQuota] = useState<boolean>(true);
   const [showCash, setShowCash] = useState<boolean>(true);
-  const [showCurve, setShowCurve] = useState<boolean>(true);
+  const [showQuota, setShowQuota] = useState<boolean>(true);
   const [activeIdx, setActiveIdx] = useState<number>(dataPoints.length - 1);
-  const [isScrubbing, setIsScrubbing] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const periodDropdownRef = useRef<HTMLDivElement>(null);
 
-  // XML NCName sanitized identifier for React 19 gradient paint servers
+  // Sanitize React 19 useId() tokens into valid W3C XML NCName strings
   const rawId = useId();
   const safeId = useMemo(() => rawId.replace(/[^a-zA-Z0-9_-]/g, ''), [rawId]);
-  const gradQuotaId = `rdc-grad-quota-${safeId}`;
-  const gradCashId = `rdc-grad-cash-${safeId}`;
-  const gradCashActiveId = `rdc-grad-cash-active-${safeId}`;
-  const gradOrangeId = `rdc-grad-orange-${safeId}`;
-  const glowFilterId = `rdc-glow-${safeId}`;
+  const primaryAreaGradId = `rdc-area-grad-${safeId}`;
+  const pulseFilterId = `rdc-glow-${safeId}`;
 
-  // Keep active index clamped within bounds when dataset length updates
-  useEffect(() => {
-    setActiveIdx(dataPoints.length - 1);
-  }, [dataPoints.length]);
+  // Palette tokens calibrated for dark luxury & high contrast
+  const cashColor = '#0284c7'; // Deep Ocean Sky (WCAG AA 4.54:1)
+  const quotaColor = '#f97316'; // Warm Coral / Amber baseline
 
-  // Executive Telemetry Ribbon Calculations
-  const { totalCashCollected, totalTargetQuota, cumulativeAttainment, netPeriodVariance } = useMemo(() => {
-    const totalCash = dataPoints.reduce((acc, d) => acc + d.cashVal, 0);
-    const totalQuota = dataPoints.reduce((acc, d) => acc + d.quotaVal, 0);
-    const attainment = totalQuota > 0 ? (totalCash / totalQuota) * 100 : 100;
-    const variance = totalCash - totalQuota;
-    return {
-      totalCashCollected: totalCash,
-      totalTargetQuota: totalQuota,
-      cumulativeAttainment: attainment,
-      netPeriodVariance: variance,
-    };
-  }, [dataPoints]);
+  // Cumulative performance telemetry
+  const totalCashCollected = useMemo(
+    () => dataPoints.reduce((acc, curr) => acc + curr.cashVal, 0),
+    [dataPoints]
+  );
+  const totalTargetQuota = useMemo(
+    () => dataPoints.reduce((acc, curr) => acc + curr.quotaVal, 0),
+    [dataPoints]
+  );
+  const cumulativeAttainment = totalTargetQuota > 0
+    ? (totalCashCollected / totalTargetQuota) * 100
+    : 0;
 
-  // Cartesian SVG ViewBox geometry dimensions
+  // SVG Cartesian Geometry Dimensions
   const svgWidth = 720;
-  const svgHeight = 280;
-  const chartLeft = 60;
-  const chartRight = 690;
-  const chartTop = 24;
-  const chartBottom = 230;
+  const svgHeight = 260;
+  const chartLeft = 56;
+  const chartRight = 684;
+  const chartTop = 28;
+  const chartBottom = 210;
   const chartHeight = chartBottom - chartTop;
 
-  // Dynamic max ceiling calculation with 25% headroom
-  const calculatedMax = Math.max(
-    ...dataPoints.map((d) => Math.max(d.quotaVal, d.cashVal)),
-    5
-  );
-  const maxMetricVal = Math.ceil(calculatedMax * 1.25);
+  const maxVal = useMemo(() => {
+    const highest = Math.max(
+      ...dataPoints.map((d) => Math.max(d.cashVal, d.quotaVal)),
+      5
+    );
+    return Math.ceil(highest * 1.25);
+  }, [dataPoints]);
 
-  const totalPoints = dataPoints.length;
-  const stepX = (chartRight - chartLeft) / totalPoints;
+  const stepX = (chartRight - chartLeft) / Math.max(dataPoints.length - 1, 1);
 
-  // Cartesian coordinates for bars and spline curve nodes
-  const monthlySlots = dataPoints.map((item, i) => {
-    const centerX = chartLeft + i * stepX + stepX / 2;
-    const quotaY = chartBottom - (item.quotaVal / maxMetricVal) * chartHeight;
-    const cashY = chartBottom - (item.cashVal / maxMetricVal) * chartHeight;
-    return {
-      centerX,
-      quotaY,
-      cashY,
-      quotaHeight: chartBottom - quotaY,
-      cashHeight: chartBottom - cashY,
-    };
-  });
-
-  const curvePoints: Point2D[] = monthlySlots.map((s) => ({
-    x: s.centerX,
-    y: s.cashY,
+  const cashCoords: Point2D[] = dataPoints.map((d, i) => ({
+    x: chartLeft + i * stepX,
+    y: chartBottom - (d.cashVal / maxVal) * chartHeight,
   }));
 
-  const bezierCurvePath = generateMonotoneBezierPath(curvePoints);
-  const areaPath = curvePoints.length > 0
-    ? `${bezierCurvePath} L ${curvePoints[curvePoints.length - 1].x.toFixed(2)} ${chartBottom} L ${curvePoints[0].x.toFixed(2)} ${chartBottom} Z`
+  const quotaCoords: Point2D[] = dataPoints.map((d, i) => ({
+    x: chartLeft + i * stepX,
+    y: chartBottom - (d.quotaVal / maxVal) * chartHeight,
+  }));
+
+  const cashSplinePath = generateMonotoneBezierPath(cashCoords);
+  const quotaSplinePath = generateMonotoneBezierPath(quotaCoords);
+
+  const cashAreaPath = cashCoords.length > 0
+    ? `${cashSplinePath} L ${cashCoords[cashCoords.length - 1].x.toFixed(2)} ${chartBottom} L ${cashCoords[0].x.toFixed(2)} ${chartBottom} Z`
     : '';
 
   const safeIdx = Math.max(0, Math.min(activeIdx, dataPoints.length - 1));
-  const currentSlot = monthlySlots[safeIdx] || monthlySlots[monthlySlots.length - 1];
-  const currentMetric = dataPoints[safeIdx] || dataPoints[dataPoints.length - 1];
+  const activeCashPoint = cashCoords[safeIdx];
+  const activeQuotaPoint = quotaCoords[safeIdx];
+  const activeData = dataPoints[safeIdx];
 
-  // Tooltip horizontal percentage clamped between 10% and 90%
-  const rawLeftPercent = currentSlot ? (currentSlot.centerX / svgWidth) * 100 : 50;
+  // Tooltip horizontal coordinate clamped between 10% and 90%
+  const rawLeftPercent = activeCashPoint ? (activeCashPoint.x / svgWidth) * 100 : 50;
   const clampedTooltipLeft = Math.max(10, Math.min(90, rawLeftPercent));
 
   // Dismiss period dropdown on click outside
@@ -283,7 +270,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   }, [isPeriodMenuOpen]);
 
   // Pointer scrubbing handler across horizontal axis
-  const handlePointerScrub = (clientX: number) => {
+  const handlePointerScrub = useCallback((clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const relX = clientX - rect.left;
@@ -291,9 +278,8 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
 
     let closestIdx = 0;
     let minDistance = Number.POSITIVE_INFINITY;
-
-    monthlySlots.forEach((slot, idx) => {
-      const dist = Math.abs(slot.centerX - svgRelX);
+    cashCoords.forEach((pt, idx) => {
+      const dist = Math.abs(pt.x - svgRelX);
       if (dist < minDistance) {
         minDistance = dist;
         closestIdx = idx;
@@ -301,13 +287,13 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
     });
 
     setActiveIdx(closestIdx);
-    setIsScrubbing(true);
-  };
+    setIsHovered(true);
+  }, [cashCoords, svgWidth]);
 
-  // Y-Axis reference grid line intervals
-  const gridSteps = 5;
+  // Horizontal Gridlines & Y-Axis Tabular Labels
+  const gridSteps = 4;
   const gridLines = Array.from({ length: gridSteps + 1 }).map((_, idx) => {
-    const val = (maxMetricVal / gridSteps) * (gridSteps - idx);
+    const val = (maxVal / gridSteps) * (gridSteps - idx);
     const yPos = chartTop + (idx * chartHeight) / gridSteps;
     return {
       val,
@@ -316,76 +302,45 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
     };
   });
 
-  const slotVarianceVal = currentMetric ? currentMetric.cashVal - currentMetric.quotaVal : 0;
-  const isPositiveSlotVariance = slotVarianceVal >= 0;
+  const slotVariance = activeData ? activeData.cashVal - activeData.quotaVal : 0;
+  const isPositiveVariance = slotVariance >= 0;
 
   return (
-    <div className={styles.chartCard}>
-      {/* Header Bar */}
-      <div className={styles.chartHeader}>
+    <div className={styles.performanceCard}>
+      {/* Header Bar: Clean Title & Refined Controls */}
+      <div className={styles.cardHeader}>
         <div className={styles.titleCluster}>
-          <h2 className={styles.title}>Revenue Dynamics & Forecast</h2>
+          <h2 className={styles.title}>Performance</h2>
           <p className={styles.subtitle}>
-            Quota baseline vs actual cash collection & growth velocity ({timeframe}).
+            Cash collections vs target quota trajectory ({timeframe}).
           </p>
         </div>
 
         <div className={styles.headerControls}>
-          {/* Interactive Legend Switches */}
+          {/* Minimalist Legend Swatches */}
           <div className={styles.legendCluster} role="group" aria-label="Toggle chart series">
-            <div
-              className={`${styles.legendItem} ${!showQuota ? styles.inactive : ''}`}
+            <button
+              type="button"
+              className={`${styles.legendPill} ${!showCash ? styles.legendInactive : ''}`}
+              onClick={() => setShowCash((prev) => !prev)}
+              aria-label="Toggle Realized Cash series"
+            >
+              <span className={styles.swatchCash} style={{ backgroundColor: cashColor }} />
+              <span>Realized Cash</span>
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.legendPill} ${!showQuota ? styles.legendInactive : ''}`}
               onClick={() => setShowQuota((prev) => !prev)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setShowQuota((prev) => !prev);
-                }
-              }}
               aria-label="Toggle Target Quota series"
             >
-              <span className={styles.legendSwatchQuota} />
+              <span className={styles.swatchQuota} style={{ backgroundColor: quotaColor }} />
               <span>Target Quota</span>
-            </div>
-
-            <div
-              className={`${styles.legendItem} ${!showCash ? styles.inactive : ''}`}
-              onClick={() => setShowCash((prev) => !prev)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setShowCash((prev) => !prev);
-                }
-              }}
-              aria-label="Toggle Collected Cash series"
-            >
-              <span className={styles.legendSwatchCash} />
-              <span>Collected Cash</span>
-            </div>
-
-            <div
-              className={`${styles.legendItem} ${!showCurve ? styles.inactive : ''}`}
-              onClick={() => setShowCurve((prev) => !prev)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setShowCurve((prev) => !prev);
-                }
-              }}
-              aria-label="Toggle Growth Curve overlay"
-            >
-              <span className={styles.legendSwatchCurve} />
-              <span>Growth Curve</span>
-            </div>
+            </button>
           </div>
 
-          {/* Period Selector Dropdown */}
+          {/* Period Selector Dropdown Pill */}
           <div className={styles.periodDropdownWrapper} ref={periodDropdownRef}>
             <button
               type="button"
@@ -424,43 +379,26 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
         </div>
       </div>
 
-      {/* Executive Header HUD Ribbon (Stripe Scorecards Benchmark) */}
-      <div className={styles.hudRibbon} aria-label="Executive revenue performance metrics">
-        <div className={styles.hudMetricItem}>
-          <span className={styles.hudMetricLabel}>Cash Realized</span>
-          <span className={styles.hudMetricValue}>{formatLakhsCurrency(totalCashCollected)}</span>
-        </div>
-        <div className={styles.hudMetricItem}>
-          <span className={styles.hudMetricLabel}>Target Quota</span>
-          <span className={styles.hudMetricSubValue}>{formatLakhsCurrency(totalTargetQuota)}</span>
-        </div>
-        <div className={styles.hudMetricItem}>
-          <span className={styles.hudMetricLabel}>Attainment Rate</span>
-          <span className={`${styles.hudAttainmentBadge} ${cumulativeAttainment >= 100 ? styles.positiveAttainment : styles.negativeAttainment}`}>
-            <span className={styles.statusDot} />
-            {cumulativeAttainment.toFixed(1)}% Attained
+      {/* Integrated Performance Headline (Clean, Zero Clutter) */}
+      <div className={styles.headlineRow}>
+        <div className={styles.headlineMetrics}>
+          <span className={styles.headlineCash}>{formatLakhsCurrency(totalCashCollected)}</span>
+          <span className={styles.deltaPill}>
+            ▲ {cumulativeAttainment.toFixed(1)}% Attained
           </span>
         </div>
-        <div className={styles.hudMetricItem}>
-          <span className={styles.hudMetricLabel}>Net Variance</span>
-          <div className={styles.hudVarianceCluster}>
-            <span className={`${styles.hudVarianceToken} ${netPeriodVariance >= 0 ? styles.positiveVariance : styles.negativeVariance}`}>
-              {netPeriodVariance >= 0 ? `+${formatLakhsCurrency(netPeriodVariance)}` : `-${formatLakhsCurrency(Math.abs(netPeriodVariance))}`}
-            </span>
-            <span className={`${styles.hudVarianceSubtitle} ${netPeriodVariance >= 0 ? styles.positiveSubtitle : styles.negativeSubtitle}`}>
-              {netPeriodVariance >= 0 ? 'Over Quota' : 'Under Quota'}
-            </span>
-          </div>
+        <div className={styles.headlineBaseline}>
+          <span>Target Quota: <strong>{formatLakhsCurrency(totalTargetQuota)}</strong></span>
         </div>
       </div>
 
       {/* SVG Canvas Area */}
       <div
-        className={styles.chartCanvasContainer}
+        className={styles.canvasContainer}
         ref={containerRef}
         onPointerMove={(e) => handlePointerScrub(e.clientX)}
         onPointerDown={(e) => handlePointerScrub(e.clientX)}
-        onPointerLeave={() => setIsScrubbing(false)}
+        onPointerLeave={() => setIsHovered(false)}
       >
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -469,37 +407,19 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
           aria-hidden="true"
         >
           <defs>
-            {/* Quota Ghost Bar Gradient */}
-            <linearGradient id={gradQuotaId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#f1f5f9" stopOpacity="0.5" />
+            {/* Translucent Area Wash Gradient */}
+            <linearGradient id={primaryAreaGradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={cashColor} stopOpacity="0.12" />
+              <stop offset="100%" stopColor={cashColor} stopOpacity="0.00" />
             </linearGradient>
 
-            {/* Collected Cash Pillar Gradient (Midnight Obsidian) */}
-            <linearGradient id={gradCashId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1e293b" stopOpacity="1" />
-              <stop offset="100%" stopColor="#0f172a" stopOpacity="1" />
-            </linearGradient>
-
-            {/* Active Hover Cash Pillar Gradient (Marca Orange Glow) */}
-            <linearGradient id={gradCashActiveId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff6100" stopOpacity="1" />
-              <stop offset="100%" stopColor="#e05500" stopOpacity="1" />
-            </linearGradient>
-
-            {/* Specular Glow Filter for Marca Orange Curve */}
-            <filter id={glowFilterId} x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" floodColor="#ff6100" floodOpacity="0.42" />
+            {/* Specular Pulse Filter */}
+            <filter id={pulseFilterId} x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor={cashColor} floodOpacity="0.4" />
             </filter>
-
-            {/* Gradient under Curve */}
-            <linearGradient id={gradOrangeId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff6100" stopOpacity="0.16" />
-              <stop offset="90%" stopColor="#ff6100" stopOpacity="0.0" />
-            </linearGradient>
           </defs>
 
-          {/* Horizontal Grid Lines & Y-Axis Tabular Labels */}
+          {/* Minimalist Horizontal Dotted Gridlines & Y-Axis Labels */}
           {gridLines.map((grid, idx) => (
             <g key={`grid-${idx}`}>
               <line
@@ -510,126 +430,123 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                 className={styles.gridLine}
               />
               <text
-                x={chartLeft - 10}
+                x={chartLeft - 12}
                 y={grid.y + 4}
                 textAnchor="end"
-                className={styles.axisText}
+                className={styles.yAxisText}
               >
                 {grid.label}
               </text>
             </g>
           ))}
 
-          {/* Grouped Vertical Bars with Defensive Inline Fills */}
-          {monthlySlots.map((slot, i) => {
-            const barWidth = 14;
-            const barGap = 4;
-            const quotaBarX = slot.centerX - barWidth - barGap / 2;
-            const cashBarX = slot.centerX + barGap / 2;
-            const isHovered = i === safeIdx && isScrubbing;
-
-            return (
-              <g key={`bars-${i}`} className={isHovered ? styles.barGroupActive : styles.barGroup}>
-                {/* Quota Bar (Muted Cool Lavender Slate #e2e8f0 with subtle hairline cap) */}
-                {showQuota && (
-                  <rect
-                    x={quotaBarX}
-                    y={slot.quotaY}
-                    width={barWidth}
-                    height={Math.max(2, slot.quotaHeight)}
-                    rx={3}
-                    fill={`url(#${gradQuotaId})`}
-                    stroke="#cbd5e1"
-                    strokeWidth={0.5}
-                    className={styles.barQuota}
-                  />
-                )}
-
-                {/* Actual Cash Bar (Crisp Slate Charcoal #0f172a, illuminates on hover) */}
-                {showCash && (
-                  <rect
-                    x={cashBarX}
-                    y={slot.cashY}
-                    width={barWidth}
-                    height={Math.max(2, slot.cashHeight)}
-                    rx={3}
-                    fill={isHovered ? `url(#${gradCashActiveId})` : `url(#${gradCashId})`}
-                    className={styles.barCash}
-                  />
-                )}
-
-                {/* X-Axis Milestone Label */}
-                <text
-                  x={slot.centerX}
-                  y={chartBottom + 20}
-                  textAnchor="middle"
-                  className={`${styles.xAxisLabel} ${isHovered ? styles.activeLabel : ''}`}
-                >
-                  {dataPoints[i]?.month}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Area Wash under Cubic Bézier Spline */}
-          {showCurve && areaPath && (
+          {/* Translucent Area Wash beneath Realized Cash Spline */}
+          {showCash && cashAreaPath && (
             <path
-              d={areaPath}
-              fill={`url(#${gradOrangeId})`}
+              d={cashAreaPath}
+              fill={`url(#${primaryAreaGradId})`}
               stroke="none"
-              className={styles.splineArea}
+              className={styles.areaWashPath}
             />
           )}
 
-          {/* Fritsch-Carlson Monotone Cubic Bézier Spline Curve with Defensive Inline Stroke */}
-          {showCurve && bezierCurvePath && (
+          {/* Baseline Curve: Target Quota Spline */}
+          {showQuota && quotaSplinePath && (
             <path
-              d={bezierCurvePath}
+              d={quotaSplinePath}
               fill="none"
-              stroke="#ff6100"
+              stroke={quotaColor}
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={styles.quotaSpline}
+            />
+          )}
+
+          {/* Primary Curve: Realized Cash Spline */}
+          {showCash && cashSplinePath && (
+            <path
+              d={cashSplinePath}
+              fill="none"
+              stroke={cashColor}
               strokeWidth={2.5}
               strokeLinecap="round"
               strokeLinejoin="round"
-              filter={`url(#${glowFilterId})`}
-              className={styles.splineLine}
+              className={styles.cashSpline}
             />
           )}
 
-          {/* Interactive Scrub Ray & Target Node */}
-          {currentSlot && (
-            <g className={styles.scrubGroup}>
+          {/* X-Axis Milestone Labels */}
+          {dataPoints.map((item, i) => (
+            <text
+              key={`x-${i}`}
+              x={cashCoords[i]?.x}
+              y={chartBottom + 22}
+              textAnchor="middle"
+              className={`${styles.xAxisText} ${i === safeIdx && isHovered ? styles.activeX : ''}`}
+            >
+              {item.month}
+            </text>
+          ))}
+
+          {/* Dotted Vertical Crosshair Scrubber with Concentric Pulse Ring */}
+          {isHovered && activeCashPoint && (
+            <g className={styles.scrubberGroup}>
+              {/* Hairline Dotted Guideline */}
               <line
-                x1={currentSlot.centerX}
+                x1={activeCashPoint.x}
                 y1={chartTop}
-                x2={currentSlot.centerX}
+                x2={activeCashPoint.x}
                 y2={chartBottom}
-                stroke="#94a3b8"
-                strokeWidth={1.5}
-                strokeDasharray="3 3"
-                className={styles.scrubRay}
+                className={styles.crosshairGuide}
               />
-              <circle
-                cx={currentSlot.centerX}
-                cy={currentSlot.cashY}
-                r={6}
-                fill="#ffffff"
-                stroke="#ff6100"
-                strokeWidth={2.5}
-                className={styles.scrubNodeOuter}
-              />
-              <circle
-                cx={currentSlot.centerX}
-                cy={currentSlot.cashY}
-                r={2.5}
-                fill="#ff6100"
-                className={styles.scrubNodeInner}
-              />
+
+              {/* Target Quota Node */}
+              {showQuota && activeQuotaPoint && (
+                <circle
+                  cx={activeQuotaPoint.x}
+                  cy={activeQuotaPoint.y}
+                  r={4}
+                  fill="#ffffff"
+                  stroke={quotaColor}
+                  strokeWidth={2}
+                />
+              )}
+
+              {/* Realized Cash Concentric Pulse Aura */}
+              {showCash && (
+                <>
+                  <circle
+                    cx={activeCashPoint.x}
+                    cy={activeCashPoint.y}
+                    r={12}
+                    fill="rgba(2, 132, 199, 0.15)"
+                    stroke="rgba(2, 132, 199, 0.40)"
+                    strokeWidth={1.5}
+                    className={styles.pulseAura}
+                  />
+                  <circle
+                    cx={activeCashPoint.x}
+                    cy={activeCashPoint.y}
+                    r={5.5}
+                    fill="#ffffff"
+                    stroke={cashColor}
+                    strokeWidth={2.5}
+                  />
+                  <circle
+                    cx={activeCashPoint.x}
+                    cy={activeCashPoint.y}
+                    r={2.5}
+                    fill={cashColor}
+                  />
+                </>
+              )}
             </g>
           )}
         </svg>
 
-        {/* Hover / Scrub Inspection Tooltip (Positioned in Obsidian Glassmorphism) */}
-        {currentMetric && currentSlot && (
+        {/* Sleek Logip Obsidian Dark Tooltip Card */}
+        {isHovered && activeData && activeCashPoint && (
           <div
             className={styles.obsidianTooltip}
             style={{
@@ -645,41 +562,35 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
             aria-live="polite"
           >
             <div className={styles.tooltipHeader}>
-              <span className={styles.tooltipMonth}>{currentMetric.fullPeriod}</span>
-              <span
-                className={`${styles.tooltipAttainmentPill} ${
-                  currentMetric.attainmentPct >= 100 ? styles.positiveAttainment : styles.negativeAttainment
-                }`}
-              >
-                {currentMetric.attainmentPct.toFixed(1)}% Attainment
+              <span className={styles.tooltipPeriod}>{activeData.fullPeriod}</span>
+              <span className={`${styles.tooltipAttainmentPill} ${activeData.attainmentPct >= 100 ? styles.pillPositive : styles.pillNegative}`}>
+                {activeData.attainmentPct.toFixed(1)}% Attained
               </span>
             </div>
 
-            <div className={styles.tooltipRows}>
+            <div className={styles.tooltipBody}>
               <div className={styles.tooltipRow}>
-                <span className={styles.tooltipLabel}>
-                  <span className={styles.dotQuota} /> Target Quota:
-                </span>
-                <span className={styles.tooltipValue}>{currentMetric.quotaFormatted}</span>
+                <div className={styles.tooltipLabelCluster}>
+                  <span className={styles.accentBarCash} style={{ backgroundColor: cashColor }} />
+                  <span>Realized Cash</span>
+                </div>
+                <span className={styles.tooltipVal}>{activeData.cashFormatted}</span>
               </div>
+
               <div className={styles.tooltipRow}>
-                <span className={styles.tooltipLabel}>
-                  <span className={styles.dotCash} /> Actual Cash:
-                </span>
-                <span className={styles.tooltipValue}>{currentMetric.cashFormatted}</span>
+                <div className={styles.tooltipLabelCluster}>
+                  <span className={styles.accentBarQuota} style={{ backgroundColor: quotaColor }} />
+                  <span>Target Quota</span>
+                </div>
+                <span className={styles.tooltipVal}>{activeData.quotaFormatted}</span>
               </div>
-              <div className={styles.tooltipVarianceRow}>
-                <span className={styles.tooltipVarianceLabel}>Variance:</span>
-                <span
-                  className={`${styles.tooltipVarianceVal} ${
-                    isPositiveSlotVariance ? styles.variancePositive : styles.varianceNegative
-                  }`}
-                >
-                  {isPositiveSlotVariance ? '+' : ''}
-                  {formatLakhsCurrency(slotVarianceVal)} ({isPositiveSlotVariance ? '+' : ''}
-                  {(currentMetric.attainmentPct - 100).toFixed(1)}%)
-                </span>
-              </div>
+            </div>
+
+            <div className={styles.tooltipFooter}>
+              <span className={styles.varianceLabel}>Net Period Variance:</span>
+              <span className={`${styles.varianceValue} ${isPositiveVariance ? styles.variancePositive : styles.varianceNegative}`}>
+                {isPositiveVariance ? `+${formatLakhsCurrency(slotVariance)}` : `-${formatLakhsCurrency(Math.abs(slotVariance))}`}
+              </span>
             </div>
           </div>
         )}

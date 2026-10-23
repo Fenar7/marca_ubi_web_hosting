@@ -320,6 +320,12 @@ export default async function AdminDashboardPage(
       dropOffRatePct: st.dropOffRatePct,
       passThroughPct: st.passThroughPct,
       slaOnTrackPct: st.slaOnTrackPct,
+      statusLabel:
+        st.id === 'stage-won'
+          ? 'Converted'
+          : st.id === 'stage-negotiation'
+          ? 'Priority Review'
+          : 'On Track',
     };
   });
 
