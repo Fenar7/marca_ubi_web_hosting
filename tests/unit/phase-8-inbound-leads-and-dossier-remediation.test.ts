@@ -325,7 +325,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
     });
 
     it('verifies src/middleware.ts registers /admin/user-management in ROUTE_TAB_MAP with tabKey: users', () => {
-      const middlewarePath = path.resolve(process.cwd(), 'src/middleware.ts');
+      const middlewarePath = fs.existsSync(path.resolve(process.cwd(), 'src/proxy.ts')) ? path.resolve(process.cwd(), 'src/proxy.ts') : path.resolve(process.cwd(), 'src/middleware.ts');
       const code = fs.readFileSync(middlewarePath, 'utf8');
       assert.ok(
         code.includes("{ prefix: '/admin/user-management', tabKey: 'users' }"),
@@ -438,7 +438,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
     });
 
     it('verifies src/middleware.ts checks hasExplicitAuthClaims to prevent false-positive role lockouts', () => {
-      const mwPath = path.resolve(process.cwd(), 'src/middleware.ts');
+      const mwPath = fs.existsSync(path.resolve(process.cwd(), 'src/proxy.ts')) ? path.resolve(process.cwd(), 'src/proxy.ts') : path.resolve(process.cwd(), 'src/middleware.ts');
       const code = fs.readFileSync(mwPath, 'utf8');
       assert.ok(code.includes('hasExplicitAuthClaims'), 'Middleware must define hasExplicitAuthClaims check');
       assert.ok(code.includes('if (matchingRoute && hasExplicitAuthClaims)'), 'Must guard only when explicit claims exist');
