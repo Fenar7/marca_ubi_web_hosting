@@ -45,6 +45,8 @@
   width: 26px;
   height: 26px;
   border-radius: 6px;
+  overflow: hidden;
+  position: relative;
   background-color: #0f172a;
   color: #ffffff;
   font-size: 11px;
@@ -55,6 +57,32 @@
   letter-spacing: 0.02em;
   flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarEditBadge {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    color: #ff6100;
+  }
+}
+
+.headerAvatar:hover .avatarEditBadge {
+  opacity: 1;
 }
 
 /* Clean Short Name without crude truncation */
@@ -126,6 +154,9 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
   background-color: #0f172a;
   color: #ffffff;
   font-size: 13px;
@@ -136,6 +167,32 @@
   letter-spacing: 0.02em;
   flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarEditBadge {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    color: #ff6100;
+  }
+}
+
+.headerAvatar:hover .avatarEditBadge {
+  opacity: 1;
 }
 
 .headerMeta {
