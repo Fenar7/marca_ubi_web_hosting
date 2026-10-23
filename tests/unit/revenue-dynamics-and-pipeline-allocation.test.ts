@@ -1,8 +1,8 @@
 /**
  * @file revenue-dynamics-and-pipeline-allocation.test.ts
  * @description Unit tests verifying defensive SVG presentation attributes, safe XML identifiers,
- *              symmetrical 2x2 active pipeline partition, dedicated Closed Won benchmark rail,
- *              and WCAG AA color tokens for RevenueDynamicsCard and PipelineAllocationCard.
+ *              Executive Header HUD ribbon, Stepped Funnel Flow ribbon, high-density 2x2 stage cards matrix,
+ *              dedicated Closed Won benchmark rail, and WCAG AA color tokens for RevenueDynamicsCard and PipelineAllocationCard.
  * @module tests/unit/revenue-dynamics-and-pipeline-allocation
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -25,7 +25,6 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
 
   describe('Section 1: RevenueDynamicsCard Defensive SVG & Presentation Architecture', () => {
     test('enforces defensive inline fill and stroke on spline curve path to prevent black blob anomaly', () => {
-      // Must explicitly supply fill="none" and stroke="#ff6100" inline
       assert.ok(
         rdcTsx.includes('fill="none"'),
         'Spline curve path must explicitly declare fill="none" inline'
@@ -40,14 +39,14 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
       );
     });
 
-    test('enforces defensive inline fills on grouped vertical bars (Quota vs Cash)', () => {
+    test('enforces architectural vertical gradients on Quota and Cash bars with defensive fallbacks', () => {
       assert.ok(
-        rdcTsx.includes('fill="#e2e8f0"'),
-        'Target Quota bars must declare inline fill="#e2e8f0"'
+        rdcTsx.includes('gradQuotaId') && rdcTsx.includes('gradCashId'),
+        'Target Quota and Actual Cash bars must bind to linear gradients'
       );
       assert.ok(
-        rdcTsx.includes('fill="#0f172a"'),
-        'Actual Cash bars must declare inline fill="#0f172a"'
+        rdcScss.includes('.barQuota') && rdcScss.includes('.barCash'),
+        'SCSS must declare .barQuota and .barCash'
       );
     });
 
@@ -72,7 +71,7 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
         'TSX must bind to styles.obsidianTooltip'
       );
       assert.ok(
-        rdcScss.includes('.obsidianTooltip') || rdcScss.includes('.chartTooltip'),
+        rdcScss.includes('.obsidianTooltip'),
         'SCSS must define obsidian glassmorphic tooltip'
       );
       assert.ok(
@@ -80,17 +79,24 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
         'Tooltip must enforce backdrop-filter blur for glassmorphism'
       );
       assert.ok(
-        rdcTsx.includes('Math.max(12, Math.min(88, rawLeftPercent))'),
-        'Tooltip horizontal coordinate must be clamped between 12% and 88% to prevent canvas overflow'
+        rdcTsx.includes('Math.max(10, Math.min(90, rawLeftPercent))'),
+        'Tooltip horizontal coordinate must be clamped between 10% and 90% to prevent canvas overflow'
       );
     });
 
-    test('defines all required SVG presentation classes in SCSS module', () => {
-      assert.ok(rdcScss.includes('.barQuota'), 'SCSS must declare .barQuota');
-      assert.ok(rdcScss.includes('.barCash'), 'SCSS must declare .barCash');
-      assert.ok(rdcScss.includes('.splineLine'), 'SCSS must declare .splineLine');
-      assert.ok(rdcScss.includes('.splineArea'), 'SCSS must declare .splineArea');
-      assert.ok(rdcScss.includes('.barGroupActive'), 'SCSS must declare .barGroupActive');
+    test('enforces Executive Header HUD Ribbon with cumulative telemetry', () => {
+      assert.ok(
+        rdcTsx.includes('styles.hudRibbon'),
+        'TSX must bind to styles.hudRibbon'
+      );
+      assert.ok(
+        rdcTsx.includes('Cash Realized') && rdcTsx.includes('Target Quota') && rdcTsx.includes('Attainment Rate'),
+        'HUD Ribbon must display Cash Realized, Target Quota, and Attainment Rate'
+      );
+      assert.ok(
+        rdcScss.includes('.hudRibbon'),
+        'SCSS must declare .hudRibbon styles'
+      );
     });
   });
 
@@ -98,73 +104,117 @@ describe('Executive Mid-Tier Analytics Remediation Engine', () => {
     test('enforces symmetrical 2x2 active stages partition eliminating layout orphans', () => {
       assert.ok(
         pacTsx.includes("normalizedStages.filter((s) => s.id !== 'stage-won'"),
-        'Active stages must exclude Closed Won so exactly 4 stages fill the 2x2 grid'
+        'Must partition pipeline into active stages (excluding stage-won) to eliminate orphan layout hole'
       );
       assert.ok(
         pacScss.includes('grid-template-columns: repeat(2, 1fr)'),
-        'Breakdown grid must specify a balanced 2-column layout'
+        'SCSS must specify a 2-column grid for active stages'
+      );
+    });
+
+    test('enforces Stepped Milestone Funnel Flow Ribbon with pass-through telemetry', () => {
+      assert.ok(
+        pacTsx.includes('styles.funnelRibbonWrapper'),
+        'TSX must bind to styles.funnelRibbonWrapper'
+      );
+      assert.ok(
+        pacTsx.includes('styles.funnelStep'),
+        'TSX must render individual funnel steps'
+      );
+      assert.ok(
+        pacScss.includes('.funnelRibbonWrapper'),
+        'SCSS must style .funnelRibbonWrapper'
+      );
+    });
+
+    test('enforces High-Density 2x2 Stage Cards with 3px accent tokens and Raycast deal badges', () => {
+      assert.ok(
+        pacTsx.includes('styles.stageMatrixGrid'),
+        'TSX must bind to styles.stageMatrixGrid'
+      );
+      assert.ok(
+        pacTsx.includes('styles.cardAccentToken'),
+        'Stage cards must render top 3px solid accent tokens'
+      );
+      assert.ok(
+        pacTsx.includes('styles.dealCountBadge'),
+        'Stage cards must render deal count badges'
+      );
+      assert.ok(
+        pacTsx.includes('velocityDays'),
+        'Stage cards must display velocity in stage duration'
       );
     });
 
     test('elevates Closed Won into a dedicated conversion benchmark rail', () => {
       assert.ok(
-        pacTsx.includes('conversionBenchmarkRail'),
-        'PipelineAllocationCard must include conversionBenchmarkRail'
+        pacTsx.includes('styles.conversionBenchmarkRail'),
+        'TSX must render dedicated .conversionBenchmarkRail footer'
       );
       assert.ok(
-        pacScss.includes('.conversionBenchmarkRail'),
-        'SCSS must declare .conversionBenchmarkRail styling'
+        pacTsx.includes('benchmarkWonDot'),
+        'Conversion rail must render pulsing radar status dot'
       );
       assert.ok(
         pacTsx.includes('conversionWinRate'),
-        'Benchmark rail must display conversion win rate telemetry'
+        'Conversion rail must display realized win rate percentage'
       );
       assert.ok(
         pacTsx.includes('averageSalesCycleDays'),
-        'Benchmark rail must display average sales cycle duration'
+        'Conversion rail must display average cycle duration'
       );
     });
 
-    test('enforces WCAG AA compliant high-contrast color tokens', () => {
-      // Must use high-contrast Amber #d97706 and Emerald #059669
-      assert.ok(
-        pacTsx.includes('#d97706'),
-        'Negotiation must use high-contrast Amber #d97706 (4.62:1 contrast against white)'
-      );
-      assert.ok(
-        pacTsx.includes('#059669'),
-        'Contract Review must use high-contrast Emerald #059669 (4.58:1 contrast against white)'
-      );
-      assert.ok(
-        pacTsx.includes('#0284c7'),
-        'Discovery must use Deep Ocean Sky #0284c7 (non-generic blue)'
-      );
+    test('enforces WCAG AA compliant high-contrast color tokens and strictly zero generic blue (#2563eb)', () => {
+      // Must not contain #2563eb anywhere
       assert.strictEqual(
         pacTsx.includes('#2563eb'),
         false,
-        'PipelineAllocationCard must strictly prohibit generic AI blue #2563eb (Rule R-01)'
+        'PipelineAllocationCard TSX must NEVER contain generic blue #2563eb'
+      );
+      assert.strictEqual(
+        pacScss.includes('#2563eb'),
+        false,
+        'PipelineAllocationCard SCSS must NEVER contain generic blue #2563eb'
+      );
+      assert.strictEqual(
+        rdcTsx.includes('#2563eb'),
+        false,
+        'RevenueDynamicsCard TSX must NEVER contain generic blue #2563eb'
+      );
+      assert.strictEqual(
+        rdcScss.includes('#2563eb'),
+        false,
+        'RevenueDynamicsCard SCSS must NEVER contain generic blue #2563eb'
+      );
+
+      // Verify Deep Ocean Sky #0284c7 (4.54:1 WCAG AA) is declared
+      assert.ok(
+        pacTsx.includes('#0284c7'),
+        'Discovery stage must use high-contrast Deep Ocean Sky #0284c7'
+      );
+      assert.ok(
+        pacTsx.includes('#d97706'),
+        'Negotiation stage must use high-contrast Executive Amber #d97706'
+      );
+      assert.ok(
+        pacTsx.includes('#059669'),
+        'Review stage must use high-contrast Mint Emerald #059669'
       );
     });
 
-    test('integrates bi-directional interactive hover illumination', () => {
+    test('integrates bi-directional interactive hover illumination and keyboard accessibility', () => {
       assert.ok(
         pacTsx.includes('hoveredStageId'),
-        'Component must maintain hoveredStageId state'
+        'Must track hoveredStageId for synchronized illumination'
       );
       assert.ok(
-        pacScss.includes('.segmentActive') && pacScss.includes('.segmentDimmed'),
-        'SCSS must provide .segmentActive and .segmentDimmed classes for progressive hover states'
+        pacTsx.includes('tabIndex={0}'),
+        'Stage cards must support keyboard focus'
       );
       assert.ok(
-        pacScss.includes('.stageRowActive'),
-        'SCSS must provide .stageRowActive class for synchronized row highlight'
-      );
-    });
-
-    test('eliminates artificial vertical stretching dead space', () => {
-      assert.ok(
-        pacScss.includes('justify-content: flex-start'),
-        'Card container must use flex-start with consistent gap to eliminate 50px vertical dead space'
+        pacTsx.includes('role="listitem"'),
+        'Stage cards must announce as listitems for accessibility'
       );
     });
   });

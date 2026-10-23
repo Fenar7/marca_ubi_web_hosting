@@ -2,27 +2,20 @@
 
 /**
  * @file RevenueDynamicsCard.tsx
- * @description Revenue Dynamics & Commercial Velocity Card benchmarked against MedTrackr Report & Analytics.
- *              Integrates dual-state grouped vertical bars (Quota vs Actual Cash) and a Fritsch-Carlson
- *              monotone cubic Bézier spline curve in Marca Orange (#ff6100) ensuring C¹ continuity and zero overshoot.
- *              Interactive SVG scrub ray reveals a dark obsidian glassmorphism inspection tooltip.
+ * @description Revenue Dynamics & Commercial Velocity Card benchmarked against Stripe Scorecards and Ramp Obsidian HUD.
+ *              Integrates an Executive Telemetry HUD ribbon (Cumulative Realized Cash, Target Quota, Attainment Rate,
+ *              Net Period Variance), dual-state vertical bars with subtle architectural gradients, a Fritsch-Carlson
+ *              monotone cubic Bézier spline curve in Marca Orange (#ff6100) ensuring C¹ continuity and zero overshoot,
+ *              and an interactive obsidian glassmorphic inspection HUD with collision boundary clamping.
  *              Guarantees defensive inline SVG presentation fallbacks to eliminate W3C initial default black fills.
  * @module admin/components/Dashboard/RevenueDynamicsCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useRef, useId, useEffect } from 'react';
+import React, { useState, useRef, useId, useEffect, useMemo } from 'react';
+import type { MonthlyRevenueMetric } from './types';
+export type { MonthlyRevenueMetric } from './types';
 import styles from './RevenueDynamicsCard.module.scss';
-
-export interface MonthlyRevenueMetric {
-  month: string;
-  fullPeriod: string;
-  quotaVal: number;       // In Lakhs (e.g. 12.0 = ₹12 Lakhs)
-  cashVal: number;        // In Lakhs (e.g. 13.5 = ₹13.5 Lakhs)
-  quotaFormatted: string;
-  cashFormatted: string;
-  attainmentPct: number;
-}
 
 export interface RevenueDynamicsCardProps {
   /** Dynamic time-series milestone points matching active timeframe */
@@ -170,38 +163,57 @@ function generateMonotoneBezierPath(points: Point2D[]): string {
   return path;
 }
 
+function formatLakhsCurrency(valInLakhs: number): string {
+  const rupees = Math.round(valInLakhs * 100000);
+  return `₹${rupees.toLocaleString('en-IN')}`;
+}
+
 export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
-  dataPoints: dynamicData,
-  timeframe,
+  dataPoints = SIX_MONTH_DATA,
+  timeframe = 'Last 30 Days',
   selectedPeriod: initialPeriod = '6 Months',
   onPeriodChange,
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>(initialPeriod);
   const [isPeriodMenuOpen, setIsPeriodMenuOpen] = useState<boolean>(false);
-  const [isScrubbing, setIsScrubbing] = useState<boolean>(false);
   const [showQuota, setShowQuota] = useState<boolean>(true);
   const [showCash, setShowCash] = useState<boolean>(true);
   const [showCurve, setShowCurve] = useState<boolean>(true);
+  const [activeIdx, setActiveIdx] = useState<number>(dataPoints.length - 1);
+  const [isScrubbing, setIsScrubbing] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const periodDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Sanitize React 19 useId() tokens: Strip colons to form valid XML NCName identifiers
+  // XML NCName sanitized identifier for React 19 gradient paint servers
   const rawId = useId();
-  const safeId = rawId.replace(/[^a-zA-Z0-9_-]/g, '');
-  const gradOrangeId = `rdc-grad-${safeId}`;
+  const safeId = useMemo(() => rawId.replace(/[^a-zA-Z0-9_-]/g, ''), [rawId]);
+  const gradQuotaId = `rdc-grad-quota-${safeId}`;
+  const gradCashId = `rdc-grad-cash-${safeId}`;
+  const gradCashActiveId = `rdc-grad-cash-active-${safeId}`;
+  const gradOrangeId = `rdc-grad-orange-${safeId}`;
   const glowFilterId = `rdc-glow-${safeId}`;
 
-  // Consume dynamic data points if provided; otherwise fallback to SIX_MONTH_DATA
-  const dataPoints = dynamicData && dynamicData.length > 0 ? dynamicData : SIX_MONTH_DATA;
-  const [activeIdx, setActiveIdx] = useState<number>(dataPoints.length - 1);
-
-  // Synchronize active inspection node whenever time-series points update
+  // Keep active index clamped within bounds when dataset length updates
   useEffect(() => {
     setActiveIdx(dataPoints.length - 1);
   }, [dataPoints.length]);
 
-  // SVG Geometry Dimensions
+  // Executive Telemetry Ribbon Calculations
+  const { totalCashCollected, totalTargetQuota, cumulativeAttainment, netPeriodVariance } = useMemo(() => {
+    const totalCash = dataPoints.reduce((acc, d) => acc + d.cashVal, 0);
+    const totalQuota = dataPoints.reduce((acc, d) => acc + d.quotaVal, 0);
+    const attainment = totalQuota > 0 ? (totalCash / totalQuota) * 100 : 100;
+    const variance = totalCash - totalQuota;
+    return {
+      totalCashCollected: totalCash,
+      totalTargetQuota: totalQuota,
+      cumulativeAttainment: attainment,
+      netPeriodVariance: variance,
+    };
+  }, [dataPoints]);
+
+  // Cartesian SVG ViewBox geometry dimensions
   const svgWidth = 720;
   const svgHeight = 280;
   const chartLeft = 60;
@@ -210,7 +222,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   const chartBottom = 230;
   const chartHeight = chartBottom - chartTop;
 
-  // Dynamically compute max ceiling based on largest metric with 25% headroom
+  // Dynamic max ceiling calculation with 25% headroom
   const calculatedMax = Math.max(
     ...dataPoints.map((d) => Math.max(d.quotaVal, d.cashVal)),
     5
@@ -220,7 +232,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   const totalPoints = dataPoints.length;
   const stepX = (chartRight - chartLeft) / totalPoints;
 
-  // Compute cartesian coordinates for bars and curve nodes
+  // Cartesian coordinates for bars and spline curve nodes
   const monthlySlots = dataPoints.map((item, i) => {
     const centerX = chartLeft + i * stepX + stepX / 2;
     const quotaY = chartBottom - (item.quotaVal / maxMetricVal) * chartHeight;
@@ -234,7 +246,6 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
     };
   });
 
-  // Calculate curve points targeting the Actual Cash coordinates
   const curvePoints: Point2D[] = monthlySlots.map((s) => ({
     x: s.centerX,
     y: s.cashY,
@@ -245,16 +256,15 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
     ? `${bezierCurvePath} L ${curvePoints[curvePoints.length - 1].x.toFixed(2)} ${chartBottom} L ${curvePoints[0].x.toFixed(2)} ${chartBottom} Z`
     : '';
 
-  // Active scrub point
   const safeIdx = Math.max(0, Math.min(activeIdx, dataPoints.length - 1));
   const currentSlot = monthlySlots[safeIdx] || monthlySlots[monthlySlots.length - 1];
   const currentMetric = dataPoints[safeIdx] || dataPoints[dataPoints.length - 1];
 
-  // Tooltip dynamic left percentage clamped within card boundaries
+  // Tooltip horizontal percentage clamped between 10% and 90%
   const rawLeftPercent = currentSlot ? (currentSlot.centerX / svgWidth) * 100 : 50;
-  const clampedTooltipLeft = Math.max(12, Math.min(88, rawLeftPercent));
+  const clampedTooltipLeft = Math.max(10, Math.min(90, rawLeftPercent));
 
-  // Dismiss period dropdown on external mousedown
+  // Dismiss period dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -272,7 +282,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
     };
   }, [isPeriodMenuOpen]);
 
-  // Pointer scrubbing handler across the SVG horizontal axis
+  // Pointer scrubbing handler across horizontal axis
   const handlePointerScrub = (clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -294,29 +304,34 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
     setIsScrubbing(true);
   };
 
-  // Generate 6 horizontal grid levels
-  const gridFractions = [1, 0.8, 0.6, 0.4, 0.2, 0];
-  const gridLines = gridFractions.map((frac) => {
-    const val = Math.round(maxMetricVal * frac * 10) / 10;
+  // Y-Axis reference grid line intervals
+  const gridSteps = 5;
+  const gridLines = Array.from({ length: gridSteps + 1 }).map((_, idx) => {
+    const val = (maxMetricVal / gridSteps) * (gridSteps - idx);
+    const yPos = chartTop + (idx * chartHeight) / gridSteps;
     return {
-      label: val === 0 ? '₹0' : `₹${val}L`,
-      y: chartBottom - frac * chartHeight,
+      val,
+      y: yPos,
+      label: val === 0 ? '₹0' : `₹${val.toFixed(1).replace(/\.0$/, '')}L`,
     };
   });
 
+  const slotVarianceVal = currentMetric ? currentMetric.cashVal - currentMetric.quotaVal : 0;
+  const isPositiveSlotVariance = slotVarianceVal >= 0;
+
   return (
-    <div className={styles.chartCard} aria-label="Revenue Dynamics and Forecast Card">
-      {/* Header */}
+    <div className={styles.chartCard}>
+      {/* Header Bar */}
       <div className={styles.chartHeader}>
         <div className={styles.titleCluster}>
           <h2 className={styles.title}>Revenue Dynamics & Forecast</h2>
           <p className={styles.subtitle}>
-            Quota baseline vs actual cash collection & growth velocity{timeframe ? ` (${timeframe})` : ''}.
+            Quota baseline vs actual cash collection & growth velocity ({timeframe}).
           </p>
         </div>
 
         <div className={styles.headerControls}>
-          {/* Interactive Legend */}
+          {/* Interactive Legend Switches */}
           <div className={styles.legendCluster} role="group" aria-label="Toggle chart series">
             <div
               className={`${styles.legendItem} ${!showQuota ? styles.inactive : ''}`}
@@ -409,6 +424,36 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
         </div>
       </div>
 
+      {/* Executive Header HUD Ribbon (Stripe Scorecards Benchmark) */}
+      <div className={styles.hudRibbon} aria-label="Executive revenue performance metrics">
+        <div className={styles.hudMetricItem}>
+          <span className={styles.hudMetricLabel}>Cash Realized</span>
+          <span className={styles.hudMetricValue}>{formatLakhsCurrency(totalCashCollected)}</span>
+        </div>
+        <div className={styles.hudMetricItem}>
+          <span className={styles.hudMetricLabel}>Target Quota</span>
+          <span className={styles.hudMetricSubValue}>{formatLakhsCurrency(totalTargetQuota)}</span>
+        </div>
+        <div className={styles.hudMetricItem}>
+          <span className={styles.hudMetricLabel}>Attainment Rate</span>
+          <span className={`${styles.hudAttainmentBadge} ${cumulativeAttainment >= 100 ? styles.positiveAttainment : styles.negativeAttainment}`}>
+            <span className={styles.statusDot} />
+            {cumulativeAttainment.toFixed(1)}% Attained
+          </span>
+        </div>
+        <div className={styles.hudMetricItem}>
+          <span className={styles.hudMetricLabel}>Net Variance</span>
+          <div className={styles.hudVarianceCluster}>
+            <span className={`${styles.hudVarianceToken} ${netPeriodVariance >= 0 ? styles.positiveVariance : styles.negativeVariance}`}>
+              {netPeriodVariance >= 0 ? `+${formatLakhsCurrency(netPeriodVariance)}` : `-${formatLakhsCurrency(Math.abs(netPeriodVariance))}`}
+            </span>
+            <span className={`${styles.hudVarianceSubtitle} ${netPeriodVariance >= 0 ? styles.positiveSubtitle : styles.negativeSubtitle}`}>
+              {netPeriodVariance >= 0 ? 'Over Quota' : 'Under Quota'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* SVG Canvas Area */}
       <div
         className={styles.chartCanvasContainer}
@@ -424,14 +469,32 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
           aria-hidden="true"
         >
           <defs>
+            {/* Quota Ghost Bar Gradient */}
+            <linearGradient id={gradQuotaId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#f1f5f9" stopOpacity="0.5" />
+            </linearGradient>
+
+            {/* Collected Cash Pillar Gradient (Midnight Obsidian) */}
+            <linearGradient id={gradCashId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1e293b" stopOpacity="1" />
+              <stop offset="100%" stopColor="#0f172a" stopOpacity="1" />
+            </linearGradient>
+
+            {/* Active Hover Cash Pillar Gradient (Marca Orange Glow) */}
+            <linearGradient id={gradCashActiveId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ff6100" stopOpacity="1" />
+              <stop offset="100%" stopColor="#e05500" stopOpacity="1" />
+            </linearGradient>
+
             {/* Specular Glow Filter for Marca Orange Curve */}
             <filter id={glowFilterId} x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" floodColor="#ff6100" floodOpacity="0.38" />
+              <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" floodColor="#ff6100" floodOpacity="0.42" />
             </filter>
 
             {/* Gradient under Curve */}
             <linearGradient id={gradOrangeId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff6100" stopOpacity="0.14" />
+              <stop offset="0%" stopColor="#ff6100" stopOpacity="0.16" />
               <stop offset="90%" stopColor="#ff6100" stopOpacity="0.0" />
             </linearGradient>
           </defs>
@@ -467,7 +530,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
 
             return (
               <g key={`bars-${i}`} className={isHovered ? styles.barGroupActive : styles.barGroup}>
-                {/* Quota Bar (Muted Cool Lavender Slate #e2e8f0) */}
+                {/* Quota Bar (Muted Cool Lavender Slate #e2e8f0 with subtle hairline cap) */}
                 {showQuota && (
                   <rect
                     x={quotaBarX}
@@ -475,12 +538,14 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                     width={barWidth}
                     height={Math.max(2, slot.quotaHeight)}
                     rx={3}
-                    fill="#e2e8f0"
+                    fill={`url(#${gradQuotaId})`}
+                    stroke="#cbd5e1"
+                    strokeWidth={0.5}
                     className={styles.barQuota}
                   />
                 )}
 
-                {/* Actual Cash Bar (Crisp Slate Charcoal #0f172a) */}
+                {/* Actual Cash Bar (Crisp Slate Charcoal #0f172a, illuminates on hover) */}
                 {showCash && (
                   <rect
                     x={cashBarX}
@@ -488,7 +553,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                     width={barWidth}
                     height={Math.max(2, slot.cashHeight)}
                     rx={3}
-                    fill="#0f172a"
+                    fill={isHovered ? `url(#${gradCashActiveId})` : `url(#${gradCashId})`}
                     className={styles.barCash}
                   />
                 )}
@@ -500,13 +565,13 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                   textAnchor="middle"
                   className={`${styles.xAxisLabel} ${isHovered ? styles.activeLabel : ''}`}
                 >
-                  {dataPoints[i].month}
+                  {dataPoints[i]?.month}
                 </text>
               </g>
             );
           })}
 
-          {/* Area Fill Under Spline Curve with Defensive presentation attribute */}
+          {/* Area Wash under Cubic Bézier Spline */}
           {showCurve && areaPath && (
             <path
               d={areaPath}
@@ -516,7 +581,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
             />
           )}
 
-          {/* Monotone Spline Curve Line with Strict Inline fill="none" and stroke="#ff6100" */}
+          {/* Fritsch-Carlson Monotone Cubic Bézier Spline Curve with Defensive Inline Stroke */}
           {showCurve && bezierCurvePath && (
             <path
               d={bezierCurvePath}
@@ -525,14 +590,14 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
               strokeWidth={2.5}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={styles.splineLine}
               filter={`url(#${glowFilterId})`}
+              className={styles.splineLine}
             />
           )}
 
-          {/* Interactive Scrub Ray & Node with Defensive Inline Presentation Attributes */}
-          {currentSlot && showCurve && (
-            <g className={styles.scrubIndicator}>
+          {/* Interactive Scrub Ray & Target Node */}
+          {currentSlot && (
+            <g className={styles.scrubGroup}>
               <line
                 x1={currentSlot.centerX}
                 y1={chartTop}
@@ -546,7 +611,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
               <circle
                 cx={currentSlot.centerX}
                 cy={currentSlot.cashY}
-                r={5.5}
+                r={6}
                 fill="#ffffff"
                 stroke="#ff6100"
                 strokeWidth={2.5}
@@ -563,14 +628,21 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
           )}
         </svg>
 
-        {/* Hover / Scrub Inspection Tooltip (Positioned Absolutes in Obsidian Glassmorphism) */}
+        {/* Hover / Scrub Inspection Tooltip (Positioned in Obsidian Glassmorphism) */}
         {currentMetric && currentSlot && (
           <div
             className={styles.obsidianTooltip}
             style={{
               left: `${clampedTooltipLeft}%`,
-              transform: clampedTooltipLeft > 70 ? 'translateX(-100%)' : clampedTooltipLeft < 30 ? 'translateX(0)' : 'translateX(-50%)',
+              transform:
+                clampedTooltipLeft > 75
+                  ? 'translateX(-100%)'
+                  : clampedTooltipLeft < 25
+                  ? 'translateX(0)'
+                  : 'translateX(-50%)',
             }}
+            role="tooltip"
+            aria-live="polite"
           >
             <div className={styles.tooltipHeader}>
               <span className={styles.tooltipMonth}>{currentMetric.fullPeriod}</span>
@@ -595,6 +667,18 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                   <span className={styles.dotCash} /> Actual Cash:
                 </span>
                 <span className={styles.tooltipValue}>{currentMetric.cashFormatted}</span>
+              </div>
+              <div className={styles.tooltipVarianceRow}>
+                <span className={styles.tooltipVarianceLabel}>Variance:</span>
+                <span
+                  className={`${styles.tooltipVarianceVal} ${
+                    isPositiveSlotVariance ? styles.variancePositive : styles.varianceNegative
+                  }`}
+                >
+                  {isPositiveSlotVariance ? '+' : ''}
+                  {formatLakhsCurrency(slotVarianceVal)} ({isPositiveSlotVariance ? '+' : ''}
+                  {(currentMetric.attainmentPct - 100).toFixed(1)}%)
+                </span>
               </div>
             </div>
           </div>

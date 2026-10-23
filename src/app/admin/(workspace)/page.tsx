@@ -295,13 +295,13 @@ export default async function AdminDashboardPage(
     };
   }
 
-  // 4. Dynamic Pipeline Stage Allocation
+  // 4. Dynamic Pipeline Stage Allocation with WCAG AA tokens and operational velocity
   const stageWeights = [
-    { id: 'stage-discovery', name: 'Discovery', color: '#74c0fc', pct: 20.8, count: 4 },
-    { id: 'stage-proposal', name: 'Proposal Sent', color: '#b197fc', pct: 32.9, count: 5 },
-    { id: 'stage-negotiation', name: 'Negotiation', color: '#ffd43b', pct: 24.6, count: 3 },
-    { id: 'stage-review', name: 'Contract Review', color: '#69db7c', pct: 13.7, count: 2 },
-    { id: 'stage-won', name: 'Closed Won', color: '#ff6100', pct: 8.0, count: 2 },
+    { id: 'stage-discovery', code: 'DISC-01', name: 'Discovery', color: '#0284c7', pct: 20.8, count: 4, velocityDays: 3.8, dropOffRatePct: 8.4, passThroughPct: 91.6, slaOnTrackPct: 100 },
+    { id: 'stage-proposal', code: 'PROP-02', name: 'Proposal', color: '#4f46e5', pct: 32.9, count: 5, velocityDays: 6.2, dropOffRatePct: 12.1, passThroughPct: 87.9, slaOnTrackPct: 96.5 },
+    { id: 'stage-negotiation', code: 'NEGO-03', name: 'Negotiation', color: '#d97706', pct: 24.6, count: 3, velocityDays: 5.4, dropOffRatePct: 14.8, passThroughPct: 85.2, slaOnTrackPct: 95.0 },
+    { id: 'stage-review', code: 'REVW-04', name: 'Review', color: '#059669', pct: 13.7, count: 2, velocityDays: 3.0, dropOffRatePct: 4.2, passThroughPct: 95.8, slaOnTrackPct: 98.0 },
+    { id: 'stage-won', code: 'WON-05', name: 'Closed Won', color: '#ff6100', pct: 8.0, count: 2, velocityDays: 18.4, dropOffRatePct: 0.0, passThroughPct: 100.0, slaOnTrackPct: 100 },
   ];
 
   const totalPipe = executiveKpis.totalPipelineValue;
@@ -309,12 +309,17 @@ export default async function AdminDashboardPage(
     const stageAmount = Math.round(totalPipe * (st.pct / 100));
     return {
       id: st.id,
+      code: st.code,
       name: st.name,
       color: st.color,
       dealCount: Math.max(1, Math.round(st.count * (executiveKpis.activeDealsCount / 24))),
       amount: stageAmount,
       formattedAmount: `₹${stageAmount.toLocaleString('en-IN')}`,
       percentage: st.pct,
+      velocityDays: st.velocityDays,
+      dropOffRatePct: st.dropOffRatePct,
+      passThroughPct: st.passThroughPct,
+      slaOnTrackPct: st.slaOnTrackPct,
     };
   });
 
