@@ -181,12 +181,13 @@ export function AdminBreadcrumbs(): React.ReactElement {
 
       const isUuid = UUID_REGEX.test(segment);
       const isLeadCode = LEAD_CODE_REGEX.test(segment);
+      const prevSegment = idx > 0 ? routeSegments[idx - 1] : '';
 
       let segmentNode: React.ReactNode;
       if (dynamicOverride) {
         segmentNode = <span className={styles.monoSegmentChip}>{dynamicOverride}</span>;
       } else if (isUuid) {
-        segmentNode = 'Client Dossier';
+        segmentNode = (prevSegment === 'team' || prevSegment === 'users') ? 'Personnel Dossier' : 'Client Dossier';
       } else if (isLeadCode) {
         segmentNode = <span className={styles.monoSegmentChip}>{segment.toUpperCase()}</span>;
       } else {

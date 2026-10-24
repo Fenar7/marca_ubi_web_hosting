@@ -11,6 +11,7 @@
  */
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import type { TeamMemberRosterItem, CrmUserRole } from '@/types/crm';
 import { SALES_REP_CAPACITY_LIMIT } from '@/app/lib/team-schemas';
@@ -236,25 +237,13 @@ export function PersonnelCard({
           </button>
         )}
 
-        {isAdmin && member.role !== 'sales_executive' && canEditAvatar ? (
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={() => onOpenAvatarModal(member)}
-            title="Update user profile photograph"
-          >
-            {member.avatar_url ? 'Change Photo' : 'Set Photo'}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={() => onOpenPermissionsModal(member)}
-            title="View full personnel dossier"
-          >
-            View Profile
-          </button>
-        )}
+        <Link
+          href={`/admin/team/${member.id}`}
+          className={styles.secondaryButton}
+          title="View full personnel profile workspace"
+        >
+          View Profile
+        </Link>
       </div>
     </div>
   );
