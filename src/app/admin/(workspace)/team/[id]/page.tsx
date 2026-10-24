@@ -19,25 +19,32 @@ interface PageProps {
 }
 
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
-  const { id } = await props.params;
+  try {
+    const { id } = await props.params;
 
-  if (!id || !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)) {
+    if (!id || !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)) {
+      return {
+        title: 'Personnel Profile | Marca Ubi Administration',
+      };
+    }
+
+    const res = await getPersonnelProfile(id);
+    if (!res.success || !res.data) {
+      return {
+        title: 'Personnel Not Found | Marca Ubi Administration',
+      };
+    }
+
+    return {
+      title: `${res.data.profile.full_name} — Personnel Dossier | Marca Ubi`,
+      description: `Performance metrics, commercial velocity scorecards, and administrative security controls for ${res.data.profile.full_name}.`,
+    };
+  } catch (err: unknown) {
+    console.error('[METADATA_FALLBACK] Personnel metadata error:', err instanceof Error ? err.message : err);
     return {
       title: 'Personnel Profile | Marca Ubi Administration',
     };
   }
-
-  const res = await getPersonnelProfile(id);
-  if (!res.success || !res.data) {
-    return {
-      title: 'Personnel Not Found | Marca Ubi Administration',
-    };
-  }
-
-  return {
-    title: `${res.data.profile.full_name} — Personnel Dossier | Marca Ubi`,
-    description: `Performance metrics, commercial velocity scorecards, and administrative security controls for ${res.data.profile.full_name}.`,
-  };
 }
 
 export default async function PersonnelProfilePage(props: PageProps): Promise<React.ReactElement> {
@@ -60,6 +67,12 @@ export default async function PersonnelProfilePage(props: PageProps): Promise<Re
   const res = await getPersonnelProfile(id);
 
   if (!res.success || !res.data) {
+    // If access was rejected due to authorization or inactive status, redirect to admin home with security alert
+    if (res.error?.includes('Access Denied') || res.error?.includes('Unauthorized')) {
+      redirect('/admin?error=unauthorized_role_access');
+    }
+
+    // Target record does not exist in the agency directory
     notFound();
   }
 

@@ -274,4 +274,64 @@ describe('Dedicated Personnel Profile & Performance Workspace (/admin/team/[id])
       );
     });
   });
+
+  describe('5. App Router 404, Edge Proxy & Client RLS Remediation Invariants', () => {
+    it('verifies elevated not-found.tsx exists at src/app/admin/(workspace)/team/not-found.tsx', () => {
+      const elevatedNotFound = path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/not-found.tsx');
+      const elevatedNotFoundStyles = path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/not-found.module.scss');
+      assert.ok(fs.existsSync(elevatedNotFound), 'Elevated not-found.tsx must exist at team route segment level');
+      assert.ok(fs.existsSync(elevatedNotFoundStyles), 'Elevated not-found.module.scss must exist');
+    });
+
+    it('verifies getPersonnelProfile consumes standard session client under RLS and avoids unhandled exceptions', () => {
+      const teamActionsPath = path.resolve(process.cwd(), 'src/app/actions/team.ts');
+      const teamActionsContent = fs.readFileSync(teamActionsPath, 'utf8');
+      
+      const getProfileStart = teamActionsContent.indexOf('export async function getPersonnelProfile(');
+      const getProfileEnd = teamActionsContent.indexOf('export async function getPersonnelDeals(');
+      const profileCode = teamActionsContent.slice(getProfileStart, getProfileEnd);
+
+      assert.ok(!profileCode.includes('getAdminClient()'), 'getPersonnelProfile MUST NOT invoke getAdminClient()');
+      assert.ok(profileCode.includes('try {'), 'getPersonnelProfile must wrap operations in top-level try/catch');
+      assert.ok(profileCode.includes('catch (err: unknown)'), 'getPersonnelProfile must catch unknown errors safely');
+    });
+
+    it('verifies getPersonnelDeals consumes standard session client under RLS', () => {
+      const teamActionsPath = path.resolve(process.cwd(), 'src/app/actions/team.ts');
+      const teamActionsContent = fs.readFileSync(teamActionsPath, 'utf8');
+
+      const getDealsStart = teamActionsContent.indexOf('export async function getPersonnelDeals(');
+      const getDealsEnd = teamActionsContent.indexOf('export async function adminResetPersonnelPassword(');
+      const dealsCode = teamActionsContent.slice(getDealsStart, getDealsEnd);
+
+      assert.ok(!dealsCode.includes('getAdminClient()'), 'getPersonnelDeals MUST NOT invoke getAdminClient()');
+      assert.ok(dealsCode.includes('try {'), 'getPersonnelDeals must wrap queries in try/catch');
+    });
+
+    it('verifies proxy.ts permits dynamic /admin/team/[uuid] paths to pass through to Server Component', () => {
+      const proxyPath = path.resolve(process.cwd(), 'src/proxy.ts');
+      const proxyContent = fs.readFileSync(proxyPath, 'utf8');
+      assert.ok(
+        proxyContent.includes('isPersonnelDossierRoute'),
+        'proxy.ts must define isPersonnelDossierRoute check'
+      );
+      assert.ok(
+        proxyContent.includes('0-9a-fA-F]{8}-[0-9a-fA-F]{4}'),
+        'proxy.ts must validate canonical RFC4122 UUID route format'
+      );
+    });
+
+    it('verifies page.tsx differentiates 403 access denial from 404 not found', () => {
+      const pagePath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/[id]/page.tsx');
+      const pageContent = fs.readFileSync(pagePath, 'utf8');
+      assert.ok(
+        pageContent.includes("res.error?.includes('Access Denied')"),
+        'page.tsx must inspect Access Denied response'
+      );
+      assert.ok(
+        pageContent.includes("redirect('/admin?error=unauthorized_role_access')"),
+        'page.tsx must redirect unauthorized attempts with error parameter'
+      );
+    });
+  });
 });
