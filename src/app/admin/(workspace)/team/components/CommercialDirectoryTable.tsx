@@ -11,12 +11,13 @@
  */
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { TeamMemberRosterItem, CrmUserRole, ProfileAccountStatus, Profile, CrmTabKey } from '@/types/crm';
 import { ROLE_DEFAULT_TABS } from '@/types/crm';
 import { updateTeamUserRole, setTeamUserStatus } from '@/app/actions/team';
-import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
+import { formatDealValuation, formatNumber, getInitials } from '@/app/lib/team-utils';
 import { SuspendUserModal } from './SuspendUserModal';
 import { LeadReassignmentWizardModal } from './LeadReassignmentWizardModal';
 import { EditUserPermissionsModal } from './EditUserPermissionsModal';
@@ -337,7 +338,18 @@ export function CommercialDirectoryTable({
                     <td className={styles.td}>
                       <div className={styles.identityCell}>
                         <div className={styles.avatar}>
-                          {getInitials(member.full_name)}
+                          {member.avatar_url ? (
+                            <Image
+                              src={member.avatar_url}
+                              alt={member.full_name}
+                              width={38}
+                              height={38}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                              unoptimized
+                            />
+                          ) : (
+                            getInitials(member.full_name)
+                          )}
                         </div>
                         <div className={styles.identityInfo}>
                           <span className={styles.fullName}>
@@ -455,7 +467,7 @@ export function CommercialDirectoryTable({
                           }}
                           title={`View ${member.active_deals_count} active deals assigned to ${member.full_name}`}
                         >
-                          <span className={styles.dealsCount}>{member.active_deals_count}</span>
+                          <span className={styles.dealsCount}>{formatNumber(member.active_deals_count)}</span>
                           <span>deals</span>
                           {member.total_deal_value > 0 && (
                             <span className={styles.dealsValuation}>

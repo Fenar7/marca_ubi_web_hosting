@@ -107,6 +107,7 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
         const content = fs.readFileSync(fullPath, 'utf8');
         const hasLegacyOrangeHex = /ff6100/i.test(content);
         const hasLegacyOrangeRgb = /255\s*,\s*97\s*,\s*0/i.test(content);
+        const hasCtaOrangeVariable = /\$cta-orange/i.test(content);
         assert.equal(
           hasLegacyOrangeHex,
           false,
@@ -270,6 +271,84 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fingestion\')'));
       assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
       assert.ok(content.includes('hasIngestionAccess'));
+    });
+  });
+
+  describe('7. Total Eradication of Website Orange & Accordion Lemon Standards in Team Workspace', () => {
+    const teamComponents = [
+      'src/app/admin/(workspace)/team/team.module.scss',
+      'src/app/admin/(workspace)/team/components/CategoryUnderlineTabs.module.scss',
+      'src/app/admin/(workspace)/team/components/PersonnelCard.module.scss',
+      'src/app/admin/(workspace)/team/components/PersonnelCard.tsx',
+      'src/app/admin/(workspace)/team/components/FilterControlToolbar.module.scss',
+      'src/app/admin/(workspace)/team/components/PersonnelActionMenu.module.scss',
+      'src/app/admin/(workspace)/team/components/EditUserPermissionsModal.module.scss',
+      'src/app/admin/(workspace)/team/components/EditUserPermissionsModal.tsx',
+      'src/app/admin/(workspace)/team/components/AvatarUploadModal.module.scss',
+    ];
+
+    for (const relPath of teamComponents) {
+      it(`verifies 0 occurrences of website orange tokens (#ff6100, $cta-orange, #e05500, #c2410c, #ea580c) in ${relPath}`, () => {
+        const fullPath = path.resolve(process.cwd(), relPath);
+        const fileContent = fs.readFileSync(fullPath, 'utf8');
+        const hasOrange = /ff6100|cta-orange|e05500|c2410c|ea580c/i.test(fileContent);
+        const hasOrangeRgb = /255\s*,\s*97\s*,\s*0/i.test(fileContent);
+        assert.equal(hasOrange, false, `Found website orange token in ${relPath}`);
+        assert.equal(hasOrangeRgb, false, `Found orange rgba in ${relPath}`);
+      });
+    }
+
+    it('verifies primaryActionButton in team.module.scss uses Signature Accordion Lemon tokens', () => {
+      const fileContent = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/team.module.scss'),
+        'utf8'
+      );
+      assert.ok(fileContent.includes('--admin-accent-lemon'));
+      assert.ok(fileContent.includes('--admin-accent-lemon-ink'));
+    });
+
+    it('verifies submitButton in EditUserPermissionsModal.module.scss uses Signature Accordion Lemon tokens', () => {
+      const fileContent = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/EditUserPermissionsModal.module.scss'),
+        'utf8'
+      );
+      assert.ok(fileContent.includes('--admin-accent-lemon'));
+      assert.ok(fileContent.includes('--admin-accent-lemon-ink'));
+    });
+
+    it('verifies PersonnelCard.tsx healthy capacity (<70%) uses emerald green, not orange', () => {
+      const fileContent = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/PersonnelCard.tsx'),
+        'utf8'
+      );
+      assert.ok(fileContent.includes('--admin-status-emerald-dot') || fileContent.includes('#10b981'));
+      assert.strictEqual(fileContent.includes('#ff6100'), false);
+    });
+
+    it('verifies PersonnelCard.module.scss enforces 44px minimum touch targets on card buttons', () => {
+      const fileContent = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/PersonnelCard.module.scss'),
+        'utf8'
+      );
+      assert.ok(fileContent.includes('min-height: 44px;'));
+    });
+
+    it('verifies 100% clean Sass compilation across all 7 Team SCSS modules with zero syntax errors', () => {
+      const sass = require('sass');
+      const scssFiles = [
+        'src/app/admin/(workspace)/team/team.module.scss',
+        'src/app/admin/(workspace)/team/components/CategoryUnderlineTabs.module.scss',
+        'src/app/admin/(workspace)/team/components/PersonnelCard.module.scss',
+        'src/app/admin/(workspace)/team/components/FilterControlToolbar.module.scss',
+        'src/app/admin/(workspace)/team/components/PersonnelActionMenu.module.scss',
+        'src/app/admin/(workspace)/team/components/EditUserPermissionsModal.module.scss',
+        'src/app/admin/(workspace)/team/components/AvatarUploadModal.module.scss',
+      ];
+      for (const relPath of scssFiles) {
+        const fullPath = path.resolve(process.cwd(), relPath);
+        const compiled = sass.compile(fullPath);
+        assert.ok(compiled.css.length > 0, `Compiled CSS for ${relPath} should not be empty`);
+      }
     });
   });
 });

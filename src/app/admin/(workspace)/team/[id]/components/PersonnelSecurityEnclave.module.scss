@@ -1,0 +1,256 @@
+/**
+ * @file PersonnelSecurityEnclave.module.scss
+ * @description Administrative security enclave styles for credential management and session revocation.
+ *              Enforces zero generic blue, 44px minimum touch targets, and clear alert styling.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.enclaveCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  svg {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.securityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.securityItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.itemLabel {
+  color: var(--admin-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.itemValue {
+  font-weight: 600;
+  color: var(--admin-text-primary, #0f172a);
+  font-variant-numeric: tabular-nums;
+
+  &.flagPending {
+    color: #92400e;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+  }
+
+  &.flagCleared {
+    color: #065f46;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+  }
+}
+
+.actionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.primaryActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  background: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: 8px;
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #e6f665;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.secondaryActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  background: #ffffff;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba(239, 68, 68, 0.6);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #cbd5e1;
+    color: #94a3b8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ef4444;
+  }
+}
+
+.alertBox {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+
+  &.success {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #065f46;
+  }
+
+  &.error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #991b1b;
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1.5rem;
+}
+
+.modalCard {
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 14px;
+  max-width: 440px;
+  width: 100%;
+  padding: 1.75rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.modalText {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.tempPasswordBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.copyBtn {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.modalCloseBtn {
+  height: 44px;
+  min-height: 44px;
+  background: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: 8px;
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background: #e6f665;
+  }
+}

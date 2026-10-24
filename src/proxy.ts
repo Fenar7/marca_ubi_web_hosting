@@ -176,9 +176,28 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     );
 
     if (matchingRoute && hasExplicitAuthClaims) {
+      // Administrators have universal access across all admin workspace routes
+      if (userRole === 'admin') {
+        return supabaseResponse;
+      }
+
+      // Personnel profile dossier (/admin/team/[uuid]):
+      // Allow dynamic personnel dossier routes to pass through to the Server Component,
+      // where strict row-level security and self-profile inspection (isSelf) are authoritatively evaluated.
+      const isPersonnelDossierRoute = /^\/admin\/team\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(pathname);
+      if (isPersonnelDossierRoute) {
+        return supabaseResponse;
+      }
+
+      // If user has no explicit role claim yet, allow pass-through to Server Component
+      // which verifies the authoritative PostgreSQL public.profiles record
+      if (!rawRole) {
+        return supabaseResponse;
+      }
+
       let isPermitted = false;
 
-      if (Array.isArray(userAllowedTabs)) {
+      if (Array.isArray(userAllowedTabs) && userAllowedTabs.length > 0) {
         isPermitted = userAllowedTabs.includes(matchingRoute.tabKey);
       } else {
         const defaultRoleTabs = ROLE_DEFAULT_TABS[userRole];

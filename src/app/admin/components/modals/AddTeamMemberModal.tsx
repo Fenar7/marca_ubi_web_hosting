@@ -229,6 +229,13 @@ export function AddTeamMemberModal({
           new CustomEvent('team-member-created', {
             detail: {
               id: result.data?.id,
+              credentials: {
+                fullName,
+                email,
+                role,
+                jobTitle,
+                allowedTabs,
+              },
               memberSummary: {
                 fullName,
                 email,

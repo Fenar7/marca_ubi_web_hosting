@@ -1,0 +1,256 @@
+/**
+ * @file ExecutiveMasthead.module.scss
+ * @description PrimeStay executive masthead styling with 72px avatar, Raycast badges, and luxury coordinates.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.mastheadCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+.avatarContainer {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.avatarWrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--admin-border-default, #e2e5ea);
+  background: #f1f5f9;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImage {
+  object-fit: cover;
+}
+
+.avatarInitials {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #334155;
+  font-family: var(--font-sans, sans-serif);
+}
+
+.cameraTriggerOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--admin-accent-lemon, #eefb87);
+  }
+}
+
+.onlineStatusDot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid var(--admin-card-bg, #ffffff);
+
+  &.active {
+    background: #10b981;
+  }
+
+  &.suspended {
+    background: #ef4444;
+  }
+}
+
+.identityMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+
+  @media (max-width: 640px) {
+    justify-content: center;
+  }
+}
+
+.fullName {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+  letter-spacing: -0.02em;
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+
+  &.roleAdmin {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #065f46;
+  }
+
+  &.roleManager {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+  }
+
+  &.roleRep {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #92400e;
+  }
+}
+
+.jobTitle {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.inviterNote {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.divider {
+  height: 1px;
+  background: var(--admin-border-default, #e2e5ea);
+  margin: 1.25rem 0;
+}
+
+.coordinatesGrid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.coordinateCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  background: #f8fafc;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  color: var(--admin-text-primary, #1e293b);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: #ffffff;
+    border-color: #94a3b8;
+    color: #0f172a;
+
+    svg {
+      color: #0f172a;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.whatsAppCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  background: rgba(37, 211, 102, 0.08);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  border-radius: 8px;
+  color: #0f5132;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    color: #198754;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: rgba(37, 211, 102, 0.16);
+    border-color: rgba(37, 211, 102, 0.5);
+    color: #0a3622;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #198754;
+  }
+}

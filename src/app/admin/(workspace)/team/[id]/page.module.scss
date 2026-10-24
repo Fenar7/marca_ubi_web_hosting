@@ -1,0 +1,131 @@
+/**
+ * @file page.module.scss
+ * @description Operational workspace layout for dedicated personnel profiles (/admin/team/[id]).
+ *              Implements an 8:4 asymmetric high-density responsive grid per Marca Ubi design tokens.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.workspaceContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 1rem 1rem 2.5rem;
+    gap: 1.25rem;
+  }
+}
+
+.topBarNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  color: var(--admin-text-secondary, #64748b);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: var(--admin-text-primary, #0f172a);
+
+    svg {
+      transform: translateX(-2px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.statusIndicatorTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &.active {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #065f46;
+  }
+
+  &.suspended {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #991b1b;
+  }
+
+  .statusDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+
+    &.dotActive {
+      background: #10b981;
+    }
+
+    &.dotSuspended {
+      background: #ef4444;
+    }
+  }
+}
+
+.asymmetricGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(320px, 4fr);
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}

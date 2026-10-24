@@ -5,13 +5,15 @@
  * @description Executive Notion-Caliber 32px user profile trigger and rich popover flyout.
  * @architecture Replaces cluttered, truncated pill capsules with an ultra-minimal 32px trigger
  *               and a high-density 260px popover containing credentials, workspace tier telemetry,
- *               security audit access, command palette shortcuts, and authenticated session termination.
+ *               self-service avatar photo updates, security audit access, and session termination.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { logoutAction } from '@/app/actions/auth';
+import { AvatarUploadModal } from '@/app/admin/(workspace)/team/components/AvatarUploadModal';
 import type { CurrentUserSession } from '@/types/crm';
 import styles from './UserProfileDropdown.module.scss';
 
@@ -24,7 +26,27 @@ interface UserProfileDropdownProps {
 export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(currentUser.avatarUrl || null);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Synchronize internal state with server props
+  useEffect(() => {
+    setAvatarUrl(currentUser.avatarUrl || null);
+  }, [currentUser.avatarUrl]);
+
+  // Real-time synchronization across workspace windows
+  useEffect(() => {
+    const handleAvatarUpdated = (event: Event): void => {
+      const customEvent = event as CustomEvent<{ userId: string; avatarUrl: string | null }>;
+      if (customEvent.detail && customEvent.detail.userId === currentUser.id) {
+        setAvatarUrl(customEvent.detail.avatarUrl);
+      }
+    };
+
+    window.addEventListener('user-avatar-updated', handleAvatarUpdated);
+    return () => window.removeEventListener('user-avatar-updated', handleAvatarUpdated);
+  }, [currentUser.id]);
 
   const handleLogout = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -111,7 +133,18 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
         title={`Authenticated as ${rawName} (${roleFormatted})`}
       >
         <span className={styles.triggerAvatar} aria-hidden="true">
-          {initials}
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt=""
+              width={26}
+              height={26}
+              className={styles.avatarImage}
+              unoptimized
+            />
+          ) : (
+            initials
+          )}
         </span>
         <span className={styles.userName}>{triggerName}</span>
         <svg
@@ -132,8 +165,33 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
         <div className={styles.dropdownMenu} role="menu" aria-label="User Account Options">
           {/* User Identity Header */}
           <div className={styles.identityHeader}>
-            <div className={styles.headerAvatar} aria-hidden="true">
-              {initials}
+            <div
+              className={styles.headerAvatar}
+              aria-hidden="true"
+              onClick={() => {
+                setIsOpen(false);
+                setIsAvatarModalOpen(true);
+              }}
+              title="Click to update profile photo"
+            >
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt=""
+                  width={36}
+                  height={36}
+                  className={styles.avatarImage}
+                  unoptimized
+                />
+              ) : (
+                initials
+              )}
+              <div className={styles.avatarEditBadge} title="Change photo">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </div>
             </div>
             <div className={styles.headerMeta}>
               <div className={styles.fullNameRow}>
@@ -160,6 +218,24 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
           <div className={styles.divider} />
 
           {/* Core Navigation Items */}
+          <button
+            type="button"
+            className={styles.menuItem}
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              setIsAvatarModalOpen(true);
+            }}
+          >
+            <span className={styles.menuItemContent}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              <span>Update Profile Photo</span>
+            </span>
+          </button>
+
           <Link
             href="/admin/settings"
             className={styles.menuItem}
@@ -201,13 +277,11 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              <span>Audit & Security Logs</span>
+              <span>Security & Audit Logs</span>
             </span>
           </Link>
 
-          <div className={styles.divider} />
-
-          {/* Productivity & Shortcuts */}
+          {/* Quick Action Item */}
           <button
             type="button"
             className={styles.menuItem}
@@ -216,15 +290,14 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
           >
             <span className={styles.menuItemContent}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
               <span>Command Palette</span>
             </span>
-            <kbd className={styles.menuKbd}>⌘K</kbd>
+            <span className={styles.hotkeyBadge}>⌘K</span>
           </button>
 
-          <div className={styles.menuItem} role="menuitem">
+          <div className={styles.menuItemStatic}>
             <span className={styles.menuItemContent}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
@@ -266,6 +339,20 @@ export function UserProfileDropdown({ currentUser }: UserProfileDropdownProps): 
             </button>
           </form>
         </div>
+      )}
+
+      {/* Self-Service Profile Photo Modal */}
+      {isAvatarModalOpen && (
+        <AvatarUploadModal
+          isOpen={isAvatarModalOpen}
+          targetMember={{
+            id: currentUser.id,
+            name: rawName,
+            avatarUrl,
+          }}
+          onClose={() => setIsAvatarModalOpen(false)}
+          onAvatarSaved={(newUrl) => setAvatarUrl(newUrl)}
+        />
       )}
     </div>
   );

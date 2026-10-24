@@ -42,7 +42,7 @@ export default async function AdminWorkspaceLayout({
   // Retrieve authenticated staff profile and verify active operational standing
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, full_name, email, role, status, job_title, allowed_tabs, feature_permissions')
+    .select('id, full_name, email, role, status, job_title, allowed_tabs, feature_permissions, avatar_url')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -61,6 +61,7 @@ export default async function AdminWorkspaceLayout({
     email: user.email || '',
     role: userRole,
     jobTitle: profile?.job_title || 'Commercial Personnel',
+    avatarUrl: profile?.avatar_url || null,
     allowed_tabs: (profile?.allowed_tabs as string[]) || undefined,
     feature_permissions: profile?.feature_permissions || undefined,
   };

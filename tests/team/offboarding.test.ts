@@ -268,8 +268,8 @@ describe('Marca Ubi CRM — Rep Offboarding Protocol & Account Suspension (Sprin
 
   describe('Section 6: UI Impact Metrics Tabulation & Deal Valuation', () => {
     it('correctly formats pipeline monetary value for the confirmation dialog', () => {
-      assert.equal(formatDealValuation(4200000), '₹42.0L');
-      assert.equal(formatDealValuation(15000000), '₹1.5Cr');
+      assert.equal(formatDealValuation(4200000), '₹42,00,000');
+      assert.equal(formatDealValuation(15000000), '₹1,50,00,000');
       assert.equal(formatDealValuation(0), '₹0');
     });
 
