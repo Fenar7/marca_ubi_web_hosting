@@ -6,7 +6,7 @@
  *              Allows administrators to fine-tune each staff member's accessible tabs
  *              across the 3 canonical functional enclaves.
  *              Enforces defensive admin self-lockout invariants, accessible touch targets,
- *              avatar photography support, and Marca Ubi Brand Action button standards.
+ *              avatar photography support, and Signature Accordion Lemon Yellow Action button standards.
  * @module app/admin/team/components/EditUserPermissionsModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */

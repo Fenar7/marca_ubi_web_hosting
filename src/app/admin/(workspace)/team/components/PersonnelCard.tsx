@@ -67,7 +67,7 @@ export function PersonnelCard({
   );
 
   const capacityColor =
-    capacityPct >= 90 ? '#ef4444' : capacityPct >= 70 ? '#f59e0b' : '#ff6100';
+    capacityPct >= 90 ? 'var(--admin-status-rose-dot, #ef4444)' : capacityPct >= 70 ? 'var(--admin-status-amber-dot, #f59e0b)' : 'var(--admin-status-emerald-dot, #10b981)';
 
   const roleClass =
     member.role === 'admin'

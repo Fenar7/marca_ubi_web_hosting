@@ -111,9 +111,9 @@
   padding: 0.65rem 1.35rem;
   min-height: 44px;
   border-radius: 9999px;
-  background: $cta-orange;
+  background: var(--admin-accent-lemon, #eefb87);
   border: 1px solid var(--admin-border-strong, #1f242f);
-  color: #ffffff;
+  color: var(--admin-accent-lemon-ink, #1f242f);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.82rem;
   font-weight: 600;
@@ -124,7 +124,7 @@
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #e05500;
+    background: var(--admin-accent-lemon-hover, #e4f375);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
   }
@@ -793,10 +793,10 @@
 .submitDrawerButton {
   flex: 2;
   min-height: 44px;
-  background: $cta-orange;
+  background: var(--admin-accent-lemon, #eefb87);
   border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 9999px;
-  color: #ffffff;
+  color: var(--admin-accent-lemon-ink, #1f242f);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.84rem;
   font-weight: 600;
@@ -811,7 +811,7 @@
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #e05500;
+    background: var(--admin-accent-lemon-hover, #e4f375);
     transform: translateY(-1px);
   }
 
@@ -915,9 +915,9 @@
 .credentialPasscode {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--admin-text-primary, #1f242f);
+  color: var(--admin-accent-lemon-ink, #1f242f);
   letter-spacing: 0.05em;
-  background: $cta-orange;
+  background: var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.35));
   padding: 0.3rem 0.65rem;
   border-radius: 4px;
   border: 1px solid var(--admin-border-strong, #1f242f);
@@ -966,10 +966,10 @@
 .doneButton {
   flex: 1;
   min-height: 44px;
-  background: $cta-orange;
+  background: var(--admin-accent-lemon, #eefb87);
   border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 9999px;
-  color: #ffffff;
+  color: var(--admin-accent-lemon-ink, #1f242f);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.82rem;
   font-weight: 600;
@@ -979,7 +979,7 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background: #e05500;
+    background: var(--admin-accent-lemon-hover, #e4f375);
   }
 }
 

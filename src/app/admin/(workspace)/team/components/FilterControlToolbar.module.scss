@@ -68,8 +68,8 @@
 
   &:focus {
     outline: none;
-    border-color: #ff6100;
-    box-shadow: 0 0 0 1px #ff6100, 0 0 8px rgba(255, 97, 0, 0.15);
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
     background: #ffffff;
   }
 }
@@ -110,8 +110,8 @@
 
   &:focus {
     outline: none;
-    border-color: #ff6100;
-    box-shadow: 0 0 0 1px #ff6100;
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 
   &:hover {
@@ -157,7 +157,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 }
 

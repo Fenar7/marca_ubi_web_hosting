@@ -30,7 +30,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 }
 
@@ -86,12 +86,12 @@
     color: #0f172a;
 
     svg {
-      color: #ff6100;
+      color: var(--admin-text-primary, #0f172a);
     }
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 }
 

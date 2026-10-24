@@ -89,14 +89,14 @@
   text-align: center;
 
   &:hover {
-    border-color: rgba(255, 97, 0, 0.4);
-    background: rgba(255, 97, 0, 0.02);
+    border-color: var(--admin-border-strong, #1f242f);
+    background: var(--admin-surface-hover, #f4f6f9);
   }
 }
 
 .dropzoneActive {
-  border-color: #ff6100;
-  background: rgba(255, 97, 0, 0.06);
+  border-color: var(--admin-border-strong, #1f242f);
+  background: var(--admin-surface-active, #ebeef3);
 }
 
 .uploadIcon {
@@ -128,8 +128,8 @@
   height: 128px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid #ff6100;
-  box-shadow: 0 0 20px rgba(255, 97, 0, 0.25);
+  border: 3px solid var(--admin-border-strong, #1f242f);
+  box-shadow: 0 0 0 4px var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.35));
   position: relative;
   background: #181b20;
 
@@ -202,19 +202,20 @@
 
 .saveButton {
   padding: 0.55rem 1.25rem;
-  background: #ff6100;
-  border: 1px solid transparent;
-  color: #ffffff;
+  min-height: 44px;
+  background: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  color: var(--admin-accent-lemon-ink, #1f242f);
   font-size: 0.82rem;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 8px rgba(255, 97, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
 
   &:hover:not(:disabled) {
-    background: #e05500;
-    box-shadow: 0 4px 14px rgba(255, 97, 0, 0.4);
+    background: var(--admin-accent-lemon-hover, #e4f375);
+    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.12);
   }
 
   &:disabled {

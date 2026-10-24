@@ -101,7 +101,7 @@
   &:hover,
   &:focus-visible {
     opacity: 1;
-    color: #ff6100;
+    color: var(--admin-accent-lemon, #eefb87);
   }
 }
 
@@ -160,9 +160,9 @@
   font-weight: 700;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
-  background: rgba(255, 97, 0, 0.1);
-  color: #c2410c;
-  border: 1px solid rgba(255, 97, 0, 0.25);
+  background: var(--admin-surface-muted, #f1f5f9);
+  color: var(--admin-text-primary, #1f242f);
+  border: 1px solid var(--admin-border-default, #cbd5e1);
 }
 
 .jobTitle {
@@ -197,9 +197,9 @@
 }
 
 .roleAdmin {
-  background: rgba(255, 97, 0, 0.08);
-  color: #c2410c;
-  border-color: rgba(255, 97, 0, 0.22);
+  background: var(--admin-surface-muted, #f0f2f5);
+  color: var(--admin-text-primary, #1f242f);
+  border-color: var(--admin-border-default, #cbd5e1);
 }
 
 .roleSales {
@@ -309,10 +309,10 @@
   justify-content: center;
   height: 38px;
   padding: 0 0.85rem;
-  background: rgba(255, 97, 0, 0.08);
-  border: 1px solid rgba(255, 97, 0, 0.22);
+  background: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 8px;
-  color: #c2410c;
+  color: var(--admin-accent-lemon-ink, #1f242f);
   font-family: inherit;
   font-size: 0.78rem;
   font-weight: 600;
@@ -320,10 +320,10 @@
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #ff6100;
-    color: #ffffff;
-    border-color: #ff6100;
-    box-shadow: 0 2px 8px rgba(255, 97, 0, 0.25);
+    background: var(--admin-accent-lemon-hover, #e4f375);
+    color: var(--admin-accent-lemon-ink, #1f242f);
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.1);
   }
 
   &:disabled {
@@ -332,8 +332,9 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
+}
 }
 
 .secondaryButton {
@@ -360,6 +361,6 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 }

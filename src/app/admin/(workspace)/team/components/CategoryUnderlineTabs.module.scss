@@ -41,7 +41,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: -2px;
   }
 }
@@ -57,7 +57,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: #ff6100;
+    background: var(--admin-border-strong, #1f242f);
     border-radius: 2px 2px 0 0;
   }
 }
@@ -80,7 +80,7 @@
 }
 
 .tabButtonActive .counterBadge {
-  background: rgba(255, 97, 0, 0.1);
-  color: #c2410c;
-  border-color: rgba(255, 97, 0, 0.25);
+  background: var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.45));
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  border-color: var(--admin-border-strong, #1f242f);
 }

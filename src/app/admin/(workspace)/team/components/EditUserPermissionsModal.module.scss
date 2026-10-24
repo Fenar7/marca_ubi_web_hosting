@@ -3,7 +3,7 @@
  * @description PrimeStay × Linear Light Luxury styling tokens for the
  *              Granular Tab Permissions Governance Modal dialog (620px).
  *              Enforces pure white card surfaces (#ffffff), hairline borders (#e2e5ea),
- *              Marca Ubi Brand Action Button ($cta-orange), circular dismiss action,
+ *              Signature Accordion Lemon Yellow Action button standards, circular dismiss action,
  *              zero-wrap footer toolbar rhythm, and 44px minimum touch targets.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -170,7 +170,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid $cta-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 
@@ -392,8 +392,8 @@
   }
 
   &.tabCardActive {
-    border-color: $cta-orange;
-    box-shadow: 0 0 0 1px $cta-orange;
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
   }
 
   &.tabCardLocked {
@@ -405,7 +405,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid $cta-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 }
@@ -424,8 +424,8 @@
   transition: all 0.15s ease;
 
   .tabCardActive & {
-    background: $cta-orange;
-    border-color: $cta-orange;
+    background: var(--admin-accent-lemon, #eefb87);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   .tabCardLocked & {
@@ -437,7 +437,7 @@
 .checkIcon {
   width: 12px;
   height: 12px;
-  color: #ffffff;
+  color: var(--admin-accent-lemon-ink, #1f242f);
 }
 
 .tabMeta {
@@ -549,7 +549,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid $cta-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
   }
 
@@ -598,7 +598,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid $cta-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
   }
 
@@ -616,10 +616,10 @@
   height: 44px;
   min-height: 44px;
   padding: 0 1.35rem;
-  background: $cta-orange;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 8px;
-  color: #ffffff;
+  color: var(--admin-accent-lemon-ink, #1f242f);
   font-size: 0.84rem;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -629,23 +629,23 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover:not(:disabled) {
-    background: #e05500;
+    background: var(--admin-accent-lemon-hover, #e4f375);
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.12);
   }
 
   &:focus-visible {
-    outline: 2px solid $cta-orange;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 4px rgba(31, 36, 47, 0.08);
   }
 
   &:disabled {
@@ -659,8 +659,8 @@
 .btnSpinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #ffffff;
+  border: 2px solid rgba(31, 36, 47, 0.2);
+  border-top-color: var(--admin-accent-lemon-ink, #1f242f);
   border-radius: 50%;
   animation: spinnerRotate 0.7s linear infinite;
   flex-shrink: 0;
