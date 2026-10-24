@@ -20,6 +20,9 @@
   --admin-btn-primary-bg: #0f172a;
   --admin-btn-primary-hover: #1e293b;
   --admin-btn-primary-text: #ffffff;
+  // DEPRECATED: Retained strictly for Phase 1 legacy auth regression test compatibility.
+  // ZERO-ORANGE MANDATE: UNDER NO CIRCUMSTANCES should this token be referenced in the Admin CRM workspace.
+  // For Admin CRM interactive accents, strictly use --admin-accent-lemon (#eefb87) with --admin-accent-lemon-ink (#1f242f).
   --admin-accent-brand: #ff6100;
 
   // Surfaces & Canvas (Sypher High-Density Neutral Light Canvas)

@@ -324,5 +324,31 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       assert.ok(fileContent.includes('--admin-status-emerald-dot') || fileContent.includes('#10b981'));
       assert.strictEqual(fileContent.includes('#ff6100'), false);
     });
+
+    it('verifies PersonnelCard.module.scss enforces 44px minimum touch targets on card buttons', () => {
+      const fileContent = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/PersonnelCard.module.scss'),
+        'utf8'
+      );
+      assert.ok(fileContent.includes('min-height: 44px;'));
+    });
+
+    it('verifies 100% clean Sass compilation across all 7 Team SCSS modules with zero syntax errors', () => {
+      const sass = require('sass');
+      const scssFiles = [
+        'src/app/admin/(workspace)/team/team.module.scss',
+        'src/app/admin/(workspace)/team/components/CategoryUnderlineTabs.module.scss',
+        'src/app/admin/(workspace)/team/components/PersonnelCard.module.scss',
+        'src/app/admin/(workspace)/team/components/FilterControlToolbar.module.scss',
+        'src/app/admin/(workspace)/team/components/PersonnelActionMenu.module.scss',
+        'src/app/admin/(workspace)/team/components/EditUserPermissionsModal.module.scss',
+        'src/app/admin/(workspace)/team/components/AvatarUploadModal.module.scss',
+      ];
+      for (const relPath of scssFiles) {
+        const fullPath = path.resolve(process.cwd(), relPath);
+        const compiled = sass.compile(fullPath);
+        assert.ok(compiled.css.length > 0, `Compiled CSS for ${relPath} should not be empty`);
+      }
+    });
   });
 });

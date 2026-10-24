@@ -307,7 +307,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 38px;
+  height: 44px;
+  min-height: 44px;
   padding: 0 0.85rem;
   background: var(--admin-accent-lemon, #eefb87);
   border: 1px solid var(--admin-border-strong, #1f242f);
@@ -341,7 +342,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 38px;
+  height: 44px;
+  min-height: 44px;
   padding: 0 0.85rem;
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
