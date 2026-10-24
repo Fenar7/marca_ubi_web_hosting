@@ -737,11 +737,15 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
     return { success: false, error: 'Access Denied: Suspended accounts cannot view team directory.' };
   }
 
-  // F-07: Invariant Check: Verify if caller has access to the 'users' tab permission,
-  // falling back to role baseline (non-sales_executive) if allowed_tabs is not explicitly set.
-  const hasUsersAccess = Array.isArray(callerProfile.allowed_tabs)
-    ? callerProfile.allowed_tabs.includes('users')
-    : callerProfile.role !== 'sales_executive';
+  // Canonical Permission Invariant:
+  // 1. Administrators ALWAYS have roster inspection privileges.
+  // 2. If allowed_tabs is explicitly populated with items, check whether it includes 'users'.
+  // 3. Otherwise fall back to role default baseline (sales_manager has access, sales_executive does not).
+  const hasUsersAccess =
+    callerProfile.role === 'admin' ||
+    (Array.isArray(callerProfile.allowed_tabs) && callerProfile.allowed_tabs.length > 0
+      ? callerProfile.allowed_tabs.includes('users')
+      : callerProfile.role !== 'sales_executive');
 
   if (!hasUsersAccess) {
     return { success: false, error: 'Access Denied: You do not have roster inspection privileges.' };

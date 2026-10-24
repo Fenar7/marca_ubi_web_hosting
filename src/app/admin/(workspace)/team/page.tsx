@@ -55,9 +55,15 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   const role = callerProfile.role as CrmUserRole;
   const allowedTabs = callerProfile.allowed_tabs as string[] | undefined;
 
-  const hasUsersAccess = Array.isArray(allowedTabs)
-    ? allowedTabs.includes('users')
-    : role === 'admin' || role === 'sales_manager';
+  // Canonical Permission Invariant:
+  // 1. Administrators ALWAYS have access to user management and personnel governance.
+  // 2. If allowedTabs is explicitly defined with items, check whether it includes 'users'.
+  // 3. Otherwise fall back to role default baseline (sales_manager has access, sales_executive/viewer does not).
+  const hasUsersAccess =
+    role === 'admin' ||
+    (Array.isArray(allowedTabs) && allowedTabs.length > 0
+      ? allowedTabs.includes('users')
+      : role === 'sales_manager');
 
   if (!hasUsersAccess) {
     redirect('/admin?error=unauthorized_role_access');

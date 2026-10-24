@@ -159,29 +159,39 @@ export async function loginAction(
     // Reset rate limiter on successful authentication
     resetRateLimit(rateLimitKey);
 
-    // SEC-03: Synchronize profile role and allowed_tabs into app_metadata if missing
-    // Ensures Next.js Edge Middleware has immediate, authoritative JWT claims for sub-millisecond route gating
+    // SEC-03: Synchronize profile role and allowed_tabs into app_metadata and rotate session cookie
+    // Ensures Next.js Edge Proxy and Server Components have synchronized, authoritative JWT claims
     try {
-      if (!data.user.app_metadata?.role || !data.user.app_metadata?.allowed_tabs) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role, allowed_tabs')
-          .eq('id', data.user.id)
-          .maybeSingle();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, allowed_tabs')
+        .eq('id', data.user.id)
+        .maybeSingle();
 
-        if (profile) {
+      if (profile) {
+        const currentMetadata = data.user.app_metadata || {};
+        const isStale =
+          !currentMetadata.role ||
+          currentMetadata.role !== profile.role ||
+          !currentMetadata.allowed_tabs ||
+          JSON.stringify(currentMetadata.allowed_tabs) !== JSON.stringify(profile.allowed_tabs);
+
+        if (isStale) {
           const adminClient = getAdminClient();
           await adminClient.auth.admin.updateUserById(data.user.id, {
             app_metadata: {
-              ...(data.user.app_metadata || {}),
+              ...currentMetadata,
               role: profile.role,
               allowed_tabs: profile.allowed_tabs,
             },
           });
+
+          // Rotate session so newly minted app_metadata claims are written to the browser's response cookies
+          await supabase.auth.refreshSession();
         }
       }
     } catch {
-      // Non-blocking: edge middleware gracefully falls back to Server Component if admin client is restricted
+      // Non-blocking: edge proxy gracefully falls back to Server Component if metadata update is restricted
     }
 
     // Intercept mandatory first-login password rotation for newly provisioned personnel

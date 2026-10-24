@@ -39,7 +39,12 @@ export function isTabAuthorized(tabKey: CrmTabKey, user: CurrentUserSession | nu
     return false;
   }
 
-  if (Array.isArray(user.allowed_tabs)) {
+  // Canonical Invariant: Administrators have universal authorization across all tabs
+  if (user.role === 'admin') {
+    return true;
+  }
+
+  if (Array.isArray(user.allowed_tabs) && user.allowed_tabs.length > 0) {
     return user.allowed_tabs.includes(tabKey);
   }
 

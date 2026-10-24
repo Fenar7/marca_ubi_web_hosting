@@ -176,9 +176,20 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     );
 
     if (matchingRoute && hasExplicitAuthClaims) {
+      // Administrators have universal access across all admin workspace routes
+      if (userRole === 'admin') {
+        return supabaseResponse;
+      }
+
+      // If user has no explicit role claim yet, allow pass-through to Server Component
+      // which verifies the authoritative PostgreSQL public.profiles record
+      if (!rawRole) {
+        return supabaseResponse;
+      }
+
       let isPermitted = false;
 
-      if (Array.isArray(userAllowedTabs)) {
+      if (Array.isArray(userAllowedTabs) && userAllowedTabs.length > 0) {
         isPermitted = userAllowedTabs.includes(matchingRoute.tabKey);
       } else {
         const defaultRoleTabs = ROLE_DEFAULT_TABS[userRole];
