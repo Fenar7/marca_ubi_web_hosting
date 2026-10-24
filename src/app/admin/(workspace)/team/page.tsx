@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
 import { SALES_REP_CAPACITY_LIMIT } from '@/app/lib/team-schemas';
-import { getInitialAllowedTabs } from '@/app/lib/team-permissions-config';
+import { getInitialAllowedTabs, hasPersonnelDirectoryAccess } from '@/app/lib/team-permissions-config';
 import { formatRupees, formatNumber } from '@/app/lib/team-utils';
 import type { CrmTabKey, CrmUserRole, TeamMemberRosterItem } from '@/types/crm';
 import { TeamWorkspaceClient } from './components/TeamWorkspaceClient';
@@ -56,14 +56,11 @@ export default async function AdminTeamPage(): Promise<React.ReactElement> {
   const allowedTabs = callerProfile.allowed_tabs as string[] | undefined;
 
   // Canonical Permission Invariant:
+  // Evaluates centralized hasPersonnelDirectoryAccess predicate:
   // 1. Administrators ALWAYS have access to user management and personnel governance.
-  // 2. If allowedTabs is explicitly defined with items, check whether it includes 'users'.
-  // 3. Otherwise fall back to role default baseline (sales_manager has access, sales_executive/viewer does not).
-  const hasUsersAccess =
-    role === 'admin' ||
-    (Array.isArray(allowedTabs) && allowedTabs.length > 0
-      ? allowedTabs.includes('users')
-      : role === 'sales_manager');
+  // 2. Custom allowedTabs checked if populated.
+  // 3. Fall back strictly to sales_manager baseline (viewers and sales reps denied).
+  const hasUsersAccess = hasPersonnelDirectoryAccess(role, allowedTabs);
 
   if (!hasUsersAccess) {
     redirect('/admin?error=unauthorized_role_access');

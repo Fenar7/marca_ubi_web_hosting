@@ -190,8 +190,10 @@ export async function loginAction(
           await supabase.auth.refreshSession();
         }
       }
-    } catch {
+    } catch (syncError: unknown) {
       // Non-blocking: edge proxy gracefully falls back to Server Component if metadata update is restricted
+      const syncErrorMessage = syncError instanceof Error ? syncError.message : String(syncError);
+      console.warn('[AUTH_SYNC_WARNING] Non-blocking JWT metadata synchronization failed; delegating to Server Component:', syncErrorMessage);
     }
 
     // Intercept mandatory first-login password rotation for newly provisioned personnel

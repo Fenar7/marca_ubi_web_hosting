@@ -9,6 +9,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { isTabAuthorized } from '../../src/app/admin/components/layout/navigationConfig';
+import { hasPersonnelDirectoryAccess } from '../../src/app/lib/team-permissions-config';
 import { ROLE_DEFAULT_TABS, type CrmUserRole, type CrmTabKey } from '../../src/types/crm';
 import type { CurrentUserSession } from '../../src/app/admin/components/layout/UserProfileDropdown';
 
@@ -134,57 +135,68 @@ describe('Commercial Personnel Directory (/admin/team) Navigation & RBAC Remedia
       );
     });
 
+    it('denies users tab for Viewer role when allowed_tabs is empty or undefined', () => {
+      const viewerUser: CurrentUserSession = {
+        id: 'viewer-uuid-1',
+        name: 'Readonly Auditor',
+        email: 'auditor@marcaubi.com',
+        role: 'viewer',
+        jobTitle: 'External Auditor',
+        allowed_tabs: [],
+      };
+
+      assert.equal(
+        isTabAuthorized('users', viewerUser),
+        false,
+        'Viewers must not have access to user management'
+      );
+    });
+
     it('returns false when user session is null or undefined', () => {
       assert.equal(isTabAuthorized('users', null), false);
       assert.equal(isTabAuthorized('users', undefined), false);
     });
   });
 
-  describe('2. Server Component & Server Action Permission Predicate Invariants', () => {
-    /**
-     * Replicates the exact architectural predicate used in team/page.tsx and actions/team.ts:
-     */
-    function evaluateUsersAccess(role: CrmUserRole, allowedTabs?: string[] | null): boolean {
-      return (
-        role === 'admin' ||
-        (Array.isArray(allowedTabs) && allowedTabs.length > 0
-          ? allowedTabs.includes('users')
-          : role === 'sales_manager')
-      );
-    }
-
+  describe('2. Canonical hasPersonnelDirectoryAccess() Production Invariant Tests', () => {
     it('evaluates true for admin across all allowed_tabs permutations', () => {
-      assert.equal(evaluateUsersAccess('admin', []), true);
-      assert.equal(evaluateUsersAccess('admin', undefined), true);
-      assert.equal(evaluateUsersAccess('admin', null), true);
-      assert.equal(evaluateUsersAccess('admin', ['deals']), true);
-      assert.equal(evaluateUsersAccess('admin', ['users']), true);
+      assert.equal(hasPersonnelDirectoryAccess('admin', []), true);
+      assert.equal(hasPersonnelDirectoryAccess('admin', undefined), true);
+      assert.equal(hasPersonnelDirectoryAccess('admin', null), true);
+      assert.equal(hasPersonnelDirectoryAccess('admin', ['deals']), true);
+      assert.equal(hasPersonnelDirectoryAccess('admin', ['users']), true);
     });
 
     it('evaluates true for sales_manager with empty or unpopulated tabs', () => {
-      assert.equal(evaluateUsersAccess('sales_manager', []), true);
-      assert.equal(evaluateUsersAccess('sales_manager', undefined), true);
-      assert.equal(evaluateUsersAccess('sales_manager', null), true);
+      assert.equal(hasPersonnelDirectoryAccess('sales_manager', []), true);
+      assert.equal(hasPersonnelDirectoryAccess('sales_manager', undefined), true);
+      assert.equal(hasPersonnelDirectoryAccess('sales_manager', null), true);
     });
 
     it('evaluates false for sales_manager when custom array explicitly excludes users', () => {
-      assert.equal(evaluateUsersAccess('sales_manager', ['deals', 'leads']), false);
+      assert.equal(hasPersonnelDirectoryAccess('sales_manager', ['deals', 'leads']), false);
     });
 
     it('evaluates false for sales_executive by default or with empty array', () => {
-      assert.equal(evaluateUsersAccess('sales_executive', []), false);
-      assert.equal(evaluateUsersAccess('sales_executive', undefined), false);
-      assert.equal(evaluateUsersAccess('sales_executive', null), false);
-      assert.equal(evaluateUsersAccess('sales_executive', ['deals']), false);
+      assert.equal(hasPersonnelDirectoryAccess('sales_executive', []), false);
+      assert.equal(hasPersonnelDirectoryAccess('sales_executive', undefined), false);
+      assert.equal(hasPersonnelDirectoryAccess('sales_executive', null), false);
+      assert.equal(hasPersonnelDirectoryAccess('sales_executive', ['deals']), false);
     });
 
     it('evaluates true for sales_executive with custom override', () => {
-      assert.equal(evaluateUsersAccess('sales_executive', ['users', 'leads']), true);
+      assert.equal(hasPersonnelDirectoryAccess('sales_executive', ['users', 'leads']), true);
     });
 
-    it('evaluates false for viewer roles by default', () => {
-      assert.equal(evaluateUsersAccess('viewer', []), false);
-      assert.equal(evaluateUsersAccess('viewer', undefined), false);
+    it('strictly evaluates false for viewer roles by default or with empty array (SEC Privilege Defense)', () => {
+      assert.equal(hasPersonnelDirectoryAccess('viewer', []), false);
+      assert.equal(hasPersonnelDirectoryAccess('viewer', undefined), false);
+      assert.equal(hasPersonnelDirectoryAccess('viewer', null), false);
+      assert.equal(hasPersonnelDirectoryAccess('viewer', ['leads', 'deals']), false);
+    });
+
+    it('grants access to viewer ONLY if explicitly provisioned with users tab in allowed_tabs', () => {
+      assert.equal(hasPersonnelDirectoryAccess('viewer', ['users']), true);
     });
   });
 

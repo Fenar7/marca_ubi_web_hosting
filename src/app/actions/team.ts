@@ -30,6 +30,7 @@ import {
   type UpdateUserPermissionsFormData,
 } from '@/app/lib/team-schemas';
 import { ROLE_DEFAULT_TABS, ROLE_DEFAULT_FEATURES, type CrmTabKey } from '@/types/crm';
+import { hasPersonnelDirectoryAccess } from '@/app/lib/team-permissions-config';
 
 /**
  * Verifies that the active request session belongs to an active administrator.
@@ -738,14 +739,14 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
   }
 
   // Canonical Permission Invariant:
+  // Evaluates centralized hasPersonnelDirectoryAccess predicate:
   // 1. Administrators ALWAYS have roster inspection privileges.
-  // 2. If allowed_tabs is explicitly populated with items, check whether it includes 'users'.
-  // 3. Otherwise fall back to role default baseline (sales_manager has access, sales_executive does not).
-  const hasUsersAccess =
-    callerProfile.role === 'admin' ||
-    (Array.isArray(callerProfile.allowed_tabs) && callerProfile.allowed_tabs.length > 0
-      ? callerProfile.allowed_tabs.includes('users')
-      : callerProfile.role !== 'sales_executive');
+  // 2. Custom allowed_tabs checked if populated.
+  // 3. Fall back strictly to sales_manager baseline (viewers and sales reps denied).
+  const hasUsersAccess = hasPersonnelDirectoryAccess(
+    callerProfile.role as CrmUserRole,
+    callerProfile.allowed_tabs
+  );
 
   if (!hasUsersAccess) {
     return { success: false, error: 'Access Denied: You do not have roster inspection privileges.' };
