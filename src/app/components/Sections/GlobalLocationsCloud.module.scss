@@ -17,7 +17,7 @@
 .leftColumn {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .sectionLabel {
@@ -37,47 +37,10 @@
   margin: 0;
 }
 
-.networkChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: $client-text-muted-dark;
-  background-color: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 6px;
-  padding: 4px 10px;
-  width: fit-content;
-  margin-top: 0.5rem;
-}
-
-.radarDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: $client-accent-red;
-  animation: radarPulse 1.8s infinite ease-out;
-}
-
-@keyframes radarPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(234, 0, 42, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(234, 0, 42, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(234, 0, 42, 0);
-  }
-}
-
 .rightColumn {
   display: flex;
   flex-direction: column;
+  gap: 3.5rem;
 }
 
 .cloudWrapper {
@@ -127,48 +90,59 @@
   }
 }
 
-.liveTimeBadge {
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #0b0b0b;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  padding: 6px 12px;
+/* 160over90 Synchronized Operational Rail: Monospace, Tabular Numerals, Zero Pill Slop */
+.operationalRail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 0;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.railNode {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   letter-spacing: 0.05em;
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
-  animation: floatUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 20;
+  color: $client-text-muted-dark;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  transition: color 0.2s ease;
 
-  &::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: #0b0b0b transparent transparent transparent;
+  &.railNodeActive {
+    color: $client-accent-red;
+
+    .railCode {
+      color: $client-accent-red;
+    }
+
+    .railTime {
+      color: $client-text-dark;
+    }
   }
 }
 
-@keyframes floatUp {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.railCode {
+  font-weight: 700;
+  color: $client-text-dark;
+  margin-right: 6px;
+}
+
+.railTime {
+  color: $client-text-body-dark;
+  margin-right: 4px;
+}
+
+.railAbbr {
+  color: $client-text-muted-dark;
+  font-size: 11px;
+}
+
+.railDivider {
+  margin: 0 1rem;
+  color: rgba(0, 0, 0, 0.2);
+  user-select: none;
 }

@@ -11,7 +11,12 @@ import styles from "./CareersCutout.module.scss";
  */
 export function CareersCutout() {
   return (
-    <section className={styles.careersCutoutSection} id="careers" aria-label="Careers at Marca Ubi">
+    <section
+      className={styles.careersCutoutSection}
+      id="careers"
+      aria-label="Careers at Marca Ubi"
+      data-header-theme="dark"
+    >
       <div className={styles.contentStage}>
         <span className={styles.kicker}>Join the Collective</span>
         <h2 className={styles.displayHeadline}>Work with us.</h2>

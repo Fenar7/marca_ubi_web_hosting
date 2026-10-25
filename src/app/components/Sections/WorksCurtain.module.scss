@@ -1,0 +1,278 @@
+@import "../../styles/client-mixins.scss";
+
+.worksSection {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  background-color: $client-canvas-white;
+  color: $client-text-dark;
+  padding: clamp(6rem, 10vw, 10rem) 0;
+  box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.gridContainer {
+  @include client-swiss-grid;
+}
+
+.leftColumn {
+  position: relative;
+}
+
+.stickyRail {
+  position: sticky;
+  top: 7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionLabel {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $client-text-muted-dark;
+}
+
+.railHeadline {
+  font-family: $font-circular;
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: $client-text-dark;
+  margin: 0;
+}
+
+.railSummary {
+  font-family: $font-circular;
+  font-size: 15px;
+  line-height: 1.6;
+  color: $client-text-body-dark;
+  margin: 0;
+}
+
+.metaRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.indexCount {
+  font-family: $font-circular;
+  font-size: 28px;
+  font-weight: 700;
+  color: $client-accent-red;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.indexLabel {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $client-text-muted-dark;
+}
+
+.actionWrap {
+  margin-top: 0.5rem;
+}
+
+.architecturalButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  height: 48px;
+  min-height: 44px;
+  border-radius: 2px;
+  border: 1.5px solid $client-text-dark;
+  background-color: transparent;
+  color: $client-text-dark;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .arrow {
+    font-size: 16px;
+    transition: transform 0.25s ease;
+  }
+
+  &:hover {
+    background-color: $client-text-dark;
+    color: #ffffff;
+
+    .arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.worksStream {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4rem, 7vw, 7rem);
+}
+
+.workCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.imageFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 2px;
+  background-color: #0b0b0b;
+
+  &:hover .projectImage {
+    transform: scale(1.03);
+  }
+}
+
+.projectImage {
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+}
+
+.projectIndexBadge {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  border-radius: 2px;
+  backdrop-filter: blur(8px);
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.projectTitle {
+  font-family: $font-circular;
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: $client-text-dark;
+  margin: 0;
+}
+
+.liveProjectLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $client-text-muted-dark;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  .linkArrow {
+    font-size: 15px;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    color: $client-accent-red;
+
+    .linkArrow {
+      transform: translate(2px, -2px);
+    }
+  }
+}
+
+.projectSubtext {
+  font-family: $font-circular;
+  font-size: 16px;
+  line-height: 1.6;
+  color: $client-text-body-dark;
+  margin: 0;
+  max-width: 90%;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.textAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 600;
+  color: $client-text-dark;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.2s ease;
+
+  .arrow {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    color: $client-accent-red;
+
+    .arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}

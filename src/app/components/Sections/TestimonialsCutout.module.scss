@@ -1,0 +1,136 @@
+@import "../../styles/client-mixins.scss";
+
+.testimonialsSection {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  color: #ffffff;
+  padding: clamp(6rem, 12vw, 11rem) 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
+}
+
+.contentWrapper {
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+.kicker {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $client-accent-red;
+}
+
+.headline {
+  font-family: $font-circular;
+  font-size: var(--client-type-h2);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.quoteBlock {
+  margin: 0;
+  padding: clamp(2rem, 3.5vw, 3.5rem);
+  background: rgba(14, 14, 16, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 3px solid $client-accent-red;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.quoteText {
+  font-family: $font-circular;
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 450;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.quoteFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.authorName {
+  font-family: $font-circular;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  font-style: normal;
+}
+
+.authorRole {
+  font-family: $font-circular;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.actionWrap {
+  margin-top: 0.5rem;
+}
+
+.architecturalButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0 1.75rem;
+  height: 52px;
+  min-height: 44px;
+  border-radius: 2px;
+  border: 1.5px solid #ffffff;
+  background-color: transparent;
+  color: #ffffff;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .arrow {
+    font-size: 16px;
+    transition: transform 0.25s ease;
+  }
+
+  &:hover {
+    background-color: #ffffff;
+    color: #0a0a0a;
+
+    .arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}

@@ -18,7 +18,11 @@ export function HeroCutout({
   kicker = "Strategic Brand Architecture & Cultural Velocity",
 }: HeroCutoutProps) {
   return (
-    <section className={styles.heroCutoutSection} aria-label="Hero Introduction">
+    <section
+      className={styles.heroCutoutSection}
+      aria-label="Hero Introduction"
+      data-header-theme="dark"
+    >
       <div className={styles.heroContentStage}>
         <span className={styles.kicker}>{kicker}</span>
         <h1 className={styles.displayHeadline}>{headline}</h1>

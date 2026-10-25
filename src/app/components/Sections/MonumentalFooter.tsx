@@ -2,28 +2,32 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import MarcaUbiLogo from "../ui/MarcaUbiLogo/MarcaUbiLogo";
 import styles from "./MonumentalFooter.module.scss";
 
 const NAV_LINKS = [
-  { label: "Manifesto", href: "/#manifesto" },
-  { label: "Selected Work", href: "/#work" },
-  { label: "Capabilities", href: "/#capabilities" },
-  { label: "Careers", href: "/#careers" },
-  { label: "Global Network", href: "/#network" },
-  { label: "Connect", href: "/#connect" },
+  { label: "About & Doctrine", href: "/#about" },
+  { label: "Selected Work", href: "/work" },
+  { label: "Guiding Principles", href: "/#values" },
+  { label: "Methodology", href: "/#process" },
+  { label: "Studio Dispatches", href: "/blog" },
+  { label: "Global Hubs", href: "/#network" },
+  { label: "Initiate Brief", href: "/start-project" },
 ];
 
 /**
- * View 08: Deep Black Monumental Footer.
+ * View 11: Deep Obsidian Black Monumental Footer.
  * Solid Obsidian Black (#000000) monolithic anchor.
- * Anthem statement, giant vector wordmark, and 4-column operational directory.
+ * Features the cultural anthem, vector brandmark, authentic Kerala desks,
+ * and 4-column operational directory.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function MonumentalFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className={styles.monumentalFooter} role="contentinfo">
+    <footer className={styles.monumentalFooter} role="contentinfo" data-header-theme="dark">
       <div className={styles.footerInner}>
         {/* Top Deck: Cultural Anthem */}
         <div className={styles.anthemBlock}>
@@ -32,11 +36,10 @@ export function MonumentalFooter() {
 
         {/* Middle Deck: The Giant Vector Wordmark */}
         <div className={styles.brandmarkStage}>
-          <Image
-            src="/images/marca-ubi-red-png.svg"
-            alt="Marca Ubi"
-            width={1400}
-            height={280}
+          <MarcaUbiLogo
+            color="#ffffff"
+            width="100%"
+            height="auto"
             className={styles.giantWordmark}
           />
         </div>
@@ -69,12 +72,17 @@ export function MonumentalFooter() {
             <ul className={styles.linksList}>
               <li>
                 <Link href="/start-project" className={styles.linkItem}>
-                  Initiate Partnership &rarr;
+                  Start a Project Brief &rarr;
                 </Link>
               </li>
               <li>
-                <a href="mailto:partnerships@marcaubi.com" className={styles.linkItem}>
-                  partnerships@marcaubi.com
+                <a href="tel:+917012052472" className={styles.linkItem}>
+                  +91 7012 052 472
+                </a>
+              </li>
+              <li>
+                <a href="mailto:hello@marcaubi.com" className={styles.linkItem}>
+                  hello@marcaubi.com
                 </a>
               </li>
               <li>
@@ -82,21 +90,16 @@ export function MonumentalFooter() {
                   careers@marcaubi.com
                 </a>
               </li>
-              <li>
-                <a href="mailto:press@marcaubi.com" className={styles.linkItem}>
-                  press@marcaubi.com
-                </a>
-              </li>
             </ul>
           </div>
 
           <div className={styles.column}>
-            <h3 className={styles.columnTitle}>04 / Hubs</h3>
+            <h3 className={styles.columnTitle}>04 / Studio Corridors</h3>
             <p className={styles.columnText}>
-              Gate Precinct 4, Level 5, DIFC, Dubai<br />
-              Tea Building, Shoreditch, London<br />
-              100 Feet Road, Indiranagar, Bengaluru<br />
-              Mercer Street, SoHo, New York
+              Hilite Business Park, Hilite City, Calicut, Kerala 673014<br />
+              Trivandrum Creative Studio, Kerala<br />
+              DIFC Gate Precinct 4, Dubai<br />
+              Tea Building, Shoreditch, London
             </p>
           </div>
         </div>

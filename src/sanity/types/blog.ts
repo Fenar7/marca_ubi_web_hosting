@@ -66,15 +66,18 @@ export interface Post {
 
 export type PostSummary = Omit<Post, "body" | "seo">;
 
+interface RawTextBlock {
+  _type?: string;
+  children?: Array<{ text?: string }>;
+}
+
 export function calculateReadingTime(blocks?: PortableTextBlock[]): number {
   if (!blocks || blocks.length === 0) return 3;
-  const text = (blocks || [])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter((b: any) => b._type === "block")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .flatMap((b: any) => b.children || [])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((c: any) => c.text || "")
+  const rawBlocks = blocks as unknown as RawTextBlock[];
+  const text = rawBlocks
+    .filter((b) => b._type === "block")
+    .flatMap((b) => b.children || [])
+    .map((c) => c.text || "")
     .join(" ");
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(words / 200));

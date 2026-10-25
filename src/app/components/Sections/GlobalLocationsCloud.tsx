@@ -21,9 +21,10 @@ const CITIES: StudioCity[] = [
 ];
 
 /**
- * View 06: Global Footprint / Studio Locations.
- * Solid pure white background (#ffffff) sliding over the video.
- * Features real-time synchronized clocks with pulsing #ea002a radar dots.
+ * View 09: Global Studio Footprint & Synchronized Operations.
+ * Solid pure white curtain (#ffffff) sliding over the living video background.
+ * Swiss broadsheet layout with kinetic city typography and a quiet tabular operational rail.
+ * Zero AI-slop pills, zero pulsing dots, zero radar animations.
  */
 export function GlobalLocationsCloud() {
   const [hoveredCityIndex, setHoveredCityIndex] = useState<number | null>(null);
@@ -54,23 +55,23 @@ export function GlobalLocationsCloud() {
   }, []);
 
   return (
-    <section className={styles.locationsSection} id="network" aria-label="Global Studio Network">
+    <section
+      className={styles.locationsSection}
+      id="network"
+      aria-label="Global Studio Network"
+      data-header-theme="light"
+    >
       <div className={styles.gridContainer}>
         <aside className={styles.leftColumn}>
-          <span className={styles.sectionLabel}>03 / Global Network</span>
+          <span className={styles.sectionLabel}>07 / Studio Footprint</span>
           <p className={styles.summaryText}>
-            Operating across synchronized hubs to deliver 24-hour uninterrupted strategic and digital momentum.
+            Operating across synchronized hubs to deliver continuous strategic, creative, and technical momentum.
           </p>
-          <div className={styles.networkChip}>
-            <span className={styles.radarDot} aria-hidden="true" />
-            <span>Active Global Relay</span>
-          </div>
         </aside>
 
         <div className={styles.rightColumn}>
           <div className={styles.cloudWrapper}>
             {CITIES.map((city, index) => {
-              const isHovered = hoveredCityIndex === index;
               const isSlashActive =
                 hoveredCityIndex === index ||
                 (hoveredCityIndex !== null && hoveredCityIndex === index + 1);
@@ -87,20 +88,33 @@ export function GlobalLocationsCloud() {
                     {city.name}
                   </button>
 
-                  {isHovered && (
-                    <div className={styles.liveTimeBadge} role="tooltip">
-                      <span className={styles.radarDot} aria-hidden="true" />
-                      <span>
-                        [{city.code} {timeStrings[city.code] || "12:00"} {city.tzAbbr} &bull; ACTIVE]
-                      </span>
-                    </div>
-                  )}
-
                   {index < CITIES.length - 1 && (
                     <span
                       className={`${styles.slashDivider} ${isSlashActive ? styles.activeSlash : ""}`}
                       aria-hidden="true"
                     >
+                      /
+                    </span>
+                  )}
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Synchronized Operational Rail: Pure Swiss typography with tabular numerals */}
+          <div className={styles.operationalRail} aria-label="Synchronized Studio Clocks">
+            {CITIES.map((city, index) => {
+              const isHovered = hoveredCityIndex === index;
+              return (
+                <span
+                  key={`rail-${city.code}`}
+                  className={`${styles.railNode} ${isHovered ? styles.railNodeActive : ""}`}
+                >
+                  <span className={styles.railCode}>{city.code}</span>
+                  <span className={styles.railTime}>{timeStrings[city.code] || "12:00"}</span>
+                  <span className={styles.railAbbr}>{city.tzAbbr}</span>
+                  {index < CITIES.length - 1 && (
+                    <span className={styles.railDivider} aria-hidden="true">
                       /
                     </span>
                   )}

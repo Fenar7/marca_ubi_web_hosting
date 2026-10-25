@@ -41,7 +41,7 @@ $client-video-scrim: rgba(0, 0, 0, 0.45);
   padding: 0 2rem;
   height: 54px;
   min-height: 44px; // WCAG tap target
-  border-radius: 9999px;
+  border-radius: 2px;
   border: 1.5px solid $client-border-pill;
   background-color: transparent;
   color: $client-text-light;

@@ -9,6 +9,17 @@ interface TocItem {
   text: string;
 }
 
+interface PortableTextChild {
+  text?: string;
+  _type?: string;
+}
+
+interface HeadingBlock {
+  _type?: string;
+  style?: string;
+  children?: PortableTextChild[];
+}
+
 function slugify(text: string, index?: number): string {
   const slug = text
     .toLowerCase()
@@ -22,13 +33,11 @@ export default function TableOfContents({ blocks }: { blocks: PortableTextBlock[
   const [activeId, setActiveId] = useState<string>("");
 
   const items: TocItem[] = useMemo(() => {
-    return (blocks || [])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((b: any) => b._type === "block" && b.style === "h2")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((b: any, index: number) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const text = b.children?.map((c: any) => c.text).join("") || "";
+    const rawBlocks = (blocks || []) as unknown as HeadingBlock[];
+    return rawBlocks
+      .filter((b) => b._type === "block" && b.style === "h2")
+      .map((b, index: number) => {
+        const text = b.children?.map((c) => c.text || "").join("") || "";
         return {
           id: slugify(text, index),
           text,
