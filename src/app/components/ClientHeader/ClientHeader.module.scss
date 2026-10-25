@@ -1,0 +1,228 @@
+@import "../../styles/client-mixins.scss";
+
+.headerHost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(1.5rem, 5vw, 4.5rem);
+  z-index: 50;
+  mix-blend-mode: difference;
+  pointer-events: none; // Allows clicks to pass through except for interactive children
+
+  @media (max-width: 768px) {
+    height: 64px;
+    padding: 0 1.25rem;
+  }
+}
+
+.logoAnchor {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.brandLogo {
+  height: 26px;
+  width: auto;
+  display: block;
+
+  @media (max-width: 768px) {
+    height: 22px;
+  }
+}
+
+.navCluster {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  pointer-events: auto;
+}
+
+.menuTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  min-height: 44px; // 44px accessible touch target
+  min-width: 44px;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    .menuLines {
+      transform: translateX(4px);
+    }
+    .hoverDot {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}
+
+.hoverDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: $client-accent-red;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.menuLines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 20px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.menuLine {
+  width: 100%;
+  height: 1.5px;
+  background-color: #ffffff;
+}
+
+// Fullscreen Minimalist Drawer
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(10, 10, 10, 0.96);
+  backdrop-filter: blur(24px);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(2rem, 5vw, 4.5rem);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 10px;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $client-accent-red;
+  }
+}
+
+.navLinksGrid {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  margin: auto 0;
+}
+
+.navItemAnchor {
+  font-family: $font-circular;
+  font-size: clamp(2rem, 5vw, 4.25rem);
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  transition: color 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5rem;
+
+  &:hover {
+    color: $client-accent-red;
+    transform: translateX(12px);
+  }
+}
+
+.navIndex {
+  font-family: $font-mono;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.35);
+  font-feature-settings: "tnum" 1;
+}
+
+.drawerFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.footerCoordinates {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.04em;
+}
+
+.startProjectBtn {
+  @include client-outline-pill-button;
+  height: 46px;
+  padding: 0 1.5rem;
+  font-size: 13px;
+  border-color: rgba(255, 255, 255, 0.3);
+
+  &:hover {
+    border-color: $client-accent-red;
+  }
+}

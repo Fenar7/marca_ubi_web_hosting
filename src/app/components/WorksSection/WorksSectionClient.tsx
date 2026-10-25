@@ -7,6 +7,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { shouldUseMobileMotion } from "@/app/lib/motion";
+import type { SanityImageSource } from "@sanity/image-url";
 import { urlFor } from "@/sanity/lib/image";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -15,8 +16,7 @@ export interface SanityWork {
     _id: string;
     title: string;
     subtext: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    coverImage: any;
+    coverImage: SanityImageSource;
     caseStudyLink?: string;
     testimonialLink?: string;
     viewWorkLink?: string;

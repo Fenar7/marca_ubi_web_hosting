@@ -1,17 +1,17 @@
 import React from "react";
 import ProjectForm from "@/app/components/ProjectForm/ProjectForm";
-import Header from "@/app/components/Header/Header";
-import Footer from "@/app/components/Footer/Footer";
+import ClientHeader from "@/app/components/ClientHeader/ClientHeader";
+import MonumentalFooter from "@/app/components/Sections/MonumentalFooter";
 
 export default function StartProjectPage() {
   return (
-    <main id="start-project" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", backgroundColor: "var(--color-light-grey)" }}>
-      <Header />
-      <h1 className="sr-only">Start a Project Brief — Marca Ubi</h1>
-      <div style={{ flex: 1, padding: "clamp(5rem, 10vw, 8rem) clamp(0.85rem, 3.5vw, 2rem) 4rem clamp(0.85rem, 3.5vw, 2rem)" }}>
+    <div data-client-shell="true" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", backgroundColor: "#0b0b0b" }}>
+      <ClientHeader />
+      <main id="start-project-main" style={{ flex: 1, padding: "clamp(6rem, 10vw, 8rem) clamp(1rem, 4vw, 3rem) 5rem" }}>
+        <h1 className="sr-only">Start a Project Brief | Marca Ubi</h1>
         <ProjectForm />
-      </div>
-      <Footer />
-    </main>
+      </main>
+      <MonumentalFooter />
+    </div>
   );
 }
