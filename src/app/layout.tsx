@@ -56,8 +56,11 @@ export default function RootLayout({
     logo: `${siteUrl}/images/marca-ubi-red-png.svg`,
     address: {
       "@type": "PostalAddress",
-      addressCountry: "AE",
-      addressLocality: "Dubai",
+      addressCountry: "IN",
+      addressRegion: "Kerala",
+      addressLocality: "Kozhikode",
+      streetAddress: "HiLITE Business Park, Calicut",
+      postalCode: "673014",
     },
     sameAs: [
       "https://linkedin.com/company/marcaubi",

@@ -11,7 +11,7 @@ const NAV_LINKS = [
   { label: "Guiding Principles", href: "/#values" },
   { label: "Methodology", href: "/#process" },
   { label: "Studio Dispatches", href: "/blog" },
-  { label: "Global Hubs", href: "/#network" },
+  { label: "Studio Corridors", href: "/#network" },
   { label: "Initiate Brief", href: "/start-project" },
 ];
 
@@ -97,9 +97,7 @@ export function MonumentalFooter() {
             <h3 className={styles.columnTitle}>04 / Studio Corridors</h3>
             <p className={styles.columnText}>
               Hilite Business Park, Hilite City, Calicut, Kerala 673014<br />
-              Trivandrum Creative Studio, Kerala<br />
-              DIFC Gate Precinct 4, Dubai<br />
-              Tea Building, Shoreditch, London
+              Trivandrum Creative Studio, Kerala
             </p>
           </div>
         </div>

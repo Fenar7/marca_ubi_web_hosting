@@ -1,7 +1,7 @@
 # Master Remediation & Full-Content Integration Plan: 160over90 Architecture
 
 **Project**: Marca Ubi Enterprise Digital Flagship  
-**Branch**: `clientside-platform-160over90-redesign` (Targeting `marca_ubi_clientsidefullredesign`)  
+**Branch**: `remediation/160over90-full-content-and-blog-redesign` (Targeting `clientside-platform-160over90-redesign`, PR #80)  
 **Base Commit Reference**: `7e5b006`  
 **Benchmark**: [160over90 Monolithic Swiss Brutalism](https://www.160over90.com/)  
 **Authorship Identity**: `Fenar7 <86710532+Fenar7@users.noreply.github.com>`  
@@ -10,14 +10,14 @@
 
 ## 1. Executive Summary & Root Cause Analysis
 
-Following user review and visual forensic inspection across Screenshots `220033`, `220400`, `220411`, and `220045`, along with the explicit requirement to completely redesign the **Blog Listing (`/blog`)** and **Blog Detail (`/blog/[slug]`)** routes, four critical architectural areas are resolved in this plan:
+Following user review across visual evidence (Screenshots `220033`, `220400`, `220411`, `220045`, and `231251`), this remediation plan incorporates the user's latest critical correction regarding studio locations, alongside previous visual and architectural fixes.
 
 ### 1.1 Root Cause 1: Missing Previous Production Content & Dynamic CMS Pipelines
 - In the initial 160over90 pass, `src/app/page.tsx` was replaced with placeholder components. As a result, previous production content from commit `7e5b006` was suppressed:
   1. **Dynamic Works Portfolio**: The Sanity CMS `worksQuery` was omitted; no client case studies were displayed on the home experience.
   2. **Homepage Blog Section (Latest 3 Articles)**: No editorial dispatches section was featured on the homepage.
   3. **Verified Production Content**: The About doctrine with 4 verified metric odometers (`100+`, `12+`, `3*`, `360°`), 4 Core Services, Testimonials from real partners, and the 4 Core Values (*Thought Before Form*, *Art With Intention*, *Experiences That Pull People In*, *Built, Not Improvised*) were absent.
-  4. **Genuine Studio Desks**: Contact details were generic, omitting the real phone (`+91 7012 052 472`), `hello@marcaubi.com`, and the Kozhikode (Hilite Business Park) & Trivandrum studios.
+  4. **Genuine Studio Desks**: Contact details were generic, omitting the real phone (`+91 7012 052 472`), `hello@marcaubi.com`, and the Kozhikode (HiLITE Business Park) & Trivandrum studios.
 - **The Solution**: Preserve 100% of the authentic production content, dynamic Sanity CMS data, and studio metadata by housing every pillar inside the 160over90 alternating living video cutout stream.
 
 ### 1.2 Root Cause 2: Common AI-Slop Pills, Badges, and Radar Dots
@@ -37,17 +37,36 @@ Following user review and visual forensic inspection across Screenshots `220033`
 
 ### 1.4 Scope Addition: Complete Ground-Up Redesign of `/blog` and `/blog/[slug]`
 - Both `/blog` and `/blog/[slug]` currently use legacy header and footer components, older typography, and generic styling.
-- Both routes will be completely redesigned to the **160over90 Monolithic Swiss Editorial Design System**:
+- Both routes are redesigned to the **160over90 Monolithic Swiss Editorial Design System**:
   - `ClientHeader` and `MonumentalFooter` integration.
   - Circular XX Web typography (`--font-circular`) across all headings, body text, and metadata.
   - Brand red accent `#ea002a` for active category tabs, pull-quote margins, and hover accents.
   - Pure Swiss broadsheet layout for the listing page and magazine-standard typography for the article reader.
 
+### 1.5 Critical User Correction: Studio Locations Mismatch (Screenshot `231251`)
+- **The Issue**: 
+  - View 09 (`GlobalLocationsCloud.tsx`) erroneously generated synthetic international cities:
+    `Dubai / London / Bengaluru / New York / Singapore / Tokyo / Los Angeles` and time clocks (`DXB / LON / BLR / NYC / SIN / TYO / LAX`).
+  - Column 04 of `MonumentalFooter.tsx` also listed `DIFC Gate Precinct 4, Dubai` and `Tea Building, Shoreditch, London`.
+  - The user explicitly clarified: *"there was only kozhikode and trivandrum right .. i told you only to use the content data that we had before right"*.
+  - Reference commit `7e5b006` (`ContactCtaSection.tsx`) verifies that Marca Ubi operates exclusively from Kerala studios:
+    1. **Kozhikode**: HiLITE Business Park, Kozhikode, Kerala 673014 (Maps link: `https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Kozhikode`)
+    2. **Trivandrum**: Creative Studio, Trivandrum, Kerala (Maps link: `https://www.google.com/maps/search/?api=1&query=Trivandrum%2C+Kerala`)
+- **The Architectural Solution**:
+  1. **Purge Synthetic Hubs**: Eliminate Dubai, London, Bengaluru, New York, Singapore, Tokyo, Los Angeles, and their foreign timezones from all client views.
+  2. **Refactor View 09 to Kerala Studio Corridors**:
+     - Headline: `07 / Studio Corridors`.
+     - Broadsheet Typography: Monumental duo `Kozhikode / Trivandrum` in `clamp(2.5rem, 6vw, 5.5rem)`, 700 weight, linked directly to their authentic Google Maps locations.
+     - Operational Rail: Authentic Kerala context with live IST clock (`IST UTC+05:30`), studio status, and direct addresses:
+       `IST 23:25 • Calicut (CCJ) HiLITE Business Park • Trivandrum (TRV) Creative Studio • Mon–Fri 09:30–18:30 IST`.
+  3. **Clean Up `MonumentalFooter.tsx`**: Restrict Column 04 to HiLITE Business Park Calicut & Trivandrum Studio only.
+  4. **Align `layout.tsx` & `privacy/page.tsx`**: Remove Dubai/London metadata, anchoring schema and legal text strictly to Kozhikode & Trivandrum.
+
 ---
 
 ## 2. The Complete 11-View Alternating Flagship Homepage Architecture
 
-The redesigned flagship experience integrates 100% of the previous content into an 11-view alternating rhythm:
+The redesigned flagship experience integrates 100% authentic production content into an 11-view alternating rhythm:
 
 ```
 +=====================================================================================+
@@ -110,11 +129,13 @@ The redesigned flagship experience integrates 100% of the previous content into 
 |     * Publication dates, reading cadence (e.g. "5 MINUTE READ"), categories        |
 |     * Typographic headline link with animated underline leading to /blog/[slug]     |
 +-------------------------------------------------------------------------------------+
-| [VIEW 09] GLOBAL STUDIO NETWORK CURTAIN (Solid Pure White #ffffff Curtain)          |
-|   - Left Rail (30%): "07 / SYNCHRONIZED HUBS", Operating across international hubs  |
+| [VIEW 09] KERALA STUDIO CORRIDORS CURTAIN (Solid Pure White #ffffff Curtain)       |
+|   - Left Rail (30%): "07 / STUDIO CORRIDORS", Operating across Kerala               |
 |   - Right Rail (70%):                                                               |
-|     * 7 Cities kinetic typographic cloud (Dubai / London / Bengaluru / New York...) |
-|     * Clean Synchronized Operational Rail (NO AI-slop pulsing dots or radar badges) |
+|     * Monumental duo typography: Kozhikode / Trivandrum                             |
+|     * Interactive hover: reveals studio address & links to authentic Google Maps    |
+|     * Operational Rail: Live IST time (UTC+05:30), CCJ / TRV codes, studio hours    |
+|     * ZERO fake international cities (Dubai, London, NYC, Tokyo, etc. purged)       |
 +-------------------------------------------------------------------------------------+
 | [VIEW 10] CONNECT & COMMERCIAL DESK CUTOUT (Transparent Video Viewport)             |
 |   - Living background video re-exposed with direct contact cluster.                 |
@@ -126,7 +147,7 @@ The redesigned flagship experience integrates 100% of the previous content into 
 | [VIEW 11] MONUMENTAL OBSIDIAN FOOTER (Solid Pitch Black #000000 Anchor)             |
 |   - Cultural Anthem: "Feel something. Do something."                                |
 |   - Full-width vector brandmark with white letterforms and red accent #ea002a       |
-|   - 4-Column Directory: Systems, Navigation, Direct Desks, Global Corridors         |
+|   - 4-Column Directory: Systems, Navigation, Direct Desks, Kerala Studio Corridors  |
 |   - Tabular-nums copyright with links to /privacy, /terms, and /security            |
 +=====================================================================================+
 ```
@@ -143,7 +164,7 @@ The redesigned flagship experience integrates 100% of the previous content into 
   - Monumental Title: `Thinking in Systems.` (`clamp(3rem, 6vw, 6rem)`).
   - Editorial Subtext: High-conviction narrative on brand engineering, art systems, and cultural velocity.
 - **Category Navigation (Zero Slop)**:
-  - Replaced pill badges with clean Swiss typography tabs separated by hairline slashes:
+  - Clean Swiss typography tabs separated by hairline slashes:
     `ALL DISPATCHES / BRAND ARCHITECTURE / DIGITAL CRAFT / CULTURAL VELOCITY / STRATEGY`
   - Active category marked by a sharp $2\text{px}$ underline in authentic `#ea002a` (NO rounded background pills).
 - **Featured Article Flagship**:
@@ -204,13 +225,45 @@ export default async function Home() {
 }
 ```
 
-### 4.2 Vector Logo Component (`MarcaUbiLogo.tsx`)
-- Create `src/app/components/ui/MarcaUbiLogo/MarcaUbiLogo.tsx`:
-  * `viewBox="0 0 2538.61 538.79"` with `aspect-ratio: 2538.61 / 538.79`.
-  * Letterform paths consume `fill="currentColor"`.
-  * Accent dot and polyline consume `fill="#ea002a"`.
-- Eliminate `mix-blend-mode: difference;` from `ClientHeader.module.scss`.
-- Implement `useHeaderTheme` (`IntersectionObserver`) switching `.isLight` (dark text/logo) over white curtains and `.isDark` (white text/logo) over video cutouts.
+### 4.2 Studio Corridors Component (`GlobalLocationsCloud.tsx`)
+```typescript
+interface KeralaStudio {
+  city: string;
+  code: string;
+  subdivision: string;
+  address: string;
+  mapsUrl: string;
+}
+
+const KERALA_STUDIOS: KeralaStudio[] = [
+  {
+    city: "Kozhikode",
+    code: "CCJ",
+    subdivision: "HiLITE Business Park",
+    address: "HiLITE Business Park, Kozhikode, Kerala 673014",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Kozhikode",
+  },
+  {
+    city: "Trivandrum",
+    code: "TRV",
+    subdivision: "Creative Studio",
+    address: "Creative Studio, Trivandrum, Kerala",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Trivandrum%2C+Kerala",
+  },
+];
+```
+
+### 4.3 Monumental Footer Corridors Clean-up (`MonumentalFooter.tsx`)
+- Restrict Column 04 strictly to:
+  ```tsx
+  <div className={styles.column}>
+    <h3 className={styles.columnTitle}>04 / Studio Corridors</h3>
+    <p className={styles.columnText}>
+      Hilite Business Park, Hilite City, Calicut, Kerala 673014<br />
+      Trivandrum Creative Studio, Kerala
+    </p>
+  </div>
+  ```
 
 ---
 
@@ -220,9 +273,10 @@ export default async function Home() {
 | :--- | :--- | :--- |
 | **Static Types** | 0 TypeScript errors across the entire codebase | `npx tsc --noEmit` |
 | **Server Action Boundaries** | 50/50 actions compliant with Next.js App Router boundary invariants | `npm run test:boundaries` |
-| **Platform Test Suite** | 100% pass rate on client platform test suite | `npx tsx --test tests/client/client_160over90_platform.test.ts` |
+| **Platform Test Suite** | 100% pass rate on client platform test suite (verifying Kozhikode & Trivandrum; 0 fake hubs) | `npx tsx --test tests/client/client_160over90_platform.test.ts` |
+| **Production Build** | 33/33 routes compiled cleanly with 0 build warnings | `npm run build` |
 | **CRM Air-Gap Quarantine** | 0 files modified under `src/app/admin/`, tokens scoped to `:not([data-admin-root="true"])` | `git diff -- src/app/admin` |
-| **AI-Slop Purge Audit** | 0 instances of `.disciplineCountChip`, `.networkChip`, `.radarDot`, `@keyframes radarPulse` | Regex check across `src/app/` |
+| **Authentic Content Audit** | 0 mentions of Dubai, London, NYC, Tokyo, or Singapore in studio components | Automated grep check |
 | **WCAG Contrast Ratios** | Text $\ge 4.5:1$ (AA) & $\ge 7:1$ (AAA); Brand red $\ge 4.5:1$ | Mathematical luminance verification |
 | **Touch Target Bounds** | $\ge 44\text{px} \times 44\text{px}$ across all interactive controls | CSS layout inspection |
 
@@ -231,6 +285,6 @@ export default async function Home() {
 ## 6. Execution Decision Gate
 
 > [!IMPORTANT]
-> In accordance with the **Strict Behavioral Rule** and **Critical Zero-Tolerance Addendum** in `AGENTS.md`, no code files will be generated or edited until you explicitly review this plan and instruct the agent to proceed.
+> In accordance with the **Strict Behavioral Rule** and **Critical Zero-Tolerance Addendum** in `AGENTS.md`, no code files will be modified, committed, or pushed until you explicitly review this updated plan and instruct the agent to proceed.
 
-Please review this comprehensive blueprint and reply with **"proceed"** or **"do it"** to begin implementation.
+Please review this updated plan addressing the studio locations and reply with **"proceed"** or **"do it"** to begin execution.

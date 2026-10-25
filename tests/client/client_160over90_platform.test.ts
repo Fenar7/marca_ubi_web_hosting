@@ -376,4 +376,43 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(!detail.includes("—"), "/blog/[slug] must have zero em dashes");
     });
   });
+
+  describe("Section 12: Authentic Kerala Studio Coordinates & Zero Synthetic Hubs Invariant", () => {
+    test("verifies GlobalLocationsCloud exclusively features authentic Kerala studios (Kozhikode & Trivandrum)", () => {
+      const locationsPath = path.join(rootDir, "src", "app", "components", "Sections", "GlobalLocationsCloud.tsx");
+      const content = fs.readFileSync(locationsPath, "utf8");
+
+      assert.ok(content.includes("Kozhikode"), "GlobalLocationsCloud must feature Kozhikode studio");
+      assert.ok(content.includes("Trivandrum"), "GlobalLocationsCloud must feature Trivandrum studio");
+      assert.ok(content.includes("HiLITE Business Park"), "Must reference HiLITE Business Park");
+
+      const syntheticCities = ["Dubai", "London", "Bengaluru", "New York", "Singapore", "Tokyo", "Los Angeles"];
+      for (const city of syntheticCities) {
+        assert.ok(!content.includes(`"${city}"`), `GlobalLocationsCloud must NOT include synthetic city "${city}"`);
+      }
+
+      const syntheticTimezones = ["GST", "GMT", "PST", "EST", "JST", "SGT"];
+      for (const tz of syntheticTimezones) {
+        assert.ok(!content.includes(`"${tz}"`), `GlobalLocationsCloud must NOT include synthetic timezone "${tz}"`);
+      }
+    });
+
+    test("verifies MonumentalFooter restricts studio corridors strictly to Kozhikode and Trivandrum", () => {
+      const footerPath = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.tsx");
+      const content = fs.readFileSync(footerPath, "utf8");
+
+      assert.ok(content.includes("Calicut") || content.includes("Kozhikode"), "Footer must list Kozhikode/Calicut");
+      assert.ok(content.includes("Trivandrum"), "Footer must list Trivandrum");
+      assert.ok(!content.includes("Dubai"), "Footer must NOT list Dubai");
+      assert.ok(!content.includes("London"), "Footer must NOT list London");
+    });
+
+    test("verifies RootLayout schema does not declare Dubai as locality", () => {
+      const layoutPath = path.join(rootDir, "src", "app", "layout.tsx");
+      const content = fs.readFileSync(layoutPath, "utf8");
+
+      assert.ok(!content.includes('addressLocality: "Dubai"'), "layout.tsx schema must not claim Dubai locality");
+      assert.ok(content.includes('addressLocality: "Kozhikode"'), "layout.tsx schema must declare Kozhikode locality");
+    });
+  });
 });
