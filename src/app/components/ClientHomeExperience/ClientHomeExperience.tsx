@@ -78,7 +78,7 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
         {/* View 07: Guiding Principles Cutout (Transparent Video with Apple HIG Vibrancy Glass Cards) */}
         <ValuesCutout />
 
-        {/* View 08: Client Evidence & Testimonials Cutout (Transparent Video) */}
+        {/* View 08: Client Evidence & Testimonials Curtain (Solid Pure White) */}
         <TestimonialsCutout />
 
         {/* View 09: Studio Dispatches & Insights Curtain (Solid Pure White with latest 3 Sanity posts) */}

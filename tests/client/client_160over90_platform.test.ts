@@ -304,7 +304,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         { file: "WorksCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "ProcessCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "ValuesCutout.tsx", expected: 'data-header-theme="dark"' },
-        { file: "TestimonialsCutout.tsx", expected: 'data-header-theme="dark"' },
+        { file: "TestimonialsCutout.tsx", expected: 'data-header-theme="light"' },
         { file: "DispatchesCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "GlobalLocationsCloud.tsx", expected: 'data-header-theme="light"' },
         { file: "ConnectCutout.tsx", expected: 'data-header-theme="dark"' },
@@ -504,6 +504,19 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("min-width: 48px"), "ClientHeader.module.scss must enforce 48px minimum width");
     });
   });
+
+
+    test("verifies TestimonialsCutout enforces solid pure white curtain tokens and shadow", () => {
+      const scssPath = path.join(rootDir, "src", "app", "components", "Sections", "TestimonialsCutout.module.scss");
+      const tsxPath = path.join(rootDir, "src", "app", "components", "Sections", "TestimonialsCutout.tsx");
+
+      const scss = fs.readFileSync(scssPath, "utf8");
+      const tsx = fs.readFileSync(tsxPath, "utf8");
+
+      assert.ok(scss.includes("$client-canvas-white"), "TestimonialsCutout must consume $client-canvas-white");
+      assert.ok(scss.includes("box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18)"), "TestimonialsCutout must declare overlap physical shadow");
+      assert.ok(tsx.includes('data-header-theme="light"'), "TestimonialsCutout must declare data-header-theme='light'");
+    });
 
   describe("Section 13: Dedicated /works Showcase Route & Navigation Invariants", () => {
     test("verifies src/app/works/page.tsx renders with ClientHeader, MonumentalFooter, and ISR revalidate", () => {

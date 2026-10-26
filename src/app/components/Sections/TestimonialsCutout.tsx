@@ -6,9 +6,10 @@ import styles from "./TestimonialsCutout.module.scss";
 
 /**
  * View 07: Client Evidence & Validation Cutout.
- * Transparent cutout exposing the living background video layer with a dark cinematic scrim.
+ * Solid pure white curtain (#ffffff) elevated above living background video cutouts.
+ * Adheres to 160over90 typographic tension and Swiss editorial clarity.
  * High-conviction executive quotation and partner attribution.
- * Marked with data-header-theme="dark" for white logo/header text.
+ * Marked with data-header-theme="light" for white logo/header text.
  */
 export function TestimonialsCutout() {
   return (
@@ -16,7 +17,7 @@ export function TestimonialsCutout() {
       className={styles.testimonialsSection}
       id="testimonials"
       aria-label="Client Testimonials and Validation"
-      data-header-theme="dark"
+      data-header-theme="light"
     >
       <div className={styles.container}>
         <div className={styles.contentWrapper}>
