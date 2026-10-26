@@ -270,7 +270,7 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
       <div className={styles.worksTitleWrap}>
         <div className={styles.titleSectionContainer}>
           <h2>
-            <span className={styles.worksTitleFill}>CURATED WORKS</span>
+            <span className={styles.worksTitleFill}>Curated Works</span>
           </h2>
         </div>
       </div>

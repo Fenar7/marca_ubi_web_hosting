@@ -132,3 +132,14 @@ When the homepage was redesigned to feature `WorksCutout.tsx` (the transparent v
     - Primary CTA updated to `View Work ↗` (with `Live Platform ↗` when live link is present).
     - Multi-directional scrim gradient (left-to-right dark gradient + bottom fade) guaranteeing 21:1 WCAG AAA contrast for left-anchored typography.
 
+---
+
+## 12. Pinned Title Refinement: Natural Case, Weight & Scale Calibration
+- **Visual Defect**: The pinned section transition title `CURATED WORKS` was styled in all-caps, heavy font-weight (`500` CircularXXWeb-Medium), and colossal fluid scale (`clamp(3rem, 9.5vw, 9.5rem)` / ~152px), which overwhelmed the masthead and disrupted typographic hierarchy.
+- **Remediation**:
+  - **Natural Title Case**: Changed JSX text to `Curated Works` and set `text-transform: none` in `.titleSectionContainer h2`.
+  - **Weight Reduction**: Stepped down from `font-weight: 500` to `font-weight: 400` (`CircularXXWeb-Book` / `$fw-book`) for sharp hairline definition.
+  - **Scale Calibration**: Reduced font size clamp by ~45% from `clamp(3rem, 9.5vw, 9.5rem)` to `clamp(2.25rem, 5.5vw, 4.75rem)` (~36px–76px) and tightened `.titleSectionContainer` minimum height to `clamp(14rem, 28vw, 28rem)`.
+  - **Optical Tracking**: Adjusted letter-spacing from `-0.035em` to `-0.025em` to suit natural Title Case ascenders/descenders.
+
+
