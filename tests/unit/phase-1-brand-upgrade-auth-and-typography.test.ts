@@ -19,7 +19,7 @@ describe('Phase 1 Brand Upgrade: Authentication Portal & Typography Hygiene Suit
   const resetScssPath = path.resolve(process.cwd(), 'src/app/admin/reset-password/reset-password.module.scss');
   const resetFormPath = path.resolve(process.cwd(), 'src/app/admin/reset-password/ResetPasswordForm.tsx');
   const resetPagePath = path.resolve(process.cwd(), 'src/app/admin/reset-password/page.tsx');
-  const workloadScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ManagerWorkloadCard.module.scss');
+  const workloadScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/PipelineAllocationCard.module.scss');
   const tokensScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/tokens.scss');
 
   describe('1. Brand Soul & Authentic Logo Coloration', () => {
@@ -71,31 +71,29 @@ describe('Phase 1 Brand Upgrade: Authentication Portal & Typography Hygiene Suit
     });
   });
 
-  describe('3. Elimination of Courier New Typewriter Monospace Font Leak', () => {
-    it('verifies ManagerWorkloadCard.module.scss metricValue uses primary sans with tabular-nums', () => {
-      const content = fs.readFileSync(workloadScssPath, 'utf8');
-      const metricValueBlock = content.match(/\.metricValue\s*\{[\s\S]*?\}/)?.[0] || '';
-      assert.ok(metricValueBlock.includes('var(--font-admin-sans'));
-      assert.ok(metricValueBlock.includes('font-variant-numeric: tabular-nums;'));
-      assert.ok(metricValueBlock.includes("font-feature-settings: 'tnum' 1;"));
-      assert.strictEqual(metricValueBlock.includes('var(--font-admin-code, monospace)'), false);
+    describe('3. Elimination of Courier New Typewriter Monospace Font Leak', () => {
+    it('verifies ExecutiveKpiGrid.module.scss kpiValue uses primary sans with tabular-nums', () => {
+      const kpiScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ExecutiveKpiGrid.module.scss');
+      const content = fs.readFileSync(kpiScssPath, 'utf8');
+      const kpiValueBlock = content.match(/\.kpiValue\s*\{[\s\S]*?\}/)?.[0] || '';
+      assert.ok(kpiValueBlock.includes('var(--font-admin-sans'));
+      assert.ok(kpiValueBlock.includes('font-variant-numeric: tabular-nums'));
+      assert.ok(kpiValueBlock.includes("font-feature-settings: 'tnum' 1"));
+      assert.strictEqual(kpiValueBlock.includes('var(--font-admin-code, monospace)'), false);
     });
 
-    it('verifies ManagerWorkloadCard.module.scss statValue uses primary sans with tabular-nums', () => {
-      const content = fs.readFileSync(workloadScssPath, 'utf8');
-      const statValueBlock = content.match(/\n\.statValue\s*\{[\s\S]*?\}/)?.[0] || '';
-      assert.ok(statValueBlock.includes('var(--font-admin-sans'));
-      assert.ok(statValueBlock.includes('font-variant-numeric: tabular-nums;'));
-      assert.ok(statValueBlock.includes("font-feature-settings: 'tnum' 1;"));
-      assert.strictEqual(statValueBlock.includes('var(--font-admin-code, monospace)'), false);
+    it('verifies CommercialDealsTable.module.scss valuation uses modern numeric typography', () => {
+      const dealsScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/CommercialDealsTable.module.scss');
+      const content = fs.readFileSync(dealsScssPath, 'utf8');
+      assert.ok(content.includes('tabular-nums'));
+      assert.strictEqual(content.includes("font-family: 'Courier New'"), false);
     });
 
-    it('verifies workload pills utilize tabular numerals and modern typography', () => {
-      const content = fs.readFileSync(workloadScssPath, 'utf8');
-      assert.ok(content.includes('.pillAmber'));
-      assert.ok(content.includes('.pillOrange'));
-      assert.ok(content.includes('.pillRed'));
-      assert.ok(content.includes('.pillClear'));
+    it('verifies KPI scorecards utilize tabular numerals and modern typography', () => {
+      const kpiScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ExecutiveKpiGrid.module.scss');
+      const content = fs.readFileSync(kpiScssPath, 'utf8');
+      assert.ok(content.includes('.deltaPill'));
+      assert.ok(content.includes('tabular-nums'));
     });
 
     it('verifies tokens.scss defines modern system monospace stack in font-admin-code', () => {

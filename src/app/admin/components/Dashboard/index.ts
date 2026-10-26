@@ -2,7 +2,7 @@
  * @file index.ts
  * @description Centralized barrel export for Executive Overview & Revenue Intelligence components.
  *              Exports all core MedTrackr-benchmarked executive dashboard modules and maintains
- *              backward-compatible aliases for legacy consuming views.
+ *              backward-compatible aliases for consuming views.
  * @module admin/components/Dashboard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -27,7 +27,3 @@ export {
 export { ExecutiveKpiGrid as MinimalistStatPods } from './ExecutiveKpiGrid';
 export { RevenueDynamicsCard as PerformanceChart } from './RevenueDynamicsCard';
 export { CommercialDealsTable as CurrentDealsTable } from './CommercialDealsTable';
-
-// Auxiliary Workload & Activity Intelligence Modules
-export { ManagerWorkloadCard, type ManagerWorkloadCardProps } from './ManagerWorkloadCard';
-export { ExecutiveActivityRail, type ActivityFeedItem } from './ExecutiveActivityRail';

@@ -276,15 +276,18 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
   });
 
   describe("Section 9: AI-Slop Eradication: Badges, Pills & Pulsing Radar Dots", () => {
-    test("asserts eradication of .disciplineCountChip and pill badges from CapabilitiesCloud", () => {
-      const tsxPath = path.join(rootDir, "src", "app", "components", "Sections", "CapabilitiesCloud.tsx");
-      const scssPath = path.join(rootDir, "src", "app", "components", "Sections", "CapabilitiesCloud.module.scss");
-
-      const tsx = fs.readFileSync(tsxPath, "utf8");
-      const scss = fs.readFileSync(scssPath, "utf8");
-
-      assert.ok(!tsx.includes("disciplineCountChip"), "CapabilitiesCloud.tsx must not contain disciplineCountChip");
-      assert.ok(!scss.includes("disciplineCountChip"), "CapabilitiesCloud.module.scss must not contain disciplineCountChip");
+    test("asserts eradication of orphaned client sections (CapabilitiesCloud, CareersCutout, EditorialManifesto)", () => {
+      const orphanedFiles = [
+        "src/app/components/Sections/CapabilitiesCloud.tsx",
+        "src/app/components/Sections/CapabilitiesCloud.module.scss",
+        "src/app/components/Sections/CareersCutout.tsx",
+        "src/app/components/Sections/EditorialManifesto.tsx",
+        "src/app/components/Sections/EditorialManifesto.module.scss",
+      ];
+      for (const relPath of orphanedFiles) {
+        const fullPath = path.join(rootDir, relPath);
+        assert.ok(!fs.existsSync(fullPath), `Orphaned draft file ${relPath} must be eradicated from production tree`);
+      }
     });
 
     test("asserts eradication of .networkChip, .radarDot, and @keyframes radarPulse from GlobalLocationsCloud", () => {

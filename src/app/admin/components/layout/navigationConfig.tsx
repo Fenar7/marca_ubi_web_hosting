@@ -44,10 +44,12 @@ export function isTabAuthorized(tabKey: CrmTabKey, user: CurrentUserSession | nu
     return true;
   }
 
+  // Non-empty custom tab permissions override role defaults
   if (Array.isArray(user.allowed_tabs) && user.allowed_tabs.length > 0) {
     return user.allowed_tabs.includes(tabKey);
   }
 
+  // Role Default Fallback
   const roleDefaults = user.role ? ROLE_DEFAULT_TABS[user.role] : undefined;
   if (roleDefaults) {
     return Boolean(roleDefaults[tabKey]);

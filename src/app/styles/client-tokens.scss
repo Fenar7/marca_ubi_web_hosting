@@ -6,84 +6,8 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-// SASS Font Families
-$font-circular: var(--font-circular), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-$font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+@import "./client-mixins.scss";
 
-// Brand Colors (The 60-30-10 Rule)
-$client-accent-red: #ea002a;
-$client-accent-red-hover: #c40023;
-$client-accent-red-glow: rgba(234, 0, 42, 0.35);
-
-$client-canvas-white: #ffffff;
-$client-canvas-black: #000000;
-
-$client-text-dark: #0a0a0a;
-$client-text-body-dark: #444444;
-$client-text-muted-dark: #666666;
-
-$client-text-light: #ffffff;
-$client-text-secondary-light: rgba(255, 255, 255, 0.85);
-
-$client-border-editorial: rgba(0, 0, 0, 0.08);
-$client-border-pill: rgba(255, 255, 255, 0.75);
-$client-border-pill-hover: #ea002a;
-$client-slash-neutral: #c4c4c4;
-
-$client-video-scrim: rgba(0, 0, 0, 0.45);
-
-// Reusable Mixins for 160over90 Aesthetic
-@mixin client-outline-pill-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 0 2rem;
-  height: 54px;
-  min-height: 44px; // WCAG tap target
-  border-radius: 2px;
-  border: 1.5px solid $client-border-pill;
-  background-color: transparent;
-  color: $client-text-light;
-  font-family: $font-circular;
-  font-size: 15px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover {
-    background-color: $client-accent-red;
-    border-color: $client-accent-red;
-    box-shadow: 0 10px 24px $client-accent-red-glow;
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 4px;
-  }
-}
-
-@mixin client-swiss-grid {
-  display: grid;
-  grid-template-columns: 28% 72%;
-  column-gap: clamp(2rem, 5vw, 6rem);
-  row-gap: 2rem;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 clamp(1.5rem, 5vw, 5rem);
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    row-gap: 2.5rem;
-    padding: 0 1.5rem;
-  }
-}
 
 // Global CSS Custom Properties (Strictly isolated from CRM Admin)
 :root:not([data-admin-root="true"]),
@@ -91,6 +15,7 @@ $client-video-scrim: rgba(0, 0, 0, 0.45);
   --client-font-primary: var(--font-circular), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --client-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
+  --client-min-touch-target: 44px;
   --client-accent-red: #ea002a;
   --client-accent-red-hover: #c40023;
   --client-accent-red-glow: rgba(234, 0, 42, 0.35);

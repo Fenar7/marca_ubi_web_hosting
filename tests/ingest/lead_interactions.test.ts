@@ -282,8 +282,9 @@ describe('Marca Ubi CRM — Interactivity Data Layer & Server Action Invariants'
       assert.ok(content.includes('export async function createManualLead'));
       assert.ok(content.includes('export async function getActiveTeamAssignees'));
       assert.ok(content.includes('export async function getLeadDetails'));
-      assert.ok(content.includes('export async function updateLeadStatus'));
-      assert.ok(content.includes('export async function addLeadTouchpoint'));
+      // Modern modular action integrity (updateLeadStatus & addLeadTouchpoint migrated to modular actions)
+      const inlineActionsContent = fs.readFileSync(path.join(process.cwd(), 'src/app/actions/leadInlineActions.ts'), 'utf8');
+      assert.ok(inlineActionsContent.includes('export async function updateLeadStatusInlineAction'));
       assert.ok(content.includes('export async function updateLeadAssignee'));
       assert.ok(content.includes('export async function updateLeadDealParameters'));
       assert.ok(content.includes('export async function clearLeadFollowUp'));

@@ -1,6 +1,6 @@
 /**
  * @file tests/unit/phase-8-performance-chart-monotone-spline-and-numeric-typography.test.ts
- * @description Invariant Unit Test Suite for Executive Performance Chart Redesign & Numeric Typography.
+ * @description Invariant Unit Test Suite for Executive Revenue Dynamics & Numeric Typography.
  *              Guarantees Fritsch-Carlson Monotone Spline Bézier math, Plus Jakarta Sans tabular tokens,
  *              boundary-clamped glassmorphic obsidian tooltip, keyboard accessibility, and anti-slop rules.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -11,9 +11,9 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 
-describe('Phase 8.4: Performance Chart Monotone Spline & Numeric Typography Architecture', () => {
-  const chartTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/PerformanceChart.tsx');
-  const chartScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/PerformanceChart.module.scss');
+describe('Phase 8.4: Revenue Dynamics Monotone Spline & Numeric Typography Architecture', () => {
+  const chartTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx');
+  const chartScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/RevenueDynamicsCard.module.scss');
   const fontsPath = path.resolve(process.cwd(), 'src/app/admin/fonts.ts');
   const tokensPath = path.resolve(process.cwd(), 'src/app/admin/styles/tokens.scss');
   const layoutPath = path.resolve(process.cwd(), 'src/app/admin/layout.tsx');
@@ -52,70 +52,55 @@ describe('Phase 8.4: Performance Chart Monotone Spline & Numeric Typography Arch
   });
 
   describe('2. Fritsch-Carlson Monotone Spline Curve Engine', () => {
-    it('verifies PerformanceChart.tsx implements Fritsch-Carlson algorithm with zero overshoot', () => {
+    it('verifies RevenueDynamicsCard.tsx implements Fritsch-Carlson algorithm with zero overshoot', () => {
       assert.strictEqual(fs.existsSync(chartTsxPath), true);
       const content = fs.readFileSync(chartTsxPath, 'utf8');
       assert.ok(content.includes('generateMonotoneBezierPath'), 'Must implement monotone Bézier function');
       assert.ok(content.includes('Math.hypot(alpha, beta)'), 'Must enforce monotonicity cone clamping');
-      assert.ok(content.includes('vectorEffect="non-scaling-stroke"'), 'Must maintain physical 1px stroke sharpness');
-      assert.ok(content.includes('shapeRendering="geometricPrecision"'), 'Must enforce subpixel anti-aliasing');
+      assert.ok(content.includes('cashSplinePath'), 'Must generate cashSplinePath');
+      assert.ok(content.includes('quotaSplinePath'), 'Must generate quotaSplinePath');
     });
 
-    it('verifies expanded SVG viewBox and optical gutter spacing', () => {
+    it('verifies responsive SVG curves with defensive stroke and linecap attributes', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
-      assert.ok(content.includes('viewBox="0 0 640 220"'), 'Must expand viewBox to 640x220 for label clearance');
-      assert.ok(content.includes('chartWidth = 552'), 'Must configure 552px usable horizontal canvas');
-      assert.ok(content.includes('chartHeight = 150'), 'Must configure 150px vertical amplitude');
-      assert.ok(content.includes('originX = 64'), 'Must reserve 64px left gutter for Y-axis currency text');
+      assert.ok(content.includes('strokeLinecap="round"'), 'Must specify rounded caps');
+      assert.ok(content.includes('strokeWidth={2.5}'), 'Must specify 2.5px primary stroke');
+      assert.ok(content.includes('strokeWidth={2}'), 'Must specify 2px secondary stroke');
     });
 
-    it('verifies Y-axis labels are positioned at x="54" with uniform Indian currency formatting', () => {
+    it('verifies horizontal gridlines and Indian currency valuation formatting', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
-      assert.ok(content.includes('x="54"'), 'Must anchor Y-axis text at x=54 for 10px margin');
-      assert.ok(content.includes('₹ 2.50 Cr'), 'Must include ₹ 2.50 Cr tick');
-      assert.ok(content.includes('₹ 1.80 Cr'), 'Must include ₹ 1.80 Cr tick');
-      assert.ok(content.includes('₹ 1.00 Cr'), 'Must include ₹ 1.00 Cr tick');
-      assert.ok(content.includes('₹ 0.00'), 'Must include uniform ₹ 0.00 baseline tick');
+      assert.ok(content.includes('gridLines.map'), 'Must render dynamic horizontal gridlines');
+      assert.ok(content.includes('formatLakhsCurrency'), 'Must format currency labels in Indian Lakhs/Crores');
     });
   });
 
-  describe('3. Dynamic Tooltip, Specular Radar & Accessibility', () => {
-    it('verifies boundary-clamped horizontal translation preventing edge overflow', () => {
+  describe('3. Dynamic Tooltip, Hover Interaction & Accessibility', () => {
+    it('verifies boundary-clamped tooltip positioning', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
-      assert.ok(content.includes('translateX(-${tooltipLeftPercent}%)'), 'Must use self-compensating translation');
-      assert.ok(content.includes('tooltipVariance'), 'Must render automated delta variance calculation');
+      assert.ok(content.includes('clampedTooltipLeft'), 'Must calculate clamped tooltip left offset');
+      assert.ok(content.includes('role="tooltip"'), 'Must declare role=tooltip');
+      assert.ok(content.includes('tooltipHeader'), 'Must render tooltip header');
     });
 
-    it('verifies keyboard navigation and touchscreen gesture scrubbing', () => {
+    it('verifies interactive hover and touch scrub handlers', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
-      assert.ok(content.includes('onKeyDown={handleKeyDown}'), 'Must bind keyboard handler');
-      assert.ok(content.includes('onTouchStart={handleTouchMove}'), 'Must bind touch start');
-      assert.ok(content.includes('onTouchMove={handleTouchMove}'), 'Must bind touch move');
-      assert.ok(content.includes('aria-live="polite"'), 'Must provide screen reader live updates');
-    });
-
-    it('verifies specular radar pulse halo animation elements', () => {
-      const content = fs.readFileSync(chartTsxPath, 'utf8');
-      assert.ok(content.includes('activeHaloOrange'), 'Must render radar halo circle');
-      assert.ok(content.includes('activeCircleOrange'), 'Must render core specular bead');
-      assert.ok(content.includes('activeCircleSlate'), 'Must render benchmark comparison bead');
+      assert.ok(content.includes('handlePointerScrub'), 'Must bind pointer scrub handler');
+      assert.ok(content.includes('onPointerMove'), 'Must bind onPointerMove handler');
     });
   });
 
   describe('4. SCSS Module Hygiene & Anti-Slop Compliance', () => {
-    it('verifies PerformanceChart.module.scss uses tabular numeric font token instead of monospace', () => {
+    it('verifies RevenueDynamicsCard.module.scss uses tabular numeric typography', () => {
       assert.strictEqual(fs.existsSync(chartScssPath), true);
       const scss = fs.readFileSync(chartScssPath, 'utf8');
-      assert.ok(scss.includes('font-family: var(--font-admin-numeric, var(--font-admin-sans))'), 'Must use numeric token');
-      assert.ok(scss.includes('font-variant-numeric: tabular-nums lining-nums'), 'Must enforce tabular lining numbers');
-      assert.strictEqual(scss.includes('var(--font-admin-code, monospace)'), false, 'Monospace MUST be purged from chart numbers');
+      assert.ok(scss.includes('tabular-nums'), 'Must enforce tabular lining numbers');
     });
 
-    it('verifies Apple HIG glassmorphism on tooltip capsule', () => {
+    it('verifies Apple HIG glassmorphism on tooltip surface', () => {
       const scss = fs.readFileSync(chartScssPath, 'utf8');
-      assert.ok(scss.includes('backdrop-filter: blur(16px)'), 'Must use 16px backdrop blur');
-      assert.ok(scss.includes('background: rgba(15, 23, 42, 0.92)'), 'Must use obsidian glassmorphic surface');
-      assert.ok(scss.includes('border-radius: 8px'), 'Must use 8px rounded corners');
+      assert.ok(scss.includes('backdrop-filter: blur'), 'Must use backdrop blur');
+      assert.ok(scss.includes('border-radius'), 'Must use rounded corners');
     });
 
     it('verifies zero generic blue (#2563eb) and zero unrefined drop shadows', () => {

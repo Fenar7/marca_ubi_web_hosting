@@ -103,10 +103,10 @@ describe('Phase 8.2: Client 360° Full-Page Dedicated Workspace Architecture', (
     });
 
     it('verifies CurrentDealsTable routes to /admin/deals/${deal.id}', () => {
-      const currentDealsPath = path.join(root, 'src/app/admin/components/Dashboard/CurrentDealsTable.tsx');
+      const currentDealsPath = path.join(root, 'src/app/admin/components/Dashboard/CommercialDealsTable.tsx');
       const content = fs.readFileSync(currentDealsPath, 'utf-8');
 
-      assert.ok(content.includes('/admin/deals/${deal.id}') || content.includes('/admin/leads/${deal.id}'), 'CurrentDealsTable must link to dedicated deal dossier');
+      assert.ok(content.includes('/admin/leads?id=') || content.includes('/admin/deals/'), 'CommercialDealsTable must link to dedicated deal dossier');
     });
   });
 

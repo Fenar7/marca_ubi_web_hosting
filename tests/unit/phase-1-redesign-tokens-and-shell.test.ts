@@ -213,14 +213,13 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
       );
       assert.strictEqual(fs.existsSync(dropdownScssPath), true);
       const content = fs.readFileSync(dropdownScssPath, 'utf8');
-      assert.ok(content.includes('.menuEmail'));
-      assert.ok(content.includes('.menuTitle'));
+      assert.ok(content.includes('.userTrigger'));
+      assert.ok(content.includes('.triggerAvatar'));
+      assert.ok(content.includes('.dropdownMenu'));
+      assert.ok(content.includes('.userEmail'));
+      assert.ok(content.includes('.workspaceStatusRow'));
       assert.ok(content.includes('.divider'));
-      assert.ok(content.includes('.menuSection'));
-      assert.ok(content.includes('.menuInfoRow'));
-      assert.ok(content.includes('.infoKey'));
-      assert.ok(content.includes('.infoVal'));
-      assert.ok(content.includes('.infoValGreen'));
+      assert.ok(content.includes('.menuItem'));
       assert.ok(content.includes('.signOutButton'));
     });
 

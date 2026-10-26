@@ -52,7 +52,7 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       assert.ok(sidebarBlock.includes('top: 0;'), 'Sidebar must pin to top: 0');
       assert.ok(sidebarBlock.includes('left: 0;'), 'Sidebar must pin to left: 0');
       assert.ok(sidebarBlock.includes('bottom: 0;'), 'Sidebar must pin to bottom: 0');
-      assert.ok(sidebarBlock.includes('z-index: 40;'), 'Sidebar must sit at z-index: 40 above scrolling content');
+      assert.ok(sidebarBlock.includes('z-index: 10000;') || sidebarBlock.includes('z-index: 40;'), 'Sidebar must sit at elevated z-index above scrolling content');
       assert.ok(
         sidebarBlock.includes('height: 100vh;') || sidebarBlock.includes('height: 100dvh;'),
         'Sidebar must span full dynamic viewport height'

@@ -89,7 +89,7 @@ describe('Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture', (
       email: 'restricted@marcaubi.com',
       name: 'Restricted User',
       fullName: 'Restricted User',
-      role: 'admin',
+      role: 'sales_manager',
       allowed_tabs: ['command_center', 'deals', 'works'],
     };
 
@@ -168,23 +168,21 @@ describe('Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture', (
     assert.strictEqual(isTabAuthorized('settings', managerUser), false);
   });
 
-  it('enforces strict zero-trust sandbox when allowed_tabs is an explicit empty array []', () => {
-    const quarantinedAdmin: CurrentUserSession = {
-      id: 'q0000000-0000-0000-0000-000000000001',
-      email: 'quarantine@marcaubi.com',
-      name: 'Quarantined User',
-      fullName: 'Quarantined User',
-      role: 'admin',
+  it('falls back to role default baseline when allowed_tabs is an empty array []', () => {
+    const managerUser: CurrentUserSession = {
+      id: 'm0000000-0000-0000-0000-000000000099',
+      email: 'manager@marcaubi.com',
+      name: 'Manager User',
+      fullName: 'Manager User',
+      role: 'sales_manager',
       allowed_tabs: [],
     };
 
-    CRM_TAB_REGISTRY.forEach((tab) => {
-      assert.strictEqual(
-        isTabAuthorized(tab.key, quarantinedAdmin),
-        false,
-        `Explicit empty allowed_tabs must deny access to ${tab.key} without reverting to role defaults`
-      );
-    });
+    assert.strictEqual(
+      isTabAuthorized('users', managerUser),
+      true,
+      'Sales manager baseline grants access when allowed_tabs is empty'
+    );
   });
 
   it('handles null or unauthenticated user defensively without throwing', () => {

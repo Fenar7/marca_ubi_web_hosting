@@ -43,8 +43,8 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
   const pageTsxPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/page.tsx');
   const pageScssPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/page.module.scss');
   const kpiScssPath = path.resolve(process.cwd(), 'src/app/admin/components/kpi/KpiRibbon.module.scss');
-  const workloadTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ManagerWorkloadCard.tsx');
-  const workloadScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ManagerWorkloadCard.module.scss');
+  const pipelineAllocationTsxPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/PipelineAllocationCard.tsx');
+  const pipelineAllocationScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/PipelineAllocationCard.module.scss');
   const activityRowItemPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/components/ActivityRowItem.tsx');
 
   describe('1. WCAG AAA Contrast Engine & Token Mathematics', () => {
@@ -100,11 +100,12 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
       assert.strictEqual(scss.includes('#ff6100'), false);
     });
 
-    it('verifies page.module.scss adopts Sypher light canvas (#f7f8fa) and Accordion Lemon Yellow pill', () => {
+    it('verifies page.module.scss adopts Sypher light canvas (#f7f8fa) and modular layout grid', () => {
       const scss = fs.readFileSync(pageScssPath, 'utf8');
       assert.ok(scss.includes('--admin-canvas-bg') || scss.includes('#f7f8fa'));
-      assert.ok(scss.includes('--admin-accent-lemon') || scss.includes('#eefb87'));
-      assert.ok(scss.includes('border-radius: var(--admin-radius-pill') || scss.includes('border-radius: 9999px'));
+      assert.ok(scss.includes('.dashboardContainer'));
+      assert.ok(scss.includes('.fluidCanvas'));
+      assert.ok(scss.includes('.midTierGrid'));
     });
 
     it('verifies purge of military/hacker jargon in page.tsx', () => {
@@ -114,12 +115,12 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
       assert.strictEqual(tsx.includes('Pipeline Ops'), false);
     });
 
-    it('verifies Phase 7 Logip architectural components mounted in page.tsx', () => {
+    it('verifies MedTrackr Executive architectural components mounted in page.tsx', () => {
       const tsx = fs.readFileSync(pageTsxPath, 'utf8');
-      assert.ok(tsx.includes('MinimalistStatPods'));
-      assert.ok(tsx.includes('PerformanceChart'));
-      assert.ok(tsx.includes('CurrentDealsTable'));
-      assert.ok(tsx.includes('ExecutiveActivityRail'));
+      assert.ok(tsx.includes('ExecutiveMasthead'));
+      assert.ok(tsx.includes('ExecutiveKpiGrid'));
+      assert.ok(tsx.includes('RevenueDynamicsCard'));
+      assert.ok(tsx.includes('CommercialDealsTable'));
     });
   });
 
@@ -151,51 +152,30 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
     });
   });
 
-  describe('4. Manager Workload Oversight Card Architecture', () => {
-    it('verifies editorial period on title in ManagerWorkloadCard.tsx', () => {
-      const tsx = fs.readFileSync(workloadTsxPath, 'utf8');
-      assert.ok(tsx.includes('Representative Workload Oversight.'));
+  describe('4. Pipeline Stage Allocation & Velocity Engine Architecture', () => {
+    it('verifies editorial period on title in PipelineAllocationCard.tsx', () => {
+      const tsx = fs.readFileSync(pipelineAllocationTsxPath, 'utf8');
+      assert.ok(tsx.includes('Pipeline Stage Allocation'));
     });
 
-    it('verifies ManagerWorkloadCard.module.scss purges legacy obsidian and brand orange (#ff6100)', () => {
-      const scss = fs.readFileSync(workloadScssPath, 'utf8');
-      assert.strictEqual(scss.includes('#121216'), false);
-      assert.strictEqual(scss.includes('#ff6100'), false);
+    it('verifies WCAG AA compliant stage colors in PipelineAllocationCard.tsx', () => {
+      const tsx = fs.readFileSync(pipelineAllocationTsxPath, 'utf8');
+      assert.ok(tsx.includes('#0284c7')); // Deep Ocean Sky
+      assert.ok(tsx.includes('#4f46e5')); // Royal Slate Indigo
+      assert.ok(tsx.includes('#d97706')); // Executive Amber
+      assert.ok(tsx.includes('#059669')); // Mint Emerald
+      assert.ok(tsx.includes('#ff6100')); // Marca Orange
     });
 
-    it('verifies batch button uses Accordion primary pill styling', () => {
-      const scss = fs.readFileSync(workloadScssPath, 'utf8');
-      assert.ok(scss.includes('--admin-accent-lemon') || scss.includes('#eefb87'));
+    it('verifies tabular numerals are enforced in PipelineAllocationCard.module.scss', () => {
+      const scss = fs.readFileSync(pipelineAllocationScssPath, 'utf8');
+      assert.ok(scss.includes('font-variant-numeric: tabular-nums') || scss.includes('tabular-nums'));
     });
 
-    it('verifies minimum 44px touch targets on interactive overdue pills via pseudo-elements', () => {
-      const scss = fs.readFileSync(workloadScssPath, 'utf8');
-      assert.ok(scss.includes('min-width: 44px'));
-      assert.ok(scss.includes('min-height: 44px'));
-    });
-
-    it('verifies deep links with sanitization in ManagerWorkloadCard.tsx', () => {
-      const tsx = fs.readFileSync(workloadTsxPath, 'utf8');
-      assert.ok(tsx.includes('/admin/deals?assigned_to='));
-      assert.ok(tsx.includes('/admin/leads?assigned_to='));
-      assert.ok(tsx.includes('encodeURIComponent'));
-    });
-
-    it('verifies zero em dashes (—) in ManagerWorkloadCard.tsx per Anti-Slop Rule R-02', () => {
-      const tsx = fs.readFileSync(workloadTsxPath, 'utf8');
-      assert.strictEqual(tsx.includes('—'), false);
-    });
-
-    it('verifies summaryMetricLink holds divider borders in ManagerWorkloadCard.module.scss', () => {
-      const scss = fs.readFileSync(workloadScssPath, 'utf8');
-      assert.ok(scss.includes('.summaryMetricLink'));
-      assert.ok(scss.includes('border-right: 1px solid var(--admin-border-subtle'));
-    });
-
-    it('verifies statItemLink satisfies minimum 44px touch target', () => {
-      const scss = fs.readFileSync(workloadScssPath, 'utf8');
-      assert.ok(scss.includes('.statItemLink'));
-      assert.ok(scss.includes('min-height: 44px'));
+    it('verifies single continuous distribution bar and borderless ledger rows', () => {
+      const scss = fs.readFileSync(pipelineAllocationScssPath, 'utf8');
+      assert.ok(scss.includes('.segmentedBarTrack'));
+      assert.ok(scss.includes('.stageLedgerRow'));
     });
   });
 
@@ -224,9 +204,9 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
       assert.ok(pageTsx.includes("redirect('/admin/login?next=%2Fadmin')"));
     });
 
-    it('verifies newLeadBtn and activityRow enforce 44px touch targets in page.module.scss', () => {
-      const scss = fs.readFileSync(pageScssPath, 'utf8');
-      assert.ok(scss.includes('min-height: 44px'));
+    it('verifies newLeadBtn enforces 44px touch target in ExecutiveMasthead.module.scss', () => {
+      const mastheadScss = fs.readFileSync(path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ExecutiveMasthead.module.scss'), 'utf8');
+      assert.ok(mastheadScss.includes('min-height: 44px'));
     });
   });
 });
