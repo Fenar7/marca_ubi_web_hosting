@@ -17,7 +17,8 @@ interface ClientHeaderProps {
  * using an active IntersectionObserver sensor, switching between `.isDark` (white logo & text)
  * and `.isLight` (dark logo & text) with zero cyan color corruption.
  *
- * Integrates with the decoupled 160/90 benchmark split NavigationOverlay.
+ * Integrates with the decoupled 160/90 benchmark split NavigationOverlay
+ * and features the 3-line rounded pill hamburger trigger.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -87,6 +88,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
             </span>
             <div className={styles.burgerStack} aria-hidden="true">
               <span className={`${styles.burgerLine} ${isDrawerOpen ? styles.lineOpenTop : ""}`} />
+              <span className={`${styles.burgerLine} ${isDrawerOpen ? styles.lineOpenMiddle : ""}`} />
               <span className={`${styles.burgerLine} ${isDrawerOpen ? styles.lineOpenBottom : ""}`} />
             </div>
           </button>
