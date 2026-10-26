@@ -47,9 +47,18 @@ export type EnvConfig = z.infer<typeof envSchema>;
  * @returns {EnvConfig} The validated and strictly-typed environment configuration object.
  */
 export function validateEnv(customEnv?: Record<string, string | undefined>): EnvConfig {
+  // Detect Next.js compilation / build phase to support static analysis without failing when env secrets are bound to runtime
+  const isBuildPhase =
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.npm_lifecycle_event === 'build';
+
   const envToValidate = customEnv || {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SUPABASE_URL:
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      (isBuildPhase ? 'https://placeholder-build-phase.supabase.co' : undefined),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      (isBuildPhase ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.build_phase_placeholder_key_marca_ubi_crm_enterprise' : undefined),
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     NODE_ENV: process.env.NODE_ENV,
   };
