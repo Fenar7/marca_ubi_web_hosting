@@ -73,11 +73,11 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
           ctaHref="/works"
         />
 
-        {/* View 06: Guiding Principles Cutout (Transparent Video with Apple HIG Vibrancy Glass Cards) */}
-        <ValuesCutout />
-
-        {/* View 07: Strategy & Delivery Methodology Curtain (Solid Pure White) */}
+        {/* View 06: Strategy & Delivery Methodology Curtain (Solid Pure White) */}
         <ProcessCurtain />
+
+        {/* View 07: Guiding Principles Cutout (Transparent Video with Apple HIG Vibrancy Glass Cards) */}
+        <ValuesCutout />
 
         {/* View 08: Client Evidence & Testimonials Cutout (Transparent Video) */}
         <TestimonialsCutout />

@@ -33,7 +33,7 @@ const VALUES: ValueCard[] = [
 ];
 
 /**
- * View 05: Guiding Principles & Philosophy Cutout.
+ * View 07: Guiding Principles & Philosophy Cutout (Section 04).
  * Transparent cutout exposing the living background video layer.
  * Enforces Apple HIG Vibrancy glass cards on an obsidian viewport.
  * Marked with data-header-theme="dark" for white logo/header text.
@@ -49,7 +49,7 @@ export function ValuesCutout() {
       <div className={styles.container}>
         {/* Header Stage */}
         <header className={styles.sectionHeader}>
-          <span className={styles.kicker}>03 / Guiding Principles</span>
+          <span className={styles.kicker}>04 / Guiding Principles</span>
           <h2 className={styles.headline}>What Shapes The Way We Build</h2>
           <p className={styles.subtext}>
             Marca Ubi is guided by a clear belief: enduring brands are built with unwavering intent, never assembled through disconnected compromise.

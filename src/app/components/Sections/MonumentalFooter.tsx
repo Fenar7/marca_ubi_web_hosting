@@ -8,8 +8,8 @@ import styles from "./MonumentalFooter.module.scss";
 const NAV_LINKS = [
   { label: "About & Doctrine", href: "/#about" },
   { label: "Selected Works", href: "/works" },
-  { label: "Guiding Principles", href: "/#values" },
   { label: "Methodology", href: "/#process" },
+  { label: "Guiding Principles", href: "/#values" },
   { label: "Studio Dispatches", href: "/blog" },
   { label: "Studio Corridors", href: "/#network" },
   { label: "Initiate Brief", href: "/start-project" },

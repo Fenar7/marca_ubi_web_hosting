@@ -64,7 +64,7 @@ export function ProcessCurtain() {
   return (
     <section
       className={styles.processSection}
-      id="methodology"
+      id="process"
       aria-label="Delivery Methodology and Capabilities"
       data-header-theme="light"
     >
@@ -72,7 +72,7 @@ export function ProcessCurtain() {
         {/* Left Sticky Rail (30%) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
-            <span className={styles.sectionLabel}>04 / Methodology &amp; Scope</span>
+            <span className={styles.sectionLabel}>03 / Methodology &amp; Scope</span>
             <h2 className={styles.railHeadline}>
               Systems over isolated outputs.
             </h2>

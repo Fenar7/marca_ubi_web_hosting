@@ -302,8 +302,8 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         { file: "ReelCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "StatementCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "WorksCutout.tsx", expected: 'data-header-theme="dark"' },
-        { file: "ValuesCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "ProcessCurtain.tsx", expected: 'data-header-theme="light"' },
+        { file: "ValuesCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "TestimonialsCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "DispatchesCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "GlobalLocationsCloud.tsx", expected: 'data-header-theme="light"' },
@@ -392,8 +392,12 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes("<ReelCutout"), "View 03: ReelCutout must be present");
       assert.ok(content.includes("<StatementCurtain"), "View 04: StatementCurtain must be present");
       assert.ok(content.includes("<WorksCutout") || content.includes("<WorksCurtain"), "View 05: WorksCutout must be present");
-      assert.ok(content.includes("<ValuesCutout"), "View 06: ValuesCutout must be present");
-      assert.ok(content.includes("<ProcessCurtain"), "View 07: ProcessCurtain must be present");
+      assert.ok(content.includes("<ProcessCurtain"), "View 06: ProcessCurtain must be present");
+      assert.ok(content.includes("<ValuesCutout"), "View 07: ValuesCutout must be present");
+      assert.ok(
+        content.indexOf("<ProcessCurtain") < content.indexOf("<ValuesCutout"),
+        "ProcessCurtain (View 06, Section 03) must precede ValuesCutout (View 07, Section 04)"
+      );
       assert.ok(content.includes("<TestimonialsCutout"), "View 08: TestimonialsCutout must be present");
       assert.ok(content.includes("<DispatchesCurtain"), "View 09: DispatchesCurtain must be present");
       assert.ok(content.includes("<GlobalLocationsCloud"), "View 10: GlobalLocationsCloud must be present");
