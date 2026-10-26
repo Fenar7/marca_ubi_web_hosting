@@ -1,0 +1,364 @@
+/**
+ * @file AdminMobileDrawer.module.scss
+ * @description Mobile Off-Canvas Drawer Navigation styling for Marca Ubi CRM.
+ *              Strictly adheres to Accordion & Sypher light palette tokens.
+ *              Eliminates off-canvas focus leakage and enforces 44px touch targets.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(31, 36, 47, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10001;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+
+  &Visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  max-width: 85vw;
+  background-color: #ffffff;
+  border-right: 1px solid var(--admin-border-default, #e2e5ea);
+  z-index: 10002;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
+  overflow: hidden;
+}
+
+.drawerOpen {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawerHeader {
+  height: 64px;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  flex-shrink: 0;
+}
+
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--admin-text-primary, #1f242f);
+}
+
+.brandLogo {
+  width: 100px;
+  height: auto;
+  display: block;
+}
+
+.systemTag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--admin-text-secondary, #525965);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.closeButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+.navScrollArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--admin-border-default, #e2e5ea);
+    border-radius: 2px;
+  }
+}
+
+.quickActionBox {
+  padding: 1rem 1rem 0.5rem;
+}
+
+.newLeadBtn {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background-color: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: var(--admin-accent-lemon-hover, #e4f375);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+.navGroup {
+  margin-bottom: 1.25rem;
+}
+
+.groupHeading {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-secondary, #525965);
+  padding: 0 1.25rem;
+  margin-bottom: 0.4rem;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  min-height: 44px;
+  margin: 0.1rem 0.65rem;
+  border-radius: 8px;
+  color: var(--admin-text-secondary, #525965);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f4f6f9);
+    color: var(--admin-text-primary, #1f242f);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+.navItemActive {
+  background: var(--admin-surface-inverse, #1f242f);
+  color: var(--admin-text-inverse, #ffffff);
+  font-weight: 600;
+
+  .iconWrapper {
+    color: #ffffff;
+  }
+
+  .itemLabel {
+    color: #ffffff;
+  }
+}
+
+.activePill {
+  position: absolute;
+  left: -0.65rem;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background-color: var(--admin-accent-lemon, #eefb87);
+  border-radius: 0 4px 4px 0;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.itemLabel {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+}
+
+.badge {
+  font-family: var(--font-admin-code, 'SF Mono', monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.badgeOrange {
+  background: var(--admin-status-amber-bg, #fffbeb);
+  color: var(--admin-status-amber-text, #92400e);
+  border: 1px solid var(--admin-status-amber-border, #fde68a);
+}
+
+.badgeEmerald {
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  color: var(--admin-status-emerald-text, #065f46);
+  border: 1px solid var(--admin-status-emerald-border, #a7f3d0);
+}
+
+.badgeAmber {
+  background: var(--admin-status-amber-bg, #fffbeb);
+  color: var(--admin-status-amber-text, #92400e);
+  border: 1px solid var(--admin-status-amber-border, #fde68a);
+}
+
+.drawerFooter {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--admin-border-default, #e2e5ea);
+  background: #ffffff;
+}
+
+.systemStatusBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--admin-status-emerald-dot, #10b981);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+  flex-shrink: 0;
+}
+
+.statusText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.statusLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  line-height: 1.2;
+}
+
+.statusSub {
+  font-size: 0.65rem;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.userAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--admin-surface-inverse, #1f242f);
+  color: var(--admin-text-inverse, #ffffff);
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.userRole {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  line-height: 1.2;
+}
+
+.userEmail {
+  font-size: 0.68rem;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

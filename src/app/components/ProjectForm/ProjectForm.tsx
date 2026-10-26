@@ -29,24 +29,107 @@ export default function ProjectForm() {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    try {
-      const response = await fetch("/api/submit-brief", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+    const idempotencyKey = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `brief-${Date.now()}`;
 
-      if (!response.ok) {
-        throw new Error("Failed to submit project brief.");
+    // Map form category to CRM service category enum
+    const mapCategory = (cat: string) => {
+      const lower = (cat || "").toLowerCase();
+      if (lower.includes("brand")) return "Branding";
+      if (lower.includes("web")) return "Web & Digital";
+      if (lower.includes("mobile") || lower.includes("app")) return "Mobile Apps";
+      if (lower.includes("ui") || lower.includes("ux") || lower.includes("design")) return "UI/UX Design";
+      if (lower.includes("advisory") || lower.includes("strategy") || lower.includes("full")) return "Full-Suite Advisory";
+      return "Web & Digital";
+    };
+
+    const combinedNotes = [
+      formData.projectDescription ? `Project Scope: ${formData.projectDescription}` : "",
+      formData.extraNotes ? `Additional Notes: ${formData.extraNotes}` : "",
+      formData.inspirationLinks ? `Inspiration References: ${formData.inspirationLinks}` : "",
+      formData.referral ? `Referral: ${formData.referral}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const payload = {
+      name: formData.name.trim(),
+      email: formData.email.trim() || undefined,
+      phone: formData.phone.trim() || undefined,
+      company: formData.projectName.trim() || undefined,
+      company_website: formData.website.trim() || undefined,
+      industry: formData.industry.trim() || undefined,
+      service_category: mapCategory(formData.category),
+      budget_bracket: formData.timeline.trim() || undefined,
+      notes: combinedNotes || undefined,
+      source_name: "Website Form",
+      source_detail: "Start Project Brief Wizard",
+      brief_payload: {
+        category: formData.category,
+        service: formData.service,
+        language: formData.language,
+        projectName: formData.projectName,
+        projectDescription: formData.projectDescription,
+        industry: formData.industry,
+        website: formData.website,
+        agencyStatus: formData.agencyStatus,
+        referral: formData.referral,
+        timeline: formData.timeline,
+        inspirationLinks: formData.inspirationLinks,
+        showcasePermission: formData.showcasePermission,
+        extraNotes: formData.extraNotes,
+        idempotencyKey,
+      },
+    };
+
+    // Resilient submission with exponential backoff retry for network interruptions
+    let attempt = 0;
+    const maxAttempts = 3;
+    let success = false;
+
+    while (attempt < maxAttempts && !success) {
+      attempt++;
+      try {
+        const response = await fetch("/api/sales-funnel/ingest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Idempotency-Key": idempotencyKey,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errData = (await response.json().catch(() => ({}))) as { error?: string };
+          throw new Error(errData.error || `Server responded with status ${response.status}`);
+        }
+
+        success = true;
+
+        // Asynchronous non-blocking Sanity brief sync for legacy studio workflows
+        fetch("/api/submit-brief", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }).catch((sanityErr: unknown) => {
+          console.warn("[SANITY_SYNC_WARNING] Background brief sync failed:", sanityErr);
+        });
+
+        setSubmitSuccess(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err: unknown) {
+        if (attempt >= maxAttempts) {
+          const message = err instanceof Error ? err.message : "Failed to submit project brief.";
+          setSubmitError(message);
+        } else {
+          // Exponential backoff delay before retry (300ms, 600ms)
+          await new Promise((resolve) => setTimeout(resolve, attempt * 300));
+        }
       }
-
-      setSubmitSuccess(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err: any) {
-      setSubmitError(err.message || "An error occurred.");
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
   if (submitSuccess) {

@@ -1,0 +1,121 @@
+/**
+ * @file PersonnelActionMenu.module.scss
+ * @description PrimeStay-inspired contextual flyout popover for card secondary actions.
+ *              Crisp white surface, hairline border, obsidian text, and downward dropdown flow.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.menuContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.triggerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--admin-text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--admin-text-primary, #0f172a);
+    background: #f1f5f9;
+    border-color: #e2e5ea;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.popoverDropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  width: 200px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  padding: 0.35rem;
+  z-index: 100;
+  animation: popoverFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--admin-text-primary, #1e293b);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  svg {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: #f8fafc;
+    color: #0f172a;
+
+    svg {
+      color: var(--admin-text-primary, #0f172a);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.destructiveItem {
+  color: #dc2626;
+
+  svg {
+    color: #dc2626;
+  }
+
+  &:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+
+    svg {
+      color: #b91c1c;
+    }
+  }
+}
+
+.menuDivider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 0.25rem 0;
+}

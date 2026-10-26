@@ -1,0 +1,130 @@
+/**
+ * @file TabPermissionsEnclave.module.scss
+ * @description Tab permissions enclave styles for the 3 canonical security enclaves.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.enclaveCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  svg {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.modifyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #64748b;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.enclavesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.enclaveBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.enclaveTitle {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.tabsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tabChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 500;
+
+  &.granted {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #065f46;
+  }
+
+  &.denied {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+
+    &.dotGranted {
+      background: #10b981;
+    }
+
+    &.dotDenied {
+      background: #cbd5e1;
+    }
+  }
+}

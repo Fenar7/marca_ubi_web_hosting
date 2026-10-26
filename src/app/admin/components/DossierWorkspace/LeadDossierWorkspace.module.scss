@@ -1,0 +1,1336 @@
+/**
+ * @file LeadDossierWorkspace.module.scss
+ * @description Master SCSS module for Client 360° Lead and Deal Dossier Workspace.
+ *              Enforces the Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
+ *              - Anti-glare light canvas foundation (var(--admin-canvas-bg, #f7f8fa))
+ *              - Crisp pure white card surfaces (var(--admin-card-bg, #ffffff)) with 1px hairline border
+ *              - 7:5 asymmetric operational grid (desktop) collapsing to a fluid stack (< 768px)
+ *              - Signature Accordion Lemon Pill primary action (#eefb87) with high-contrast charcoal border
+ *              - Zero text truncation on contact coordinates (emails, phones, domains)
+ *              - Single-line duration buttons with grid-template-columns: repeat(5, 1fr)
+ *              - Light Notion-callout aesthetic for Original Ingestion Briefs and Executive Deal Notes
+ *              - Sticky rapid touchpoint composer in the 5fr operational column
+ *              - Minimalist Stat Pods with 44px circular tinted icon chips (Emerald, Amber, Slate)
+ *              - Frosted light glass bottom action dock on mobile (< 768px) with 44px tap targets
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@use '../../styles/mixins.scss' as *;
+
+// Surface & Typography Aliases mapped from CRM Design Tokens
+$canvas-bg: var(--admin-canvas-bg, #f7f8fa);
+$surface-card: var(--admin-card-bg, #ffffff);
+$surface-elevated: var(--admin-surface-muted, #f0f2f5);
+$surface-hover: var(--admin-surface-hover, #f4f6f9);
+$surface-callout: var(--admin-surface-muted, #f8fafc);
+
+$border-hairline: 1px solid var(--admin-border-default, #e2e5ea);
+$border-subtle: 1px solid var(--admin-border-subtle, #eef0f3);
+$border-strong: 1px solid var(--admin-border-strong, #1f242f);
+$brand-accent: var(--admin-accent-brand, #ff6100);
+
+$text-primary: var(--admin-text-primary, #1f242f);
+$text-secondary: var(--admin-text-secondary, #525965);
+$text-muted: var(--admin-text-muted, #6b7280);
+
+$font-sans: var(--font-admin-primary, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+$font-mono: var(--font-admin-code, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+$ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+// 1. Workspace Outer Envelopes
+
+.workspaceContainer {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: $canvas-bg;
+  color: $text-primary;
+  font-family: $font-sans;
+  padding: 24px 32px 80px 32px;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    padding: 20px 20px 90px 20px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 14px 104px 14px;
+  }
+}
+
+// 2. Dossier Header Bar & Navigation Rail
+
+.headerBar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: $border-subtle;
+}
+
+.headerTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.breadcrumbsNav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $text-secondary;
+}
+
+.backLink {
+  @include accordionPillGhost;
+  height: 36px;
+  min-height: 36px;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: normal;
+  text-transform: none;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: currentColor;
+    flex-shrink: 0;
+  }
+}
+
+.breadcrumbSeparator {
+  color: var(--admin-border-default, #e2e5ea);
+  user-select: none;
+}
+
+.breadcrumbItem {
+  color: $text-secondary;
+}
+
+.tokenChip {
+  @include adminMonoToken;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    color: $text-secondary;
+    transition: color 0.15s ease;
+  }
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+
+    svg {
+      color: $text-primary;
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+.tokenCopiedTooltip {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--admin-border-strong, #1f242f);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.headerMainRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.entityHeading {
+  font-size: clamp(22px, 2.5vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: $text-primary;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.headerActionsRail {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+// 3. Status Selector Pill & Triggers
+
+.statusSelectorWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.statusPillTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: $text-primary;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s $ease-spring;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+
+  &:hover {
+    background: $surface-hover;
+    border-color: var(--admin-border-strong, #1f242f);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+.radarDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.35;
+    animation: radarPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+.statusDropdownMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 100;
+  min-width: 220px;
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(31, 36, 47, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statusDropdownOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: $text-secondary;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: $surface-hover;
+    color: $text-primary;
+  }
+
+  &.activeOption {
+    color: $text-primary;
+    background: $surface-elevated;
+    font-weight: 600;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: -1px;
+  }
+}
+
+// 4. Primary & Secondary Action Buttons (WCAG 44px)
+
+.btnConvertDeal {
+  @include accordionPillPrimary;
+}
+
+.btnSecondaryAction {
+  @include accordionPillSecondary;
+  font-size: 0.78rem;
+  letter-spacing: normal;
+  text-transform: none;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    color: $text-secondary;
+    transition: color 0.15s ease;
+  }
+
+  &:hover svg {
+    color: $text-primary;
+  }
+}
+
+// 5. Commercial KPI Ribbon (3 Minimalist Stat Pods)
+
+.kpiRibbonGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.stripeScorecard {
+  position: relative;
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  transition: all 0.2s $ease-spring;
+
+  &:hover {
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.08);
+    transform: translateY(-1px);
+  }
+}
+
+.scorecardHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scorecardLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.scorecardLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: $text-secondary;
+}
+
+.scorecardPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: $surface-elevated;
+  border: $border-hairline;
+  color: $text-primary;
+}
+
+// 44px circular tinted icon chips for Minimalist Stat Pods
+.statPodIconChip {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.chipEmerald {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.chipAmber {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.chipSlate {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+}
+
+.scorecardValue {
+  font-size: clamp(24px, 2.2vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: $text-primary;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.scorecardMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.momentumTrack {
+  width: 100%;
+  height: 4px;
+  background: var(--admin-border-subtle, #eef0f3);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.momentumFill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--admin-border-strong, #1f242f);
+  transition: width 0.6s $ease-spring;
+}
+
+// 6. 7:5 Asymmetric Operational Grid Layout
+
+.workspaceGrid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.columnLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+  }
+}
+
+.columnRight {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+  }
+}
+
+// 7. Surface Cards & Fluid Stacks
+
+.sectionCard {
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 18px 16px;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: $text-primary;
+  margin: 0;
+
+  svg {
+    width: 17px;
+    height: 17px;
+    color: $text-secondary;
+    flex-shrink: 0;
+  }
+}
+
+// 8. Contact & Organization Details (Zero Text Truncation)
+
+.keyValueGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.keyValuePair {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: $text-secondary;
+}
+
+.fieldValue {
+  font-size: 14px;
+  color: $text-primary;
+  font-weight: 500;
+}
+
+// Zero Truncation Rule: Absolute enforcement for email, phone, and domain coordinates
+.contactValueUntruncated {
+  font-size: 14px;
+  color: $text-primary;
+  font-weight: 500;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  text-overflow: clip;
+}
+
+.contactEmptyValue {
+  font-size: 14px;
+  color: var(--admin-text-muted, #6b7280);
+  font-style: italic;
+}
+
+.contactCoordinateRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.coordinateDeepLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--admin-surface-muted, #f8fafc);
+  border: $border-hairline;
+  border-radius: 8px;
+  color: $text-primary;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  min-height: 38px;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: $text-secondary;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: $surface-hover;
+    border-color: var(--admin-border-strong, #1f242f);
+    color: $text-primary;
+
+    svg {
+      color: $text-primary;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: $surface-elevated;
+  border: $border-hairline;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: $text-primary;
+  letter-spacing: 0.02em;
+}
+
+.tagPillBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+// 9. Light Notion-Callout Aesthetic (Briefs & Executive Deal Notes)
+
+.notionCallout {
+  position: relative;
+  background: var(--admin-surface-muted, #f8fafc);
+  border: $border-hairline;
+  border-left: 3px solid var(--admin-border-strong, #1f242f);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin-top: 8px;
+  box-sizing: border-box;
+}
+
+.notionCalloutQuote {
+  font-size: 13.5px;
+  line-height: 1.62;
+  color: $text-primary;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notionCalloutMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+// 10. Ingestion Brief Matrix (Parsed Questionnaire Grid)
+
+.briefMatrixGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.briefMatrixItem {
+  background: var(--admin-card-bg, #ffffff);
+  border: $border-hairline;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+
+  &.fullWidthItem {
+    grid-column: 1 / -1;
+  }
+}
+
+.briefItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.briefItemLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: $text-secondary;
+}
+
+.briefItemValue {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: $text-primary;
+  word-break: break-word;
+}
+
+.briefLinkChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $text-primary;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+  word-break: break-all;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    color: $text-secondary;
+  }
+
+  &:hover {
+    color: $text-secondary;
+  }
+}
+
+.briefEmptyText {
+  color: var(--admin-text-muted, #6b7280);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.briefJsonBlock {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: var(--font-admin-code, monospace);
+  color: var(--admin-text-primary, #1f242f);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.briefEmptyBanner {
+  padding: 24px;
+  text-align: center;
+  color: $text-muted;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--admin-surface-muted, #f8fafc);
+  border: 1px dashed var(--admin-border-default, #cbd5e1);
+  border-radius: 12px;
+}
+
+// 11. Sticky Rapid Touchpoint Composer (Right Column)
+
+.stickyComposerContainer {
+  position: sticky;
+  top: 24px;
+  z-index: 10;
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    position: static;
+  }
+}
+
+.composerTabsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  padding: 4px;
+  border-radius: 10px;
+  border: $border-hairline;
+  margin-bottom: 16px;
+}
+
+.composerTabBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: $text-secondary;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: currentColor;
+  }
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(31, 36, 47, 0.04);
+  }
+
+  &.activeTab {
+    background: $surface-card;
+    color: $text-primary;
+    box-shadow: 0 1px 4px rgba(31, 36, 47, 0.08);
+
+    svg {
+      color: $text-primary;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+.composerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.composerField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.composerSelect {
+  width: 100%;
+  height: 40px;
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: $text-primary;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 2px rgba(31, 36, 47, 0.1);
+  }
+
+  option {
+    background: #ffffff;
+    color: #1f242f;
+  }
+}
+
+// Single-line duration buttons with exactly 5 equal columns
+.durationHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.durationActiveBadge {
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 600;
+  color: $text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.presetGroup {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.presetBtn {
+  height: 38px;
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 8px;
+  color: $text-secondary;
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: $text-primary;
+    background: $surface-hover;
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &.activePreset {
+    background: var(--admin-accent-lemon, #eefb87);
+    border: 1px solid var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
+    font-weight: 700;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+.composerTextarea {
+  width: 100%;
+  min-height: 85px;
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: $text-primary;
+  font-size: 13.5px;
+  font-family: inherit;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 2px rgba(31, 36, 47, 0.1);
+  }
+}
+
+.composerErrorBanner {
+  padding: 8px 12px;
+  background: var(--admin-status-rose-bg, #fef2f2);
+  border: 1px solid var(--admin-status-rose-border, #fecaca);
+  border-radius: 6px;
+  color: var(--admin-status-rose-text, #991b1b);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.composerSubmitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  min-height: 44px;
+  background: var(--admin-border-strong, #1f242f);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.1);
+  transition: all 0.2s $ease-spring;
+
+  &:hover:not(:disabled) {
+    background: #333d4e;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+// 12. Commercial Meta & Next Follow-Up Schedule Card
+
+.metaCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.metaCardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: $border-subtle;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.followUpCountdownCard {
+  background: var(--admin-surface-muted, #f8fafc);
+  border: $border-hairline;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.followUpDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.followUpTimeTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.followUpRelativeBadge {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: var(--admin-status-emerald-text, #065f46);
+  font-weight: 600;
+}
+
+.btnRescheduleMini {
+  padding: 6px 12px;
+  background: $surface-elevated;
+  border: $border-hairline;
+  border-radius: 6px;
+  color: $text-primary;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: $surface-hover;
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+// 13. Omnichannel Activity Ledger Timeline
+
+.timelineContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-left: 20px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--admin-border-default, #e2e5ea);
+  }
+}
+
+.timelineItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timelineGlyphDot {
+  position: absolute;
+  left: -20px;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: $surface-card;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.05);
+
+  svg {
+    width: 10px;
+    height: 10px;
+    color: $text-secondary;
+  }
+}
+
+.timelineCard {
+  background: $surface-card;
+  border: $border-hairline;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.03);
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timelineAuthorMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatarInitials {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: $surface-elevated;
+  border: $border-hairline;
+  color: $text-primary;
+  font-family: $font-mono;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timelineActorName {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.timelineEventTag {
+  font-size: 11px;
+  color: $text-secondary;
+  font-weight: 500;
+}
+
+.timelineTimestamp {
+  font-size: 11px;
+  color: $text-muted;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.timelineBodyText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: $text-primary;
+}
+
+.mentionHighlight {
+  color: $text-primary;
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.tagHighlight {
+  color: $text-primary;
+  font-weight: 700;
+}
+
+.timelineEmptyState {
+  padding: 32px 20px;
+  text-align: center;
+  color: $text-muted;
+  font-size: 13px;
+}
+
+// 14. Sticky Bottom Action Dock (Mobile < 768px, 44px tap targets)
+
+.mobileActionDock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: $border-hairline;
+  padding: 12px 16px;
+  gap: 8px;
+  box-shadow: 0 -4px 16px rgba(31, 36, 47, 0.08);
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: stretch;
+  }
+}
+
+.mobileDockBtn {
+  flex: 1;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &.mobilePrimary {
+    @include accordionPillPrimary;
+  }
+
+  &.mobileSecondary {
+    @include accordionPillSecondary;
+    font-size: 0.78rem;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+}
+
+// 15. Keyframe Animations
+
+@keyframes radarPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

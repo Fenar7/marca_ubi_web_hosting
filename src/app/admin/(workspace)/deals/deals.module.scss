@@ -1,0 +1,64 @@
+// SCSS Module: deals.module.scss
+// Aesthetic: Accordion Private Equity Advisory & Sypher Minimalist Light Architecture
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: Zero generic blue, zero drop shadows, 44px touch targets, tabular-nums
+
+.dealsWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  padding-bottom: 1.5rem;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-text-secondary, #525965);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.heading {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--admin-text-primary, #1f242f);
+  margin: 0 0 0.4rem;
+}
+
+.subheading {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.88rem;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 720px;
+}
+
+.kpiContainer {
+  width: 100%;
+}

@@ -1,0 +1,302 @@
+/**
+ * @file RepresentativeDealLedger.module.scss
+ * @description Linear Fluid table archetype styles for representative assigned deals.
+ *              Enforces 44px touch targets, zero generic blue, and responsive reflow.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.ledgerCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ledgerHeader {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+  letter-spacing: -0.01em;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.bucketTabs {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f8fafc;
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+}
+
+.tabButton {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--admin-text-primary, #0f172a);
+  }
+
+  &.activeTab {
+    background: #ffffff;
+    color: var(--admin-text-primary, #0f172a);
+    border: 1px solid var(--admin-border-default, #cbd5e1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  min-width: 220px;
+
+  svg {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.8rem;
+    font-family: inherit;
+    color: var(--admin-text-primary, #0f172a);
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
+
+  &:focus-within {
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.dealTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.82rem;
+
+  th {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--admin-text-secondary, #64748b);
+    background: #f8fafc;
+    border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    color: var(--admin-text-primary, #1e293b);
+  }
+
+  tbody tr {
+    transition: background-color 0.1s ease;
+
+    &:hover {
+      background-color: #f8fafc;
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+}
+
+.codeChip {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  color: #1e293b;
+  display: inline-block;
+}
+
+.clientMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  .clientName {
+    font-weight: 600;
+    color: var(--admin-text-primary, #0f172a);
+  }
+
+  .companyName {
+    font-size: 0.75rem;
+    color: var(--admin-text-secondary, #64748b);
+  }
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  .statusDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+}
+
+.valuationText {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.inspectLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #64748b;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.emptyState {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--admin-text-secondary, #64748b);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  svg {
+    color: #64748b;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+}
+
+.paginationFooter {
+  padding: 0.85rem 1.5rem;
+  border-top: 1px solid var(--admin-border-default, #e2e5ea);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #f8fafc;
+  font-size: 0.78rem;
+  color: var(--admin-text-secondary, #64748b);
+  font-variant-numeric: tabular-nums;
+}
+
+.pageControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pageBtn {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    background: #f1f5f9;
+  }
+}

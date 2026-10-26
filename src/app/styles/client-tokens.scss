@@ -1,0 +1,44 @@
+/**
+ * @file src/app/styles/client-tokens.scss
+ * @description Master Design Tokens & CSS Custom Properties for Marca Ubi Client Platform.
+ *              Strictly air-gapped from Admin CRM via :root:not([data-admin-root="true"]) selector.
+ *              Benchmarked to 160over90 aesthetic with brand red accent #ea002a and 60-30-10 palette.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@import "./client-mixins.scss";
+
+
+// Global CSS Custom Properties (Strictly isolated from CRM Admin)
+:root:not([data-admin-root="true"]),
+[data-client-shell="true"] {
+  --client-font-primary: var(--font-circular), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --client-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --client-min-touch-target: 44px;
+  --client-accent-red: #ea002a;
+  --client-accent-red-hover: #c40023;
+  --client-accent-red-glow: rgba(234, 0, 42, 0.35);
+
+  --client-canvas-white: #ffffff;
+  --client-canvas-black: #000000;
+
+  --client-text-dark: #0a0a0a;
+  --client-text-body-dark: #444444;
+  --client-text-muted-dark: #666666;
+
+  --client-text-light: #ffffff;
+  --client-text-secondary-light: rgba(255, 255, 255, 0.85);
+
+  --client-border-editorial: rgba(0, 0, 0, 0.08);
+  --client-border-pill: rgba(255, 255, 255, 0.75);
+  --client-border-pill-hover: #ea002a;
+  --client-slash-neutral: #c4c4c4;
+
+  --client-video-scrim: rgba(0, 0, 0, 0.45);
+
+  --client-type-h1: clamp(2.5rem, 6vw, 5.5rem);
+  --client-type-h2: clamp(2rem, 4.5vw, 4rem);
+  --client-type-h3: clamp(1.5rem, 3vw, 2.5rem);
+  --client-type-body-lead: clamp(1.125rem, 1.8vw, 1.5rem);
+}

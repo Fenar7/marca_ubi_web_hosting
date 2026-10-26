@@ -1,0 +1,100 @@
+// SCSS Module: OverdueBadge.module.scss
+// Brand: Marca Ubi Enterprise CRM (Accordion & Sypher Architecture)
+// Rationale: High-contrast tiered overdue warning pills adhering to WCAG 2.1 AAA (>= 7:1 text, >= 3:1 graphical).
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 767px) {
+    font-size: 10.5px;
+    padding: 3px 7px;
+  }
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// Tier 1: Amber (< 24h)
+.amber {
+  color: var(--admin-status-amber-text, #92400e);
+  background-color: var(--admin-status-amber-bg, #fffbeb);
+  border-color: var(--admin-status-amber-border, #fde68a);
+
+  .dot {
+    background-color: var(--admin-status-amber-text, #92400e);
+  }
+}
+
+// Tier 2: Vivid Orange (24h - 72h)
+.orange {
+  color: #c2410c;
+  background-color: #fff7ed;
+  border-color: #fed7aa;
+
+  .dot {
+    background-color: #c2410c;
+  }
+}
+
+// Tier 3: Critical Red Pulse (> 72h)
+.redPulse {
+  color: var(--admin-status-rose-text, #991b1b);
+  background-color: var(--admin-status-rose-bg, #fef2f2);
+  border-color: var(--admin-status-rose-border, #fecaca);
+  animation: pulseGlow 2s infinite ease-in-out;
+
+  .dot {
+    background-color: var(--admin-status-rose-text, #991b1b);
+    animation: dotPulse 1.5s infinite ease-in-out;
+  }
+}
+
+.icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(153, 27, 27, 0.2);
+    border-color: var(--admin-status-rose-border, #fecaca);
+  }
+  50% {
+    box-shadow: 0 0 6px 1px rgba(153, 27, 27, 0.15);
+    border-color: var(--admin-status-rose-text, #991b1b);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(153, 27, 27, 0);
+    border-color: var(--admin-status-rose-border, #fecaca);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.7;
+  }
+}

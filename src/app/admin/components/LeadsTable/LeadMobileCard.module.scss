@@ -1,0 +1,246 @@
+// SCSS Module: LeadMobileCard.module.scss
+// Aesthetic: Accordion Executive Advisory & Sypher Light Mobile Fluid Architecture
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: 44px minimum tap targets, tabular-nums, zero generic blue, zero drop shadows
+
+.cardWrapper {
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-card, 12px);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--admin-border-strong, #1f242f);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+// 1. Header: Deal ID, Timestamp, and Expected Value
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.leadIdToken {
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--admin-radius-micro, 4px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--admin-surface-hover, #e4e7ec);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.timeTag {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.68rem;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.dealValue {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.02em;
+}
+
+// 2. Client & Organization Meta
+.clientSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.clientName {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  letter-spacing: -0.01em;
+}
+
+.companyTitle {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.78rem;
+  color: var(--admin-text-secondary, #525965);
+}
+
+// 3. Category & Source Tags
+.metaTagsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.serviceTag {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.68rem;
+  color: var(--admin-text-secondary, #525965);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--admin-radius-micro, 4px);
+}
+
+.sourceTag {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.68rem;
+  color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--admin-radius-micro, 4px);
+}
+
+// 4. Interactive Inline Mutators Row
+.inlineSelectorsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--admin-border-subtle, #eef0f3);
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
+}
+
+.repInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.repAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--admin-surface-inverse, #1f242f);
+  color: #ffffff;
+  font-size: 0.58rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 5. Quick Omnichannel Action Bar
+.actionBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.actionBtn {
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  outline: none;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.callBtn {
+  background: #ffffff;
+  border-color: var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-primary, #1f242f);
+
+  &:hover:not(:disabled) {
+    background: var(--admin-surface-hover, #f8fafc);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+}
+
+.whatsappBtn {
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  border-color: var(--admin-status-emerald-border, #a7f3d0);
+  color: var(--admin-status-emerald-text, #065f46);
+
+  &:hover:not(:disabled) {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+  }
+}
+
+.drawerBtn {
+  background: var(--admin-accent-lemon, #eefb87);
+  border-color: var(--admin-border-strong, #1f242f);
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 1rem;
+
+  &:hover {
+    background: var(--admin-accent-lemon-hover, #e4f375);
+  }
+}

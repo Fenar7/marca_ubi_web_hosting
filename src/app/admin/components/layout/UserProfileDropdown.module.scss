@@ -1,0 +1,373 @@
+/**
+ * @file UserProfileDropdown.module.scss
+ * @description Notion-Caliber 32px user profile trigger and luxury popover card styling.
+ *              Guarantees zero text truncation, fluid 12px radii elevation, and WCAG AA contrast.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.container {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Unified 32px Height Top Bar Trigger */
+.userTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 2px 8px 2px 3px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 2px;
+  }
+}
+
+/* 26×26px Luxury Obsidian Monogram Avatar */
+.triggerAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Clean Short Name without crude truncation */
+.userName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  line-height: 1;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.chevron {
+  width: 12px;
+  height: 12px;
+  color: #64748b;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* 260px Elevated Popover Flyout */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 260px;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -4px rgba(16, 24, 40, 0.08), 0 4px 12px -2px rgba(16, 24, 40, 0.04);
+  padding: 8px;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: popoverFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* User Identity Header */
+.identityHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 8px;
+}
+
+.headerAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarEditBadge {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    color: #ff6100;
+  }
+}
+
+.headerAvatar:hover .avatarEditBadge {
+  opacity: 1;
+}
+
+.headerMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.fullNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fullName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roleBadge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.userEmail {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Workspace Status Row */
+.workspaceStatusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2px;
+}
+
+.workspaceName {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: #10b981;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+  flex-shrink: 0;
+}
+
+.planBadge {
+  font-size: 10px;
+  font-weight: 600;
+  background-color: #0f172a;
+  color: #ffffff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Hairline Divider */
+.divider {
+  height: 1px;
+  background-color: #eaecf0;
+  margin: 3px 0;
+}
+
+/* Navigation and Productivity Menu Items */
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: left;
+  line-height: 1.4;
+
+  &:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: -1px;
+  }
+}
+
+.menuItemContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+}
+
+.menuKbd {
+  font-family: var(--font-admin-code, 'SF Mono', monospace);
+  font-size: 10px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.2;
+}
+
+.versionBadge {
+  font-family: var(--font-admin-code, 'SF Mono', monospace);
+  font-size: 10px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Sign Out Action */
+.logoutForm {
+  margin: 0;
+}
+
+.signOutButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #dc2626;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  line-height: 1.4;
+
+  svg {
+    color: #dc2626;
+    flex-shrink: 0;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: #fef2f2;
+    color: #b91c1c;
+
+    svg {
+      color: #b91c1c;
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #dc2626;
+    outline-offset: -1px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}

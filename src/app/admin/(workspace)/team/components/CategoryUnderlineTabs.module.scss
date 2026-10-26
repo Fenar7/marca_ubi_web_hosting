@@ -1,0 +1,86 @@
+/**
+ * @file CategoryUnderlineTabs.module.scss
+ * @description PrimeStay-inspired light luxury category underline tabs for personnel segmentation.
+ *              Enforces WCAG AA contrast (15.5:1 active text) on light canvas (#f7f8fa).
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.tabsContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tabButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--admin-text-secondary, #475569);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--admin-text-primary, #0f172a);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: -2px;
+  }
+}
+
+.tabButtonActive {
+  color: var(--admin-text-primary, #0f172a);
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--admin-border-strong, #1f242f);
+    border-radius: 2px 2px 0 0;
+  }
+}
+
+.counterBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.4rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: var(--admin-surface-muted, #f1f5f9);
+  color: var(--admin-text-secondary, #475569);
+  border: 1px solid var(--admin-border-subtle, #e2e5ea);
+  transition: all 0.15s ease;
+}
+
+.tabButtonActive .counterBadge {
+  background: var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.45));
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  border-color: var(--admin-border-strong, #1f242f);
+}

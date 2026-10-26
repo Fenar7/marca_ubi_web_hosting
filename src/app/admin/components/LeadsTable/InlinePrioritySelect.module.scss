@@ -1,0 +1,197 @@
+// SCSS Module: InlinePrioritySelect.module.scss
+// Aesthetic: Accordion Executive Advisory & Sypher Popover Architecture
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: Zero generic blue, 44px touch targets, WCAG AAA/AA compliant tints
+
+.priorityContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.priorityBadgeBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--admin-radius-micro, 4px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.15s ease;
+  outline: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &.priorityHigh {
+    background: var(--admin-status-rose-bg, #fef2f2);
+    border-color: var(--admin-status-rose-border, #fecaca);
+    color: var(--admin-status-rose-text, #991b1b);
+
+    .priorityDot {
+      background: var(--admin-status-rose-text, #991b1b);
+    }
+  }
+
+  &.priorityMedium {
+    background: var(--admin-status-amber-bg, #fffbeb);
+    border-color: var(--admin-status-amber-border, #fde68a);
+    color: var(--admin-status-amber-text, #92400e);
+
+    .priorityDot {
+      background: var(--admin-status-amber-text, #92400e);
+    }
+  }
+
+  &.priorityLow {
+    background: var(--admin-surface-muted, #f8fafc);
+    border-color: var(--admin-border-default, #e2e5ea);
+    color: var(--admin-text-secondary, #525965);
+
+    .priorityDot {
+      background: var(--admin-text-secondary, #525965);
+    }
+  }
+}
+
+.priorityDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.priorityLabel {
+  letter-spacing: -0.01em;
+}
+
+.dropdownChevron {
+  font-size: 0.5rem;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+  margin-left: 0.1rem;
+
+  &.chevronOpen {
+    transform: rotate(180deg);
+  }
+}
+
+.popoverMenu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  left: auto;
+  min-width: 140px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(31, 36, 47, 0.12);
+  padding: 0.35rem;
+  z-index: 50;
+  animation: priorityFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes priorityFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popoverHeader {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-secondary, #525965);
+  padding: 0.25rem 0.45rem 0.3rem;
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
+  margin-bottom: 0.2rem;
+}
+
+.popoverItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  min-height: 44px;
+  border-radius: 5px;
+  background: transparent;
+  border: none;
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.74rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+  outline: none;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f4f6f9);
+    color: var(--admin-text-primary, #1f242f);
+  }
+
+  &:focus-visible {
+    background: var(--admin-surface-muted, #f0f2f5);
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+
+  &.selectedItem {
+    background: var(--admin-surface-muted, #f0f2f5);
+    color: var(--admin-text-primary, #1f242f);
+    font-weight: 700;
+  }
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.checkMark {
+  color: var(--admin-text-primary, #1f242f);
+  font-size: 0.72rem;
+  font-weight: 700;
+}

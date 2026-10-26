@@ -1,0 +1,618 @@
+/**
+ * Marca Ubi CRM Enterprise — Executive KPI Ribbon Styling
+ * Archetype: Logip x Sypher Minimalist Light SaaS Scorecards
+ * 5-column unified card island, 36px circular tinted icon containers,
+ * collision-free separated badge rows, and precision micro-meters.
+ * Author: Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.ribbonContainer {
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.toolbarMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.engineEyebrow {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--admin-status-emerald-dot, #10b981);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.45);
+}
+
+.lastUpdatedLabel {
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.filterBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  background-color: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.currencyToggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  padding: 3px;
+  gap: 2px;
+}
+
+.currencyBtn {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  height: 40px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--admin-radius-pill, 9999px);
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary, #525965);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    min-height: 44px;
+    height: 100%;
+  }
+
+  &:hover:not(.currencyActive) {
+    color: var(--admin-text-primary, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+.currencyActive {
+  background: var(--admin-card-bg, #ffffff);
+  color: var(--admin-text-primary, #1f242f);
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
+}
+
+.refreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  height: 44px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-text-secondary, #525965);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover:not(:disabled) {
+    background: var(--admin-surface-hover, #f8fafc);
+    color: var(--admin-text-primary, #1f242f);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.refreshIcon {
+  display: inline-flex;
+  transition: transform 0.25s ease;
+
+  &.refreshSpin {
+    animation: spinClockwise 0.8s linear infinite;
+  }
+}
+
+@keyframes spinClockwise {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 5-Column Unified Scorecard Island with 1px Hairline Dividers
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  background-color: var(--admin-border-default, #e2e5ea);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-card, 16px);
+  overflow: hidden;
+  min-height: 156px;
+  background-clip: padding-box;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+
+  @media (max-width: 1200px) and (min-width: 769px) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+
+    > :nth-child(1),
+    > :nth-child(2),
+    > :nth-child(3) {
+      grid-column: span 2;
+    }
+
+    > :nth-child(4),
+    > :nth-child(5) {
+      grid-column: span 3;
+    }
+  }
+
+  @media (max-width: 768px) and (min-width: 541px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > :last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
+  }
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Individual Logip x Sypher Metric Card
+.kpiCard {
+  background: var(--admin-card-bg, #ffffff);
+  padding: 20px 22px;
+  min-height: 156px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f8fafc);
+    cursor: pointer;
+
+    .drilldownArrow {
+      transform: translate(2px, -2px);
+      opacity: 1;
+      color: var(--admin-text-primary, #1f242f);
+    }
+
+    .kpiIconWrap {
+      transform: scale(1.05);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: -2px;
+    z-index: 2;
+  }
+
+  &:active {
+    transform: scale(0.985);
+  }
+
+  &.alertActive {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--admin-status-rose-text, #991b1b);
+    }
+  }
+}
+
+.kpiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.kpiLabel {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpiHeaderMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+// 36px Circular Tinted Icon Containers (Logip Archetype)
+.kpiIconWrap {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kpiIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Card-Specific Color Archetypes
+[data-card-id="total-leads"] .kpiIconWrap {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+[data-card-id="potential-value"] .kpiIconWrap {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+[data-card-id="converted-revenue"] .kpiIconWrap {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+[data-card-id="conversion-rate"] .kpiIconWrap {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+
+[data-card-id="overdue-followups"] .kpiIconWrap {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.drilldownArrow {
+  color: var(--admin-text-secondary, #525965);
+  opacity: 0.7;
+  transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.kpiValueWrapper {
+  display: flex;
+  align-items: baseline;
+  margin: 4px 0 2px;
+}
+
+.kpiValue {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: clamp(1.625rem, 2vw + 0.45rem, 2.375rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--admin-text-primary, #1f242f);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+}
+
+// Separated Secondary Badge Row (Prevents Text Collisions with Primary Numerals)
+.secondaryBadgeRow {
+  margin-top: 4px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  min-height: 22px;
+}
+
+.weightedValuationBadge {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.6875rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  letter-spacing: 0.01em;
+}
+
+.weightedPrefix {
+  font-weight: 700;
+  color: #b45309;
+}
+
+.weightedAmount {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.weightedSuffix {
+  font-size: 0.625rem;
+  color: #92400e;
+  opacity: 0.85;
+}
+
+// Micro-Meter Progress Track for Conversion Rate
+.microMeterTrack {
+  width: 100%;
+  height: 6px;
+  background-color: var(--admin-surface-muted, #f0f2f5);
+  border-radius: 9999px;
+  position: relative;
+  overflow: visible;
+  margin: 6px 0 2px;
+}
+
+.microMeterFill {
+  height: 100%;
+  background-color: var(--admin-status-emerald-text, #047857);
+  border-radius: 9999px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.microMeterBenchmark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background-color: var(--admin-border-strong, #1f242f);
+  border-radius: 1px;
+  z-index: 2;
+}
+
+.conversionMetricsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 6px;
+}
+
+.kpiSubtext {
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary, #525965);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  line-height: 1.35;
+  margin-top: auto;
+}
+
+.positiveTrend {
+  color: var(--admin-status-emerald-text, #065f46);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.neutralSubtext {
+  color: var(--admin-text-secondary, #525965);
+}
+
+.urgentAlert {
+  color: var(--admin-status-rose-text, #991b1b);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.radarDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--admin-status-rose-text, #991b1b);
+  position: relative;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--admin-status-rose-text, #991b1b);
+    opacity: 0.4;
+    animation: alertPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes alertPulse {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+// Dark Shimmer Skeleton Matching Exact Geometry
+.skeletonCard {
+  background: var(--admin-card-bg, #ffffff);
+  padding: 20px 22px;
+  min-height: 156px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(31, 36, 47, 0.04) 50%,
+      transparent 100%
+    );
+    animation: shimmer 1.6s infinite ease-in-out;
+  }
+}
+
+.skeletonToolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeletonCurrencyToggle {
+  width: 120px;
+  height: 44px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  background: var(--admin-surface-muted, #f0f2f5);
+}
+
+.skeletonRefreshBtn {
+  width: 96px;
+  height: 44px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  background: var(--admin-surface-muted, #f0f2f5);
+}
+
+.skeletonSecondaryBadge {
+  width: 96px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.skeletonHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skeletonLabel {
+  width: 70px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f0f2f5);
+}
+
+.skeletonIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--admin-surface-muted, #f0f2f5);
+}
+
+.skeletonValue {
+  width: 110px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  margin: 6px 0;
+}
+
+.skeletonSubtext {
+  width: 130px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  margin-top: auto;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

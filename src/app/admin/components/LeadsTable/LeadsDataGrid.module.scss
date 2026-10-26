@@ -1,0 +1,534 @@
+// SCSS Module: LeadsDataGrid.module.scss
+// Aesthetic: Accordion Executive Advisory & Sypher High-Density Data Grid
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: Fixed 72px row rhythm, zero CLS, tabular-nums, zero drop shadows
+
+.gridContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+// Dedicated 9-Column Collision-Free Grid Metrics
+// 1: Lead ID | 2: Client & Org | 3: Service Scope | 4: Funnel Stage | 5: Expected Value | 6: Representative | 7: Priority | 8: Next SLA | 9: Actions
+$grid-columns: 85px minmax(170px, 1.3fr) 115px 125px 105px 125px 100px 120px 190px;
+$grid-min-width: 1140px;
+
+// Desktop & Tablet Virtualized View
+.virtualScrollContainer {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-card, 12px);
+  overflow-x: auto;
+  overflow-y: auto;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  max-height: calc(100vh - 280px);
+  min-height: 400px;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--admin-border-default, #e2e5ea);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: $grid-columns;
+  min-width: $grid-min-width;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 0.85rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  box-sizing: border-box;
+}
+
+.thCell {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.sortableHeaderCol {
+  background: transparent;
+  border: none;
+  min-height: 44px;
+  padding: 0.35rem 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  text-align: left;
+
+  &:hover {
+    color: var(--admin-text-primary, #1f242f);
+
+    .sortArrow {
+      color: var(--admin-text-primary, #1f242f);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}
+
+.sortArrow {
+  display: inline-flex;
+  align-items: center;
+  color: var(--admin-text-secondary, #525965);
+  transition: color 0.15s ease;
+}
+
+.headerColActions {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  user-select: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.virtualViewport {
+  position: relative;
+  width: 100%;
+  min-width: $grid-min-width;
+  z-index: 1;
+}
+
+.virtualRow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-width: $grid-min-width;
+  height: 72px;
+  display: grid;
+  grid-template-columns: $grid-columns;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
+  transition: background-color 0.12s ease;
+  cursor: pointer;
+  box-sizing: border-box;
+  background: #ffffff;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f8fafc);
+
+    .clientName {
+      color: var(--admin-text-primary, #1f242f);
+      text-decoration: underline;
+    }
+  }
+
+  &:hover,
+  &:focus-within {
+    z-index: 50 !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: -2px;
+  }
+}
+
+// Columns Specific Styling
+.leadIdToken {
+  position: relative;
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--admin-radius-micro, 4px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  outline: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background: var(--admin-surface-hover, #e4e7ec);
+    border-color: var(--admin-border-strong, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+  }
+}
+
+.clientMeta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.clientName {
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1f242f);
+  transition: color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.companyTitle {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.74rem;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.serviceCategory {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.76rem;
+  color: var(--admin-text-secondary, #525965);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dealValue {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.repBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  color: var(--admin-text-secondary, #525965);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.repAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--admin-surface-inverse, #1f242f);
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.priorityCol {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.slaCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.actionsCol {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.rowInspectBtn {
+  position: relative;
+  min-height: 28px;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--admin-radius-pill, 9999px);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-surface-card, #ffffff);
+  color: var(--admin-text-secondary, #525965);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  user-select: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
+    background: var(--admin-surface-hover, #f8fafc);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+.touchpointDate {
+  position: relative;
+  font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
+  font-size: 0.68rem;
+  color: var(--admin-text-secondary, #525965);
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    color: var(--admin-text-primary, #1f242f);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+// Mobile View (< 768px)
+.mobileCardsContainer {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+// Empty State Display
+.emptyState {
+  padding: 4rem 1.5rem;
+  text-align: center;
+  color: var(--admin-text-secondary, #525965);
+  font-size: 0.88rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+}
+
+.emptyStateTitle {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1f242f);
+}
+
+.rowConvertBtn {
+  position: relative;
+  min-height: 28px;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--admin-radius-pill, 9999px);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  background: var(--admin-accent-lemon, #eefb87);
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.15s ease;
+  user-select: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background: var(--admin-accent-lemon-hover, #e4f375);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
+  }
+}
+
+.rowQuickActions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  @media (min-width: 1024px) {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(4px);
+  }
+}
+
+.virtualRow:hover .rowQuickActions,
+.virtualRow:focus-within .rowQuickActions {
+  @media (min-width: 1024px) {
+    display: flex;
+  }
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.actionBtn {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: var(--admin-text-secondary, #525965);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background: var(--admin-surface-hover, #f4f6f9);
+    border-color: var(--admin-border-strong, #1f242f);
+    color: var(--admin-text-primary, #1f242f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}

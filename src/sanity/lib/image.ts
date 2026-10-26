@@ -1,9 +1,11 @@
-import { createImageUrlBuilder } from "@sanity/image-url";
+import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
 import { client } from "./client";
 
 const builder = createImageUrlBuilder(client);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function urlFor(source: any) {
-    return builder.image(source);
+/**
+ * Generates responsive image URLs from Sanity image assets with strict typing.
+ */
+export function urlFor(source: SanityImageSource) {
+  return builder.image(source);
 }

@@ -1,0 +1,277 @@
+/**
+ * @file PipelineAllocationCard.module.scss
+ * @description Master Logip-inspired styling for Pipeline Stage Allocation.
+ *              Replaces the 2x2 nested cards matrix and bracketed terminal tags with
+ *              a continuous 8px segmented progress bar and clean, borderless list rows.
+ * @module admin/components/Dashboard/PipelineAllocationCard.module.scss
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.pipelineCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #eaecf0);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+  }
+}
+
+.headerBlock {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.titleCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.subtitle {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.headlineCluster {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.valuationRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+
+.valuationBadge {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1;
+}
+
+.deltaPill {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dealCountMuted {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.74rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Single Continuous 8px Segmented Progress Track */
+.segmentedBarTrack {
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+  background-color: #f1f5f9;
+  cursor: pointer;
+}
+
+.segmentedBarSlice {
+  height: 100%;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
+
+  &.sliceActive {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
+
+  &.sliceDimmed {
+    opacity: 0.35;
+  }
+}
+
+/* Clean Borderless Stage Rows (Logip "Current Tasks" Pattern) */
+.stageLedgerList {
+  display: flex;
+  flex-direction: column;
+}
+
+.stageLedgerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0.65rem;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, opacity 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover,
+  &.rowActive {
+    background-color: #f8fafc;
+  }
+
+  &.rowDimmed {
+    opacity: 0.45;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ff6100);
+    outline-offset: 2px;
+  }
+}
+
+.stagePrimaryCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 160px;
+}
+
+.circularAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatarDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.12);
+}
+
+.stageNameBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stageName {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.stageVolumeSubText {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Metric Cluster: Valuation & Inline Micro Progress Bar */
+.stageMetricsCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.stageValuation {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums lining-nums;
+  min-width: 80px;
+  text-align: right;
+}
+
+.progressShareGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  @media (max-width: 540px) {
+    display: none;
+  }
+}
+
+.microProgressTrack {
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #f1f5f9;
+  overflow: hidden;
+}
+
+.microProgressFill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.percentageShareVal {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+}
+
+.rowActionBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+}

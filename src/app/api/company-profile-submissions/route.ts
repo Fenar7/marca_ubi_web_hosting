@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, extractClientIp } from "@/app/lib/rateLimit";
 import { appendCompanyProfileSubmissionToGoogleSheet } from "@/app/lib/googleSheets";
 import {
   sanitizeCompanyProfileSubmission,
@@ -10,11 +11,36 @@ import { writeClient } from "@/sanity/lib/write-client";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const clientIp = extractClientIp(request);
+  const rateLimit = checkRateLimit(clientIp);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { ok: false, message: "Too many submission attempts. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(rateLimit.retryAfterSeconds),
+          "X-RateLimit-Remaining": String(rateLimit.remaining),
+          "X-RateLimit-Reset": String(rateLimit.resetAt),
+        },
+      }
+    );
+  }
+
   try {
     const payload = (await request.json()) as Partial<CompanyProfileSubmissionInput> & {
+      _hp_company_url_confirm?: string;
       submissionId?: string;
     };
 
+    // Bot Honeypot Protection
+    if (payload._hp_company_url_confirm && String(payload._hp_company_url_confirm).trim().length > 0) {
+      console.warn("[SECURITY] Bot submission trapped via honeypot field");
+      return NextResponse.json(
+        { ok: true, message: "Thank you for your submission." },
+        { status: 200 }
+      );
+    }
     const input: CompanyProfileSubmissionInput = {
       name: payload.name ?? "",
       businessType: payload.businessType ?? "",

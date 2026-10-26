@@ -1,0 +1,426 @@
+/**
+ * @file RevenueDynamicsCard.module.scss
+ * @description Master Logip-inspired styling for the Performance Chart Engine.
+ *              Eliminates noisy HUD ribbon boxes and vertical bar clutter in favor
+ *              of pure continuous Bézier splines, translucent area wash, and obsidian glassmorphism.
+ * @module admin/components/Dashboard/RevenueDynamicsCard.module.scss
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.performanceCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #eaecf0);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.titleCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.subtitle {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.legendCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legendPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  &.legendInactive {
+    opacity: 0.4;
+  }
+}
+
+.swatchCash,
+.swatchQuota {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Period Selector Dropdown */
+.periodDropdownWrapper {
+  position: relative;
+}
+
+.periodPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid #eaecf0;
+  background: #ffffff;
+  color: #0f172a;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    stroke-width: 2.2;
+    color: #64748b;
+  }
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+}
+
+.periodMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 130px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.periodMenuItem {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #334155;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+
+  &.selected {
+    background: rgba(2, 132, 199, 0.08);
+    color: #0284c7;
+    font-weight: 600;
+  }
+}
+
+/* Integrated Performance Headline (Clean, Zero Clutter) */
+.headlineRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+}
+
+.headlineMetrics {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+
+.headlineCash {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1;
+}
+
+.deltaPill {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.headlineBaseline {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.8rem;
+  color: #64748b;
+
+  strong {
+    font-family: var(--font-admin-numeric, sans-serif);
+    color: #334155;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Canvas Area */
+.canvasContainer {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  touch-action: none;
+  cursor: crosshair;
+
+  @media (max-width: 520px) {
+    height: 220px;
+  }
+}
+
+.chartSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: rgba(0, 0, 0, 0.05);
+  stroke-dasharray: 3 4;
+}
+
+.yAxisText {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  fill: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.xAxisText {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  fill: #64748b;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  transition: fill 0.15s ease, font-weight 0.15s ease;
+
+  &.activeX {
+    fill: #0f172a;
+    font-weight: 700;
+  }
+}
+
+.areaWashPath {
+  pointer-events: none;
+}
+
+.cashSpline,
+.quotaSpline {
+  pointer-events: none;
+}
+
+.crosshairGuide {
+  stroke: #cbd5e1;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.pulseAura {
+  pointer-events: none;
+  animation: pulseRadar 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseRadar {
+  0%, 100% {
+    opacity: 0.35;
+    r: 12px;
+  }
+  50% {
+    opacity: 0.85;
+    r: 14px;
+  }
+}
+
+/* Logip Obsidian Dark Floating Tooltip Card */
+.obsidianTooltip {
+  position: absolute;
+  top: 8px;
+  z-index: 30;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.75rem 0.95rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 195px;
+  transition: left 0.08s ease, transform 0.12s ease;
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.4rem;
+}
+
+.tooltipPeriod {
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.tooltipAttainmentPill {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+
+  &.pillPositive {
+    color: #34d399;
+    background: rgba(5, 150, 105, 0.2);
+  }
+
+  &.pillNegative {
+    color: #f87171;
+    background: rgba(220, 38, 38, 0.2);
+  }
+}
+
+.tooltipBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.74rem;
+}
+
+.tooltipLabelCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #94a3b8;
+}
+
+.accentBarCash,
+.accentBarQuota {
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.tooltipVal {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-weight: 700;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.tooltipFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.35rem;
+  font-size: 0.7rem;
+}
+
+.varianceLabel {
+  color: #94a3b8;
+}
+
+.varianceValue {
+  font-family: var(--font-admin-numeric, sans-serif);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  &.variancePositive {
+    color: #34d399;
+  }
+
+  &.varianceNegative {
+    color: #fbbf24;
+  }
+}

@@ -15,8 +15,11 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
   const pathname = usePathname();
 
   useEffect(() => {
-    // Skip Lenis entirely in Sanity Studio — let the browser handle scroll
-    if (pathname?.startsWith("/studio")) return;
+    // Skip Lenis entirely in Sanity Studio and Admin Workspace panels — let browser handle standard native scroll
+    if (pathname?.startsWith("/studio") || pathname?.startsWith("/admin")) {
+      document.documentElement.classList.remove("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
+      return;
+    }
 
     gsap.registerPlugin(ScrollTrigger);
     let lenis: Lenis | null = null;

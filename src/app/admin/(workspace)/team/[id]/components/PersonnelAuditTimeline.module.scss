@@ -1,0 +1,115 @@
+/**
+ * @file PersonnelAuditTimeline.module.scss
+ * @description Chronological compliance audit timeline styles for personnel security records.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.timelineCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  svg {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.timelineList {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 1.25rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 4px;
+    width: 2px;
+    background: #e2e8f0;
+  }
+}
+
+.timelineItem {
+  position: relative;
+  padding-bottom: 1.25rem;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1.25rem;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #64748b;
+  }
+
+  &.itemAccent::before {
+    border-color: #10b981;
+    background: #10b981;
+  }
+
+  &.itemWarning::before {
+    border-color: #f59e0b;
+    background: #f59e0b;
+  }
+}
+
+.itemHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.actionTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.itemTime {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.itemActor {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.emptyTimeline {
+  text-align: center;
+  padding: 1.5rem 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}

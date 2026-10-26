@@ -1,0 +1,617 @@
+'use client';
+
+/**
+ * @file AddTeamMemberModal.tsx
+ * @description Centered administrative user provisioning modal component (560px).
+ *              Replaces lateral slide-out drawers with a focused command dialog.
+ *              Enforces client-side validation, generates 16-character high-entropy temporary passwords,
+ *              guards against accidental dismissal with unsaved changes detection,
+ *              smooth enter/exit animations, and submits to Server Action createTeamUser.
+ * @module app/admin/components/modals/AddTeamMemberModal
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+import React, { useState, useEffect, useRef, useTransition, useCallback } from 'react';
+import { createTeamUser } from '@/app/actions/team';
+import type { CrmUserRole, CrmTabKey } from '@/types/crm';
+import { ROLE_DEFAULT_TABS } from '@/types/crm';
+import { generateHighEntropyPassword, isDrawerDirty } from '@/app/lib/team-utils';
+import type { ProvisionedCredentialsPayload } from '@/app/admin/(workspace)/team/components/CredentialRevealModal';
+import { useModalAnimation } from './useModalAnimation';
+import { PERMISSION_ENCLAVES, getInitialAllowedTabs } from '@/app/lib/team-permissions-config';
+import styles from './AddTeamMemberModal.module.scss';
+
+export interface AddTeamMemberModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUserCreated: (credentials: ProvisionedCredentialsPayload) => void;
+}
+
+export function AddTeamMemberModal({
+  isOpen,
+  onClose,
+  onUserCreated,
+}: AddTeamMemberModalProps): React.ReactElement | null {
+  const { shouldRender, isClosing, handleAnimationEnd } = useModalAnimation({
+    isOpen,
+    exitDurationMs: 180,
+  });
+
+  const [isPending, startTransition] = useTransition();
+  const modalRef = useRef<HTMLDivElement>(null);
+  const promptKeepBtnRef = useRef<HTMLButtonElement>(null);
+  const promptDiscardBtnRef = useRef<HTMLButtonElement>(null);
+
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<CrmUserRole>('sales_executive');
+  const [jobTitle, setJobTitle] = useState('');
+  const [phone, setPhone] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [allowedTabs, setAllowedTabs] = useState<CrmTabKey[]>(getInitialAllowedTabs('sales_executive'));
+
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
+  // Unsaved changes confirmation modal state
+  const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
+
+  // Initialize or regenerate temporary password on modal open
+  useEffect(() => {
+    if (isOpen) {
+      setFullName('');
+      setEmail('');
+      setRole('sales_executive');
+      setJobTitle('');
+      setPhone('');
+      setTempPassword(generateHighEntropyPassword());
+      setShowPassword(false);
+      setAllowedTabs(getInitialAllowedTabs('sales_executive'));
+      setFormErrors({});
+      setGeneralError(null);
+      setShowDiscardPrompt(false);
+    }
+  }, [isOpen]);
+
+  const handleRoleChange = (newRole: CrmUserRole) => {
+    setRole(newRole);
+    setAllowedTabs(getInitialAllowedTabs(newRole));
+  };
+
+  const handleToggleTab = (tabKey: CrmTabKey) => {
+    setAllowedTabs((prev) =>
+      prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]
+    );
+  };
+
+  const handleSelectAllTabs = () => {
+    setAllowedTabs([
+      'command_center',
+      'leads',
+      'deals',
+      'works',
+      'tasks',
+      'users',
+      'analytics',
+      'ingestion',
+      'settings',
+    ]);
+  };
+
+  const handleResetToRoleDefaults = () => {
+    setAllowedTabs(getInitialAllowedTabs(role));
+  };
+
+  // Determine whether the form contains unsaved modifications
+  const defaultTabs = getInitialAllowedTabs(role);
+  const areTabsModified =
+    allowedTabs.length !== defaultTabs.length ||
+    !allowedTabs.every((t) => defaultTabs.includes(t));
+
+  const isDirty = isDrawerDirty(fullName, email, jobTitle, phone, role) || areTabsModified;
+
+  const requestClose = useCallback(() => {
+    if (isDirty) {
+      setShowDiscardPrompt(true);
+      setTimeout(() => {
+        promptKeepBtnRef.current?.focus();
+      }, 50);
+    } else {
+      onClose();
+    }
+  }, [isDirty, onClose]);
+
+  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        if (showDiscardPrompt) {
+          setShowDiscardPrompt(false);
+        } else {
+          requestClose();
+        }
+        return;
+      }
+
+      if (event.key === 'Tab' && isOpen) {
+        if (showDiscardPrompt) {
+          event.preventDefault();
+          if (document.activeElement === promptKeepBtnRef.current) {
+            promptDiscardBtnRef.current?.focus();
+          } else {
+            promptKeepBtnRef.current?.focus();
+          }
+          return;
+        }
+
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, showDiscardPrompt, requestClose]);
+
+  if (!shouldRender) {
+    return null;
+  }
+
+  const handleRegeneratePassword = () => {
+    setTempPassword(generateHighEntropyPassword());
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFormErrors({});
+    setGeneralError(null);
+
+    // Client-side pre-validation
+    const errors: Record<string, string> = {};
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      errors.fullName = 'Full name must contain at least 2 characters.';
+    }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errors.email = 'A valid business email address is required.';
+    }
+    if (!jobTitle.trim() || jobTitle.trim().length < 2) {
+      errors.jobTitle = 'Job title must contain at least 2 characters.';
+    }
+    if (!tempPassword || tempPassword.length < 8) {
+      errors.tempPassword = 'Temporary password is required.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const payload = {
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          role,
+          jobTitle: jobTitle.trim(),
+          phone: phone.trim() || null,
+          tempPassword,
+          allowedTabs,
+        };
+
+        const result = await createTeamUser(payload);
+
+        if (!result.success) {
+          if (result.validationErrors) {
+            setFormErrors(result.validationErrors);
+          }
+          setGeneralError(result.error || 'Failed to provision team member account.');
+          return;
+        }
+
+        // Broadcast custom event for optimistic roster synchronization across workspaces
+        // F-04: Include real provisioned UUID in event detail so optimistic mutations work immediately
+        window.dispatchEvent(
+          new CustomEvent('team-member-created', {
+            detail: {
+              id: result.data?.id,
+              credentials: {
+                fullName,
+                email,
+                role,
+                jobTitle,
+                allowedTabs,
+              },
+              memberSummary: {
+                fullName,
+                email,
+                role,
+                jobTitle,
+                allowedTabs,
+              },
+            },
+          })
+        );
+
+        // Forward credentials to reveal modal and close creation modal
+        onUserCreated({
+          fullName: payload.fullName,
+          email: payload.email,
+          role: payload.role,
+          jobTitle: payload.jobTitle,
+          tempPassword: payload.tempPassword,
+          allowedTabs: payload.allowedTabs,
+        });
+
+        onClose();
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
+        setGeneralError(msg);
+      }
+    });
+  };
+
+  return (
+    <div
+      className={`${styles.modalOverlay} ${isClosing ? styles.overlayClosing : ''}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          requestClose();
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-team-modal-title"
+    >
+      <div
+        ref={modalRef}
+        className={`${styles.modalDialog} ${isClosing ? styles.dialogClosing : ''}`}
+        onAnimationEnd={handleAnimationEnd}
+      >
+        {/* Modal Header */}
+        <div className={styles.modalHeader}>
+          <div className={styles.headerMeta}>
+            <span className={styles.eyebrow}>User Governance</span>
+            <h2 id="add-team-modal-title" className={styles.modalTitle}>
+              Provision Commercial Personnel.
+            </h2>
+          </div>
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={requestClose}
+            aria-label="Close add team member modal"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            <kbd className={styles.escBadge}>Esc</kbd>
+          </button>
+        </div>
+
+        {/* Modal Body Form */}
+        <form id="add-team-user-form" className={styles.modalBody} onSubmit={handleFormSubmit} noValidate>
+          {generalError && (
+            <div className={styles.generalErrorAlert} role="alert" aria-live="assertive">
+              {generalError}
+            </div>
+          )}
+
+          {/* Full Name Field */}
+          <div className={styles.formGroup}>
+            <label htmlFor="team-member-name" className={styles.label}>
+              Full Name *
+            </label>
+            <input
+              id="team-member-name"
+              name="fullName"
+              type="text"
+              className={`${styles.input} ${formErrors.fullName ? styles.inputError : ''}`}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="e.g. Anita Nair"
+              disabled={isPending}
+              required
+            />
+            {formErrors.fullName && <span className={styles.fieldError}>{formErrors.fullName}</span>}
+          </div>
+
+          {/* Email Field */}
+          <div className={styles.formGroup}>
+            <label htmlFor="team-member-email" className={styles.label}>
+              Work Email Address *
+            </label>
+            <input
+              id="team-member-email"
+              name="email"
+              type="email"
+              className={`${styles.input} ${formErrors.email ? styles.inputError : ''}`}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. anita@marcaubi.com"
+              disabled={isPending}
+              required
+            />
+            {formErrors.email && <span className={styles.fieldError}>{formErrors.email}</span>}
+          </div>
+
+          {/* Role and Job Title Row */}
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label htmlFor="team-member-role" className={styles.label}>
+                Assigned Role *
+              </label>
+              <select
+                id="team-member-role"
+                name="role"
+                className={styles.select}
+                value={role}
+                onChange={(e) => handleRoleChange(e.target.value as CrmUserRole)}
+                disabled={isPending}
+              >
+                <option value="sales_executive">Sales Executive</option>
+                <option value="sales_manager">Sales Manager</option>
+                <option value="admin">Administrator</option>
+                <option value="viewer">Viewer (Read Only)</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="team-member-title" className={styles.label}>
+                Job Title *
+              </label>
+              <input
+                id="team-member-title"
+                name="jobTitle"
+                type="text"
+                className={`${styles.input} ${formErrors.jobTitle ? styles.inputError : ''}`}
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                placeholder="e.g. Senior Partner"
+                disabled={isPending}
+                required
+              />
+              {formErrors.jobTitle && <span className={styles.fieldError}>{formErrors.jobTitle}</span>}
+            </div>
+          </div>
+
+          {/* Phone Field */}
+          <div className={styles.formGroup}>
+            <label htmlFor="team-member-phone" className={styles.label}>
+              Phone Number (Optional)
+            </label>
+            <input
+              id="team-member-phone"
+              name="phone"
+              type="tel"
+              className={styles.input}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+971 50 000 0000"
+              disabled={isPending}
+            />
+          </div>
+
+          {/* Granular Tab Access Permissions Matrix */}
+          <div className={styles.permissionsSection}>
+            <div className={styles.permissionsHeader}>
+              <div className={styles.permissionsTitleGroup}>
+                <span className={styles.permissionsTitle}>Workspace Tab Permissions</span>
+                <span className={styles.permissionsSubtitle}>
+                  Authorize specific functional tabs for this staff member ({allowedTabs.length}/9 Active)
+                </span>
+              </div>
+              <div className={styles.permissionsQuickActions}>
+                <button
+                  type="button"
+                  className={styles.quickActionBtn}
+                  onClick={handleSelectAllTabs}
+                  disabled={isPending}
+                  title="Grant access to all 9 tabs"
+                >
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  className={styles.quickActionBtn}
+                  onClick={handleResetToRoleDefaults}
+                  disabled={isPending}
+                  title="Reset to role-based baseline"
+                >
+                  Reset Defaults
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.enclavesContainer}>
+              {PERMISSION_ENCLAVES.map((enclave) => (
+                <div key={enclave.enclaveTitle} className={styles.enclaveCard}>
+                  <div className={styles.enclaveHeader}>
+                    <span className={styles.enclaveName}>{enclave.enclaveTitle}</span>
+                    <span className={styles.enclaveBadge}>
+                      {enclave.tabs.filter((t) => allowedTabs.includes(t.key)).length}/{enclave.tabs.length} Authorized
+                    </span>
+                  </div>
+
+                  <div className={styles.tabsGrid}>
+                    {enclave.tabs.map((tab) => {
+                      const isChecked = allowedTabs.includes(tab.key);
+                      return (
+                        <div
+                          key={tab.key}
+                          className={`${styles.tabCard} ${isChecked ? styles.tabCardActive : ''}`}
+                          onClick={() => !isPending && handleToggleTab(tab.key)}
+                          onKeyDown={(e) => {
+                            if (e.key === ' ' || e.key === 'Enter') {
+                              e.preventDefault();
+                              if (!isPending) handleToggleTab(tab.key);
+                            }
+                          }}
+                          role="checkbox"
+                          aria-checked={isChecked}
+                          tabIndex={0}
+                          aria-label={`${tab.label} (${tab.route})`}
+                        >
+                          <div className={styles.customCheckbox} aria-hidden="true">
+                            {isChecked && (
+                              <svg
+                                className={styles.checkIcon}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className={styles.tabMeta}>
+                            <div className={styles.tabLabel}>
+                              <span>{tab.label}</span>
+                              <span className={styles.tabRoute}>{tab.route}</span>
+                            </div>
+                            <span className={styles.tabHint}>{tab.hint}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Generated Temporary Password Section */}
+          <div className={styles.passwordGroup}>
+            <label htmlFor="team-member-temp-pwd" className={styles.label}>
+              Generated Temporary Passphrase *
+            </label>
+            <div className={styles.passwordInputWrapper}>
+              <input
+                id="team-member-temp-pwd"
+                name="tempPassword"
+                type={showPassword ? 'text' : 'password'}
+                className={styles.passwordInput}
+                value={tempPassword}
+                readOnly
+                aria-label="Generated temporary passphrase"
+              />
+              <button
+                type="button"
+                className={styles.passwordActionBtn}
+                onClick={() => setShowPassword((prev) => !prev)}
+                title={showPassword ? 'Mask password' : 'Show password'}
+              >
+                {showPassword ? 'Hide' : 'Reveal'}
+              </button>
+              <button
+                type="button"
+                className={styles.passwordActionBtn}
+                onClick={handleRegeneratePassword}
+                title="Generate new 16-character high-entropy password"
+              >
+                Regenerate
+              </button>
+            </div>
+            <p className={styles.passwordHint}>
+              16-character high-entropy secret. Automatically copied and revealed in the next step.
+            </p>
+            {formErrors.tempPassword && (
+              <span className={styles.fieldError}>{formErrors.tempPassword}</span>
+            )}
+          </div>
+
+          {/* Modal Footer */}
+          <div className={styles.modalFooter}>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={requestClose}
+              disabled={isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={isPending}
+            >
+              {isPending ? 'Provisioning...' : 'Provision Member'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Accidental Dismissal Confirmation Dialog */}
+      {showDiscardPrompt && (
+        <div
+          className={styles.promptOverlay}
+          onClick={() => setShowDiscardPrompt(false)}
+        >
+          <div
+            className={styles.promptModal}
+            onClick={(e) => e.stopPropagation()}
+            role="alertdialog"
+            aria-labelledby="discard-title"
+            aria-describedby="discard-message"
+          >
+            <h3 id="discard-title" className={styles.promptTitle}>
+              Discard Unsaved Personnel Record?
+            </h3>
+            <p id="discard-message" className={styles.promptMessage}>
+              You have entered member details that have not been provisioned. Exiting now will permanently discard all entered parameters.
+            </p>
+            <div className={styles.promptActions}>
+              <button
+                ref={promptKeepBtnRef}
+                type="button"
+                className={styles.promptKeepBtn}
+                onClick={() => setShowDiscardPrompt(false)}
+              >
+                Keep Editing
+              </button>
+              <button
+                ref={promptDiscardBtnRef}
+                type="button"
+                className={styles.promptDiscardBtn}
+                onClick={() => {
+                  setShowDiscardPrompt(false);
+                  onClose();
+                }}
+              >
+                Discard & Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

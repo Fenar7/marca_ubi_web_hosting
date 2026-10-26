@@ -1,0 +1,54 @@
+/**
+ * Marca Ubi CRM Enterprise — Workspace Shell Styling Tokens & Grid Definitions
+ * Accordion Executive Advisory × Sypher Minimalist SaaS Architecture.
+ * Neutral editorial canvas (#f7f8fa), pure white card surfaces (#ffffff),
+ * hairline slate borders (1px solid #e2e5ea), slate ink typography (#1f242f / #525965),
+ * and MessinaSans display font integration.
+ * Author: Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.layoutRoot {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--admin-canvas-bg, #f7f8fa);
+  color: var(--admin-text-primary, #1f242f);
+  position: relative;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  font-family: var(--font-admin-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mainViewport {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: var(--sidebar-width, 260px);
+  width: calc(100% - var(--sidebar-width, 260px));
+  transition: margin-left 0.22s cubic-bezier(0.16, 1, 0.3, 1), width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.contentContainer {
+  flex: 1;
+  padding: 2rem 2.5rem 4rem;
+  max-width: 1720px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  @media (max-width: 640px) {
+    padding: 1rem 0.75rem 2.5rem;
+  }
+}

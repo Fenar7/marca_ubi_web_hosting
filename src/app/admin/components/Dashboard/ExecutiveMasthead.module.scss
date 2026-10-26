@@ -1,0 +1,243 @@
+/**
+ * @file ExecutiveMasthead.module.scss
+ * @description Executive Overview Masthead styling benchmarked against MedTrackr & Accordion Executive Advisory.
+ *              Features high-contrast typographic hierarchy, 44px touch-accessible action pills,
+ *              and Signature Accordion Lemon Yellow (#eefb87) New Lead CTA.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.mastheadContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+  padding: 0.25rem 0;
+
+  @media (min-width: 960px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.titleCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-admin-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #0f172a);
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.25;
+
+  @media (min-width: 768px) {
+    font-size: 1.85rem;
+  }
+}
+
+.subtitle {
+  font-size: 0.88rem;
+  color: var(--admin-text-secondary, #525965);
+  margin: 0;
+  line-height: 1.45;
+  max-width: 680px;
+}
+
+.actionsCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dropdownWrapper {
+  position: relative;
+}
+
+/* Date Range Dropdown Pill [ 📅 Last 30 Days ▾ ] */
+.dateRangePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+
+  svg {
+    flex-shrink: 0;
+    color: var(--admin-text-secondary, #6b7280);
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f8fafc);
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ff6100);
+    outline-offset: 2px;
+  }
+
+  &.active {
+    border-color: #0f172a;
+
+    svg.chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+/* Accessible Date Range Popover Menu */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+  padding: 0.35rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f1f5f9);
+    color: #0f172a;
+  }
+
+  &.selected {
+    background-color: #f1f5f9;
+    font-weight: 600;
+    color: var(--admin-accent-brand, #ff6100);
+  }
+}
+
+/* Export Report Pill Button [ 📥 Export ] */
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1.15rem;
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+
+  svg {
+    color: var(--admin-text-secondary, #6b7280);
+  }
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f8fafc);
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(31, 36, 47, 0.06);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ff6100);
+    outline-offset: 2px;
+  }
+}
+
+/* Signature Accordion Lemon Yellow Action Pill Button [ ➕ New Lead ] */
+.newLeadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  background-color: var(--admin-accent-lemon, #eefb87);
+  border: 1px solid var(--admin-border-strong, #1f242f);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+
+  svg {
+    stroke-width: 2.5;
+  }
+
+  &:hover {
+    background-color: var(--admin-accent-lemon-hover, #e4f375);
+    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.14);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 2px;
+  }
+}

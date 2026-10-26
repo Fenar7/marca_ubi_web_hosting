@@ -1,0 +1,49 @@
+/**
+ * @file page.module.scss
+ * @description Master Executive Overview styles for the Marca Ubi CRM dashboard (/admin).
+ *              Benchmarked against MedTrackr Report & Analytics architecture.
+ *              Features 100% full-width fluid canvas, 4-pod KPI ribbon, 60/40 mid-tier analytics grid
+ *              (Revenue Dynamics & Pipeline Allocation), and high-density commercial deals ledger.
+ *              Preserves Signature Accordion Lemon Yellow (#eefb87 / #e4f375) action pills.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.dashboardContainer {
+  width: 100%;
+  background-color: var(--admin-canvas-bg, #f7f8fa);
+  max-width: 1720px;
+  margin: 0 auto;
+  padding: 0 0 2rem 0;
+}
+
+/* 100% Full-Width Fluid Canvas */
+.fluidCanvas {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    gap: 1.75rem;
+  }
+}
+
+/* Mid-Tier Analytics Grid (60% / 40% Split: Dynamics & Allocation) */
+.midTierGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* Bottom Full-Width Section */
+.bottomSection {
+  width: 100%;
+  min-width: 0;
+}

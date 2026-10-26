@@ -1,33 +1,35 @@
-import AboutSection from "./components/AboutSection/AboutSection";
-import ContactCtaSection from "./components/ContactCtaSection/ContactCtaSection";
-import Footer from "./components/Footer/Footer";
-import FloatingExploreButton from "./components/FloatingExploreButton/FloatingExploreButton";
-import Header from "./components/Header/Header";
-import Hero from "./components/Hero/Hero";
-import HowWeWork from "./components/HowWeWorkSection/HowWeWork";
-import InitialLoader from "./components/InitialLoader/InitialLoader";
-import OurValuesSection from "./components/OurValuesSection/OurValuesSection";
-import StepSectionContainer from "./components/StepSectionContainer/StepSectionContainer";
-import TestimonialsSection from "./components/TestimonialsSection/TestimonialsSection";
-import WorksSection from "./components/WorksSection/WorksSection";
+import { client } from "@/sanity/lib/client";
+import { worksQuery } from "@/sanity/lib/queries";
+import { postsQuery } from "@/sanity/lib/blog-queries";
+import type { SanityWork } from "./components/WorksSection/WorksSectionClient";
+import type { PostSummary } from "@/sanity/types/blog";
+import ClientHomeExperience from "./components/ClientHomeExperience/ClientHomeExperience";
 
-export default function Home() {
-  return (
-    <>
-      <InitialLoader />
-      <div data-app-shell>
-        <Header />
-        <Hero />
-        <AboutSection />
-        <TestimonialsSection />
-        <HowWeWork />
-        <StepSectionContainer />
-        <WorksSection />
-        <OurValuesSection />
-        <ContactCtaSection />
-        <Footer />
-      </div>
-      <FloatingExploreButton />
-    </>
-  );
+export const revalidate = 60; // 60-second Incremental Static Regeneration
+
+/**
+ * Flagship Client-Facing Homepage Server Component.
+ * Concurrently streams dynamic client case studies and editorial dispatches from Sanity CMS,
+ * feeding them into the 160over90 alternating living video stream.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+export default async function Home() {
+  let works: SanityWork[] = [];
+  let posts: PostSummary[] = [];
+
+  try {
+    const [fetchedWorks, fetchedPosts] = await Promise.all([
+      client.fetch<SanityWork[]>(worksQuery),
+      client.fetch<PostSummary[]>(postsQuery),
+    ]);
+    works = fetchedWorks || [];
+    posts = fetchedPosts || [];
+  } catch (error) {
+    console.error("Sanity data fetch error on flagship homepage:", error);
+    works = [];
+    posts = [];
+  }
+
+  return <ClientHomeExperience works={works} posts={posts} />;
 }
