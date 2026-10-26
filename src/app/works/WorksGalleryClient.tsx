@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { shouldUseMobileMotion, prefersReducedMotion } from "@/app/lib/motion";
 import { urlFor } from "@/sanity/lib/image";
 import type { SanityWork } from "@/app/components/WorksSection/WorksSectionClient";
+import { ReelModal } from "@/app/components/ReelModal/ReelModal";
 import styles from "./Works.module.scss";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -76,6 +77,8 @@ function toNaturalCase(text?: string | null): string {
  */
 export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [isReelOpen, setIsReelOpen] = useState(false);
+  const [activeReelSrc, setActiveReelSrc] = useState("/video/video-web.mp4");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filteredWorks = useMemo(() => {
@@ -335,50 +338,33 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
                   )}
                 </div>
 
-                {/* Bottom-Right Interactive Action Buttons */}
-                {(work.viewWorkLink || work.caseStudyLink || work.testimonialLink) && (
-                  <div
-                    className={styles.cardBottomRightActions}
-                    onClick={(e) => e.stopPropagation()}
+                {/* Bottom-Right 160over90 Benchmark Action Button Stack */}
+                <div
+                  className={styles.cardBottomRightActions}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className={styles.actionPillLink}
+                    onClick={() => {
+                      setActiveReelSrc("/video/video-web.mp4");
+                      setIsReelOpen(true);
+                    }}
+                    aria-label={`Play Reel for ${toNaturalCase(work.title)}`}
                   >
-                    {work.caseStudyLink && (
-                      <a
-                        href={work.caseStudyLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.actionPillLink}
-                        aria-label={`Read case study for ${work.title}`}
-                      >
-                        <span>Case Study</span>
-                        <span className={styles.actionGlyph} aria-hidden="true">↗</span>
-                      </a>
-                    )}
-                    {work.testimonialLink && (
-                      <a
-                        href={work.testimonialLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.actionPillLink}
-                        aria-label={`View testimonial for ${work.title}`}
-                      >
-                        <span>Testimonial</span>
-                        <span className={styles.actionGlyph} aria-hidden="true">↗</span>
-                      </a>
-                    )}
-                    {work.viewWorkLink && (
-                      <a
-                        href={work.viewWorkLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`${styles.actionPillLink} ${styles.primaryAction}`}
-                        aria-label={`View live platform for ${work.title}`}
-                      >
-                        <span>View Work</span>
-                        <span className={styles.actionGlyph} aria-hidden="true">↗</span>
-                      </a>
-                    )}
-                  </div>
-                )}
+                    <span>Play Reel</span>
+                    <span className={styles.playGlyph} aria-hidden="true">▶</span>
+                  </button>
+                  <a
+                    href={work.viewWorkLink || (work.caseStudyLink || "/works")}
+                    target={work.viewWorkLink ? "_blank" : undefined}
+                    rel={work.viewWorkLink ? "noopener noreferrer" : undefined}
+                    className={styles.actionPillLink}
+                    aria-label={`View Work for ${toNaturalCase(work.title)}`}
+                  >
+                    <span>View Work</span>
+                  </a>
+                </div>
               </article>
             </div>
           );
@@ -403,6 +389,13 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
           </div>
         </div>
       </aside>
+
+      {/* 6. Accessible Full-Screen Showreel Modal */}
+      <ReelModal
+        isOpen={isReelOpen}
+        onClose={() => setIsReelOpen(false)}
+        videoSrc={activeReelSrc}
+      />
     </div>
   );
 }

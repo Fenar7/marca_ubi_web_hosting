@@ -134,12 +134,20 @@ When the homepage was redesigned to feature `WorksCutout.tsx` (the transparent v
 
 ---
 
-## 12. Pinned Title Refinement: Uppercase Alignment, Weight & Scale Calibration
-- **User Directive**: The user explicitly requested full capitalization for the pinned transition title (`CURATED WORKS`) while retaining the reduced Book 400 hairline weight and compact display size clamp.
+## 13. 160over90 Reference Parity: Drop Shadow Eradication, Sheer Ambient Scrim & Action Button Stack
+- **Visual Defect & User Observation**:
+  - The live implementation ([Screenshot 2026-10-26 231737.png](file:///C:/Users/firoz/Pictures/Screenshots/Screenshot%202026-10-26%20231737.png)) displayed heavy drop shadows on card titles, subtext, and cards, a muddy 94% black scrim composite smothering the cover artwork, and boxy filled buttons with diagonal arrows.
+  - The benchmark reference ([Screenshot 2026-10-26 231815.png](file:///C:/Users/firoz/Pictures/Screenshots/Screenshot%202026-10-26%20231815.png)) demonstrates zero drop shadows, an ultra-sheer ambient veil preserving complete artwork vibrance, and a vertical stack of signature outline pill buttons.
 - **Remediation**:
-  - **Full Capitalization**: Restored JSX text to `CURATED WORKS` and enforced `text-transform: uppercase` in `.titleSectionContainer h2`.
-  - **Hairline Weight Retention**: Maintained `font-weight: 400` (`CircularXXWeb-Book` / `$fw-book`) for razor-sharp, non-bulky letterforms.
-  - **Scale Calibration Retention**: Maintained calibrated font size clamp `clamp(2.25rem, 5.5vw, 4.75rem)` (~36px–76px) and tightened `.titleSectionContainer` minimum height `clamp(14rem, 28vw, 28rem)`.
-  - **Optical Tracking**: Calibrated letter-spacing to `-0.035em` for uppercase glyph tracking without overcrowding.
+  - **Zero Drop Shadows**: Eradicated `text-shadow` across `.cardTitle` and `.cardSubtext` (`text-shadow: none;`). Removed `box-shadow` across `.workDeckCard`, `.indexBadge`, and `.actionPillLink`.
+  - **Sheer Ambient Scrim Veil**: Replaced the 3-directional 94% black scrim with an ultra-sheer lateral gradient (`rgba(0, 0, 0, 0.35)` to transparent at 55%), ensuring cover artwork and mockups remain crystal clear.
+  - **160over90 Outline Pill Button Stack**:
+    - Layout: Vertical column stack docked in bottom-right corner (`flex-direction: column; align-items: stretch; gap: 12px; min-width: 170px;`).
+    - Geometry: Signature full pill (`border-radius: 9999px;`).
+    - Surface: 100% transparent fill (`background: transparent;`) with crisp `1.5px solid rgba(255, 255, 255, 0.85)` outline border.
+    - Actions:
+      1. Top button: `Play Reel ▶` with solid triangle glyph `▶` (`\u25B6`), opening the accessible `ReelModal`.
+      2. Bottom button: `View Work` (plain text, NO diagonal arrow `↗`).
+    - Inversion on Hover: `background: #ffffff; color: #0a0a0a; border-color: #ffffff; transform: translateY(-2px);`.
 
 

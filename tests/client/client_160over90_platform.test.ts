@@ -357,7 +357,6 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/components/Sections/ReelCutout.module.scss",
         "src/app/components/Sections/StatementCurtain.module.scss",
         "src/app/components/Sections/WorksCutout.module.scss",
-        "src/app/works/Works.module.scss",
         "src/app/components/Sections/ValuesCutout.module.scss",
         "src/app/components/Sections/ProcessCurtain.module.scss",
         "src/app/components/Sections/TestimonialsCutout.module.scss",
@@ -579,6 +578,16 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes(".cardLeftContent"), "Works.module.scss must define .cardLeftContent class");
       assert.ok(scss.includes(".cardBottomRightActions"), "Works.module.scss must define .cardBottomRightActions class");
       assert.ok(scss.includes("transform: translateY(-50%)"), "Works.module.scss must vertically center .cardLeftContent");
+      assert.ok(scss.includes("border-radius: 9999px; // 160over90 signature outline pill geometry"), "Works.module.scss must enforce border-radius: 9999px for 160over90 benchmark outline pill");
+      assert.ok(scss.includes("border: 1.5px solid rgba(255, 255, 255, 0.85);"), "Works.module.scss must declare 1.5px solid outline border");
+      assert.ok(scss.includes("background: transparent;"), "Works.module.scss must enforce transparent background on action pills");
+      assert.ok(scss.includes("flex-direction: column;"), "Works.module.scss must enforce vertical column stack for cardBottomRightActions");
+      assert.ok(!scss.includes("text-shadow: 0"), "Works.module.scss must not contain drop shadows on text");
+      assert.ok(!scss.includes("rgba(5, 5, 6, 0.94)"), "Works.module.scss must not contain heavy 94% black scrim composite");
+      assert.ok(tsx.includes("Play Reel"), "WorksGalleryClient must declare 'Play Reel' button");
+      assert.ok(tsx.includes("playGlyph"), "WorksGalleryClient must declare playGlyph class for ▶ solid triangle");
+      assert.ok(tsx.includes("ReelModal"), "WorksGalleryClient must integrate accessible ReelModal showreel viewer");
+      assert.ok(!tsx.includes("↗"), "WorksGalleryClient must not contain diagonal arrow glyph in action pills");
       assert.ok(!tsx.includes("&nearr;"), "WorksGalleryClient must not contain unescaped &nearr; entity");
       assert.ok(!tsx.includes("pulseDot"), "WorksGalleryClient must not contain AI-slop pulseDot");
       assert.ok(!tsx.includes("countBadge"), "WorksGalleryClient must not contain AI-slop countBadge");
