@@ -102,3 +102,12 @@ When the homepage was redesigned to feature `WorksCutout.tsx` (the transparent v
   - Open the route cleanly with the monumental headline `Proof of intent.\nEngineered to endure.` followed by the editorial lead.
   - Assert in `tests/client/client_160over90_platform.test.ts` that zero `pulseDot` or `countBadge` elements exist.
 
+---
+
+## 9. Full-Width Edge-to-Edge Stacking Deck Addendum
+- **Issue**: `.workDeckWrapper` previously enforced `padding: 0 clamp(1rem, 3.5vw, 3.5rem)` which inset the 3D cards away from the screen edges with wide black side gutters.
+- **Remediation**:
+  - Eliminate all side padding on `.workDeckWrapper` (`padding: 0`), allowing cards to bleed 100% full width edge-to-edge.
+  - Set `border-radius: 0` and remove left/right borders on `.workDeckCard` for seamless edge-to-edge cinematic canvas.
+  - Align index badges and action pills with broadsheet viewport margins.
+

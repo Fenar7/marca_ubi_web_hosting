@@ -182,12 +182,12 @@
   top: clamp(1rem, 2vw, 2.5rem);
   will-change: transform;
   width: 100%;
-  padding: 0 clamp(1rem, 3.5vw, 3.5rem);
+  padding: 0;
   box-sizing: border-box;
 
   @media (max-width: 1024px) {
     top: 4.8rem;
-    padding: 0 1rem;
+    padding: 0;
   }
 
   &:last-child {
@@ -209,8 +209,11 @@
   transform-origin: center bottom;
   width: 100%;
   will-change: transform;
-  border-radius: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: none;
+  border-right: none;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
   background: #121214;
   outline: none;
@@ -270,8 +273,8 @@
 
 .indexBadge {
   position: absolute;
-  top: clamp(1.25rem, 3vw, 2.5rem);
-  left: clamp(1.25rem, 3vw, 2.5rem);
+  top: clamp(1.5rem, 4vw, 3rem);
+  left: clamp(1.5rem, 5vw, 4.5rem);
   font-family: $font-mono;
   font-size: 13px;
   font-weight: 500;
@@ -289,8 +292,8 @@
 
 .cardActionLinks {
   position: absolute;
-  top: clamp(1.25rem, 3vw, 2.5rem);
-  right: clamp(1.25rem, 3vw, 2.5rem);
+  top: clamp(1.5rem, 4vw, 3rem);
+  right: clamp(1.5rem, 5vw, 4.5rem);
   display: flex;
   align-items: flex-end;
   flex-direction: column;
