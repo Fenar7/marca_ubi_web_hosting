@@ -40,6 +40,45 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes("CircularXXWeb-Medium.woff2"), "Must map Medium weight to 500");
       assert.ok(content.includes("CircularXXWeb-Bold.woff2"), "Must map Bold weight to 700");
     });
+
+    test("asserts client SCSS modules adhere to 160over90 typographic weight invariants (StatementCurtain uses Book 400, zero unmapped 600)", () => {
+      const statementScss = path.join(rootDir, "src", "app", "components", "Sections", "StatementCurtain.module.scss");
+      const content = fs.readFileSync(statementScss, "utf8");
+
+      assert.ok(!content.includes("font-weight: 700"), "StatementCurtain must not use heavy font-weight: 700");
+      assert.ok(content.includes("font-weight: 400"), "StatementCurtain must use Book (400) matching 160over90 benchmark");
+
+      const clientScssFiles = [
+        "src/app/components/ClientHeader/ClientHeader.module.scss",
+        "src/app/components/ReelModal/ReelModal.module.scss",
+        "src/app/components/Sections/StatementCurtain.module.scss",
+        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/HeroCutout.module.scss",
+        "src/app/components/Sections/ReelCutout.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/components/Sections/WorksCurtain.module.scss",
+        "src/app/components/Sections/ValuesCutout.module.scss",
+        "src/app/components/Sections/ProcessCurtain.module.scss",
+        "src/app/components/Sections/TestimonialsCutout.module.scss",
+        "src/app/components/Sections/DispatchesCurtain.module.scss",
+        "src/app/components/Sections/GlobalLocationsCloud.module.scss",
+        "src/app/components/Sections/ConnectCutout.module.scss",
+        "src/app/components/Sections/MonumentalFooter.module.scss",
+        "src/app/works/Works.module.scss",
+        "src/app/blog/Blog.module.scss",
+        "src/app/blog/[slug]/BlogPost.module.scss",
+        "src/app/blog/components/BlogPostComponents.module.scss",
+        "src/app/blog/components/PortableTextRenderer.module.scss",
+      ];
+
+      for (const relPath of clientScssFiles) {
+        const full = path.join(rootDir, relPath);
+        if (fs.existsSync(full)) {
+          const css = fs.readFileSync(full, "utf8");
+          assert.ok(!css.includes("font-weight: 600"), `${relPath} must not use font-weight: 600 (maps to 700 bold; use 500 Medium)`);
+        }
+      }
+    });
   });
 
   describe("Section 2: 60-30-10 Color Architecture & Contrast Standards", () => {

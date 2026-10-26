@@ -22,7 +22,7 @@
 .kicker {
   font-family: $font-circular;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: $client-accent-red;
@@ -31,9 +31,9 @@
 .displayHeadline {
   font-family: $font-circular;
   font-size: var(--client-type-h1);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
   color: #ffffff;
   margin: 0;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
@@ -73,7 +73,7 @@
 .deskLabel {
   font-family: $font-mono;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.6);
@@ -82,7 +82,7 @@
 .deskValue {
   font-family: $font-circular;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #ffffff;
   text-decoration: none;
   transition: color 0.2s ease;
@@ -120,7 +120,7 @@
   color: #0a0a0a;
   font-family: $font-circular;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   text-decoration: none;
   cursor: pointer;
@@ -160,7 +160,7 @@
   color: #ffffff;
   font-family: $font-circular;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   text-decoration: none;
   cursor: pointer;
