@@ -285,9 +285,6 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
             ? urlFor(work.coverImage).width(1920).height(1080).quality(92).url()
             : "/images/work-image.png";
 
-          const projectIndex = String(index + 1).padStart(2, "0");
-          const totalCount = String(filteredWorks.length).padStart(2, "0");
-
           return (
             <div
               key={work._id}
@@ -322,13 +319,8 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
                   />
                 </div>
 
-                {/* Dark Contrast Scrim Gradient */}
+                {/* Ambient Contrast Scrim Glaze */}
                 <div className={styles.cardScrimOverlay} aria-hidden="true" />
-
-                {/* Top-Left Monospace Index Badge */}
-                <span className={styles.indexBadge} aria-label={`Project ${projectIndex} of ${totalCount}`}>
-                  {projectIndex} / {totalCount}
-                </span>
 
                 {/* Left Side Vertically Centered Typographic Block */}
                 <div className={styles.cardLeftContent}>

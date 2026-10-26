@@ -584,6 +584,13 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("flex-direction: column;"), "Works.module.scss must enforce vertical column stack for cardBottomRightActions");
       assert.ok(!scss.includes("text-shadow: 0"), "Works.module.scss must not contain drop shadows on text");
       assert.ok(!scss.includes("rgba(5, 5, 6, 0.94)"), "Works.module.scss must not contain heavy 94% black scrim composite");
+      assert.ok(scss.includes(".cardScrimOverlay"), "Works.module.scss must define .cardScrimOverlay class");
+      assert.ok(scss.includes("rgba(0, 0, 0, 0.48)"), "Works.module.scss must provide lateral typographic contrast veil");
+      assert.ok(scss.includes("rgba(0, 0, 0, 0.20)"), "Works.module.scss must provide very light ambient dark glaze across the card");
+      assert.ok(!tsx.includes("indexBadge"), "WorksGalleryClient must not contain indexBadge");
+      assert.ok(!tsx.includes("projectIndex"), "WorksGalleryClient must eradicate unused projectIndex");
+      assert.ok(!tsx.includes("totalCount"), "WorksGalleryClient must eradicate unused totalCount");
+      assert.ok(!scss.includes(".indexBadge"), "Works.module.scss must not contain .indexBadge selector");
       assert.ok(tsx.includes("Play Reel"), "WorksGalleryClient must declare 'Play Reel' button");
       assert.ok(tsx.includes("playGlyph"), "WorksGalleryClient must declare playGlyph class for ▶ solid triangle");
       assert.ok(tsx.includes("ReelModal"), "WorksGalleryClient must integrate accessible ReelModal showreel viewer");

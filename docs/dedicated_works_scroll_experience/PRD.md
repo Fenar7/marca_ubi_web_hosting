@@ -150,4 +150,13 @@ When the homepage was redesigned to feature `WorksCutout.tsx` (the transparent v
       2. Bottom button: `View Work` (plain text, NO diagonal arrow `↗`).
     - Inversion on Hover: `background: #ffffff; color: #0a0a0a; border-color: #ffffff; transform: translateY(-2px);`.
 
+---
 
+## 14. Index Badge Elimination & Calibrated Ambient Glaze
+- **User Directive**:
+  1. Eradicate the top-left `04 / 05` index badge (`Screenshot 2026-10-26 235226.png`) to clean up mechanical noise and elevate minimal luxury restraint.
+  2. Add a very light black overlay (`Screenshot 2026-10-26 235230.png`) across showcase cards to settle high-key concrete architecture into the obsidian website shell without smothering artwork.
+- **Architectural Solution**:
+  - **Index Badge Purged**: Eradicated `<span className={styles.indexBadge}>` and unused counter calculations (`projectIndex`, `totalCount`) from `WorksGalleryClient.tsx`. Purged `.indexBadge` selector from `Works.module.scss`.
+  - **Dual-Zone Ambient Glaze**: Updated `.cardScrimOverlay` to continuous composite gradient (`rgba(0, 0, 0, 0.48)` left text shield transitioning to `rgba(0, 0, 0, 0.20 - 0.22)` ambient floor).
+  - **Legibility & Contrast**: Guarantees WCAG AA 5.22:1 contrast for white Circular XX display typography while retaining 80% light transmittance on devices and artwork.

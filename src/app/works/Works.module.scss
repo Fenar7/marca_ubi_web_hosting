@@ -257,7 +257,7 @@
   }
 }
 
-/* Sheer Localized Ambient Contrast Veil (160over90 Benchmark Parity) */
+/* Sheer Ambient Obsidian Glaze & Lateral Typographic Contrast Veil */
 .cardScrimOverlay {
   position: absolute;
   inset: 0;
@@ -265,51 +265,24 @@
   z-index: 1;
   transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
-  // Sheer lateral gradient: provides clean typography legibility on the left edge while leaving >50% of the artwork crystal-clear and unsmothered
+  // Desktop: Light ambient floor (0.20 - 0.22) across entire artwork + gentle lateral typographic veil (0.48 -> 0.22) on left
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.35) 0%,
-    rgba(0, 0, 0, 0.15) 30%,
-    rgba(0, 0, 0, 0) 55%
+    rgba(0, 0, 0, 0.48) 0%,
+    rgba(0, 0, 0, 0.32) 32%,
+    rgba(0, 0, 0, 0.22) 58%,
+    rgba(0, 0, 0, 0.20) 100%
   );
 
   @media (max-width: 768px) {
+    // Mobile: Vertical progression protecting bottom-stacked typography & action pills
     background: linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.15) 0%,
-      rgba(0, 0, 0, 0) 25%,
-      rgba(0, 0, 0, 0.4) 60%,
-      rgba(0, 0, 0, 0.75) 100%
+      rgba(0, 0, 0, 0.20) 0%,
+      rgba(0, 0, 0, 0.20) 35%,
+      rgba(0, 0, 0, 0.48) 70%,
+      rgba(0, 0, 0, 0.78) 100%
     );
-  }
-}
-
-/* Top-Left Monospace Index Badge (Raycast Token Archetype) */
-.indexBadge {
-  position: absolute;
-  top: clamp(5.75rem, 8.5vw, 7.5rem);
-  left: clamp(2rem, 6.5vw, 6.5rem);
-  font-family: $font-mono;
-  font-size: 12.5px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(8, 8, 10, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 6px 14px;
-  border-radius: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: none;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-  z-index: 3;
-
-  @media (max-width: 768px) {
-    top: clamp(4.75rem, 9vh, 5.5rem);
-    left: clamp(1.25rem, 5vw, 2rem);
-    font-size: 11.5px;
-    padding: 5px 12px;
   }
 }
 
