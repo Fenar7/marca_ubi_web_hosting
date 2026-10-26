@@ -6,6 +6,7 @@ import ClientHeader from "../ClientHeader/ClientHeader";
 import HeroCutout from "../Sections/HeroCutout";
 import AboutDoctrineCurtain from "../Sections/AboutDoctrineCurtain";
 import ReelCutout from "../Sections/ReelCutout";
+import StatementCurtain from "../Sections/StatementCurtain";
 import WorksCutout from "../Sections/WorksCutout";
 import ValuesCutout from "../Sections/ValuesCutout";
 import ProcessCurtain from "../Sections/ProcessCurtain";
@@ -26,7 +27,7 @@ export interface ClientHomeExperienceProps {
 /**
  * Master Client Experience Container.
  * Orchestrates the complete 160over90 alternating video cutout & pure white curtain stream.
- * Integrates 100% of authentic agency content across 11 synchronized views.
+ * Integrates 100% of authentic agency content across 12 synchronized views.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -49,7 +50,7 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
         {/* View 01: Hero Video Cutout (Transparent) */}
         <HeroCutout
           headline="Engineering Brands That Move The World."
-          kicker="00 / Strategic Brand Architecture &amp; Cultural Velocity"
+          kicker="00 / Strategic Brand Architecture & Cultural Velocity"
         />
 
         {/* View 02: About & Doctrine Curtain (Solid Pure White) */}
@@ -61,7 +62,10 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
           headline="Everything you expect. A few things you don't."
         />
 
-        {/* View 04: Curated Works Portfolio Cutout (Transparent Video with Circular XX and link to /works) */}
+        {/* View 04: Monumental Statement Curtain (Solid Pure White) */}
+        <StatementCurtain />
+
+        {/* View 05: Curated Works Portfolio Cutout (Transparent Video with Circular XX and link to /works) */}
         <WorksCutout
           headline={"Work\nwith us."}
           kicker="02 / Selected Works"
@@ -69,25 +73,25 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
           ctaHref="/works"
         />
 
-        {/* View 05: Guiding Principles Cutout (Transparent Video with Apple HIG Vibrancy Glass Cards) */}
+        {/* View 06: Guiding Principles Cutout (Transparent Video with Apple HIG Vibrancy Glass Cards) */}
         <ValuesCutout />
 
-        {/* View 06: Strategy & Delivery Methodology Curtain (Solid Pure White) */}
+        {/* View 07: Strategy & Delivery Methodology Curtain (Solid Pure White) */}
         <ProcessCurtain />
 
-        {/* View 07: Client Evidence & Testimonials Cutout (Transparent Video) */}
+        {/* View 08: Client Evidence & Testimonials Cutout (Transparent Video) */}
         <TestimonialsCutout />
 
-        {/* View 08: Studio Dispatches & Insights Curtain (Solid Pure White with latest 3 Sanity posts) */}
+        {/* View 09: Studio Dispatches & Insights Curtain (Solid Pure White with latest 3 Sanity posts) */}
         <DispatchesCurtain posts={posts} />
 
-        {/* View 09: Global Studio Footprint & Synchronized Operations Curtain (Solid Pure White) */}
+        {/* View 10: Global Studio Footprint & Synchronized Operations Curtain (Solid Pure White) */}
         <GlobalLocationsCloud />
 
-        {/* View 10: Connect & Commercial Desk Cutout (Transparent Video with genuine Kerala desks) */}
+        {/* View 11: Connect & Commercial Desk Cutout (Transparent Video with genuine Kerala desks) */}
         <ConnectCutout />
 
-        {/* View 11: Deep Obsidian Black Monumental Footer (Solid Pitch Black) */}
+        {/* View 12: Deep Obsidian Black Monumental Footer (Solid Pitch Black) */}
         <MonumentalFooter />
       </main>
 

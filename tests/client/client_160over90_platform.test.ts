@@ -179,6 +179,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/components/Sections/HeroCutout.module.scss",
         "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
+        "src/app/components/Sections/StatementCurtain.module.scss",
         "src/app/components/Sections/WorksCurtain.module.scss",
         "src/app/components/Sections/WorksCutout.module.scss",
         "src/app/works/Works.module.scss",
@@ -255,11 +256,12 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes(".isDark"), "ClientHeader must have .isDark class for dark video cutouts");
     });
 
-    test("verifies all 11 homepage views declare explicit data-header-theme for theme observer", () => {
+    test("verifies all 12 homepage views declare explicit data-header-theme for theme observer", () => {
       const views = [
         { file: "HeroCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "AboutDoctrineCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "ReelCutout.tsx", expected: 'data-header-theme="dark"' },
+        { file: "StatementCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "WorksCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "ValuesCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "ProcessCurtain.tsx", expected: 'data-header-theme="light"' },
@@ -314,6 +316,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/components/Sections/HeroCutout.module.scss",
         "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
+        "src/app/components/Sections/StatementCurtain.module.scss",
         "src/app/components/Sections/WorksCutout.module.scss",
         "src/app/works/Works.module.scss",
         "src/app/components/Sections/ValuesCutout.module.scss",
@@ -340,22 +343,23 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     });
   });
 
-  describe("Section 10: Full 11-View Stream & Dynamic Sanity Invariants", () => {
-    test("verifies ClientHomeExperience orchestrates the complete 11-view alternating stream", () => {
+  describe("Section 10: Full 12-View Stream & Dynamic Sanity Invariants", () => {
+    test("verifies ClientHomeExperience orchestrates the complete 12-view alternating stream", () => {
       const experiencePath = path.join(rootDir, "src", "app", "components", "ClientHomeExperience", "ClientHomeExperience.tsx");
       const content = fs.readFileSync(experiencePath, "utf8");
 
       assert.ok(content.includes("<HeroCutout"), "View 01: HeroCutout must be present");
       assert.ok(content.includes("<AboutDoctrineCurtain"), "View 02: AboutDoctrineCurtain must be present");
       assert.ok(content.includes("<ReelCutout"), "View 03: ReelCutout must be present");
-      assert.ok(content.includes("<WorksCutout") || content.includes("<WorksCurtain"), "View 04: WorksCutout must be present");
-      assert.ok(content.includes("<ValuesCutout"), "View 05: ValuesCutout must be present");
-      assert.ok(content.includes("<ProcessCurtain"), "View 06: ProcessCurtain must be present");
-      assert.ok(content.includes("<TestimonialsCutout"), "View 07: TestimonialsCutout must be present");
-      assert.ok(content.includes("<DispatchesCurtain"), "View 08: DispatchesCurtain must be present");
-      assert.ok(content.includes("<GlobalLocationsCloud"), "View 09: GlobalLocationsCloud must be present");
-      assert.ok(content.includes("<ConnectCutout"), "View 10: ConnectCutout must be present");
-      assert.ok(content.includes("<MonumentalFooter"), "View 11: MonumentalFooter must be present");
+      assert.ok(content.includes("<StatementCurtain"), "View 04: StatementCurtain must be present");
+      assert.ok(content.includes("<WorksCutout") || content.includes("<WorksCurtain"), "View 05: WorksCutout must be present");
+      assert.ok(content.includes("<ValuesCutout"), "View 06: ValuesCutout must be present");
+      assert.ok(content.includes("<ProcessCurtain"), "View 07: ProcessCurtain must be present");
+      assert.ok(content.includes("<TestimonialsCutout"), "View 08: TestimonialsCutout must be present");
+      assert.ok(content.includes("<DispatchesCurtain"), "View 09: DispatchesCurtain must be present");
+      assert.ok(content.includes("<GlobalLocationsCloud"), "View 10: GlobalLocationsCloud must be present");
+      assert.ok(content.includes("<ConnectCutout"), "View 11: ConnectCutout must be present");
+      assert.ok(content.includes("<MonumentalFooter"), "View 12: MonumentalFooter must be present");
     });
 
     test("verifies page.tsx streams worksQuery and postsQuery concurrently with revalidate = 60", () => {
