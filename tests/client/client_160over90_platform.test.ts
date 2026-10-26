@@ -547,6 +547,26 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("min-height: 44px"), "WorksCutout button must enforce 44px min-height touch target");
     });
 
+
+    test("verifies WorksGalleryClient integrates GSAP ScrollTrigger 3D card stacking engine and Brand Red sweep", () => {
+      const galleryPath = path.join(rootDir, "src", "app", "works", "WorksGalleryClient.tsx");
+      const scssPath = path.join(rootDir, "src", "app", "works", "Works.module.scss");
+
+      const tsx = fs.readFileSync(galleryPath, "utf8");
+      const scss = fs.readFileSync(scssPath, "utf8");
+
+      assert.ok(tsx.includes("ScrollTrigger"), "WorksGalleryClient must register ScrollTrigger");
+      assert.ok(tsx.includes("useGSAP"), "WorksGalleryClient must use useGSAP hook");
+      assert.ok(tsx.includes("CURATED WORKS"), "WorksGalleryClient must declare CURATED WORKS title");
+      assert.ok(tsx.includes("workDeckWrapper"), "WorksGalleryClient must wrap cards in workDeckWrapper");
+      assert.ok(tsx.includes("rotateZ"), "WorksGalleryClient must implement 3D rotateZ transform");
+      assert.ok(tsx.includes("transformPerspective: 1400"), "WorksGalleryClient must set 1400 perspective");
+      assert.ok(scss.includes("$client-accent-red"), "Works.module.scss must consume $client-accent-red");
+      assert.ok(scss.includes("position: sticky"), "Works.module.scss must enforce position: sticky for cards");
+      assert.ok(scss.includes("height: 150svh"), "Works.module.scss must declare 150svh scroll spacer");
+      assert.ok(!tsx.includes("&nearr;"), "WorksGalleryClient must not contain unescaped &nearr; entity");
+    });
+
     test("verifies legacy /work route permanently redirects to /works", () => {
       const legacyWorkPath = path.join(rootDir, "src", "app", "work", "page.tsx");
       assert.ok(fs.existsSync(legacyWorkPath), "src/app/work/page.tsx must exist");
