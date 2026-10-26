@@ -100,8 +100,8 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(fs.statSync(videoPath).size > 5000000, "Video asset must be a valid media file > 5MB");
     });
 
-    test("asserts BackgroundVideoEngine.module.scss enforces fixed positioning, z-index -1, and GPU acceleration", () => {
-      const scssPath = path.join(rootDir, "src", "app", "components", "BackgroundVideo", "BackgroundVideoEngine.module.scss");
+    test("asserts BackgroundVideoEngine.module.css enforces fixed positioning, z-index -1, and GPU acceleration", () => {
+      const scssPath = path.join(rootDir, "src", "app", "components", "BackgroundVideo", "BackgroundVideoEngine.module.css");
       const content = fs.readFileSync(scssPath, "utf8");
 
       assert.ok(content.includes("position: fixed"), "Must enforce position: fixed");
@@ -173,7 +173,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     test("verifies zero generic blue (#2563eb or #4571ff) in newly created client components", () => {
       const filesToCheck = [
         "src/app/styles/client-tokens.scss",
-        "src/app/components/BackgroundVideo/BackgroundVideoEngine.module.scss",
+        "src/app/components/BackgroundVideo/BackgroundVideoEngine.module.css",
         "src/app/components/ClientHeader/ClientHeader.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
         "src/app/components/Sections/HeroCutout.module.scss",

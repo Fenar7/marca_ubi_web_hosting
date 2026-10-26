@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import styles from "./BackgroundVideoEngine.module.scss";
+import styles from "./BackgroundVideoEngine.module.css";
 
 interface BackgroundVideoEngineProps {
   isPausedByModal?: boolean;
