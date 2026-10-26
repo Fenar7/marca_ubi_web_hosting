@@ -31,6 +31,42 @@ const CATEGORIES: TaxonomyCategory[] = [
 ];
 
 /**
+ * Normalizes raw all-caps strings from legacy CMS entries to natural typography.
+ * Preserves existing mixed-case strings (e.g. "PropertySeller UAE", "LogiP") and known acronyms.
+ */
+function toNaturalCase(text?: string | null): string {
+  if (!text) return "";
+  const trimmed = text.trim();
+  if (!trimmed) return "";
+
+  // If the text contains lowercase characters, respect the original authoring
+  if (/[a-z]/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Explicit mappings for known luxury commission brands and categories
+  const EXACT_MAP: Record<string, string> = {
+    KUNSTLERIN: "KünstlerIn",
+    ECOMMERCE: "E-Commerce",
+    "REAL ESTATE": "Real Estate",
+    HOSPITALITY: "Hospitality",
+    LOGISTICS: "Logistics",
+    ENTERPRISE: "Enterprise",
+  };
+
+  if (EXACT_MAP[trimmed.toUpperCase()]) {
+    return EXACT_MAP[trimmed.toUpperCase()];
+  }
+
+  // Natural Title Case conversion for shouting strings
+  return trimmed
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/**
  * Dedicated Client Works & Portfolio Showcase Gallery.
  * Implements the signature 3D perspective card stacking stream with GSAP ScrollTrigger,
  * synchronized image de-zoom, pinned title scrub fill in Brand Red (#ea002a),
@@ -335,8 +371,8 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
 
                 {/* Bottom Center Monumental Typographic Block */}
                 <div className={styles.cardBottomContent}>
-                  <h3 className={styles.cardTitle}>{work.title}</h3>
-                  {work.subtext && <p className={styles.cardSubtext}>{work.subtext}</p>}
+                  <h3 className={styles.cardTitle}>{toNaturalCase(work.title)}</h3>
+                  {work.subtext && <p className={styles.cardSubtext}>{toNaturalCase(work.subtext)}</p>}
                 </div>
               </article>
             </div>

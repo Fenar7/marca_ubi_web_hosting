@@ -566,6 +566,10 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("height: 150svh"), "Works.module.scss must declare 150svh scroll spacer");
       assert.ok(scss.includes("padding: 0;"), "Works.module.scss must enforce 0 padding on workDeckWrapper for full-width bleed");
       assert.ok(scss.includes("border-radius: 0;"), "Works.module.scss must enforce 0 border-radius on workDeckCard for seamless edge-to-edge canvas");
+      assert.ok(scss.includes("top: 0;"), "Works.module.scss must enforce top: 0 on workDeckWrapper for zero top gap");
+      assert.ok(scss.includes("height: 100svh;"), "Works.module.scss must enforce height: 100svh on workDeckCard for full viewport coverage");
+      assert.ok(scss.includes("text-transform: none;"), "Works.module.scss must enforce text-transform: none on actionPillLink");
+      assert.ok(tsx.includes("toNaturalCase"), "WorksGalleryClient must utilize toNaturalCase to eliminate shouting all-caps text");
       assert.ok(!tsx.includes("&nearr;"), "WorksGalleryClient must not contain unescaped &nearr; entity");
       assert.ok(!tsx.includes("pulseDot"), "WorksGalleryClient must not contain AI-slop pulseDot");
       assert.ok(!tsx.includes("countBadge"), "WorksGalleryClient must not contain AI-slop countBadge");

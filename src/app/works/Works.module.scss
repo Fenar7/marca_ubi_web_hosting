@@ -179,31 +179,31 @@
   height: 150vh;
   height: 150svh;
   position: sticky;
-  top: clamp(1rem, 2vw, 2.5rem);
+  top: 0;
   will-change: transform;
   width: 100%;
   padding: 0;
   box-sizing: border-box;
 
   @media (max-width: 1024px) {
-    top: 4.8rem;
+    top: 0;
     padding: 0;
   }
 
   &:last-child {
-    height: calc(100vh - clamp(1rem, 2vw, 2.5rem));
-    height: calc(100svh - clamp(1rem, 2vw, 2.5rem));
+    height: 100vh;
+    height: 100svh;
     margin-bottom: clamp(3rem, 6vw, 6rem);
 
     @media (max-width: 1024px) {
-      height: calc(100svh - 4.8rem);
+      height: 100svh;
     }
   }
 }
 
 .workDeckCard {
-  height: calc(100vh - clamp(1rem, 2vw, 2.5rem));
-  height: calc(100svh - clamp(1rem, 2vw, 2.5rem));
+  height: 100vh;
+  height: 100svh;
   overflow: hidden;
   position: relative;
   transform-origin: center bottom;
@@ -219,7 +219,7 @@
   outline: none;
 
   @media (max-width: 1024px) {
-    height: calc(100svh - 4.8rem);
+    height: 100svh;
   }
 
   &.isClickable {
@@ -273,7 +273,7 @@
 
 .indexBadge {
   position: absolute;
-  top: clamp(1.5rem, 4vw, 3rem);
+  top: clamp(5.75rem, 8vw, 7rem);
   left: clamp(1.5rem, 5vw, 4.5rem);
   font-family: $font-mono;
   font-size: 13px;
@@ -288,17 +288,25 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   font-variant-numeric: tabular-nums;
   z-index: 2;
+
+  @media (max-width: 768px) {
+    top: 4.75rem;
+  }
 }
 
 .cardActionLinks {
   position: absolute;
-  top: clamp(1.5rem, 4vw, 3rem);
+  top: clamp(5.75rem, 8vw, 7rem);
   right: clamp(1.5rem, 5vw, 4.5rem);
   display: flex;
   align-items: flex-end;
   flex-direction: column;
   gap: 0.5rem;
   z-index: 2;
+
+  @media (max-width: 768px) {
+    top: 4.75rem;
+  }
 }
 
 .actionPillLink {
@@ -310,7 +318,7 @@
   font-size: 13px;
   font-weight: 500; // CircularXXWeb-Medium
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none;
   text-decoration: none;
   padding: 8px 16px;
   min-height: 44px; // 44px touch target

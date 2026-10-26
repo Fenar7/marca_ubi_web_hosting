@@ -111,3 +111,11 @@ When the homepage was redesigned to feature `WorksCutout.tsx` (the transparent v
   - Set `border-radius: 0` and remove left/right borders on `.workDeckCard` for seamless edge-to-edge cinematic canvas.
   - Align index badges and action pills with broadsheet viewport margins.
 
+---
+
+## 10. Zero Top Gap & Natural Casing Addendum
+- **Issue 1 (Top Viewport Gap)**: `.workDeckWrapper` applied `top: clamp(1rem, 2vw, 2.5rem)` and `.workDeckCard` applied `height: calc(100svh - clamp(...))`, leaving a black gap above the card.
+- **Remediation 1**: Set `.workDeckWrapper { top: 0; }` and `.workDeckCard { height: 100svh; }` flush with the viewport. Offset `.indexBadge` and `.cardActionLinks` (`top: clamp(5.75rem, 8vw, 7rem)`) to sit below the fixed header.
+- **Issue 2 (All-Caps Shouting Typography)**: `.actionPillLink` enforced `text-transform: uppercase;` and raw Sanity CMS data contained uppercase entries like `"KUNSTLERIN"` / `"ECOMMERCE"`.
+- **Remediation 2**: Set `text-transform: none;` on `.actionPillLink` and implement `toNaturalCase()` in `WorksGalleryClient.tsx` to normalize all-caps titles into natural typography (`"KünstlerIn"`, `"E-Commerce"`).
+
