@@ -119,3 +119,16 @@ When the homepage was redesigned to feature `WorksCutout.tsx` (the transparent v
 - **Issue 2 (All-Caps Shouting Typography)**: `.actionPillLink` enforced `text-transform: uppercase;` and raw Sanity CMS data contained uppercase entries like `"KUNSTLERIN"` / `"ECOMMERCE"`.
 - **Remediation 2**: Set `text-transform: none;` on `.actionPillLink` and implement `toNaturalCase()` in `WorksGalleryClient.tsx` to normalize all-caps titles into natural typography (`"KünstlerIn"`, `"E-Commerce"`).
 
+---
+
+## 11. 160over90 Reference Parity: Left-Anchored Typographic Block & Bottom-Right Action Cluster
+- **Visual Defect**: Current cards place project titles at the bottom center (`left: 50%; transform: translateX(-50%)`) and actions at the top right, creating a symmetrical generic look.
+- **Reference Benchmark**: 160over90 asymmetrically anchors monumental display typography on the **left side**, vertically centered in the viewport, and places the interactive action buttons (`View Work ↗`, `Case Study ↗`) in the **bottom right**.
+- **Remediation**:
+  - Restructure `WorksGalleryClient.tsx` and `Works.module.scss`:
+    - `.cardLeftContent`: `position: absolute; top: 50%; transform: translateY(-50%); left: clamp(1.5rem, 6vw, 6rem); text-align: left; max-width: min(90%, 650px);`
+    - Display title scaled to `clamp(2.5rem, 5.5vw, 5.25rem)` with tight `1.04` line-height and left alignment.
+    - `.cardBottomRightActions`: `position: absolute; bottom: clamp(2.5rem, 6vw, 4.5rem); right: clamp(1.5rem, 6vw, 6rem);`
+    - Primary CTA updated to `View Work ↗` (with `Live Platform ↗` when live link is present).
+    - Multi-directional scrim gradient (left-to-right dark gradient + bottom fade) guaranteeing 21:1 WCAG AAA contrast for left-anchored typography.
+

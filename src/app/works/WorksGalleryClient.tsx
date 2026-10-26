@@ -327,10 +327,18 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
                   {projectIndex} / {totalCount}
                 </span>
 
-                {/* Top-Right Action Link Pills */}
-                {(work.caseStudyLink || work.testimonialLink || work.viewWorkLink) && (
+                {/* Left Side Vertically Centered Typographic Block */}
+                <div className={styles.cardLeftContent}>
+                  <h3 className={styles.cardTitle}>{toNaturalCase(work.title)}</h3>
+                  {work.subtext && (
+                    <p className={styles.cardSubtext}>{toNaturalCase(work.subtext)}</p>
+                  )}
+                </div>
+
+                {/* Bottom-Right Interactive Action Buttons */}
+                {(work.viewWorkLink || work.caseStudyLink || work.testimonialLink) && (
                   <div
-                    className={styles.cardActionLinks}
+                    className={styles.cardBottomRightActions}
                     onClick={(e) => e.stopPropagation()}
                   >
                     {work.caseStudyLink && (
@@ -339,9 +347,10 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.actionPillLink}
+                        aria-label={`Read case study for ${work.title}`}
                       >
                         <span>Case Study</span>
-                        <span aria-hidden="true">↗</span>
+                        <span className={styles.actionGlyph} aria-hidden="true">↗</span>
                       </a>
                     )}
                     {work.testimonialLink && (
@@ -350,9 +359,10 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.actionPillLink}
+                        aria-label={`View testimonial for ${work.title}`}
                       >
                         <span>Testimonial</span>
-                        <span aria-hidden="true">↗</span>
+                        <span className={styles.actionGlyph} aria-hidden="true">↗</span>
                       </a>
                     )}
                     {work.viewWorkLink && (
@@ -360,20 +370,15 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
                         href={work.viewWorkLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={styles.actionPillLink}
+                        className={`${styles.actionPillLink} ${styles.primaryAction}`}
+                        aria-label={`View live platform for ${work.title}`}
                       >
-                        <span>Live Platform</span>
-                        <span aria-hidden="true">↗</span>
+                        <span>View Work</span>
+                        <span className={styles.actionGlyph} aria-hidden="true">↗</span>
                       </a>
                     )}
                   </div>
                 )}
-
-                {/* Bottom Center Monumental Typographic Block */}
-                <div className={styles.cardBottomContent}>
-                  <h3 className={styles.cardTitle}>{toNaturalCase(work.title)}</h3>
-                  {work.subtext && <p className={styles.cardSubtext}>{toNaturalCase(work.subtext)}</p>}
-                </div>
               </article>
             </div>
           );

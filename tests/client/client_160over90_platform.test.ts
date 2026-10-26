@@ -570,6 +570,12 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("height: 100svh;"), "Works.module.scss must enforce height: 100svh on workDeckCard for full viewport coverage");
       assert.ok(scss.includes("text-transform: none;"), "Works.module.scss must enforce text-transform: none on actionPillLink");
       assert.ok(tsx.includes("toNaturalCase"), "WorksGalleryClient must utilize toNaturalCase to eliminate shouting all-caps text");
+      assert.ok(tsx.includes("cardLeftContent"), "WorksGalleryClient must declare cardLeftContent for left-side vertically centered title");
+      assert.ok(tsx.includes("cardBottomRightActions"), "WorksGalleryClient must declare cardBottomRightActions for bottom-right action button cluster");
+      assert.ok(tsx.includes("View Work"), "WorksGalleryClient must declare 'View Work' action button");
+      assert.ok(scss.includes(".cardLeftContent"), "Works.module.scss must define .cardLeftContent class");
+      assert.ok(scss.includes(".cardBottomRightActions"), "Works.module.scss must define .cardBottomRightActions class");
+      assert.ok(scss.includes("transform: translateY(-50%)"), "Works.module.scss must vertically center .cardLeftContent");
       assert.ok(!tsx.includes("&nearr;"), "WorksGalleryClient must not contain unescaped &nearr; entity");
       assert.ok(!tsx.includes("pulseDot"), "WorksGalleryClient must not contain AI-slop pulseDot");
       assert.ok(!tsx.includes("countBadge"), "WorksGalleryClient must not contain AI-slop countBadge");

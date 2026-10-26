@@ -257,123 +257,237 @@
   }
 }
 
+/* Tri-Planar Multi-Directional Lighting Scrim */
 .cardScrimOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.25) 0%,
-    rgba(0, 0, 0, 0.45) 50%,
-    rgba(0, 0, 0, 0.88) 100%
-  );
-  z-index: 1;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  z-index: 1;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  // Multi-directional lighting composite: Left contrast pool + Bottom pedestal + Top ambient
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 5, 6, 0.94) 0%,
+      rgba(5, 5, 6, 0.84) 30%,
+      rgba(5, 5, 6, 0.48) 52%,
+      rgba(5, 5, 6, 0.12) 68%,
+      transparent 82%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(5, 5, 6, 0.88) 0%,
+      rgba(5, 5, 6, 0.52) 24%,
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(5, 5, 6, 0.65) 0%,
+      rgba(5, 5, 6, 0.22) 16%,
+      transparent 32%
+    );
+
+  @media (max-width: 768px) {
+    background: linear-gradient(
+      180deg,
+      rgba(5, 5, 6, 0.75) 0%,
+      rgba(5, 5, 6, 0.25) 20%,
+      rgba(5, 5, 6, 0.55) 45%,
+      rgba(5, 5, 6, 0.92) 75%,
+      rgba(5, 5, 6, 0.98) 100%
+    );
+  }
 }
 
+/* Top-Left Monospace Index Badge (Raycast Token Archetype) */
 .indexBadge {
   position: absolute;
-  top: clamp(5.75rem, 8vw, 7rem);
-  left: clamp(1.5rem, 5vw, 4.5rem);
+  top: clamp(5.75rem, 8.5vw, 7.5rem);
+  left: clamp(2rem, 6.5vw, 6.5rem);
   font-family: $font-mono;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.65);
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(8, 8, 10, 0.72);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 6px 14px;
   border-radius: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
   font-variant-numeric: tabular-nums;
-  z-index: 2;
+  font-feature-settings: "tnum" 1;
+  z-index: 3;
 
   @media (max-width: 768px) {
-    top: 4.75rem;
+    top: clamp(4.75rem, 9vh, 5.5rem);
+    left: clamp(1.25rem, 5vw, 2rem);
+    font-size: 11.5px;
+    padding: 5px 12px;
   }
 }
 
-.cardActionLinks {
+/* Left Side Vertically Centered Typographic Block */
+.cardLeftContent {
   position: absolute;
-  top: clamp(5.75rem, 8vw, 7rem);
-  right: clamp(1.5rem, 5vw, 4.5rem);
+  top: 50%;
+  left: clamp(2rem, 6.5vw, 6.5rem);
+  transform: translateY(-50%);
+  width: min(52vw, 680px);
+  max-width: calc(100% - clamp(4rem, 13vw, 13rem));
   display: flex;
-  align-items: flex-end;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: clamp(1rem, 1.8vw, 1.5rem);
+  text-align: left;
   z-index: 2;
+  pointer-events: none;
 
   @media (max-width: 768px) {
-    top: 4.75rem;
+    top: auto;
+    bottom: clamp(6.25rem, 14vh, 7.5rem);
+    left: clamp(1.25rem, 5vw, 2rem);
+    right: clamp(1.25rem, 5vw, 2rem);
+    width: auto;
+    max-width: 100%;
+    transform: none;
+    gap: 0.65rem;
+  }
+}
+
+.cardTitle {
+  font-family: $font-circular;
+  font-size: clamp(2.5rem, 5.2vw, 5.25rem);
+  font-weight: 500; // CircularXXWeb-Medium
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.8);
+  text-wrap: balance;
+
+  @media (max-width: 768px) {
+    font-size: clamp(1.85rem, 7.5vw, 2.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+  }
+}
+
+.cardSubtext {
+  font-family: $font-circular;
+  font-size: clamp(1.0625rem, 1.35vw, 1.25rem);
+  font-weight: 400; // CircularXXWeb-Book
+  line-height: 1.55;
+  letter-spacing: -0.012em;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0;
+  max-width: 560px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+  text-wrap: pretty;
+
+  @media (max-width: 768px) {
+    font-size: clamp(0.875rem, 3.5vw, 0.975rem);
+    line-height: 1.48;
+    color: rgba(255, 255, 255, 0.8);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Bottom Right Interactive Action Buttons (Apple HIG Vibrancy Archetype) */
+.cardBottomRightActions {
+  position: absolute;
+  bottom: clamp(2.5rem, 5.5vw, 4.5rem);
+  right: clamp(2rem, 6.5vw, 6.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 3;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    bottom: clamp(1.25rem, 3.5vh, 2rem);
+    left: clamp(1.25rem, 5vw, 2rem);
+    right: clamp(1.25rem, 5vw, 2rem);
+    justify-content: stretch;
+    gap: 0.5rem;
   }
 }
 
 .actionPillLink {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   color: #ffffff;
   font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 500; // CircularXXWeb-Medium
-  letter-spacing: 0.04em;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   text-transform: none;
   text-decoration: none;
-  padding: 8px 16px;
-  min-height: 44px; // 44px touch target
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0 1.25rem;
+  height: 46px;
+  min-height: 44px; // WCAG 2.5.5 Touch Target Standard
+  background: rgba(12, 12, 15, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 2px;
-  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.14), 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+
+  .actionGlyph {
+    font-size: 13px;
+    line-height: 1;
+    transition: transform 0.22s ease;
+  }
 
   &:hover {
-    background: #ffffff;
-    color: #0a0a0a;
-    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.32);
+    color: #ffffff;
+
+    .actionGlyph {
+      transform: translate(2px, -2px);
+    }
+  }
+
+  &.primaryAction {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+
+    &:hover {
+      background: #ffffff;
+      color: #0a0a0a;
+      border-color: #ffffff;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
-}
 
-.cardBottomContent {
-  position: absolute;
-  bottom: clamp(2.5rem, 6vw, 5rem);
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(92%, 840px);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.cardTitle {
-  font-family: $font-circular;
-  font-size: clamp(2rem, 4.5vw, 4rem);
-  font-weight: 500; // CircularXXWeb-Medium
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.75);
-}
-
-.cardSubtext {
-  font-family: $font-circular;
-  font-size: clamp(1rem, 1.4vw, 1.25rem);
-  font-weight: 400; // CircularXXWeb-Book
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.88);
-  margin: 0;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+  @media (max-width: 768px) {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 44px;
+    padding: 0 0.75rem;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
 }
 
 /* 5. Bottom Commission Bridge */
