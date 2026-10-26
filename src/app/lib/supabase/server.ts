@@ -36,7 +36,18 @@ export async function createClient() {
 
   try {
     cookieStore = await cookies();
-  } catch {
+  } catch (error: unknown) {
+    // Allow Next.js internal dynamic bailout and redirect signals to propagate
+    if (
+      error &&
+      typeof error === 'object' &&
+      'digest' in error &&
+      typeof (error as { digest?: string }).digest === 'string' &&
+      ((error as { digest: string }).digest.startsWith('DYNAMIC_SERVER_USAGE') ||
+       (error as { digest: string }).digest.startsWith('NEXT_REDIRECT'))
+    ) {
+      throw error;
+    }
     // Graceful in-memory fallback when executed outside Next.js request context (e.g., test harnesses)
     const memoryCookies = new Map<string, { name: string; value: string; options?: Record<string, unknown> }>();
     cookieStore = {

@@ -14,6 +14,13 @@ import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole } from '@/types/crm';
 import { AdminWorkspaceShell } from '@/app/admin/components/layout/AdminWorkspaceShell';
 
+/**
+ * Guarantees dynamic request-time rendering and zero stale cache across all authenticated CRM routes.
+ * Prevents build-time prerendering workers from attempting unauthenticated database queries.
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: {
     template: '%s | Marca Ubi Enterprise CRM',
