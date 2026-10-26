@@ -249,7 +249,7 @@ ON CONFLICT (name) DO UPDATE SET
 -- immutable default state for all automated inbound web briefs.
 INSERT INTO public.funnel_statuses (id, name, bucket, color_code, sort_order, is_active)
 VALUES
-    ('b0000000-0000-0000-0000-000000000001', 'New', 'open', '#ffffff', 10, true),
+    ('b0000000-0000-0000-0000-000000000001', 'New', 'open', '#475569', 10, true),
     ('b0000000-0000-0000-0000-000000000002', 'Contacted', 'open', '#94a3b8', 20, true),
     ('b0000000-0000-0000-0000-000000000003', 'On Hold', 'open', '#f59e0b', 30, true),
     ('b0000000-0000-0000-0000-000000000004', 'Qualified', 'potential', '#38bdf8', 40, true),

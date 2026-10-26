@@ -58,6 +58,8 @@ export interface FilterActionBarProps {
   onPriorityChange: (priority: string | null) => void;
   onStageClear: () => void;
   onClearAll: () => void;
+  /** Optional workspace context to dynamically label tabs ('leads' | 'deals') */
+  scope?: 'leads' | 'deals';
   /** Optional custom class name */
   className?: string;
 }
@@ -68,19 +70,10 @@ interface BucketTabConfig {
   isUrgent?: boolean;
 }
 
-const BUCKET_TABS: readonly BucketTabConfig[] = [
-  { id: 'all', label: 'All Deals' },
-  { id: 'open', label: 'Open' },
-  { id: 'potential', label: 'Potential' },
-  { id: 'converted', label: 'Won' },
-  { id: 'lost', label: 'Lost' },
-  { id: 'overdue', label: 'Overdue Today', isUrgent: true },
-] as const;
-
 const PRIORITY_OPTIONS: readonly FilterDropdownOption[] = [
-  { id: 'High', label: 'High Priority', colorCode: '#ff6100' },
-  { id: 'Medium', label: 'Medium Priority', colorCode: '#f59e0b' },
-  { id: 'Low', label: 'Low Priority', colorCode: '#71717a' },
+  { id: 'High', label: 'High Priority', colorCode: '#991b1b' },
+  { id: 'Medium', label: 'Medium Priority', colorCode: '#92400e' },
+  { id: 'Low', label: 'Low Priority', colorCode: '#525965' },
 ] as const;
 
 export function FilterActionBar({
@@ -100,8 +93,18 @@ export function FilterActionBar({
   onPriorityChange,
   onStageClear,
   onClearAll,
+  scope = 'deals',
   className,
 }: FilterActionBarProps): React.ReactElement {
+  const itemTypeLabel = scope === 'leads' ? 'inquiries' : 'deals';
+  const bucketTabs: readonly BucketTabConfig[] = [
+    { id: 'all', label: scope === 'leads' ? 'All Inquiries' : 'All Deals' },
+    { id: 'open', label: 'Open' },
+    { id: 'potential', label: 'Potential' },
+    { id: 'converted', label: 'Won' },
+    { id: 'lost', label: 'Lost' },
+    { id: 'overdue', label: 'Overdue Today', isUrgent: true },
+  ];
   const [localSearch, setLocalSearch] = useState<string>(searchQuery);
   const [activeDropdown, setActiveDropdown] = useState<'source' | 'assignee' | 'priority' | null>(null);
   const [, startTransition] = useTransition();
@@ -199,7 +202,7 @@ export function FilterActionBar({
       <div className={styles.controlsRow}>
         {/* Pipeline Bucket Segmented Navigation Tabs */}
         <div className={styles.bucketTabs} role="tablist" aria-label="Pipeline Stages">
-          {BUCKET_TABS.map((tab) => {
+          {bucketTabs.map((tab) => {
             const count = counts[tab.id] ?? 0;
             const isSelected = selectedBucket === tab.id;
             const isOverdueTab = tab.id === 'overdue';
@@ -221,7 +224,7 @@ export function FilterActionBar({
               >
                 {hasOverdueLeads && <span className={styles.urgentPulseDot} aria-hidden="true" />}
                 <span>{tab.label}</span>
-                <span className={styles.tabCount} aria-label={`${count} deals`}>
+                <span className={styles.tabCount} aria-label={`${count} ${itemTypeLabel}`}>
                   {count}
                 </span>
               </button>
@@ -248,9 +251,9 @@ export function FilterActionBar({
                   handleClearSearch();
                 }
               }}
-              placeholder="Search deals, company, rep..."
+              placeholder={`Search ${itemTypeLabel}, company, rep...`}
               className={styles.searchInput}
-              aria-label="Search commercial pipeline"
+              aria-label={`Search commercial ${itemTypeLabel}`}
             />
             {localSearch.length > 0 && (
               <button
@@ -260,7 +263,10 @@ export function FilterActionBar({
                 title="Clear search"
                 aria-label="Clear search"
               >
-                ✕
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             )}
           </div>
@@ -276,7 +282,9 @@ export function FilterActionBar({
             >
               <span>{activeSource ? activeSource.label : 'Source'}</span>
               <span className={`${styles.dropdownChevron} ${activeDropdown === 'source' ? styles.chevronOpen : ''}`}>
-                ▼
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </span>
             </button>
 
@@ -294,7 +302,13 @@ export function FilterActionBar({
                   aria-selected={!selectedSourceId}
                 >
                   <span>All Sources</span>
-                  {!selectedSourceId && <span className={styles.checkMark}>✓</span>}
+                  {!selectedSourceId && (
+                    <span className={styles.checkMark} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                  )}
                 </button>
                 {availableSources.map((s) => {
                   const isSelected = selectedSourceId === s.id;
@@ -320,7 +334,13 @@ export function FilterActionBar({
                         )}
                         <span>{s.label}</span>
                       </div>
-                      {isSelected && <span className={styles.checkMark}>✓</span>}
+                      {isSelected && (
+                        <span className={styles.checkMark} aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -339,7 +359,9 @@ export function FilterActionBar({
             >
               <span>{activeAssignee ? activeAssignee.label : 'Representative'}</span>
               <span className={`${styles.dropdownChevron} ${activeDropdown === 'assignee' ? styles.chevronOpen : ''}`}>
-                ▼
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </span>
             </button>
 
@@ -357,7 +379,13 @@ export function FilterActionBar({
                   aria-selected={!selectedAssigneeId}
                 >
                   <span>All Representatives</span>
-                  {!selectedAssigneeId && <span className={styles.checkMark}>✓</span>}
+                  {!selectedAssigneeId && (
+                    <span className={styles.checkMark} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                  )}
                 </button>
                 {availableAssignees.map((a) => {
                   const isSelected = selectedAssigneeId === a.id;
@@ -379,7 +407,13 @@ export function FilterActionBar({
                         </span>
                         <span>{a.label}</span>
                       </div>
-                      {isSelected && <span className={styles.checkMark}>✓</span>}
+                      {isSelected && (
+                        <span className={styles.checkMark} aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -398,7 +432,9 @@ export function FilterActionBar({
             >
               <span>{selectedPriority ? `${selectedPriority} Priority` : 'Priority'}</span>
               <span className={`${styles.dropdownChevron} ${activeDropdown === 'priority' ? styles.chevronOpen : ''}`}>
-                ▼
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </span>
             </button>
 
@@ -416,7 +452,13 @@ export function FilterActionBar({
                   aria-selected={!selectedPriority}
                 >
                   <span>All Priorities</span>
-                  {!selectedPriority && <span className={styles.checkMark}>✓</span>}
+                  {!selectedPriority && (
+                    <span className={styles.checkMark} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                  )}
                 </button>
                 {PRIORITY_OPTIONS.map((p) => {
                   const isSelected = selectedPriority === p.id;
@@ -442,7 +484,13 @@ export function FilterActionBar({
                         )}
                         <span>{p.label}</span>
                       </div>
-                      {isSelected && <span className={styles.checkMark}>✓</span>}
+                      {isSelected && (
+                        <span className={styles.checkMark} aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -462,7 +510,7 @@ export function FilterActionBar({
 
           {selectedBucket !== 'all' && (
             <span className={styles.filterChip}>
-              Bucket: {BUCKET_TABS.find((t) => t.id === selectedBucket)?.label || selectedBucket}
+              Bucket: {bucketTabs.find((t) => t.id === selectedBucket)?.label || selectedBucket}
               <button
                 type="button"
                 onClick={() => onBucketChange('all')}
@@ -470,7 +518,10 @@ export function FilterActionBar({
                 title="Reset bucket"
                 aria-label="Reset bucket filter"
               >
-                ✕
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </span>
           )}
@@ -485,7 +536,10 @@ export function FilterActionBar({
                 title="Clear query"
                 aria-label="Remove search query filter"
               >
-                ✕
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </span>
           )}
@@ -500,7 +554,10 @@ export function FilterActionBar({
                 title="Remove source filter"
                 aria-label="Remove source filter"
               >
-                ✕
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </span>
           )}
@@ -515,7 +572,10 @@ export function FilterActionBar({
                 title="Remove representative filter"
                 aria-label="Remove representative filter"
               >
-                ✕
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </span>
           )}
@@ -530,7 +590,10 @@ export function FilterActionBar({
                 title="Remove priority filter"
                 aria-label="Remove priority filter"
               >
-                ✕
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </span>
           )}
@@ -545,7 +608,10 @@ export function FilterActionBar({
                 title="Clear stage filter"
                 aria-label="Remove stage filter"
               >
-                ✕
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </span>
           )}

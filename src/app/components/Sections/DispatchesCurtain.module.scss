@@ -1,0 +1,244 @@
+@import "../../styles/client-mixins.scss";
+
+.dispatchesSection {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  background-color: $client-canvas-white;
+  color: $client-text-dark;
+  padding: clamp(6rem, 10vw, 10rem) 0;
+  box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.gridContainer {
+  @include client-swiss-grid;
+}
+
+.leftColumn {
+  position: relative;
+}
+
+.stickyRail {
+  position: sticky;
+  top: 7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionLabel {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $client-text-muted-dark;
+}
+
+.railHeadline {
+  font-family: $font-circular;
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: $client-text-dark;
+  margin: 0;
+}
+
+.railSummary {
+  font-family: $font-circular;
+  font-size: 15px;
+  line-height: 1.6;
+  color: $client-text-body-dark;
+  margin: 0;
+}
+
+.actionWrap {
+  margin-top: 1rem;
+}
+
+.architecturalButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  height: 48px;
+  min-height: 44px;
+  border-radius: 2px;
+  border: 1.5px solid $client-text-dark;
+  background-color: transparent;
+  color: $client-text-dark;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .arrow {
+    font-size: 16px;
+    transition: transform 0.25s ease;
+  }
+
+  &:hover {
+    background-color: $client-text-dark;
+    color: #ffffff;
+
+    .arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.postsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+.postCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.imageLink {
+  display: block;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.imageFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: #0b0b0b;
+
+  &:hover .postImage {
+    transform: scale(1.04);
+  }
+}
+
+.postImage {
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.postMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.categoryName {
+  color: $client-accent-red;
+}
+
+.metaDivider {
+  color: rgba(0, 0, 0, 0.2);
+}
+
+.readingTime {
+  color: $client-text-muted-dark;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.postTitle {
+  font-family: $font-circular;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: $client-text-dark;
+  margin: 0;
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $client-accent-red;
+  }
+}
+
+.postExcerpt {
+  font-family: $font-circular;
+  font-size: 14px;
+  line-height: 1.55;
+  color: $client-text-body-dark;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.postFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  margin-top: 0.5rem;
+}
+
+.dateLabel {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: $client-text-muted-dark;
+}
+
+.readMoreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 600;
+  color: $client-text-dark;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  .arrow {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    color: $client-accent-red;
+
+    .arrow {
+      transform: translateX(3px);
+    }
+  }
+}

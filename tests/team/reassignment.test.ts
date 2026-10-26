@@ -186,7 +186,7 @@ describe('Marca Ubi CRM — Lead Reassignment Wizard & Atomic Engine (Sprint 4.2
 
       assert.equal(activeDeals.length, 3);
       assert.equal(totalActiveValue, 4750000.00);
-      assert.equal(formatDealValuation(totalActiveValue), '₹47.5L');
+      assert.equal(formatDealValuation(totalActiveValue), '₹47,50,000');
     });
   });
 

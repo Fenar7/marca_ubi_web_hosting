@@ -11,7 +11,7 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 import { NextRequest, NextResponse } from 'next/server';
-import { middleware, createRedirectResponse } from '../src/middleware';
+import { proxy as middleware, createRedirectResponse } from '../src/proxy';
 import { sanitizeRedirectUrl } from '../src/app/lib/auth-redirect';
 import {
   checkRateLimit,

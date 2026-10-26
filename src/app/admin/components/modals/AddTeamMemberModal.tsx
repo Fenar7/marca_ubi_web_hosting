@@ -11,7 +11,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect, useTransition, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useTransition, useCallback } from 'react';
 import { createTeamUser } from '@/app/actions/team';
 import type { CrmUserRole, CrmTabKey } from '@/types/crm';
 import { ROLE_DEFAULT_TABS } from '@/types/crm';
@@ -38,6 +38,9 @@ export function AddTeamMemberModal({
   });
 
   const [isPending, startTransition] = useTransition();
+  const modalRef = useRef<HTMLDivElement>(null);
+  const promptKeepBtnRef = useRef<HTMLButtonElement>(null);
+  const promptDiscardBtnRef = useRef<HTMLButtonElement>(null);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -111,12 +114,15 @@ export function AddTeamMemberModal({
   const requestClose = useCallback(() => {
     if (isDirty) {
       setShowDiscardPrompt(true);
+      setTimeout(() => {
+        promptKeepBtnRef.current?.focus();
+      }, 50);
     } else {
       onClose();
     }
   }, [isDirty, onClose]);
 
-  // Close on Escape key press with dirty check
+  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
@@ -124,6 +130,36 @@ export function AddTeamMemberModal({
           setShowDiscardPrompt(false);
         } else {
           requestClose();
+        }
+        return;
+      }
+
+      if (event.key === 'Tab' && isOpen) {
+        if (showDiscardPrompt) {
+          event.preventDefault();
+          if (document.activeElement === promptKeepBtnRef.current) {
+            promptDiscardBtnRef.current?.focus();
+          } else {
+            promptKeepBtnRef.current?.focus();
+          }
+          return;
+        }
+
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
         }
       }
     };
@@ -198,7 +234,13 @@ export function AddTeamMemberModal({
                 email,
                 role,
                 jobTitle,
-                tempPassword,
+                allowedTabs,
+              },
+              memberSummary: {
+                fullName,
+                email,
+                role,
+                jobTitle,
                 allowedTabs,
               },
             },
@@ -236,6 +278,7 @@ export function AddTeamMemberModal({
       aria-labelledby="add-team-modal-title"
     >
       <div
+        ref={modalRef}
         className={`${styles.modalDialog} ${isClosing ? styles.dialogClosing : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >
@@ -244,7 +287,7 @@ export function AddTeamMemberModal({
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>User Governance</span>
             <h2 id="add-team-modal-title" className={styles.modalTitle}>
-              Add Team Member
+              Provision Commercial Personnel.
             </h2>
           </div>
           <button
@@ -253,7 +296,20 @@ export function AddTeamMemberModal({
             onClick={requestClose}
             aria-label="Close add team member modal"
           >
-            <span>✕</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
             <kbd className={styles.escBadge}>Esc</kbd>
           </button>
         </div>
@@ -518,7 +574,6 @@ export function AddTeamMemberModal({
         <div
           className={styles.promptOverlay}
           onClick={() => setShowDiscardPrompt(false)}
-          aria-hidden="true"
         >
           <div
             className={styles.promptModal}
@@ -535,6 +590,7 @@ export function AddTeamMemberModal({
             </p>
             <div className={styles.promptActions}>
               <button
+                ref={promptKeepBtnRef}
                 type="button"
                 className={styles.promptKeepBtn}
                 onClick={() => setShowDiscardPrompt(false)}
@@ -542,6 +598,7 @@ export function AddTeamMemberModal({
                 Keep Editing
               </button>
               <button
+                ref={promptDiscardBtnRef}
                 type="button"
                 className={styles.promptDiscardBtn}
                 onClick={() => {

@@ -67,3 +67,28 @@ export function getInitialAllowedTabs(role: CrmUserRole): CrmTabKey[] {
   if (!defaults) return ['command_center', 'leads', 'deals', 'works', 'tasks'];
   return (Object.keys(defaults) as CrmTabKey[]).filter((k) => defaults[k]);
 }
+
+/**
+ * Evaluates whether a user role and optional custom allowed_tabs grant access
+ * to the Commercial Personnel Directory & Governance Workspace (/admin/team).
+ *
+ * Canonical Architectural Invariants:
+ * 1. Administrators ALWAYS have access to user management and personnel governance.
+ * 2. If allowedTabs is explicitly defined with non-empty items, check whether it includes 'users'.
+ * 3. Otherwise fall back to role default baseline (sales_manager has access, sales_executive and viewer do not).
+ *
+ * @param {CrmUserRole} role User operational role.
+ * @param {string[] | null | undefined} allowedTabs Optional custom allowed tab overrides.
+ * @returns {boolean} True if the user is authorized to inspect the team roster/workspace.
+ */
+export function hasPersonnelDirectoryAccess(
+  role: CrmUserRole,
+  allowedTabs?: string[] | null
+): boolean {
+  return (
+    role === 'admin' ||
+    (Array.isArray(allowedTabs) && allowedTabs.length > 0
+      ? allowedTabs.includes('users')
+      : role === 'sales_manager')
+  );
+}

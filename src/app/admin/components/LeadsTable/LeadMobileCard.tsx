@@ -10,6 +10,7 @@
  */
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
 import { InlinePrioritySelect } from './InlinePrioritySelect';
@@ -26,6 +27,8 @@ export interface LeadMobileCardProps {
   onStatusChange?: (leadId: string, newStatus: InlineStatusOption) => void;
   /** Callback fired upon inline priority modification */
   onPriorityChange?: (leadId: string, newPriority: LeadPriority) => void;
+  /** Optional user role for role-based authorization */
+  userRole?: string;
   /** Custom class name */
   className?: string;
 }
@@ -46,11 +49,13 @@ export function LeadMobileCard({
   availableStatuses,
   onStatusChange,
   onPriorityChange,
+  userRole,
   className,
 }: LeadMobileCardProps): React.ReactElement {
+  const router = useRouter();
   const [copied, setCopied] = useState<boolean>(false);
 
-  const handleCopyDealId = (e: React.MouseEvent): void => {
+  const handleCopyLeadId = (e: React.MouseEvent): void => {
     e.stopPropagation();
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(lead.lead_id);
@@ -60,11 +65,7 @@ export function LeadMobileCard({
   };
 
   const handleCardClick = (): void => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', { detail: { leadId: lead.id } })
-      );
-    }
+    router.push(`/admin/leads/${lead.id}`);
   };
 
   const repInitials = (lead.assigned_to_name || 'Unassigned')
@@ -92,7 +93,7 @@ export function LeadMobileCard({
     id: lead.status_id,
     name: lead.status_name,
     bucket: lead.bucket,
-    color_code: lead.status_color || '#ff6100',
+    color_code: lead.status_color || '#1f242f',
   };
 
   return (
@@ -107,25 +108,34 @@ export function LeadMobileCard({
           handleCardClick();
         }
       }}
-      aria-label={`Deal ${lead.lead_id}: ${lead.name} from ${lead.company || 'Private Client'}`}
+      aria-label={`Lead ${lead.lead_id}: ${lead.name} from ${lead.company || 'Private Client'}`}
     >
-      {/* 1. Header: Deal ID, Timestamp, and Expected Valuation */}
+      {/* 1. Header: Lead ID, Timestamp, and Expected Valuation */}
       <div className={styles.cardHeader}>
         <div className={styles.headerLeft}>
           <button
             type="button"
-            onClick={handleCopyDealId}
+            onClick={handleCopyLeadId}
             onKeyDown={(e) => {
               e.stopPropagation();
               if (e.key === 'Enter' || e.key === ' ') {
-                handleCopyDealId(e as unknown as React.MouseEvent);
+                handleCopyLeadId(e as unknown as React.MouseEvent);
               }
             }}
             className={styles.leadIdToken}
-            title="Click to copy Deal ID"
-            aria-label={`Copy Deal ID ${lead.lead_id}`}
+            title="Click to copy Lead ID"
+            aria-label={`Copy Lead ID ${lead.lead_id}`}
           >
-            <span>{copied ? '✓ Copied' : lead.lead_id}</span>
+            {copied ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Copied
+              </span>
+            ) : (
+              <span>{lead.lead_id}</span>
+            )}
           </button>
           <span className={styles.timeTag}>
             {new Date(lead.created_at).toLocaleDateString('en-US', {
@@ -172,12 +182,14 @@ export function LeadMobileCard({
           currentStatus={currentStatusOption}
           availableStatuses={availableStatuses}
           onStatusChange={onStatusChange}
+          disabled={userRole === 'viewer'}
         />
 
         <InlinePrioritySelect
           leadId={lead.id}
           currentPriority={lead.priority}
           onPriorityChange={onPriorityChange}
+          disabled={userRole === 'viewer'}
         />
 
         <div className={styles.repInfo} title={`Assigned to ${lead.assigned_to_name}`}>
@@ -301,7 +313,13 @@ export function LeadMobileCard({
           className={`${styles.actionBtn} ${styles.drawerBtn}`}
           aria-label="Open 360-degree client dossier"
         >
-          <span>Dossier →</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <span>Dossier</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </span>
         </button>
       </div>
     </article>

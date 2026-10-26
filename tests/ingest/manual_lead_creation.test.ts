@@ -176,15 +176,15 @@ describe('Marca Ubi CRM — Manual Lead Creation & Ingestion Validation (Sprint 
   });
 
   describe('Section 4: Currency Valuation Formatting', () => {
-    it('formats values in Indian Lakhs with 1 decimal place', () => {
-      assert.equal(formatDealValuation(500000), '₹5.0L');
-      assert.equal(formatDealValuation(1500000), '₹15.0L');
-      assert.equal(formatDealValuation(7500000), '₹75.0L');
+    it('formats values in Indian Lakhs using full en-IN currency grouping', () => {
+      assert.equal(formatDealValuation(500000), '₹5,00,000');
+      assert.equal(formatDealValuation(1500000), '₹15,00,000');
+      assert.equal(formatDealValuation(7500000), '₹75,00,000');
     });
 
-    it('formats values in Indian Crores with 1 decimal place', () => {
-      assert.equal(formatDealValuation(10000000), '₹1.0Cr');
-      assert.equal(formatDealValuation(25000000), '₹2.5Cr');
+    it('formats values in Indian Crores using full en-IN currency grouping', () => {
+      assert.equal(formatDealValuation(10000000), '₹1,00,00,000');
+      assert.equal(formatDealValuation(25000000), '₹2,50,00,000');
     });
 
     it('formats small amounts with localized commas', () => {

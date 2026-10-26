@@ -1,0 +1,336 @@
+// SCSS Module: EditLeadModal.module.scss
+// Aesthetic: Accordion Executive Advisory & Sypher Light Controls
+// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
+// Strict Anti-AI-Slop: Zero generic blue, zero drop shadows, 44px touch targets, tabular-nums
+
+$backdrop-bg: rgba(0, 0, 0, 0.6);
+$modal-bg: #ffffff;
+$border-color: var(--admin-border-default, #e2e5ea);
+$border-strong: var(--admin-border-strong, #1f242f);
+$text-primary: var(--admin-text-primary, #1f242f);
+$text-secondary: var(--admin-text-secondary, #525965);
+$surface-muted: var(--admin-surface-muted, #f8fafc);
+$accent-lemon: var(--admin-accent-lemon, #eefb87);
+$accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: $backdrop-bg;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1100; // Above ClientDossierDrawer (1050)
+  animation: overlayFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  &.closing {
+    animation: overlayFadeOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+.modalDialog {
+  width: 100%;
+  max-width: 640px;
+  max-height: calc(100vh - 4rem);
+  background: $modal-bg;
+  border: 1px solid $border-color;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dialogScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  &.closing {
+    animation: dialogScaleOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @media (max-width: 640px) {
+    max-height: 100vh;
+    border-radius: 0;
+    max-width: 100%;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $border-color;
+  background: #ffffff;
+}
+
+.headerTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.modalEyebrow {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $text-secondary;
+}
+
+.modalTitle {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.closeButton {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border-radius: 8px;
+  border: 1px solid $border-color;
+  background: #ffffff;
+  color: $text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background: $surface-muted;
+    color: $text-primary;
+    border-color: $border-strong;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $border-strong;
+    outline-offset: 1px;
+  }
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: 3px;
+  }
+}
+
+.sectionHeading {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $text-secondary;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid $border-color;
+  margin-top: 0.5rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  &.fullWidth {
+    grid-column: 1 / -1;
+  }
+}
+
+.fieldLabel {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.inputField,
+.selectField,
+.textareaField {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.85rem;
+  color: $text-primary;
+  background: #ffffff;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: $border-strong;
+    box-shadow: 0 0 0 2px rgba(31, 36, 47, 0.08);
+  }
+}
+
+.textareaField {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.valuationPreview {
+  font-family: var(--font-admin-sans, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--admin-status-emerald-text, #065f46);
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.2rem;
+}
+
+.errorBanner {
+  background: #fee2e2;
+  border: 1px solid #f87171;
+  color: #991b1b;
+  font-size: 0.8rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.15rem 1.5rem;
+  border-top: 1px solid $border-color;
+  background: $surface-muted;
+}
+
+.cancelButton {
+  position: relative;
+  min-height: 38px;
+  padding: 0 1rem;
+  border-radius: 8px;
+  border: 1px solid $border-color;
+  background: #ffffff;
+  color: $text-secondary;
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    background: var(--admin-surface-muted, #f0f2f5);
+    color: $text-primary;
+    border-color: $border-strong;
+  }
+}
+
+.saveButton {
+  position: relative;
+  min-height: 38px;
+  padding: 0 1.25rem;
+  border-radius: 8px;
+  border: 1px solid $border-strong;
+  background: $accent-lemon;
+  color: var(--admin-accent-lemon-ink, #1f242f);
+  font-family: var(--font-admin-btn, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover:not(:disabled) {
+    background: $accent-lemon-hover;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlayFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes dialogScaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes dialogScaleOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.96) translateY(6px); }
+}

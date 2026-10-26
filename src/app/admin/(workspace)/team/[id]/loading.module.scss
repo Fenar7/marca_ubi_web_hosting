@@ -1,0 +1,120 @@
+/**
+ * @file loading.module.scss
+ * @description Zero-CLS skeleton placeholder styles for personnel workspace loading state.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@keyframes pulseShimmer {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.skeletonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 1rem 1rem 2.5rem;
+    gap: 1.25rem;
+  }
+}
+
+.skeletonTopBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 44px;
+}
+
+.skeletonPill {
+  height: 38px;
+  width: 130px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  animation: pulseShimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(320px, 4fr);
+  gap: 1.5rem;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skeletonMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.skeletonSide {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.skeletonCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.skeletonMasthead {
+  height: 180px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  animation: pulseShimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonKpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.skeletonKpiCard {
+  height: 110px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  animation: pulseShimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonTable {
+  height: 380px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  animation: pulseShimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonSideCard {
+  height: 220px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: 12px;
+  animation: pulseShimmer 1.5s ease-in-out infinite;
+}

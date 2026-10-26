@@ -1,6 +1,6 @@
 /**
  * @file KpiSkeleton.tsx
- * @description Dark shimmer skeleton loading state matching exact card geometry (130px height,
+ * @description Dark shimmer skeleton loading state matching exact card geometry (156px height,
  *              hairline grid separation) to enforce Zero Cumulative Layout Shift (CLS < 0.01).
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -40,6 +40,10 @@ export function KpiSkeleton({
             <span>Recalculating Pipeline Pulse</span>
           </span>
         </div>
+        <div className={styles.skeletonToolbarActions} aria-hidden="true">
+          <div className={styles.skeletonCurrencyToggle} />
+          <div className={styles.skeletonRefreshBtn} />
+        </div>
       </div>
 
       <div className={styles.kpiGrid}>
@@ -50,6 +54,9 @@ export function KpiSkeleton({
               <div className={styles.skeletonIcon} />
             </div>
             <div className={styles.skeletonValue} />
+            {(index === 1 || index === 3) && (
+              <div className={styles.skeletonSecondaryBadge} />
+            )}
             <div className={styles.skeletonSubtext} />
           </div>
         ))}

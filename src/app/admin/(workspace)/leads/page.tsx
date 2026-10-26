@@ -13,9 +13,10 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
-import { KpiRibbon } from '@/app/admin/components/kpi';
+import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
+import { NewLeadHeaderButton } from './NewLeadHeaderButton';
 import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBar';
 import styles from './leads.module.scss';
 
@@ -29,21 +30,28 @@ export const metadata: Metadata = {
 
 interface AdminLeadsPageProps {
   searchParams?: Promise<{
+    id?: string;
+    leadId?: string;
     stage?: string;
     assigned_to?: string;
     bucket?: string;
-    leadId?: string;
     source?: string;
     priority?: string;
     search?: string;
+    action?: string;
   }>;
 }
 
 export default async function AdminLeadsPage(
   props: AdminLeadsPageProps
 ): Promise<React.ReactElement> {
-  // Await Next.js 16 dynamic search parameters
-  await (props.searchParams ? props.searchParams : Promise.resolve(undefined));
+  // Await Next.js 16 dynamic search parameters.
+  // Note: Deep links with ?id= seamlessly hydrate the in-context Client 360 Slide-over
+  // Drawer within LeadsWorkspaceClient, while legacy ?leadId= redirects to the dedicated full-page workspace.
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
+  if (resolvedSearchParams?.leadId) {
+    redirect(`/admin/leads/${resolvedSearchParams.leadId}`);
+  }
   const supabase = await createClient();
 
   const {
@@ -156,7 +164,7 @@ export default async function AdminLeadsPage(
     id: s.id,
     name: s.name,
     bucket: s.bucket as FunnelBucket,
-    color_code: s.color_code || '#ff6100',
+    color_code: s.color_code || '#1f242f',
     sort_order: s.sort_order,
   }));
 
@@ -189,7 +197,7 @@ export default async function AdminLeadsPage(
       priority: l.priority || 'Medium',
       status_id: l.status_id,
       status_name: statusData?.name || 'Active Deal',
-      status_color: statusData?.color_code || '#ff6100',
+      status_color: statusData?.color_code || '#1f242f',
       bucket: statusData?.bucket || 'open',
       assigned_to: l.assigned_to,
       assigned_to_name:
@@ -208,16 +216,19 @@ export default async function AdminLeadsPage(
       {/* Workspace Header & Operational Context */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Commercial Pipeline & Staging</span>
-          <h1 className={styles.pageTitle}>Deals & Inquiries</h1>
+          <span className={styles.eyebrow}>Stage 01: Inbound Discovery</span>
+          <h1 className={styles.pageTitle}>Inbound Leads.</h1>
           <p className={styles.pageSubtitle}>
-            Track incoming inquiries, negotiate high-ticket proposals, and manage deal progression.
+            Triage incoming briefs, evaluate client scope, and advance qualified opportunities to negotiation.
           </p>
+        </div>
+        <div className={styles.headerRight}>
+          <NewLeadHeaderButton userRole={role} />
         </div>
       </header>
 
       {/* Dark Luxury Executive KPI Ribbon with Reactive URL Filter Recalculation */}
-      <KpiRibbon initialData={rpcMetrics} syncWithUrlParams={true} />
+      <MinimalistStatPods metrics={rpcMetrics} />
 
       {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
       <Suspense fallback={<LeadsTableSkeleton rowCount={8} />}>
@@ -226,6 +237,7 @@ export default async function AdminLeadsPage(
           availableSources={availableSources}
           availableAssignees={availableAssignees}
           availableStatuses={availableStatuses}
+          userRole={role}
         />
       </Suspense>
     </div>

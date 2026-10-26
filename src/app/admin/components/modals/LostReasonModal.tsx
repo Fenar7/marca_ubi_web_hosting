@@ -75,7 +75,7 @@ export function LostReasonModal({
 
       if (e.key === 'Tab' && containerRef.current) {
         const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         if (focusableElements.length === 0) return;
 
@@ -192,11 +192,11 @@ export function LostReasonModal({
               </span>
             </div>
             <h2 id="lost-modal-title" className={styles.modalTitle}>
-              Close Deal as Lost
+              Close Deal as Lost.
             </h2>
             {dealName && (
               <p className={styles.modalSubtitle}>
-                Attributing commercial loss for <strong style={{ color: '#ffffff' }}>{dealName}</strong>.
+                Attributing commercial loss for <strong style={{ color: 'var(--admin-text-primary, #1f242f)' }}>{dealName}</strong>.
               </p>
             )}
           </div>
@@ -260,8 +260,9 @@ export function LostReasonModal({
                   <span
                     style={{
                       fontSize: '0.72rem',
-                      color: lostNotes.trim().length >= 10 ? '#10b981' : '#ef4444',
-                      fontFamily: 'ui-monospace, monospace',
+                      color: lostNotes.trim().length >= 10 ? 'var(--admin-status-emerald-text, #065f46)' : 'var(--admin-status-rose-text, #991b1b)',
+                      fontFamily: 'var(--font-admin-code, monospace)',
+                      fontWeight: 600,
                     }}
                   >
                     {lostNotes.trim().length}/10 chars

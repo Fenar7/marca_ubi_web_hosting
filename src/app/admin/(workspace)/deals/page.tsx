@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
-import { KpiRibbon } from '@/app/admin/components/kpi';
+import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
 import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable';
 import { DealsWorkspaceClient, type HydratedDealItem } from './DealsWorkspaceClient';
 import styles from './deals.module.scss';
@@ -27,6 +27,9 @@ export const metadata: Metadata = {
 
 interface AdminDealsPageProps {
   searchParams?: Promise<{
+    id?: string;
+    dealId?: string;
+    leadId?: string;
     stage?: string;
     assigned_to?: string;
     source?: string;
@@ -38,7 +41,11 @@ interface AdminDealsPageProps {
 export default async function AdminDealsPage(
   props: AdminDealsPageProps
 ): Promise<React.ReactElement> {
-  await (props.searchParams ? props.searchParams : Promise.resolve(undefined));
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
+  const targetDealId = resolvedSearchParams?.id || resolvedSearchParams?.dealId || resolvedSearchParams?.leadId;
+  if (targetDealId) {
+    redirect(`/admin/deals/${targetDealId}`);
+  }
   const supabase = await createClient();
 
   const {
@@ -84,6 +91,7 @@ export default async function AdminDealsPage(
         expected_value,
         priority,
         next_follow_up,
+        revisit_date,
         created_at,
         updated_at,
         assigned_to,
@@ -147,6 +155,7 @@ export default async function AdminDealsPage(
       expected_value: Number(item.expected_value) || 0,
       priority: (item.priority as 'High' | 'Medium' | 'Low') || 'Medium',
       next_follow_up: (item.next_follow_up as string) || null,
+      revisit_date: (item.revisit_date as string) || null,
       created_at: (item.created_at as string) || new Date().toISOString(),
       updated_at: (item.updated_at as string) || new Date().toISOString(),
       assigned_to: (item.assigned_to as string) || null,
@@ -155,7 +164,7 @@ export default async function AdminDealsPage(
       assigned_to_name: profileObj?.full_name || 'Unassigned',
       status_name: statusObj?.name || 'Open',
       status_bucket: (statusObj?.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open',
-      status_color: statusObj?.color_code || '#ff6100',
+      status_color: statusObj?.color_code || '#1f242f',
       source_name: sourceObj?.name || 'Direct Ingestion',
     };
   });
@@ -165,13 +174,16 @@ export default async function AdminDealsPage(
       {/* Dynamic KPI Header Strip */}
       <header className={styles.header}>
         <div className={styles.titleArea}>
-          <div className={styles.eyebrow}>Commercial Architecture</div>
-          <h1 className={styles.heading}>Pipeline Deals</h1>
+          <div className={styles.eyebrow}>Stage 02: Pipeline Negotiations</div>
+          <h1 className={styles.heading}>Commercial Deals.</h1>
+          <p className={styles.subheading}>
+            Active commercial negotiations, proposal development, and high-ticket engagement staging.
+          </p>
         </div>
       </header>
 
       <section className={styles.kpiContainer} aria-label="Pipeline Metrics">
-        <KpiRibbon initialData={initialKpis} />
+        <MinimalistStatPods metrics={initialKpis} />
       </section>
 
       {/* Main Deals Grid with Filter Controls */}

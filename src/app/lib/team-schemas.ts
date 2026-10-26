@@ -181,3 +181,93 @@ export const suspendTeamUserSchema = z.object({
 
 export type SuspendTeamUserFormData = z.infer<typeof suspendTeamUserSchema>;
 
+/**
+ * Zod validation schema for administrative password reset and first-login credential rotation.
+ * Allows administrators to assign a custom or auto-generated high-entropy temporary password
+ * and enforces mandatory password change flag.
+ */
+export const adminResetPasswordSchema = z.object({
+  targetUserId: z
+    .string({ message: 'Target user ID is required.' })
+    .regex(
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+      'Target user ID must be a valid UUID.'
+    ),
+  tempPassword: z
+    .string()
+    .min(8, 'Temporary password must contain at least 8 characters.')
+    .max(128, 'Temporary password must not exceed 128 characters.')
+    .optional(),
+  mustChangePassword: z.boolean().default(true),
+});
+
+export type AdminResetPasswordFormData = z.infer<typeof adminResetPasswordSchema>;
+
+/**
+ * Zod validation schema for administrative session revocation across all devices.
+ */
+export const adminRevokeSessionsSchema = z.object({
+  targetUserId: z
+    .string({ message: 'Target user ID is required.' })
+    .regex(
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+      'Target user ID must be a valid UUID.'
+    ),
+});
+
+export type AdminRevokeSessionsFormData = z.infer<typeof adminRevokeSessionsSchema>;
+
+/**
+ * Zod validation schema for updating a team member's personal coordinates.
+ */
+export const updatePersonnelCoordinatesSchema = z.object({
+  targetUserId: z
+    .string({ message: 'Target user ID is required.' })
+    .regex(
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+      'Target user ID must be a valid UUID.'
+    ),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, 'Full name must contain at least 2 characters.')
+    .max(100, 'Full name must not exceed 100 characters.')
+    .optional(),
+  jobTitle: z
+    .string()
+    .trim()
+    .min(2, 'Job title must contain at least 2 characters.')
+    .max(100, 'Job title must not exceed 100 characters.')
+    .optional(),
+  phone: z
+    .string()
+    .trim()
+    .max(30, 'Phone number must not exceed 30 characters.')
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.length > 0 ? val : null)),
+  avatarUrl: z
+    .string()
+    .trim()
+    .max(2000, 'Avatar URL must not exceed 2000 characters.')
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.length > 0 ? val : null)),
+});
+
+export type UpdatePersonnelCoordinatesFormData = z.infer<typeof updatePersonnelCoordinatesSchema>;
+
+/**
+ * Zod validation schema for filtering deals within the representative deal ledger.
+ */
+export const personnelDealsFilterSchema = z.object({
+  statusBucket: z.enum(['all', 'open', 'potential', 'converted', 'lost']).default('all'),
+  timeRange: z.enum(['all', '30d', '90d', 'ytd', '12m']).default('all'),
+  search: z.string().trim().max(100).optional(),
+  page: z.number().int().positive().default(1),
+  pageSize: z.number().int().min(1).max(100).default(10),
+});
+
+export type PersonnelDealsFilterInput = z.infer<typeof personnelDealsFilterSchema>;
+
+

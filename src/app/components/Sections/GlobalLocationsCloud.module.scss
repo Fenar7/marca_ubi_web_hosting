@@ -1,0 +1,169 @@
+@import "../../styles/client-mixins.scss";
+
+.locationsSection {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  background-color: $client-canvas-white;
+  color: $client-text-dark;
+  padding: clamp(6rem, 10vw, 10rem) 0;
+  box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.gridContainer {
+  @include client-swiss-grid;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sectionLabel {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $client-text-muted-dark;
+}
+
+.summaryText {
+  font-family: $font-circular;
+  font-size: 17px;
+  line-height: 1.5;
+  color: $client-text-body-dark;
+  margin: 0;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.cloudWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1.5rem 0;
+  line-height: 1.2;
+}
+
+.itemGroup {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.cityLink {
+  display: inline-flex;
+  flex-direction: column;
+  text-decoration: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    .cityName {
+      color: $client-accent-red;
+    }
+
+    .citySubdivision {
+      color: $client-text-dark;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}
+
+.cityName {
+  font-family: $font-circular;
+  font-size: var(--client-type-h2);
+  font-weight: 700;
+  color: $client-text-dark;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.citySubdivision {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $client-text-muted-dark;
+  margin-top: 0.5rem;
+  transition: color 0.25s ease;
+}
+
+.slashDivider {
+  font-family: $font-circular;
+  font-size: var(--client-type-h2);
+  font-weight: 300;
+  color: $client-slash-neutral;
+  margin: 0 1.5rem;
+  user-select: none;
+  line-height: 1.1;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.25s ease;
+
+  &.activeSlash {
+    color: $client-accent-red;
+    text-shadow: 0 0 14px $client-accent-red-glow;
+  }
+}
+
+/* 160over90 Synchronized Operational Rail: Monospace, Tabular Numerals, Zero Pill Slop */
+.operationalRail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 0;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.railNode {
+  display: inline-flex;
+  align-items: center;
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: $client-text-muted-dark;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.railCode {
+  font-weight: 700;
+  color: $client-text-dark;
+  margin-right: 6px;
+}
+
+.railTime {
+  color: $client-accent-red;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.railAbbr {
+  color: $client-text-muted-dark;
+  font-size: 11px;
+}
+
+.railText {
+  color: $client-text-body-dark;
+}
+
+.railDivider {
+  margin: 0 1rem;
+  color: rgba(0, 0, 0, 0.2);
+  user-select: none;
+}

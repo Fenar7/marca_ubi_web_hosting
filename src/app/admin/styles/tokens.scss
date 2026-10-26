@@ -1,0 +1,90 @@
+/**
+ * @file src/app/admin/styles/tokens.scss
+ * @description Centralized Design System Tokens for Marca Ubi Enterprise CRM.
+ *              Aesthetic benchmarks: Accordion Executive Advisory × Sypher Minimalist SaaS Architecture.
+ *              Strictly scoped to [data-admin-root="true"] to guarantee zero interference
+ *              with the public website's styling and dark obsidian theme.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@forward './mixins';
+
+[data-admin-root="true"] {
+  // Typography Font Variable References
+  --font-admin-primary: var(--font-admin-sans), 'MessinaSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-admin-btn: var(--font-admin-button), 'MessinaSansBook', 'MessinaSans', sans-serif;
+  --font-admin-code: var(--font-admin-mono), ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  --font-admin-numeric: var(--font-admin-num-font), var(--font-admin-sans), -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+
+  // Modern Luxury Button & Brand Tokens
+  --admin-btn-primary-bg: #0f172a;
+  --admin-btn-primary-hover: #1e293b;
+  --admin-btn-primary-text: #ffffff;
+  // DEPRECATED: Retained strictly for Phase 1 legacy auth regression test compatibility.
+  // ZERO-ORANGE MANDATE: UNDER NO CIRCUMSTANCES should this token be referenced in the Admin CRM workspace.
+  // For Admin CRM interactive accents, strictly use --admin-accent-lemon (#eefb87) with --admin-accent-lemon-ink (#1f242f).
+  --admin-accent-brand: #ff6100;
+
+  // Surfaces & Canvas (Sypher High-Density Neutral Light Canvas)
+  --admin-canvas-bg: #f7f8fa;          // Soft neutral anti-glare foundation
+  --admin-card-bg: #ffffff;            // Crisp pure white elevated card surfaces
+  --admin-surface-muted: #f0f2f5;      // Subdued container fill (kanban columns, headers)
+  --admin-surface-hover: #f4f6f9;      // Interactive row & tile hover state
+  --admin-surface-active: #ebeef3;     // Active selection & pressed states
+  --admin-surface-inverse: #1f242f;    // High-contrast slate charcoal
+
+  // Hairline Specular Borders (Zero Muddy Shadows)
+  --admin-border-subtle: #eef0f3;      // Internal cell dividers & secondary borders
+  --admin-border-default: #e2e5ea;     // Standard 1px card and table outline
+  --admin-border-strong: #1f242f;      // High-contrast Accordion 1px outline
+
+  // Text & Inks (Editorial High-Finance Richness)
+  --admin-text-primary: #1f242f;       // Deep charcoal headline & primary data (15.54:1 on white)
+  --admin-text-secondary: #525965;     // Refined executive slate grey for body & descriptions (7.1:1)
+  --admin-text-muted: #6b7280;         // Metadata, timestamps & empty states (4.72:1 WCAG AA compliant)
+  --admin-text-inverse: #ffffff;       // White ink for dark badges & high-contrast elements
+
+  // Signature Accordion Accent (Lemon Yellow)
+  --admin-accent-lemon: #eefb87;       // Signature Electric Lemon Yellow
+  --admin-accent-lemon-hover: #e4f375; // Lemon press/hover state
+  --admin-accent-lemon-ink: #1f242f;   // Paired contrast text/border (Mandatory 13.92:1 AAA)
+  --admin-accent-lemon-tint: rgba(238, 251, 135, 0.35); // Soft tinted badge background
+
+  // Semantic Status Tokens (Calm Fintech Standards)
+  --admin-status-emerald-bg: #ecfdf5;
+  --admin-status-emerald-border: #a7f3d0;
+  --admin-status-emerald-text: #065f46;
+  --admin-status-emerald-dot: #10b981;
+
+  --admin-status-amber-bg: #fffbeb;
+  --admin-status-amber-border: #fde68a;
+  --admin-status-amber-text: #92400e;
+  --admin-status-amber-dot: #f59e0b;
+
+  --admin-status-rose-bg: #fef2f2;
+  --admin-status-rose-border: #fecaca;
+  --admin-status-rose-text: #991b1b;
+  --admin-status-rose-dot: #ef4444;
+
+  --admin-status-slate-bg: #f8fafc;
+  --admin-status-slate-border: #cbd5e1;
+  --admin-status-slate-text: #1e293b;
+  --admin-status-slate-dot: #64748b;
+
+  // Geometry & Radii Hierarchy
+  --admin-radius-pill: 9999px;         // Buttons, search input, segmented chips, status pills
+  --admin-radius-outer: 16px;          // Dialog modals, shell envelopes
+  --admin-radius-card: 12px;           // Scorecards, kanban tiles, data grid wrapper
+  --admin-radius-inner: 8px;           // Input fields, popovers, inner wells
+  --admin-radius-micro: 4px;           // Monospace tags, keyboard shortcuts
+
+  // Elevation & Micro-Shadows
+  --admin-shadow-none: none;
+  --admin-shadow-subtle: 0 1px 2px rgba(31, 36, 47, 0.04);
+  --admin-shadow-hover: 0 4px 14px rgba(31, 36, 47, 0.08);
+  --admin-shadow-modal: 0 24px 60px rgba(31, 36, 47, 0.16);
+
+  // Platform Rail Dimensions & Viewport Grid Geometry
+  --admin-sidebar-width-expanded: 260px;
+  --admin-sidebar-width-collapsed: 72px;
+}

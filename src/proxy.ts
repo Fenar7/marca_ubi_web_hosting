@@ -1,10 +1,11 @@
 /**
- * @file middleware.ts
- * @description Next.js 16 Edge Middleware perimeter firewall and session synchronization engine.
+ * @file proxy.ts
+ * @description Next.js 16 Edge Proxy perimeter firewall and session synchronization engine.
  *              Intercepts administrative requests, cryptographically authenticates JWT claims against Supabase Auth,
  *              prevents circular redirect loops, propagates mutated session cookies across redirects,
  *              and enforces sub-millisecond edge role-based route gating for governance routes (/admin/team).
- * @module middleware
+ *              Conforms strictly to the Next.js 16 "proxy" specification (superseding legacy middleware.ts).
+ * @module proxy
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -46,7 +47,7 @@ export function createRedirectResponse(redirectUrl: URL, sourceResponse: NextRes
 }
 
 /**
- * Next.js Edge Middleware entry point.
+ * Next.js Edge Proxy entry point (Next.js 16 convention).
  * Intercepts `/admin/:path*` requests before server rendering.
  *
  * Security Lifecycle:
@@ -60,7 +61,7 @@ export function createRedirectResponse(redirectUrl: URL, sourceResponse: NextRes
  * @param {NextRequest} request The incoming HTTP request.
  * @returns {Promise<NextResponse>} The verified response or route guard redirection.
  */
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
 
   // Execute Supabase SSR session synchronization and cryptographic JWT validation
@@ -107,7 +108,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           redirectResponse.cookies.delete(cookie.name);
         }
       });
-
       return redirectResponse;
     }
 
@@ -150,19 +150,18 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   // Scenario 4: Granular Tab & Role-based Edge Route Gating
   if (isAdminRoute && user) {
-    // SEC-02: Enforce app_metadata as the sole source of truth for authorization claims (role & allowed_tabs)
+    // SEC-02: Enforce app_metadata as the primary source of truth for edge authorization claims (role & allowed_tabs)
     // Client-side user_metadata is excluded to prevent tampering via client auth.updateUser() calls
-    const userRole = (
-      (user.app_metadata?.role as string | undefined) ||
-      'viewer'
-    ) as CrmUserRole;
-
+    const rawRole = user.app_metadata?.role as string | undefined;
     const userAllowedTabs = user.app_metadata?.allowed_tabs as string[] | undefined;
+    const hasExplicitAuthClaims = Boolean(rawRole || Array.isArray(userAllowedTabs));
+    const userRole = (rawRole || 'viewer') as CrmUserRole;
 
     // Canonical route-to-tab permission mapping
     const ROUTE_TAB_MAP: Array<{ prefix: string; tabKey: CrmTabKey }> = [
       { prefix: '/admin/team', tabKey: 'users' },
       { prefix: '/admin/users', tabKey: 'users' },
+      { prefix: '/admin/user-management', tabKey: 'users' },
       { prefix: '/admin/analytics', tabKey: 'analytics' },
       { prefix: '/admin/ingestion', tabKey: 'ingestion' },
       { prefix: '/admin/settings', tabKey: 'settings' },
@@ -176,10 +175,29 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       pathname === m.prefix || pathname.startsWith(`${m.prefix}/`)
     );
 
-    if (matchingRoute) {
+    if (matchingRoute && hasExplicitAuthClaims) {
+      // Administrators have universal access across all admin workspace routes
+      if (userRole === 'admin') {
+        return supabaseResponse;
+      }
+
+      // Personnel profile dossier (/admin/team/[uuid]):
+      // Allow dynamic personnel dossier routes to pass through to the Server Component,
+      // where strict row-level security and self-profile inspection (isSelf) are authoritatively evaluated.
+      const isPersonnelDossierRoute = /^\/admin\/team\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(pathname);
+      if (isPersonnelDossierRoute) {
+        return supabaseResponse;
+      }
+
+      // If user has no explicit role claim yet, allow pass-through to Server Component
+      // which verifies the authoritative PostgreSQL public.profiles record
+      if (!rawRole) {
+        return supabaseResponse;
+      }
+
       let isPermitted = false;
 
-      if (Array.isArray(userAllowedTabs)) {
+      if (Array.isArray(userAllowedTabs) && userAllowedTabs.length > 0) {
         isPermitted = userAllowedTabs.includes(matchingRoute.tabKey);
       } else {
         const defaultRoleTabs = ROLE_DEFAULT_TABS[userRole];
@@ -197,6 +215,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   return supabaseResponse;
 }
+
+// Dual-export aliases for Next.js 16 proxy convention and backward compatibility
+export const middleware = proxy;
+export default proxy;
 
 export const config = {
   matcher: ['/admin', '/admin/:path*'],

@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3003",
+    "dev:clean": "node -e \"const fs=require('fs'); fs.rmSync('.next', { recursive: true, force: true });\" && next dev -p 3003",
+    "dev:webpack": "next dev --webpack -p 3003",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3003",
     "lint": "eslint",
     "test:boundaries": "tsx scripts/verify-server-action-boundaries.ts",
     "test:unit": "tsx --test tests/unit/*.test.ts tests/ingest/*.test.ts tests/leads/*.test.ts tests/actions/*.test.ts tests/analytics/*.test.ts tests/auth/*.test.ts tests/team/*.test.ts",

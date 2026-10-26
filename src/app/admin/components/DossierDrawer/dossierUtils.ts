@@ -57,11 +57,33 @@ export function createWhatsAppUri(
   return `https://wa.me/${digits}?text=${encodedText}`;
 }
 
+const BRIEF_LABEL_MAP: Record<string, string> = {
+  projectDescription: 'Project Scope & Goals',
+  projectName: 'Project / Brand Name',
+  category: 'Service Category',
+  service: 'Deliverable Focus',
+  timeline: 'Target Launch Window',
+  inspirationLinks: 'Inspiration References',
+  extraNotes: 'Additional Client Notes',
+  agencyStatus: 'Agency Experience',
+  showcasePermission: 'Case Study Consent',
+  client_message: 'Inbound Client Message',
+  businessType: 'Business Classification',
+  instagramId: 'Social Coordinate',
+  language: 'Preferred Language',
+  referral: 'Referral Source',
+  website: 'Existing Website',
+  industry: 'Market Sector',
+};
+
 /**
  * Formats snake_case or camelCase object keys into clean human titles.
  * @param key Raw key from brief questionnaire payload
  */
 export function formatBriefLabel(key: string): string {
+  if (BRIEF_LABEL_MAP[key]) {
+    return BRIEF_LABEL_MAP[key];
+  }
   return key
     .replace(/_/g, ' ')
     .replace(/([A-Z])/g, ' $1')
@@ -124,6 +146,18 @@ export function extractBriefEntries(
     'phone_warning',
     'idempotencyKey',
     'idempotency_key',
+    // Synthetic benchmark & test simulation metadata keys
+    'synthetic_benchmark',
+    'batch_id',
+    'lead_index',
+    'benchmark_run',
+    'simulated',
+    'simulated_at',
+    'simulated_by',
+    'submissionId',
+    'source_channel',
+    'estimated_budget',
+    'service_interest',
   ];
   return Object.entries(payload).filter(
     ([key, val]) =>

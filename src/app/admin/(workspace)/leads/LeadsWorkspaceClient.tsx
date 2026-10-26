@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
 import {
   FilterActionBar,
@@ -62,6 +62,7 @@ export interface LeadsWorkspaceClientProps {
   availableSources?: FilterDropdownOption[];
   availableAssignees?: FilterDropdownOption[];
   availableStatuses?: InlineStatusOption[];
+  userRole?: string;
 }
 
 function formatCurrency(amount: number): string {
@@ -95,8 +96,19 @@ function LeadsWorkspaceContent({
   availableSources: initialSources,
   availableAssignees: initialAssignees,
   availableStatuses: initialStatuses,
+  userRole,
 }: LeadsWorkspaceClientProps): React.ReactElement {
+  const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Listen for manual lead creations to refresh workspace data
+  useEffect(() => {
+    const handleLeadCreated = () => {
+      router.refresh();
+    };
+    window.addEventListener('lead-created', handleLeadCreated);
+    return () => window.removeEventListener('lead-created', handleLeadCreated);
+  }, [router]);
 
   // Local state initialized with server-hydrated leads for optimistic in-memory reconciliation
   const [leads, setLeads] = useState<HydratedLeadItem[]>(initialLeads);
@@ -113,7 +125,8 @@ function LeadsWorkspaceContent({
   const priorityParam = searchParams.get('priority');
   const stageParam = searchParams.get('stage');
 
-  const leadIdParam = searchParams.get('leadId');
+  // Deep-link query param resolution: supports both canonical ?id=<uuid> and legacy ?leadId=<uuid>
+  const leadIdParam = searchParams.get('id') || searchParams.get('leadId');
 
   const validBuckets: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
   const initialBucket: BucketTabId = validBuckets.includes(bucketParam as BucketTabId)
@@ -169,14 +182,15 @@ function LeadsWorkspaceContent({
     lead: null,
   });
 
-  // Shallow URL Synchronizer for Client 360 drawer: preserves ?leadId=<uuid> for bookmarking & persistence
+  // Shallow URL Synchronizer for Client 360 drawer: preserves ?id=<uuid> for bookmarking & persistence
   const handleOpenDrawer = useCallback((id: string) => {
     setActiveDrawerLeadId(id);
     setIsDrawerOpen(true);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
-      if (url.searchParams.get('leadId') !== id) {
-        url.searchParams.set('leadId', id);
+      if (url.searchParams.get('id') !== id && url.searchParams.get('leadId') !== id) {
+        url.searchParams.set('id', id);
+        url.searchParams.delete('leadId');
         window.history.replaceState({}, '', url.pathname + url.search);
       }
     }
@@ -187,8 +201,20 @@ function LeadsWorkspaceContent({
     setActiveDrawerLeadId(null);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
+      let changed = false;
       if (url.searchParams.has('leadId')) {
         url.searchParams.delete('leadId');
+        changed = true;
+      }
+      if (url.searchParams.has('id')) {
+        url.searchParams.delete('id');
+        changed = true;
+      }
+      if (url.searchParams.has('action')) {
+        url.searchParams.delete('action');
+        changed = true;
+      }
+      if (changed) {
         window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
       }
     }
@@ -196,11 +222,11 @@ function LeadsWorkspaceContent({
 
   useEffect(() => {
     const handleOpenDrawerEvent = (e: Event): void => {
-      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
+      const customEvt = e as CustomEvent<{ leadId?: string; id?: string } | string>;
       const id =
         typeof customEvt.detail === 'string'
           ? customEvt.detail
-          : customEvt.detail?.leadId;
+          : customEvt.detail?.id || customEvt.detail?.leadId;
       if (id) {
         handleOpenDrawer(id);
       }
@@ -307,7 +333,14 @@ function LeadsWorkspaceContent({
     );
     setSelectedPriority(searchParams.get('priority') || null);
     setSelectedStageId(searchParams.get('stage') || null);
-  }, [searchParams]);
+
+    // Reactive synchronization for drawer state upon browser back/forward or deep-link parameter changes
+    const currentParamId = searchParams.get('id') || searchParams.get('leadId');
+    if (currentParamId && currentParamId !== activeDrawerLeadId) {
+      setActiveDrawerLeadId(currentParamId);
+      setIsDrawerOpen(true);
+    }
+  }, [searchParams, activeDrawerLeadId]);
 
   // Derive catalog dropdown options dynamically if not passed directly from server props
   const availableSources = useMemo<FilterDropdownOption[]>(() => {
@@ -320,7 +353,7 @@ function LeadsWorkspaceContent({
         map.set(lead.lead_source_id, {
           id: lead.lead_source_id,
           label: lead.lead_source_name,
-          colorCode: lead.lead_source_color || '#ff6100',
+          colorCode: lead.lead_source_color || '#1f242f',
         });
       }
     }
@@ -363,7 +396,7 @@ function LeadsWorkspaceContent({
           id: lead.status_id,
           name: lead.status_name,
           bucket: lead.bucket,
-          color_code: lead.status_color || '#ff6100',
+          color_code: lead.status_color || '#1f242f',
         });
       }
     }
@@ -773,6 +806,7 @@ function LeadsWorkspaceContent({
     <>
       {/* High-Performance Multi-Filter Action Bar */}
       <FilterActionBar
+        scope="leads"
         counts={counts}
         selectedBucket={selectedBucket}
         searchQuery={searchQuery}
@@ -820,14 +854,16 @@ function LeadsWorkspaceContent({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            className={styles.batchReassignTriggerBtn}
-            onClick={() => setIsBatchReassignOpen(true)}
-            aria-label="Launch batch reassignment modal"
-          >
-            Batch Reassign Overdue Leads
-          </button>
+          {userRole !== 'viewer' && (
+            <button
+              type="button"
+              className={styles.batchReassignTriggerBtn}
+              onClick={() => setIsBatchReassignOpen(true)}
+              aria-label="Launch batch reassignment modal"
+            >
+              Batch Reassign Overdue Leads
+            </button>
+          )}
         </div>
       )}
 
@@ -858,7 +894,7 @@ function LeadsWorkspaceContent({
               </p>
             </div>
           </div>
-          {filteredLeads.length > 0 && (
+          {filteredLeads.length > 0 && userRole !== 'viewer' && (
             <button
               type="button"
               className={styles.convertTriggerBtn}
@@ -894,6 +930,7 @@ function LeadsWorkspaceContent({
         availableStatuses={resolvedStatuses}
         onStatusChange={handleInlineStatusChange}
         onPriorityChange={handleInlinePriorityChange}
+        userRole={userRole}
       />
 
       {/* Slide-over Client 360 Degree Dossier Drawer */}

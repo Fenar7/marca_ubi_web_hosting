@@ -2,16 +2,17 @@
 
 /**
  * @file EditUserPermissionsModal.tsx
- * @description Granular Tab Permissions Governance Modal dialog (580px).
+ * @description Granular Tab Permissions Governance Modal dialog (620px).
  *              Allows administrators to fine-tune each staff member's accessible tabs
  *              across the 3 canonical functional enclaves.
  *              Enforces defensive admin self-lockout invariants, accessible touch targets,
- *              and commits mutations atomically through Server Action updateUserPermissions.
+ *              avatar photography support, and Signature Accordion Lemon Yellow Action button standards.
  * @module app/admin/team/components/EditUserPermissionsModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React, { useState, useEffect, useTransition, useCallback } from 'react';
+import Image from 'next/image';
 import type { TeamMemberRosterItem, CrmTabKey } from '@/types/crm';
 import { ROLE_DEFAULT_TABS } from '@/types/crm';
 import { updateUserPermissions } from '@/app/actions/team';
@@ -43,10 +44,11 @@ export function EditUserPermissionsModal({
   const [isPending, startTransition] = useTransition();
   const [allowedTabs, setAllowedTabs] = useState<CrmTabKey[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<boolean>(false);
 
   const isSelf = targetMember?.id === currentUserId;
 
-  // Initialize allowedTabs state whenever a target member is opened
+  // Initialize allowedTabs and avatar error state when modal opens
   useEffect(() => {
     if (isOpen && targetMember) {
       if (Array.isArray(targetMember.allowed_tabs)) {
@@ -61,6 +63,7 @@ export function EditUserPermissionsModal({
         }
       }
       setErrorMessage(null);
+      setAvatarError(false);
     }
   }, [isOpen, targetMember]);
 
@@ -85,8 +88,12 @@ export function EditUserPermissionsModal({
   }
 
   const handleToggleTab = (tabKey: CrmTabKey) => {
-    // Admin self-lockout defense: prevent revoking users or settings on own account
-    if (isSelf && (tabKey === 'users' || tabKey === 'settings')) {
+    // All-admin immunity policy: users and settings tabs are immutable for the authenticated admin's
+    // own account (self-lockout prevention) AND for any other admin (peer-admin protection). This dual
+    // guard ensures no administrator can be stripped of core governance tabs by another admin,
+    // preventing privilege escalation through tab revocation across the RBAC boundary.
+    const isTargetAdmin = targetMember.role === 'admin';
+    if ((isSelf || isTargetAdmin) && (tabKey === 'users' || tabKey === 'settings')) {
       return;
     }
 
@@ -141,7 +148,6 @@ export function EditUserPermissionsModal({
           return;
         }
 
-        // Notify parent workspace to update table row optimistically
         onPermissionsUpdated(targetMember.id, allowedTabs);
         onClose();
       } catch (err: unknown) {
@@ -167,22 +173,35 @@ export function EditUserPermissionsModal({
         className={`${styles.modalDialog} ${isClosing ? styles.dialogClosing : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >
-        {/* Modal Header */}
+        {/* Modal Header with 44px Circular Close Action (Apple HIG minimum touch target) */}
         <div className={styles.modalHeader}>
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>Governance & RBAC</span>
             <h2 id="edit-permissions-modal-title" className={styles.modalTitle}>
-              Configure Tab Permissions
+              Configure Tab Permissions.
             </h2>
           </div>
           <button
             type="button"
             className={styles.closeButton}
             onClick={requestClose}
-            aria-label="Close tab permissions modal"
+            aria-label="Close permissions modal (Esc)"
+            title="Close modal (Esc)"
           >
-            <span>✕</span>
-            <kbd className={styles.escBadge}>Esc</kbd>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
@@ -199,10 +218,24 @@ export function EditUserPermissionsModal({
             </div>
           )}
 
-          {/* User Identity Dossier Strip */}
+          {/* User Identity Dossier Strip with Photography Support */}
           <div className={styles.userDossierStrip}>
-            <div className={styles.userAvatar} aria-hidden="true">
-              {getInitials(targetMember.full_name)}
+            <div className={styles.avatarWrapper}>
+              {targetMember.avatar_url && !avatarError ? (
+                <Image
+                  src={targetMember.avatar_url}
+                  alt={`${targetMember.full_name}'s avatar`}
+                  width={46}
+                  height={46}
+                  className={styles.avatarImage}
+                  onError={() => setAvatarError(true)}
+                  unoptimized
+                />
+              ) : (
+                <div className={styles.avatarFallback} aria-hidden="true">
+                  {getInitials(targetMember.full_name)}
+                </div>
+              )}
             </div>
             <div className={styles.userDetails}>
               <div className={styles.userNameRow}>
@@ -232,7 +265,7 @@ export function EditUserPermissionsModal({
             {PERMISSION_ENCLAVES.map((enclave) => {
               const authorizedCount = enclave.tabs.filter((t) => allowedTabs.includes(t.key)).length;
               return (
-                <div key={enclave.enclaveTitle} className={styles.enclaveCard}>
+                <div key={enclave.enclaveTitle} className={styles.enclaveSection}>
                   <div className={styles.enclaveHeader}>
                     <span className={styles.enclaveName}>{enclave.enclaveTitle}</span>
                     <span className={styles.enclaveBadge}>
@@ -243,7 +276,6 @@ export function EditUserPermissionsModal({
                   <div className={styles.tabsGrid}>
                     {enclave.tabs.map((tab) => {
                       const isChecked = allowedTabs.includes(tab.key);
-                      // F-02 & Invariant: Lock users & settings tabs for active administrators to guarantee system governance
                       const isLocked =
                         (isSelf || targetMember.role === 'admin') &&
                         (tab.key === 'users' || tab.key === 'settings');
@@ -285,15 +317,16 @@ export function EditUserPermissionsModal({
                             )}
                           </div>
                           <div className={styles.tabMeta}>
-                            <div className={styles.tabLabel}>
-                              <span>{tab.label}</span>
-                              {isLocked ? (
+                            <div className={styles.tabTitleRow}>
+                              <span className={styles.tabLabel}>{tab.label}</span>
+                              {isLocked && (
                                 <span className={styles.lockedPill}>Locked</span>
-                              ) : (
-                                <span className={styles.tabRoute}>{tab.route}</span>
                               )}
                             </div>
                             <span className={styles.tabHint}>{tab.hint}</span>
+                            <div className={styles.tabRouteTag}>
+                              <span className={styles.tabRoute}>{tab.route}</span>
+                            </div>
                           </div>
                         </div>
                       );
@@ -304,7 +337,7 @@ export function EditUserPermissionsModal({
             })}
           </div>
 
-          {/* Modal Footer */}
+          {/* Modal Footer with Standardized 38px Buttons */}
           <div className={styles.modalFooter}>
             <div className={styles.footerLeft}>
               <button
@@ -340,7 +373,8 @@ export function EditUserPermissionsModal({
                 className={styles.submitButton}
                 disabled={isPending}
               >
-                {isPending ? 'Updating...' : 'Save Permissions'}
+                {isPending && <span className={styles.btnSpinner} aria-hidden="true" />}
+                <span>{isPending ? 'Updating...' : 'Save Permissions'}</span>
               </button>
             </div>
           </div>

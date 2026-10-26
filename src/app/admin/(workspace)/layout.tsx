@@ -42,7 +42,7 @@ export default async function AdminWorkspaceLayout({
   // Retrieve authenticated staff profile and verify active operational standing
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, full_name, email, role, status, job_title, allowed_tabs, feature_permissions')
+    .select('id, full_name, email, role, status, job_title, allowed_tabs, feature_permissions, avatar_url')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -61,11 +61,12 @@ export default async function AdminWorkspaceLayout({
     email: user.email || '',
     role: userRole,
     jobTitle: profile?.job_title || 'Commercial Personnel',
+    avatarUrl: profile?.avatar_url || null,
     allowed_tabs: (profile?.allowed_tabs as string[]) || undefined,
     feature_permissions: profile?.feature_permissions || undefined,
   };
 
-  // Query live count of due follow-up tasks scoped to current representative if applicable
+  // Query live count of due follow-up tasks excluding synthetic benchmark records
   let dueTasksCount = 0;
   try {
     const nowIso = new Date().toISOString();
@@ -73,7 +74,8 @@ export default async function AdminWorkspaceLayout({
       .from('leads')
       .select('id, funnel_statuses!inner(bucket)', { count: 'exact', head: true })
       .lte('next_follow_up', nowIso)
-      .in('funnel_statuses.bucket', ['open', 'potential']);
+      .in('funnel_statuses.bucket', ['open', 'potential'])
+      .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true');
 
     if (userRole === 'sales_executive') {
       tasksQuery.eq('assigned_to', user.id);

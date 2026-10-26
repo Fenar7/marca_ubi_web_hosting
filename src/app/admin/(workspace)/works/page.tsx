@@ -11,7 +11,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { ClientWorkItem, CrmUserRole } from '@/types/crm';
+import { type ClientWorkItem, type CrmUserRole, ROLE_DEFAULT_TABS } from '@/types/crm';
 import { WorksWorkspaceClient } from './WorksWorkspaceClient';
 import styles from './works.module.scss';
 
@@ -40,12 +40,16 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
     .eq('id', user.id)
     .maybeSingle();
 
+  if (profile?.status !== 'active') {
+    redirect('/admin/login?error=account_suspended');
+  }
+
   const role = (profile?.role as CrmUserRole) || 'viewer';
   const allowedTabs = profile?.allowed_tabs as string[] | undefined;
 
   const hasWorksAccess = Array.isArray(allowedTabs)
     ? allowedTabs.includes('works')
-    : true;
+    : ROLE_DEFAULT_TABS[role]?.works ?? false;
 
   if (!hasWorksAccess) {
     redirect('/admin?error=unauthorized_role_access');
@@ -127,10 +131,10 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
       {/* Workspace Header Strip */}
       <header className={styles.header}>
         <div className={styles.titleArea}>
-          <div className={styles.eyebrow}>Agency Deliverables Engine</div>
-          <h1 className={styles.heading}>Client Works & Engagements</h1>
+          <div className={styles.eyebrow}>Client Deliverables</div>
+          <h1 className={styles.heading}>Client Deliverables.</h1>
           <p className={styles.subheading}>
-            Tracking active post-conversion creative deliverables, milestone progress, and engineering health.
+            Tracking active post-conversion deliverables, milestone progress, and engineering health.
           </p>
         </div>
       </header>

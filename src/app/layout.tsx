@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SmoothScrollProvider from "./components/SmoothScrollProvider/SmoothScrollProvider";
-import { graphik } from "./fonts";
+import { graphik, circularXX } from "./fonts";
+import "./globals.css";
 import "./globals.scss";
 
 const siteUrl =
@@ -9,20 +10,20 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Marca Ubi — Brand Identity & Digital Experience Studio",
+  title: "Marca Ubi | Brand Identity & Cultural Experience Architecture",
   description:
-    "Marca Ubi builds brand identities, content systems, and digital experiences that stay consistent everywhere your customers see you. Strategy, design, and execution — engineered for modern brands.",
+    "Marca Ubi builds living brand systems, digital flagships, and cultural experiences that move modern enterprise audiences. Strategy, design, and computational execution.",
   icons: {
-    icon: [{ url: "/icon.png", type: "image/png" }],
+    icon: [{ url: "/images/marca-ubi-red-png.svg", type: "image/svg+xml" }],
     apple: [{ url: "/icon.png", type: "image/png" }],
-    shortcut: ["/icon.png"],
+    shortcut: ["/images/marca-ubi-red-png.svg"],
   },
   openGraph: {
     type: "website",
     url: "/",
-    title: "Marca Ubi — Brand Identity & Digital Experience Studio",
+    title: "Marca Ubi | Brand Identity & Cultural Experience Architecture",
     description:
-      "Marca Ubi builds brand identities, content systems, and digital experiences that stay consistent everywhere your customers see you.",
+      "Marca Ubi builds living brand systems, digital flagships, and cultural experiences that move modern enterprise audiences.",
     images: [
       {
         url: "/images/hero-image.png",
@@ -34,9 +35,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Marca Ubi — Brand Identity & Digital Experience Studio",
+    title: "Marca Ubi | Brand Identity & Cultural Experience Architecture",
     description:
-      "Marca Ubi builds brand identities, content systems, and digital experiences that stay consistent everywhere your customers see you.",
+      "Marca Ubi builds living brand systems, digital flagships, and cultural experiences that move modern enterprise audiences.",
     images: ["/images/hero-image.png"],
   },
 };
@@ -46,12 +47,37 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const schemaOrgData = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: "Marca Ubi Enterprise Agency",
+    description: "Creative Technology, Strategic Brand Architecture, and High-Performance Digital Experiences.",
+    url: siteUrl,
+    logo: `${siteUrl}/images/marca-ubi-red-png.svg`,
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "IN",
+      addressRegion: "Kerala",
+      addressLocality: "Kozhikode",
+      streetAddress: "HiLITE Business Park, Calicut",
+      postalCode: "673014",
+    },
+    sameAs: [
+      "https://linkedin.com/company/marcaubi",
+      "https://instagram.com/marcaubi",
+    ],
+  };
+
   return (
-    <html lang="en" className={graphik.variable}>
+    <html lang="en" className={`${graphik.variable} ${circularXX.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="preload" as="image" href="/hero/marca-ubi-logo.png" />
+        <link rel="preload" as="image" href="/images/marca-ubi-red-png.svg" type="image/svg+xml" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrgData) }}
+        />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <SmoothScrollProvider>
           {children}
         </SmoothScrollProvider>

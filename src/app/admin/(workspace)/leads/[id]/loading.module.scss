@@ -1,0 +1,96 @@
+/**
+ * @file loading.module.scss
+ * @description Zero Cumulative Layout Shift (CLS < 0.01) Suspense skeleton for Lead Dossier Workspace.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+@keyframes shimmerEffect {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeletonBox {
+  background: linear-gradient(
+    90deg,
+    var(--admin-border-subtle, #eef0f3) 25%,
+    var(--admin-surface-muted, #f8f9fa) 50%,
+    var(--admin-border-subtle, #eef0f3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmerEffect 1.5s infinite linear;
+  border-radius: 6px;
+}
+
+.workspaceLoading {
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  padding: 0 0 3rem;
+  box-sizing: border-box;
+}
+
+.headerSkeleton {
+  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 1rem 0 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.breadcrumbRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gridSkeleton {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1.75rem;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leftRailSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rightRailSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.kpiRibbonSkeleton {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cardSkeleton {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border-radius: var(--admin-radius-card, 12px);
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

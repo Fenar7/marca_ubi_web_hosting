@@ -1,7 +1,13 @@
+import React from "react";
 import { PortableText, type PortableTextComponents, type PortableTextBlock } from "next-sanity";
 import Link from "next/link";
 import { urlFor } from "@/sanity/lib/image";
 import styles from "./PortableTextRenderer.module.scss";
+
+interface ChildSpan {
+  text?: string;
+  _type?: string;
+}
 
 export function slugify(text: string, index?: number): string {
   const slug = text
@@ -15,8 +21,8 @@ export function slugify(text: string, index?: number): string {
 export const portableTextComponents: PortableTextComponents = {
   block: {
     h2: ({ children, value, index }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const text = value?.children?.map((c: any) => c.text).join("") || "";
+      const spans = (value?.children || []) as ChildSpan[];
+      const text = spans.map((c) => c.text || "").join("");
       const id = slugify(text, index);
       return (
         <h2 id={id} className={styles.heading2}>
@@ -28,8 +34,8 @@ export const portableTextComponents: PortableTextComponents = {
       );
     },
     h3: ({ children, value, index }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const text = value?.children?.map((c: any) => c.text).join("") || "";
+      const spans = (value?.children || []) as ChildSpan[];
+      const text = spans.map((c) => c.text || "").join("");
       const id = slugify(text, index);
       return (
         <h3 id={id} className={styles.heading3}>
@@ -72,14 +78,7 @@ export const portableTextComponents: PortableTextComponents = {
           >
             {children}
             {isExternal && (
-              <img
-                src="/hero/primary-arrow.png"
-                alt=""
-                width={12}
-                height={12}
-                className={styles.linkArrowIcon}
-                aria-hidden="true"
-              />
+              <span className={styles.linkArrowIcon} aria-hidden="true">&nearr;</span>
             )}
           </a>
         );

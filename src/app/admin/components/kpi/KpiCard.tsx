@@ -1,8 +1,9 @@
 /**
  * @file KpiCard.tsx
- * @description Individual Stripe Scorecard archetype component for executive analytics.
- *              Enforces tabular numerals, hover lift micro-interactions, alert pulse
- *              states for overdue follow-ups, and clickable drilldown routes.
+ * @description Individual Logip x Sypher Scorecard component for executive analytics.
+ *              Features 36px circular tinted icon containers, tabular numerals,
+ *              isolated secondary badge rows to prevent value truncation/collision,
+ *              and tactile hover states.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -24,9 +25,9 @@ export interface KpiCardProps {
 }
 
 /**
- * Individual metric card conforming to the Stripe Scorecard archetype.
- * Provides accessible navigation, specular top highlight, and zero-layout-shift
- * tabular numeral presentation.
+ * Individual metric card conforming to the Logip x Sypher Scorecard archetype.
+ * Provides accessible navigation, specular top highlight, zero-layout-shift
+ * tabular numeral presentation, and separated badge geometry.
  *
  * @param {KpiCardProps} props Properties configuring the metric card presentation.
  * @returns {React.ReactElement} Clickable, styled score card.
@@ -44,7 +45,9 @@ export function KpiCard({
   ariaLabel,
 }: KpiCardProps): React.ReactElement {
   const cardTitle = titleTooltip || `${label}: ${value}`;
-  const accessibleLabel = ariaLabel || `${label}, value: ${value}`;
+  const accessibleLabel =
+    ariaLabel ||
+    `${label}: ${value}${isAlert ? '. Action Required' : ''}`;
 
   return (
     <Link
@@ -53,11 +56,16 @@ export function KpiCard({
       title={cardTitle}
       aria-label={accessibleLabel}
       data-testid={`kpi-card-${id}`}
+      data-card-id={id}
     >
       <div className={styles.kpiHeader}>
         <span className={styles.kpiLabel}>{label}</span>
         <div className={styles.kpiHeaderMeta}>
-          {icon && <span className={styles.kpiIcon}>{icon}</span>}
+          {icon && (
+            <span className={`${styles.kpiIconWrap} ${styles.kpiIcon}`}>
+              {icon}
+            </span>
+          )}
           <span className={styles.drilldownArrow} aria-hidden="true">
             <svg
               width="14"
@@ -80,8 +88,13 @@ export function KpiCard({
         <span className={styles.kpiValue} data-testid={`kpi-value-${id}`}>
           {value}
         </span>
-        {secondaryBadge && <div>{secondaryBadge}</div>}
       </div>
+
+      {secondaryBadge && (
+        <div className={styles.secondaryBadgeRow}>
+          {secondaryBadge}
+        </div>
+      )}
 
       <div className={styles.kpiSubtext} data-testid={`kpi-subtext-${id}`}>
         {subtext}

@@ -61,7 +61,7 @@ export function OrganizationDossier({
             <path d="M9 22v-4h6v4" />
             <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
           </svg>
-          <span>Organization & Market</span>
+          <span>Organization & Market.</span>
         </div>
 
         <div className={styles.keyValueList}>
@@ -106,7 +106,7 @@ export function OrganizationDossier({
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          <span>Primary Decision Maker</span>
+          <span>Primary Decision Maker.</span>
         </div>
 
         <div className={styles.keyValueList}>
@@ -184,7 +184,7 @@ export function OrganizationDossier({
             <line x1="12" y1="1" x2="12" y2="23" />
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
-          <span>Commercial Engagement Scope</span>
+          <span>Commercial Engagement Scope.</span>
         </div>
 
         <div className={styles.keyValueList}>
@@ -240,7 +240,7 @@ export function OrganizationDossier({
             <line x1="16" y1="17" x2="8" y2="17" />
             <polyline points="10 9 9 9 8 9" />
           </svg>
-          <span>Original Brief Questionnaire</span>
+          <span>Original Brief Questionnaire.</span>
         </div>
 
         <RawBriefAccordion briefPayload={lead.brief_payload} />

@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import PillButton from "@/app/components/ui/PillButton/PillButton";
 import type { Category, PostSummary } from "@/sanity/types/blog";
+import { urlFor } from "@/sanity/lib/image";
 import styles from "./Blog.module.scss";
 
 interface BlogListingClientProps {
@@ -26,6 +26,13 @@ function formatDate(isoString: string): string {
   }
 }
 
+/**
+ * Client-Side Interactive Broadsheet Blog Listing.
+ * Pure Swiss editorial design with category slash navigation and 60/40 featured showcase.
+ * Zero AI-slop pills, zero capsule badges, 100% Circular XX typography.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
 export default function BlogListingClient({ posts, categories }: BlogListingClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -47,216 +54,171 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
   }, [filteredPosts, featuredPost, selectedCategory]);
 
   return (
-    <div className={styles.blogContainer}>
-      {/* Editorial Hero Header */}
+    <div className={styles.blogWrapper}>
+      {/* 1. Monumental Hero Stage */}
       <header className={styles.heroHeader}>
-        <div className={styles.heroTag}>
-          <img
-            src="/images/asterisk.png"
-            alt=""
-            className={styles.tagAsterisk}
-            width={16}
-            height={16}
-            aria-hidden="true"
-          />
-          <h2 className={styles.tagText}>Insights / Marca Ubi</h2>
-        </div>
-        <h1 className={styles.heroTitle}>
-          Dispatches on brand architecture, digital craft, and modern systems.
-        </h1>
-        <p className={styles.heroSubtitle}>
-          Essays, strategic field notes, and technical insights from the Marca Ubi studio floor.
+        <span className={styles.kicker}>01 / Studio Dispatches &amp; Architectural Papers</span>
+        <h1 className={styles.displayTitle}>Thinking in Systems.</h1>
+        <p className={styles.heroLead}>
+          Essays, strategic field notes, and technical insights on brand architecture, digital craft, and high-velocity systems from the Marca Ubi studio floor.
         </p>
       </header>
 
-      {/* Category Tabs */}
-      {categories.length > 0 && (
-        <nav className={styles.filterBar} aria-label="Filter insights by category">
-          <button
-            type="button"
-            aria-pressed={selectedCategory === "all"}
-            className={`${styles.filterPill} ${selectedCategory === "all" ? styles.filterPillActive : ""}`}
-            onClick={() => setSelectedCategory("all")}
-          >
-            <span>All Dispatches</span>
-            <span className={styles.countBadge}>{posts.length}</span>
-          </button>
+      {/* 2. Typographic Category Navigation Rail (Zero Pills) */}
+      <nav className={styles.categoryRail} aria-label="Filter essays by category">
+        <button
+          type="button"
+          aria-pressed={selectedCategory === "all"}
+          className={`${styles.categoryTab} ${selectedCategory === "all" ? styles.categoryTabActive : ""}`}
+          onClick={() => setSelectedCategory("all")}
+        >
+          <span>All Dispatches</span>
+          <span className={styles.countNumeral}>({posts.length})</span>
+        </button>
 
-          {categories.map((category) => {
-            const count = posts.filter((p) => p.category?.slug === category.slug).length;
-            if (count === 0 && selectedCategory !== category.slug) return null;
+        {categories.map((category) => {
+          const count = posts.filter((p) => p.category?.slug === category.slug).length;
+          if (count === 0 && selectedCategory !== category.slug) return null;
 
-            return (
+          return (
+            <React.Fragment key={category._id}>
+              <span className={styles.railSlash} aria-hidden="true">/</span>
               <button
-                key={category._id}
                 type="button"
                 aria-pressed={selectedCategory === category.slug}
-                className={`${styles.filterPill} ${selectedCategory === category.slug ? styles.filterPillActive : ""}`}
+                className={`${styles.categoryTab} ${selectedCategory === category.slug ? styles.categoryTabActive : ""}`}
                 onClick={() => setSelectedCategory(category.slug)}
               >
                 <span>{category.title}</span>
-                <span className={styles.countBadge}>{count}</span>
+                <span className={styles.countNumeral}>({count})</span>
               </button>
-            );
-          })}
-        </nav>
-      )}
+            </React.Fragment>
+          );
+        })}
+      </nav>
 
-      {/* Featured Leading Card */}
+      {/* 3. Featured Flagship Article (60/40 Broadsheet Card) */}
       {featuredPost && (
-        <article className={styles.featuredCard}>
-          <Link
-            href={`/blog/${featuredPost.slug}`}
-            className={styles.featuredMedia}
-            tabIndex={-1}
-            aria-hidden="true"
-          >
-            {featuredPost.mainImage?.asset?.url ? (
-              <Image
-                src={featuredPost.mainImage.asset.url}
-                alt={featuredPost.mainImage.alt || featuredPost.title}
-                fill
-                priority
-                sizes="(max-width: 60rem) 100vw, 55vw"
-              />
-            ) : (
-              <div style={{ width: "100%", height: "100%", background: "#161616" }} />
-            )}
-          </Link>
+        <section className={styles.featuredSection} aria-label="Featured Dispatch">
+          <article className={styles.featuredCard}>
+            {/* 60% Left Cover Image */}
+            <div className={styles.featuredImageFrame}>
+              <Link href={`/blog/${featuredPost.slug}`} tabIndex={-1} aria-hidden="true">
+                <Image
+                  src={
+                    featuredPost.mainImage?.asset?.url
+                      ? urlFor(featuredPost.mainImage).width(1400).height(800).quality(90).url()
+                      : "/images/what-we-stand-for.png"
+                  }
+                  alt={featuredPost.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  className={styles.featuredImage}
+                  priority
+                />
+              </Link>
+            </div>
 
-          <div className={styles.featuredContent}>
-            <div className={styles.featuredTop}>
-              <div className={styles.metaRow}>
-                {featuredPost.category?.title && (
-                  <span className={styles.categoryTag}>{featuredPost.category.title}</span>
-                )}
-                {featuredPost.publishedAt && (
-                  <>
-                    <span className={styles.metaDot}>•</span>
-                    <span className={styles.readingTime}>{formatDate(featuredPost.publishedAt)}</span>
-                  </>
-                )}
-                {featuredPost.estimatedReadingTime && (
-                  <>
-                    <span className={styles.metaDot}>•</span>
-                    <span className={styles.readingTime}>{featuredPost.estimatedReadingTime} min read</span>
-                  </>
+            {/* 40% Right Editorial Dossier */}
+            <div className={styles.featuredDossier}>
+              <div className={styles.featuredMetaRow}>
+                <span className={styles.featuredKicker}>Featured Dispatch</span>
+                {featuredPost.category && (
+                  <span className={styles.featuredCategory}>
+                    / {featuredPost.category.title}
+                  </span>
                 )}
               </div>
 
-              <Link href={`/blog/${featuredPost.slug}`} style={{ textDecoration: "none" }}>
-                <h2 className={styles.featuredTitle}>{featuredPost.title}</h2>
-              </Link>
+              <h2 className={styles.featuredTitle}>
+                <Link href={`/blog/${featuredPost.slug}`} className={styles.titleLink}>
+                  {featuredPost.title}
+                </Link>
+              </h2>
 
               <p className={styles.featuredExcerpt}>{featuredPost.excerpt}</p>
-            </div>
 
-            <div className={styles.featuredAuthorRow}>
-              {featuredPost.author && (
-                <div className={styles.authorMeta}>
-                  {featuredPost.author.avatar?.asset?.url && (
-                    <div className={styles.authorAvatar}>
-                      <Image
-                        src={featuredPost.author.avatar.asset.url}
-                        alt={featuredPost.author.name}
-                        width={40}
-                        height={40}
-                      />
-                    </div>
+              <div className={styles.featuredFooter}>
+                <div className={styles.authorCluster}>
+                  {featuredPost.author?.name && (
+                    <span className={styles.authorName}>{featuredPost.author.name}</span>
                   )}
-                  <div className={styles.authorInfo}>
-                    <p className={styles.authorName}>{featuredPost.author.name}</p>
-                    <p className={styles.authorRole}>{featuredPost.author.role}</p>
-                  </div>
-                </div>
-              )}
-
-              <PillButton
-                href={`/blog/${featuredPost.slug}`}
-                label="Read More"
-                variant="brand"
-                icon={<img src="/hero/primary-arrow.png" alt="" width={16} height={16} />}
-              />
-            </div>
-          </div>
-        </article>
-      )}
-
-      {/* Dispatches Grid */}
-      {gridPosts.length > 0 ? (
-        <section className={styles.postsGrid} aria-label="Latest dispatches">
-          {gridPosts.map((post) => (
-            <Link
-              key={post._id}
-              href={`/blog/${post.slug}`}
-              className={styles.postCard}
-            >
-              <div className={styles.cardMedia}>
-                {post.mainImage?.asset?.url ? (
-                  <Image
-                    src={post.mainImage.asset.url}
-                    alt={post.mainImage.alt || post.title}
-                    fill
-                    sizes="(max-width: 44rem) 100vw, (max-width: 72rem) 50vw, 33vw"
-                  />
-                ) : (
-                  <div style={{ width: "100%", height: "100%", background: "#161616" }} />
-                )}
-              </div>
-
-              <div className={styles.cardBody}>
-                <div className={styles.cardTextContent}>
-                  <div className={styles.metaRow}>
-                    {post.category?.title && (
-                      <span className={styles.categoryTag}>{post.category.title}</span>
-                    )}
-                    {post.estimatedReadingTime && (
-                      <>
-                        <span className={styles.metaDot}>•</span>
-                        <span className={styles.readingTime}>{post.estimatedReadingTime} min read</span>
-                      </>
-                    )}
-                  </div>
-
-                  <h3 className={styles.cardTitle}>{post.title}</h3>
-                  <p className={styles.cardExcerpt}>{post.excerpt}</p>
-                </div>
-
-                <div className={styles.cardFooter}>
-                  <span className={styles.cardDate}>{formatDate(post.publishedAt)}</span>
-                  <span className={styles.cardReadMore}>
-                    <span>Read More</span>
-                    <img
-                      src="/hero/primary-arrow.png"
-                      alt=""
-                      width={13}
-                      height={13}
-                      className={styles.cardArrowIcon}
-                      aria-hidden="true"
-                    />
+                  <span className={styles.metaSlash}>/</span>
+                  <span className={styles.readingTime}>
+                    {featuredPost.estimatedReadingTime || 5} Min Read
                   </span>
                 </div>
+
+                <Link href={`/blog/${featuredPost.slug}`} className={styles.readAction}>
+                  <span>Read Full Dispatch</span>
+                  <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+                </Link>
               </div>
-            </Link>
-          ))}
+            </div>
+          </article>
         </section>
-      ) : (
-        !featuredPost && (
-          <div className={styles.emptyState}>
-            <span className={styles.emptyBadge}>[ 00 / ARCHIVE EMPTY ]</span>
-            <h2 className={styles.emptyTitle}>No dispatches published yet</h2>
-            <p className={styles.emptyDescription}>
-              Our team is actively drafting new field notes on brand strategy and digital engineering. Check back shortly or start a project conversation.
-            </p>
-            <PillButton
-              href="/start-project"
-              label="Start a Project Brief"
-              variant="brand"
-              icon={<img src="/hero/primary-arrow.png" alt="" width={16} height={16} />}
-            />
-          </div>
-        )
       )}
+
+      {/* 4. 3-Column Broadsheet Dispatches Grid */}
+      <section className={styles.dispatchesGridSection} aria-label="All Dispatches">
+        {gridPosts.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No dispatches found in this category.</p>
+          </div>
+        ) : (
+          <div className={styles.dispatchesGrid}>
+            {gridPosts.map((post) => {
+              const imageUrl = post.mainImage?.asset?.url
+                ? urlFor(post.mainImage).width(800).height(450).quality(85).url()
+                : "/images/what-we-stand-for.png";
+
+              return (
+                <article key={post._id} className={styles.gridCard}>
+                  <Link href={`/blog/${post.slug}`} className={styles.cardImageLink} tabIndex={-1} aria-hidden="true">
+                    <div className={styles.cardImageFrame}>
+                      <Image
+                        src={imageUrl}
+                        alt={post.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className={styles.cardImage}
+                      />
+                    </div>
+                  </Link>
+
+                  <div className={styles.cardMetaRow}>
+                    {post.category && (
+                      <span className={styles.cardCategory}>{post.category.title}</span>
+                    )}
+                    <span className={styles.cardMetaDivider}>/</span>
+                    <span className={styles.cardReadingTime}>
+                      {post.estimatedReadingTime || 4} MIN READ
+                    </span>
+                  </div>
+
+                  <h3 className={styles.cardTitle}>
+                    <Link href={`/blog/${post.slug}`} className={styles.titleLink}>
+                      {post.title}
+                    </Link>
+                  </h3>
+
+                  <p className={styles.cardExcerpt}>{post.excerpt}</p>
+
+                  <div className={styles.cardFooter}>
+                    <time dateTime={post.publishedAt} className={styles.cardDate}>
+                      {formatDate(post.publishedAt)}
+                    </time>
+                    <Link href={`/blog/${post.slug}`} className={styles.cardReadLink}>
+                      <span>Read</span>
+                      <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

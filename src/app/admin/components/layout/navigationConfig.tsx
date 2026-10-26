@@ -4,7 +4,7 @@
  * @architecture Defines the unified 9-tab navigation taxonomy organized into 3 logical enclaves:
  *               Commercial Pipeline, Agency Operations, and System Governance.
  *               Enforces granular tab-level authorization gating based on authenticated user allowed_tabs
- *               and provides calibrated SVG icons adhering to the Marca Ubi Dark Luxury tokens.
+ *               and provides calibrated SVG icons adhering to the Accordion & Sypher minimal design tokens.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -39,7 +39,12 @@ export function isTabAuthorized(tabKey: CrmTabKey, user: CurrentUserSession | nu
     return false;
   }
 
-  if (Array.isArray(user.allowed_tabs)) {
+  // Canonical Invariant: Administrators have universal authorization across all tabs
+  if (user.role === 'admin') {
+    return true;
+  }
+
+  if (Array.isArray(user.allowed_tabs) && user.allowed_tabs.length > 0) {
     return user.allowed_tabs.includes(tabKey);
   }
 
@@ -60,7 +65,7 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     items: [
       {
         key: 'command_center',
-        label: 'Command Center',
+        label: 'Executive Overview',
         href: '/admin',
         icon: ({ active }) => (
           <svg

@@ -36,6 +36,7 @@ export function CredentialRevealModal({
   const [secondsRemaining, setSecondsRemaining] = useState<number>(60);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const modalCardRef = useRef<HTMLDivElement>(null);
 
   // Auto-purge clipboard memory after 60 seconds
   const purgeClipboard = useCallback(() => {
@@ -155,11 +156,42 @@ export function CredentialRevealModal({
     onClose();
   }, [copied, purgeClipboard, clearTimers, onClose]);
 
-  // Escape key modal dismissal
+  // Body scroll lock on open and unmount clipboard purge
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      if (copied) {
+        purgeClipboard();
+      }
+    };
+  }, [isOpen, copied, purgeClipboard]);
+
+  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         handleDone();
+        return;
+      }
+
+      if (e.key === 'Tab' && isOpen && modalCardRef.current) {
+        const focusable = modalCardRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -178,7 +210,7 @@ export function CredentialRevealModal({
         }
       }}
     >
-      <div className={styles.modalCard}>
+      <div ref={modalCardRef} className={styles.modalCard}>
         <div className={styles.modalAlertBanner}>
           <svg
             className={styles.modalAlertIcon}
@@ -197,8 +229,8 @@ export function CredentialRevealModal({
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
           <div>
-            <h3 id="credential-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.88rem', fontWeight: 700 }}>
-              One-Time Credential Reveal
+            <h3 id="credential-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}>
+              One-Time Credential Reveal.
             </h3>
             <p className={styles.modalAlertText}>
               These temporary credentials are displayed strictly once. They are never stored in plain text or

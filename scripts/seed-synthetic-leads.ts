@@ -165,7 +165,16 @@ export async function seedSyntheticLeads(
       const phone = `${prefix}${faker.string.numeric(7)}`;
 
       const expectedValue = faker.number.int({ min: 15000, max: 250000 });
-      const notes = faker.lorem.sentence();
+      const realisticNotes = [
+        'Initial discovery brief submitted for digital rebrand and design system.',
+        'Follow-up scheduled with executive leadership to review commercial terms.',
+        'Client requesting expedited delivery for upcoming product launch in Q1.',
+        'Technical scoping call completed. Scope document and architecture draft shared.',
+        'Proposal under board review. Decision expected by end of current business week.',
+        'Budget revised following architectural review. Procurement approval in progress.',
+        'Contract review underway with client legal counsel.',
+      ];
+      const notes = realisticNotes[idx % realisticNotes.length];
 
       // Overdue & Follow-up generation
       let nextFollowUp: string | null = null;

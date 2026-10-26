@@ -207,12 +207,12 @@ describe('Marca Ubi CRM — Team Management Workspace & Security (Sprint 3.2)', 
   });
 
   describe('Section 5: Deal Valuation & Monogram Formatting Utilities', () => {
-    it('formats monetary values into clean Indian Lakhs and Crores', () => {
+    it('formats monetary values into clean canonical Indian Rupee currency', () => {
       assert.equal(formatDealValuation(0), '₹0');
       assert.equal(formatDealValuation(-5000), '₹0');
       assert.equal(formatDealValuation(45000), '₹45,000');
-      assert.equal(formatDealValuation(3850000), '₹38.5L');
-      assert.equal(formatDealValuation(12000000), '₹1.2Cr');
+      assert.equal(formatDealValuation(3850000), '₹38,50,000');
+      assert.equal(formatDealValuation(12000000), '₹1,20,00,000');
     });
 
     it('extracts consistent uppercase monograms from full names', () => {

@@ -39,7 +39,8 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sanity.io",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' blob: data: https://cdn.sanity.io",
+      "img-src 'self' blob: data: https://cdn.sanity.io https://*.supabase.co",
+      "media-src 'self' blob: data: https://*.amazonaws.com",
       "font-src 'self' data:",
       "connect-src 'self' https://*.supabase.co https://*.sanity.io wss://*.supabase.co",
       "frame-ancestors 'none'",
@@ -51,12 +52,18 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   images: {
+    qualities: [75, 82],
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "cdn.sanity.io",
         pathname: "/images/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
       },
     ],
   },
@@ -76,9 +83,12 @@ $cta-orange: #ff6100;
 $hash-grey: #7c7c7c;
 $light-grey: #2b2b2b;
 
+// 160over90 Benchmark Tokens
+$client-accent-red: #ea002a;
+$font-circular: var(--font-circular), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 $font-graphik: var(--font-graphik), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-$font-sf-pro: $font-graphik;
-$font-movatif: $font-graphik;
+$font-sf-pro: $font-circular;
+$font-movatif: $font-circular;
 
 // Typography Token Variables
 $type-display-giant: var(--type-display-giant);

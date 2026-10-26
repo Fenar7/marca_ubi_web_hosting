@@ -1,14 +1,7 @@
 // SCSS Module: InlineStatusSelect.module.scss
-// Aesthetic: Apple HIG Vibrancy & Raycast Monospace Selectors
+// Aesthetic: Accordion Executive Advisory & Sypher Popover Architecture
 // Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
-// Strict Anti-AI-Slop: Zero generic blue, zero toy emojis, tabular-nums
-
-$marca-orange: #ff6100;
-$obsidian-popover: rgba(18, 18, 22, 0.96);
-$hairline-border: rgba(255, 255, 255, 0.1);
-$text-primary: #ffffff;
-$text-secondary: #a1a1aa;
-$text-muted: #8e8e93;
+// Strict Anti-AI-Slop: Zero generic blue, 44px touch targets, zero muddy drop shadows
 
 .statusSelectContainer {
   position: relative;
@@ -17,38 +10,48 @@ $text-muted: #8e8e93;
 }
 
 .statusPillBtn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-family: inherit;
+  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
-  border: 1px solid transparent;
-  background: transparent;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--admin-radius-pill, 9999px);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: #ffffff;
+  color: var(--admin-text-primary, #1f242f);
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s ease;
   outline: none;
 
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
   }
 
-  &:active:not(:disabled) {
-    transform: translateY(0);
+  &:hover:not(:disabled) {
+    background: var(--admin-surface-hover, #f8fafc);
+    border-color: var(--admin-border-strong, #1f242f);
   }
 
   &:focus-visible {
-    outline: 2px solid $marca-orange;
-    outline-offset: 2px;
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: 1px;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: not-allowed;
   }
 }
@@ -80,25 +83,29 @@ $text-muted: #8e8e93;
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  min-width: 170px;
+  min-width: 180px;
   max-height: 260px;
   overflow-y: auto;
-  background: $obsidian-popover;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid $hairline-border;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
   border-radius: 8px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px rgba(31, 36, 47, 0.12);
   padding: 0.35rem;
   z-index: 50;
   animation: statusFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.popoverMenuUp {
+    top: auto;
+    bottom: calc(100% + 6px);
+    box-shadow: 0 -12px 32px rgba(31, 36, 47, 0.12);
+  }
 
   &::-webkit-scrollbar {
     width: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--admin-border-default, #e2e5ea);
     border-radius: 2px;
   }
 }
@@ -115,13 +122,14 @@ $text-muted: #8e8e93;
 }
 
 .popoverHeader {
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: $text-muted;
+  color: var(--admin-text-secondary, #525965);
   padding: 0.25rem 0.5rem 0.35rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
   margin-bottom: 0.2rem;
 }
 
@@ -130,11 +138,13 @@ $text-muted: #8e8e93;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 0.4rem 0.55rem;
+  padding: 0.45rem 0.55rem;
+  min-height: 44px;
   border-radius: 5px;
   background: transparent;
   border: none;
-  color: $text-secondary;
+  color: var(--admin-text-primary, #1f242f);
+  font-family: var(--font-admin-sans, sans-serif);
   font-size: 0.76rem;
   cursor: pointer;
   text-align: left;
@@ -142,19 +152,19 @@ $text-muted: #8e8e93;
   outline: none;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: $text-primary;
+    background: var(--admin-surface-hover, #f4f6f9);
+    color: var(--admin-text-primary, #1f242f);
   }
 
   &:focus-visible {
-    background: rgba(255, 255, 255, 0.1);
-    color: $text-primary;
+    background: var(--admin-surface-muted, #f0f2f5);
+    outline: 2px solid var(--admin-border-strong, #1f242f);
   }
 
   &.selectedItem {
-    background: rgba(255, 97, 0, 0.14);
-    color: #ffffff;
-    font-weight: 600;
+    background: var(--admin-surface-muted, #f0f2f5);
+    color: var(--admin-text-primary, #1f242f);
+    font-weight: 700;
   }
 
   &.guardedItem {
@@ -166,8 +176,9 @@ $text-muted: #8e8e93;
       letter-spacing: 0.04em;
       padding: 0.1rem 0.3rem;
       border-radius: 3px;
-      background: rgba(255, 255, 255, 0.08);
-      color: $text-muted;
+      background: var(--admin-surface-muted, #f0f2f5);
+      border: 1px solid var(--admin-border-default, #e2e5ea);
+      color: var(--admin-text-secondary, #525965);
     }
   }
 }
@@ -179,7 +190,7 @@ $text-muted: #8e8e93;
 }
 
 .checkMark {
-  color: $marca-orange;
+  color: var(--admin-text-primary, #1f242f);
   font-size: 0.72rem;
   font-weight: 700;
 }

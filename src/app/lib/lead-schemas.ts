@@ -323,4 +323,89 @@ export const convertLeadToDealSchema = z.object({
 });
 
 export type ConvertLeadToDealInput = z.infer<typeof convertLeadToDealSchema>;
+/**
+ * Zod validation schema for updating comprehensive lead details, contact coordinates,
+ * commercial engagement scope, and executive notes from the Client 360° Dossier.
+ */
+export const updateLeadDetailsSchema = z.object({
+  leadId: z
+    .string({ message: 'Lead identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid lead identifier' }),
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: 'Contact name cannot be empty' })
+    .max(255, { message: 'Contact name cannot exceed 255 characters' })
+    .optional(),
+  company: z
+    .string()
+    .trim()
+    .max(255, { message: 'Company name cannot exceed 255 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  companyWebsite: z
+    .string()
+    .trim()
+    .max(500, { message: 'Website cannot exceed 500 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  industry: z
+    .string()
+    .trim()
+    .max(255, { message: 'Industry cannot exceed 255 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  email: z
+    .string()
+    .trim()
+    .email({ message: 'Invalid business email format' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  phone: z
+    .string()
+    .trim()
+    .max(50, { message: 'Phone number cannot exceed 50 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  preferredChannel: z
+    .enum(PREFERRED_CHANNELS, {
+      message: 'Please select a valid communication channel',
+    })
+    .optional(),
+  serviceCategory: z
+    .enum(SERVICE_CATEGORIES, {
+      message: 'Please select a valid service scope category',
+    })
+    .optional(),
+  budgetBracket: z
+    .string()
+    .trim()
+    .max(100, { message: 'Budget tier cannot exceed 100 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  expectedValue: z.coerce
+    .number({ message: 'Expected valuation must be a numeric amount' })
+    .min(0, { message: 'Expected valuation cannot be negative' })
+    .max(1000000000, { message: 'Expected valuation cannot exceed ₹100 Crore' })
+    .optional(),
+  priority: z
+    .enum(LEAD_PRIORITIES, {
+      message: 'Please select a valid deal priority',
+    })
+    .optional(),
+  notes: z
+    .string()
+    .trim()
+    .max(5000, { message: 'Executive deal notes must not exceed 5000 characters' })
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
 
+export type UpdateLeadDetailsInput = z.infer<typeof updateLeadDetailsSchema>;

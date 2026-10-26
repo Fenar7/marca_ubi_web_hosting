@@ -117,6 +117,60 @@ export interface TeamMemberRosterItem extends Profile {
   invited_by_name?: string | null;
 }
 
+/**
+ * Performance analytics and commercial velocity scorecard indicators
+ * for an individual representative workspace (/admin/team/[id]).
+ */
+export interface PersonnelPerformanceKpis {
+  wonRevenue: number;
+  activePipelineValue: number;
+  winRatePercentage: number;
+  closedDealsCount: number;
+  wonDealsCount: number;
+  activeDealsCount: number;
+  capacityLimit: number;
+  capacityUtilizationPercentage: number;
+  isAtCapacity: boolean;
+  totalDealsAssigned: number;
+}
+
+/**
+ * Audit log entry capturing administrative and compliance events for personnel dossiers.
+ */
+export interface PersonnelAuditLogEntry {
+  id: string;
+  actor_id: string | null;
+  actor_name: string | null;
+  actor_email: string | null;
+  action: string;
+  target_user_email: string;
+  details: Record<string, unknown>;
+  created_at: string;
+}
+
+/**
+ * Complete hydrated personnel dossier payload for the dedicated profile workspace.
+ */
+export interface PersonnelProfilePayload {
+  profile: Profile;
+  invited_by_name: string | null;
+  kpis: PersonnelPerformanceKpis;
+  auditLogs: PersonnelAuditLogEntry[];
+  canEdit: boolean;
+  isSelf: boolean;
+}
+
+/**
+ * Paginated response structure for representative deals.
+ */
+export interface PersonnelDealsPayload {
+  deals: LeadWithRelations[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 
 /**
  * Catalog entry for commercial lead acquisition channels mirroring `public.lead_sources`.
@@ -831,6 +885,7 @@ export interface CurrentUserSession {
   email: string;
   role: CrmUserRole;
   jobTitle?: string;
+  avatarUrl?: string | null;
   allowed_tabs?: string[];
   feature_permissions?: FeaturePermissions;
 }

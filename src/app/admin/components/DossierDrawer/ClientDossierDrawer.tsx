@@ -9,12 +9,14 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { getLeadDetails } from '@/app/actions/leads';
 import type { LeadActivityWithActor } from '@/types/crm';
 import { OrganizationDossier } from './OrganizationDossier';
 import { QuickActionComposer } from './QuickActionComposer';
 import { ActivityTimeline } from './ActivityTimeline';
 import { FollowUpScheduler } from '../Scheduler';
+import { EditLeadModal } from '@/app/admin/components/modals';
 import styles from './DossierDrawer.module.scss';
 
 export interface LeadDossierData {
@@ -56,6 +58,15 @@ export interface ClientDossierDrawerProps {
   onLeadUpdated?: () => void;
 }
 
+function sanitizeDealNotes(notes: string | null | undefined): string | null {
+  if (!notes) return null;
+  const trimmed = notes.trim();
+  if (/^(possimus|lorem|ipsum|consectetur|adipiscing)/i.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
+}
+
 export function ClientDossierDrawer({
   leadId,
   isOpen,
@@ -63,6 +74,7 @@ export function ClientDossierDrawer({
   initialLead,
   onLeadUpdated,
 }: ClientDossierDrawerProps): React.ReactElement | null {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [lead, setLead] = useState<LeadDossierData | null>(initialLead || null);
   const [activities, setActivities] = useState<LeadActivityWithActor[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -71,9 +83,14 @@ export function ClientDossierDrawer({
   const [shouldRender, setShouldRender] = useState<boolean>(isOpen);
   const [copiedId, setCopiedId] = useState<boolean>(false);
   const [isSchedulerOpen, setIsSchedulerOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Animation lifecycle and body scroll lock
   useEffect(() => {
@@ -104,18 +121,22 @@ export function ClientDossierDrawer({
   // Ensure body scroll lock is restored if component unmounts unexpectedly while open
   useEffect(() => {
     return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     };
   }, []);
 
-  // Load complete lead dossier from Server Action
+  // Load complete lead dossier from Server Action with cancellation guard
   const loadDossier = useCallback(
-    async (id: string) => {
+    async (id: string, getIsCurrent?: () => boolean) => {
       setIsLoading(true);
       setFetchError(null);
       try {
         const response = await getLeadDetails(id);
+        if (getIsCurrent && !getIsCurrent()) return;
         if (!response.success || !response.data?.lead) {
           setFetchError(response.error || 'Failed to load deal record from database.');
           return;
@@ -137,7 +158,7 @@ export function ClientDossierDrawer({
           priority: (raw.priority as LeadDossierData['priority']) || 'Medium',
           status_id: raw.status_id,
           status_name: raw.status?.name || 'In Review',
-          status_color: raw.status?.color_code || '#ff6100',
+          status_color: raw.status?.color_code || '#1f242f',
           bucket: (raw.status?.bucket as LeadDossierData['bucket']) || 'open',
           assigned_to: raw.assigned_to,
           assigned_to_name: raw.assignee?.full_name || 'Unassigned',
@@ -153,14 +174,18 @@ export function ClientDossierDrawer({
           updated_at: raw.updated_at,
         };
 
+        if (getIsCurrent && !getIsCurrent()) return;
         setLead(normalized);
         setActivities(response.data.activities || []);
       } catch (err) {
+        if (getIsCurrent && !getIsCurrent()) return;
         setFetchError(
           err instanceof Error ? err.message : 'An unexpected exception occurred while retrieving the dossier.'
         );
       } finally {
-        setIsLoading(false);
+        if (!getIsCurrent || getIsCurrent()) {
+          setIsLoading(false);
+        }
       }
     },
     []
@@ -178,9 +203,14 @@ export function ClientDossierDrawer({
   );
 
   useEffect(() => {
+    let isCurrent = true;
     if (isOpen && leadId) {
-      loadDossier(leadId);
+      setLead(null);
+      loadDossier(leadId, () => isCurrent);
     }
+    return () => {
+      isCurrent = false;
+    };
   }, [isOpen, leadId, loadDossier]);
 
   // Keyboard accessibility: Escape key dismissal and focus trapping loop (WCAG 2.1 AA)
@@ -224,23 +254,35 @@ export function ClientDossierDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleCopyDealId = (e: React.MouseEvent) => {
+  const handleCopyDealId = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!lead) return;
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard
-        .writeText(lead.lead_id)
-        .then(() => {
-          setCopiedId(true);
-          setTimeout(() => setCopiedId(false), 2000);
-        })
-        .catch(() => {});
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(lead.lead_id);
+      } else if (typeof document !== 'undefined') {
+        const textArea = document.createElement('textarea');
+        textArea.value = lead.lead_id;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    } catch {
+      // Non-blocking clipboard fallback handling
     }
   };
 
   if (!shouldRender) return null;
 
-  return (
+  const activeNotes = sanitizeDealNotes(lead?.notes);
+
+  const drawerContent = (
     <div
       className={`${styles.drawerOverlay} ${isClosing ? styles.closing : ''}`}
       onClick={(e) => {
@@ -273,7 +315,11 @@ export function ClientDossierDrawer({
             )}
 
             <h2 className={styles.headerCompany}>
-              {lead?.company || lead?.name || 'Commercial Deal Dossier'}
+              {lead?.company
+                ? `${lead.company.replace(/\.+$/, '')}.`
+                : lead?.name
+                ? `${lead.name.replace(/\.+$/, '')}.`
+                : 'Commercial Deal Dossier.'}
             </h2>
 
             {lead && (
@@ -291,8 +337,8 @@ export function ClientDossierDrawer({
                       gap: '0.25rem',
                       marginLeft: '0.35rem',
                       paddingLeft: '0.35rem',
-                      borderLeft: '1px solid rgba(255, 255, 255, 0.15)',
-                      color: '#10b981',
+                      borderLeft: '1px solid var(--admin-border-default, #e2e5ea)',
+                      color: 'var(--admin-status-emerald-text, #065f46)',
                       fontSize: '0.72rem',
                     }}
                     title="Deal Converted: Immutable to non-admin roles"
@@ -313,6 +359,7 @@ export function ClientDossierDrawer({
               <button
                 type="button"
                 onClick={() => {
+                  onClose();
                   if (typeof window !== 'undefined') {
                     window.dispatchEvent(
                       new CustomEvent('open-convert-lead-modal', {
@@ -329,6 +376,21 @@ export function ClientDossierDrawer({
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
                 <span>Convert</span>
+              </button>
+            )}
+            {lead && (
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(true)}
+                className={styles.editScopeHeaderBtn}
+                title="Edit Commercial Scope & Details"
+                aria-label={`Edit details for ${lead.lead_id}`}
+              >
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                <span>Edit Scope</span>
               </button>
             )}
             {lead && (
@@ -371,7 +433,7 @@ export function ClientDossierDrawer({
           </div>
         ) : fetchError ? (
           <div className={styles.loadingContainer}>
-            <p style={{ color: '#ff4d4f' }}>{fetchError}</p>
+            <p style={{ color: 'var(--admin-status-rose-text, #991b1b)' }}>{fetchError}</p>
             {leadId && (
               <button
                 type="button"
@@ -464,16 +526,22 @@ export function ClientDossierDrawer({
                   </div>
                 </div>
 
-                {lead.notes && (
-                  <div style={{ marginTop: '0.75rem' }}>
-                    <span className={styles.fieldLabel} style={{ display: 'block', marginBottom: '0.35rem' }}>
-                      Executive Deal Notes
-                    </span>
-                    <p style={{ fontSize: '0.82rem', color: '#e4e4e7', lineHeight: 1.5, margin: 0 }}>
-                      {lead.notes}
-                    </p>
+                <div className={styles.notesSection}>
+                  <div className={styles.notesHeaderRow}>
+                    <span className={styles.fieldLabel}>Executive Deal Notes</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditModalOpen(true)}
+                      className={styles.editNotesInlineBtn}
+                      aria-label="Edit executive deal notes"
+                    >
+                      {activeNotes ? 'Edit Notes' : '+ Add Notes'}
+                    </button>
                   </div>
-                )}
+                  <p className={`${styles.notesContentText} ${!activeNotes ? styles.emptyNotes : ''}`}>
+                    {activeNotes || 'No executive notes recorded for this engagement. Click "+ Add Notes" to record strategic client takeaways.'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -484,6 +552,20 @@ export function ClientDossierDrawer({
         )}
       </aside>
 
+      {lead && isEditModalOpen && (
+        <EditLeadModal
+          isOpen={isEditModalOpen}
+          lead={lead}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={(updated: Partial<LeadDossierData>) => {
+            setLead((prev) => (prev ? { ...prev, ...updated } : null));
+            if (leadId) {
+              loadDossier(leadId);
+            }
+            onLeadUpdated?.();
+          }}
+        />
+      )}
       {lead && isSchedulerOpen && (
         <FollowUpScheduler
           leadId={lead.id}
@@ -502,4 +584,10 @@ export function ClientDossierDrawer({
       )}
     </div>
   );
+
+  if (typeof window !== 'undefined' && mounted) {
+    return createPortal(drawerContent, document.body);
+  }
+
+  return drawerContent;
 }

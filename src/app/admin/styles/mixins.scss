@@ -1,0 +1,157 @@
+/**
+ * @file src/app/admin/styles/mixins.scss
+ * @description Centralized SCSS Mixins for Marca Ubi Enterprise CRM.
+ *              Strictly contains pure Sass mixin definitions and ZERO top-level CSS selectors or rules.
+ *              This architectural separation guarantees that importing this partial via `@use` into
+ *              CSS Modules (*.module.scss) emits zero impure selectors, satisfying Next.js Turbopack
+ *              pure selector constraints while providing reusable button and badge patterns.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+/**
+ * Primary Signature Accordion Pill Button
+ * Aesthetic: Electric lemon fill (#eefb87) with high-contrast slate outline (#1f242f).
+ * Invariant: 44px minimum touch target (WCAG 2.5.5 / Rule R-03), 13.92:1 AAA text contrast.
+ */
+@mixin accordionPillPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1.5rem;
+  background-color: var(--admin-accent-lemon);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-accent-lemon-ink);
+  font-family: var(--font-admin-btn);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    background-color: var(--admin-accent-lemon-hover);
+    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/**
+ * Secondary Accordion Outline Pill Button
+ * Aesthetic: Crisp white surface (#ffffff) with high-contrast slate outline (#1f242f).
+ * Invariant: 44px minimum touch target, high-contrast primary text color.
+ */
+@mixin accordionPillSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1.5rem;
+  background-color: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-text-primary);
+  font-family: var(--font-admin-btn);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+/**
+ * Subtle Ghost Action Pill Button
+ * Aesthetic: Subdued container fill (#f0f2f5) with default hairline border (#e2e5ea).
+ * Invariant: 44px touch target for secondary actions, filter pills, and navigation crumbs.
+ */
+@mixin accordionPillGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  background-color: var(--admin-surface-muted);
+  border: 1px solid var(--admin-border-default);
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-text-primary);
+  font-family: var(--font-admin-btn);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover);
+    border-color: var(--admin-border-strong);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong);
+    outline-offset: 2px;
+  }
+}
+
+/**
+ * Raycast Monospace Micro-Token
+ * Aesthetic: Monospace data tag styling for UUIDs, currency values, codes, and shortcuts.
+ */
+@mixin adminMonoToken {
+  font-family: var(--font-admin-code);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  background-color: var(--admin-surface-muted);
+  border: 1px solid var(--admin-border-default);
+  border-radius: var(--admin-radius-micro);
+  color: var(--admin-text-primary);
+  letter-spacing: 0.02em;
+}

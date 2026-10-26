@@ -76,6 +76,8 @@ export function BatchReassignModal({
   useEffect(() => {
     if (isOpen) {
       setSelectedLeadIds(candidateLeads.map((l) => l.id));
+      setDestinationUserId('');
+      setReassignReason('Portfolio rebalancing due to overdue touchpoints');
       setErrorMessage(null);
     }
   }, [isOpen, candidateLeads.length, preselectedSourceRepId]);
@@ -106,7 +108,7 @@ export function BatchReassignModal({
       if (e.key === 'Tab') {
         if (!containerRef.current) return;
         const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         const first = focusableElements[0];
         const last = focusableElements[focusableElements.length - 1];
@@ -131,7 +133,7 @@ export function BatchReassignModal({
     const focusTimer = setTimeout(() => {
       if (containerRef.current) {
         const firstFocusable = containerRef.current.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         firstFocusable?.focus();
       }
@@ -176,35 +178,41 @@ export function BatchReassignModal({
     }
 
     startTransition(async () => {
-      const result = await batchReassignOverdueLeadsAction({
-        leadIds: selectedLeadIds,
-        destinationUserId,
-        reason: reassignReason.trim(),
-      });
+      try {
+        const result = await batchReassignOverdueLeadsAction({
+          leadIds: selectedLeadIds,
+          destinationUserId,
+          reason: reassignReason.trim(),
+        });
 
-      if (!result.success) {
-        setErrorMessage(result.error || 'Failed to reassign deals.');
-        return;
-      }
+        if (!result.success) {
+          setErrorMessage(result.error || 'Failed to reassign deals.');
+          return;
+        }
 
-      const count = result.data?.reassignedCount || selectedLeadIds.length;
-      const destName = result.data?.destinationName || 'Representative';
+        const count = result.data?.reassignedCount || selectedLeadIds.length;
+        const destName = result.data?.destinationName || 'Representative';
 
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('crm-toast', {
-            detail: {
-              title: 'Deals Reassigned',
-              message: `Successfully transferred ${count} overdue account(s) to ${destName}.`,
-              type: 'success',
-            },
-          })
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('crm-toast', {
+              detail: {
+                title: 'Deals Reassigned',
+                message: `Successfully transferred ${count} overdue account(s) to ${destName}.`,
+                type: 'success',
+              },
+            })
+          );
+          window.dispatchEvent(new Event('popstate'));
+        }
+
+        onSuccess?.(count, destName, selectedLeadIds, destinationUserId);
+        onClose();
+      } catch (err: unknown) {
+        setErrorMessage(
+          err instanceof Error ? err.message : 'An unexpected error occurred during lead reassignment.'
         );
-        window.dispatchEvent(new Event('popstate'));
       }
-
-      onSuccess?.(count, destName, selectedLeadIds, destinationUserId);
-      onClose();
     });
   };
 
@@ -230,7 +238,7 @@ export function BatchReassignModal({
           <div className={styles.headerTitleGroup}>
             <span className={styles.eyebrow}>Workload Rebalancing</span>
             <h2 id="batch-reassign-modal-title" className={styles.modalTitle}>
-              Batch Reassign Overdue Deals
+              Reassign Active Pipeline Leads.
             </h2>
             <p className={styles.modalSubtitle}>
               Transfer stalled prospect accounts to active representatives to prevent deal stagnation.
@@ -303,7 +311,7 @@ export function BatchReassignModal({
               aria-label="Overdue candidate leads"
             >
               {candidateLeads.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#a1a1aa', fontSize: '13px' }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--admin-text-secondary, #525965)', fontSize: '13px' }}>
                   No overdue accounts match the current filter criteria.
                 </div>
               ) : (
@@ -350,7 +358,7 @@ export function BatchReassignModal({
           {/* Destination Representative Selector */}
           <div className={styles.formGroup}>
             <label htmlFor={repSelectId} className={styles.label}>
-              Destination Representative <span style={{ color: '#ff6100' }}>*</span>
+              Destination Representative <span style={{ color: 'var(--admin-status-rose-text, #991b1b)' }}>*</span>
             </label>
             <select
               id={repSelectId}
@@ -371,7 +379,7 @@ export function BatchReassignModal({
           {/* Rationale Input */}
           <div className={styles.formGroup}>
             <label htmlFor={reasonInputId} className={styles.label}>
-              Transfer Rationale / Audit Notes <span style={{ color: '#ff6100' }}>*</span>
+              Transfer Rationale / Audit Notes <span style={{ color: 'var(--admin-status-rose-text, #991b1b)' }}>*</span>
             </label>
             <textarea
               id={reasonInputId}

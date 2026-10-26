@@ -45,6 +45,9 @@ export function NewLeadModal({
 
   const [isPending, startTransition] = useTransition();
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const modalDialogRef = useRef<HTMLDivElement>(null);
+  const promptKeepBtnRef = useRef<HTMLButtonElement>(null);
+  const promptDiscardBtnRef = useRef<HTMLButtonElement>(null);
 
   // Form Field State
   const [name, setName] = useState('');
@@ -70,14 +73,21 @@ export function NewLeadModal({
   // Unsaved changes modal state
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
 
-  // Fetch active team assignees when opening modal
+  // Fetch active team assignees when opening modal with error fallback
   useEffect(() => {
     if (isOpen) {
-      getActiveTeamAssignees().then((options) => {
-        setAssigneeOptions(options);
-      });
+      getActiveTeamAssignees()
+        .then((options) => {
+          setAssigneeOptions(options);
+        })
+        .catch((err) => {
+          console.error('[ASSIGN_FETCH_ERROR] Failed to load assignees:', err);
+          setAssigneeOptions([
+            { id: currentUser.id, fullName: currentUser.name || 'Current User', role: currentUser.role, email: currentUser.email || '' },
+          ]);
+        });
     }
-  }, [isOpen]);
+  }, [isOpen, currentUser.id, currentUser.name, currentUser.role]);
 
   // Reset form upon opening
   useEffect(() => {
@@ -114,18 +124,26 @@ export function NewLeadModal({
     email.trim().length > 0 ||
     phone.trim().length > 0 ||
     notes.trim().length > 0 ||
-    (typeof expectedValue === 'number' && expectedValue !== 500000)
+    (typeof expectedValue === 'number' && expectedValue !== 500000) ||
+    preferredChannel !== 'Phone' ||
+    serviceCategory !== 'Web & Digital' ||
+    budgetBracket !== '₹5L - ₹15L' ||
+    priority !== 'Medium' ||
+    (currentUser.role !== 'sales_executive' && assignedTo !== currentUser.id)
   );
 
   const requestClose = useCallback(() => {
     if (isDirty) {
       setShowDiscardPrompt(true);
+      setTimeout(() => {
+        promptKeepBtnRef.current?.focus();
+      }, 50);
     } else {
       onClose();
     }
   }, [isDirty, onClose]);
 
-  // Handle Escape key
+  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
@@ -133,6 +151,36 @@ export function NewLeadModal({
           setShowDiscardPrompt(false);
         } else {
           requestClose();
+        }
+        return;
+      }
+
+      if (event.key === 'Tab' && isOpen) {
+        if (showDiscardPrompt) {
+          event.preventDefault();
+          if (document.activeElement === promptKeepBtnRef.current) {
+            promptDiscardBtnRef.current?.focus();
+          } else {
+            promptKeepBtnRef.current?.focus();
+          }
+          return;
+        }
+
+        if (modalDialogRef.current) {
+          const focusable = modalDialogRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
         }
       }
     };
@@ -179,19 +227,33 @@ export function NewLeadModal({
     }
 
     startTransition(async () => {
-      const result = await createManualLead(parsed.data);
-      if (!result.success) {
-        setGeneralError(result.error || 'Failed to initialize prospective lead record.');
-        return;
-      }
+      try {
+        const result = await createManualLead(parsed.data);
+        if (!result.success) {
+          setGeneralError(result.error || 'Failed to initialize prospective lead record.');
+          return;
+        }
 
-      // Signal success to the workspace shell and close modal
-      window.dispatchEvent(
-        new CustomEvent('lead-created', {
-          detail: { leadId: result.leadId, id: result.id },
-        })
-      );
-      onClose();
+        // Signal success to the workspace shell and close modal
+        window.dispatchEvent(
+          new CustomEvent('lead-created', {
+            detail: { leadId: result.leadId, id: result.id },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('crm-toast', {
+            detail: {
+              type: 'success',
+              title: 'Lead Created',
+              description: `Prospective lead "${name}" has been recorded.`,
+            },
+          })
+        );
+        onClose();
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'An unexpected network error occurred while initializing lead.';
+        setGeneralError(msg);
+      }
     });
   };
 
@@ -208,6 +270,7 @@ export function NewLeadModal({
       aria-labelledby="new-lead-modal-title"
     >
       <div
+        ref={modalDialogRef}
         className={`${styles.modalDialog} ${isClosing ? styles.dialogClosing : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >
@@ -216,7 +279,7 @@ export function NewLeadModal({
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>Commercial Intake</span>
             <h2 id="new-lead-modal-title" className={styles.modalTitle}>
-              + New Client Engagement
+              New Prospective Commercial Lead.
             </h2>
           </div>
           <button
@@ -225,7 +288,20 @@ export function NewLeadModal({
             onClick={requestClose}
             aria-label="Close modal"
           >
-            <span>✕</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
             <kbd className={styles.escBadge}>Esc</kbd>
           </button>
         </div>
@@ -553,7 +629,6 @@ export function NewLeadModal({
         <div
           className={styles.promptOverlay}
           onClick={() => setShowDiscardPrompt(false)}
-          aria-hidden="true"
         >
           <div
             className={styles.promptModal}
@@ -570,6 +645,7 @@ export function NewLeadModal({
             </p>
             <div className={styles.promptActions}>
               <button
+                ref={promptKeepBtnRef}
                 type="button"
                 className={styles.promptKeepBtn}
                 onClick={() => setShowDiscardPrompt(false)}
@@ -577,6 +653,7 @@ export function NewLeadModal({
                 Keep Editing
               </button>
               <button
+                ref={promptDiscardBtnRef}
                 type="button"
                 className={styles.promptDiscardBtn}
                 onClick={() => {

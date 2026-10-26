@@ -10,7 +10,6 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/app/lib/supabase/server';
 import { sanitizeRedirectUrl } from '@/app/lib/auth-redirect';
@@ -160,6 +159,43 @@ export async function loginAction(
     // Reset rate limiter on successful authentication
     resetRateLimit(rateLimitKey);
 
+    // SEC-03: Synchronize profile role and allowed_tabs into app_metadata and rotate session cookie
+    // Ensures Next.js Edge Proxy and Server Components have synchronized, authoritative JWT claims
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, allowed_tabs')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (profile) {
+        const currentMetadata = data.user.app_metadata || {};
+        const isStale =
+          !currentMetadata.role ||
+          currentMetadata.role !== profile.role ||
+          !currentMetadata.allowed_tabs ||
+          JSON.stringify(currentMetadata.allowed_tabs) !== JSON.stringify(profile.allowed_tabs);
+
+        if (isStale) {
+          const adminClient = getAdminClient();
+          await adminClient.auth.admin.updateUserById(data.user.id, {
+            app_metadata: {
+              ...currentMetadata,
+              role: profile.role,
+              allowed_tabs: profile.allowed_tabs,
+            },
+          });
+
+          // Rotate session so newly minted app_metadata claims are written to the browser's response cookies
+          await supabase.auth.refreshSession();
+        }
+      }
+    } catch (syncError: unknown) {
+      // Non-blocking: edge proxy gracefully falls back to Server Component if metadata update is restricted
+      const syncErrorMessage = syncError instanceof Error ? syncError.message : String(syncError);
+      console.warn('[AUTH_SYNC_WARNING] Non-blocking JWT metadata synchronization failed; delegating to Server Component:', syncErrorMessage);
+    }
+
     // Intercept mandatory first-login password rotation for newly provisioned personnel
     const mustChangePassword =
       data.user.app_metadata?.must_change_password === true ||
@@ -248,7 +284,7 @@ export async function resetTemporaryPassword(
   const { newPassword } = parseResult.data;
 
   try {
-    // 1. Update Auth identity password and reset metadata flag
+    // 1. Update Auth identity password and reset user_metadata flag
     const { error: updateAuthError } = await supabase.auth.updateUser({
       password: newPassword,
       data: {
@@ -263,8 +299,22 @@ export async function resetTemporaryPassword(
       };
     }
 
-    // 2. Clear must_change_password flag in public.profiles
     const adminClient = getAdminClient();
+
+    // 2. Clear must_change_password flag in Supabase Auth app_metadata (requires service_role admin privileges)
+    // Invariant: middleware.ts inspects user.app_metadata.must_change_password to gate /admin routes.
+    const { error: appMetaError } = await adminClient.auth.admin.updateUserById(user.id, {
+      app_metadata: {
+        ...(user.app_metadata ?? {}),
+        must_change_password: false,
+      },
+    });
+
+    if (appMetaError) {
+      console.warn('[PASSWORD_RESET_WARNING] Failed to update app_metadata.must_change_password:', appMetaError.message);
+    }
+
+    // 3. Clear must_change_password flag in public.profiles
     const { error: profileError } = await adminClient
       .from('profiles')
       .update({
@@ -306,11 +356,43 @@ export async function resetTemporaryPassword(
   }
 }
 
+export interface LogoutActionResult {
+  success: boolean;
+  redirectTo: string;
+  error?: string;
+}
+
 /**
- * Terminates the active administrative session across all Supabase cookies and redirects to /admin/login.
+ * Terminates the active administrative session across all Supabase cookies and clears authentication context.
+ * Returns structured navigation target to allow the client to execute a hard browser window navigation,
+ * completely purging the client-side RSC cache and in-memory heap to prevent state leaks.
+ * Defensively catches Supabase connection errors to prevent unhandled Server Action rejections.
  */
-export async function logoutAction(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect('/admin/login');
+export async function logoutAction(): Promise<LogoutActionResult> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.warn('[AUTH_LOGOUT_WARN] Supabase signOut reported non-fatal error:', error.message);
+      return {
+        success: false,
+        redirectTo: '/admin/login',
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      redirectTo: '/admin/login',
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown internal error';
+    console.error('[AUTH_LOGOUT_FATAL] Unexpected error during session logout:', message);
+    return {
+      success: false,
+      redirectTo: '/admin/login',
+      error: 'An unexpected error occurred during logout.',
+    };
+  }
 }
