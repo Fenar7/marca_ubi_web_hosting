@@ -17,7 +17,7 @@ export default function PrivacyPage() {
         <h1 style={{ fontFamily: "var(--font-circular)", fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, margin: "1rem 0 2rem", letterSpacing: "-0.035em" }}>Privacy Architecture</h1>
         <div style={{ fontFamily: "var(--font-circular)", fontSize: "16px", lineHeight: "1.7", color: "rgba(255, 255, 255, 0.8)", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <p>
-            Marca Ubi operates with uncompromising data sovereignty standards. We collect only telemetric coordinates strictly required for inquiry routing, commercial contracts, and security enforcement across our global studios in Dubai, London, Bengaluru, and New York.
+            Marca Ubi operates with uncompromising data sovereignty standards. We collect only telemetric coordinates strictly required for inquiry routing, commercial contracts, and security enforcement across our studios in Kozhikode and Trivandrum.
           </p>
           <p>
             Client brief submissions are protected by TLS 1.3 cryptographic transit, database encryption at rest, and strict role-based access boundaries. We do not monetize, broker, or syndicate client information.

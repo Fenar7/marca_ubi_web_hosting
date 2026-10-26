@@ -19,7 +19,12 @@ export function ReelCutout({
   headline = "Everything you expect. A few things you don't.",
 }: ReelCutoutProps) {
   return (
-    <section className={styles.reelCutoutSection} id="work" aria-label="Curated Work Showreel">
+    <section
+      className={styles.reelCutoutSection}
+      id="work"
+      aria-label="Curated Work Showreel"
+      data-header-theme="dark"
+    >
       <div className={styles.contentStage}>
         <h2 className={styles.statementHeadline}>{headline}</h2>
 

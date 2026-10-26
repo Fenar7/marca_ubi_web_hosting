@@ -55,14 +55,42 @@
 }
 
 .openPositionsButton {
-  @include client-outline-pill-button;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0 1.75rem;
+  height: 52px;
+  min-height: 44px;
+  border-radius: 2px;
+  border: 1.5px solid #ffffff;
+  background-color: transparent;
+  color: #ffffff;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   .arrowIcon {
     display: inline-block;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  &:hover .arrowIcon {
-    transform: translate(3px, -3px);
+  &:hover {
+    background-color: $client-accent-red;
+    border-color: $client-accent-red;
+    color: #ffffff;
+
+    .arrowIcon {
+      transform: translate(3px, -3px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
   }
 }

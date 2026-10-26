@@ -3,100 +3,105 @@
 import React, { useState, useEffect } from "react";
 import styles from "./GlobalLocationsCloud.module.scss";
 
-interface StudioCity {
-  name: string;
+interface KeralaStudio {
+  city: string;
   code: string;
-  timezone: string;
-  tzAbbr: string;
+  subdivision: string;
+  address: string;
+  mapsUrl: string;
 }
 
-const CITIES: StudioCity[] = [
-  { name: "Dubai", code: "DXB", timezone: "Asia/Dubai", tzAbbr: "GST" },
-  { name: "London", code: "LON", timezone: "Europe/London", tzAbbr: "GMT" },
-  { name: "Bengaluru", code: "BLR", timezone: "Asia/Kolkata", tzAbbr: "IST" },
-  { name: "New York", code: "NYC", timezone: "America/New_York", tzAbbr: "EST" },
-  { name: "Singapore", code: "SIN", timezone: "Asia/Singapore", tzAbbr: "SGT" },
-  { name: "Tokyo", code: "TYO", timezone: "Asia/Tokyo", tzAbbr: "JST" },
-  { name: "Los Angeles", code: "LAX", timezone: "America/Los_Angeles", tzAbbr: "PST" },
+const KERALA_STUDIOS: KeralaStudio[] = [
+  {
+    city: "Kozhikode",
+    code: "CCJ",
+    subdivision: "HiLITE Business Park",
+    address: "HiLITE Business Park, Kozhikode, Kerala 673014",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Kozhikode",
+  },
+  {
+    city: "Trivandrum",
+    code: "TRV",
+    subdivision: "Creative Studio",
+    address: "Creative Studio, Trivandrum, Kerala",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Trivandrum%2C+Kerala",
+  },
 ];
 
 /**
- * View 06: Global Footprint / Studio Locations.
- * Solid pure white background (#ffffff) sliding over the video.
- * Features real-time synchronized clocks with pulsing #ea002a radar dots.
+ * View 09: Studio Corridors & Kerala Operations.
+ * Solid pure white curtain (#ffffff) sliding over the living video background.
+ * Swiss broadsheet layout featuring authentic Kerala studio coordinates:
+ * Kozhikode (HiLITE Business Park) and Trivandrum.
+ * Pure Swiss typography with tabular numerals and real-time IST clock.
+ * Zero AI-slop pills, zero pulsing dots, zero synthetic international hubs.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function GlobalLocationsCloud() {
-  const [hoveredCityIndex, setHoveredCityIndex] = useState<number | null>(null);
-  const [timeStrings, setTimeStrings] = useState<Record<string, string>>({});
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [istTime, setIstTime] = useState<string>("");
 
   useEffect(() => {
-    const updateTimes = () => {
-      const times: Record<string, string> = {};
-      const now = new Date();
-      CITIES.forEach((c) => {
-        try {
-          times[c.code] = new Intl.DateTimeFormat("en-US", {
-            timeZone: c.timezone,
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }).format(now);
-        } catch {
-          times[c.code] = "--:--";
-        }
-      });
-      setTimeStrings(times);
+    const updateTime = () => {
+      try {
+        const now = new Date();
+        const formatted = new Intl.DateTimeFormat("en-US", {
+          timeZone: "Asia/Kolkata",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(now);
+        setIstTime(formatted);
+      } catch {
+        setIstTime("12:00");
+      }
     };
 
-    updateTimes();
-    const interval = setInterval(updateTimes, 10000);
+    updateTime();
+    const interval = setInterval(updateTime, 10000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <section className={styles.locationsSection} id="network" aria-label="Global Studio Network">
+    <section
+      className={styles.locationsSection}
+      id="network"
+      aria-label="Studio Corridors"
+      data-header-theme="light"
+    >
       <div className={styles.gridContainer}>
         <aside className={styles.leftColumn}>
-          <span className={styles.sectionLabel}>03 / Global Network</span>
+          <span className={styles.sectionLabel}>07 / Studio Corridors</span>
           <p className={styles.summaryText}>
-            Operating across synchronized hubs to deliver 24-hour uninterrupted strategic and digital momentum.
+            Operating across Kerala with permanent studios in Kozhikode and Trivandrum,
+            delivering strategic brand architecture and digital flagships.
           </p>
-          <div className={styles.networkChip}>
-            <span className={styles.radarDot} aria-hidden="true" />
-            <span>Active Global Relay</span>
-          </div>
         </aside>
 
         <div className={styles.rightColumn}>
           <div className={styles.cloudWrapper}>
-            {CITIES.map((city, index) => {
-              const isHovered = hoveredCityIndex === index;
+            {KERALA_STUDIOS.map((studio, index) => {
               const isSlashActive =
-                hoveredCityIndex === index ||
-                (hoveredCityIndex !== null && hoveredCityIndex === index + 1);
+                hoveredIndex === index ||
+                (hoveredIndex !== null && hoveredIndex === index + 1);
 
               return (
-                <span key={city.code} className={styles.itemGroup}>
-                  <button
-                    type="button"
-                    className={styles.cityButton}
-                    onMouseEnter={() => setHoveredCityIndex(index)}
-                    onMouseLeave={() => setHoveredCityIndex(null)}
-                    aria-label={`${city.name} studio time`}
+                <span key={studio.code} className={styles.itemGroup}>
+                  <a
+                    href={studio.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.cityLink}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    aria-label={`View ${studio.city} studio coordinates on Google Maps`}
                   >
-                    {city.name}
-                  </button>
+                    <span className={styles.cityName}>{studio.city}</span>
+                    <span className={styles.citySubdivision}>{studio.subdivision}</span>
+                  </a>
 
-                  {isHovered && (
-                    <div className={styles.liveTimeBadge} role="tooltip">
-                      <span className={styles.radarDot} aria-hidden="true" />
-                      <span>
-                        [{city.code} {timeStrings[city.code] || "12:00"} {city.tzAbbr} &bull; ACTIVE]
-                      </span>
-                    </div>
-                  )}
-
-                  {index < CITIES.length - 1 && (
+                  {index < KERALA_STUDIOS.length - 1 && (
                     <span
                       className={`${styles.slashDivider} ${isSlashActive ? styles.activeSlash : ""}`}
                       aria-hidden="true"
@@ -107,6 +112,35 @@ export function GlobalLocationsCloud() {
                 </span>
               );
             })}
+          </div>
+
+          {/* Synchronized Operational Rail: Pure Swiss typography with tabular numerals */}
+          <div className={styles.operationalRail} aria-label="Synchronized Studio Operations">
+            <span className={styles.railNode}>
+              <span className={styles.railCode}>IST</span>
+              <span className={styles.railTime}>{istTime || "12:00"}</span>
+              <span className={styles.railAbbr}>UTC+05:30</span>
+            </span>
+
+            <span className={styles.railDivider} aria-hidden="true">/</span>
+
+            <span className={styles.railNode}>
+              <span className={styles.railCode}>CCJ</span>
+              <span className={styles.railText}>HiLITE Business Park, Kozhikode</span>
+            </span>
+
+            <span className={styles.railDivider} aria-hidden="true">/</span>
+
+            <span className={styles.railNode}>
+              <span className={styles.railCode}>TRV</span>
+              <span className={styles.railText}>Creative Studio, Trivandrum</span>
+            </span>
+
+            <span className={styles.railDivider} aria-hidden="true">/</span>
+
+            <span className={styles.railNode}>
+              <span className={styles.railText}>MON–FRI 09:30–18:30 IST</span>
+            </span>
           </div>
         </div>
       </div>

@@ -13,31 +13,64 @@ const SOCIAL_LINKS = [
 ];
 
 /**
- * View 07: Client Inquiries & Socials Cutout.
- * Transparent viewport revealing the fixed background video.
- * Monumental headline with dual high-impact pill actions and an editorial social rail.
+ * View 10: Connect & Commercial Desk Cutout.
+ * Transparent viewport revealing the living background video layer.
+ * Features authentic Kerala studio desks, direct phone/email channels,
+ * and high-contrast architectural action triggers.
+ * Marked with data-header-theme="dark" for white logo/header text.
  */
 export function ConnectCutout() {
   return (
-    <section className={styles.connectCutoutSection} id="connect" aria-label="Commercial Inquiries and Social Channels">
+    <section
+      className={styles.connectCutoutSection}
+      id="connect"
+      aria-label="Commercial Inquiries and Studio Coordinates"
+      data-header-theme="dark"
+    >
       <div className={styles.contentStage}>
-        <span className={styles.kicker}>New Ventures &amp; Commissions</span>
-        <h2 className={styles.displayHeadline}>Connect with us.</h2>
+        <span className={styles.kicker}>08 / Direct Desks &amp; Commissions</span>
+        <h2 className={styles.displayHeadline}>Let&apos;s Build Something That Holds.</h2>
         <p className={styles.leadText}>
-          For new business mandates, institutional branding, or global creative technology partnerships.
+          For institutional branding, enterprise digital platforms, or global creative technology partnerships.
         </p>
 
-        <div className={styles.actionCluster}>
-          <Link href="/start-project" className={styles.newBusinessButton}>
-            <span>New Business</span>
-            <span className={styles.arrowIcon} aria-hidden="true">&nearr;</span>
-          </Link>
+        {/* Studio Desks Cluster */}
+        <div className={styles.desksCluster}>
+          <div className={styles.deskItem}>
+            <span className={styles.deskLabel}>Direct Channel</span>
+            <a href="tel:+917012052472" className={styles.deskValue}>
+              +91 7012 052 472
+            </a>
+          </div>
 
-          <Link href="mailto:press@marcaubi.com" className={styles.pressButton}>
-            <span>Press &amp; Media</span>
-          </Link>
+          <div className={styles.deskItem}>
+            <span className={styles.deskLabel}>General Inquiries</span>
+            <a href="mailto:hello@marcaubi.com" className={styles.deskValue}>
+              hello@marcaubi.com
+            </a>
+          </div>
+
+          <div className={styles.deskItem}>
+            <span className={styles.deskLabel}>Kerala Studios</span>
+            <span className={styles.deskValueText}>
+              Hilite Business Park, Calicut &bull; Trivandrum
+            </span>
+          </div>
         </div>
 
+        {/* Architectural Actions */}
+        <div className={styles.actionCluster}>
+          <Link href="/start-project" className={styles.primaryActionButton}>
+            <span>Start a Project Brief</span>
+            <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
+          </Link>
+
+          <a href="mailto:press@marcaubi.com" className={styles.secondaryActionButton}>
+            <span>Press &amp; Media</span>
+          </a>
+        </div>
+
+        {/* Clean Editorial Social Rail */}
         <nav className={styles.socialRail} aria-label="Social Channels">
           {SOCIAL_LINKS.map((item, index) => (
             <React.Fragment key={item.label}>

@@ -29,14 +29,18 @@ export function CapabilitiesCloud() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section className={styles.capabilitiesSection} id="capabilities" aria-label="Capabilities and Disciplines">
+    <section
+      className={styles.capabilitiesSection}
+      id="capabilities"
+      aria-label="Capabilities and Disciplines"
+      data-header-theme="light"
+    >
       <div className={styles.gridContainer}>
         <aside className={styles.leftColumn}>
-          <span className={styles.sectionLabel}>02 / Capabilities</span>
+          <span className={styles.sectionLabel}>04 / Practice Areas</span>
           <p className={styles.summaryText}>
-            A unified creative technology and brand architecture practice. We operate without assembly lines or departmental siloing.
+            A unified creative technology and brand architecture practice. Twelve integrated disciplines operating without departmental siloing.
           </p>
-          <span className={styles.disciplineCountChip}>12 Integrated Disciplines</span>
         </aside>
 
         <div className={styles.rightColumn}>
