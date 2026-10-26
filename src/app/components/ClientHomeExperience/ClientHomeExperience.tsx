@@ -61,7 +61,7 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
           headline="Everything you expect. A few things you don't."
         />
 
-        {/* View 04: Curated Works Portfolio Curtain (Solid Pure White with dynamic Sanity CMS data) */}
+        {/* View 04: Curated Works Portfolio Cutout (Transparent Video with Circular XX and link to /works) */}
         <WorksCutout
           headline={"Work\nwith us."}
           kicker="02 / Selected Works"
