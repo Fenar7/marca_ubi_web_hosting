@@ -199,16 +199,6 @@ export function WorksGalleryClient({ initialWorks }: WorksGalleryClientProps) {
       <div className={styles.worksWrapper}>
         {/* 1. Masthead Hero Deck */}
         <header className={styles.heroHeader}>
-          <div className={styles.kickerRow}>
-            <span className={styles.kicker}>02 / Portfolio Archive</span>
-            <div className={styles.countBadge}>
-              <span className={styles.pulseDot} aria-hidden="true" />
-              <span className={styles.countText}>
-                {initialWorks.length} Active Commissions
-              </span>
-            </div>
-          </div>
-
           <h1 className={styles.displayTitle}>
             Proof of intent.<br />Engineered to endure.
           </h1>

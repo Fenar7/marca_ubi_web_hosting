@@ -43,50 +43,8 @@
 .heroHeader {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  max-width: 1080px;
-}
-
-.kickerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.kicker {
-  font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 500; // CircularXXWeb-Medium
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: $client-accent-red;
-}
-
-.countBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 4px 12px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-family: $font-mono;
-  font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.7);
-
-  .pulseDot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
-  }
-
-  .countText {
-    font-variant-numeric: tabular-nums;
-  }
+  max-width: 1080px;
 }
 
 .displayTitle {

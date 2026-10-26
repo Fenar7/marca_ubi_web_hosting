@@ -565,6 +565,11 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("position: sticky"), "Works.module.scss must enforce position: sticky for cards");
       assert.ok(scss.includes("height: 150svh"), "Works.module.scss must declare 150svh scroll spacer");
       assert.ok(!tsx.includes("&nearr;"), "WorksGalleryClient must not contain unescaped &nearr; entity");
+      assert.ok(!tsx.includes("pulseDot"), "WorksGalleryClient must not contain AI-slop pulseDot");
+      assert.ok(!tsx.includes("countBadge"), "WorksGalleryClient must not contain AI-slop countBadge");
+      assert.ok(!tsx.includes("02 / Portfolio Archive"), "WorksGalleryClient must not contain 02 / Portfolio Archive kicker");
+      assert.ok(!scss.includes(".pulseDot"), "Works.module.scss must not contain .pulseDot class");
+      assert.ok(!scss.includes(".countBadge"), "Works.module.scss must not contain .countBadge class");
     });
 
     test("verifies legacy /work route permanently redirects to /works", () => {

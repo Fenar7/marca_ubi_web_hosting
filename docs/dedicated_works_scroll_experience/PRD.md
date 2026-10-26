@@ -89,3 +89,16 @@ When the homepage was redesigned to feature `WorksCutout.tsx` (the transparent v
 5. Run 35 platform tests + boundaries + `tsc --noEmit`.
 6. Deploy Senior CTO PR Auditor agent for Delivery Gate Report.
 7. Commit as Fenar7 and push to PR #84 (remain OPEN).
+
+---
+
+## 8. Anti-AI-Slop Cleanliness Addendum: Masthead Eradication
+- **Elements Identified for Eradication**:
+  1. `02 / Portfolio Archive` (`.kicker`): Unnecessary artificial chapter numbering.
+  2. `• 5 Active Commissions` (`.countBadge` + `.pulseDot`): SaaS-style status badge and glowing green radar dot.
+- **Remediation**:
+  - Purge `<div className={styles.kickerRow}>` entirely from `WorksGalleryClient.tsx`.
+  - Remove orphaned `.kickerRow`, `.kicker`, `.countBadge`, `.pulseDot`, and `.countText` from `Works.module.scss`.
+  - Open the route cleanly with the monumental headline `Proof of intent.\nEngineered to endure.` followed by the editorial lead.
+  - Assert in `tests/client/client_160over90_platform.test.ts` that zero `pulseDot` or `countBadge` elements exist.
+
