@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import MarcaUbiLogo from "../ui/MarcaUbiLogo/MarcaUbiLogo";
+import { NavigationOverlay } from "../NavigationOverlay";
 import styles from "./ClientHeader.module.scss";
 
 interface ClientHeaderProps {
@@ -10,27 +11,20 @@ interface ClientHeaderProps {
   defaultTheme?: "dark" | "light";
 }
 
-const NAV_ITEMS = [
-  { label: "About & Doctrine", href: "/#about", index: "01" },
-  { label: "Selected Works", href: "/works", index: "02" },
-  { label: "Methodology", href: "/#process", index: "03" },
-  { label: "Principles", href: "/#values", index: "04" },
-  { label: "Studio Dispatches", href: "/blog", index: "05" },
-  { label: "Global Hubs", href: "/#network", index: "06" },
-  { label: "Contact", href: "/#connect", index: "07" },
-];
-
 /**
  * Adaptive Header HUD.
  * Tracks viewport position across alternating light curtains and dark cutouts
  * using an active IntersectionObserver sensor, switching between `.isDark` (white logo & text)
  * and `.isLight` (dark logo & text) with zero cyan color corruption.
  *
+ * Integrates with the decoupled 160/90 benchmark split NavigationOverlay.
+ *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headerTheme, setHeaderTheme] = useState<"dark" | "light">(defaultTheme);
+  const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   // IntersectionObserver Theme Sensor: Monitors current intersecting section
   useEffect(() => {
@@ -61,18 +55,6 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
     };
   }, []);
 
-  // Lock body scroll when navigation drawer is open
-  useEffect(() => {
-    if (isDrawerOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isDrawerOpen]);
-
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const closeDrawer = () => setIsDrawerOpen(false);
 
@@ -92,11 +74,12 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
 
         <div className={styles.navCluster}>
           <button
+            ref={menuTriggerRef}
             type="button"
             className={styles.menuTrigger}
             onClick={toggleDrawer}
             aria-expanded={isDrawerOpen}
-            aria-controls="client-nav-drawer"
+            aria-controls="client-navigation-overlay"
             aria-label={isDrawerOpen ? "Close navigation menu" : "Open navigation menu"}
           >
             <span className={styles.srOnly}>
@@ -110,57 +93,12 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         </div>
       </header>
 
-      {/* Fullscreen Swiss Minimalist Navigation Drawer */}
-      <div
-        id="client-nav-drawer"
-        className={`${styles.menuDrawer} ${isDrawerOpen ? styles.drawerActive : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Site Navigation"
-      >
-        <div className={styles.drawerHeader}>
-          <Link href="/" onClick={closeDrawer} aria-label="Marca Ubi Homepage">
-            <MarcaUbiLogo color="#ffffff" width={160} height={34} />
-          </Link>
-          <button
-            type="button"
-            className={styles.drawerCloseBtn}
-            onClick={closeDrawer}
-            aria-label="Close Navigation"
-          >
-            <span>Close</span>
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-
-        <nav className={styles.drawerNavGrid} aria-label="Primary Navigation">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.index}
-              href={item.href}
-              className={styles.drawerNavLink}
-              onClick={closeDrawer}
-            >
-              <span className={styles.navIndex}>{item.index}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className={styles.drawerFooter}>
-          <Link
-            href="/start-project"
-            className={styles.drawerDirectAction}
-            onClick={closeDrawer}
-          >
-            <span>Start a Project Brief</span>
-            <span aria-hidden="true">&rarr;</span>
-          </Link>
-          <div className={styles.drawerMeta}>
-            <span>Marca Ubi Enterprise &copy; {new Date().getFullYear()}</span>
-          </div>
-        </div>
-      </div>
+      {/* 160/90 Benchmark Split Navigation Overlay */}
+      <NavigationOverlay
+        isOpen={isDrawerOpen}
+        onClose={closeDrawer}
+        triggerRef={menuTriggerRef}
+      />
     </>
   );
 }

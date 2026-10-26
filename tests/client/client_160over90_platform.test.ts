@@ -50,6 +50,8 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
 
       const clientScssFiles = [
         "src/app/components/ClientHeader/ClientHeader.module.scss",
+        "src/app/components/NavigationOverlay/NavigationOverlay.module.scss",
+        "src/app/components/NavigationOverlay/KineticStage.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
         "src/app/components/Sections/StatementCurtain.module.scss",
         "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
@@ -214,6 +216,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/styles/client-tokens.scss",
         "src/app/components/BackgroundVideo/BackgroundVideoEngine.module.css",
         "src/app/components/ClientHeader/ClientHeader.module.scss",
+        "src/app/components/NavigationOverlay/NavigationOverlay.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
         "src/app/components/Sections/HeroCutout.module.scss",
         "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
@@ -233,6 +236,8 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/components/Sections/WorksCutout.module.scss",
         "src/app/works/Works.module.scss",
         "src/app/components/Sections/MonumentalFooter.module.scss",
+        "src/app/components/NavigationOverlay/NavigationOverlay.module.scss",
+        "src/app/components/NavigationOverlay/KineticStage.module.scss",
         "src/app/blog/Blog.module.scss",
         "src/app/blog/[slug]/BlogPost.module.scss",
       ];
@@ -501,6 +506,27 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes(".srOnly"), "ClientHeader.module.scss must define .srOnly clip rules");
       assert.ok(scss.includes("min-height: 48px"), "ClientHeader.module.scss must enforce 48px touch targets");
       assert.ok(scss.includes("min-width: 48px"), "ClientHeader.module.scss must enforce 48px minimum width");
+    });
+
+    test("verifies NavigationOverlay implements 160/90 benchmark split dual-canvas, WAI-ARIA dialog, and focus trapping", () => {
+      const overlayPath = path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.tsx");
+      const overlayScssPath = path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.module.scss");
+      const kineticPath = path.join(rootDir, "src", "app", "components", "NavigationOverlay", "KineticStage.tsx");
+
+      assert.ok(fs.existsSync(overlayPath), "NavigationOverlay.tsx must exist");
+      assert.ok(fs.existsSync(overlayScssPath), "NavigationOverlay.module.scss must exist");
+      assert.ok(fs.existsSync(kineticPath), "KineticStage.tsx must exist");
+
+      const overlayTsx = fs.readFileSync(overlayPath, "utf8");
+      const overlayScss = fs.readFileSync(overlayScssPath, "utf8");
+      const kineticTsx = fs.readFileSync(kineticPath, "utf8");
+
+      assert.ok(overlayTsx.includes('role="dialog"'), "NavigationOverlay must declare role='dialog'");
+      assert.ok(overlayTsx.includes('aria-modal="true"'), "NavigationOverlay must declare aria-modal='true'");
+      assert.ok(overlayTsx.includes("Kozhikode &amp; Trivandrum") || overlayTsx.includes("Kozhikode & Trivandrum"), "NavigationOverlay must anchor authentic Kerala studios");
+      assert.ok(!overlayTsx.includes("Dubai"), "NavigationOverlay must not declare synthetic Dubai hub");
+      assert.ok(overlayScss.includes("grid-template-columns: 1fr 1fr;"), "NavigationOverlay must enforce 50/50 dual-canvas split");
+      assert.ok(kineticTsx.includes("KineticStage"), "KineticStage must be exported");
     });
   });
 

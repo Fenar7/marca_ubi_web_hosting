@@ -1,0 +1,229 @@
+@import "../../styles/client-mixins.scss";
+
+.stageHost {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: $client-canvas-black;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  cursor: crosshair;
+
+  @media (prefers-reduced-motion: reduce) {
+    cursor: default;
+  }
+}
+
+.topTelemetry {
+  position: absolute;
+  top: clamp(2rem, 4vw, 3.5rem);
+  left: clamp(2rem, 4vw, 4rem);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.statusIndicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.bottomTelemetry {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 3.5rem);
+  left: clamp(2rem, 4vw, 4rem);
+  right: clamp(2rem, 4vw, 4rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.4);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  z-index: 5;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.25rem;
+}
+
+.telemetryCoords {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.constellationStage {
+  position: relative;
+  width: min(520px, 80%);
+  height: min(520px, 80%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compassRing {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.compassRingInner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 60%;
+  height: 60%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.centerCrosshair {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  opacity: 0.25;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    background-color: #ffffff;
+  }
+
+  &::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform: translateY(-50%);
+  }
+
+  &::after {
+    left: 50%;
+    top: 0;
+    height: 100%;
+    width: 1px;
+    transform: translateX(-50%);
+  }
+}
+
+.disciplineNode {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-family: $font-circular;
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 0.25s ease, transform 0.25s ease;
+  cursor: pointer;
+  z-index: 2;
+
+  &:hover,
+  &.nodeActive {
+    color: #ffffff;
+    transform: scale(1.06);
+
+    .nodeGlyph {
+      color: $client-accent-red;
+      transform: scale(1.15);
+    }
+  }
+}
+
+.nodeVertical {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+
+  &:hover,
+  &.nodeActive {
+    transform: rotate(180deg) scale(1.06);
+  }
+}
+
+.nodeGlyph {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.nodeLabel {
+  line-height: 1;
+}
+
+.reticleContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+
+.reticleSvg {
+  width: 44px;
+  height: 44px;
+  display: block;
+  overflow: visible;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.isClicking {
+    transform: scale(0.82);
+  }
+}
+
+.reticleChip {
+  position: absolute;
+  top: 36px;
+  left: 20px;
+  background: rgba(10, 10, 10, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-family: $font-mono;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.shockwave {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1.5px solid $client-accent-red;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0.85;
+  z-index: 8;
+  will-change: transform, opacity;
+}
