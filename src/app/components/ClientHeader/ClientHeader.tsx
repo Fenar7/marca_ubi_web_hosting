@@ -12,7 +12,7 @@ interface ClientHeaderProps {
 
 const NAV_ITEMS = [
   { label: "About & Doctrine", href: "/#about", index: "01" },
-  { label: "Selected Work", href: "/#work", index: "02" },
+  { label: "Selected Works", href: "/works", index: "02" },
   { label: "Principles", href: "/#values", index: "03" },
   { label: "Methodology", href: "/#process", index: "04" },
   { label: "Studio Dispatches", href: "/blog", index: "05" },

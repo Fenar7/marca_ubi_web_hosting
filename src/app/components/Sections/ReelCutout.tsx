@@ -39,7 +39,7 @@ export function ReelCutout({
             <span className={styles.playTriangleIcon} aria-hidden="true" />
           </button>
 
-          <Link href="/work" className={styles.exploreWorkAnchor}>
+          <Link href="/works" className={styles.exploreWorkAnchor}>
             <span>Explore Selected Work &rarr;</span>
           </Link>
         </div>

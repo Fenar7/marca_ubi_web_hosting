@@ -180,12 +180,18 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
         "src/app/components/Sections/WorksCurtain.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/works/Works.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/works/Works.module.scss",
         "src/app/components/Sections/ValuesCutout.module.scss",
         "src/app/components/Sections/ProcessCurtain.module.scss",
         "src/app/components/Sections/TestimonialsCutout.module.scss",
         "src/app/components/Sections/DispatchesCurtain.module.scss",
         "src/app/components/Sections/GlobalLocationsCloud.module.scss",
         "src/app/components/Sections/ConnectCutout.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/works/Works.module.scss",
         "src/app/components/Sections/MonumentalFooter.module.scss",
         "src/app/blog/Blog.module.scss",
         "src/app/blog/[slug]/BlogPost.module.scss",
@@ -254,7 +260,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         { file: "HeroCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "AboutDoctrineCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "ReelCutout.tsx", expected: 'data-header-theme="dark"' },
-        { file: "WorksCurtain.tsx", expected: 'data-header-theme="light"' },
+        { file: "WorksCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "ValuesCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "ProcessCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "TestimonialsCutout.tsx", expected: 'data-header-theme="dark"' },
@@ -341,7 +347,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes("<HeroCutout"), "View 01: HeroCutout must be present");
       assert.ok(content.includes("<AboutDoctrineCurtain"), "View 02: AboutDoctrineCurtain must be present");
       assert.ok(content.includes("<ReelCutout"), "View 03: ReelCutout must be present");
-      assert.ok(content.includes("<WorksCurtain"), "View 04: WorksCurtain must be present");
+      assert.ok(content.includes("<WorksCutout") || content.includes("<WorksCurtain"), "View 04: WorksCutout must be present");
       assert.ok(content.includes("<ValuesCutout"), "View 05: ValuesCutout must be present");
       assert.ok(content.includes("<ProcessCurtain"), "View 06: ProcessCurtain must be present");
       assert.ok(content.includes("<TestimonialsCutout"), "View 07: TestimonialsCutout must be present");
@@ -416,6 +422,43 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
 
       assert.ok(!content.includes('addressLocality: "Dubai"'), "layout.tsx schema must not claim Dubai locality");
       assert.ok(content.includes('addressLocality: "Kozhikode"'), "layout.tsx schema must declare Kozhikode locality");
+    });
+  });
+  describe("Section 13: Dedicated /works Showcase Route & Navigation Invariants", () => {
+    test("verifies src/app/works/page.tsx renders with ClientHeader, MonumentalFooter, and ISR revalidate", () => {
+      const worksPagePath = path.join(rootDir, "src", "app", "works", "page.tsx");
+      assert.ok(fs.existsSync(worksPagePath), "src/app/works/page.tsx must exist");
+
+      const content = fs.readFileSync(worksPagePath, "utf8");
+      assert.ok(content.includes("ClientHeader"), "Works page must render ClientHeader");
+      assert.ok(content.includes("MonumentalFooter"), "Works page must render MonumentalFooter");
+      assert.ok(content.includes("export const revalidate = 60"), "Works page must declare 60s revalidation");
+      assert.ok(content.includes('canonical: "/works"'), "Works page must declare canonical /works URL");
+      assert.ok(content.includes("WorksGalleryClient"), "Works page must render WorksGalleryClient");
+      assert.ok(content.includes("CollectionPage"), "Works page must declare CollectionPage schema");
+    });
+
+    test("verifies WorksCutout.tsx links to /works with accessible touch target", () => {
+      const cutoutPath = path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.tsx");
+      const scssPath = path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.module.scss");
+
+      assert.ok(fs.existsSync(cutoutPath), "WorksCutout.tsx must exist");
+      assert.ok(fs.existsSync(scssPath), "WorksCutout.module.scss must exist");
+
+      const tsx = fs.readFileSync(cutoutPath, "utf8");
+      const scss = fs.readFileSync(scssPath, "utf8");
+
+      assert.ok(tsx.includes('/works'), "WorksCutout must link to /works");
+      assert.ok(tsx.includes('data-header-theme="dark"'), "WorksCutout must declare dark theme for header sensor");
+      assert.ok(scss.includes("min-height: 44px"), "WorksCutout button must enforce 44px min-height touch target");
+    });
+
+    test("verifies legacy /work route permanently redirects to /works", () => {
+      const legacyWorkPath = path.join(rootDir, "src", "app", "work", "page.tsx");
+      assert.ok(fs.existsSync(legacyWorkPath), "src/app/work/page.tsx must exist");
+
+      const content = fs.readFileSync(legacyWorkPath, "utf8");
+      assert.ok(content.includes('redirect("/works")'), "Legacy /work page must redirect to /works");
     });
   });
 });

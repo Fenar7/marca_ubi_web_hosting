@@ -6,7 +6,7 @@ import ClientHeader from "../ClientHeader/ClientHeader";
 import HeroCutout from "../Sections/HeroCutout";
 import AboutDoctrineCurtain from "../Sections/AboutDoctrineCurtain";
 import ReelCutout from "../Sections/ReelCutout";
-import WorksCurtain from "../Sections/WorksCurtain";
+import WorksCutout from "../Sections/WorksCutout";
 import ValuesCutout from "../Sections/ValuesCutout";
 import ProcessCurtain from "../Sections/ProcessCurtain";
 import TestimonialsCutout from "../Sections/TestimonialsCutout";
@@ -62,7 +62,12 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
         />
 
         {/* View 04: Curated Works Portfolio Curtain (Solid Pure White with dynamic Sanity CMS data) */}
-        <WorksCurtain works={works} />
+        <WorksCutout
+          headline={"Work\nwith us."}
+          kicker="02 / Selected Works"
+          ctaLabel="View Works"
+          ctaHref="/works"
+        />
 
         {/* View 05: Guiding Principles Cutout (Transparent Video with Apple HIG Vibrancy Glass Cards) */}
         <ValuesCutout />
