@@ -102,6 +102,7 @@
 .navCluster {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: clamp(0.75rem, 2vh, 1.75rem);
   margin: auto 0;
   padding: 1rem 0;
@@ -110,7 +111,9 @@
 .navLink {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  width: fit-content;
+  gap: 12px;
   text-decoration: none;
   color: #0a0a0a;
   font-family: $font-circular;
@@ -123,16 +126,12 @@
 
   &:hover {
     color: #000000;
-    transform: translateX(8px);
+    transform: translateX(4px);
 
     .navArrow {
-      transform: translateX(8px);
+      transform: translateX(6px);
       color: $client-accent-red;
       opacity: 1;
-    }
-
-    .navIndex {
-      color: $client-accent-red;
     }
   }
 
@@ -146,22 +145,6 @@
   }
 }
 
-.navLabelGroup {
-  display: inline-flex;
-  align-items: baseline;
-  gap: clamp(1rem, 2vw, 2rem);
-}
-
-.navIndex {
-  font-family: $font-mono;
-  font-size: clamp(0.875rem, 1.2vw, 1.125rem);
-  color: #888888;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  font-variant-numeric: tabular-nums;
-  transition: color 0.2s ease;
-}
-
 .navLabel {
   display: inline-block;
 }
@@ -170,7 +153,7 @@
   font-size: clamp(1.25rem, 2vw, 2rem);
   color: rgba(10, 10, 10, 0.35);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, opacity 0.2s ease;
-  margin-left: 1rem;
+  display: inline-block;
 }
 
 .leftFooter {
@@ -204,15 +187,15 @@
   height: 44px;
   min-width: 44px;
   min-height: 44px;
-  color: #0a0a0a;
-  text-decoration: none;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
 
   &:hover {
-    color: $client-accent-red;
-    border-color: $client-accent-red;
+    background-color: $client-accent-red;
+    color: #ffffff;
     transform: translateY(-2px);
   }
 
@@ -222,20 +205,13 @@
   }
 }
 
-.studioMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.studioLocation {
   font-family: $font-mono;
   font-size: 11px;
-  color: #666666;
+  color: #888888;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-}
-
-.metaHighlight {
-  color: #0a0a0a;
-  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .rightPanel {

@@ -5,65 +5,44 @@ import gsap from "gsap";
 import styles from "./KineticStage.module.scss";
 import type { KineticStageProps } from "./types";
 
-interface DisciplineNodeDef {
+interface WordNode {
   readonly id: string;
   readonly label: string;
-  readonly glyph: string;
+  readonly glyph?: string;
   readonly xPct: number;
   readonly yPct: number;
-  readonly isVertical?: boolean;
 }
 
-const DISCIPLINE_NODES: readonly DisciplineNodeDef[] = [
-  { id: "arch", label: "Architecture", glyph: "✦", xPct: 50, yPct: 14 },
-  { id: "infra", label: "Infrastructure", glyph: "◎", xPct: 84, yPct: 50, isVertical: true },
-  { id: "systems", label: "Systems", glyph: "▲", xPct: 50, yPct: 86 },
-  { id: "precision", label: "Precision", glyph: "⌘", xPct: 16, yPct: 50, isVertical: true },
-  { id: "endure", label: "Endure", glyph: "✣", xPct: 50, yPct: 50 },
+const STAGE_WORDS: readonly WordNode[] = [
+  { id: "culture", label: "Culture", glyph: "✦", xPct: 24, yPct: 24 },
+  { id: "design", label: "Design", glyph: "✌", xPct: 76, yPct: 22 },
+  { id: "craft", label: "Craft", xPct: 50, yPct: 50 },
+  { id: "tech", label: "Tech", glyph: "🌐", xPct: 24, yPct: 76 },
+  { id: "impact", label: "Impact", glyph: "♡", xPct: 76, yPct: 78 },
 ] as const;
 
-interface ShockwaveInstance {
-  readonly id: number;
-  readonly x: number;
-  readonly y: number;
-}
-
 /**
- * KineticStage — Right Panel Interactive Architectural CAD Stage.
- * Benchmark parity with 160/90 while asserting Marca Ubi's distinct architectural identity.
- * Features an autonomous precision CAD reticle that glides between studio disciplines, executes
- * tactile click pulses, and seamlessly yields to user pointer movements via GSAP quickTo.
+ * KineticStage — 160/90 Benchmark Graphic Kinetic Stage.
+ * Obsidian black canvas hosting an authentic vector arrow cursor that autonomously navigates
+ * between studio ethos words (Culture, Design, Craft, Tech, Impact), executes tactile
+ * click pulses with micro-spring reactions, and seamlessly yields to pointer interactions.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function KineticStage({ isActive }: KineticStageProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const reticleRef = useRef<HTMLDivElement | null>(null);
+  const cursorRef = useRef<HTMLDivElement | null>(null);
   const isInteractingRef = useRef<boolean>(false);
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
-  const shockwaveCounterRef = useRef<number>(0);
 
-  const [activeNodeId, setActiveNodeId] = useState<string>("endure");
+  const [activeWordId, setActiveWordId] = useState<string>("craft");
   const [isClicking, setIsClicking] = useState<boolean>(false);
-  const [coordsLabel, setCoordsLabel] = useState<string>("CADENCE: 60FPS");
-  const [shockwaves, setShockwaves] = useState<readonly ShockwaveInstance[]>([]);
   const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
 
-  // Spawn a tactile expanding shockwave ring at specified stage coordinates
-  const triggerShockwave = useCallback((x: number, y: number) => {
-    const id = ++shockwaveCounterRef.current;
-    setShockwaves((prev) => [...prev.slice(-4), { id, x, y }]);
-
-    // Self-cleaning pulse ring
-    setTimeout(() => {
-      setShockwaves((prev) => prev.filter((sw) => sw.id !== id));
-    }, 700);
-  }, []);
-
-  // Initialize and run the autonomous CAD reticle navigation loop
+  // Autonomous animation loop: moves vector cursor between words with tactile clicks
   const startAutonomousLoop = useCallback(() => {
-    if (!stageRef.current || !reticleRef.current || isReducedMotion) return;
+    if (!stageRef.current || !cursorRef.current || isReducedMotion) return;
 
     if (timelineRef.current) {
       timelineRef.current.kill();
@@ -72,31 +51,34 @@ export function KineticStage({ isActive }: KineticStageProps) {
     const stageRect = stageRef.current.getBoundingClientRect();
     const tl = gsap.timeline({ repeat: -1 });
 
-    DISCIPLINE_NODES.forEach((node) => {
-      const targetX = (node.xPct / 100) * stageRect.width;
-      const targetY = (node.yPct / 100) * stageRect.height;
+    STAGE_WORDS.forEach((word) => {
+      const targetX = (word.xPct / 100) * stageRect.width;
+      const targetY = (word.yPct / 100) * stageRect.height;
 
       // Glide phase
-      tl.to(reticleRef.current, {
+      tl.to(cursorRef.current, {
         x: targetX,
         y: targetY,
-        duration: 1.4,
+        duration: 1.35,
         ease: "power2.inOut",
-        onUpdate: () => {
-          if (!isInteractingRef.current) {
-            setCoordsLabel(`LOCKED: ${node.label.toUpperCase()}`);
-          }
-        },
       });
 
       // Arrival & Tactile Click phase
       tl.call(() => {
         if (isInteractingRef.current) return;
-        setActiveNodeId(node.id);
+        setActiveWordId(word.id);
         setIsClicking(true);
-        triggerShockwave(targetX, targetY);
 
-        setTimeout(() => setIsClicking(false), 140);
+        const wordEl = stageRef.current?.querySelector(`[data-word-id="${word.id}"]`);
+        if (wordEl) {
+          gsap.fromTo(
+            wordEl,
+            { scale: 1 },
+            { scale: 1.1, duration: 0.22, yoyo: true, repeat: 1, ease: "back.out(2)" }
+          );
+        }
+
+        setTimeout(() => setIsClicking(false), 130);
       });
 
       // Dwell phase for visual absorption
@@ -104,12 +86,12 @@ export function KineticStage({ isActive }: KineticStageProps) {
     });
 
     timelineRef.current = tl;
-  }, [isReducedMotion, triggerShockwave]);
+  }, [isReducedMotion]);
 
-  // Handle pointer enter & tracking override
+  // Pointer move handler with smooth GSAP quickTo tracking
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!stageRef.current || !reticleRef.current || isReducedMotion) return;
+      if (!stageRef.current || !cursorRef.current || isReducedMotion) return;
 
       isInteractingRef.current = true;
       if (timelineRef.current) {
@@ -120,15 +102,13 @@ export function KineticStage({ isActive }: KineticStageProps) {
       const relativeX = e.clientX - rect.left;
       const relativeY = e.clientY - rect.top;
 
-      gsap.to(reticleRef.current, {
+      gsap.to(cursorRef.current, {
         x: relativeX,
         y: relativeY,
-        duration: 0.18,
+        duration: 0.16,
         ease: "power3.out",
         overwrite: "auto",
       });
-
-      setCoordsLabel(`X: ${Math.round(relativeX)}px | Y: ${Math.round(relativeY)}px`);
 
       // Reset idle debounce timer to resume autonomous mode
       if (idleTimerRef.current) {
@@ -142,23 +122,17 @@ export function KineticStage({ isActive }: KineticStageProps) {
     [isReducedMotion, startAutonomousLoop]
   );
 
-  // Handle stage clicks with tactile shockwave
+  // Stage click handler with tactile pulse
   const handleStageClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!stageRef.current || isReducedMotion) return;
 
-      const rect = stageRef.current.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
       setIsClicking(true);
-      triggerShockwave(clickX, clickY);
-      setTimeout(() => setIsClicking(false), 150);
+      setTimeout(() => setIsClicking(false), 140);
     },
-    [isReducedMotion, triggerShockwave]
+    [isReducedMotion]
   );
 
-  // Lifecycle orchestrator: handles motion media queries and stage activation
   useEffect(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setIsReducedMotion(motionQuery.matches);
@@ -170,7 +144,6 @@ export function KineticStage({ isActive }: KineticStageProps) {
     motionQuery.addEventListener("change", handleMotionChange);
 
     if (isActive && !motionQuery.matches) {
-      // Delay slightly to let layout settle after drawer expansion
       const initTimer = setTimeout(() => {
         startAutonomousLoop();
       }, 200);
@@ -199,96 +172,61 @@ export function KineticStage({ isActive }: KineticStageProps) {
       role="presentation"
       aria-hidden="true"
     >
-      {/* Top Telemetry Bar */}
-      <div className={styles.topTelemetry}>
-        <span className={styles.statusIndicator} />
-        <span>Studio Kinetic Telemetry</span>
-      </div>
-
-      {/* Centerpiece Constellation Stage */}
-      <div className={styles.constellationStage}>
-        <div className={styles.compassRing} />
-        <div className={styles.compassRingInner} />
-        <div className={styles.centerCrosshair} />
-
-        {/* Studio Discipline Nodes arranged in architectural orbit */}
-        {DISCIPLINE_NODES.map((node) => {
-          const isActiveNode = activeNodeId === node.id;
+      {/* Words Constellation */}
+      <div className={styles.wordsContainer}>
+        {STAGE_WORDS.map((word) => {
+          const isActiveWord = activeWordId === word.id;
           return (
-            <div
-              key={node.id}
-              className={`${styles.disciplineNode} ${node.isVertical ? styles.nodeVertical : ""} ${
-                isActiveNode ? styles.nodeActive : ""
-              }`}
+            <button
+              key={word.id}
+              type="button"
+              data-word-id={word.id}
+              className={`${styles.wordNode} ${isActiveWord ? styles.wordActive : ""}`}
               style={{
-                left: `${node.xPct}%`,
-                top: `${node.yPct}%`,
-                transform: `translate(-50%, -50%) ${node.isVertical ? "rotate(180deg)" : ""}`,
+                left: `${word.xPct}%`,
+                top: `${word.yPct}%`,
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                setActiveNodeId(node.id);
-                if (stageRef.current) {
-                  const rect = stageRef.current.getBoundingClientRect();
-                  triggerShockwave(
-                    (node.xPct / 100) * rect.width,
-                    (node.yPct / 100) * rect.height
-                  );
-                }
+                setActiveWordId(word.id);
+                setIsClicking(true);
+                setTimeout(() => setIsClicking(false), 140);
               }}
+              tabIndex={-1}
             >
-              <span className={styles.nodeGlyph}>{node.glyph}</span>
-              <span className={styles.nodeLabel}>{node.label}</span>
-            </div>
+              <span className={styles.wordLabel}>{word.label}</span>
+              {word.glyph && <span className={styles.nodeGlyph}>{word.glyph}</span>}
+              {isActiveWord && !word.glyph && <span className={styles.wordDot} aria-hidden="true" />}
+            </button>
           );
         })}
       </div>
 
-      {/* Autonomous / Interactive CAD Reticle Pointer */}
+      {/* Authentic Vector Arrow Pointer Cursor */}
       <div
-        ref={reticleRef}
-        className={styles.reticleContainer}
+        ref={cursorRef}
+        className={styles.cursorWrapper}
         style={{
           left: isReducedMotion ? "50%" : 0,
           top: isReducedMotion ? "50%" : 0,
         }}
       >
         <svg
-          viewBox="0 0 44 44"
-          className={`${styles.reticleSvg} ${isClicking ? styles.isClicking : ""}`}
+          viewBox="0 0 24 24"
+          width="28"
+          height="28"
+          className={`${styles.vectorCursor} ${isClicking ? styles.isClicking : ""}`}
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Outer crosshairs */}
-          <line x1="22" y1="2" x2="22" y2="12" stroke="#ffffff" strokeWidth="1.5" />
-          <line x1="22" y1="32" x2="22" y2="42" stroke="#ffffff" strokeWidth="1.5" />
-          <line x1="2" y1="22" x2="12" y2="22" stroke="#ffffff" strokeWidth="1.5" />
-          <line x1="32" y1="22" x2="42" y2="22" stroke="#ffffff" strokeWidth="1.5" />
-
-          {/* Center precision ring */}
-          <circle cx="22" cy="22" r="6" stroke="#ffffff" strokeWidth="1.5" fill="none" />
-
-          {/* Central brand red reticle pip */}
-          <circle cx="22" cy="22" r="2.5" fill="#ea002a" />
+          <path
+            d="M3 3L10.5 21L14 13.5L21.5 10L3 3Z"
+            fill="#ffffff"
+            stroke="#000000"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
         </svg>
-
-        <div className={styles.reticleChip}>{coordsLabel}</div>
-      </div>
-
-      {/* Shockwave Rings */}
-      {shockwaves.map((sw) => (
-        <span
-          key={sw.id}
-          className={styles.shockwave}
-          style={{
-            left: `${sw.x}px`,
-            top: `${sw.y}px`,
-          }}
-        />
-      ))}
-
-      {/* Bottom Telemetry HUD */}
-      <div className={styles.bottomTelemetry}>
-        <span>KOZHIKODE &amp; TRIVANDRUM</span>
-        <span className={styles.telemetryCoords}>11.2588&deg; N, 75.7804&deg; E</span>
       </div>
     </div>
   );

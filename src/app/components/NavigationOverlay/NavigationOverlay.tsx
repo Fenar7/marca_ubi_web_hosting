@@ -8,17 +8,17 @@ import styles from "./NavigationOverlay.module.scss";
 import type { NavItem, NavigationOverlayProps } from "./types";
 
 const DEFAULT_NAV_ITEMS: readonly NavItem[] = [
-  { label: "Selected Works", href: "/works", index: "01" },
-  { label: "About & Doctrine", href: "/#about", index: "02" },
-  { label: "Methodology", href: "/#process", index: "03" },
-  { label: "Studio Dispatches", href: "/blog", index: "04" },
-  { label: "Direct Desks", href: "/start-project", index: "05" },
+  { label: "Selected Works", href: "/works" },
+  { label: "About & Doctrine", href: "/#about" },
+  { label: "Methodology", href: "/#process" },
+  { label: "Studio Dispatches", href: "/blog" },
+  { label: "Direct Desks", href: "/start-project" },
 ] as const;
 
 /**
  * NavigationOverlay — 160/90 Benchmark 50/50 Dual-Canvas Navigation Architecture.
  * Features a pure white left panel for Swiss editorial navigation and a solid obsidian
- * black right panel hosting the bespoke Architectural Studio Reticle Kinetic Stage.
+ * black right panel hosting the bespoke Graphic Kinetic Stage.
  *
  * Implements strict WAI-ARIA Dialog semantics, complete keyboard focus trapping,
  * scrollbar layout shift prevention, and clean route change teardown.
@@ -112,8 +112,6 @@ export function NavigationOverlay({
     };
   }, [isOpen, handleKeyDown, triggerRef]);
 
-  const currentYear = new Date().getFullYear();
-
   return (
     <div
       ref={overlayRef}
@@ -166,21 +164,18 @@ export function NavigationOverlay({
         <nav className={styles.navCluster} aria-label="Primary Navigation">
           {navItems.map((item) => (
             <Link
-              key={item.index}
+              key={item.href}
               href={item.href}
               className={styles.navLink}
               onClick={onClose}
             >
-              <div className={styles.navLabelGroup}>
-                <span className={styles.navIndex}>{item.index}</span>
-                <span className={styles.navLabel}>{item.label}</span>
-              </div>
+              <span className={styles.navLabel}>{item.label}</span>
               <span className={styles.navArrow} aria-hidden="true">&rarr;</span>
             </Link>
           ))}
         </nav>
 
-        {/* Panel Footer: Social & Studio Metadata */}
+        {/* Panel Footer: Solid Black Social Badges & Studio Anchor */}
         <div className={styles.leftFooter}>
           <div className={styles.socialCluster} role="list" aria-label="Social Channels">
             {/* Instagram */}
@@ -230,16 +225,14 @@ export function NavigationOverlay({
             </a>
           </div>
 
-          <div className={styles.studioMeta}>
-            <span className={styles.metaHighlight}>MARCA UBI GLOBAL HOLDINGS</span>
-            <span>Kozhikode &amp; Trivandrum Studios &copy; {currentYear}</span>
+          <div className={styles.studioLocation} aria-label="Studio Corridors">
+            <span>Kozhikode &amp; Trivandrum</span>
           </div>
         </div>
       </div>
 
       {/* Right Panel: Solid Obsidian Black (#000000) with Kinetic Stage */}
       <div className={styles.rightPanel}>
-        {/* Frameless Desktop Close Button */}
         <button
           ref={desktopCloseBtnRef}
           type="button"
@@ -263,7 +256,6 @@ export function NavigationOverlay({
           <span className={styles.srOnly}>Close Navigation Menu</span>
         </button>
 
-        {/* Kinetic Stage Component */}
         <KineticStage isActive={isOpen} />
       </div>
     </div>

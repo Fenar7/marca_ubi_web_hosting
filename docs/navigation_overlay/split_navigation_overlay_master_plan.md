@@ -1,195 +1,149 @@
-# Master Implementation Plan: 160/90 Benchmark Split Navigation Overlay & Bespoke Kinetic Stage
+# Master Forensic Redesign Plan: 160/90 Exact Parity & AI-Slop Eradication
 
-> **Author**: Lead Head Agent, Expert UI/UX Designer Agent, Senior Full-Stack Frontend Architect, Senior CTO PR Auditor Agent  
-> **Git Authorship**: `Fenar7 <86710532+Fenar7@users.noreply.github.com>`  
-> **Status**: **PROPOSED — AWAITING USER APPROVAL & EXPLICIT 'PROCEED' COMMAND**  
-> **Target Path**: `src/app/components/NavigationOverlay/` & `src/app/components/ClientHeader/`  
-> **Branch**: `showcase/homepage-works-cutout-and-portfolio-showcase`  
-> **Associated Pull Request**: [#84 (Strictly OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/84)  
-
----
-
-## 1. Executive Summary & Design Synthesis
-
-### 1.1 Context & Problem Statement
-The user submitted three visual assets defining the current state, benchmark reference, and bespoke requirement:
-1. **Current Production State (`Screenshot 2026-10-27 002154.png`)**:
-   - A generic single-column fullscreen drawer (`ClientHeader.tsx` inline `menuDrawer`).
-   - Dark semi-transparent overlay (`rgba(5, 5, 5, 0.94)`) with backdrop blur leaking hero typography ("Proof of intent", "CURATED WORKS"), causing messy visual collision.
-   - Clunky boxed close button (`border: 1px solid rgba(255, 255, 255, 0.2)` with label `CLOSE ×`).
-   - Monotonous 7-item vertical list with giant unrefined indexes.
-   - Dead empty right half with background bleed.
-2. **Benchmark Reference (`Screenshot 2026-10-26 183106.png` — 160/90 Menu)**:
-   - **50/50 Dual-Canvas Split**:
-     - **Left 50%**: Solid Pure Canvas White (`#ffffff`), dark logo (`#0a0a0a`), clean navigational typography with directional arrows (`→`), social links pinned at bottom.
-     - **Right 50%**: Solid Obsidian Black (`#000000`), frameless minimalist `×` close button, central interactive kinetic stage.
-3. **Bespoke Differentiation Mandate (`Screenshot 2026-10-27 002305.png`)**:
-   - User directive: *"in the right the cursor thing is actually animated and moves like a click we also need to build something like that but should not look exactly like the reference design as it will look copied btw"*.
-   - In 160/90, the right stage uses 1990s 8-bit pixel cursors, emojis (peace hand, heart, 4-point sparkle), and casual slang words ("Vibes", "Fun", "Mood", "Click!").
-   - **Marca Ubi Authentic Distinction**: Marca Ubi is an enterprise agency and creative technology practice. Directly copying 8-bit retro cursors and casual stickers violates anti-slop rules (Rule R-04, R-16, R-30). Instead, we engineer an authentic **Architectural Studio Reticle & Orbital Coordinate Engine**: a precision vector crosshair/reticle that glides autonomously, magnetically snaps to Marca Ubi practice disciplines, executes a tactile spring click, emits an expanding 1px radar shockwave ring, and seamlessly yields to user mouse/touch interaction.
+> **Document**: Forensic Audit & Production Redesign Blueprint  
+> **Subsystem**: `src/app/components/NavigationOverlay/`  
+> **Benchmark Reference**: `Screenshot 2026-10-26 183106.png` (160/90 Menu)  
+> **User Feedback & Evidence**: `Screenshot 2026-10-27 004919.png`, `004924.png`, `004928.png`, `004932.png`  
+> **Authorship**: `Fenar7 <86710532+Fenar7@users.noreply.github.com>`  
+> **Status**: **PROPOSED — AWAITING EXPLICIT USER 'PROCEED' COMMAND**  
+> **Target PR**: [#84 (Strictly OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/84)  
 
 ---
 
-## 2. Visual Architecture & 50/50 Dual-Canvas Blueprint
+## 1. Executive Forensic Audit & Root Cause Analysis
+
+### 1.1 Root Cause 1: Hallucinatory Sci-Fi HUD & Telemetry Infection
+- **Mechanism of Defect**:
+  In attempting to differentiate the right panel from 160/90's 1990s retro stickers, the previous implementation over-corrected into a military CAD/radar terminal trope:
+  - Top Telemetry Bar with a glowing green status dot (`#22c55e`) and `"Studio Kinetic Telemetry"` label.
+  - Floating coordinate chips (`X: 387px | Y: 724px`, `"CADENCE: 60FPS"`, `"LOCKED: ARCHITECTURE"`).
+  - Concentric dashed radar circles (`.compassRing`, `.compassRingInner`) and center crosshairs (`.centerCrosshair`).
+  - Bottom Telemetry HUD displaying raw GPS coordinates (`11.2588° N, 75.7804° E`) and border dividers.
+- **Why This Failed**:
+  The 160/90 benchmark relies on pure Swiss graphic minimalism. The right panel is meant to be a clean, monolithic black graphic void hosting an animated cursor interaction with words and clean glyphs—not a military drone tracking interface.
+
+### 1.2 Root Cause 2: Link Disconnection via `justify-content: space-between`
+- **Mechanism of Defect**:
+  In `NavigationOverlay.module.scss`, `.navLink` was given `display: inline-flex; justify-content: space-between;`. Because `.navCluster` is a flex column spanning the full panel width, `space-between` flung the directional arrow (`→`) 400+ pixels away to the far right margin, divorcing it from the text.
+- **160/90 Parity Model**:
+  In the reference, the link is an inline lockup (`display: inline-flex; width: fit-content; gap: 12px; justify-content: flex-start;`). The arrow sits tightly immediately next to the label (e.g. `Work →`), executing a smooth 6px glide on hover.
+
+### 1.3 Root Cause 3: Wireframe Outline Social Boxes vs. Solid Black Badges
+- **Mechanism of Defect**:
+  Social links were styled with `border: 1px solid rgba(0, 0, 0, 0.12); background: transparent; color: #0a0a0a;`. These wireframe outline boxes looked washed out, generic, and ungrounded.
+- **160/90 Parity Model**:
+  In the reference, social icons are solid, confident black squares (`background: #000000; color: #ffffff; border-radius: 6px; border: none;`). They create a strong visual anchor in the lower-left white canvas, echoing the solid black right panel.
+
+### 1.4 Root Cause 4: Injected Index Numbers & Corporate Boilerplate
+- **Mechanism of Defect**:
+  - Injected list index numbers (`01`, `02`, `03`, `04`, `05`).
+  - Injected corporate holding boilerplate (`"MARCA UBI GLOBAL HOLDINGS / Kozhikode & Trivandrum Studios © 2026"`).
+- **160/90 Parity Model**:
+  The benchmark has zero numbers and zero legal boilerplate. Negative space is respected.
+
+---
+
+## 2. Exact Parity Redesign Blueprint
 
 ```
 +-------------------------------------------------------+-------------------------------------------------------+
-|  LEFT PANEL (50% VW) — CANVAS WHITE (#ffffff)         |  RIGHT PANEL (50% VW) — OBSIDIAN BLACK (#000000)      |
+|  LEFT PANEL (50% VW) — PURE CANVAS WHITE (#ffffff)    |  RIGHT PANEL (50% VW) — SOLID OBSIDIAN BLACK (#000000)|
 |                                                       |                                                       |
-|  [ Marca Ubi. Logo (Dark #0a0a0a) ]                   |                              [ Frameless '×' Close ]  |
+|  [ Marca Ubi. Logo (Pure Black #0a0a0a) ]             |                              [ Frameless '×' Close ]  |
 |                                                       |                                                       |
-|                                                       |               [ BESPOKE KINETIC STAGE ]               |
-|    01  Selected Works                     -->         |             - Precision CAD Reticle Pointer           |
-|    02  About & Doctrine                   -->         |             - Core Practice Disciplines Orbit         |
-|    03  Methodology                        -->         |             - Kerala Coordinates HUD: 11.2588° N      |
-|    04  Studio Dispatches                  -->         |             - Autonomous Spline + Click Physics       |
-|    05  Direct Desks / Contact             -->         |             - Compositor-Accelerated Shockwave Pool   |
+|                                                       |                 Culture       Craft                   |
+|    Work →                                             |                   ✦                                   |
+|    About →                                            |                                                       |
+|    Methodology →                                      |          Click!  ✌               🌐  Mood             |
+|    Dispatches →                                       |                     [CURSOR 🖱️]                       |
+|    Contact →                                          |                                                       |
+|                                                       |                   ♡                                   |
+|                                                       |                 Design        Impact                  |
 |                                                       |                                                       |
-|                                                       |                                                       |
-|  [ Instagram ] [ LinkedIn ] [ X ]                     |  STUDIO STATUS: ACTIVE [KOZHIKODE & TRIVANDRUM]       |
+|  [ Instagram ] [ LinkedIn ] [ X ]                     |                                                       |
+|  (Solid black squircles, pure white vector glyphs)    |                                                       |
 +-------------------------------------------------------+-------------------------------------------------------+
 ```
 
-### 2.1 Color Tokens & Contrast Ratios (Rule R-25 & antislop-human)
+### 2.1 Complete Purge Matrix (Zero AI-Slop)
 
-| Canvas Region | Element | Color Token | Surface Base | Contrast Ratio | WCAG Compliance |
-| :--- | :--- | :--- | :--- | :---: | :---: |
-| **Left Panel** | Background Canvas | `#ffffff` | N/A | N/A | Base |
-| **Left Panel** | Brand Logo & Nav Text | `#0a0a0a` | `#ffffff` | **19.82 : 1** | **PASS (WCAG AAA >= 7:1)** |
-| **Left Panel** | Nav Numbers & Meta | `#666666` | `#ffffff` | **5.74 : 1** | **PASS (WCAG AA >= 4.5:1)** |
-| **Left Panel** | Hover Accent & Arrow | `#ea002a` | `#ffffff` | **4.64 : 1** | **PASS (WCAG AA >= 4.5:1)** |
-| **Right Panel**| Background Canvas | `#000000` | N/A | N/A | Base |
-| **Right Panel**| Close Icon & Reticle | `#ffffff` | `#000000` | **21.00 : 1** | **PASS (WCAG AAA >= 7:1)** |
-| **Right Panel**| Discipline Labels | `rgba(255,255,255,0.7)` | `#000000` | **10.85 : 1** | **PASS (WCAG AAA >= 7:1)** |
-| **Right Panel**| Shockwave Pulse Ring | `#ea002a` | `#000000` | **4.52 : 1** | **PASS (WCAG AA >= 4.5:1)** |
-
-### 2.2 Responsive Reflow Matrix (Rule R-03 & antislop-layoutmobile)
-
-| Viewport Tier | Width | Left Panel Layout | Right Panel Layout | Technical Action |
-| :--- | :--- | :--- | :--- | :--- |
-| **Desktop Ultra** | `>= 1440px` | `50vw`, padding `clamp(3rem, 5vw, 6rem)` | `50vw`, full interactive kinetic stage | Dual-column CSS Grid |
-| **Desktop Standard**| `1024px – 1439px` | `50vw`, padding `2.5rem 3.5rem` | `50vw`, full interactive kinetic stage | Dual-column CSS Grid |
-| **Tablet Portrait & Mobile** | `< 1024px` | `100vw`, padding `2rem 1.5rem`, scrollable | `display: none;` (unmounted) | Single column; RAF loop halted |
+| Item to Eradicate | Location | Status |
+| :--- | :--- | :---: |
+| `01`, `02`, `03`, `04`, `05` (`.navIndex`) | `NavigationOverlay.tsx` | **PURGED** |
+| `justify-content: space-between` | `NavigationOverlay.module.scss` | **PURGED** (replaced with `fit-content; gap: 12px`) |
+| Outline grey borders on social links | `NavigationOverlay.module.scss` | **PURGED** (replaced with solid `#000000` squircle badges) |
+| Corporate boilerplate (`MARCA UBI GLOBAL HOLDINGS...`) | `NavigationOverlay.tsx` | **PURGED** |
+| `.topTelemetry` & green pulsing dot | `KineticStage.tsx`, `.scss` | **PURGED** |
+| `X: px \| Y: px` coordinate tooltip chips | `KineticStage.tsx`, `.scss` | **PURGED** |
+| Dashed radar circles (`.compassRing`, `.compassRingInner`) | `KineticStage.tsx`, `.scss` | **PURGED** |
+| Center crosshair (`.centerCrosshair`) | `KineticStage.tsx`, `.scss` | **PURGED** |
+| Bottom GPS coordinates & divider line | `KineticStage.tsx`, `.scss` | **PURGED** |
 
 ---
 
-## 3. Kinetic Stage Engine: Architecture & Motion Physics
+## 3. Component Architecture & Code Blueprints
 
-### 3.1 Kinetic Stage State Machine (Mermaid)
+### 3.1 Left Panel (`NavigationOverlay.tsx` & `.module.scss`)
+1. **Nav Links**:
+   ```tsx
+   <nav className={styles.navCluster} aria-label="Primary Navigation">
+     {navItems.map((item) => (
+       <Link
+         key={item.href}
+         href={item.href}
+         className={styles.navLink}
+         onClick={onClose}
+       >
+         <span className={styles.navLabel}>{item.label}</span>
+         <span className={styles.navArrow} aria-hidden="true">&rarr;</span>
+       </Link>
+     ))}
+   </nav>
+   ```
+   - Styled with `display: inline-flex; align-items: center; justify-content: flex-start; width: fit-content; gap: 12px;`.
+   - Arrow sits immediately adjacent to the text label.
+   - On hover: Text remains bold black, label shifts 4px, arrow glides 6px and transitions to Marca Red (`#ea002a`).
 
-```mermaid
-stateDiagram-v2
-    [*] --> Inactive : Navigation Closed (!isOpen)
-    
-    Inactive --> AutonomousIdle : Navigation Opened (isOpen && pointer == idle)
-    Inactive --> StaticReducedMotion : Navigation Opened (prefers-reduced-motion)
-    
-    AutonomousIdle --> MouseTracking : Pointer Enters Stage (pointermove)
-    MouseTracking --> AutonomousIdle : Pointer Leaves Stage / 2500ms Inactive
-    
-    AutonomousIdle --> SimulatedClick : Waypoint Target Locked
-    SimulatedClick --> RadarShockwave : Reticle Scale 0.88 + Label Highlight
-    RadarShockwave --> DwellHold : Emit 1px Hairline Ring
-    DwellHold --> AutonomousIdle : Advance Spline to Next Waypoint
-    
-    MouseTracking --> UserClick : Pointer Down / Click
-    UserClick --> RadarShockwave : Instant Pulse at Cursor (X, Y)
-    
-    AutonomousIdle --> Inactive : Close Triggered
-    MouseTracking --> Inactive : Close Triggered
-    StaticReducedMotion --> Inactive : Close Triggered
-```
+2. **Social Channels**:
+   - Solid black squircle tiles: `width: 44px; height: 44px; background-color: #000000; color: #ffffff; border-radius: 6px; border: none;`.
+   - Centered 18px vector glyphs for Instagram, LinkedIn, and X.
+   - Hover state: Background transitions to `#ea002a` with subtle spring lift (`translateY(-2px)`).
 
-### 3.2 Motion Physics & Specification
-1. **Autonomous Waypoints & Disciplines**:
-   - The virtual cursor navigates along a continuous cubic Bézier path connecting five Marca Ubi core competencies:
-     - `[01] BRAND ARCHITECTURE` — `(30%, 25%)`
-     - `[02] DIGITAL INFRASTRUCTURE` — `(72%, 40%)`
-     - `[03] GENERATIVE SYSTEMS` — `(28%, 68%)`
-     - `[04] IMMERSIVE INTERACTION` — `(68%, 78%)`
-     - `[05] SPATIAL COMPUTING` — `(50%, 50%)`
-2. **Tactile Click Simulation**:
-   - As the pointer approaches within 32px of a waypoint:
-     - Reticle snaps with micro-spring damping (`ease: "power3.out"`).
-     - Pointer contracts by 12% (`scale: 0.88`) for 110ms.
-     - Node label illuminates to pure `#ffffff` with a subtle Marca Red dot (`#ea002a`).
-     - A pre-allocated DOM ripple expands (`scale: 0.2 -> 2.8`, `opacity: 0.75 -> 0`) over 650ms.
-3. **Interactive User Override**:
-   - When the user's mouse moves over the black canvas, GSAP `quickTo` seamlessly binds the reticle to real mouse coordinates with smooth 60fps spring damping.
-   - Clicking triggers an instant tactile pulse at the cursor's exact coordinates.
-   - Leaving the canvas resumes the autonomous spline loop after a 2.5s idle debounce.
-4. **Prefers-Reduced-Motion**:
-   - When `(prefers-reduced-motion: reduce)` is detected, all GSAP RAF loops and animations are completely disabled. The right stage displays a static, elegant architectural compass and Kerala studio coordinates.
+3. **Footer Cleanliness**:
+   - Zero corporate holding text, zero copyright strings.
+   - Clean, minimal studio location stamp (`Kozhikode & Trivandrum`) satisfying Section 12 & 14 test invariants.
 
----
-
-## 4. Component Hierarchy & Decoupled File Structure
-
-```
-src/app/components/NavigationOverlay/
-├── NavigationOverlay.tsx          // Orchestrator: WAI-ARIA dialog, focus trap, body scroll lock, 50/50 split
-├── NavigationOverlay.module.scss  // 50/50 CSS Grid, typography, arrow transitions, mobile reflow
-├── KineticStage.tsx               // Right panel: GSAP quickTo tracking, autonomous spline, shockwave pool
-├── KineticStage.module.scss       // Obsidian canvas, reticle styling, radar ring keyframes, telemetry HUD
-├── types.ts                       // NavItem contracts, stage coordinates, event interfaces
-└── index.ts                       // Barrel export
-```
-
-### 4.1 Integration with `ClientHeader.tsx`
-`ClientHeader.tsx` is simplified from 168 lines down to ~100 lines:
-- Retains sticky intersection observer and dynamic header theme detection (`data-header-theme="dark"` / `"light"`).
-- Replaces the 50-line inline `menuDrawer` with `<NavigationOverlay isOpen={isDrawerOpen} onClose={closeDrawer} triggerRef={menuTriggerRef} />`.
-- Guarantees 100% backward compatibility with all 36 existing platform tests.
+### 3.2 Right Panel (`KineticStage.tsx` & `.module.scss`)
+1. **Graphic Typographic Constellation**:
+   - Five evocative studio words (`Culture`, `Design`, `Craft`, `Tech`, `Impact`) with clean vector glyphs (`✦`, `✌`, `🌐`, `♡`).
+   - Pure obsidian black `#000000` canvas with zero radar circles or coordinate numbers.
+2. **Authentic Vector Cursor**:
+   - High-contrast SVG vector arrow pointer:
+     ```tsx
+     <svg viewBox="0 0 24 24" width="28" height="28" className={styles.vectorCursor}>
+       <path d="M3 3L10.5 21L14 13.5L21.5 10L3 3Z" fill="#ffffff" stroke="#000000" strokeWidth="1.5" strokeLinejoin="round" />
+     </svg>
+     ```
+3. **Motion Physics**:
+   - **Autonomous Navigation**: Glides between words using GSAP `power2.inOut` over 1.35s.
+   - **Tactile Click**: Cursor scales down to `0.82` for 130ms; target word reacts with micro-spring scale bump (`scale(1.10)`), dwelling for 850ms before moving to the next word.
+   - **Pointer Override**: Moving mouse over the canvas immediately binds the cursor to pointer position via `gsap.quickTo` (0.16s). Clicking triggers an instant tactile click scale. Resumes autonomous loop after 2.5s idle.
+   - **Reduced Motion**: Respects `(prefers-reduced-motion: reduce)` by disabling all animation loops and presenting a static graphic composition.
 
 ---
 
-## 5. Accessibility, WAI-ARIA Dialog & Security Boundaries
+## 4. Verification Matrix & Delivery Gate Checklist
 
-1. **WAI-ARIA Dialog Compliance**:
-   - `role="dialog"`, `aria-modal="true"`, `aria-label="Site Navigation"`.
-   - Hamburger button declares `aria-expanded={isOpen}`, `aria-controls="client-navigation-overlay"`.
-2. **Active Focus Trap**:
-   - On opening: Focus is automatically moved to the first focusable element (frameless Close button).
-   - `Tab` / `Shift+Tab`: Cycles exclusively within the modal's focusable elements (Close button, nav links, social icons).
-   - `Escape`: Closes the overlay immediately and restores focus to the triggering hamburger button.
-3. **Zero-Shift Body Scroll Lock**:
-   - Windows scrollbar layout shift prevention: calculates `window.innerWidth - document.documentElement.clientWidth` and applies compensating `padding-right` to `document.body` while `overflow: hidden` is active.
-4. **Touch Target Enforcement**:
-   - Frameless Close button: 48px × 48px hitbox (`min-height: 48px; min-width: 48px;`).
-   - All navigation items: minimum 44px vertical height with generous horizontal padding.
-
----
-
-## 6. Implementation Step-by-Step Roadmap
-
-| Phase | Milestone Description | Target Files | Verification Gate |
-| :---: | :--- | :--- | :--- |
-| **Phase 1** | **Type Contracts & Interfaces** | `src/app/components/NavigationOverlay/types.ts` | 0 TypeScript errors (`tsc --noEmit`) |
-| **Phase 2** | **Kinetic Stage Engine (Right Panel)** | `KineticStage.tsx`, `KineticStage.module.scss` | 60fps GPU acceleration, reduced-motion fallback |
-| **Phase 3** | **Navigation Overlay Container (Left Panel & Split Grid)** | `NavigationOverlay.tsx`, `NavigationOverlay.module.scss`, `index.ts` | 50/50 desktop split, <1024px mobile reflow, focus trap |
-| **Phase 4** | **Header Decoupling & Integration** | `ClientHeader.tsx`, `ClientHeader.module.scss` | 36/36 client tests pass, seamless header toggle |
-| **Phase 5** | **Test Expansion & CTO PR Auditor Review** | `tests/client/client_160over90_platform.test.ts` | 100% test pass rate, R-35 smoke test evidence |
-| **Phase 6** | **Commit, Push & PR Update** | Git commit authored as `Fenar7`, push to branch | PR #84 description updated, PR remains OPEN |
-
----
-
-## 7. 4-Block Delivery Gate Verification Checklist
-
-- [ ] **Block 1: Architectural Rigor & Zero Loose Files**
-  - All documentation resides exclusively in `docs/navigation_overlay/`.
-  - Zero loose `.md` files in project root or `docs/` root.
-  - CRM air-gap strictly preserved (`:root:not([data-admin-root="true"])`).
-- [ ] **Block 2: 160over90 Visual Parity & Brand Distinction**
-  - 50/50 dual-canvas split (Pure White left / Obsidian Black right).
-  - Frameless minimal `×` close button (zero box border).
-  - Right panel features authentic Marca Ubi Architectural Studio Reticle (zero 8-bit emojis or casual slang).
-- [ ] **Block 3: Accessibility & Mobile Responsiveness**
-  - WAI-ARIA `role="dialog"`, `aria-modal="true"`.
-  - Focus trap, Esc key listener, focus restoration to hamburger trigger.
-  - Zero-shift body scroll lock with scrollbar padding compensation.
-  - Mobile reflows cleanly to 1-column layout with 0 horizontal overflow.
-- [ ] **Block 4: Test Suite & Type-Safety Verification**
-  - All 36 client platform tests pass (`npx tsx --test tests/client/client_160over90_platform.test.ts`).
-  - TypeScript compiles with 0 errors (`npx tsc --noEmit`).
-  - Authored strictly as `Fenar7 <86710532+Fenar7@users.noreply.github.com>`.
+- [ ] **160/90 Visual Parity**:
+  - Left panel: Zero numbers, tight inline arrows (`Work →`), solid black social badges, zero footer boilerplate.
+  - Right panel: Pure obsidian black canvas, zero radar circles, zero coordinates, zero green status dots, authentic vector cursor with tactile click motion.
+- [ ] **WAI-ARIA & Accessibility**:
+  - `role="dialog"`, `aria-modal="true"`, active keyboard focus trap, `Escape` key close.
+  - Windows zero-shift body scroll lock with padding compensation.
+  - Mobile reflow (< 1024px) collapses to single white panel with mobile close trigger.
+- [ ] **Test Invariants**:
+  - All 37 client platform tests in `tests/client/client_160over90_platform.test.ts` pass with 0 failures.
+  - `tsc --noEmit` returns 0 compilation errors.
+- [ ] **Governance & Author Identity**:
+  - Commit author: `Fenar7 <86710532+Fenar7@users.noreply.github.com>`.
   - PR #84 remains strictly **OPEN**.
