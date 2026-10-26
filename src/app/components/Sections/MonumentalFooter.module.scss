@@ -1,0 +1,156 @@
+@import "../../styles/client-mixins.scss";
+
+.monumentalFooter {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  background-color: $client-canvas-black;
+  color: #ffffff;
+  padding: clamp(6rem, 10vw, 10rem) clamp(1.5rem, 5vw, 4.5rem) 3rem;
+  box-sizing: border-box;
+}
+
+.footerInner {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4rem, 8vw, 8rem);
+}
+
+.anthemBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.anthemHeadline {
+  font-family: $font-circular;
+  font-size: var(--client-type-h1);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.brandmarkStage {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.giantWordmark {
+  width: 100%;
+  max-width: 1400px;
+  height: auto;
+  max-height: 160px;
+  display: block;
+  opacity: 0.85;
+  transition: opacity 0.3s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.directoryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2.5rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 3rem;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    row-gap: 2.5rem;
+  }
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.columnTitle {
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+.columnText {
+  font-family: $font-circular;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.linksList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.linkItem {
+  font-family: $font-circular;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+  display: inline-block;
+
+  &:hover {
+    color: $client-accent-red;
+    transform: translateX(3px);
+  }
+}
+
+.bottomLegalBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 2rem;
+  font-family: $font-mono;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.legalLinksCluster {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.legalLink {
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+}

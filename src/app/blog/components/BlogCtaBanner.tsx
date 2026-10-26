@@ -1,14 +1,20 @@
+import React from "react";
 import Link from "next/link";
-import PillButton from "@/app/components/ui/PillButton/PillButton";
 import styles from "./BlogPostComponents.module.scss";
 
+/**
+ * Studio Conversion CTA Banner for Editorial Dispatches.
+ * Monolithic Swiss architectural block with high-contrast actions.
+ * Zero AI-slop pills, zero asterisk decorations.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
 export default function BlogCtaBanner() {
   return (
     <section className={styles.ctaBanner} aria-labelledby="cta-heading">
       <div className={styles.ctaContent}>
         <div className={styles.ctaTag}>
-          <img src="/images/asterisk.png" alt="" className={styles.ctaAsterisk} width={14} height={14} aria-hidden="true" />
-          <span>Work With Us / Marca Ubi</span>
+          <span>Commissions / Marca Ubi</span>
         </div>
         <h2 id="cta-heading" className={styles.ctaHeading}>
           Ready to engineer your brand identity?
@@ -19,22 +25,13 @@ export default function BlogCtaBanner() {
       </div>
 
       <div className={styles.ctaActions}>
-        <PillButton
-          href="/start-project"
-          label="Start a Project Brief"
-          variant="brand"
-          icon={<img src="/hero/primary-arrow.png" alt="" width={16} height={16} />}
-        />
+        <Link href="/start-project" className={styles.ctaPrimaryButton}>
+          <span>Start a Project Brief</span>
+          <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+        </Link>
         <Link href="/#works" className={styles.ctaSecondaryLink}>
           <span>Explore Selected Works</span>
-          <img
-            src="/hero/primary-arrow.png"
-            alt=""
-            width={13}
-            height={13}
-            className={styles.ctaSecondaryArrow}
-            aria-hidden="true"
-          />
+          <span className={styles.arrow} aria-hidden="true">&rarr;</span>
         </Link>
       </div>
     </section>
