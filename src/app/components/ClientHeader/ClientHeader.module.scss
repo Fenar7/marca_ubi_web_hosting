@@ -61,19 +61,14 @@
 .menuTrigger {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   background: transparent;
   border: none;
-  padding: 10px 14px;
-  min-height: 44px; // 44px accessible touch target
-  min-width: 44px;
+  padding: 10px;
+  min-height: 48px; // 48px accessible touch target
+  min-width: 48px;
   cursor: pointer;
   color: inherit;
-  font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   transition: opacity 0.2s ease;
 
   &:hover {
@@ -90,13 +85,16 @@
   }
 }
 
-.menuLabel {
-  display: inline-block;
-  line-height: 1;
-
-  @media (max-width: 480px) {
-    display: none;
-  }
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .burgerStack {
@@ -104,7 +102,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 6px;
-  width: 22px;
+  width: 24px;
   height: 16px;
 }
 

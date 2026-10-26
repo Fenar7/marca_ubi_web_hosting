@@ -99,8 +99,8 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
             aria-controls="client-nav-drawer"
             aria-label={isDrawerOpen ? "Close navigation menu" : "Open navigation menu"}
           >
-            <span className={styles.menuLabel}>
-              {isDrawerOpen ? "Close" : "Menu"}
+            <span className={styles.srOnly}>
+              {isDrawerOpen ? "Close navigation menu" : "Open navigation menu"}
             </span>
             <div className={styles.burgerStack} aria-hidden="true">
               <span className={`${styles.burgerLine} ${isDrawerOpen ? styles.lineOpenTop : ""}`} />

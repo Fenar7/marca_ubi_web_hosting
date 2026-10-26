@@ -472,6 +472,39 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes('addressLocality: "Kozhikode"'), "layout.tsx schema must declare Kozhikode locality");
     });
   });
+
+  describe("Section 14: Minimalist Clean Aesthetic & Clutter Eradication Invariants", () => {
+    test("verifies HeroCutout renders without mandatory kicker or scrollCueCluster by default", () => {
+      const heroPath = path.join(rootDir, "src", "app", "components", "Sections", "HeroCutout.tsx");
+      const content = fs.readFileSync(heroPath, "utf8");
+
+      assert.ok(content.includes("{kicker ?"), "HeroCutout must conditionally render kicker only when passed");
+      assert.ok(content.includes("{showScrollCue ?"), "HeroCutout must conditionally render scrollCueCluster only when true");
+      assert.ok(content.includes('showScrollCue = false'), "HeroCutout showScrollCue must default to false");
+    });
+
+    test("verifies ClientHomeExperience mounts HeroCutout with pure 2-line headline and zero kicker", () => {
+      const experiencePath = path.join(rootDir, "src", "app", "components", "ClientHomeExperience", "ClientHomeExperience.tsx");
+      const content = fs.readFileSync(experiencePath, "utf8");
+
+      assert.ok(!content.includes('kicker="00 /'), "ClientHomeExperience must NOT pass kicker 00 to HeroCutout");
+      assert.ok(content.includes('headline={"Engineering Brands\\nThat Move The World."}') || content.includes('Engineering Brands\nThat Move The World.'), "ClientHomeExperience must pass balanced 2-line headline");
+    });
+
+    test("verifies ClientHeader menu trigger enforces 48px touch target and .srOnly screen reader text without visual clutter", () => {
+      const headerTsxPath = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.tsx");
+      const headerScssPath = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.module.scss");
+
+      const tsx = fs.readFileSync(headerTsxPath, "utf8");
+      const scss = fs.readFileSync(headerScssPath, "utf8");
+
+      assert.ok(tsx.includes("className={styles.srOnly}"), "ClientHeader must wrap navigation label in .srOnly for screen readers");
+      assert.ok(scss.includes(".srOnly"), "ClientHeader.module.scss must define .srOnly clip rules");
+      assert.ok(scss.includes("min-height: 48px"), "ClientHeader.module.scss must enforce 48px touch targets");
+      assert.ok(scss.includes("min-width: 48px"), "ClientHeader.module.scss must enforce 48px minimum width");
+    });
+  });
+
   describe("Section 13: Dedicated /works Showcase Route & Navigation Invariants", () => {
     test("verifies src/app/works/page.tsx renders with ClientHeader, MonumentalFooter, and ISR revalidate", () => {
       const worksPagePath = path.join(rootDir, "src", "app", "works", "page.tsx");

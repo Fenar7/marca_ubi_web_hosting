@@ -47,10 +47,9 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
 
       {/* 3. Main Alternating Content Stream (z-index: 10) */}
       <main id="main-content" tabIndex={-1}>
-        {/* View 01: Hero Video Cutout (Transparent) */}
+        {/* View 01: Hero Video Cutout (Transparent, Pure Monumental 160/90 Headline) */}
         <HeroCutout
-          headline="Engineering Brands That Move The World."
-          kicker="00 / Strategic Brand Architecture & Cultural Velocity"
+          headline={"Engineering Brands\nThat Move The World."}
         />
 
         {/* View 02: About & Doctrine Curtain (Solid Pure White) */}

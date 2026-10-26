@@ -31,14 +31,17 @@
 
 .displayHeadline {
   font-family: $font-circular;
-  font-size: var(--client-type-h1);
+  font-size: clamp(3rem, 7.5vw, 6.75rem);
   font-weight: 500; // CircularXXWeb-Medium
-  line-height: 1.08;
-  letter-spacing: -0.025em;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
   color: #ffffff;
   margin: 0;
   text-transform: none;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  white-space: pre-line;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.9),
+    0 8px 32px rgba(0, 0, 0, 0.75);
 }
 
 .scrollCueCluster {
