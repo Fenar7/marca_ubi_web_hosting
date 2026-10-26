@@ -557,10 +557,10 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
 
       assert.ok(tsx.includes("ScrollTrigger"), "WorksGalleryClient must register ScrollTrigger");
       assert.ok(tsx.includes("useGSAP"), "WorksGalleryClient must use useGSAP hook");
-      assert.ok(tsx.includes("Curated Works"), "WorksGalleryClient must declare Curated Works title in natural casing");
+      assert.ok(tsx.includes("CURATED WORKS"), "WorksGalleryClient must declare CURATED WORKS title in uppercase");
       assert.ok(scss.includes("font-weight: 400; // CircularXXWeb-Book"), "Works.module.scss must enforce font-weight: 400 (Book) for title");
       assert.ok(scss.includes("font-size: clamp(2.25rem, 5.5vw, 4.75rem);"), "Works.module.scss must scale down title size to elegant clamp");
-      assert.ok(scss.includes("text-transform: none;"), "Works.module.scss must enforce text-transform: none on title");
+      assert.ok(scss.includes("text-transform: uppercase;"), "Works.module.scss must enforce text-transform: uppercase on title");
       assert.ok(tsx.includes("workDeckWrapper"), "WorksGalleryClient must wrap cards in workDeckWrapper");
       assert.ok(tsx.includes("rotateZ"), "WorksGalleryClient must implement 3D rotateZ transform");
       assert.ok(tsx.includes("transformPerspective: 1400"), "WorksGalleryClient must set 1400 perspective");
