@@ -27,11 +27,12 @@
 
 .leftPanel {
   background-color: #ffffff;
-  color: #0a0a0a;
+  color: #000000;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(2.5rem, 5vw, 4.5rem) clamp(2rem, 5vw, 5rem);
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: clamp(2.5rem, 5vh, 4.5rem) clamp(3rem, 5.5vw, 6rem);
   height: 100%;
   box-sizing: border-box;
   overflow-y: auto;
@@ -39,7 +40,7 @@
   -webkit-overflow-scrolling: touch;
 
   @media (max-width: 1024px) {
-    padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 4vw, 2rem);
+    padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.25rem, 4vw, 2rem);
     padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
   }
 }
@@ -49,7 +50,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 .brandLogoAnchor {
@@ -103,9 +104,18 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(0.75rem, 2vh, 1.75rem);
-  margin: auto 0;
-  padding: 1rem 0;
+  margin: 0;
+  margin-top: clamp(2.75rem, 5.5vh, 4.5rem);
+  padding: 0;
+  width: 100%;
+}
+
+.navLinksList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(1.125rem, 2vh, 1.75rem);
+  width: 100%;
 }
 
 .navLink {
@@ -113,15 +123,14 @@
   align-items: center;
   justify-content: flex-start;
   width: fit-content;
-  gap: 12px;
+  gap: 14px;
   text-decoration: none;
-  color: #0a0a0a;
+  color: #000000;
   font-family: $font-circular;
-  font-size: clamp(2rem, 3.8vw, 3.5rem);
+  font-size: clamp(2.75rem, 3.8vw, 3.875rem);
   font-weight: 500;
   letter-spacing: -0.03em;
-  line-height: 1.1;
-  min-height: 48px;
+  line-height: 1.12;
   transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
@@ -129,9 +138,8 @@
     transform: translateX(4px);
 
     .navArrow {
-      transform: translateX(6px);
+      transform: translateX(8px);
       color: $client-accent-red;
-      opacity: 1;
     }
   }
 
@@ -141,57 +149,75 @@
   }
 
   @media (max-width: 1024px) {
-    font-size: clamp(1.75rem, 6.5vw, 2.5rem);
+    font-size: clamp(2rem, 6.5vw, 2.75rem);
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
   }
 }
 
 .navLabel {
   display: inline-block;
+  line-height: 1;
 }
 
 .navArrow {
-  font-size: clamp(1.25rem, 2vw, 2rem);
-  color: rgba(10, 10, 10, 0.35);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, opacity 0.2s ease;
-  display: inline-block;
-}
-
-.leftFooter {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  padding-top: 1.75rem;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  justify-content: center;
+  width: 0.65em;
+  height: 0.65em;
+  color: #000000;
+  margin-left: 0.15em;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+  will-change: transform, color;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.25rem;
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 }
 
 .socialCluster {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
+  margin-top: clamp(2rem, 3.8vh, 2.75rem);
+  padding-top: 0;
+  border-top: none;
 }
 
 .socialLink {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
   background-color: #000000;
   color: #ffffff;
   border: none;
   border-radius: 6px;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    background: transparent;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+    color: #ffffff;
+    transition: transform 0.2s ease;
+  }
 
   &:hover {
     background-color: $client-accent-red;
@@ -201,17 +227,8 @@
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
-}
-
-.studioLocation {
-  font-family: $font-mono;
-  font-size: 11px;
-  color: #888888;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .rightPanel {

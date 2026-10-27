@@ -22,7 +22,7 @@ const STAGE_WORDS: readonly WordNode[] = [
 ] as const;
 
 /**
- * KineticStage — 160/90 Benchmark Graphic Kinetic Stage.
+ * KineticStage — 160/90 Benchmark Graphic Kinetic Constellation Stage.
  * Obsidian black canvas hosting an authentic vector arrow cursor that autonomously navigates
  * between studio ethos words (Culture, Design, Craft, Tech, Impact), executes tactile
  * click pulses with micro-spring reactions, and seamlessly yields to pointer interactions.
@@ -88,7 +88,7 @@ export function KineticStage({ isActive }: KineticStageProps) {
     timelineRef.current = tl;
   }, [isReducedMotion]);
 
-  // Pointer move handler with smooth GSAP quickTo tracking
+  // Pointer move handler with smooth GSAP tracking
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (!stageRef.current || !cursorRef.current || isReducedMotion) return;
