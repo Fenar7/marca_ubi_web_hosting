@@ -39,9 +39,17 @@
   margin: 0;
   text-transform: none;
   white-space: pre-line;
-  text-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.9),
-    0 8px 32px rgba(0, 0, 0, 0.75);
+}
+
+.terminalCluster {
+  display: inline;
+  white-space: nowrap;
+}
+
+.accentDot {
+  display: inline-block;
+  margin-left: 0.16em;
+  color: $client-accent-red;
 }
 
 .scrollCueCluster {
