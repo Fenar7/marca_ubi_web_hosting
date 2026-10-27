@@ -1,0 +1,357 @@
+@import "../../../styles/client-mixins.scss";
+
+.servicesShowcase {
+  width: 100%;
+  margin-top: clamp(4rem, 7vw, 7rem);
+  padding-top: clamp(3rem, 5vw, 5rem);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+}
+
+/* Header Container aligned with Swiss Grid margins */
+.headerContainer {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto 2.5rem auto;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.kickerWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sectionKicker {
+  font-family: $font-circular;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $client-text-muted-dark;
+}
+
+.sectionTitle {
+  font-family: $font-circular;
+  font-size: clamp(1.6rem, 2.4vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: $client-text-dark;
+  margin: 0;
+}
+
+/* Segmented Architecture Pill Switch */
+.segmentedSwitch {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f2f2f2;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  gap: 3px;
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.35rem;
+  min-height: 42px;
+  border: none;
+  background: transparent;
+  color: $client-text-body-dark;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+
+  &:hover {
+    color: $client-text-dark;
+  }
+
+  &.active {
+    background-color: $client-text-dark;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+
+    .countBadge {
+      background-color: $client-accent-red;
+      color: #ffffff;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 2px;
+  }
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.08);
+  color: $client-text-dark;
+  transition: all 0.25s ease;
+}
+
+/* 100% Full-Width Edge-to-Edge Strip */
+.fullWidthStrip {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #000000;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.cardsRow {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-width: 100%;
+  height: 560px;
+  gap: 1px;
+  background-color: rgba(255, 255, 255, 0.08);
+
+  @media (max-width: 1280px) {
+    height: 520px;
+  }
+
+  @media (max-width: 768px) {
+    height: 480px;
+  }
+}
+
+/* Each card strictly divides the space equally (NO width expansion) */
+.cardColumn {
+  position: relative;
+  flex: 1 1 0px;
+  min-width: 180px; // Prevents single-word vertical wrapping while enabling smooth full-width display
+  height: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #0d0d0d;
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: -2px;
+    z-index: 10;
+  }
+
+  @media (max-width: 1440px) {
+    min-width: 210px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 240px;
+  }
+}
+
+/* Background Image Layer */
+.imageLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+
+  img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  }
+
+  .cardActive & img,
+  .cardColumn:hover & img {
+    transform: scale(1.06);
+    filter: brightness(0.65);
+  }
+}
+
+/* Resting Scrim (Dark gradient at bottom for text contrast) */
+.restingScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.88) 100%);
+  transition: opacity 0.3s ease;
+
+  .cardActive & {
+    opacity: 0;
+  }
+}
+
+/* Resting State: Number index + Bottom-aligned Title */
+.restingContent {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.75rem 1.25rem;
+  opacity: 1;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+
+  .cardActive & {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+  }
+}
+
+.restingNumber {
+  font-family: $font-mono;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.05em;
+}
+
+.restingTitle {
+  font-family: $font-circular;
+  font-size: clamp(1.1rem, 1.3vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  margin: 0;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* Hover/Active State: Obsidian Overlay with Top-aligned Title & Description */
+.hoverOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 2vw, 2.25rem) 1.25rem;
+  background-color: rgba(10, 10, 10, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .cardActive & {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
+.overlayTop {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.overlayNumber {
+  font-family: $font-mono;
+  font-size: 13px;
+  font-weight: 700;
+  color: $client-accent-red;
+}
+
+.overlayCategory {
+  font-family: $font-circular;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.overlayTitle {
+  font-family: $font-circular;
+  font-size: clamp(1.15rem, 1.4vw, 1.45rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.accentBar {
+  width: 28px;
+  height: 2px;
+  background-color: $client-accent-red;
+  margin-top: 0.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.overlayDesc {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 400; // CircularXXWeb-Book
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+}
+
+.overlayBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.exploreCue {
+  font-family: $font-circular;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.redArrow {
+  font-size: 18px;
+  color: $client-accent-red;
+  transition: transform 0.25s ease;
+
+  .cardColumn:hover & {
+    transform: translateX(4px);
+  }
+}

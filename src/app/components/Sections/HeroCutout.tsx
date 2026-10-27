@@ -10,6 +10,39 @@ export interface HeroCutoutProps {
 }
 
 /**
+ * Renders the display headline, isolating the terminal period with an optical space
+ * and brand red accent color while preventing line-wrap orphaning.
+ *
+ * @param text The input headline string, optionally containing newlines and trailing period.
+ */
+function renderHeadline(text: string) {
+  if (text.endsWith(".")) {
+    const mainText = text.slice(0, -1);
+    const lastSpaceIndex = mainText.lastIndexOf(" ");
+    if (lastSpaceIndex !== -1) {
+      const beforeLastWord = mainText.slice(0, lastSpaceIndex + 1);
+      const lastWord = mainText.slice(lastSpaceIndex + 1);
+      return (
+        <>
+          {beforeLastWord}
+          <span className={styles.terminalCluster}>
+            {lastWord}
+            <span className={styles.accentDot}>.</span>
+          </span>
+        </>
+      );
+    }
+    return (
+      <span className={styles.terminalCluster}>
+        {mainText}
+        <span className={styles.accentDot}>.</span>
+      </span>
+    );
+  }
+  return text;
+}
+
+/**
  * View 01: Hero Video Cutout.
  * Pure monumental typography over continuous background video layer.
  * Enforces the 160over90 minimalist aesthetic: zero kicker clutter,
@@ -30,7 +63,7 @@ export function HeroCutout({
     >
       <div className={styles.heroContentStage}>
         {kicker ? <span className={styles.kicker}>{kicker}</span> : null}
-        <h1 className={styles.displayHeadline}>{headline}</h1>
+        <h1 className={styles.displayHeadline}>{renderHeadline(headline)}</h1>
         {showScrollCue ? (
           <div className={styles.scrollCueCluster} aria-hidden="true">
             <span className={styles.scrollCueLabel}>Scroll to explore</span>
