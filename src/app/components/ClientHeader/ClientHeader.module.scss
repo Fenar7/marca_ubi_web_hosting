@@ -64,11 +64,15 @@
   justify-content: center;
   background: transparent;
   border: none;
+  outline: none;
+  box-shadow: none;
   padding: 10px;
   min-height: 48px; // 48px accessible touch target
   min-width: 48px;
   cursor: pointer;
   color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
   transition: opacity 0.2s ease;
 
   &:hover {
@@ -79,9 +83,12 @@
     }
   }
 
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 4px;
+  &:focus,
+  &:focus-visible,
+  &:active {
+    outline: none;
+    border: none;
+    box-shadow: none;
   }
 }
 
@@ -101,22 +108,22 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
-  width: 24px;
-  height: 16px;
+  gap: 4.5px;
+  width: 26.5px;
+  height: 18px;
 }
 
 .burgerLine {
   display: block;
   width: 100%;
-  height: 2.5px;
+  height: 2.75px;
   border-radius: 9999px; // Fully rounded capsule ends matching benchmark
   background-color: currentColor;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background-color 0.2s ease;
   transform-origin: center;
 
   &.lineOpenTop {
-    transform: translateY(6.5px) rotate(45deg);
+    transform: translateY(7.25px) rotate(45deg);
     background-color: #ffffff;
   }
 
@@ -126,7 +133,7 @@
   }
 
   &.lineOpenBottom {
-    transform: translateY(-6.5px) rotate(-45deg);
+    transform: translateY(-7.25px) rotate(-45deg);
     background-color: #ffffff;
   }
 }
