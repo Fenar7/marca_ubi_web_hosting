@@ -43,7 +43,7 @@ const METRICS: MetricItem[] = [
  * View 02: About Curtain.
  * Solid pure white curtain (#ffffff) sliding over the fixed background video.
  * Enforces the 160over90 Swiss 30/70 asymmetric editorial layout.
- * Houses authentic production content: Studio Narrative, 4 Metric Odometers, and Services Accordion Showcase.
+ * Houses authentic production content: Studio Narrative, 4 Metric Odometers, and Full-Width Services Showcase.
  */
 export function AboutCurtain() {
   return (
@@ -103,11 +103,11 @@ export function AboutCurtain() {
               ))}
             </div>
           </div>
-
-          {/* Practice Spectrum & Services Accordion Showcase */}
-          <ServicesAccordion />
         </div>
       </div>
+
+      {/* Full-Width Panoramic Practice Spectrum & Services Showcase */}
+      <ServicesAccordion />
     </section>
   );
 }
