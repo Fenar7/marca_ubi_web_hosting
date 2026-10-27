@@ -3,7 +3,6 @@
 import React from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
-import { EditIcon } from "@sanity/icons";
 
 interface Step4Props {
   formData: ProjectFormData;
@@ -13,71 +12,147 @@ interface Step4Props {
   submitError: string | null;
 }
 
-export default function Step4Summary({ formData, goToStep, handleSubmit, isSubmitting, submitError }: Step4Props) {
-  
-  const SummaryItem = ({ label, value }: { label: string, value: string }) => (
-    <div className={styles.summaryItem}>
-      <div className={styles.summaryLabel}>{label}</div>
-      <div className={styles.summaryValue}>{value}</div>
-    </div>
-  );
-
-  const SummarySection = ({ title, step, children }: { title: string, step: number, children: React.ReactNode }) => (
-    <div className={styles.summaryCard}>
-      <div className={styles.summaryHeader}>
-        <h3>{title}</h3>
-        <button 
-          onClick={() => goToStep(step)}
-          className={styles.editButton}
-        >
-          <EditIcon /> Edit
-        </button>
-      </div>
-      <div className={styles.summaryContent}>
-        {children}
-      </div>
-    </div>
-  );
-
+/**
+ * Step 4: Executive Review & Submission.
+ * Clean review summary with direct communication channels and solid error handling.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+export default function Step4Summary({
+  formData,
+  goToStep,
+  handleSubmit,
+  isSubmitting,
+  submitError,
+}: Step4Props) {
   return (
     <div className={styles.stepContainer}>
-      <h2 className={styles.stepTitle}>Review your project brief</h2>
-      
-      <SummarySection title="1. Design Needs" step={1}>
-        <SummaryItem label="Category" value={formData.category || "Not selected"} />
-        <SummaryItem label="Service" value={formData.service || "Not selected"} />
-      </SummarySection>
+      <header className={styles.stepHeaderBlock}>
+        <h2 className={styles.stepTitle}>Review Your Project Brief</h2>
+        <p className={styles.stepDescription}>
+          Please verify your parameters before sending. Our partners review every brief personally.
+        </p>
+      </header>
 
-      <SummarySection title="2. Business Details" step={2}>
-        <SummaryItem label="Name" value={formData.name || "Not provided"} />
-        <SummaryItem label="Email" value={formData.email || "Not provided"} />
-        <SummaryItem label="Phone" value={formData.phone || "Not provided"} />
-        <SummaryItem label="Instagram" value={formData.instagram || "Not provided"} />
-        <SummaryItem label="Language" value={formData.language || "Not provided"} />
-        <SummaryItem label="Project Name" value={formData.projectName || "Not provided"} />
-        <SummaryItem label="Description" value={formData.projectDescription || "Not provided"} />
-        <SummaryItem label="Industry" value={formData.industry || "Not provided"} />
-        <SummaryItem label="Website" value={formData.website || "Not provided"} />
-        <SummaryItem label="Agency Status" value={formData.agencyStatus || "Not provided"} />
-        <SummaryItem label="Source" value={formData.referral || "Not provided"} />
-      </SummarySection>
+      {/* Review Dossiers */}
+      <div className={styles.dossierCluster}>
+        {/* Discipline & Scope */}
+        <div className={styles.dossierCard}>
+          <div className={styles.dossierHeader}>
+            <span className={styles.dossierTitle}>Focus Area</span>
+            <button
+              type="button"
+              className={styles.editButton}
+              onClick={() => goToStep(1)}
+              aria-label="Edit Discipline"
+            >
+              Edit
+            </button>
+          </div>
+          <div className={styles.dossierRows}>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Selected Discipline</span>
+              <span className={styles.itemValue}>{formData.service || "Not selected"}</span>
+            </div>
+          </div>
+        </div>
 
-      <SummarySection title="3. Details & Timeline" step={3}>
-        <SummaryItem label="Inspiration Links" value={formData.inspirationLinks || "None provided"} />
-        <SummaryItem label="Timeline" value={formData.timeline || "Not selected"} />
-        <SummaryItem label="Showcase Permission" value={formData.showcasePermission || "Not selected"} />
-        <SummaryItem label="Extra Notes" value={formData.extraNotes || "None"} />
-      </SummarySection>
+        {/* Brand & Contact */}
+        <div className={styles.dossierCard}>
+          <div className={styles.dossierHeader}>
+            <span className={styles.dossierTitle}>Contact &amp; Venture</span>
+            <button
+              type="button"
+              className={styles.editButton}
+              onClick={() => goToStep(2)}
+              aria-label="Edit Brand & Contact"
+            >
+              Edit
+            </button>
+          </div>
+          <div className={styles.dossierRows}>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Contact Name</span>
+              <span className={styles.itemValue}>{formData.name}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Email</span>
+              <span className={styles.itemValue}>{formData.email}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Brand / Entity</span>
+              <span className={styles.itemValue}>{formData.projectName}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Phone</span>
+              <span className={styles.itemValue}>{formData.phone || "Not provided"}</span>
+            </div>
+            <div className={`${styles.dossierItem} ${styles.fullWidth}`}>
+              <span className={styles.itemLabel}>Project Scope</span>
+              <span className={styles.itemValue}>{formData.projectDescription}</span>
+            </div>
+          </div>
+        </div>
 
+        {/* Timeline & Parameters */}
+        <div className={styles.dossierCard}>
+          <div className={styles.dossierHeader}>
+            <span className={styles.dossierTitle}>Timeline &amp; Parameters</span>
+            <button
+              type="button"
+              className={styles.editButton}
+              onClick={() => goToStep(3)}
+              aria-label="Edit Timeline"
+            >
+              Edit
+            </button>
+          </div>
+          <div className={styles.dossierRows}>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Target Horizon</span>
+              <span className={styles.itemValue}>{formData.timeline || "Not specified"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Attribution</span>
+              <span className={styles.itemValue}>
+                {formData.showcasePermission === "no" ? "Strict NDA Confidentiality" : "Public Release Permitted"}
+              </span>
+            </div>
+            {formData.inspirationLinks && (
+              <div className={`${styles.dossierItem} ${styles.fullWidth}`}>
+                <span className={styles.itemLabel}>Reference Links</span>
+                <span className={styles.itemValue}>{formData.inspirationLinks}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Error Notice */}
       {submitError && (
-        <div style={{ color: "red", padding: "1rem", backgroundColor: "#fff0f0", borderRadius: "8px", marginBottom: "1rem" }}>
-          <strong>Error:</strong> {submitError}
+        <div className={styles.notionCalloutError} role="alert">
+          <span className={styles.calloutKicker}>Submission Notice</span>
+          <p className={styles.calloutText}>{submitError}</p>
         </div>
       )}
 
-      <div className={styles.buttonGroup}>
-        <button className={styles.btnPrimary} onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Let's do this!"}
+      {/* Direct Transmission Action */}
+      <div className={styles.actionContainer}>
+        <button
+          type="button"
+          className={styles.submitCommandButton}
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          aria-label="Submit Project Brief"
+        >
+          {isSubmitting ? (
+            <span>Sending Project Brief...</span>
+          ) : (
+            <>
+              <span>Send Project Brief</span>
+              <span aria-hidden="true">&rarr;</span>
+            </>
+          )}
         </button>
       </div>
     </div>

@@ -637,4 +637,66 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes('redirect("/works")'), "Legacy /work page must redirect to /works");
     });
   });
+
+  describe("Section 15: Section Cadence Calibration and Project Brief Modal Invariants", () => {
+    test("verifies non-hero sections have calibrated heights and HeroCutout remains 100dvh", () => {
+      const heroPath = path.join(rootDir, "src", "app", "components", "Sections", "HeroCutout.module.scss");
+      const worksPath = path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.module.scss");
+      const connectPath = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.module.scss");
+      const valuesPath = path.join(rootDir, "src", "app", "components", "Sections", "ValuesCutout.module.scss");
+      const testimonialsPath = path.join(rootDir, "src", "app", "components", "Sections", "TestimonialsCutout.module.scss");
+
+      const heroScss = fs.readFileSync(heroPath, "utf8");
+      const worksScss = fs.readFileSync(worksPath, "utf8");
+      const connectScss = fs.readFileSync(connectPath, "utf8");
+      const valuesScss = fs.readFileSync(valuesPath, "utf8");
+      const testimonialsScss = fs.readFileSync(testimonialsPath, "utf8");
+
+      assert.ok(heroScss.includes("height: 100dvh;"), "HeroCutout must remain full screen 100dvh");
+      assert.ok(worksScss.includes("height: clamp(460px, 62vh, 640px);"), "WorksCutout must use calibrated clamp height");
+      assert.ok(!worksScss.includes("height: 100dvh;"), "WorksCutout must not consume 100dvh");
+      assert.ok(!connectScss.includes("min-height: 85vh;"), "ConnectCutout must not consume 85vh");
+      assert.ok(!valuesScss.includes("min-height: 80vh;"), "ValuesCutout must not consume 80vh");
+      assert.ok(!testimonialsScss.includes("min-height: 80vh;"), "TestimonialsCutout must not consume 80vh");
+    });
+
+    test("verifies ProjectBriefModal component exists and implements accessible modal standards", () => {
+      const modalPath = path.join(rootDir, "src", "app", "components", "ProjectBriefModal", "ProjectBriefModal.tsx");
+      const modalScssPath = path.join(rootDir, "src", "app", "components", "ProjectBriefModal", "ProjectBriefModal.module.scss");
+
+      assert.ok(fs.existsSync(modalPath), "ProjectBriefModal.tsx must exist");
+      assert.ok(fs.existsSync(modalScssPath), "ProjectBriefModal.module.scss must exist");
+
+      const tsx = fs.readFileSync(modalPath, "utf8");
+      const scss = fs.readFileSync(modalScssPath, "utf8");
+
+      assert.ok(tsx.includes('role="dialog"'), "ProjectBriefModal must declare role=dialog");
+      assert.ok(tsx.includes('aria-modal="true"'), "ProjectBriefModal must declare aria-modal=true");
+      assert.ok(tsx.includes("Escape"), "ProjectBriefModal must handle Escape key dismiss");
+      assert.ok(tsx.includes('document.body.style.overflow = "hidden"'), "ProjectBriefModal must lock body scroll");
+      assert.ok(scss.includes("backdrop-filter: blur(24px)"), "ProjectBriefModal must apply dark luxury backdrop blur");
+      assert.ok(scss.includes("min-height: 44px"), "ProjectBriefModal close button must meet 44px touch target");
+    });
+
+    test("verifies dual triggers in WorksCutout and ConnectCutout and wiring in ClientHomeExperience", () => {
+      const worksPath = path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.tsx");
+      const connectPath = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.tsx");
+      const homePath = path.join(rootDir, "src", "app", "components", "ClientHomeExperience", "ClientHomeExperience.tsx");
+
+      const worksTsx = fs.readFileSync(worksPath, "utf8");
+      const connectTsx = fs.readFileSync(connectPath, "utf8");
+      const homeTsx = fs.readFileSync(homePath, "utf8");
+
+      assert.ok(worksTsx.includes("onOpenBrief"), "WorksCutout must accept onOpenBrief prop");
+      assert.ok(worksTsx.includes("Start a Project"), "WorksCutout must render Start a Project action");
+      assert.ok(worksTsx.includes("View Works"), "WorksCutout must render View Works action");
+
+      assert.ok(connectTsx.includes("onOpenBrief"), "ConnectCutout must accept onOpenBrief prop");
+      assert.ok(connectTsx.includes("Start a Project Brief"), "ConnectCutout must render Start a Project Brief action");
+
+      assert.ok(homeTsx.includes("ProjectBriefModal"), "ClientHomeExperience must import ProjectBriefModal");
+      assert.ok(homeTsx.includes("isBriefOpen"), "ClientHomeExperience must maintain isBriefOpen state");
+      assert.ok(homeTsx.includes("isPausedByModal={isReelOpen || isBriefOpen}"), "BackgroundVideoEngine must pause when brief modal is open");
+    });
+  });
 });

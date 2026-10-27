@@ -4,18 +4,25 @@ import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./ProjectForm.module.scss";
 import { ProjectFormData, initialFormData } from "./types";
-import { MobileDeviceIcon, EnvelopeIcon, ArrowLeftIcon } from "@sanity/icons";
+import { ArrowLeftIcon, CheckmarkIcon } from "@sanity/icons";
 import Step1Services from "./steps/Step1Services";
 import Step2Business from "./steps/Step2Business";
 import Step3Details from "./steps/Step3Details";
 import Step4Summary from "./steps/Step4Summary";
 
+/**
+ * Master Project Brief Form Wizard.
+ * Clean, minimal 160over90 Agency Standard with zero AI-slop metadata.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
 export default function ProjectForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProjectFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submissionReceipt, setSubmissionReceipt] = useState<string | null>(null);
 
   const updateFormData = (field: keyof ProjectFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -33,14 +40,13 @@ export default function ProjectForm() {
       ? crypto.randomUUID()
       : `brief-${Date.now()}`;
 
-    // Map form category to CRM service category enum
+    // Map pillar to CRM service category
     const mapCategory = (cat: string) => {
       const lower = (cat || "").toLowerCase();
       if (lower.includes("brand")) return "Branding";
-      if (lower.includes("web")) return "Web & Digital";
-      if (lower.includes("mobile") || lower.includes("app")) return "Mobile Apps";
-      if (lower.includes("ui") || lower.includes("ux") || lower.includes("design")) return "UI/UX Design";
-      if (lower.includes("advisory") || lower.includes("strategy") || lower.includes("full")) return "Full-Suite Advisory";
+      if (lower.includes("digital") || lower.includes("web")) return "Web & Digital";
+      if (lower.includes("motion") || lower.includes("cinema")) return "Creative Direction";
+      if (lower.includes("advisory") || lower.includes("growth")) return "Full-Suite Advisory";
       return "Web & Digital";
     };
 
@@ -48,7 +54,7 @@ export default function ProjectForm() {
       formData.projectDescription ? `Project Scope: ${formData.projectDescription}` : "",
       formData.extraNotes ? `Additional Notes: ${formData.extraNotes}` : "",
       formData.inspirationLinks ? `Inspiration References: ${formData.inspirationLinks}` : "",
-      formData.referral ? `Referral: ${formData.referral}` : "",
+      formData.referral ? `Social Touchpoint: ${formData.referral}` : "",
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -64,7 +70,7 @@ export default function ProjectForm() {
       budget_bracket: formData.timeline.trim() || undefined,
       notes: combinedNotes || undefined,
       source_name: "Website Form",
-      source_detail: "Start Project Brief Wizard",
+      source_detail: "Start Project Brief Wizard (Agency Overhaul)",
       brief_payload: {
         category: formData.category,
         service: formData.service,
@@ -83,7 +89,6 @@ export default function ProjectForm() {
       },
     };
 
-    // Resilient submission with exponential backoff retry for network interruptions
     let attempt = 0;
     const maxAttempts = 3;
     let success = false;
@@ -100,129 +105,154 @@ export default function ProjectForm() {
           body: JSON.stringify(payload),
         });
 
-        if (!response.ok) {
-          const errData = (await response.json().catch(() => ({}))) as { error?: string };
-          throw new Error(errData.error || `Server responded with status ${response.status}`);
+        if (response.ok) {
+          success = true;
+          setSubmissionReceipt(idempotencyKey);
+          setSubmitSuccess(true);
+          return;
         }
 
-        success = true;
-
-        // Asynchronous non-blocking Sanity brief sync for legacy studio workflows
-        fetch("/api/submit-brief", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }).catch((sanityErr: unknown) => {
-          console.warn("[SANITY_SYNC_WARNING] Background brief sync failed:", sanityErr);
-        });
-
-        setSubmitSuccess(true);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        const data = await response.json().catch(() => ({}));
+        if (attempt === maxAttempts) {
+          throw new Error(data.error || `Server responded with status ${response.status}`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
       } catch (err: unknown) {
-        if (attempt >= maxAttempts) {
-          const message = err instanceof Error ? err.message : "Failed to submit project brief.";
-          setSubmitError(message);
+        if (attempt === maxAttempts) {
+          const msg = err instanceof Error ? err.message : "Transmission failed. Please verify connection.";
+          setSubmitError(msg);
         } else {
-          // Exponential backoff delay before retry (300ms, 600ms)
-          await new Promise((resolve) => setTimeout(resolve, attempt * 300));
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+        }
+      } finally {
+        if (attempt === maxAttempts || success) {
+          setIsSubmitting(false);
         }
       }
     }
-
-    setIsSubmitting(false);
   };
 
   if (submitSuccess) {
     return (
-      <div className={styles.successContainer}>
-        <div className={styles.successCard}>
-          <svg className={styles.checkmark} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-            <circle className={styles.checkmarkCircle} cx="26" cy="26" r="25" fill="none"/>
-            <path className={styles.checkmarkCheck} fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-          </svg>
-          
-          <h2>Project Brief Submitted!</h2>
-          <p className={styles.successMessage}>
-            Thank you for reaching out. Our team will review your requirements and get back to you within 24-48 hours.
-          </p>
-          
-          <div className={styles.contactCard}>
-            <p>Need immediate assistance?</p>
-            <div className={styles.contactDetails}>
-              <a href="tel:+917012052472" className={styles.contactLink}>
-                <MobileDeviceIcon /> +91 7012 052472
-              </a>
-              <a href="mailto:hello@marcaubi.com" className={styles.contactLink}>
-                <EnvelopeIcon /> hello@marcaubi.com
-              </a>
+      <div className={styles.formContainer}>
+        <div className={styles.successContainer}>
+          <div className={styles.successCard}>
+            <div className={styles.successEmblem} aria-hidden="true">
+              <CheckmarkIcon />
             </div>
-          </div>
 
-          <button className={styles.btnPrimary} onClick={() => window.location.href = "/"}>Return to Homepage</button>
+            <h2>Brief Received</h2>
+            <p className={styles.successMessage}>
+              Thank you. Your project brief has been routed to our Calicut &amp; Trivandrum commercial desks.
+              An executive partner will review your specifications and respond promptly.
+            </p>
+
+            <div className={styles.receiptMetadataBox}>
+              <div className={styles.receiptRow}>
+                <span className={styles.receiptLabel}>Reference ID</span>
+                <span className={styles.receiptValue}>{submissionReceipt}</span>
+              </div>
+              <div className={styles.receiptRow}>
+                <span className={styles.receiptLabel}>Target Entity</span>
+                <span className={styles.receiptValue}>{formData.projectName}</span>
+              </div>
+              <div className={styles.receiptRow}>
+                <span className={styles.receiptLabel}>Primary Discipline</span>
+                <span className={styles.receiptValue}>{formData.service}</span>
+              </div>
+              <div className={styles.receiptRow}>
+                <span className={styles.receiptLabel}>Direct Coordinates</span>
+                <span className={styles.receiptValue}>+91 7012 052 472 / hello@marcaubi.com</span>
+              </div>
+            </div>
+
+            <Link href="/" className={styles.actionHomeButton}>
+              <span>&larr; Return to Overview</span>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={styles.formContainer} id="project-form">
-      <div className={styles.formHeader}>
-        {currentStep > 1 ? (
-          <button className={styles.backButton} onClick={prevStep} aria-label="Go back">
-            <ArrowLeftIcon />
-            <span>Back</span>
-          </button>
-        ) : (
-          <Link href="/" className={styles.backButton} aria-label="Go to homepage">
-            <ArrowLeftIcon />
-            <span>Back</span>
-          </Link>
-        )}
+    <div className={styles.formContainer}>
+      <header className={styles.formHeader}>
+        {/* Step Indicator Controls */}
         <div className={styles.stepIndicatorContainer}>
-          <div className={styles.stepIndicatorText}>
-            Step {currentStep} of 4
-          </div>
-          <div className={styles.progressBarContainer}>
-            {[1, 2, 3, 4].map((step) => (
-              <div 
-                key={step} 
-                className={`${styles.progressPill} ${currentStep >= step ? styles.active : ""}`} 
-              />
-            ))}
+          {currentStep > 1 ? (
+            <button
+              type="button"
+              className={styles.backButton}
+              onClick={prevStep}
+              aria-label="Return to previous step"
+            >
+              <ArrowLeftIcon />
+              <span>Back</span>
+            </button>
+          ) : (
+            <span />
+          )}
+
+          <div className={styles.stepCounter}>
+            <span className={styles.activeStepNum}>0{currentStep}</span>
+            <span>/</span>
+            <span>04</span>
           </div>
         </div>
-      </div>
-      
-      <div className={styles.stepContent} key={currentStep}>
+
+        {/* Minimal Progress Rail */}
+        <div
+          className={styles.progressBarContainer}
+          role="progressbar"
+          aria-valuenow={currentStep}
+          aria-valuemin={1}
+          aria-valuemax={4}
+        >
+          {[1, 2, 3, 4].map((step) => {
+            let stateClass = "";
+            if (currentStep === step) stateClass = styles.active;
+            else if (currentStep > step) stateClass = styles.completed;
+
+            return (
+              <div
+                key={step}
+                className={`${styles.progressPill} ${stateClass}`}
+              />
+            );
+          })}
+        </div>
+      </header>
+
+      {/* Main Step Body */}
+      <div className={styles.stepContent}>
         {currentStep === 1 && (
-          <Step1Services 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            nextStep={nextStep} 
+          <Step1Services
+            formData={formData}
+            updateFormData={updateFormData}
+            nextStep={nextStep}
           />
         )}
         {currentStep === 2 && (
-          <Step2Business 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            nextStep={nextStep} 
-            prevStep={prevStep} 
+          <Step2Business
+            formData={formData}
+            updateFormData={updateFormData}
+            nextStep={nextStep}
           />
         )}
         {currentStep === 3 && (
-          <Step3Details 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            nextStep={nextStep} 
-            prevStep={prevStep} 
+          <Step3Details
+            formData={formData}
+            updateFormData={updateFormData}
+            nextStep={nextStep}
           />
         )}
         {currentStep === 4 && (
-          <Step4Summary 
-            formData={formData} 
+          <Step4Summary
+            formData={formData}
             goToStep={goToStep}
-            handleSubmit={handleSubmit} 
-            isSubmitting={isSubmitting} 
+            handleSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
             submitError={submitError}
           />
         )}
