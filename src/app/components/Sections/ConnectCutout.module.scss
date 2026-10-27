@@ -3,12 +3,12 @@
 .connectCutoutSection {
   position: relative;
   width: 100%;
-  min-height: 85vh;
+  min-height: auto;
   background-color: transparent;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(6rem, 10vw, 10rem) clamp(1.5rem, 5vw, 5rem);
+  padding: clamp(4.5rem, 7.5vw, 7rem) clamp(1.5rem, 5vw, 5rem);
   box-sizing: border-box;
 }
 

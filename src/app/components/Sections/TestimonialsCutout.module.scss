@@ -12,12 +12,12 @@
   position: relative;
   z-index: 10;
   width: 100%;
-  min-height: 80vh;
+  min-height: auto;
   display: flex;
   align-items: center;
   background-color: $client-canvas-white;
   color: $client-text-dark;
-  padding: clamp(6.5rem, 12vw, 11rem) 0;
+  padding: clamp(4.5rem, 7.5vw, 7rem) 0;
   box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18);
   box-sizing: border-box;
 }
