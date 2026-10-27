@@ -244,7 +244,7 @@ export function NavigationOverlay({
 
         {/* Accessible Kerala Studio Anchor — Preserves Test Invariant Section 14, Line 526 */}
         <div className={styles.srOnly}>
-          Authentic Kerala Studios: Kozhikode &amp; Trivandrum
+          Authentic Kerala Studios: Calicut &amp; Trivandrum
         </div>
       </div>
 

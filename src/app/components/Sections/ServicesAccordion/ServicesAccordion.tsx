@@ -29,7 +29,6 @@ export function ServicesAccordion() {
       {/* Editorial Header Section with Swiss Grid Padding */}
       <div className={styles.headerContainer}>
         <div className={styles.kickerWrap}>
-          <span className={styles.sectionKicker}>02 / Practice Spectrum</span>
           <h3 className={styles.sectionTitle}>Capabilities &amp; Strategic Delivery</h3>
         </div>
 

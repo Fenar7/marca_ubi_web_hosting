@@ -49,7 +49,6 @@ export function ValuesCutout() {
       <div className={styles.container}>
         {/* Header Stage */}
         <header className={styles.sectionHeader}>
-          <span className={styles.kicker}>04 / Guiding Principles</span>
           <h2 className={styles.headline}>What Shapes The Way We Build</h2>
           <p className={styles.subtext}>
             Marca Ubi is guided by a clear belief: enduring brands are built with unwavering intent, never assembled through disconnected compromise.

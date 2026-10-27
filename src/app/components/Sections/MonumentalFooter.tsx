@@ -47,7 +47,6 @@ export function MonumentalFooter() {
         {/* Bottom Deck: 4-Column Directory Rail */}
         <div className={styles.directoryGrid}>
           <div className={styles.column}>
-            <h3 className={styles.columnTitle}>01 / Identity &amp; Practice</h3>
             <p className={styles.columnText}>
               Marca Ubi Global Holdings.<br />
               Strategic Brand Architecture, Creative Technology, and High-Performance Digital Flagships.
@@ -55,48 +54,49 @@ export function MonumentalFooter() {
           </div>
 
           <div className={styles.column}>
-            <h3 className={styles.columnTitle}>02 / Navigation</h3>
-            <ul className={styles.linksList}>
-              {NAV_LINKS.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className={styles.linkItem}>
-                    {link.label}
+            <nav aria-label="Footer Navigation">
+              <ul className={styles.linksList}>
+                {NAV_LINKS.map((link) => (
+                  <li key={link.label}>
+                    <Link href={link.href} className={styles.linkItem}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+
+          <div className={styles.column}>
+            <nav aria-label="Direct Desks">
+              <ul className={styles.linksList}>
+                <li>
+                  <Link href="/start-project" className={styles.linkItem}>
+                    Start a Project Brief &rarr;
                   </Link>
                 </li>
-              ))}
-            </ul>
+                <li>
+                  <a href="tel:+917012052472" className={styles.linkItem}>
+                    +91 7012 052 472
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:hello@marcaubi.com" className={styles.linkItem}>
+                    hello@marcaubi.com
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:careers@marcaubi.com" className={styles.linkItem}>
+                    careers@marcaubi.com
+                  </a>
+                </li>
+              </ul>
+            </nav>
           </div>
 
           <div className={styles.column}>
-            <h3 className={styles.columnTitle}>03 / Direct Desks</h3>
-            <ul className={styles.linksList}>
-              <li>
-                <Link href="/start-project" className={styles.linkItem}>
-                  Start a Project Brief &rarr;
-                </Link>
-              </li>
-              <li>
-                <a href="tel:+917012052472" className={styles.linkItem}>
-                  +91 7012 052 472
-                </a>
-              </li>
-              <li>
-                <a href="mailto:hello@marcaubi.com" className={styles.linkItem}>
-                  hello@marcaubi.com
-                </a>
-              </li>
-              <li>
-                <a href="mailto:careers@marcaubi.com" className={styles.linkItem}>
-                  careers@marcaubi.com
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className={styles.column}>
-            <h3 className={styles.columnTitle}>04 / Studio Corridors</h3>
             <p className={styles.columnText}>
-              Hilite Business Park, Hilite City, Calicut, Kerala 673014<br />
+              HiLITE Business Park, Hilite City, Calicut, Kerala 673014<br />
               Trivandrum Creative Studio, Kerala
             </p>
           </div>

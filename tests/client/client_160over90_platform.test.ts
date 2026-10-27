@@ -443,7 +443,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const locationsPath = path.join(rootDir, "src", "app", "components", "Sections", "GlobalLocationsCloud.tsx");
       const content = fs.readFileSync(locationsPath, "utf8");
 
-      assert.ok(content.includes("Kozhikode"), "GlobalLocationsCloud must feature Kozhikode studio");
+      assert.ok(content.includes("Calicut") || content.includes("Kozhikode"), "GlobalLocationsCloud must feature Calicut/Kozhikode studio");
       assert.ok(content.includes("Trivandrum"), "GlobalLocationsCloud must feature Trivandrum studio");
       assert.ok(content.includes("HiLITE Business Park"), "Must reference HiLITE Business Park");
 
@@ -458,7 +458,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       }
     });
 
-    test("verifies MonumentalFooter restricts studio corridors strictly to Kozhikode and Trivandrum", () => {
+    test("verifies MonumentalFooter restricts studio corridors strictly to Calicut/Kozhikode and Trivandrum", () => {
       const footerPath = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.tsx");
       const content = fs.readFileSync(footerPath, "utf8");
 
@@ -473,7 +473,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const content = fs.readFileSync(layoutPath, "utf8");
 
       assert.ok(!content.includes('addressLocality: "Dubai"'), "layout.tsx schema must not claim Dubai locality");
-      assert.ok(content.includes('addressLocality: "Kozhikode"'), "layout.tsx schema must declare Kozhikode locality");
+      assert.ok(content.includes('addressLocality: "Calicut"') || content.includes('addressLocality: "Kozhikode"'), "layout.tsx schema must declare Calicut/Kozhikode locality");
     });
   });
 
@@ -523,7 +523,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
 
       assert.ok(overlayTsx.includes('role="dialog"'), "NavigationOverlay must declare role='dialog'");
       assert.ok(overlayTsx.includes('aria-modal="true"'), "NavigationOverlay must declare aria-modal='true'");
-      assert.ok(overlayTsx.includes("Kozhikode &amp; Trivandrum") || overlayTsx.includes("Kozhikode & Trivandrum"), "NavigationOverlay must anchor authentic Kerala studios");
+      assert.ok(overlayTsx.includes("Calicut &amp; Trivandrum") || overlayTsx.includes("Calicut & Trivandrum") || overlayTsx.includes("Kozhikode &amp; Trivandrum") || overlayTsx.includes("Kozhikode & Trivandrum"), "NavigationOverlay must anchor authentic Kerala studios");
       assert.ok(!overlayTsx.includes("Dubai"), "NavigationOverlay must not declare synthetic Dubai hub");
       assert.ok(overlayScss.includes("grid-template-columns: 1fr 1fr;"), "NavigationOverlay must enforce 50/50 dual-canvas split");
       assert.ok(kineticTsx.includes("KineticStage"), "KineticStage must be exported");

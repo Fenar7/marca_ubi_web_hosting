@@ -74,7 +74,6 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
         {/* Left Sticky Rail (30%) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
-            <span className={styles.sectionLabel}>06 / Studio Dispatches</span>
             <h2 className={styles.railHeadline}>
               Thinking in Systems.
             </h2>
