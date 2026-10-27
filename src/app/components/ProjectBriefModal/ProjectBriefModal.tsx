@@ -15,9 +15,9 @@ export interface ProjectBriefModalProps {
  *
  * Implements:
  * - WAI-ARIA role="dialog" & aria-modal="true"
- * - Esc key dismiss with focus restoration
- * - Body scroll lock to prevent underlying page scroll leak
- * - Backdrop blur with Apple HIG vibrancy tokens
+ * - Escape key dismiss with focus restoration
+ * - Strict scroll isolation: locks document body and captures wheel bubbling
+ * - Clean minimal header without AI-slop metadata
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -31,7 +31,10 @@ export function ProjectBriefModal({ isOpen, onClose }: ProjectBriefModalProps) {
 
     previouslyFocusedElementRef.current = document.activeElement as HTMLElement;
     const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+
     document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
 
     // Focus close button on mount
     const timer = setTimeout(() => {
@@ -42,6 +45,7 @@ export function ProjectBriefModal({ isOpen, onClose }: ProjectBriefModalProps) {
     return () => {
       clearTimeout(timer);
       document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
       if (previouslyFocusedElementRef.current) {
         previouslyFocusedElementRef.current.focus();
       }
@@ -59,12 +63,18 @@ export function ProjectBriefModal({ isOpen, onClose }: ProjectBriefModalProps) {
     [onClose]
   );
 
+  // Scroll event isolation to prevent website background from scrolling
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
       className={styles.backdropOverlay}
       role="presentation"
+      onWheel={handleWheel}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -78,14 +88,13 @@ export function ProjectBriefModal({ isOpen, onClose }: ProjectBriefModalProps) {
         aria-modal="true"
         aria-labelledby="brief-modal-title"
         onKeyDown={handleKeyDown}
+        onWheel={handleWheel}
       >
-        {/* Modal Top Control Bar */}
+        {/* Clean Architectural Header without AI slop metadata */}
         <header className={styles.modalHeader}>
           <div className={styles.headerMeta}>
-            <span className={styles.modalKicker}>Commercial Desk</span>
-            <span className={styles.headerSlash} aria-hidden="true">/</span>
             <h2 id="brief-modal-title" className={styles.modalTitle}>
-              Start a Project Brief
+              Start a Project
             </h2>
           </div>
 

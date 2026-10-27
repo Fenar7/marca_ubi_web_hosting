@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
 
@@ -8,180 +8,181 @@ interface Step2Props {
   formData: ProjectFormData;
   updateFormData: (field: keyof ProjectFormData, value: string) => void;
   nextStep: () => void;
-  prevStep: () => void;
 }
 
-const languages = ["English", "Spanish", "French", "German", "Arabic", "Other"];
-const industries = ["Technology", "Retail", "Healthcare", "Finance", "Real Estate", "Education", "Food & Beverage", "Other"];
-const referralSources = ["Google", "Social Media", "Friend/Colleague", "Advertisement", "Other"];
+const LANGUAGES = [
+  "English",
+  "Malayalam",
+  "Arabic",
+  "Hindi",
+  "German",
+  "French",
+  "Spanish",
+  "Other",
+];
 
-export default function Step2Business({ formData, updateFormData, nextStep, prevStep }: Step2Props) {
-  const isComplete = 
-    formData.name.trim() !== "" &&
-    formData.email.trim() !== "" &&
-    formData.projectName.trim() !== "" && 
-    formData.projectDescription.trim() !== "";
+/**
+ * Step 2: Brand & Stakeholder Details.
+ * Clean, modern form inputs with zero AI-slop robotic prefixes.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+export default function Step2Business({
+  formData,
+  updateFormData,
+  nextStep,
+}: Step2Props) {
+  const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
+
+  const validateAndProceed = () => {
+    const newErrors: { [key: string]: boolean } = {};
+    if (!formData.name.trim()) newErrors.name = true;
+    if (!formData.email.trim()) newErrors.email = true;
+    if (!formData.projectName.trim()) newErrors.projectName = true;
+    if (!formData.projectDescription.trim()) newErrors.projectDescription = true;
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      nextStep();
+    }
+  };
 
   return (
     <div className={styles.stepContainer}>
-      <h2 className={styles.stepTitle}>Tell us about your business</h2>
+      <header className={styles.stepHeaderBlock}>
+        <h2 className={styles.stepTitle}>Tell Us About Your Brand</h2>
+        <p className={styles.stepDescription}>
+          Share who you are and an overview of what you want to build.
+        </p>
+      </header>
 
-      <div className={styles.formGroup}>
-        <label>Your Name *</label>
-        <input 
-          type="text" 
-          className={styles.formInput}
-          placeholder="E.g. John Doe"
-          value={formData.name}
-          onChange={(e) => updateFormData("name", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Email Address *</label>
-        <input 
-          type="email" 
-          className={styles.formInput}
-          placeholder="E.g. john@example.com"
-          value={formData.email}
-          onChange={(e) => updateFormData("email", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Phone Number</label>
-        <input 
-          type="tel" 
-          className={styles.formInput}
-          placeholder="E.g. +1 234 567 8900"
-          value={formData.phone}
-          onChange={(e) => updateFormData("phone", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Instagram Handle</label>
-        <input 
-          type="text" 
-          className={styles.formInput}
-          placeholder="E.g. @johndoe"
-          value={formData.instagram}
-          onChange={(e) => updateFormData("instagram", e.target.value)}
-        />
-      </div>
-      
-      <div className={styles.formGroup}>
-        <label>Choose your preferred language</label>
-        <select 
-          className={styles.formSelect}
-          value={formData.language}
-          onChange={(e) => updateFormData("language", e.target.value)}
-        >
-          <option value="">Select language</option>
-          {languages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-        </select>
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Name your project *</label>
-        <input 
-          type="text" 
-          className={styles.formInput}
-          placeholder="E.g. Packaging for an organic juice company"
-          value={formData.projectName}
-          onChange={(e) => updateFormData("projectName", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Describe your project *</label>
-        <textarea 
-          className={styles.formTextarea}
-          placeholder="Tell us what you need..."
-          value={formData.projectDescription}
-          onChange={(e) => updateFormData("projectDescription", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>What industry are you in?</label>
-        <select 
-          className={styles.formSelect}
-          value={formData.industry}
-          onChange={(e) => updateFormData("industry", e.target.value)}
-        >
-          <option value="">Select industry</option>
-          {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-        </select>
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Add your website and/or social media pages</label>
-        <input 
-          type="text" 
-          className={styles.formInput}
-          placeholder="E.g. www.best-site-ever.com"
-          value={formData.website}
-          onChange={(e) => updateFormData("website", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Is your company a digital, marketing or design agency?</label>
-        <div className={styles.radioGroup}>
-          <label className={styles.radioLabel}>
-            <input 
-              type="radio" 
-              name="agencyStatus" 
-              value="Yes and I'm interested in agency services"
-              checked={formData.agencyStatus === "Yes and I'm interested in agency services"}
-              onChange={(e) => updateFormData("agencyStatus", e.target.value)}
-            />
-            Yes and I'm interested in agency services
+      <div className={styles.formGrid}>
+        {/* Your Name */}
+        <div className={styles.inputGroup}>
+          <label className={styles.inputLabel} htmlFor="field-name">
+            <span>Your Name *</span>
           </label>
-          <label className={styles.radioLabel}>
-            <input 
-              type="radio" 
-              name="agencyStatus" 
-              value="Yes and I'm NOT interested in agency services"
-              checked={formData.agencyStatus === "Yes and I'm NOT interested in agency services"}
-              onChange={(e) => updateFormData("agencyStatus", e.target.value)}
-            />
-            Yes and I'm NOT interested in agency services
+          <input
+            id="field-name"
+            type="text"
+            className={styles.textInput}
+            placeholder="e.g. Alexander Vance"
+            value={formData.name}
+            onChange={(e) => updateFormData("name", e.target.value)}
+            style={errors.name ? { borderColor: "#ea002a" } : undefined}
+          />
+        </div>
+
+        {/* Corporate Email */}
+        <div className={styles.inputGroup}>
+          <label className={styles.inputLabel} htmlFor="field-email">
+            <span>Work Email *</span>
           </label>
-          <label className={styles.radioLabel}>
-            <input 
-              type="radio" 
-              name="agencyStatus" 
-              value="No, I'm not an agency"
-              checked={formData.agencyStatus === "No, I'm not an agency"}
-              onChange={(e) => updateFormData("agencyStatus", e.target.value)}
-            />
-            No, I'm not an agency
+          <input
+            id="field-email"
+            type="email"
+            className={styles.textInput}
+            placeholder="e.g. alexander@enterprise.com"
+            value={formData.email}
+            onChange={(e) => updateFormData("email", e.target.value)}
+            style={errors.email ? { borderColor: "#ea002a" } : undefined}
+          />
+        </div>
+
+        {/* Contact Phone */}
+        <div className={styles.inputGroup}>
+          <label className={styles.inputLabel} htmlFor="field-phone">
+            <span>Phone / WhatsApp</span>
+            <span className={styles.optionalTag}>Optional</span>
           </label>
+          <input
+            id="field-phone"
+            type="tel"
+            className={styles.textInput}
+            placeholder="+91 00000 00000"
+            value={formData.phone}
+            onChange={(e) => updateFormData("phone", e.target.value)}
+          />
+        </div>
+
+        {/* Working Language */}
+        <div className={styles.inputGroup}>
+          <label className={styles.inputLabel} htmlFor="field-lang">
+            <span>Preferred Language</span>
+          </label>
+          <select
+            id="field-lang"
+            className={styles.selectInput}
+            value={formData.language || "English"}
+            onChange={(e) => updateFormData("language", e.target.value)}
+          >
+            {LANGUAGES.map((lang) => (
+              <option key={lang} value={lang} style={{ background: "#0c0c0c", color: "#ffffff" }}>
+                {lang}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Company / Brand Name */}
+        <div className={styles.inputGroup}>
+          <label className={styles.inputLabel} htmlFor="field-proj-name">
+            <span>Brand or Company Name *</span>
+          </label>
+          <input
+            id="field-proj-name"
+            type="text"
+            className={styles.textInput}
+            placeholder="e.g. Apex Global Logistics"
+            value={formData.projectName}
+            onChange={(e) => updateFormData("projectName", e.target.value)}
+            style={errors.projectName ? { borderColor: "#ea002a" } : undefined}
+          />
+        </div>
+
+        {/* Current Website */}
+        <div className={styles.inputGroup}>
+          <label className={styles.inputLabel} htmlFor="field-website">
+            <span>Current Website or Deck</span>
+            <span className={styles.optionalTag}>Optional</span>
+          </label>
+          <input
+            id="field-website"
+            type="url"
+            className={styles.textInput}
+            placeholder="https://..."
+            value={formData.website}
+            onChange={(e) => updateFormData("website", e.target.value)}
+          />
+        </div>
+
+        {/* Project Scope Description */}
+        <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+          <label className={styles.inputLabel} htmlFor="field-desc">
+            <span>Project Overview &amp; Objectives *</span>
+          </label>
+          <textarea
+            id="field-desc"
+            className={styles.textArea}
+            placeholder="Describe what you are looking to achieve, your timeline expectations, and any specific requirements..."
+            value={formData.projectDescription}
+            onChange={(e) => updateFormData("projectDescription", e.target.value)}
+            style={errors.projectDescription ? { borderColor: "#ea002a" } : undefined}
+          />
         </div>
       </div>
 
-      <div className={styles.formGroup}>
-        <label>How did you hear about us?</label>
-        <select 
-          className={styles.formSelect}
-          value={formData.referral}
-          onChange={(e) => updateFormData("referral", e.target.value)}
+      {/* Continue Action Button */}
+      <div className={styles.actionContainer}>
+        <button
+          type="button"
+          className={styles.nextButton}
+          onClick={validateAndProceed}
+          aria-label="Continue to timeline and budget details"
         >
-          <option value="">Select channel</option>
-          {referralSources.map(ref => <option key={ref} value={ref}>{ref}</option>)}
-        </select>
-      </div>
-
-      <div className={styles.buttonGroup}>
-        <button className={styles.btnSecondary} onClick={prevStep}>Back</button>
-        <button 
-          className={styles.btnPrimary} 
-          onClick={nextStep}
-          disabled={!isComplete}
-        >
-          Next Step
+          <span>Continue</span>
+          <span className={styles.arrow} aria-hidden="true">&rarr;</span>
         </button>
       </div>
     </div>

@@ -1,93 +1,117 @@
+@import "../../styles/client-mixins.scss";
+
+/**
+ * ProjectForm Stylesheet: Clean 160over90 Agency Standard
+ * Free of AI-slop metadata tags, with smooth layout and authentic typography.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .formContainer {
-  max-width: 900px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  color: $white;
+  color: #ffffff;
   width: 100%;
-  scroll-margin-top: clamp(5rem, 9vw, 6.5rem);
+  box-sizing: border-box;
 }
 
 .formHeader {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 1.5rem;
+  gap: 1.25rem;
   margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .stepIndicatorContainer {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  justify-content: space-between;
   width: 100%;
 }
 
 .backButton {
-  background: rgba($white, 0.05);
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 9999px;
-  min-height: 2.75rem;
-  padding: 0.5rem 1rem 0.5rem 0.75rem;
-  display: flex;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  min-height: 38px;
+  padding: 0.4rem 1rem;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: $white;
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-  font-family: $font-sf-pro;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
+  transition: all 0.2s ease;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 400;
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
   }
 
   &:hover {
-    background: $white;
-    color: $black;
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 2px;
   }
 }
 
-.stepIndicatorText {
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: rgba($white, 0.6);
-  white-space: nowrap;
+.stepCounter {
+  font-family: $font-mono;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  .activeStepNum {
+    color: #ffffff;
+    font-weight: 500;
+  }
 }
 
 .progressBarContainer {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
+  width: 100%;
 }
 
 .progressPill {
-  width: 48px;
-  height: 4px;
-  border-radius: 4px;
-  background: rgba($white, 0.1);
-  transition: background-color 0.28s ease, box-shadow 0.28s ease;
-  
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.25s ease;
+
+  &.completed {
+    background: rgba(234, 0, 42, 0.6);
+  }
+
   &.active {
-    background: $cta-orange;
-    box-shadow: 0 0 12px rgba($cta-orange, 0.4);
+    background: $client-accent-red;
   }
 }
 
 .stepContent {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
-  animation: fadeIn 0.32s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  gap: 2rem;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -95,175 +119,120 @@
   }
 }
 
+// Success State
 .successContainer {
-  text-align: center;
-  padding: 4rem 0;
+  padding: 3rem 0;
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 .successCard {
-  background: rgba($white, 0.02);
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 16px;
-  padding: 4rem 3rem;
-  max-width: 600px;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+  max-width: 620px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+  box-sizing: border-box;
 
   h2 {
-    font-size: clamp(1.5rem, 6.5vw, 2.25rem);
-    margin-bottom: 1rem;
-    color: $white;
+    font-family: $font-circular;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 1.25rem 0 0.75rem;
+    color: #ffffff;
     font-weight: 500;
   }
 
   .successMessage {
-    font-size: 1.125rem;
-    color: rgba($white, 0.6);
-    margin-bottom: 3rem;
+    font-family: $font-circular;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 2rem;
     line-height: 1.6;
-    max-width: 450px;
+    max-width: 480px;
   }
 }
 
-.checkmark {
-  width: 72px;
-  height: 72px;
+.successEmblem {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  display: block;
-  stroke-width: 3;
-  stroke: $cta-orange;
-  stroke-miterlimit: 10;
-  box-shadow: inset 0px 0px 0px $cta-orange;
-  animation: fill .3s ease-in-out .25s forwards, scale .25s ease-in-out .5s both;
-  margin-bottom: 2rem;
-}
-
-.checkmarkCircle {
-  stroke-dasharray: 166;
-  stroke-dashoffset: 166;
-  stroke-width: 3;
-  stroke-miterlimit: 10;
-  stroke: $cta-orange;
-  fill: none;
-  animation: stroke 0.38s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-}
-
-.checkmarkCheck {
-  transform-origin: 50% 50%;
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  animation: stroke 0.24s cubic-bezier(0.65, 0, 0.45, 1) 0.25s forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .stepContent {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .checkmark,
-  .checkmarkCircle,
-  .checkmarkCheck {
-    animation: none;
-    stroke-dashoffset: 0;
-    box-shadow: inset 0px 0px 0px 40px rgba($cta-orange, 0.1);
-  }
-}
-
-@keyframes stroke {
-  100% { stroke-dashoffset: 0; }
-}
-@keyframes scale {
-  0%, 100% { transform: none; }
-  50% { transform: scale3d(1.1, 1.1, 1); }
-}
-@keyframes fill {
-  100% { box-shadow: inset 0px 0px 0px 40px rgba($cta-orange, 0.1); }
-}
-
-.contactCard {
-  background: rgba($black, 0.3);
-  border: 1px solid rgba($white, 0.05);
-  border-radius: 12px;
-  padding: 1.5rem;
-  width: 100%;
-  margin-bottom: 3rem;
-
-  p {
-    font-size: 0.875rem;
-    color: rgba($white, 0.4);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
-    margin-top: 0;
-  }
-}
-
-.contactDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-
-  @media (min-width: 600px) {
-    flex-direction: row;
-    justify-content: center;
-    gap: 2rem;
-  }
-}
-
-.contactLink {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  min-height: 2.75rem;
-  color: $white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  justify-content: center;
+  background: rgba(234, 0, 42, 0.12);
+  border: 1px solid rgba(234, 0, 42, 0.4);
+  color: $client-accent-red;
 
   svg {
-    width: 20px;
-    height: 20px;
-    color: $cta-orange;
-  }
-
-  &:hover {
-    color: $cta-orange;
+    width: 24px;
+    height: 24px;
   }
 }
 
-.btnPrimary {
-  background-color: $cta-orange;
-  color: $white;
-  padding: 0.875rem 2.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  border: none;
+.receiptMetadataBox {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.receiptRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: $font-mono;
+  font-size: 11px;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .receiptLabel {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .receiptValue {
+    color: #ffffff;
+  }
+}
+
+.actionHomeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 48px;
+  padding: 0 2rem;
+  border-radius: 2px;
+  background: #ffffff;
+  color: #000000;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
 
   &:hover {
-    opacity: 0.9;
-  }
-}
-
-@media (max-width: 37.5rem) {
-  .successCard {
-    padding: 2.5rem 1.25rem;
-  }
-
-  .btnPrimary {
-    font-size: 0.92rem;
-    min-height: 2.75rem;
-    padding: 0.75rem 1.25rem;
-    width: 100%;
+    background: $client-accent-red;
+    color: #ffffff;
   }
 }

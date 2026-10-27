@@ -2,9 +2,8 @@
 
 /**
  * ProjectBriefModal Stylesheet
- * Dark Luxury overlay presenting the multi-page Project Submission Brief wizard.
- * Incorporates Apple HIG vibrancy backdrop blur, Swiss architectural lines,
- * and high-contrast accessibility.
+ * Fully scroll-isolated Dark Luxury overlay for the Project Brief Form.
+ * Enforces overscroll-behavior: contain to eliminate background website scroll leaking.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -13,7 +12,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background-color: rgba(5, 5, 5, 0.82);
+  background-color: rgba(5, 5, 5, 0.85);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   display: flex;
@@ -21,22 +20,27 @@
   justify-content: center;
   padding: clamp(1rem, 3vw, 2.5rem);
   box-sizing: border-box;
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .modalContainer {
   position: relative;
   width: 100%;
-  max-width: 980px;
-  max-height: 92vh;
+  max-width: 960px;
+  height: min(88vh, 800px);
+  max-height: 88vh;
   background-color: #0c0c0c;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  animation: scaleUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .modalHeader {
@@ -45,7 +49,7 @@
   justify-content: space-between;
   padding: 1.25rem clamp(1.25rem, 3vw, 2rem);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(18, 18, 18, 0.85);
+  background: #111111;
   flex-shrink: 0;
 }
 
@@ -55,26 +59,12 @@
   gap: 0.75rem;
 }
 
-.modalKicker {
-  font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: $client-accent-red;
-}
-
-.headerSlash {
-  color: rgba(255, 255, 255, 0.25);
-  font-size: 13px;
-}
-
 .modalTitle {
   font-family: $font-circular;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.01em;
+  color: #ffffff;
   margin: 0;
 }
 
@@ -94,7 +84,7 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   .closeGlyph {
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1;
   }
 
@@ -111,13 +101,15 @@
 }
 
 .modalBody {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  padding: clamp(1.25rem, 3vw, 2.5rem);
-  box-sizing: border-box;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  box-sizing: border-box;
 
-  // Custom refined scrollbar
+  // Refined scrollbar
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -148,7 +140,7 @@
 @keyframes scaleUp {
   from {
     opacity: 0;
-    transform: scale(0.97) translateY(8px);
+    transform: scale(0.98) translateY(6px);
   }
   to {
     opacity: 1;
