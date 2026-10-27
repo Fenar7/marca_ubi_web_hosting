@@ -12,25 +12,53 @@ interface ClientHeaderProps {
 }
 
 /**
- * Adaptive Header HUD.
- * Tracks viewport position across alternating light curtains and dark cutouts
- * using an active IntersectionObserver sensor, switching between `.isDark` (white logo & text)
- * and `.isLight` (dark logo & text) with zero cyan color corruption.
+ * Adaptive Header HUD with Scroll-Activated Frosted Glass.
  *
- * Integrates with the decoupled 160/90 benchmark split NavigationOverlay
- * and features the 3-line rounded pill hamburger trigger.
+ * Implements:
+ * 1. IntersectionObserver Theme Sensor: Monitors current intersecting section
+ *    switching between `.isDark` (white logo & text) and `.isLight` (dark logo & text).
+ * 2. Scroll-Activated Frosted Glass:
+ *    - In pristine top state (scrollY <= 50px, e.g. HeroCutout), header is 100% transparent.
+ *    - When scrolled past 50px, smoothly transitions via Apple HIG cubic-bezier
+ *      into 16px frosted glass blur with adaptive light/dark glassmorphism,
+ *      preventing page text from colliding with the logo and hamburger trigger.
+ * 3. Passive rAF-throttled scroll listener for 60fps performance.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headerTheme, setHeaderTheme] = useState<"dark" | "light">(defaultTheme);
+  const [isScrolled, setIsScrolled] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
 
-  // IntersectionObserver Theme Sensor: Monitors current intersecting section
+  // 1. Scroll-Activated Frosted Glass Sensor (Passive + rAF throttled)
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 50;
+          setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // Evaluate immediately on mount for deep-linked / refreshed states
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // 2. IntersectionObserver Theme Sensor: Monitors current intersecting section
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
-      // Find the entry that intersects nearest to the top header zone
       for (const entry of entries) {
         if (entry.isIntersecting) {
           const theme = entry.target.getAttribute("data-header-theme") as "dark" | "light" | null;
@@ -62,7 +90,9 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   return (
     <>
       <header
-        className={`${styles.headerHost} ${headerTheme === "light" ? styles.isLight : styles.isDark}`}
+        className={`${styles.headerHost} ${headerTheme === "light" ? styles.isLight : styles.isDark} ${
+          isScrolled ? styles.isScrolled : ""
+        }`}
         role="banner"
       >
         <Link href="/" className={styles.logoAnchor} aria-label="Marca Ubi Homepage" onClick={closeDrawer}>

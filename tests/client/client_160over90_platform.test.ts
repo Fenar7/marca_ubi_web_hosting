@@ -699,4 +699,31 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(homeTsx.includes("isPausedByModal={isReelOpen || isBriefOpen}"), "BackgroundVideoEngine must pause when brief modal is open");
     });
   });
+
+  describe('Section 16: Scroll-Activated Frosted Glass Adaptive Header Invariants', () => {
+    test('verifies ClientHeader.module.scss implements zero-pop blur and adaptive frosted glass tokens', () => {
+      const scssPath = path.join(rootDir, 'src', 'app', 'components', 'ClientHeader', 'ClientHeader.module.scss');
+      const scss = fs.readFileSync(scssPath, 'utf8');
+
+      assert.ok(scss.includes('backdrop-filter: blur(0px);'), 'ClientHeader must declare backdrop-filter: blur(0px) at rest');
+      assert.ok(scss.includes('-webkit-backdrop-filter: blur(0px);'), 'ClientHeader must declare -webkit-backdrop-filter: blur(0px) at rest');
+      assert.ok(scss.includes('.isScrolled'), 'ClientHeader must define .isScrolled state');
+      assert.ok(scss.includes('backdrop-filter: blur(16px);'), 'ClientHeader must declare 16px frosted glass blur when scrolled');
+      assert.ok(scss.includes('-webkit-backdrop-filter: blur(16px);'), 'ClientHeader must declare -webkit 16px blur when scrolled');
+      assert.ok(scss.includes('background-color: rgba(255, 255, 255, 0.72);'), 'ClientHeader must apply white frosted glass on light curtains');
+      assert.ok(scss.includes('background-color: rgba(10, 10, 10, 0.65);'), 'ClientHeader must apply obsidian frosted glass on dark cutouts');
+    });
+
+    test('verifies ClientHeader.tsx wires scroll sensor with passive listener and rAF throttle', () => {
+      const tsxPath = path.join(rootDir, 'src', 'app', 'components', 'ClientHeader', 'ClientHeader.tsx');
+      const tsx = fs.readFileSync(tsxPath, 'utf8');
+
+      assert.ok(tsx.includes('isScrolled'), 'ClientHeader must maintain isScrolled state');
+      assert.ok(tsx.includes('window.scrollY > 50'), 'ClientHeader must evaluate 50px threshold');
+      assert.ok(tsx.includes('requestAnimationFrame'), 'ClientHeader must throttle scroll events with requestAnimationFrame');
+      assert.ok(tsx.includes('passive: true'), 'ClientHeader must declare passive: true scroll listener');
+      assert.ok(tsx.includes('styles.isScrolled'), 'ClientHeader must toggle isScrolled class dynamically');
+    });
+  });
 });
+
