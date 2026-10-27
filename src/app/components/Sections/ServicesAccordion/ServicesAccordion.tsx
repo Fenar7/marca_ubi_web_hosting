@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { ServiceCategory, B2B_SERVICES, B2C_SERVICES } from "./types";
 import styles from "./ServicesAccordion.module.scss";
 
@@ -83,12 +82,11 @@ export function ServicesAccordion() {
             >
               {/* Background Image Layer */}
               <div className={styles.imageLayer}>
-                <Image
+                <img
                   src={service.imageUrl}
                   alt={service.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 25vw, 15vw"
-                  priority={service.number === "01"}
+                  loading={service.number === "01" ? "eager" : "lazy"}
+                  decoding="async"
                 />
               </div>
 
