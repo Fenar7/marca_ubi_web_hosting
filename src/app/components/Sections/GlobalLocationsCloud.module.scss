@@ -85,10 +85,10 @@
 .cityName {
   font-family: $font-circular;
   font-size: var(--client-type-h2);
-  font-weight: 700;
+  font-weight: 400;
   color: $client-text-dark;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -149,7 +149,7 @@
 
 .railTime {
   color: $client-accent-red;
-  font-weight: 600;
+  font-weight: 500;
   margin-right: 4px;
 }
 

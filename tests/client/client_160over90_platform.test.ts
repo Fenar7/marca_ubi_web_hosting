@@ -40,6 +40,47 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes("CircularXXWeb-Medium.woff2"), "Must map Medium weight to 500");
       assert.ok(content.includes("CircularXXWeb-Bold.woff2"), "Must map Bold weight to 700");
     });
+
+    test("asserts client SCSS modules adhere to 160over90 typographic weight invariants (StatementCurtain uses Book 400, zero unmapped 600)", () => {
+      const statementScss = path.join(rootDir, "src", "app", "components", "Sections", "StatementCurtain.module.scss");
+      const content = fs.readFileSync(statementScss, "utf8");
+
+      assert.ok(!content.includes("font-weight: 700"), "StatementCurtain must not use heavy font-weight: 700");
+      assert.ok(content.includes("font-weight: 400"), "StatementCurtain must use Book (400) matching 160over90 benchmark");
+
+      const clientScssFiles = [
+        "src/app/components/ClientHeader/ClientHeader.module.scss",
+        "src/app/components/NavigationOverlay/NavigationOverlay.module.scss",
+        "src/app/components/NavigationOverlay/KineticStage.module.scss",
+        "src/app/components/ReelModal/ReelModal.module.scss",
+        "src/app/components/Sections/StatementCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
+        "src/app/components/Sections/HeroCutout.module.scss",
+        "src/app/components/Sections/ReelCutout.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/components/Sections/WorksCurtain.module.scss",
+        "src/app/components/Sections/ValuesCutout.module.scss",
+        "src/app/components/Sections/ProcessCurtain.module.scss",
+        "src/app/components/Sections/TestimonialsCutout.module.scss",
+        "src/app/components/Sections/DispatchesCurtain.module.scss",
+        "src/app/components/Sections/GlobalLocationsCloud.module.scss",
+        "src/app/components/Sections/ConnectCutout.module.scss",
+        "src/app/components/Sections/MonumentalFooter.module.scss",
+        "src/app/works/Works.module.scss",
+        "src/app/blog/Blog.module.scss",
+        "src/app/blog/[slug]/BlogPost.module.scss",
+        "src/app/blog/components/BlogPostComponents.module.scss",
+        "src/app/blog/components/PortableTextRenderer.module.scss",
+      ];
+
+      for (const relPath of clientScssFiles) {
+        const full = path.join(rootDir, relPath);
+        if (fs.existsSync(full)) {
+          const css = fs.readFileSync(full, "utf8");
+          assert.ok(!css.includes("font-weight: 600"), `${relPath} must not use font-weight: 600 (maps to 700 bold; use 500 Medium)`);
+        }
+      }
+    });
   });
 
   describe("Section 2: 60-30-10 Color Architecture & Contrast Standards", () => {
@@ -175,18 +216,28 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/styles/client-tokens.scss",
         "src/app/components/BackgroundVideo/BackgroundVideoEngine.module.css",
         "src/app/components/ClientHeader/ClientHeader.module.scss",
+        "src/app/components/NavigationOverlay/NavigationOverlay.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
         "src/app/components/Sections/HeroCutout.module.scss",
-        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
+        "src/app/components/Sections/StatementCurtain.module.scss",
         "src/app/components/Sections/WorksCurtain.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/works/Works.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/works/Works.module.scss",
         "src/app/components/Sections/ValuesCutout.module.scss",
         "src/app/components/Sections/ProcessCurtain.module.scss",
         "src/app/components/Sections/TestimonialsCutout.module.scss",
         "src/app/components/Sections/DispatchesCurtain.module.scss",
         "src/app/components/Sections/GlobalLocationsCloud.module.scss",
         "src/app/components/Sections/ConnectCutout.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
+        "src/app/works/Works.module.scss",
         "src/app/components/Sections/MonumentalFooter.module.scss",
+        "src/app/components/NavigationOverlay/NavigationOverlay.module.scss",
+        "src/app/components/NavigationOverlay/KineticStage.module.scss",
         "src/app/blog/Blog.module.scss",
         "src/app/blog/[slug]/BlogPost.module.scss",
       ];
@@ -206,7 +257,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/styles/client-tokens.scss",
         "src/app/components/ClientHeader/ClientHeader.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
-        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
         "src/app/components/Sections/WorksCurtain.module.scss",
         "src/app/components/Sections/ProcessCurtain.module.scss",
         "src/app/components/Sections/TestimonialsCutout.module.scss",
@@ -249,15 +300,16 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes(".isDark"), "ClientHeader must have .isDark class for dark video cutouts");
     });
 
-    test("verifies all 11 homepage views declare explicit data-header-theme for theme observer", () => {
+    test("verifies all 12 homepage views declare explicit data-header-theme for theme observer", () => {
       const views = [
         { file: "HeroCutout.tsx", expected: 'data-header-theme="dark"' },
-        { file: "AboutDoctrineCurtain.tsx", expected: 'data-header-theme="light"' },
+        { file: "AboutCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "ReelCutout.tsx", expected: 'data-header-theme="dark"' },
-        { file: "WorksCurtain.tsx", expected: 'data-header-theme="light"' },
-        { file: "ValuesCutout.tsx", expected: 'data-header-theme="dark"' },
+        { file: "StatementCurtain.tsx", expected: 'data-header-theme="light"' },
+        { file: "WorksCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "ProcessCurtain.tsx", expected: 'data-header-theme="light"' },
-        { file: "TestimonialsCutout.tsx", expected: 'data-header-theme="dark"' },
+        { file: "ValuesCutout.tsx", expected: 'data-header-theme="dark"' },
+        { file: "TestimonialsCutout.tsx", expected: 'data-header-theme="light"' },
         { file: "DispatchesCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "GlobalLocationsCloud.tsx", expected: 'data-header-theme="light"' },
         { file: "ConnectCutout.tsx", expected: 'data-header-theme="dark"' },
@@ -306,9 +358,10 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     test("asserts zero border-radius: 9999px on button classes in redesigned client sections", () => {
       const clientScssFiles = [
         "src/app/components/Sections/HeroCutout.module.scss",
-        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
-        "src/app/components/Sections/WorksCurtain.module.scss",
+        "src/app/components/Sections/StatementCurtain.module.scss",
+        "src/app/components/Sections/WorksCutout.module.scss",
         "src/app/components/Sections/ValuesCutout.module.scss",
         "src/app/components/Sections/ProcessCurtain.module.scss",
         "src/app/components/Sections/TestimonialsCutout.module.scss",
@@ -333,22 +386,27 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     });
   });
 
-  describe("Section 10: Full 11-View Stream & Dynamic Sanity Invariants", () => {
-    test("verifies ClientHomeExperience orchestrates the complete 11-view alternating stream", () => {
+  describe("Section 10: Full 12-View Stream & Dynamic Sanity Invariants", () => {
+    test("verifies ClientHomeExperience orchestrates the complete 12-view alternating stream", () => {
       const experiencePath = path.join(rootDir, "src", "app", "components", "ClientHomeExperience", "ClientHomeExperience.tsx");
       const content = fs.readFileSync(experiencePath, "utf8");
 
       assert.ok(content.includes("<HeroCutout"), "View 01: HeroCutout must be present");
-      assert.ok(content.includes("<AboutDoctrineCurtain"), "View 02: AboutDoctrineCurtain must be present");
+      assert.ok(content.includes("<AboutCurtain"), "View 02: AboutCurtain must be present");
       assert.ok(content.includes("<ReelCutout"), "View 03: ReelCutout must be present");
-      assert.ok(content.includes("<WorksCurtain"), "View 04: WorksCurtain must be present");
-      assert.ok(content.includes("<ValuesCutout"), "View 05: ValuesCutout must be present");
+      assert.ok(content.includes("<StatementCurtain"), "View 04: StatementCurtain must be present");
+      assert.ok(content.includes("<WorksCutout") || content.includes("<WorksCurtain"), "View 05: WorksCutout must be present");
       assert.ok(content.includes("<ProcessCurtain"), "View 06: ProcessCurtain must be present");
-      assert.ok(content.includes("<TestimonialsCutout"), "View 07: TestimonialsCutout must be present");
-      assert.ok(content.includes("<DispatchesCurtain"), "View 08: DispatchesCurtain must be present");
-      assert.ok(content.includes("<GlobalLocationsCloud"), "View 09: GlobalLocationsCloud must be present");
-      assert.ok(content.includes("<ConnectCutout"), "View 10: ConnectCutout must be present");
-      assert.ok(content.includes("<MonumentalFooter"), "View 11: MonumentalFooter must be present");
+      assert.ok(content.includes("<ValuesCutout"), "View 07: ValuesCutout must be present");
+      assert.ok(
+        content.indexOf("<ProcessCurtain") < content.indexOf("<ValuesCutout"),
+        "ProcessCurtain (View 06, Section 03) must precede ValuesCutout (View 07, Section 04)"
+      );
+      assert.ok(content.includes("<TestimonialsCutout"), "View 08: TestimonialsCutout must be present");
+      assert.ok(content.includes("<DispatchesCurtain"), "View 09: DispatchesCurtain must be present");
+      assert.ok(content.includes("<GlobalLocationsCloud"), "View 10: GlobalLocationsCloud must be present");
+      assert.ok(content.includes("<ConnectCutout"), "View 11: ConnectCutout must be present");
+      assert.ok(content.includes("<MonumentalFooter"), "View 12: MonumentalFooter must be present");
     });
 
     test("verifies page.tsx streams worksQuery and postsQuery concurrently with revalidate = 60", () => {
@@ -416,6 +474,167 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
 
       assert.ok(!content.includes('addressLocality: "Dubai"'), "layout.tsx schema must not claim Dubai locality");
       assert.ok(content.includes('addressLocality: "Kozhikode"'), "layout.tsx schema must declare Kozhikode locality");
+    });
+  });
+
+  describe("Section 14: Minimalist Clean Aesthetic & Clutter Eradication Invariants", () => {
+    test("verifies HeroCutout renders without mandatory kicker or scrollCueCluster by default", () => {
+      const heroPath = path.join(rootDir, "src", "app", "components", "Sections", "HeroCutout.tsx");
+      const content = fs.readFileSync(heroPath, "utf8");
+
+      assert.ok(content.includes("{kicker ?"), "HeroCutout must conditionally render kicker only when passed");
+      assert.ok(content.includes("{showScrollCue ?"), "HeroCutout must conditionally render scrollCueCluster only when true");
+      assert.ok(content.includes('showScrollCue = false'), "HeroCutout showScrollCue must default to false");
+    });
+
+    test("verifies ClientHomeExperience mounts HeroCutout with pure 2-line headline and zero kicker", () => {
+      const experiencePath = path.join(rootDir, "src", "app", "components", "ClientHomeExperience", "ClientHomeExperience.tsx");
+      const content = fs.readFileSync(experiencePath, "utf8");
+
+      assert.ok(!content.includes('kicker="00 /'), "ClientHomeExperience must NOT pass kicker 00 to HeroCutout");
+      assert.ok(content.includes('headline={"Engineering Brands\\nThat Move The World."}') || content.includes('Engineering Brands\nThat Move The World.'), "ClientHomeExperience must pass balanced 2-line headline");
+    });
+
+    test("verifies ClientHeader menu trigger enforces 48px touch target and .srOnly screen reader text without visual clutter", () => {
+      const headerTsxPath = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.tsx");
+      const headerScssPath = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.module.scss");
+
+      const tsx = fs.readFileSync(headerTsxPath, "utf8");
+      const scss = fs.readFileSync(headerScssPath, "utf8");
+
+      assert.ok(tsx.includes("className={styles.srOnly}"), "ClientHeader must wrap navigation label in .srOnly for screen readers");
+      assert.ok(scss.includes(".srOnly"), "ClientHeader.module.scss must define .srOnly clip rules");
+      assert.ok(scss.includes("min-height: 48px"), "ClientHeader.module.scss must enforce 48px touch targets");
+      assert.ok(scss.includes("min-width: 48px"), "ClientHeader.module.scss must enforce 48px minimum width");
+    });
+
+    test("verifies NavigationOverlay implements 160/90 benchmark split dual-canvas, WAI-ARIA dialog, and focus trapping", () => {
+      const overlayPath = path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.tsx");
+      const overlayScssPath = path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.module.scss");
+      const kineticPath = path.join(rootDir, "src", "app", "components", "NavigationOverlay", "KineticStage.tsx");
+
+      assert.ok(fs.existsSync(overlayPath), "NavigationOverlay.tsx must exist");
+      assert.ok(fs.existsSync(overlayScssPath), "NavigationOverlay.module.scss must exist");
+      assert.ok(fs.existsSync(kineticPath), "KineticStage.tsx must exist");
+
+      const overlayTsx = fs.readFileSync(overlayPath, "utf8");
+      const overlayScss = fs.readFileSync(overlayScssPath, "utf8");
+      const kineticTsx = fs.readFileSync(kineticPath, "utf8");
+
+      assert.ok(overlayTsx.includes('role="dialog"'), "NavigationOverlay must declare role='dialog'");
+      assert.ok(overlayTsx.includes('aria-modal="true"'), "NavigationOverlay must declare aria-modal='true'");
+      assert.ok(overlayTsx.includes("Kozhikode &amp; Trivandrum") || overlayTsx.includes("Kozhikode & Trivandrum"), "NavigationOverlay must anchor authentic Kerala studios");
+      assert.ok(!overlayTsx.includes("Dubai"), "NavigationOverlay must not declare synthetic Dubai hub");
+      assert.ok(overlayScss.includes("grid-template-columns: 1fr 1fr;"), "NavigationOverlay must enforce 50/50 dual-canvas split");
+      assert.ok(kineticTsx.includes("KineticStage"), "KineticStage must be exported");
+    });
+  });
+
+
+    test("verifies TestimonialsCutout enforces solid pure white curtain tokens and shadow", () => {
+      const scssPath = path.join(rootDir, "src", "app", "components", "Sections", "TestimonialsCutout.module.scss");
+      const tsxPath = path.join(rootDir, "src", "app", "components", "Sections", "TestimonialsCutout.tsx");
+
+      const scss = fs.readFileSync(scssPath, "utf8");
+      const tsx = fs.readFileSync(tsxPath, "utf8");
+
+      assert.ok(scss.includes("$client-canvas-white"), "TestimonialsCutout must consume $client-canvas-white");
+      assert.ok(scss.includes("box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18)"), "TestimonialsCutout must declare overlap physical shadow");
+      assert.ok(tsx.includes('data-header-theme="light"'), "TestimonialsCutout must declare data-header-theme='light'");
+    });
+
+  describe("Section 13: Dedicated /works Showcase Route & Navigation Invariants", () => {
+    test("verifies src/app/works/page.tsx renders with ClientHeader, MonumentalFooter, and ISR revalidate", () => {
+      const worksPagePath = path.join(rootDir, "src", "app", "works", "page.tsx");
+      assert.ok(fs.existsSync(worksPagePath), "src/app/works/page.tsx must exist");
+
+      const content = fs.readFileSync(worksPagePath, "utf8");
+      assert.ok(content.includes("ClientHeader"), "Works page must render ClientHeader");
+      assert.ok(content.includes("MonumentalFooter"), "Works page must render MonumentalFooter");
+      assert.ok(content.includes("export const revalidate = 60"), "Works page must declare 60s revalidation");
+      assert.ok(content.includes('canonical: "/works"'), "Works page must declare canonical /works URL");
+      assert.ok(content.includes("WorksGalleryClient"), "Works page must render WorksGalleryClient");
+      assert.ok(content.includes("CollectionPage"), "Works page must declare CollectionPage schema");
+    });
+
+    test("verifies WorksCutout.tsx links to /works with accessible touch target", () => {
+      const cutoutPath = path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.tsx");
+      const scssPath = path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.module.scss");
+
+      assert.ok(fs.existsSync(cutoutPath), "WorksCutout.tsx must exist");
+      assert.ok(fs.existsSync(scssPath), "WorksCutout.module.scss must exist");
+
+      const tsx = fs.readFileSync(cutoutPath, "utf8");
+      const scss = fs.readFileSync(scssPath, "utf8");
+
+      assert.ok(tsx.includes('/works'), "WorksCutout must link to /works");
+      assert.ok(tsx.includes('data-header-theme="dark"'), "WorksCutout must declare dark theme for header sensor");
+      assert.ok(scss.includes("min-height: 44px"), "WorksCutout button must enforce 44px min-height touch target");
+    });
+
+
+    test("verifies WorksGalleryClient integrates GSAP ScrollTrigger 3D card stacking engine and Brand Red sweep", () => {
+      const galleryPath = path.join(rootDir, "src", "app", "works", "WorksGalleryClient.tsx");
+      const scssPath = path.join(rootDir, "src", "app", "works", "Works.module.scss");
+
+      const tsx = fs.readFileSync(galleryPath, "utf8");
+      const scss = fs.readFileSync(scssPath, "utf8");
+
+      assert.ok(tsx.includes("ScrollTrigger"), "WorksGalleryClient must register ScrollTrigger");
+      assert.ok(tsx.includes("useGSAP"), "WorksGalleryClient must use useGSAP hook");
+      assert.ok(tsx.includes("CURATED WORKS"), "WorksGalleryClient must declare CURATED WORKS title in uppercase");
+      assert.ok(scss.includes("font-weight: 400; // CircularXXWeb-Book"), "Works.module.scss must enforce font-weight: 400 (Book) for title");
+      assert.ok(scss.includes("font-size: clamp(2.25rem, 5.5vw, 4.75rem);"), "Works.module.scss must scale down title size to elegant clamp");
+      assert.ok(scss.includes("text-transform: uppercase;"), "Works.module.scss must enforce text-transform: uppercase on title");
+      assert.ok(tsx.includes("workDeckWrapper"), "WorksGalleryClient must wrap cards in workDeckWrapper");
+      assert.ok(tsx.includes("rotateZ"), "WorksGalleryClient must implement 3D rotateZ transform");
+      assert.ok(tsx.includes("transformPerspective: 1400"), "WorksGalleryClient must set 1400 perspective");
+      assert.ok(scss.includes("$client-accent-red"), "Works.module.scss must consume $client-accent-red");
+      assert.ok(scss.includes("position: sticky"), "Works.module.scss must enforce position: sticky for cards");
+      assert.ok(scss.includes("height: 150svh"), "Works.module.scss must declare 150svh scroll spacer");
+      assert.ok(scss.includes("padding: 0;"), "Works.module.scss must enforce 0 padding on workDeckWrapper for full-width bleed");
+      assert.ok(scss.includes("border-radius: 0;"), "Works.module.scss must enforce 0 border-radius on workDeckCard for seamless edge-to-edge canvas");
+      assert.ok(scss.includes("top: 0;"), "Works.module.scss must enforce top: 0 on workDeckWrapper for zero top gap");
+      assert.ok(scss.includes("height: 100svh;"), "Works.module.scss must enforce height: 100svh on workDeckCard for full viewport coverage");
+      assert.ok(scss.includes("text-transform: none;"), "Works.module.scss must enforce text-transform: none on actionPillLink");
+      assert.ok(tsx.includes("toNaturalCase"), "WorksGalleryClient must utilize toNaturalCase to eliminate shouting all-caps text");
+      assert.ok(tsx.includes("cardLeftContent"), "WorksGalleryClient must declare cardLeftContent for left-side vertically centered title");
+      assert.ok(tsx.includes("cardBottomRightActions"), "WorksGalleryClient must declare cardBottomRightActions for bottom-right action button cluster");
+      assert.ok(tsx.includes("View Work"), "WorksGalleryClient must declare 'View Work' action button");
+      assert.ok(scss.includes(".cardLeftContent"), "Works.module.scss must define .cardLeftContent class");
+      assert.ok(scss.includes(".cardBottomRightActions"), "Works.module.scss must define .cardBottomRightActions class");
+      assert.ok(scss.includes("transform: translateY(-50%)"), "Works.module.scss must vertically center .cardLeftContent");
+      assert.ok(scss.includes("border-radius: 9999px; // 160over90 signature outline pill geometry"), "Works.module.scss must enforce border-radius: 9999px for 160over90 benchmark outline pill");
+      assert.ok(scss.includes("border: 1.5px solid rgba(255, 255, 255, 0.85);"), "Works.module.scss must declare 1.5px solid outline border");
+      assert.ok(scss.includes("background: transparent;"), "Works.module.scss must enforce transparent background on action pills");
+      assert.ok(scss.includes("flex-direction: column;"), "Works.module.scss must enforce vertical column stack for cardBottomRightActions");
+      assert.ok(!scss.includes("text-shadow: 0"), "Works.module.scss must not contain drop shadows on text");
+      assert.ok(!scss.includes("rgba(5, 5, 6, 0.94)"), "Works.module.scss must not contain heavy 94% black scrim composite");
+      assert.ok(scss.includes(".cardScrimOverlay"), "Works.module.scss must define .cardScrimOverlay class");
+      assert.ok(scss.includes("rgba(0, 0, 0, 0.48)"), "Works.module.scss must provide lateral typographic contrast veil");
+      assert.ok(scss.includes("rgba(0, 0, 0, 0.20)"), "Works.module.scss must provide very light ambient dark glaze across the card");
+      assert.ok(!tsx.includes("indexBadge"), "WorksGalleryClient must not contain indexBadge");
+      assert.ok(!tsx.includes("projectIndex"), "WorksGalleryClient must eradicate unused projectIndex");
+      assert.ok(!tsx.includes("totalCount"), "WorksGalleryClient must eradicate unused totalCount");
+      assert.ok(!scss.includes(".indexBadge"), "Works.module.scss must not contain .indexBadge selector");
+      assert.ok(tsx.includes("Play Reel"), "WorksGalleryClient must declare 'Play Reel' button");
+      assert.ok(tsx.includes("playGlyph"), "WorksGalleryClient must declare playGlyph class for ▶ solid triangle");
+      assert.ok(tsx.includes("ReelModal"), "WorksGalleryClient must integrate accessible ReelModal showreel viewer");
+      assert.ok(!tsx.includes("↗"), "WorksGalleryClient must not contain diagonal arrow glyph in action pills");
+      assert.ok(!tsx.includes("&nearr;"), "WorksGalleryClient must not contain unescaped &nearr; entity");
+      assert.ok(!tsx.includes("pulseDot"), "WorksGalleryClient must not contain AI-slop pulseDot");
+      assert.ok(!tsx.includes("countBadge"), "WorksGalleryClient must not contain AI-slop countBadge");
+      assert.ok(!tsx.includes("02 / Portfolio Archive"), "WorksGalleryClient must not contain 02 / Portfolio Archive kicker");
+      assert.ok(!scss.includes(".pulseDot"), "Works.module.scss must not contain .pulseDot class");
+      assert.ok(!scss.includes(".countBadge"), "Works.module.scss must not contain .countBadge class");
+    });
+
+    test("verifies legacy /work route permanently redirects to /works", () => {
+      const legacyWorkPath = path.join(rootDir, "src", "app", "work", "page.tsx");
+      assert.ok(fs.existsSync(legacyWorkPath), "src/app/work/page.tsx must exist");
+
+      const content = fs.readFileSync(legacyWorkPath, "utf8");
+      assert.ok(content.includes('redirect("/works")'), "Legacy /work page must redirect to /works");
     });
   });
 });

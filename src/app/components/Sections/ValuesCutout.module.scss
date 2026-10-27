@@ -32,7 +32,7 @@
 .kicker {
   font-family: $font-circular;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: $client-accent-red;
@@ -41,9 +41,9 @@
 .headline {
   font-family: $font-circular;
   font-size: var(--client-type-h2);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
   color: #ffffff;
   margin: 0;
 }
@@ -98,7 +98,7 @@
 .valueNumber {
   font-family: $font-mono;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.05em;
   color: $client-accent-red;
 }
@@ -112,7 +112,7 @@
 .valueTitle {
   font-family: $font-circular;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.3;
   letter-spacing: -0.015em;
   color: #ffffff;

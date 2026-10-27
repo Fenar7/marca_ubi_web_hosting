@@ -10,6 +10,11 @@
 $font-circular: var(--font-circular), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 $font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
+// Discrete Circular XX Weight Tokens (Strictly mapped to loaded WOFF2 cuts)
+$fw-book: 400;   // CircularXXWeb-Book.woff2: Editorial statements, long-form prose, kinetic clouds
+$fw-medium: 500; // CircularXXWeb-Medium.woff2: Section headlines, buttons, kickers, anthem titles
+$fw-bold: 700;   // CircularXXWeb-Bold.woff2: Reserved exclusively for high-impact tabular metric figures
+
 // Brand Colors (The 60-30-10 Rule)
 $client-accent-red: #ea002a;
 $client-accent-red-hover: #c40023;

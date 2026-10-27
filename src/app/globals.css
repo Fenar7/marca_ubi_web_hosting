@@ -91,22 +91,15 @@ html.lenis {
   pointer-events: none;
 }
 
-/* ─── Custom Brand Cursor (Public Site Only) ─────────────────────────── */
-html:not([data-admin-route='true']),
-html:not([data-admin-route='true']) body {
-  cursor: url('/cursor-default.svg'), auto !important;
-}
-
-html:not([data-admin-route='true']) a,
-html:not([data-admin-route='true']) button,
-html:not([data-admin-route='true']) [role='button'],
-html:not([data-admin-route='true']) input,
-html:not([data-admin-route='true']) textarea,
-html:not([data-admin-route='true']) select,
-html:not([data-admin-route='true']) label,
-html:not([data-admin-route='true']) summary,
-html:not([data-admin-route='true']) [data-cursor-hover] {
-  cursor: url('/cursor-pointer.svg') 10 0, pointer !important;
+/* ─── Native Standard Cursor Invariants ──────────────────────────────── */
+a,
+button,
+[role='button'],
+label,
+select,
+summary,
+[data-cursor-hover] {
+  cursor: pointer;
 }
 
 /* ─── Admin Workspace Native Cursor & Standard Scroll Invariants ───────── */

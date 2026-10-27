@@ -23,9 +23,9 @@
 .statementHeadline {
   font-family: $font-circular;
   font-size: var(--client-type-h1);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
+  font-weight: 500; // CircularXXWeb-Medium
+  line-height: 1.14;
+  letter-spacing: -0.02em;
   color: #ffffff;
   margin: 0;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
@@ -52,7 +52,7 @@
   color: #ffffff;
   font-family: $font-circular;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -94,7 +94,7 @@
   color: #ffffff;
   font-family: $font-circular;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   text-decoration: none;
   cursor: pointer;

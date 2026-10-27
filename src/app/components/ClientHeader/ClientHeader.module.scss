@@ -61,19 +61,18 @@
 .menuTrigger {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   background: transparent;
   border: none;
-  padding: 10px 14px;
-  min-height: 44px; // 44px accessible touch target
-  min-width: 44px;
+  outline: none;
+  box-shadow: none;
+  padding: 10px;
+  min-height: 48px; // 48px accessible touch target
+  min-width: 48px;
   cursor: pointer;
   color: inherit;
-  font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
   transition: opacity 0.2s ease;
 
   &:hover {
@@ -84,188 +83,57 @@
     }
   }
 
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 4px;
+  &:focus,
+  &:focus-visible,
+  &:active {
+    outline: none;
+    border: none;
+    box-shadow: none;
   }
 }
 
-.menuLabel {
-  display: inline-block;
-  line-height: 1;
-
-  @media (max-width: 480px) {
-    display: none;
-  }
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .burgerStack {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
-  width: 22px;
-  height: 16px;
+  gap: 4.5px;
+  width: 26.5px;
+  height: 18px;
 }
 
 .burgerLine {
   display: block;
   width: 100%;
-  height: 1.5px;
+  height: 2.75px;
+  border-radius: 9999px; // Fully rounded capsule ends matching benchmark
   background-color: currentColor;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background-color 0.2s ease;
   transform-origin: center;
 
   &.lineOpenTop {
-    transform: translateY(3.75px) rotate(45deg);
+    transform: translateY(7.25px) rotate(45deg);
     background-color: #ffffff;
+  }
+
+  &.lineOpenMiddle {
+    opacity: 0;
+    transform: scaleX(0);
   }
 
   &.lineOpenBottom {
-    transform: translateY(-3.75px) rotate(-45deg);
+    transform: translateY(-7.25px) rotate(-45deg);
     background-color: #ffffff;
   }
-}
-
-/* Minimalist Swiss Fullscreen Navigation Drawer */
-.menuDrawer {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100dvh;
-  background-color: rgba(5, 5, 5, 0.94);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(2rem, 6vw, 5rem) clamp(1.5rem, 5vw, 6rem);
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
-
-  &.drawerActive {
-    opacity: 1;
-    pointer-events: auto;
-    visibility: visible;
-  }
-}
-
-.drawerHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.drawerCloseBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0 1.25rem;
-  height: 44px;
-  min-height: 44px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-
-  &:hover {
-    border-color: $client-accent-red;
-    color: $client-accent-red;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 4px;
-  }
-}
-
-.drawerNavGrid {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.75rem, 2vh, 1.75rem);
-  max-width: 900px;
-}
-
-.drawerNavLink {
-  display: inline-flex;
-  align-items: baseline;
-  gap: clamp(1rem, 3vw, 2.5rem);
-  text-decoration: none;
-  color: #ffffff;
-  font-family: $font-circular;
-  font-size: clamp(2rem, 5.5vw, 4.5rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
-
-  &:hover {
-    color: $client-accent-red;
-    transform: translateX(10px);
-
-    .navIndex {
-      color: $client-accent-red;
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 4px;
-  }
-}
-
-.navIndex {
-  font-family: $font-mono;
-  font-size: clamp(0.875rem, 1.5vw, 1.25rem);
-  color: rgba(255, 255, 255, 0.4);
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  transition: color 0.2s ease;
-}
-
-.drawerFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 2rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-}
-
-.drawerDirectAction {
-  color: #ffffff;
-  text-decoration: none;
-  font-family: $font-circular;
-  font-size: 15px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: $client-accent-red;
-  }
-}
-
-.drawerMeta {
-  font-family: $font-circular;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-  font-variant-numeric: tabular-nums;
 }

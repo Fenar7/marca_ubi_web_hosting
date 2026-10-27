@@ -39,7 +39,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sanity.io",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' blob: data: https://cdn.sanity.io https://*.supabase.co",
+      "img-src 'self' blob: data: https://cdn.sanity.io https://*.supabase.co https://images.unsplash.com",
       "media-src 'self' blob: data: https://*.amazonaws.com",
       "font-src 'self' data:",
       "connect-src 'self' https://*.supabase.co https://*.sanity.io wss://*.supabase.co",
@@ -65,7 +65,21 @@ const nextConfig: NextConfig = {
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/work",
+        destination: "/works",
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [

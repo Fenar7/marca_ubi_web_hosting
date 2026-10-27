@@ -1,0 +1,146 @@
+@import "../../styles/client-mixins.scss";
+
+.worksCutoutSection {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  min-height: 680px;
+  background-color: transparent; // Living video engine shows through
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(3.5rem, 6vw, 6.5rem) clamp(2rem, 5vw, 5.5rem);
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    height: 80dvh;
+    min-height: 540px;
+    padding: 3.5rem 2rem;
+  }
+
+  @media (max-width: 768px) {
+    height: 85dvh;
+    min-height: 480px;
+    padding: 2.5rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.stageContainer {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2.5rem;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+}
+
+.headlineColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 850px;
+}
+
+.kickerBadge {
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.monumentalHeadline {
+  font-family: $font-circular;
+  font-size: clamp(3.5rem, 8.5vw, 8.5rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 4px 32px rgba(0, 0, 0, 0.7);
+
+  @media (max-width: 768px) {
+    font-size: clamp(2.75rem, 11vw, 4rem);
+    line-height: 1.0;
+  }
+}
+
+.actionColumn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    margin-bottom: 0;
+  }
+}
+
+.viewWorksPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  height: 52px;
+  min-height: 44px; // WCAG AA tap target
+  padding: 0 32px;
+  border-radius: 2px; // Swiss architectural precision
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  background-color: rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .pillLabel {
+    font-family: $font-circular;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.015em;
+    color: #ffffff;
+  }
+
+  .arrowIcon {
+    color: #ffffff;
+    font-size: 16px;
+    transition: transform 0.25s ease;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+    border-color: #ffffff;
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+
+    .arrowIcon {
+      transform: translateX(4px);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 48px;
+    justify-content: center;
+  }
+}

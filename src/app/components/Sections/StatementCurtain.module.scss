@@ -1,0 +1,64 @@
+@import "../../styles/client-mixins.scss";
+
+/**
+ * StatementCurtain Stylesheet
+ * Solid pure white curtain (#ffffff) elevated above living background video cutouts.
+ * Adheres to 160over90 typographic tension and antislop-ui guidelines.
+ */
+
+.statementCurtainSection {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  background-color: $client-canvas-white;
+  color: $client-text-dark;
+  padding: clamp(6.5rem, 12vw, 11.5rem) clamp(1.5rem, 5vw, 5rem);
+  box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    padding: clamp(5rem, 9vw, 8rem) clamp(1.5rem, 4vw, 3rem);
+  }
+
+  @media (max-width: 768px) {
+    padding: 4rem 1.5rem;
+  }
+}
+
+.stageContainer {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.statementStage {
+  width: 100%;
+  max-width: 1180px;
+}
+
+.monumentalStatement {
+  font-family: $font-circular;
+  font-size: clamp(2.25rem, 4.2vw, 4rem);
+  font-weight: 400; // CircularXXWeb-Book.woff2 (160over90 benchmark parity)
+  line-height: 1.34; // Airy editorial breathing room
+  letter-spacing: -0.005em; // Natural optical tracking
+  color: $client-text-dark;
+  margin: 0;
+  text-wrap: balance;
+  word-break: break-word;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 1.32;
+    letter-spacing: -0.005em;
+  }
+
+  @media (max-width: 768px) {
+    font-size: clamp(1.65rem, 5.5vw, 2.25rem);
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+}

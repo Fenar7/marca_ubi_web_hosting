@@ -6,10 +6,10 @@ import MarcaUbiLogo from "../ui/MarcaUbiLogo/MarcaUbiLogo";
 import styles from "./MonumentalFooter.module.scss";
 
 const NAV_LINKS = [
-  { label: "About & Doctrine", href: "/#about" },
-  { label: "Selected Work", href: "/work" },
-  { label: "Guiding Principles", href: "/#values" },
+  { label: "About", href: "/#about" },
+  { label: "Selected Works", href: "/works" },
   { label: "Methodology", href: "/#process" },
+  { label: "Guiding Principles", href: "/#values" },
   { label: "Studio Dispatches", href: "/blog" },
   { label: "Studio Corridors", href: "/#network" },
   { label: "Initiate Brief", href: "/start-project" },
