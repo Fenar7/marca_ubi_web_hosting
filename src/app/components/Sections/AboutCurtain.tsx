@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import styles from "./AboutDoctrineCurtain.module.scss";
+import styles from "./AboutCurtain.module.scss";
 
 interface CoreService {
   number: string;
@@ -63,24 +63,24 @@ const METRICS: MetricItem[] = [
 ];
 
 /**
- * View 02: About & Doctrine Curtain.
+ * View 02: About Curtain.
  * Solid pure white curtain (#ffffff) sliding over the fixed background video.
  * Enforces the 160over90 Swiss 30/70 asymmetric editorial layout.
- * Houses 100% of authentic production content: Doctrine, 4 Services, 4 Metric Odometers.
+ * Houses 100% of authentic production content: Studio Narrative, 4 Services, 4 Metric Odometers.
  */
-export function AboutDoctrineCurtain() {
+export function AboutCurtain() {
   return (
     <section
       className={styles.aboutSection}
       id="about"
-      aria-label="About and Agency Doctrine"
+      aria-label="About Marca Ubi"
       data-header-theme="light"
     >
       <div className={styles.gridContainer}>
         {/* Left Sticky/Anchor Rail (30%) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
-            <span className={styles.sectionLabel}>01 / About &amp; Doctrine</span>
+            <span className={styles.sectionLabel}>01 / About</span>
             <p className={styles.railTagline}>
               Engineering brands as complete living systems rather than disconnected outputs.
             </p>
@@ -100,12 +100,12 @@ export function AboutDoctrineCurtain() {
             We live at the collision of culture and commerce. Where brand identity ceases to be decoration and becomes an operating system for commercial influence.
           </h2>
 
-          {/* Core Doctrine Narrative */}
-          <div className={styles.doctrineBlock}>
-            <p className={styles.doctrineLead}>
+          {/* Core Studio Narrative */}
+          <div className={styles.narrativeBlock}>
+            <p className={styles.narrativeLead}>
               Marca Ubi brings together brand engineering, artistic direction, and experience design to build brands as complete systems rather than disconnected outputs. We define the strategic core, shape the visual and emotional language, and translate it into digital environments people can understand, engage with, and remember.
             </p>
-            <p className={styles.doctrineSupport}>
+            <p className={styles.narrativeSupport}>
               Every layer is designed to work with the next, so the brand is not only well designed, but well built. In an era of synthetic sameness, enduring resonance must be deliberately engineered.
             </p>
           </div>
@@ -145,4 +145,4 @@ export function AboutDoctrineCurtain() {
   );
 }
 
-export default AboutDoctrineCurtain;
+export default AboutCurtain;

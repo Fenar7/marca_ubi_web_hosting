@@ -9,7 +9,7 @@ import type { NavItem, NavigationOverlayProps } from "./types";
 
 const DEFAULT_NAV_ITEMS: readonly NavItem[] = [
   { label: "Selected Works", href: "/works" },
-  { label: "About & Doctrine", href: "/#about" },
+  { label: "About", href: "/#about" },
   { label: "Methodology", href: "/#process" },
   { label: "Studio Dispatches", href: "/blog" },
   { label: "Direct Desks", href: "/start-project" },

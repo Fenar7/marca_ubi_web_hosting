@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import BackgroundVideoEngine from "../BackgroundVideo/BackgroundVideoEngine";
 import ClientHeader from "../ClientHeader/ClientHeader";
 import HeroCutout from "../Sections/HeroCutout";
-import AboutDoctrineCurtain from "../Sections/AboutDoctrineCurtain";
+import AboutCurtain from "../Sections/AboutCurtain";
 import ReelCutout from "../Sections/ReelCutout";
 import StatementCurtain from "../Sections/StatementCurtain";
 import WorksCutout from "../Sections/WorksCutout";
@@ -52,8 +52,8 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
           headline={"Engineering Brands\nThat Move The World."}
         />
 
-        {/* View 02: About & Doctrine Curtain (Solid Pure White) */}
-        <AboutDoctrineCurtain />
+        {/* View 02: About Curtain (Solid Pure White) */}
+        <AboutCurtain />
 
         {/* View 03: Showreel Cutout (Transparent) */}
         <ReelCutout

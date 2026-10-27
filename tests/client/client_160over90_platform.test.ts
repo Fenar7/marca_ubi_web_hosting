@@ -54,7 +54,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/components/NavigationOverlay/KineticStage.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
         "src/app/components/Sections/StatementCurtain.module.scss",
-        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
         "src/app/components/Sections/HeroCutout.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
         "src/app/components/Sections/WorksCutout.module.scss",
@@ -219,7 +219,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/components/NavigationOverlay/NavigationOverlay.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
         "src/app/components/Sections/HeroCutout.module.scss",
-        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
         "src/app/components/Sections/StatementCurtain.module.scss",
         "src/app/components/Sections/WorksCurtain.module.scss",
@@ -257,7 +257,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
         "src/app/styles/client-tokens.scss",
         "src/app/components/ClientHeader/ClientHeader.module.scss",
         "src/app/components/ReelModal/ReelModal.module.scss",
-        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
         "src/app/components/Sections/WorksCurtain.module.scss",
         "src/app/components/Sections/ProcessCurtain.module.scss",
         "src/app/components/Sections/TestimonialsCutout.module.scss",
@@ -303,7 +303,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     test("verifies all 12 homepage views declare explicit data-header-theme for theme observer", () => {
       const views = [
         { file: "HeroCutout.tsx", expected: 'data-header-theme="dark"' },
-        { file: "AboutDoctrineCurtain.tsx", expected: 'data-header-theme="light"' },
+        { file: "AboutCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "ReelCutout.tsx", expected: 'data-header-theme="dark"' },
         { file: "StatementCurtain.tsx", expected: 'data-header-theme="light"' },
         { file: "WorksCutout.tsx", expected: 'data-header-theme="dark"' },
@@ -358,7 +358,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     test("asserts zero border-radius: 9999px on button classes in redesigned client sections", () => {
       const clientScssFiles = [
         "src/app/components/Sections/HeroCutout.module.scss",
-        "src/app/components/Sections/AboutDoctrineCurtain.module.scss",
+        "src/app/components/Sections/AboutCurtain.module.scss",
         "src/app/components/Sections/ReelCutout.module.scss",
         "src/app/components/Sections/StatementCurtain.module.scss",
         "src/app/components/Sections/WorksCutout.module.scss",
@@ -392,7 +392,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const content = fs.readFileSync(experiencePath, "utf8");
 
       assert.ok(content.includes("<HeroCutout"), "View 01: HeroCutout must be present");
-      assert.ok(content.includes("<AboutDoctrineCurtain"), "View 02: AboutDoctrineCurtain must be present");
+      assert.ok(content.includes("<AboutCurtain"), "View 02: AboutCurtain must be present");
       assert.ok(content.includes("<ReelCutout"), "View 03: ReelCutout must be present");
       assert.ok(content.includes("<StatementCurtain"), "View 04: StatementCurtain must be present");
       assert.ok(content.includes("<WorksCutout") || content.includes("<WorksCurtain"), "View 05: WorksCutout must be present");
