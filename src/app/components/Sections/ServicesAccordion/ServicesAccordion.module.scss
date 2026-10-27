@@ -1,0 +1,360 @@
+@import "../../../styles/client-mixins.scss";
+
+.servicesShowcase {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  padding-top: clamp(2rem, 4vw, 3.5rem);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.kickerWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sectionKicker {
+  font-family: $font-circular;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $client-text-muted-dark;
+}
+
+.sectionTitle {
+  font-family: $font-circular;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: $client-text-dark;
+  margin: 0;
+}
+
+/* Segmented Architecture Pill Switch */
+.segmentedSwitch {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  gap: 2px;
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  min-height: 40px;
+  border: none;
+  background: transparent;
+  color: $client-text-body-dark;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+
+  &:hover {
+    color: $client-text-dark;
+  }
+
+  &.active {
+    background-color: $client-text-dark;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+    .countBadge {
+      background-color: $client-accent-red;
+      color: #ffffff;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 2px;
+  }
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.08);
+  color: $client-text-dark;
+  transition: all 0.25s ease;
+}
+
+/* Horizontal Multi-Column Accordion Strip */
+.accordionStrip {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 520px;
+  overflow: hidden;
+  border-radius: 4px;
+  gap: 4px;
+  background-color: #0a0a0a;
+
+  @media (max-width: 1024px) {
+    height: 480px;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    gap: 8px;
+    background-color: transparent;
+  }
+}
+
+.accordionCard {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #111111;
+  transition: flex 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: -2px;
+  }
+
+  &.expanded {
+    flex: 3.4;
+
+    @media (max-width: 1200px) {
+      flex: 3;
+    }
+
+    .restingView {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .expandedView {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition: opacity 0.4s ease 0.1s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+    }
+
+    .imageScrim {
+      background-color: rgba(10, 10, 10, 0.94);
+      backdrop-filter: blur(8px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex: none !important;
+    width: 100%;
+    min-height: 80px;
+    border-radius: 4px;
+
+    &.expanded {
+      min-height: 360px;
+    }
+  }
+}
+
+/* Background Image & Gradient Scrim */
+.imageLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+
+  img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+.imageScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.9) 100%);
+  transition: background-color 0.4s ease;
+}
+
+/* Resting State: Editorial Photo + Bottom Title */
+.restingView {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem 1.25rem;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.restingTop {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.restingIndex {
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.05em;
+}
+
+.restingBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.restingTitle {
+  font-family: $font-circular;
+  font-size: clamp(1rem, 1.2vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  margin: 0;
+  word-break: break-word;
+}
+
+/* Expanded State: Dark Backdrop + Top Content + Red Arrow */
+.expandedView {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.75rem, 2.5vw, 2.5rem);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.expandedTop {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.expandedHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.expandedMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.expandedIndex {
+  font-family: $font-mono;
+  font-size: 13px;
+  font-weight: 700;
+  color: $client-accent-red;
+}
+
+.expandedCategory {
+  font-family: $font-circular;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.expandedTitle {
+  font-family: $font-circular;
+  font-size: clamp(1.25rem, 1.6vw, 1.65rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.accentBar {
+  width: 32px;
+  height: 2px;
+  background-color: $client-accent-red;
+  margin-top: 0.25rem;
+}
+
+.expandedDesc {
+  font-family: $font-circular;
+  font-size: clamp(0.875rem, 1vw, 0.975rem);
+  font-weight: 400; // CircularXXWeb-Book
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+  max-width: 580px;
+}
+
+.expandedBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.actionTagline {
+  font-family: $font-circular;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.expandedArrow {
+  font-size: 20px;
+  color: $client-accent-red;
+  transition: transform 0.25s ease;
+
+  .accordionCard:hover & {
+    transform: translateX(4px);
+  }
+}
