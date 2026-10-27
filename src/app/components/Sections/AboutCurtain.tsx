@@ -34,29 +34,34 @@ const SERVICES: CoreService[] = [
 ];
 
 interface MetricItem {
-  value: string;
+  number: string;
+  symbol: string;
   title: string;
   desc: string;
 }
 
 const METRICS: MetricItem[] = [
   {
-    value: "100+",
+    number: "100",
+    symbol: "+",
     title: "Brands Served",
     desc: "Across strategy, identity, digital platforms, and communication systems.",
   },
   {
-    value: "12+",
+    number: "12",
+    symbol: "+",
     title: "Core Disciplines",
     desc: "From positioning and messaging to identity systems and digital direction.",
   },
   {
-    value: "3*",
+    number: "3",
+    symbol: "*",
     title: "Integrated Pillars",
     desc: "Brand engineering, art direction, and experience systems working as one.",
   },
   {
-    value: "360°",
+    number: "360",
+    symbol: "°",
     title: "Application Scope",
     desc: "End-to-end execution across digital platforms and physical touchpoints.",
   },
@@ -132,7 +137,10 @@ export function AboutCurtain() {
             <div className={styles.metricsGrid}>
               {METRICS.map((metric) => (
                 <div key={metric.title} className={styles.metricItem}>
-                  <span className={styles.metricValue}>{metric.value}</span>
+                  <span className={styles.metricValue}>
+                    {metric.number}
+                    <span className={styles.metricSymbol}>{metric.symbol}</span>
+                  </span>
                   <h4 className={styles.metricTitle}>{metric.title}</h4>
                   <p className={styles.metricDesc}>{metric.desc}</p>
                 </div>

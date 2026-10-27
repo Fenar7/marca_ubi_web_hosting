@@ -69,6 +69,7 @@
 
   .arrow {
     font-size: 16px;
+    color: $client-accent-red;
     transition: transform 0.25s ease;
   }
 
@@ -241,6 +242,12 @@
   color: $client-text-dark;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
+}
+
+.metricSymbol {
+  color: $client-accent-red;
+  font-weight: 700;
+  margin-left: 2px;
 }
 
 .metricTitle {

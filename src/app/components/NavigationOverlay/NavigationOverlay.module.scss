@@ -134,7 +134,7 @@
   transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    color: #000000;
+    color: $client-accent-red;
     transform: translateX(4px);
 
     .navArrow {

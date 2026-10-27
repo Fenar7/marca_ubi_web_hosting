@@ -26,9 +26,31 @@ export interface NavigationOverlayProps {
 }
 
 /**
+ * Individual kinetic constellation node representing a core studio discipline or nexus hub.
+ */
+export interface WordNode {
+  /** Unique invariant identifier */
+  readonly id: string;
+  /** Studio ethos or service discipline title */
+  readonly label: string;
+  /** Optional architectural typographic glyph or symbol */
+  readonly glyph?: string;
+  /** Constellation anchor X coordinate percentage (0 - 100) */
+  readonly xPct: number;
+  /** Constellation anchor Y coordinate percentage (0 - 100) */
+  readonly yPct: number;
+  /** Identifies the central nexus hub that renders the living brand red dot */
+  readonly isCenterHub?: boolean;
+}
+
+/**
  * Props contract for the right-panel KineticStage.
  */
 export interface KineticStageProps {
-  /** Governs whether the GSAP RAF animation loop and pointer listeners are active */
+  /** Governs whether the GSAP autonomous animation loop and pointer listeners are active */
   readonly isActive: boolean;
+  /** Optional custom stage words array conforming to readonly WordNode[] */
+  readonly words?: readonly WordNode[];
+  /** Optional callback invoked when a word node is activated */
+  readonly onWordChange?: (wordId: string) => void;
 }
