@@ -1,4 +1,4 @@
-# Architecture & Implementation Plan: Kinetic Stage Asymmetric Scatter & Operational Rail Removal
+# Architecture & Implementation Plan: Kinetic Stage Asymmetric Scatter, Operational Rail Removal & Social Icons Refinement
 
 > **Document Location**: `docs/kinetic_stage_asymmetric_scatter/master_kinetic_scatter_and_rail_removal_plan.md`  
 > **Status**: **IMPLEMENTED & AUDITED**  
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary & User Directives
 
-This implementation addresses two sequential client-directed visual enhancements:
+This implementation addresses three sequential client-directed visual enhancements:
 
 1. **Request A (`Screenshot 2026-10-27 165358.png`)**:
    - Directive: *"just remoe this"*
@@ -21,6 +21,11 @@ This implementation addresses two sequential client-directed visual enhancements
    - Directive: *"see thowe top tow itms are like ina row right also that of hte bottom is laos i nlike row i wnat it to be like in random no tow itses shoudlbe ina arow but hsoudl be fully sviisble btw not cut off or anythihing please hire expoert sbu agetsn ad nd do hits ndpuate he pr"*
    - Target: In [`KineticStage.tsx`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/NavigationOverlay/KineticStage.tsx), the 5 core studio capability nodes were positioned in a rigid rectangular grid where the top two items (`Brand Engineering` and `Identity & Art Systems`) shared `yPct: 22`, and the bottom two items (`Digital Experience Design` and `Communication & Growth`) shared `yPct: 78`.
    - Resolution: Re-architect the node positions into an **asymmetric organic constellation** where **every single item occupies a unique vertical level (yPct)** and a **unique horizontal coordinate (xPct)**. Nodes maintain ample padding (>30px) from all canvas container boundaries and >60px clearance from the top-right desktop close button `✕`.
+
+3. **Request C (`Screenshot 2026-10-27 171958.png`)**:
+   - Directive: *"ok now hte htoehr htign is we neeed to chagne teh diseng of thi we dont neddd this our er box jstu that outline icons only als icnrease the size of it pls d oit uqikcly andupate hte pr thast all"*
+   - Target: Social channel links in the left panel of [`NavigationOverlay.tsx`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/NavigationOverlay/NavigationOverlay.tsx) and [`NavigationOverlay.module.scss`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/NavigationOverlay/NavigationOverlay.module.scss).
+   - Resolution: Eradicated the solid rounded outer box (`background-color: #000000` / `border-radius: 6px`). Render pure outline SVG icons directly on the white canvas in `#000000` dark tone. Increased icon dimensions from `20x20` to `26x26`. On hover, the icons transition seamlessly to `$client-accent-red` (`#ea002a`) with a subtle `translateY(-2px)` lift while maintaining transparent background and accessible 44px tap targets.
 
 ---
 
@@ -59,7 +64,21 @@ This implementation addresses two sequential client-directed visual enhancements
 
 ---
 
-## 3. Engineering & Platform Verification
+## 3. Social Channels Outline Refinement Architecture
+
+1. **Outer Box Eradication**:
+   - Replaced solid `#000000` background pill/box with `background-color: transparent`.
+   - Removed visual container borders, rendering pristine vector linework directly against the pure white editorial canvas.
+2. **Icon Scale & Precision**:
+   - Scaled SVG viewports from `20x20` to `26x26` with refined `1.75` stroke weight.
+   - Preserved `currentColor` dynamic inheritance: `#000000` default resting state, transitioning to `$client-accent-red` (`#ea002a`) on hover.
+3. **Touch Targets & Accessibility**:
+   - Anchor bounds maintain `width: 44px; height: 44px;` providing compliant WCAG 2.5.5 tap targets without visual clutter.
+   - High-contrast focus indicator: `outline: 2px solid $client-accent-red; outline-offset: 4px;`.
+
+---
+
+## 4. Engineering & Platform Verification
 
 1. **`GlobalLocationsCloud.tsx`**:
    - Removed `.operationalRail` JSX.
@@ -67,6 +86,6 @@ This implementation addresses two sequential client-directed visual enhancements
 2. **`GlobalLocationsCloud.module.scss`**:
    - Removed `.operationalRail`, `.railNode`, `.railCode`, `.railTime`, `.railAbbr`, `.railText`, and `.railDivider`.
 3. **`tests/client/client_160over90_platform.test.ts`**:
-   - Updated assertion at line 355 to verify `!tsx.includes("operationalRail")`, strictly enforcing eradication in CI.
+   - Updated assertion at line 355 to verify `!tsx.includes("operationalRail")`.
 4. **Platform Test Suite**:
    - Executed `node --import tsx --test tests/client/client_160over90_platform.test.ts` &rarr; 37/37 passing (100%).
