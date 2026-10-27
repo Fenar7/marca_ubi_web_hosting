@@ -18,6 +18,8 @@ const SOCIAL_LINKS = [
  * Features authentic Kerala studio desks, direct phone/email channels,
  * and high-contrast architectural action triggers.
  * Marked with data-header-theme="dark" for white logo/header text.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function ConnectCutout() {
   return (
@@ -28,7 +30,6 @@ export function ConnectCutout() {
       data-header-theme="dark"
     >
       <div className={styles.contentStage}>
-        <span className={styles.kicker}>08 / Direct Desks &amp; Commissions</span>
         <h2 className={styles.displayHeadline}>Let&apos;s Build Something That Holds.</h2>
         <p className={styles.leadText}>
           For institutional branding, enterprise digital platforms, or global creative technology partnerships.
@@ -37,7 +38,7 @@ export function ConnectCutout() {
         {/* Studio Desks Cluster */}
         <div className={styles.desksCluster}>
           <div className={styles.deskItem}>
-            <span className={styles.deskLabel}>Direct Channel</span>
+            <span className={styles.deskLabel}>Contact</span>
             <a href="tel:+917012052472" className={styles.deskValue}>
               +91 7012 052 472
             </a>
@@ -53,7 +54,7 @@ export function ConnectCutout() {
           <div className={styles.deskItem}>
             <span className={styles.deskLabel}>Kerala Studios</span>
             <span className={styles.deskValueText}>
-              Hilite Business Park, Calicut &bull; Trivandrum
+              HiLITE Business Park, Calicut &bull; Trivandrum
             </span>
           </div>
         </div>

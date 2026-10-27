@@ -217,12 +217,12 @@ const ContactCtaSection = () => {
               <span className="contact-info-location-list">
                 <a
                   className="contact-info-location-link"
-                  href="https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Kozhikode"
+                  href="https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Calicut"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="View Kozhikode office on Google Maps"
+                  aria-label="View Calicut office on Google Maps"
                 >
-                  Kozhikode
+                  Calicut
                 </a>
                 <span className="contact-info-location-separator" aria-hidden="true">|</span>
                 <a

@@ -67,7 +67,6 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
         {/* View 05: Curated Works Portfolio Cutout (Transparent Video with Circular XX and link to /works) */}
         <WorksCutout
           headline={"Work\nwith us."}
-          kicker="02 / Selected Works"
           ctaLabel="View Works"
           ctaHref="/works"
         />

@@ -20,7 +20,7 @@ export interface WorksCutoutProps {
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function WorksCutout({
-  kicker = "02 / Selected Works",
+  kicker,
   headline = "Work\nwith us.",
   ctaLabel = "View Works",
   ctaHref = "/works",
@@ -37,7 +37,7 @@ export function WorksCutout({
       <div className={styles.stageContainer}>
         {/* Left Column: Kicker & Monumental Typography */}
         <div className={styles.headlineColumn}>
-          <span className={styles.kickerBadge}>{kicker}</span>
+          {kicker ? <span className={styles.kickerBadge}>{kicker}</span> : null}
           <h2 className={styles.monumentalHeadline}>
             {headlineLines.map((line, idx) => (
               <React.Fragment key={idx}>

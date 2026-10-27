@@ -21,7 +21,6 @@ export function TestimonialsCutout() {
     >
       <div className={styles.container}>
         <div className={styles.contentWrapper}>
-          <span className={styles.kicker}>05 / Client Evidence</span>
           <h2 className={styles.headline}>What Clients Value After Working With Marca Ubi</h2>
 
           {/* Monumental Quote Stage */}

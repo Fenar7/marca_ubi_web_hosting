@@ -58,7 +58,7 @@ export default function RootLayout({
       "@type": "PostalAddress",
       addressCountry: "IN",
       addressRegion: "Kerala",
-      addressLocality: "Kozhikode",
+      addressLocality: "Calicut",
       streetAddress: "HiLITE Business Park, Calicut",
       postalCode: "673014",
     },

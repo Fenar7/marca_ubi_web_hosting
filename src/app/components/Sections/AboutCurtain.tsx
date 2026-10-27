@@ -57,7 +57,6 @@ export function AboutCurtain() {
         {/* Left Sticky/Anchor Rail (30%) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
-            <span className={styles.sectionLabel}>01 / About</span>
             <p className={styles.railTagline}>
               Engineering brands as complete living systems rather than disconnected outputs.
             </p>

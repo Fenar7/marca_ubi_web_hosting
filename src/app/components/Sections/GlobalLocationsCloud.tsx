@@ -13,11 +13,11 @@ interface KeralaStudio {
 
 const KERALA_STUDIOS: KeralaStudio[] = [
   {
-    city: "Kozhikode",
+    city: "Calicut",
     code: "CCJ",
     subdivision: "HiLITE Business Park",
-    address: "HiLITE Business Park, Kozhikode, Kerala 673014",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Kozhikode",
+    address: "HiLITE Business Park, Calicut, Kerala 673014",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=HiLITE+Business+Park%2C+Calicut",
   },
   {
     city: "Trivandrum",
@@ -32,7 +32,7 @@ const KERALA_STUDIOS: KeralaStudio[] = [
  * View 09: Studio Corridors & Kerala Operations.
  * Solid pure white curtain (#ffffff) sliding over the living video background.
  * Swiss broadsheet layout featuring authentic Kerala studio coordinates:
- * Kozhikode (HiLITE Business Park) and Trivandrum.
+ * Calicut (HiLITE Business Park) and Trivandrum.
  * Pure Swiss typography with tabular numerals and real-time IST clock.
  * Zero AI-slop pills, zero pulsing dots, zero synthetic international hubs.
  *
@@ -72,10 +72,8 @@ export function GlobalLocationsCloud() {
     >
       <div className={styles.gridContainer}>
         <aside className={styles.leftColumn}>
-          <span className={styles.sectionLabel}>07 / Studio Corridors</span>
           <p className={styles.summaryText}>
-            Operating across Kerala with permanent studios in Kozhikode and Trivandrum,
-            delivering strategic brand architecture and digital flagships.
+            Our finest creators and collaborators working across India to deliver top-notch digital assets and creatives.
           </p>
         </aside>
 
@@ -126,7 +124,7 @@ export function GlobalLocationsCloud() {
 
             <span className={styles.railNode}>
               <span className={styles.railCode}>CCJ</span>
-              <span className={styles.railText}>HiLITE Business Park, Kozhikode</span>
+              <span className={styles.railText}>HiLITE Business Park, Calicut</span>
             </span>
 
             <span className={styles.railDivider} aria-hidden="true">/</span>
