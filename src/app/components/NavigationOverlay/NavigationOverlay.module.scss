@@ -183,7 +183,7 @@
 .socialCluster {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-top: clamp(2rem, 3.8vh, 2.75rem);
   padding-top: 0;
   border-top: none;
@@ -194,15 +194,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
-  min-height: 42px;
-  background-color: #000000;
-  color: #ffffff;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background-color: transparent;
+  color: #000000;
   border: none;
-  border-radius: 6px;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   &::before {
     content: "";
@@ -212,22 +213,27 @@
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
     display: block;
-    color: #ffffff;
-    transition: transform 0.2s ease;
+    color: currentColor;
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:hover {
-    background-color: $client-accent-red;
-    color: #ffffff;
+    background-color: transparent;
+    color: $client-accent-red;
     transform: translateY(-2px);
+
+    svg {
+      color: $client-accent-red;
+    }
   }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
-    outline-offset: 3px;
+    outline-offset: 4px;
+    border-radius: 4px;
   }
 }
 

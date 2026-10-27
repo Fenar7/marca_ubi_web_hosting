@@ -1,211 +1,177 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
-import {
-  ClockIcon,
-  CalendarIcon,
-  ControlsIcon,
-  CommentIcon,
-  OlistIcon,
-  RocketIcon,
-  AddIcon,
-  TrashIcon
-} from "@sanity/icons";
+import { TrashIcon, AddIcon } from "@sanity/icons";
 
 interface Step3Props {
   formData: ProjectFormData;
   updateFormData: (field: keyof ProjectFormData, value: string) => void;
   nextStep: () => void;
-  prevStep: () => void;
 }
 
-const timelines = [
-  "48 hours (Quick turnaround fees typically apply)",
-  "1 week",
-  "2 weeks",
-  "1 month",
-  "Choose a start & end date",
-  "Not sure. I'd like to chat with my Brand experience consultant",
+const TIMELINE_OPTIONS = [
+  { value: "immediate", badge: "Immediate (Under 2 Weeks)", detail: "High-priority rapid turn-around directive" },
+  { value: "1-2-months", badge: "1 – 2 Months", detail: "Standard full identity or web development sprint" },
+  { value: "quarterly", badge: "Quarterly Roadmap", detail: "Multi-phase institutional rollout" },
+  { value: "exploratory", badge: "Exploratory / Advisory", detail: "Initial strategy and technical discovery" },
 ];
 
-const timelineIcons: Record<string, React.ReactNode> = {
-  "48 hours (Quick turnaround fees typically apply)": <RocketIcon />,
-  "1 week": <ClockIcon />,
-  "2 weeks": <CalendarIcon />,
-  "1 month": <CalendarIcon />,
-  "Choose a start & end date": <OlistIcon />,
-  "Not sure. I'd like to chat with my Brand experience consultant": <CommentIcon />,
-};
+/**
+ * Step 3: Project Timeline, Reference Benchmarks, and Confidentiality.
+ * Clean, human, and professional agency parameters.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+export default function Step3Details({
+  formData,
+  updateFormData,
+  nextStep,
+}: Step3Props) {
+  const initialLinks = formData.inspirationLinks
+    ? formData.inspirationLinks.split(",").map((s) => s.trim()).filter(Boolean)
+    : [""];
 
-export default function Step3Details({ formData, updateFormData, nextStep, prevStep }: Step3Props) {
-  const [links, setLinks] = React.useState<string[]>(
-    formData.inspirationLinks ? formData.inspirationLinks.split("\n") : [""]
-  );
+  const [links, setLinks] = useState<string[]>(initialLinks.length ? initialLinks : [""]);
 
   const handleLinkChange = (index: number, value: string) => {
-    const newLinks = [...links];
-    newLinks[index] = value;
-    setLinks(newLinks);
-    updateFormData("inspirationLinks", newLinks.filter(l => l.trim() !== "").join("\n"));
+    const updated = [...links];
+    updated[index] = value;
+    setLinks(updated);
+    updateFormData("inspirationLinks", updated.filter(Boolean).join(", "));
   };
 
-  const addLinkField = () => {
-    if (links[links.length - 1].trim() === "") return;
-    setLinks([...links, ""]);
+  const addLink = () => {
+    if (links.length < 4) {
+      setLinks([...links, ""]);
+    }
   };
 
-  const removeLinkField = (index: number) => {
-    const newLinks = links.filter((_, i) => i !== index);
-    if (newLinks.length === 0) newLinks.push("");
-    setLinks(newLinks);
-    updateFormData("inspirationLinks", newLinks.filter(l => l.trim() !== "").join("\n"));
-  };
-
-  const handleTimelineSelect = (timeline: string) => {
-    updateFormData("timeline", timeline);
+  const removeLink = (index: number) => {
+    const updated = links.filter((_, i) => i !== index);
+    const finalLinks = updated.length ? updated : [""];
+    setLinks(finalLinks);
+    updateFormData("inspirationLinks", finalLinks.filter(Boolean).join(", "));
   };
 
   return (
     <div className={styles.stepContainer}>
-      <h2 className={styles.stepTitle}>Details & Timeline</h2>
-
-      <div className={styles.formGroup}>
-        <label>Link to any inspiration on the Web</label>
-        <p style={{fontSize: "0.875rem", color: "var(--color-hash-grey)", margin: "0 0 0.5rem 0"}}>
-          Paste URLs to any designs or imagery you like so we get an idea of the style you're looking for.
+      <header className={styles.stepHeaderBlock}>
+        <h2 className={styles.stepTitle}>Timeline &amp; References</h2>
+        <p className={styles.stepDescription}>
+          Help us align delivery targets and aesthetic benchmarks.
         </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {links.map((link, index) => (
-            <div key={index} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <input 
-                type="text" 
-                className={styles.formInput}
-                placeholder="https://pinterest.com/..."
+      </header>
+
+      {/* Timeline Selection */}
+      <div className={styles.inputGroup}>
+        <label className={styles.inputLabel}>
+          <span>Target Launch Horizon *</span>
+        </label>
+        <div className={styles.timelineGrid} role="radiogroup" aria-label="Launch Horizon">
+          {TIMELINE_OPTIONS.map((t) => {
+            const isSelected = formData.timeline === t.value;
+            return (
+              <button
+                key={t.value}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                className={`${styles.timelineCard} ${isSelected ? styles.active : ""}`}
+                onClick={() => updateFormData("timeline", t.value)}
+              >
+                <span className={styles.timelineBadge}>{t.badge}</span>
+                <span className={styles.timelineDetail}>{t.detail}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Reference Links */}
+      <div className={styles.inputGroup}>
+        <label className={styles.inputLabel}>
+          <span>Reference or Benchmark Links</span>
+          <span className={styles.optionalTag}>Optional</span>
+        </label>
+        <div className={styles.urlRepeater}>
+          {links.map((link, idx) => (
+            <div key={idx} className={styles.urlRow}>
+              <input
+                type="url"
+                className={`${styles.textInput} ${styles.urlInput}`}
+                placeholder={`e.g. https://example.com/site-${idx + 1}`}
                 value={link}
-                onChange={(e) => handleLinkChange(index, e.target.value)}
-                style={{ flex: 1 }}
+                onChange={(e) => handleLinkChange(idx, e.target.value)}
               />
               {links.length > 1 && (
                 <button
                   type="button"
-                  onClick={() => removeLinkField(index)}
-                  style={{
-                    background: "rgba(255, 255, 255, 0.03)",
-                    border: "none",
-                    color: "rgba(255, 255, 255, 0.4)",
-                    width: "56px",
-                    height: "100%",
-                    minHeight: "56px",
-                    borderRadius: "12px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "color 0.2s ease, background-color 0.2s ease"
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.color = "#ff4d4f";
-                    e.currentTarget.style.background = "rgba(255, 77, 79, 0.1)";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.color = "rgba(255, 255, 255, 0.4)";
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
-                  }}
+                  className={styles.trashBtn}
+                  onClick={() => removeLink(idx)}
+                  aria-label={`Remove reference link ${idx + 1}`}
                 >
-                  <TrashIcon style={{ width: "24px", height: "24px" }} />
+                  <TrashIcon />
                 </button>
               )}
             </div>
           ))}
-          <button 
+
+          {links.length < 4 && (
+            <button
+              type="button"
+              className={styles.addLinkBtn}
+              onClick={addLink}
+            >
+              <AddIcon />
+              <span>Add Another Link</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* NDA / Attribution */}
+      <div className={styles.inputGroup}>
+        <label className={styles.inputLabel}>
+          <span>Attribution Preference</span>
+        </label>
+        <div className={styles.radioGrid} role="radiogroup" aria-label="Attribution">
+          <button
             type="button"
-            onClick={addLinkField}
-            disabled={links[links.length - 1].trim() === ""}
-            style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: "0.5rem", 
-              background: "none", 
-              border: "none", 
-              color: links[links.length - 1].trim() === "" ? "rgba(255, 255, 255, 0.2)" : "#dc4216", 
-              cursor: links[links.length - 1].trim() === "" ? "not-allowed" : "pointer", 
-              fontWeight: 500,
-              minHeight: "44px",
-              padding: "0.5rem 0.25rem",
-              alignSelf: "flex-start",
-              fontSize: "0.95rem",
-              fontFamily: "inherit"
-            }}
+            role="radio"
+            aria-checked={formData.showcasePermission === "yes"}
+            className={`${styles.radioCard} ${formData.showcasePermission === "yes" ? styles.active : ""}`}
+            onClick={() => updateFormData("showcasePermission", "yes")}
           >
-            <AddIcon /> Add another link
+            <span className={styles.radioLabel}>Public Release Permitted</span>
+            <span className={styles.radioDesc}>Marca Ubi may feature the work in our case study archive upon launch</span>
+          </button>
+
+          <button
+            type="button"
+            role="radio"
+            aria-checked={formData.showcasePermission === "no"}
+            className={`${styles.radioCard} ${formData.showcasePermission === "no" ? styles.active : ""}`}
+            onClick={() => updateFormData("showcasePermission", "no")}
+          >
+            <span className={styles.radioLabel}>Strict NDA</span>
+            <span className={styles.radioDesc}>Confidential institutional project with zero external disclosure</span>
           </button>
         </div>
       </div>
 
-      <div className={styles.formGroup}>
-        <label>What's your timeline?</label>
-        <div className={styles.timelineGrid}>
-          {timelines.map((tl) => (
-            <button
-              key={tl}
-              className={`${styles.timelineCard} ${formData.timeline === tl ? styles.active : ""}`}
-              onClick={() => handleTimelineSelect(tl)}
-            >
-              <div className={styles.cardIcon}>
-                {timelineIcons[tl]}
-              </div>
-              <div className={styles.textContent}>
-                <span className={styles.timelineName}>{tl.split(" (")[0]}</span>
-                {tl.includes("(") && <p>{tl.substring(tl.indexOf("("))}</p>}
-                {tl.includes("Not sure") && <p>I'd like to chat with my Brand experience consultant</p>}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Can your Brand experience consultant showcase the finished designs in their portfolio?</label>
-        <div className={styles.radioGroup}>
-          <label className={styles.radioLabel}>
-            <input 
-              type="radio" 
-              name="showcasePermission" 
-              value="Yes"
-              checked={formData.showcasePermission === "Yes"}
-              onChange={(e) => updateFormData("showcasePermission", e.target.value)}
-            />
-            Yes
-          </label>
-          <label className={styles.radioLabel}>
-            <input 
-              type="radio" 
-              name="showcasePermission" 
-              value="No"
-              checked={formData.showcasePermission === "No"}
-              onChange={(e) => updateFormData("showcasePermission", e.target.value)}
-            />
-            No
-          </label>
-        </div>
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Anything else you'd like to share with your Brand experience consultant?</label>
-        <textarea 
-          className={styles.formTextarea}
-          placeholder="Any extra details..."
-          value={formData.extraNotes}
-          onChange={(e) => updateFormData("extraNotes", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.buttonGroup}>
-        <button className={styles.btnSecondary} onClick={prevStep}>Back</button>
-        <button className={styles.btnPrimary} onClick={nextStep}>
-          Review Brief
+      {/* Continue Action Button */}
+      <div className={styles.actionContainer}>
+        <button
+          type="button"
+          className={styles.nextButton}
+          onClick={nextStep}
+          disabled={!formData.timeline}
+          aria-label="Continue to brief review"
+        >
+          <span>Review Brief</span>
+          <span className={styles.arrow} aria-hidden="true">&rarr;</span>
         </button>
       </div>
     </div>

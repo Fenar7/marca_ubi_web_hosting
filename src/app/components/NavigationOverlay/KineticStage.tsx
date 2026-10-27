@@ -7,27 +7,29 @@ import type { KineticStageProps, WordNode } from "./types";
 
 /**
  * 5 Core Capability Practice Areas + Center Nexus Hub with Iconic Glyphs.
- * Strictly maps to Marca Ubi capabilities with benchmark tactile glyphs.
+ * Formulates an organic asymmetric constellation where every discipline occupies a unique
+ * vertical level (no two items share a row) and distinct horizontal column, guaranteeing
+ * zero clipping against canvas container boundaries and top-right close trigger.
  */
 export const DEFAULT_STAGE_WORDS: readonly WordNode[] = [
   {
     id: "brand-engineering",
     label: "Brand Engineering",
     glyph: "✦",
-    xPct: 24,
-    yPct: 22,
+    xPct: 26,
+    yPct: 18,
   },
   {
     id: "identity-art-systems",
     label: "Identity & Art Systems",
     glyph: "✌",
-    xPct: 76,
-    yPct: 22,
+    xPct: 72,
+    yPct: 32,
   },
   {
     id: "brand-transformation",
     label: "Brand Transformation",
-    xPct: 50,
+    xPct: 48,
     yPct: 50,
     isCenterHub: true,
   },
@@ -35,15 +37,15 @@ export const DEFAULT_STAGE_WORDS: readonly WordNode[] = [
     id: "digital-experience-design",
     label: "Digital Experience Design",
     glyph: "🌐",
-    xPct: 24,
-    yPct: 78,
+    xPct: 28,
+    yPct: 68,
   },
   {
     id: "communication-growth",
     label: "Communication & Growth",
     glyph: "♡",
-    xPct: 76,
-    yPct: 78,
+    xPct: 70,
+    yPct: 84,
   },
 ] as const;
 

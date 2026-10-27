@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { ServiceCategory, B2B_SERVICES, B2C_SERVICES } from "./types";
 import styles from "./ServicesAccordion.module.scss";
 
@@ -16,13 +16,48 @@ import styles from "./ServicesAccordion.module.scss";
 export function ServicesAccordion() {
   const [activeCategory, setActiveCategory] = useState<ServiceCategory>("B2B");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const stripRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
+  const [canScrollRight, setCanScrollRight] = useState<boolean>(true);
 
   const services = activeCategory === "B2B" ? B2B_SERVICES : B2C_SERVICES;
+
+  /**
+   * Evaluates horizontal scroll metrics and manages navigation arrow visibility.
+   */
+  const updateScrollBounds = useCallback(() => {
+    if (!stripRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = stripRef.current;
+    setCanScrollLeft(scrollLeft > 10);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+  }, []);
+
+  /**
+   * Advances the horizontal strip smoothly in the requested direction.
+   */
+  const scrollStrip = (direction: "left" | "right") => {
+    if (!stripRef.current) return;
+    const delta = direction === "right" ? 360 : -360;
+    stripRef.current.scrollBy({ left: delta, behavior: "smooth" });
+  };
 
   const handleCategoryChange = (category: ServiceCategory) => {
     setActiveCategory(category);
     setHoveredId(null);
+    if (stripRef.current) {
+      stripRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
   };
+
+  useEffect(() => {
+    updateScrollBounds();
+    const el = stripRef.current;
+    if (!el) return;
+
+    const handleResize = () => updateScrollBounds();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [updateScrollBounds, activeCategory]);
 
   return (
     <div className={styles.servicesShowcase}>
@@ -57,8 +92,39 @@ export function ServicesAccordion() {
         </div>
       </div>
 
-      {/* 100% Full-Width Edge-to-Edge Cards Strip */}
-      <div className={styles.fullWidthStrip} role="region" aria-label={`${activeCategory} Services Grid`}>
+      {/* 100% Full-Width Edge-to-Edge Cards Strip with Horizontal Navigation Rails */}
+      <div className={styles.stripWrapper}>
+        {/* Left Scroll Navigation Button */}
+        {canScrollLeft && (
+          <button
+            type="button"
+            className={`${styles.navScrollBtn} ${styles.navScrollLeft}`}
+            onClick={() => scrollStrip("left")}
+            aria-label="Scroll services left"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+        )}
+
+        <div
+          ref={stripRef}
+          onScroll={updateScrollBounds}
+          className={styles.fullWidthStrip}
+          role="region"
+          aria-label={`${activeCategory} Services Grid`}
+        >
         <div className={styles.cardsRow}>
           {services.map((service) => {
             const isHovered = hoveredId === service.id;
@@ -120,6 +186,31 @@ export function ServicesAccordion() {
             );
           })}
         </div>
+        </div>
+
+        {/* Right Scroll Indicator & Navigation Button */}
+        {canScrollRight && (
+          <button
+            type="button"
+            className={`${styles.navScrollBtn} ${styles.navScrollRight}`}
+            onClick={() => scrollStrip("right")}
+            aria-label="Scroll services right"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

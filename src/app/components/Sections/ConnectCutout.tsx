@@ -12,6 +12,10 @@ const SOCIAL_LINKS = [
   { label: "Substack", href: "https://marcaubi.substack.com" },
 ];
 
+export interface ConnectCutoutProps {
+  onOpenBrief?: () => void;
+}
+
 /**
  * View 10: Connect & Commercial Desk Cutout.
  * Transparent viewport revealing the living background video layer.
@@ -21,7 +25,7 @@ const SOCIAL_LINKS = [
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
-export function ConnectCutout() {
+export function ConnectCutout({ onOpenBrief }: ConnectCutoutProps = {}) {
   return (
     <section
       className={styles.connectCutoutSection}
@@ -61,10 +65,22 @@ export function ConnectCutout() {
 
         {/* Architectural Actions */}
         <div className={styles.actionCluster}>
-          <Link href="/start-project" className={styles.primaryActionButton}>
-            <span>Start a Project Brief</span>
-            <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
-          </Link>
+          {onOpenBrief ? (
+            <button
+              type="button"
+              onClick={onOpenBrief}
+              className={styles.primaryActionButton}
+              aria-label="Start a Project Brief"
+            >
+              <span>Start a Project Brief</span>
+              <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
+            </button>
+          ) : (
+            <Link href="/start-project" className={styles.primaryActionButton}>
+              <span>Start a Project Brief</span>
+              <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
+            </Link>
+          )}
 
           <a href="mailto:press@marcaubi.com" className={styles.secondaryActionButton}>
             <span>Press &amp; Media</span>
