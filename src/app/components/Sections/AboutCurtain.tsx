@@ -4,35 +4,6 @@ import React from "react";
 import Link from "next/link";
 import styles from "./AboutCurtain.module.scss";
 
-interface CoreService {
-  number: string;
-  title: string;
-  desc: string;
-}
-
-const SERVICES: CoreService[] = [
-  {
-    number: "01",
-    title: "Brand Engineering",
-    desc: "Strategic core definition, brand positioning, and cultural architecture.",
-  },
-  {
-    number: "02",
-    title: "Identity & Art Systems",
-    desc: "Visual language, responsive typography, and tactile physical collateral.",
-  },
-  {
-    number: "03",
-    title: "Digital Experience Design",
-    desc: "Enterprise web platforms, immersive interactions, and high-velocity systems.",
-  },
-  {
-    number: "04",
-    title: "Communication & Growth",
-    desc: "Multi-channel narrative systems, campaign art direction, and launch execution.",
-  },
-];
-
 interface MetricItem {
   number: string;
   symbol: string;
@@ -71,7 +42,7 @@ const METRICS: MetricItem[] = [
  * View 02: About Curtain.
  * Solid pure white curtain (#ffffff) sliding over the fixed background video.
  * Enforces the 160over90 Swiss 30/70 asymmetric editorial layout.
- * Houses 100% of authentic production content: Studio Narrative, 4 Services, 4 Metric Odometers.
+ * Houses authentic production content: Studio Narrative and 4 Metric Odometers.
  */
 export function AboutCurtain() {
   return (
@@ -113,22 +84,6 @@ export function AboutCurtain() {
             <p className={styles.narrativeSupport}>
               Every layer is designed to work with the next, so the brand is not only well designed, but well built. In an era of synthetic sameness, enduring resonance must be deliberately engineered.
             </p>
-          </div>
-
-          {/* 4 Core Services Flex Strip */}
-          <div className={styles.servicesContainer}>
-            <span className={styles.subKicker}>Practice Areas</span>
-            <div className={styles.servicesGrid}>
-              {SERVICES.map((service) => (
-                <div key={service.number} className={styles.serviceItem}>
-                  <div className={styles.serviceHeader}>
-                    <span className={styles.serviceNumber}>{service.number}</span>
-                    <h3 className={styles.serviceTitle}>{service.title}</h3>
-                  </div>
-                  <p className={styles.serviceDesc}>{service.desc}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* 4 Metric Odometers with Tabular Numerals */}

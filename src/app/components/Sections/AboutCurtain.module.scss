@@ -144,68 +144,6 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.servicesContainer {
-  display: flex;
-  flex-direction: column;
-}
-
-.servicesGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-}
-
-.serviceItem {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  background-color: #fafafa;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 2px;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    border-color: rgba(0, 0, 0, 0.2);
-    transform: translateY(-2px);
-  }
-}
-
-.serviceHeader {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-
-.serviceNumber {
-  font-family: $font-mono;
-  font-size: 13px;
-  font-weight: 700;
-  color: $client-accent-red;
-}
-
-.serviceTitle {
-  font-family: $font-circular;
-  font-size: 18px;
-  font-weight: 500;
-  color: $client-text-dark;
-  letter-spacing: -0.015em;
-  margin: 0;
-}
-
-.serviceDesc {
-  font-family: $font-circular;
-  font-size: 14px;
-  line-height: 1.5;
-  color: $client-text-body-dark;
-  margin: 0;
-}
-
 .metricsContainer {
   display: flex;
   flex-direction: column;
