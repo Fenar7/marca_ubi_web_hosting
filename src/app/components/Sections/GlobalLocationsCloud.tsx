@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styles from "./GlobalLocationsCloud.module.scss";
 
 interface KeralaStudio {
@@ -33,35 +33,13 @@ const KERALA_STUDIOS: KeralaStudio[] = [
  * Solid pure white curtain (#ffffff) sliding over the living video background.
  * Swiss broadsheet layout featuring authentic Kerala studio coordinates:
  * Calicut (HiLITE Business Park) and Trivandrum.
- * Pure Swiss typography with tabular numerals and real-time IST clock.
+ * Pure Swiss typography with distributed creators narrative.
  * Zero AI-slop pills, zero pulsing dots, zero synthetic international hubs.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function GlobalLocationsCloud() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [istTime, setIstTime] = useState<string>("");
-
-  useEffect(() => {
-    const updateTime = () => {
-      try {
-        const now = new Date();
-        const formatted = new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Kolkata",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }).format(now);
-        setIstTime(formatted);
-      } catch {
-        setIstTime("12:00");
-      }
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <section
@@ -112,34 +90,7 @@ export function GlobalLocationsCloud() {
             })}
           </div>
 
-          {/* Synchronized Operational Rail: Pure Swiss typography with tabular numerals */}
-          <div className={styles.operationalRail} aria-label="Synchronized Studio Operations">
-            <span className={styles.railNode}>
-              <span className={styles.railCode}>IST</span>
-              <span className={styles.railTime}>{istTime || "12:00"}</span>
-              <span className={styles.railAbbr}>UTC+05:30</span>
-            </span>
 
-            <span className={styles.railDivider} aria-hidden="true">/</span>
-
-            <span className={styles.railNode}>
-              <span className={styles.railCode}>CCJ</span>
-              <span className={styles.railText}>HiLITE Business Park, Calicut</span>
-            </span>
-
-            <span className={styles.railDivider} aria-hidden="true">/</span>
-
-            <span className={styles.railNode}>
-              <span className={styles.railCode}>TRV</span>
-              <span className={styles.railText}>Creative Studio, Trivandrum</span>
-            </span>
-
-            <span className={styles.railDivider} aria-hidden="true">/</span>
-
-            <span className={styles.railNode}>
-              <span className={styles.railText}>MON–FRI 09:30–18:30 IST</span>
-            </span>
-          </div>
         </div>
       </div>
     </section>

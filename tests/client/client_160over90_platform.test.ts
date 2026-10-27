@@ -352,7 +352,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(!tsx.includes("networkChip"), "GlobalLocationsCloud.tsx must not contain networkChip");
       assert.ok(!tsx.includes("radarDot"), "GlobalLocationsCloud.tsx must not contain radarDot");
       assert.ok(!scss.includes("radarPulse"), "GlobalLocationsCloud.module.scss must not contain @keyframes radarPulse");
-      assert.ok(tsx.includes("operationalRail"), "GlobalLocationsCloud must define the clean operationalRail");
+      assert.ok(!tsx.includes("operationalRail"), "GlobalLocationsCloud must eradicate operationalRail per user direction");
     });
 
     test("asserts zero border-radius: 9999px on button classes in redesigned client sections", () => {
