@@ -1,6 +1,6 @@
 ## Executive Summary
 
-This Pull Request restores 100% of the authentic 4-step questionnaire flow, all 8 primary categories, 52 sub-services, and client intake coordinates from baseline commit `ebff860`, introduces a **Multi-Service Selection Engine with Cross-Category Persistence**, calibrates the **Integrated Capabilities** typographic cloud in `ProcessCurtain` by eradicating forward slashes, and elevates the **ClientHeader HUD to Apple Liquid Glass (visionOS / macOS Sonoma / iOS 18)** with optical vibrancy saturation, directional refraction gradients, and specular rim reflections.
+This Pull Request restores 100% of the authentic 4-step questionnaire flow, all 8 primary categories, 52 sub-services, and client intake coordinates from baseline commit `ebff860`, introduces a **Multi-Service Selection Engine with Cross-Category Persistence**, calibrates the **Integrated Capabilities** typographic cloud in `ProcessCurtain` by eradicating forward slashes, and elevates the **ClientHeader HUD to Apple Floating Liquid Glass (visionOS / macOS Sonoma / iOS Island Tier)** with morphing floating capsule geometry, convex lens gloss sheen, and 360° specular crystal rims.
 
 ---
 
@@ -54,12 +54,13 @@ This Pull Request restores 100% of the authentic 4-step questionnaire flow, all 
 - **Calibrated Fluid Typographic Spacing**: Configured `.cloudWrapper` with `gap: 0.85rem clamp(1.25rem, 2.5vw, 2.25rem);` and `line-height: 1.35;` for organic typographic flow.
 - **Interactive State**: Preserved `#ea002a` brand red hover color transitions on all practice areas with full keyboard accessibility.
 
-### 6. Apple Liquid Glass Adaptive Header HUD (`ClientHeader.module.scss`)
-- **Optical Lensing Engine**: Upgraded from flat `blur(16px)` to `blur(22px) saturate(180%) contrast(105%)`, eliminating Gaussian desaturation and keeping background video/images refracting with luminous vibrancy.
-- **Directional Refraction Gradients**: Replaced flat `rgba(...)` with directional 180° light transmission gradients (`linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(250, 250, 252, 0.65) 100%)` in light mode, and obsidian liquid crystal in dark mode).
-- **Fresnel Specular Rim Reflection**: Implemented multi-layered `box-shadow` with an ultra-thin top specular hairline (`inset 0 1px 0 0 rgba(255, 255, 255, 0.95)` in light mode, `0.22` in dark mode) and grounding shadow.
-- **Top Crystal Bevel Glint (`::after`)**: 1px hairline light sweep simulating physical beveled crystal rim.
-- **Accessibility & Hardware Compositing**: Added `@media (prefers-reduced-transparency: reduce)` solid fallback and anchored GPU compositor layer via `translate3d(0, 0, 0)`.
+### 6. Apple Floating Liquid Glass Island HUD (`ClientHeader.module.scss`)
+- **Morphing Floating Capsule Geometry**: Pinned full-width at rest over the hero view; upon scroll, morphs into a centered floating liquid glass capsule (`top: 14px; max-width: 1360px; border-radius: 9999px; height: 60px`), providing surrounding negative airspace so page content visibly flows underneath and around it.
+- **Optical Lensing Engine**: Upgraded to `blur(28px) saturate(190%) contrast(106%)` for authentic crystal refraction without Gaussian muddiness.
+- **Directional Crystalline Gradients**: Configured 135° crystalline quartz gradient in light mode (`rgba(255, 255, 255, 0.72) 0%, rgba(245, 245, 250, 0.45) 45%, rgba(255, 255, 255, 0.60) 100%`) and obsidian crystal in dark mode.
+- **360° Specular Rim Bevel & Floating Penumbra**: Layered `0 0 0 1px rgba(255, 255, 255, 0.65)` outer rim, `inset 0 1.5px 1px 0 rgba(255, 255, 255, 1)` top specular keylight, and dual contact/atmospheric suspension shadows.
+- **Convex Liquid Lens Sheen (`::before`)**: Curved top-half specular gloss reflection simulating physical lens curvature.
+- **Accessibility & GPU Compositing**: Full `@media (prefers-reduced-transparency: reduce)` fallback and `translate3d(-50%, 0, 0)` centered GPU anchoring.
 
 ---
 
@@ -76,7 +77,7 @@ This Pull Request restores 100% of the authentic 4-step questionnaire flow, all 
 
 ### 3. Code Hygiene & Anti-Slop Audit
 - **Zero AI-slop comments**: Strictly removed placeholder separator comments, echo narrative, or robotic meta-tags.
-- **Zero bubble pills (`9999px`)**: Replaced with Swiss 2px/4px architectural geometry.
+- **Zero bubble pills (`9999px`) on buttons**: Form buttons maintain architectural Swiss 2px/4px geometry; header capsule uses continuous optical squircle.
 - **Zero generic blue (`#2563eb`)**: Verified pure Brand Red `#ea002a` and obsidian `#0c0c0c` / `#111111`.
 - **Zero background scroll leaking**: Verified `overscroll-behavior: contain` and wheel event containment in modal overlay.
 
