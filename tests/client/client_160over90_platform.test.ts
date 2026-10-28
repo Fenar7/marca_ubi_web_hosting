@@ -700,18 +700,21 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     });
   });
 
-  describe('Section 16: Scroll-Activated Frosted Glass Adaptive Header Invariants', () => {
-    test('verifies ClientHeader.module.scss implements zero-pop blur and adaptive frosted glass tokens', () => {
+  describe('Section 16: Scroll-Activated Apple Liquid Glass Adaptive Header Invariants', () => {
+    test('verifies ClientHeader.module.scss implements Apple Liquid Glass floating capsule geometry, vibrancy, and specular highlights', () => {
       const scssPath = path.join(rootDir, 'src', 'app', 'components', 'ClientHeader', 'ClientHeader.module.scss');
       const scss = fs.readFileSync(scssPath, 'utf8');
 
-      assert.ok(scss.includes('backdrop-filter: blur(0px);'), 'ClientHeader must declare backdrop-filter: blur(0px) at rest');
-      assert.ok(scss.includes('-webkit-backdrop-filter: blur(0px);'), 'ClientHeader must declare -webkit-backdrop-filter: blur(0px) at rest');
+      assert.ok(scss.includes('backdrop-filter: blur(0px) saturate(100%);'), 'ClientHeader must declare baseline blur(0px) at rest');
+      assert.ok(scss.includes('-webkit-backdrop-filter: blur(0px) saturate(100%);'), 'ClientHeader must declare -webkit-backdrop-filter at rest');
       assert.ok(scss.includes('.isScrolled'), 'ClientHeader must define .isScrolled state');
-      assert.ok(scss.includes('backdrop-filter: blur(16px);'), 'ClientHeader must declare 16px frosted glass blur when scrolled');
-      assert.ok(scss.includes('-webkit-backdrop-filter: blur(16px);'), 'ClientHeader must declare -webkit 16px blur when scrolled');
-      assert.ok(scss.includes('background-color: rgba(255, 255, 255, 0.72);'), 'ClientHeader must apply white frosted glass on light curtains');
-      assert.ok(scss.includes('background-color: rgba(10, 10, 10, 0.65);'), 'ClientHeader must apply obsidian frosted glass on dark cutouts');
+      assert.ok(scss.includes('border-radius: 9999px;'), 'ClientHeader must morph into floating continuous pill capsule');
+      assert.ok(scss.includes('max-width: 1360px;'), 'ClientHeader must enforce max-width constraint for floating capsule');
+      assert.ok(scss.includes('backdrop-filter: blur(28px) saturate(190%) contrast(106%);'), 'ClientHeader must declare 28px blur with 190% saturation and contrast boost when scrolled');
+      assert.ok(scss.includes('-webkit-backdrop-filter: blur(28px) saturate(190%) contrast(106%);'), 'ClientHeader must declare -webkit 28px blur with 190% saturation when scrolled');
+      assert.ok(scss.includes('inset 0 1.5px 1px 0 rgba(255, 255, 255, 1)'), 'ClientHeader must apply pure-white top specular rim highlight on light curtains');
+      assert.ok(scss.includes('inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.35)'), 'ClientHeader must apply obsidian specular rim highlight on dark cutouts');
+      assert.ok(scss.includes('prefers-reduced-transparency: reduce'), 'ClientHeader must include accessibility reduced transparency guard');
     });
 
     test('verifies ClientHeader.tsx wires scroll sensor with passive listener and rAF throttle', () => {
@@ -723,6 +726,27 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(tsx.includes('requestAnimationFrame'), 'ClientHeader must throttle scroll events with requestAnimationFrame');
       assert.ok(tsx.includes('passive: true'), 'ClientHeader must declare passive: true scroll listener');
       assert.ok(tsx.includes('styles.isScrolled'), 'ClientHeader must toggle isScrolled class dynamically');
+    });
+  });
+
+  describe('Section 17: ProcessCurtain Typography and Slash Eradication Invariants', () => {
+    test('verifies ProcessCurtain.tsx renders capability items without slash dividers', () => {
+      const tsxPath = path.join(rootDir, 'src', 'app', 'components', 'Sections', 'ProcessCurtain.tsx');
+      const tsx = fs.readFileSync(tsxPath, 'utf8');
+
+      assert.ok(!tsx.includes('slashDivider'), 'ProcessCurtain.tsx must not contain slashDivider');
+      assert.ok(!tsx.includes('activeSlash'), 'ProcessCurtain.tsx must not contain activeSlash');
+      assert.ok(tsx.includes('styles.cloudWrapper'), 'ProcessCurtain.tsx must render cloudWrapper');
+      assert.ok(tsx.includes('styles.disciplineItem'), 'ProcessCurtain.tsx must render disciplineItem');
+    });
+
+    test('verifies ProcessCurtain.module.scss defines fluid spacing gap and eradicates slash classes', () => {
+      const scssPath = path.join(rootDir, 'src', 'app', 'components', 'Sections', 'ProcessCurtain.module.scss');
+      const scss = fs.readFileSync(scssPath, 'utf8');
+
+      assert.ok(!scss.includes('.slashDivider'), 'ProcessCurtain.module.scss must eradicate .slashDivider');
+      assert.ok(!scss.includes('.activeSlash'), 'ProcessCurtain.module.scss must eradicate .activeSlash');
+      assert.ok(scss.includes('gap: 0.85rem clamp(1.25rem, 2.5vw, 2.25rem);'), 'ProcessCurtain.module.scss must declare calibrated fluid gap');
     });
   });
 });

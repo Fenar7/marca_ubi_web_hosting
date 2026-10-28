@@ -16,6 +16,9 @@ export interface ProjectFormData {
   inspirationLinks: string;
   showcasePermission: string;
   extraNotes: string;
+  // Multi-service selection arrays
+  services?: string[];
+  categories?: string[];
 }
 
 export const initialFormData: ProjectFormData = {
@@ -36,4 +39,6 @@ export const initialFormData: ProjectFormData = {
   inspirationLinks: "",
   showcasePermission: "",
   extraNotes: "",
+  services: [],
+  categories: [],
 };

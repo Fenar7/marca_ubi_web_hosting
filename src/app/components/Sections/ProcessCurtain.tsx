@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import styles from "./ProcessCurtain.module.scss";
 
@@ -56,11 +56,12 @@ const STEPS: DeliveryStep[] = [
  * View 06: Strategy & Delivery Methodology Curtain.
  * Solid pure white curtain (#ffffff) sliding over the living background video.
  * Enforces the 160over90 Swiss 30/70 asymmetric editorial layout.
- * Houses the 12 practice disciplines kinetic cloud and the 4-phase delivery system.
+ * Houses the 12 practice disciplines typographic cloud and the 4-phase delivery system.
+ * Uses pure typographic fluid whitespace between capability disciplines without slash dividers.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function ProcessCurtain() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
   return (
     <section
       className={styles.processSection}
@@ -93,32 +94,16 @@ export function ProcessCurtain() {
           <div className={styles.disciplinesBlock}>
             <span className={styles.subKicker}>Integrated Capabilities</span>
             <div className={styles.cloudWrapper}>
-              {DISCIPLINES.map((discipline, index) => {
-                const isSlashActive =
-                  hoveredIndex === index || (hoveredIndex !== null && hoveredIndex === index + 1);
-
-                return (
-                  <span key={discipline} className={styles.itemGroup}>
-                    <button
-                      type="button"
-                      className={styles.disciplineItem}
-                      onMouseEnter={() => setHoveredIndex(index)}
-                      onMouseLeave={() => setHoveredIndex(null)}
-                      aria-label={`Practice area: ${discipline}`}
-                    >
-                      {discipline}
-                    </button>
-                    {index < DISCIPLINES.length - 1 && (
-                      <span
-                        className={`${styles.slashDivider} ${isSlashActive ? styles.activeSlash : ""}`}
-                        aria-hidden="true"
-                      >
-                        /
-                      </span>
-                    )}
-                  </span>
-                );
-              })}
+              {DISCIPLINES.map((discipline) => (
+                <button
+                  key={discipline}
+                  type="button"
+                  className={styles.disciplineItem}
+                  aria-label={`Practice area: ${discipline}`}
+                >
+                  {discipline}
+                </button>
+              ))}
             </div>
           </div>
 

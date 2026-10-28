@@ -1,9 +1,9 @@
 @import "../../../styles/client-mixins.scss";
 
 /**
- * ProjectForm Step Sub-Module Stylesheet: 160over90 Agency Standard
- * Free of AI-slop metadata tags, with high-contrast typography,
- * spacious pillar cards, and clean input states.
+ * ProjectForm Step Sub-Module Stylesheet: Swiss Dark Luxury Standard
+ * Implements high-contrast architectural surfaces, 2px/4px border-radius hierarchy,
+ * official brand red (#ea002a) indicators, and accessible interactive states.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -35,48 +35,117 @@
   font-size: 15px;
   color: rgba(255, 255, 255, 0.65);
   margin: 0;
-  max-width: 600px;
+  max-width: 640px;
   line-height: 1.55;
 }
 
-// 4 Agency Pillars Grid
-.pillarGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+/* =========================================================================
+   Step 1: Category Tabs & Service Grid (Multi-Select)
+   ========================================================================= */
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+.categoryTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.categoryTab {
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  min-height: 38px;
+  padding: 0.5rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: -0.01em;
+
+  .tabBadge {
+    font-family: $font-mono;
+    font-size: 10px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: $client-accent-red;
+    padding: 1px 5px;
+    border-radius: 9999px;
+    line-height: 1.2;
+    box-shadow: 0 0 8px rgba(234, 0, 42, 0.4);
+  }
+
+  &:hover {
+    background: #171717;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  &.active {
+    background: rgba(234, 0, 42, 0.08);
+    color: #ffffff;
+    border-color: $client-accent-red;
+    box-shadow: 0 0 16px rgba(234, 0, 42, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 2px;
   }
 }
 
-.pillarCard {
+.serviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.serviceCard {
   position: relative;
   background: #0e0e0e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 4px;
-  padding: 1.5rem;
+  padding: 1rem 1.15rem;
   text-align: left;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.85rem;
   color: #ffffff;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  min-height: 56px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
-  .pillarTop {
-    display: flex;
-    justify-content: space-between;
+  .cardIcon {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
 
-  .pillarIndex {
-    font-family: $font-mono;
-    font-size: 11px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.4);
-    letter-spacing: 0.05em;
+  .serviceName {
+    font-family: $font-circular;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.88);
+    flex: 1;
   }
 
   .selectionDot {
@@ -85,66 +154,38 @@
     border-radius: 50%;
     border: 1.5px solid rgba(255, 255, 255, 0.25);
     background: transparent;
+    flex-shrink: 0;
     transition: all 0.2s ease;
-  }
-
-  .pillarTitle {
-    font-family: $font-circular;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 1.3;
-    color: #ffffff;
-    margin: 0;
-  }
-
-  .pillarTagline {
-    font-family: $font-circular;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  .scopeTags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-top: 0.5rem;
-  }
-
-  .scopeTag {
-    font-family: $font-circular;
-    font-size: 11px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 2px;
-    padding: 0.25rem 0.6rem;
-    color: rgba(255, 255, 255, 0.7);
   }
 
   &:hover {
     background: #141414;
     border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+
+    .cardIcon {
+      color: #ffffff;
+    }
   }
 
   &.active {
     background: rgba(234, 0, 42, 0.06);
     border-color: $client-accent-red;
-    box-shadow: 0 0 20px rgba(234, 0, 42, 0.2), inset 0 1px 0 rgba(234, 0, 42, 0.3);
+    box-shadow: 0 0 18px rgba(234, 0, 42, 0.2), inset 0 1px 0 rgba(234, 0, 42, 0.3);
 
-    .pillarIndex {
+    .cardIcon {
       color: $client-accent-red;
+    }
+
+    .serviceName {
+      color: #ffffff;
+      font-weight: 500;
     }
 
     .selectionDot {
       border-color: $client-accent-red;
       background: $client-accent-red;
       box-shadow: 0 0 8px $client-accent-red;
-    }
-
-    .pillarTitle {
-      color: #ffffff;
     }
   }
 
@@ -154,116 +195,139 @@
   }
 }
 
-// Action Button Container
-.actionContainer {
+.selectionStatusBar {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
-}
-
-.nextButton {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  height: 48px;
-  min-height: 44px;
-  padding: 0 2rem;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 2px;
-  border: 1.5px solid #ffffff;
-  background-color: #ffffff;
-  color: #000000;
-  font-family: $font-circular;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.22s ease;
+  margin-top: 0.75rem;
 
-  .arrow {
-    font-size: 16px;
-    transition: transform 0.2s ease;
-  }
+  .selectionStatusText {
+    font-family: $font-circular;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
 
-  &:hover:not(:disabled) {
-    background-color: $client-accent-red;
-    border-color: $client-accent-red;
-    color: #ffffff;
-
-    .arrow {
-      transform: translateX(3px);
+    strong {
+      color: #ffffff;
+      font-weight: 500;
     }
   }
 
-  &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    border-color: rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.4);
-  }
+  .clearSelectionBtn {
+    font-family: $font-circular;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
 
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 4px;
+    &:hover {
+      color: $client-accent-red;
+      text-decoration: underline;
+    }
   }
 }
 
-// Input Fields (Steps 2 & 3)
+/* =========================================================================
+   Step 2: Business & Contact Form Inputs
+   ========================================================================= */
+
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
+  gap: 1.25rem 1rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 }
 
-.fullWidth {
-  grid-column: 1 / -1;
-}
-
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
+
+  &.fullWidth {
+    grid-column: 1 / -1;
+  }
 }
 
 .inputLabel {
   font-family: $font-circular;
   font-size: 13px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  .optionalTag {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
-  }
 }
 
-.textInput, .textArea, .selectInput {
-  width: 100%;
-  background: #0e0e0e;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 2px;
-  color: #ffffff;
+.optionalTag {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.fieldHint {
+  font-family: $font-circular;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: -0.2rem 0 0.25rem 0;
+  line-height: 1.45;
+}
+
+.textInput,
+.selectInput,
+.textArea {
   font-family: $font-circular;
   font-size: 14px;
-  padding: 0.75rem 0.9rem;
+  color: #ffffff;
+  background-color: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
   box-sizing: border-box;
+  width: 100%;
   transition: all 0.2s ease;
 
   &::placeholder {
     color: rgba(255, 255, 255, 0.3);
   }
 
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
   &:focus {
     outline: none;
     border-color: $client-accent-red;
-    background: #121212;
+    background-color: #121212;
+    box-shadow: inset 0 0 0 1px $client-accent-red, 0 0 12px rgba(234, 0, 42, 0.2);
+  }
+
+  &.inputError {
+    border-color: $client-accent-red;
+    box-shadow: inset 0 0 0 1px $client-accent-red;
+  }
+}
+
+.selectInput {
+  min-height: 44px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+
+  option {
+    background-color: #0c0c0c;
+    color: #ffffff;
   }
 }
 
@@ -273,39 +337,58 @@
   line-height: 1.5;
 }
 
-// Timeline Grid
-.timelineGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+/* Radio Group: Vertical & Horizontal */
+.radioGroupVertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radioGroupHorizontal {
+  display: flex;
   gap: 0.75rem;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 600px) {
+    flex-direction: column;
   }
 }
 
-.timelineCard {
-  background: #0e0e0e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  padding: 1rem;
-  cursor: pointer;
+.radioCardOption,
+.radioInlineOption {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  align-items: center;
+  gap: 0.75rem;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
   transition: all 0.2s ease;
+  user-select: none;
 
-  .timelineBadge {
-    font-family: $font-circular;
-    font-size: 14px;
-    font-weight: 500;
-    color: #ffffff;
+  .hiddenRadio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
   }
 
-  .timelineDetail {
+  .customRadioIndicator {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .radioOptionLabel {
     font-family: $font-circular;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   &:hover {
@@ -314,124 +397,212 @@
   }
 
   &.active {
+    background: rgba(234, 0, 42, 0.06);
     border-color: $client-accent-red;
-    background: rgba(234, 0, 42, 0.08);
 
-    .timelineBadge {
-      color: $client-accent-red;
+    .customRadioIndicator {
+      border-color: $client-accent-red;
+      background: $client-accent-red;
+      box-shadow: 0 0 6px $client-accent-red;
+    }
+
+    .radioOptionLabel {
+      color: #ffffff;
+      font-weight: 500;
     }
   }
 }
 
-// Repeater
-.urlRepeater {
+.radioInlineOption {
+  flex: 1;
+  min-height: 44px;
+}
+
+/* =========================================================================
+   Step 3: Timeline & Inspiration Repeater
+   ========================================================================= */
+
+.linksRepeaterContainer {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.urlRow {
+.repeaterRow {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.urlInput {
-  flex: 1;
-}
-
-.trashBtn {
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  color: rgba(255, 255, 255, 0.5);
-  display: flex;
+.trashLinkBtn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: all 0.2s ease;
 
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
   &:hover {
-    border-color: $client-accent-red;
     color: $client-accent-red;
+    border-color: $client-accent-red;
+    background: rgba(234, 0, 42, 0.08);
   }
 }
 
 .addLinkBtn {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
+  font-family: $font-circular;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
   background: transparent;
   border: 1px dashed rgba(255, 255, 255, 0.2);
   border-radius: 2px;
-  padding: 0.5rem 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-family: $font-circular;
-  font-size: 12px;
+  padding: 0.6rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   cursor: pointer;
+  align-self: flex-start;
   transition: all 0.2s ease;
+  min-height: 38px;
 
-  &:hover {
-    border-color: $client-accent-red;
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.4);
     color: #ffffff;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
   }
 }
 
-// Attribution Radio
-.radioGrid {
+.timelineGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 600px) {
     grid-template-columns: 1fr;
   }
 }
 
-.radioCard {
+.timelineCard {
   background: #0e0e0e;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  padding: 1rem;
-  cursor: pointer;
+  border-radius: 4px;
+  padding: 1rem 1.15rem;
   text-align: left;
-  transition: all 0.2s ease;
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  align-items: center;
+  gap: 0.85rem;
+  color: #ffffff;
+  min-height: 58px;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
-  .radioLabel {
-    font-family: $font-circular;
-    font-size: 14px;
-    font-weight: 500;
-    color: #ffffff;
+  .cardIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
 
-  .radioDesc {
+  .timelineTextContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .timelineName {
     font-family: $font-circular;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    line-height: 1.25;
+  }
+
+  .timelineSubtitle {
+    font-family: $font-circular;
+    font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    line-height: 1.35;
+  }
+
+  .selectionDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
   }
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.3);
     background: #141414;
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+
+    .cardIcon {
+      color: #ffffff;
+    }
   }
 
   &.active {
+    background: rgba(234, 0, 42, 0.06);
     border-color: $client-accent-red;
-    background: rgba(234, 0, 42, 0.08);
+    box-shadow: 0 0 18px rgba(234, 0, 42, 0.2);
 
-    .radioLabel {
+    .cardIcon {
       color: $client-accent-red;
     }
+
+    .selectionDot {
+      border-color: $client-accent-red;
+      background: $client-accent-red;
+      box-shadow: 0 0 8px $client-accent-red;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 2px;
   }
 }
 
-// Dossiers
+/* =========================================================================
+   Step 4: Summary Dossiers (Multi-Service Chips)
+   ========================================================================= */
+
 .dossierCluster {
   display: flex;
   flex-direction: column;
@@ -450,35 +621,46 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 0.85rem;
 }
 
 .dossierTitle {
   font-family: $font-circular;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
 }
 
 .editButton {
   font-family: $font-circular;
   font-size: 12px;
+  font-weight: 500;
   color: $client-accent-red;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 0.2rem 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: opacity 0.2s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 
   &:hover {
     text-decoration: underline;
+    opacity: 0.85;
   }
 }
 
 .dossierRows {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.85rem;
+  gap: 1rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -488,19 +670,53 @@
 .dossierItem {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
+
+  &.fullWidth {
+    grid-column: 1 / -1;
+  }
 }
 
 .itemLabel {
   font-family: $font-circular;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .itemValue {
   font-family: $font-circular;
   font-size: 13px;
   color: #ffffff;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.serviceChipsCluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.serviceChip {
+  font-family: $font-circular;
+  font-size: 12px;
+  color: #ffffff;
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  padding: 0.3rem 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: -0.01em;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: $client-accent-red;
+  }
 }
 
 .notionCalloutError {
@@ -527,12 +743,99 @@
   }
 }
 
+/* =========================================================================
+   Buttons & Navigation Actions
+   ========================================================================= */
+
+.actionContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dualActionContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.backButtonAction {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  height: 46px;
+  min-height: 44px;
+  padding: 0 1.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.nextButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 46px;
+  min-height: 44px;
+  padding: 0 2rem;
+  border-radius: 2px;
+  border: 1.5px solid $client-accent-red;
+  background-color: $client-accent-red;
+  color: #ffffff;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  .arrow {
+    font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: lighten($client-accent-red, 6%);
+    border-color: lighten($client-accent-red, 10%);
+
+    .arrow {
+      transform: translateX(3px);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
 .submitCommandButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  height: 50px;
+  height: 48px;
   min-height: 44px;
   padding: 0 2.5rem;
   border-radius: 2px;
@@ -555,8 +858,7 @@
     cursor: not-allowed;
   }
 
-  &:focus-visible {
-    outline: 2px solid #ffffff;
-    outline-offset: 4px;
+  &:active:not(:disabled) {
+    transform: scale(0.98);
   }
 }
