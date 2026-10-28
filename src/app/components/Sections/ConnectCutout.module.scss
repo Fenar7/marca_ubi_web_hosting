@@ -28,6 +28,11 @@
   color: $client-accent-red;
 }
 
+.accentRed {
+  color: $client-accent-red;
+  display: inline-block;
+}
+
 .displayHeadline {
   font-family: $font-circular;
   font-size: var(--client-type-h1);

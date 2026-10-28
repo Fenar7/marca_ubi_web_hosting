@@ -34,7 +34,9 @@ export function ConnectCutout({ onOpenBrief }: ConnectCutoutProps = {}) {
       data-header-theme="dark"
     >
       <div className={styles.contentStage}>
-        <h2 className={styles.displayHeadline}>Let&apos;s Build Something That Holds.</h2>
+        <h2 className={styles.displayHeadline}>
+          Let<span className={styles.accentRed}>&apos;</span>s Build Something That Holds<span className={styles.accentRed}>.</span>
+        </h2>
         <p className={styles.leadText}>
           For institutional branding, enterprise digital platforms, or global creative technology partnerships.
         </p>
