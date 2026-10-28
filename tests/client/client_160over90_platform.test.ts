@@ -864,6 +864,10 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(tsx.includes("HOLD_DURATION"), "ClientHeader must enforce in-place hold duration");
       assert.ok(tsx.includes("MORPH_DURATION"), "ClientHeader must enforce fluid vertical morph duration");
       assert.ok(tsx.includes("activeAnimations"), "ClientHeader must track active animations for leak-free cleanup");
+      assert.ok(tsx.includes("TRAVEL_Y = 14"), "ClientHeader must enforce 14px slot-machine roll displacement");
+      assert.ok(tsx.includes("autoAlpha"), "ClientHeader must use autoAlpha for atomic visibility and opacity");
+      assert.ok(scss.includes("margin-left: 12px;"), "ClientHeader.module.scss must anchor streamAperture 12px adjacent to logo");
+      assert.ok(scss.includes("clamp(14px, 1.05vw, 15px)"), "ClientHeader.module.scss must scale streamText to 15px clamp");
     });
 
     test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {

@@ -142,8 +142,8 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
 
       // Accessibility: Honor reduced motion preference with static elegant display
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        gsap.set(carrierA, { x: 0, y: 0, opacity: 0.95, visibility: "visible" });
-        gsap.set(carrierB, { opacity: 0, visibility: "hidden" });
+        gsap.set(carrierA, { x: 0, y: 0, autoAlpha: 1 });
+        gsap.set(carrierB, { autoAlpha: 0 });
         textA.textContent = HEADER_DISCIPLINES[0];
         return;
       }
@@ -160,13 +160,14 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
       // Morphing Timing Parameters:
       // HOLD_DURATION (2.5s): Comfortable readability window per discipline
       // MORPH_DURATION (0.42s): Fluid vertical roll-up cross-fade with optical diffusion
-      const HOLD_DURATION = 2.5;
-      const MORPH_DURATION = 0.42;
+      const HOLD_DURATION = 2.8;
+      const MORPH_DURATION = 0.46;
+      const TRAVEL_Y = 14;
 
       // Initial state: Carrier A displayed in place, Carrier B primed below
       activeText.textContent = HEADER_DISCIPLINES[0];
-      gsap.set(activeCarrier, { x: 0, y: 0, opacity: 1, visibility: "visible" });
-      gsap.set(nextCarrier, { x: 0, y: 6, opacity: 0, visibility: "hidden" });
+      gsap.set(activeCarrier, { x: 0, y: 0, autoAlpha: 1 });
+      gsap.set(nextCarrier, { x: 0, y: TRAVEL_Y, autoAlpha: 0 });
 
       const cycleNextDiscipline = () => {
         if (isCleanedUp) return;
@@ -176,12 +177,12 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
 
         // Populate next carrier
         nextText.textContent = upcomingDiscipline;
-        gsap.set(nextCarrier, { x: 0, y: 6, opacity: 0, filter: "blur(2px)", visibility: "visible" });
+        gsap.set(nextCarrier, { x: 0, y: TRAVEL_Y, autoAlpha: 0 });
 
         const morphTl = gsap.timeline({
           onComplete: () => {
             activeAnimations.delete(morphTl);
-            gsap.set(activeCarrier, { y: 6, opacity: 0, visibility: "hidden" });
+            gsap.set(activeCarrier, { y: TRAVEL_Y, autoAlpha: 0 });
 
             // Swap roles
             const tempCarrier = activeCarrier;
@@ -204,30 +205,27 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
           },
         });
 
-        // 1. Outgoing carrier rolls upward and dissolves smoothly
+        // Symmetrical 14px slot-machine roll with smooth power2.inOut
         morphTl.to(
           activeCarrier,
           {
-            y: -6,
-            opacity: 0,
-            filter: "blur(2px)",
+            y: -TRAVEL_Y,
+            autoAlpha: 0,
             duration: MORPH_DURATION,
-            ease: "power2.in",
+            ease: "power2.inOut",
           },
           0
         );
 
-        // 2. Incoming carrier elevates into pristine baseline lock
         morphTl.to(
           nextCarrier,
           {
             y: 0,
-            opacity: 1,
-            filter: "blur(0px)",
-            duration: MORPH_DURATION + 0.08,
-            ease: "power2.out",
+            autoAlpha: 1,
+            duration: MORPH_DURATION,
+            ease: "power2.inOut",
           },
-          0.06
+          0
         );
 
         activeAnimations.add(morphTl);
