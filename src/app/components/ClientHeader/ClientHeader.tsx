@@ -6,6 +6,14 @@ import MarcaUbiLogo from "../ui/MarcaUbiLogo/MarcaUbiLogo";
 import { NavigationOverlay } from "../NavigationOverlay";
 import styles from "./ClientHeader.module.scss";
 
+const BRAND_STATEMENTS = [
+  "The Brand Engineering Company",
+  "The Brand Transformation Company",
+  "The Identity & Art Systems Company",
+  "The Digital Experience Design Company",
+  "The Communication and Growth Company",
+] as const;
+
 interface ClientHeaderProps {
   onOpenReel?: () => void;
   defaultTheme?: "dark" | "light";
@@ -95,13 +103,36 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         }`}
         role="banner"
       >
-        <Link href="/" className={styles.logoAnchor} aria-label="Marca Ubi Homepage" onClick={closeDrawer}>
-          <MarcaUbiLogo
-            width={160}
-            height={34}
-            className={styles.brandLogo}
-          />
-        </Link>
+        <div className={styles.brandLockup}>
+          <Link href="/" className={styles.logoAnchor} aria-label="Marca Ubi Homepage" onClick={closeDrawer}>
+            <MarcaUbiLogo
+              width={160}
+              height={34}
+              className={styles.brandLogo}
+            />
+          </Link>
+          <span className={`${styles.brandSubtitle} ${isScrolled ? styles.subtitleScrolled : ""}`}>
+            The Brand Engineering Company
+          </span>
+        </div>
+
+        {/* Dynamic Kinetic Stream Aperture (Active when scrolled inside floating capsule) */}
+        <div
+          className={`${styles.streamAperture} ${isScrolled ? styles.streamVisible : ""}`}
+          aria-hidden={!isScrolled}
+          role="region"
+          aria-label="Brand Statements Ticker"
+        >
+          <div className={styles.streamTrack}>
+            {[...BRAND_STATEMENTS, ...BRAND_STATEMENTS].map((statement, idx) => (
+              <div key={`${statement}-${idx}`} className={styles.streamItem}>
+                <span className={styles.streamDot} aria-hidden="true" />
+                <span className={styles.streamText}>{statement}</span>
+                <span className={styles.streamDivider} aria-hidden="true">/</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className={styles.navCluster}>
           <button

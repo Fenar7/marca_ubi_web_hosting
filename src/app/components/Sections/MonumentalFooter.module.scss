@@ -39,6 +39,11 @@
   text-align: center;
 }
 
+.accentDot {
+  color: $client-accent-red;
+  display: inline-block;
+}
+
 .brandmarkStage {
   width: 100%;
   display: flex;
@@ -135,9 +140,13 @@
   padding-top: 2rem;
   font-family: $font-mono;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  color: $client-accent-red;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
+
+  span {
+    color: $client-accent-red;
+  }
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -152,11 +161,17 @@
 }
 
 .legalLink {
-  color: rgba(255, 255, 255, 0.45);
+  color: $client-accent-red;
   text-decoration: none;
   transition: color 0.15s ease;
 
   &:hover {
     color: #ffffff;
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 3px;
   }
 }

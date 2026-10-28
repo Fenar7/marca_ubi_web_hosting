@@ -329,3 +329,172 @@
 .lineOpenBottom {
   transform: translateY(-7px) rotate(-45deg);
 }
+
+.brandLockup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: auto;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.brandSubtitle {
+  font-family: $font-circular;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.75);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 18px;
+  opacity: 1;
+  transform: translateY(0);
+  white-space: nowrap;
+
+  .isLight & {
+    color: rgba(10, 10, 10, 0.75);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+  }
+}
+
+.subtitleScrolled {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.streamAperture {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  max-width: 540px;
+  margin: 0 clamp(0.75rem, 2vw, 2rem);
+  overflow: hidden;
+  position: relative;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, 4px, 0) scale(0.98);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  // Optical Edge Fade Masks (Liquid Glass Edge Bleed)
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 88%,
+    transparent 100%
+  );
+
+  @media (max-width: 1024px) {
+    max-width: 360px;
+  }
+
+  @media (max-width: 680px) {
+    display: none; // Preserve luxury breathing space on mobile devices
+  }
+}
+
+.streamVisible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  pointer-events: auto;
+}
+
+.streamTrack {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+  animation: streamGlideLeftToRight 28s linear infinite;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+.streamItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.streamDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background-color: $client-accent-red; // #ea002a
+  box-shadow: 0 0 8px rgba(234, 0, 42, 0.65);
+  flex-shrink: 0;
+}
+
+.streamText {
+  font-family: $font-circular;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: inherit;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+
+  .isDark & {
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .isLight & {
+    color: rgba(10, 10, 10, 0.88);
+  }
+
+  &:hover {
+    opacity: 1;
+    color: $client-accent-red;
+  }
+}
+
+.streamDivider {
+  color: inherit;
+  opacity: 0.25;
+  font-size: 11px;
+}
+
+@keyframes streamGlideLeftToRight {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streamTrack {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .streamTrack > .streamItem:not(:first-child) {
+    display: none;
+  }
+}
