@@ -38,6 +38,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headerTheme, setHeaderTheme] = useState<"dark" | "light">(defaultTheme);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [statementIndex, setStatementIndex] = useState(0);
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   // 1. Scroll-Activated Frosted Glass Sensor (Passive + rAF throttled)
@@ -124,13 +125,16 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
           aria-label="Brand Statements Ticker"
         >
           <div className={styles.streamTrack}>
-            {[...BRAND_STATEMENTS, ...BRAND_STATEMENTS].map((statement, idx) => (
-              <div key={`${statement}-${idx}`} className={styles.streamItem}>
-                <span className={styles.streamDot} aria-hidden="true" />
-                <span className={styles.streamText}>{statement}</span>
-                <span className={styles.streamDivider} aria-hidden="true">/</span>
-              </div>
-            ))}
+            <div
+              key={statementIndex}
+              className={styles.kineticItem}
+              onAnimationEnd={() =>
+                setStatementIndex((prev) => (prev + 1) % BRAND_STATEMENTS.length)
+              }
+            >
+              <span className={styles.streamDot} aria-hidden="true" />
+              <span className={styles.streamText}>{BRAND_STATEMENTS[statementIndex]}</span>
+            </div>
           </div>
         </div>
 

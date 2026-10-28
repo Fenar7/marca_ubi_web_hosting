@@ -342,48 +342,60 @@
 
 .brandSubtitle {
   font-family: $font-circular;
-  font-size: 11px;
+  font-size: 13.5px;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  line-height: 1.25;
+  letter-spacing: 0.025em;
   margin-top: 3px;
-  color: rgba(255, 255, 255, 0.75);
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  max-height: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              margin-top 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.25s ease;
+  max-height: 24px;
   opacity: 1;
   transform: translateY(0);
   white-space: nowrap;
+  overflow: hidden;
+  will-change: opacity, transform, max-height, margin-top;
 
   .isLight & {
-    color: rgba(10, 10, 10, 0.75);
+    color: rgba(10, 10, 10, 0.85);
+  }
+
+  @media (max-width: 1024px) {
+    font-size: 12.5px;
+    letter-spacing: 0.025em;
+    max-height: 22px;
   }
 
   @media (max-width: 768px) {
-    font-size: 9.5px;
-    letter-spacing: 0.05em;
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    max-height: 20px;
   }
 }
 
 .subtitleScrolled {
   opacity: 0;
   max-height: 0;
+  margin-top: 0;
   transform: translateY(-4px);
   pointer-events: none;
   overflow: hidden;
-  margin-top: 0;
 }
 
 .streamAperture {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   display: flex;
   align-items: center;
-  justify-content: center;
   height: 100%;
-  max-width: 540px;
-  margin: 0 clamp(0.75rem, 2vw, 2rem);
+  margin: 0 clamp(0.75rem, 2vw, 2.5rem);
   overflow: hidden;
   position: relative;
+  container-type: inline-size;
   pointer-events: none;
   opacity: 0;
   transform: translate3d(0, 4px, 0) scale(0.98);
@@ -394,24 +406,24 @@
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 0, 0, 1) 12%,
-    rgba(0, 0, 0, 1) 88%,
+    rgba(0, 0, 0, 1) 6%,
+    rgba(0, 0, 0, 1) 94%,
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 0, 0, 1) 12%,
-    rgba(0, 0, 0, 1) 88%,
+    rgba(0, 0, 0, 1) 6%,
+    rgba(0, 0, 0, 1) 94%,
     transparent 100%
   );
 
-  @media (max-width: 1024px) {
-    max-width: 360px;
-  }
-
   @media (max-width: 680px) {
     display: none; // Preserve luxury breathing space on mobile devices
+  }
+
+  &:hover .kineticItem {
+    animation-play-state: paused;
   }
 }
 
@@ -422,23 +434,24 @@
 }
 
 .streamTrack {
+  width: 100%;
+  height: 100%;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 2.25rem;
-  width: max-content;
-  white-space: nowrap;
-  will-change: transform;
-  animation: streamGlideLeftToRight 28s linear infinite;
-
-  &:hover {
-    animation-play-state: paused;
-  }
 }
 
-.streamItem {
+.kineticItem {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate3d(0, -50%, 0);
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
+  white-space: nowrap;
+  will-change: transform, opacity;
+  animation: streamGlideLeftToRight 7.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 .streamDot {
@@ -452,19 +465,19 @@
 
 .streamText {
   font-family: $font-circular;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: inherit;
-  opacity: 0.85;
+  opacity: 0.88;
   transition: opacity 0.2s ease;
 
   .isDark & {
-    color: rgba(255, 255, 255, 0.88);
+    color: rgba(255, 255, 255, 0.92);
   }
 
   .isLight & {
-    color: rgba(10, 10, 10, 0.88);
+    color: rgba(10, 10, 10, 0.90);
   }
 
   &:hover {
@@ -473,28 +486,29 @@
   }
 }
 
-.streamDivider {
-  color: inherit;
-  opacity: 0.25;
-  font-size: 11px;
-}
-
 @keyframes streamGlideLeftToRight {
   0% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(0, -50%, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.95;
+    transform: translate3d(calc(100cqw - 100% - 16px), -50%, 0);
   }
   100% {
-    transform: translate3d(0%, 0, 0);
+    transform: translate3d(calc(100cqw - 100%), -50%, 0);
+    opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .streamTrack {
+  .kineticItem {
     animation: none !important;
-    transform: none !important;
-  }
-
-  .streamTrack > .streamItem:not(:first-child) {
-    display: none;
+    position: static;
+    transform: translateY(0) !important;
+    opacity: 0.88 !important;
   }
 }

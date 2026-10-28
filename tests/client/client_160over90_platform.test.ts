@@ -784,6 +784,9 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(tsx.includes("styles.brandSubtitle"), "ClientHeader must style subtitle with .brandSubtitle");
       assert.ok(tsx.includes("styles.subtitleScrolled"), "ClientHeader must toggle .subtitleScrolled on scroll");
       assert.ok(scss.includes(".brandSubtitle"), "ClientHeader.module.scss must define .brandSubtitle");
+      assert.ok(scss.includes("font-size: 13.5px;"), "brandSubtitle must define calibrated 13.5px desktop font-size");
+      assert.ok(scss.includes("letter-spacing: 0.025em;"), "brandSubtitle must define calibrated 0.025em letter-spacing");
+      assert.ok(scss.includes("margin-top 0.35s"), "brandSubtitle must synchronize margin-top into transition");
       assert.ok(scss.includes(".subtitleScrolled"), "ClientHeader.module.scss must define .subtitleScrolled collapse");
       assert.ok(scss.includes("opacity: 0;"), "subtitleScrolled must hide subtitle smoothly");
     });
@@ -811,8 +814,11 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(tsx.includes("styles.streamTrack"), "ClientHeader must render streamTrack");
       assert.ok(scss.includes(".streamAperture"), "ClientHeader.module.scss must define .streamAperture");
       assert.ok(scss.includes("mask-image: linear-gradient("), "streamAperture must apply liquid glass edge gradient mask");
+      assert.ok(tsx.includes("styles.kineticItem"), "ClientHeader must render single active kineticItem");
+      assert.ok(tsx.includes("onAnimationEnd"), "ClientHeader must advance statements via onAnimationEnd");
+      assert.ok(scss.includes(".kineticItem"), "ClientHeader.module.scss must define .kineticItem");
       assert.ok(scss.includes("@keyframes streamGlideLeftToRight"), "ClientHeader.module.scss must declare left-to-right glide keyframes");
-      assert.ok(scss.includes("translate3d(-50%, 0, 0)"), "streamGlideLeftToRight must animate 50% track glide seamlessly");
+      assert.ok(scss.includes("calc(100cqw - 100%)"), "streamGlideLeftToRight must animate across container query runway");
     });
 
     test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {
