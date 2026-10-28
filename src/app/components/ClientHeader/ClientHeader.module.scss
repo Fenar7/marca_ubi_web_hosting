@@ -1,15 +1,21 @@
 @import "../../styles/client-mixins.scss";
 
 /**
- * ClientHeader Stylesheet: Adaptive Frosted Glass HUD
+ * ClientHeader Stylesheet: Apple Liquid Glass Adaptive HUD
  *
- * Implements:
- * 1. Pristine Top State: 100% transparent background with blur(0px) over hero view.
- * 2. Scrolled Frosted Glass State:
- *    - On Light Curtains (.isLight): White glass rgba(255, 255, 255, 0.72) with 16px blur,
- *      diffusing scrolled section text and keeping dark logo / burger high-contrast.
- *    - On Dark Cutouts (.isDark): Obsidian glass rgba(10, 10, 10, 0.65) with 16px blur.
- * 3. 60fps Kinetic Interpolation: Deceleration curve cubic-bezier(0.16, 1, 0.3, 1) across 0.4s.
+ * Implements Apple HIG Materials (visionOS / macOS Sonoma / iOS 18):
+ * 1. Pristine Rest State: 100% transparent background with blur(0px) and saturate(100%).
+ * 2. Scrolled Liquid Glass HUD:
+ *    - Optical Lensing Engine: blur(22px) saturate(180%) contrast(105%) to counteract
+ *      Gaussian desaturation and keep background video/images refracting with luminous vibrancy.
+ *    - On Light Curtains (.isLight): Directional high-key quartz refraction gradient with
+ *      crisp pure-white top specular rim highlight (inset 0 1px 0 0 rgba(255, 255, 255, 0.95))
+ *      and soft ambient grounding shadow.
+ *    - On Dark Cutouts (.isDark): Directional obsidian liquid crystal refraction gradient with
+ *      specular rim reflection (inset 0 1px 0 0 rgba(255, 255, 255, 0.22)) and deep projection shadow.
+ * 3. Top Specular Bevel Glint (::after): 1px hairline light sweep simulating physical beveled crystal rim.
+ * 4. Accessibility: Pure solid fallback for prefers-reduced-transparency.
+ * 5. Hardware Acceleration: translate3d(0, 0, 0) for 60fps GPU compositor anchoring.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -27,15 +33,19 @@
   z-index: 50;
   pointer-events: none;
   background-color: transparent;
+  background: transparent;
   border-bottom: 1px solid transparent;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px) saturate(100%);
+  -webkit-backdrop-filter: blur(0px) saturate(100%);
   transform: translate3d(0, 0, 0); // Hardware acceleration
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
-  // Smooth kinetic deceleration curve
+  // Kinetic deceleration curve
   transition: 
     background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     -webkit-backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.4s ease,
@@ -50,22 +60,81 @@
     color: #0a0a0a;
   }
 
-  // Scrolled Frosted Glass HUD
+  // Scrolled Apple Liquid Glass HUD
   &.isScrolled {
     pointer-events: auto;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(22px) saturate(180%) contrast(105%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%) contrast(105%);
 
     &.isLight {
-      background-color: rgba(255, 255, 255, 0.72);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.82) 0%,
+        rgba(250, 250, 252, 0.65) 100%
+      );
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.03),
+        0 8px 28px -4px rgba(15, 23, 42, 0.06);
     }
 
     &.isDark {
-      background-color: rgba(10, 10, 10, 0.65);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+      background: linear-gradient(
+        180deg,
+        rgba(20, 20, 24, 0.76) 0%,
+        rgba(10, 10, 12, 0.62) 100%
+      );
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.5),
+        0 16px 36px -6px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  // Top Specular Bevel Glint
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      transparent 100%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  &.isScrolled::after {
+    opacity: 1;
+  }
+
+  // Accessibility Fallback for Reduced Transparency
+  @media (prefers-reduced-transparency: reduce) {
+    &.isScrolled {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+
+      &.isLight {
+        background: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+      }
+
+      &.isDark {
+        background: #0a0a0a !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+      }
+    }
+
+    &::after {
+      display: none !important;
     }
   }
 
