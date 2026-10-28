@@ -40,7 +40,7 @@
 }
 
 /* =========================================================================
-   Step 1: Category Tabs & Service Grid
+   Step 1: Category Tabs & Service Grid (Multi-Select)
    ========================================================================= */
 
 .categoryTabs {
@@ -64,9 +64,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   letter-spacing: -0.01em;
+
+  .tabBadge {
+    font-family: $font-mono;
+    font-size: 10px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: $client-accent-red;
+    padding: 1px 5px;
+    border-radius: 9999px;
+    line-height: 1.2;
+    box-shadow: 0 0 8px rgba(234, 0, 42, 0.4);
+  }
 
   &:hover {
     background: #171717;
@@ -136,10 +149,10 @@
   }
 
   .selectionDot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
     background: transparent;
     flex-shrink: 0;
     transition: all 0.2s ease;
@@ -179,6 +192,44 @@
   &:focus-visible {
     outline: 2px solid $client-accent-red;
     outline-offset: 2px;
+  }
+}
+
+.selectionStatusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  margin-top: 0.75rem;
+
+  .selectionStatusText {
+    font-family: $font-circular;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+
+    strong {
+      color: #ffffff;
+      font-weight: 500;
+    }
+  }
+
+  .clearSelectionBtn {
+    font-family: $font-circular;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $client-accent-red;
+      text-decoration: underline;
+    }
   }
 }
 
@@ -549,7 +600,7 @@
 }
 
 /* =========================================================================
-   Step 4: Summary Dossiers
+   Step 4: Summary Dossiers (Multi-Service Chips)
    ========================================================================= */
 
 .dossierCluster {
@@ -641,6 +692,31 @@
   color: #ffffff;
   line-height: 1.45;
   word-break: break-word;
+}
+
+.serviceChipsCluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.serviceChip {
+  font-family: $font-circular;
+  font-size: 12px;
+  color: #ffffff;
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  padding: 0.3rem 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: -0.01em;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: $client-accent-red;
+  }
 }
 
 .notionCalloutError {

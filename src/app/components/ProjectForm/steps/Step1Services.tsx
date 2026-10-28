@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
 import {
@@ -196,9 +196,21 @@ const SERVICES_BY_CATEGORY: Record<string, string[]> = {
 };
 
 /**
- * Step 1: Design Scope & Service Taxonomy Selection.
- * Restores 100% of authentic categories and services while applying Swiss 2px/4px
- * architectural dark luxury geometry and Brand Red (#ea002a) indicators.
+ * Pre-computed inverted lookup mapping every service name to its parent category.
+ */
+const SERVICE_TO_CATEGORY: Record<string, string> = Object.entries(
+  SERVICES_BY_CATEGORY
+).reduce((acc, [category, services]) => {
+  services.forEach((service) => {
+    acc[service] = category;
+  });
+  return acc;
+}, {} as Record<string, string>);
+
+/**
+ * Step 1: Design Scope & Multi-Service Taxonomy Selection Engine.
+ * Supports selecting multiple services within and across all 8 design disciplines,
+ * with cross-category selection persistence, category badge counts, and Brand Red styling.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -207,42 +219,83 @@ export default function Step1Services({
   updateFormData,
   nextStep,
 }: Step1Props) {
+  // Parse currently selected services from comma-delimited string
+  const selectedServices = useMemo<string[]>(() => {
+    if (!formData.service) return [];
+    return formData.service
+      .split(", ")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }, [formData.service]);
+
+  // Determine active category tab (defaults to first category with an active selection or first tab)
   const [selectedCategory, setSelectedCategory] = useState<string>(() => {
-    if (formData.category && CATEGORIES.includes(formData.category)) {
-      return formData.category;
+    if (selectedServices.length > 0) {
+      const firstCat = SERVICE_TO_CATEGORY[selectedServices[0]];
+      if (firstCat && CATEGORIES.includes(firstCat)) return firstCat;
+    }
+    if (formData.category && CATEGORIES.includes(formData.category.split(", ")[0])) {
+      return formData.category.split(", ")[0];
     }
     return CATEGORIES[0];
   });
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    updateFormData("category", category);
-    // Reset service selection when changing category to avoid mismatched state
-    if (formData.category !== category) {
-      updateFormData("service", "");
-    }
+  // Calculate selection count per category for tab badges
+  const categorySelectionCounts = useMemo<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    CATEGORIES.forEach((cat) => {
+      const catServices = SERVICES_BY_CATEGORY[cat] || [];
+      counts[cat] = selectedServices.filter((s) => catServices.includes(s)).length;
+    });
+    return counts;
+  }, [selectedServices]);
+
+  // Unique categories derived from all currently selected services
+  const uniqueCategories = useMemo<string[]>(() => {
+    const cats = selectedServices
+      .map((s) => SERVICE_TO_CATEGORY[s])
+      .filter((cat): cat is string => Boolean(cat));
+    return Array.from(new Set(cats));
+  }, [selectedServices]);
+
+  // Toggle selection for a service item
+  const handleServiceToggle = (service: string) => {
+    const isAlreadySelected = selectedServices.includes(service);
+    const updatedServices = isAlreadySelected
+      ? selectedServices.filter((s) => s !== service)
+      : [...selectedServices, service];
+
+    const updatedCategories = Array.from(
+      new Set(
+        updatedServices
+          .map((s) => SERVICE_TO_CATEGORY[s])
+          .filter((cat): cat is string => Boolean(cat))
+      )
+    );
+
+    updateFormData("service", updatedServices.join(", "));
+    updateFormData("category", updatedCategories.join(", "));
   };
 
-  const handleServiceSelect = (service: string) => {
-    if (!formData.category) {
-      updateFormData("category", selectedCategory);
-    }
-    updateFormData("service", service);
+  // Clear all selections across all categories
+  const handleClearAll = () => {
+    updateFormData("service", "");
+    updateFormData("category", "");
   };
 
-  const isComplete = Boolean(formData.category && formData.service);
-  const currentServices = SERVICES_BY_CATEGORY[selectedCategory] || [];
+  const isComplete = selectedServices.length > 0;
+  const currentCategoryServices = SERVICES_BY_CATEGORY[selectedCategory] || [];
 
   return (
     <div className={styles.stepContainer}>
       <header className={styles.stepHeaderBlock}>
         <h2 className={styles.stepTitle}>What do you need designed?</h2>
         <p className={styles.stepDescription}>
-          Select your primary discipline and specific service requirements below to begin structuring your project brief.
+          Select one or multiple services across any discipline below. We assemble dedicated specialist teams around your complete project scope.
         </p>
       </header>
 
-      {/* Swiss Architectural Category Tabs */}
+      {/* Swiss Architectural Category Tabs with Dynamic Selection Badges */}
       <div
         className={styles.categoryTabs}
         role="tablist"
@@ -250,6 +303,8 @@ export default function Step1Services({
       >
         {CATEGORIES.map((cat) => {
           const isActive = selectedCategory === cat;
+          const count = categorySelectionCounts[cat] || 0;
+
           return (
             <button
               key={cat}
@@ -257,32 +312,37 @@ export default function Step1Services({
               role="tab"
               aria-selected={isActive}
               className={`${styles.categoryTab} ${isActive ? styles.active : ""}`}
-              onClick={() => handleCategorySelect(cat)}
+              onClick={() => setSelectedCategory(cat)}
             >
               <span>{cat}</span>
+              {count > 0 && (
+                <span className={styles.tabBadge} aria-label={`${count} selected`}>
+                  {count}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* Granular Service Cards Grid */}
+      {/* Granular Multi-Select Service Cards Grid */}
       <div
         className={styles.serviceGrid}
-        role="radiogroup"
-        aria-label={`${selectedCategory} Services`}
+        role="group"
+        aria-label={`${selectedCategory} Services (Multi-Select)`}
       >
-        {currentServices.map((service) => {
-          const isSelected = formData.service === service;
+        {currentCategoryServices.map((service) => {
+          const isSelected = selectedServices.includes(service);
           const icon = SERVICE_ICONS[service] || <SparkleIcon />;
 
           return (
             <button
               key={service}
               type="button"
-              role="radio"
+              role="checkbox"
               aria-checked={isSelected}
               className={`${styles.serviceCard} ${isSelected ? styles.active : ""}`}
-              onClick={() => handleServiceSelect(service)}
+              onClick={() => handleServiceToggle(service)}
             >
               <div className={styles.cardIcon} aria-hidden="true">
                 {icon}
@@ -294,6 +354,22 @@ export default function Step1Services({
         })}
       </div>
 
+      {/* Real-Time Live Selection Status Bar */}
+      {selectedServices.length > 0 && (
+        <div className={styles.selectionStatusBar}>
+          <span className={styles.selectionStatusText}>
+            <strong>{selectedServices.length}</strong> {selectedServices.length === 1 ? "service" : "services"} selected across <strong>{uniqueCategories.length}</strong> {uniqueCategories.length === 1 ? "discipline" : "disciplines"}
+          </span>
+          <button
+            type="button"
+            className={styles.clearSelectionBtn}
+            onClick={handleClearAll}
+          >
+            Clear selection
+          </button>
+        </div>
+      )}
+
       {/* Continue Action Button */}
       <div className={styles.actionContainer}>
         <button
@@ -303,7 +379,11 @@ export default function Step1Services({
           disabled={!isComplete}
           aria-label="Continue to business details"
         >
-          <span>Continue</span>
+          <span>
+            {selectedServices.length > 1
+              ? `Continue (${selectedServices.length} Selected)`
+              : "Continue"}
+          </span>
           <span className={styles.arrow} aria-hidden="true">
             &rarr;
           </span>

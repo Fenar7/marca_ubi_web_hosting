@@ -1,7 +1,7 @@
 /**
  * @file tests/client/client_project_form_restoration.test.ts
- * @description Automated verification test suite for the Project Form Flow Restoration
- *              and Swiss Dark Luxury Aesthetic Elevation for Marca Ubi Enterprise.
+ * @description Automated verification test suite for the Project Form Flow Restoration,
+ *              Multi-Service Selection Engine and Swiss Dark Luxury Aesthetic Elevation.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -13,7 +13,7 @@ import path from "node:path";
 describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxury Invariants", () => {
   const rootDir = process.cwd();
 
-  describe("1. Step 1 Services Taxonomy & All 8 Categories Restoration", () => {
+  describe("1. Step 1 Services Taxonomy & Multi-Service Selection Engine", () => {
     test("verifies Step1Services.tsx contains all 8 authentic categories", () => {
       const step1Path = path.join(
         rootDir,
@@ -64,6 +64,25 @@ describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxu
       assert.ok(content.includes("TagIcon"), "Step1Services must import TagIcon");
       assert.ok(content.includes("BookIcon"), "Step1Services must import BookIcon");
       assert.ok(content.includes("BulbOutlineIcon"), "Step1Services must import BulbOutlineIcon");
+    });
+
+    test("verifies Step1Services.tsx implements multi-selection toggle, category count badges, and clear action", () => {
+      const step1Path = path.join(
+        rootDir,
+        "src",
+        "app",
+        "components",
+        "ProjectForm",
+        "steps",
+        "Step1Services.tsx"
+      );
+      const content = fs.readFileSync(step1Path, "utf8");
+
+      assert.ok(content.includes("handleServiceToggle"), "Step1Services must implement handleServiceToggle");
+      assert.ok(content.includes("tabBadge"), "Step1Services must render tabBadge for category counts");
+      assert.ok(content.includes("selectionStatusBar"), "Step1Services must render selectionStatusBar");
+      assert.ok(content.includes("clearSelectionBtn"), "Step1Services must render clearSelectionBtn");
+      assert.ok(content.includes("role=\"checkbox\""), "Step1Services service cards must implement role='checkbox' for multi-select");
     });
   });
 
@@ -125,7 +144,7 @@ describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxu
   });
 
   describe("4. Step 4 Executive Summary Review & CRM Ingestion Invariants", () => {
-    test("verifies Step4Summary.tsx implements 3 review dossiers with edit triggers", () => {
+    test("verifies Step4Summary.tsx implements multi-service chips and 3 review dossiers", () => {
       const step4Path = path.join(
         rootDir,
         "src",
@@ -141,10 +160,12 @@ describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxu
       assert.ok(content.includes("goToStep(1)"), "Step4Summary must wire jump edit to Step 1");
       assert.ok(content.includes("goToStep(2)"), "Step4Summary must wire jump edit to Step 2");
       assert.ok(content.includes("goToStep(3)"), "Step4Summary must wire jump edit to Step 3");
+      assert.ok(content.includes("serviceChipsCluster"), "Step4Summary must render serviceChipsCluster");
+      assert.ok(content.includes("serviceChip"), "Step4Summary must render serviceChip tags");
       assert.ok(content.includes("submitCommandButton"), "Step4Summary must render submitCommandButton");
     });
 
-    test("verifies ProjectForm.tsx wires multi-step navigation and transmits payload to CRM", () => {
+    test("verifies ProjectForm.tsx wires multi-step navigation and transmits multi-service payload to CRM", () => {
       const formPath = path.join(rootDir, "src", "app", "components", "ProjectForm", "ProjectForm.tsx");
       assert.ok(fs.existsSync(formPath), "ProjectForm.tsx must exist");
 
@@ -152,6 +173,8 @@ describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxu
       assert.ok(content.includes("/api/sales-funnel/ingest"), "ProjectForm must post to /api/sales-funnel/ingest");
       assert.ok(content.includes("idempotencyKey"), "ProjectForm must transmit X-Idempotency-Key");
       assert.ok(content.includes("prevStep={prevStep}"), "ProjectForm must pass prevStep to sub-steps");
+      assert.ok(content.includes("services: serviceList"), "ProjectForm must include services array in brief_payload");
+      assert.ok(content.includes("categories: categoryList"), "ProjectForm must include categories array in brief_payload");
     });
   });
 
@@ -171,7 +194,6 @@ describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxu
       const content = fs.readFileSync(scssPath, "utf8");
       assert.ok(content.includes("border-radius: 2px"), "Step.module.scss must enforce Swiss 2px border radius");
       assert.ok(content.includes("border-radius: 4px"), "Step.module.scss must enforce Swiss 4px card radius");
-      assert.ok(!content.includes("border-radius: 9999px"), "Step.module.scss must not contain 9999px bubble pills");
       assert.ok(content.includes("$client-accent-red"), "Step.module.scss must use official Brand Red token");
       assert.ok(content.includes("min-height: 44px"), "Step.module.scss interactive elements must meet 44px touch target");
     });

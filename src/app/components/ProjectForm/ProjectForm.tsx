@@ -13,7 +13,7 @@ import Step4Summary from "./steps/Step4Summary";
 /**
  * Master Project Brief Form Wizard.
  * Clean, minimal 160over90 Agency Standard with zero AI-slop metadata.
- * Restores 100% of authentic multi-step questionnaire flow and options.
+ * Supports multi-service selection across all 8 design disciplines.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -42,9 +42,11 @@ export default function ProjectForm() {
         ? crypto.randomUUID()
         : `brief-${Date.now()}`;
 
-    // Map client category to CRM enum whitelist: 'Branding' | 'Web & Digital' | 'Mobile Apps' | 'UI/UX Design' | 'Full-Suite Advisory' | 'Other'
+    // Map client categories to CRM enum whitelist: 'Branding' | 'Web & Digital' | 'Mobile Apps' | 'UI/UX Design' | 'Full-Suite Advisory' | 'Other'
     const mapCategory = (cat: string) => {
       const lower = (cat || "").toLowerCase();
+      const categoriesCount = cat.split(", ").filter(Boolean).length;
+      if (categoriesCount > 2) return "Full-Suite Advisory";
       if (lower.includes("brand") || lower.includes("logo") || lower.includes("stationery")) return "Branding";
       if (lower.includes("app") || lower.includes("mobile")) return "Mobile Apps";
       if (lower.includes("digital") || lower.includes("web")) return "Web & Digital";
@@ -53,8 +55,16 @@ export default function ProjectForm() {
       return "Other";
     };
 
+    const serviceList = formData.service
+      ? formData.service.split(", ").filter(Boolean)
+      : [];
+    const categoryList = formData.category
+      ? formData.category.split(", ").filter(Boolean)
+      : [];
+
     const combinedNotes = [
       formData.projectDescription ? `Project Scope: ${formData.projectDescription}` : "",
+      serviceList.length > 0 ? `Requested Services (${serviceList.length}):\n• ${serviceList.join("\n• ")}` : "",
       formData.extraNotes ? `Additional Notes: ${formData.extraNotes}` : "",
       formData.inspirationLinks ? `Inspiration References:\n${formData.inspirationLinks}` : "",
       formData.instagram ? `Instagram: ${formData.instagram}` : "",
@@ -75,10 +85,12 @@ export default function ProjectForm() {
       budget_bracket: formData.timeline.trim() || undefined,
       notes: combinedNotes || undefined,
       source_name: "Website Form",
-      source_detail: "Start Project Brief Wizard",
+      source_detail: "Start Project Brief Wizard (Multi-Service)",
       brief_payload: {
         category: formData.category,
         service: formData.service,
+        services: serviceList,
+        categories: categoryList,
         language: formData.language,
         projectName: formData.projectName,
         projectDescription: formData.projectDescription,
@@ -164,7 +176,7 @@ export default function ProjectForm() {
                 <span className={styles.receiptValue}>{formData.projectName}</span>
               </div>
               <div className={styles.receiptRow}>
-                <span className={styles.receiptLabel}>Primary Discipline</span>
+                <span className={styles.receiptLabel}>Selected Scope</span>
                 <span className={styles.receiptValue}>{formData.service}</span>
               </div>
               <div className={styles.receiptRow}>

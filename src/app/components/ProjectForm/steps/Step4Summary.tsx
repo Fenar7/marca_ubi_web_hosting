@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
 import { EditIcon } from "@sanity/icons";
@@ -16,7 +16,7 @@ interface Step4Props {
 /**
  * Step 4: Executive Brief Dossier Review & Direct CRM Pipeline Transmission.
  * Restores all 3 comprehensive summary dossiers with dedicated edit jump actions,
- * verified error banner states, and high-contrast dark luxury surfaces.
+ * interactive multi-service chips, verified error banner states, and high-contrast dark luxury surfaces.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -27,6 +27,17 @@ export default function Step4Summary({
   isSubmitting,
   submitError,
 }: Step4Props) {
+  // Parse multi-select services and categories
+  const selectedServices = useMemo(() => {
+    if (!formData.service) return [];
+    return formData.service.split(", ").map((s) => s.trim()).filter(Boolean);
+  }, [formData.service]);
+
+  const selectedCategories = useMemo(() => {
+    if (!formData.category) return [];
+    return formData.category.split(", ").map((c) => c.trim()).filter(Boolean);
+  }, [formData.category]);
+
   return (
     <div className={styles.stepContainer}>
       <header className={styles.stepHeaderBlock}>
@@ -41,7 +52,9 @@ export default function Step4Summary({
         {/* Section 1: Design Scope */}
         <div className={styles.dossierCard}>
           <div className={styles.dossierHeader}>
-            <span className={styles.dossierTitle}>1. Design Needs</span>
+            <span className={styles.dossierTitle}>
+              1. Design Needs ({selectedServices.length} {selectedServices.length === 1 ? "Service" : "Services"})
+            </span>
             <button
               type="button"
               className={styles.editButton}
@@ -53,13 +66,29 @@ export default function Step4Summary({
             </button>
           </div>
           <div className={styles.dossierRows}>
-            <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Category</span>
-              <span className={styles.itemValue}>{formData.category || "Not selected"}</span>
+            <div className={`${styles.dossierItem} ${styles.fullWidth}`}>
+              <span className={styles.itemLabel}>
+                Discipline Categories ({selectedCategories.length})
+              </span>
+              <span className={styles.itemValue}>
+                {selectedCategories.join(" • ") || "Not selected"}
+              </span>
             </div>
-            <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Service</span>
-              <span className={styles.itemValue}>{formData.service || "Not selected"}</span>
+            <div className={`${styles.dossierItem} ${styles.fullWidth}`}>
+              <span className={styles.itemLabel}>
+                Requested Deliverables ({selectedServices.length})
+              </span>
+              {selectedServices.length > 0 ? (
+                <div className={styles.serviceChipsCluster}>
+                  {selectedServices.map((service) => (
+                    <span key={service} className={styles.serviceChip}>
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className={styles.itemValue}>Not selected</span>
+              )}
             </div>
           </div>
         </div>
