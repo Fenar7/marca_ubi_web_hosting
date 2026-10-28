@@ -815,10 +815,16 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes(".streamAperture"), "ClientHeader.module.scss must define .streamAperture");
       assert.ok(scss.includes("mask-image: linear-gradient("), "streamAperture must apply liquid glass edge gradient mask");
       assert.ok(tsx.includes("styles.kineticItem"), "ClientHeader must render single active kineticItem");
-      assert.ok(tsx.includes("onAnimationEnd"), "ClientHeader must advance statements via onAnimationEnd");
+      assert.ok(tsx.includes("useGSAP"), "ClientHeader must drive dynamic kinetic stream via useGSAP");
+      assert.ok(tsx.includes("gsap.timeline"), "ClientHeader must orchestrate master timeline");
+      assert.ok(!tsx.includes("streamDot"), "ClientHeader.tsx must NOT contain streamDot (clean typography only)");
+      assert.ok(!scss.includes(".streamDot"), "ClientHeader.module.scss must NOT contain .streamDot");
+      assert.ok(tsx.includes("styles.textRotator"), "ClientHeader must render textRotator");
+      assert.ok(tsx.includes("styles.streamGhost"), "ClientHeader must render streamGhost spacer for CLS 0.000");
       assert.ok(scss.includes(".kineticItem"), "ClientHeader.module.scss must define .kineticItem");
-      assert.ok(scss.includes("@keyframes streamGlideLeftToRight"), "ClientHeader.module.scss must declare left-to-right glide keyframes");
-      assert.ok(scss.includes("calc(100cqw - 100%)"), "streamGlideLeftToRight must animate across container query runway");
+      assert.ok(scss.includes(".textRotator"), "ClientHeader.module.scss must define .textRotator");
+      assert.ok(scss.includes(".streamGhost"), "ClientHeader.module.scss must define .streamGhost");
+      assert.ok(scss.includes(".streamText"), "ClientHeader.module.scss must define .streamText");
     });
 
     test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {

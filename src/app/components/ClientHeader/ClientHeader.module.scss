@@ -448,29 +448,47 @@
   transform: translate3d(0, -50%, 0);
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
   white-space: nowrap;
   will-change: transform, opacity;
-  animation: streamGlideLeftToRight 7.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-.streamDot {
-  width: 5px;
-  height: 5px;
-  border-radius: 9999px;
-  background-color: $client-accent-red; // #ea002a
-  box-shadow: 0 0 8px rgba(234, 0, 42, 0.65);
-  flex-shrink: 0;
+.textRotator {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  height: 20px;
+  line-height: 20px;
+}
+
+.streamGhost {
+  display: inline-block;
+  visibility: hidden;
+  pointer-events: none;
+  font-family: $font-circular;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 20px;
+  height: 20px;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .streamText {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate3d(0, -50%, 0);
   font-family: $font-circular;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.03em;
   color: inherit;
-  opacity: 0.88;
-  transition: opacity 0.2s ease;
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  will-change: transform, opacity, filter;
+  transition: color 0.2s ease;
 
   .isDark & {
     color: rgba(255, 255, 255, 0.92);
