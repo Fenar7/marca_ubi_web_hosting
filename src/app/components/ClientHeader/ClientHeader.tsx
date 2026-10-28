@@ -8,12 +8,27 @@ import MarcaUbiLogo from "../ui/MarcaUbiLogo/MarcaUbiLogo";
 import { NavigationOverlay } from "../NavigationOverlay";
 import styles from "./ClientHeader.module.scss";
 
-const BRAND_STATEMENTS = [
+export const BRAND_STATEMENTS = [
   "The Brand Engineering Company",
   "The Brand Transformation Company",
   "The Identity & Art Systems Company",
   "The Digital Experience Design Company",
   "The Communication and Growth Company",
+] as const;
+
+export const HEADER_DISCIPLINES = [
+  "Brand Strategy",
+  "Visual Identity Systems",
+  "Creative Direction",
+  "Culture Marketing",
+  "Experiential Production",
+  "Digital Infrastructure",
+  "Creative Technology",
+  "Motion & Cinema",
+  "Campaign Architecture",
+  "Editorial Systems",
+  "High-Growth GTM",
+  "Spatial Brand Design",
 ] as const;
 
 interface ClientHeaderProps {
@@ -103,9 +118,9 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const closeDrawer = () => setIsDrawerOpen(false);
 
-  // 3. Dynamic Scrolled Kinetic Stream Engine (Dual-Carrier Staggered Overlapping Relay)
-  // Continuous handoff: As one statement approaches the right boundary, the next statement
-  // simultaneously launches from the left boundary (right after the logo), cycling indefinitely.
+  // 3. Anchored Scrolled Disciplines Station (Stationary in-place vertical morph)
+  // Anchored directly after the logo on the left side of the capsule.
+  // Zero horizontal travel; in-place vertical blur/fade cross-morph across the 12 core disciplines.
   useGSAP(
     () => {
       if (
@@ -127,117 +142,108 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
 
       // Accessibility: Honor reduced motion preference with static elegant display
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        gsap.set(carrierA, { x: 0, opacity: 0.95, visibility: "visible" });
+        gsap.set(carrierA, { x: 0, y: 0, opacity: 0.95, visibility: "visible" });
         gsap.set(carrierB, { opacity: 0, visibility: "hidden" });
-        textA.textContent = BRAND_STATEMENTS[0];
+        textA.textContent = HEADER_DISCIPLINES[0];
         return;
       }
 
-      // Initial resting state: hide carriers until dispatched
-      gsap.set([carrierA, carrierB], { x: 0, opacity: 0, visibility: "hidden" });
-
       const activeAnimations = new Set<gsap.core.Animation>();
-      let statementIndex = 0;
-      let carrierTurn = 0; // Alternates: 0 for Carrier Alpha, 1 for Carrier Beta
+      let disciplineIndex = 0;
+      let activeCarrier = carrierA;
+      let nextCarrier = carrierB;
+      let activeText = textA;
+      let nextText = textB;
       let isPaused = false;
       let isCleanedUp = false;
 
-      // Motion Timing Parameters:
-      // GLIDE_DURATION (9.2s): Smooth, calm velocity across the full horizontal runway
-      // STAGGER_INTERVAL (7.2s): Dispatches next carrier when current carrier enters right mask dissolve (~78% transit)
-      const GLIDE_DURATION = 9.2;
-      const STAGGER_INTERVAL = 7.2;
+      // Morphing Timing Parameters:
+      // HOLD_DURATION (2.5s): Comfortable readability window per discipline
+      // MORPH_DURATION (0.42s): Fluid vertical roll-up cross-fade with optical diffusion
+      const HOLD_DURATION = 2.5;
+      const MORPH_DURATION = 0.42;
 
-      const computeDistance = (carrierEl: HTMLElement) => {
-        const apertureWidth = aperture.clientWidth;
-        const carrierWidth = carrierEl.offsetWidth || 280;
-        return Math.max(0, apertureWidth - carrierWidth - 12);
-      };
+      // Initial state: Carrier A displayed in place, Carrier B primed below
+      activeText.textContent = HEADER_DISCIPLINES[0];
+      gsap.set(activeCarrier, { x: 0, y: 0, opacity: 1, visibility: "visible" });
+      gsap.set(nextCarrier, { x: 0, y: 6, opacity: 0, visibility: "hidden" });
 
-      const dispatchCarrier = () => {
+      const cycleNextDiscipline = () => {
         if (isCleanedUp) return;
 
-        const carrier = carrierTurn === 0 ? carrierA : carrierB;
-        const textEl = carrierTurn === 0 ? textA : textB;
-        const statement = BRAND_STATEMENTS[statementIndex % BRAND_STATEMENTS.length];
+        disciplineIndex = (disciplineIndex + 1) % HEADER_DISCIPLINES.length;
+        const upcomingDiscipline = HEADER_DISCIPLINES[disciplineIndex];
 
-        statementIndex++;
-        carrierTurn = 1 - carrierTurn;
+        // Populate next carrier
+        nextText.textContent = upcomingDiscipline;
+        gsap.set(nextCarrier, { x: 0, y: 6, opacity: 0, filter: "blur(2px)", visibility: "visible" });
 
-        // Populate statement text dynamically
-        textEl.textContent = statement;
-
-        const travelDistance = computeDistance(carrier);
-
-        // Orchestrate master carrier flight timeline
-        const carrierTl = gsap.timeline({
+        const morphTl = gsap.timeline({
           onComplete: () => {
-            activeAnimations.delete(carrierTl);
-            gsap.set(carrier, { x: 0, opacity: 0, visibility: "hidden" });
+            activeAnimations.delete(morphTl);
+            gsap.set(activeCarrier, { y: 6, opacity: 0, visibility: "hidden" });
+
+            // Swap roles
+            const tempCarrier = activeCarrier;
+            activeCarrier = nextCarrier;
+            nextCarrier = tempCarrier;
+
+            const tempText = activeText;
+            activeText = nextText;
+            nextText = tempText;
+
+            // Schedule subsequent morph
+            const nextCall = gsap.delayedCall(HOLD_DURATION, () => {
+              activeAnimations.delete(nextCall);
+              cycleNextDiscipline();
+            });
+            activeAnimations.add(nextCall);
+            if (isPaused) {
+              nextCall.pause();
+            }
           },
         });
 
-        // Step 1: Position carrier at left boundary (immediately after logo)
-        carrierTl.set(carrier, { x: 0, opacity: 0, visibility: "visible" }, 0);
-
-        // Step 2: Linear glide from left boundary towards hamburger menu
-        carrierTl.to(
-          carrier,
+        // 1. Outgoing carrier rolls upward and dissolves smoothly
+        morphTl.to(
+          activeCarrier,
           {
-            x: travelDistance,
-            duration: GLIDE_DURATION,
-            ease: "none",
-          },
-          0
-        );
-
-        // Step 3: Edge Mask Dissolves - Emerge smoothly from left edge mask (1.0s)
-        carrierTl.to(
-          carrier,
-          {
-            opacity: 1,
-            duration: 1.0,
-            ease: "power2.out",
-          },
-          0
-        );
-
-        // Step 4: Melt smoothly into right edge mask before hamburger menu (1.3s dissolve)
-        carrierTl.to(
-          carrier,
-          {
+            y: -6,
             opacity: 0,
-            duration: 1.3,
+            filter: "blur(2px)",
+            duration: MORPH_DURATION,
             ease: "power2.in",
           },
-          GLIDE_DURATION - 1.3
+          0
         );
 
-        activeAnimations.add(carrierTl);
-        if (isPaused) {
-          carrierTl.pause();
-        }
+        // 2. Incoming carrier elevates into pristine baseline lock
+        morphTl.to(
+          nextCarrier,
+          {
+            y: 0,
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: MORPH_DURATION + 0.08,
+            ease: "power2.out",
+          },
+          0.06
+        );
 
-        // Seamless Relay: Dispatch next carrier when current carrier enters the right edge dissolve zone
-        const nextTimer = gsap.delayedCall(STAGGER_INTERVAL, () => {
-          activeAnimations.delete(nextTimer);
-          dispatchCarrier();
-        });
-
-        activeAnimations.add(nextTimer);
+        activeAnimations.add(morphTl);
         if (isPaused) {
-          nextTimer.pause();
+          morphTl.pause();
         }
       };
 
-      // Delay initial dispatch by 400ms to allow CSS capsule expansion transition to settle
-      const initTimer = gsap.delayedCall(0.4, () => {
-        activeAnimations.delete(initTimer);
-        dispatchCarrier();
+      // Delay initial cycle to give user time to read the opening discipline
+      const initialTimer = gsap.delayedCall(HOLD_DURATION, () => {
+        activeAnimations.delete(initialTimer);
+        cycleNextDiscipline();
       });
-      activeAnimations.add(initTimer);
+      activeAnimations.add(initialTimer);
 
-      // Micro-interaction: Hover over stream pauses flight for effortless reading
+      // Micro-interaction: Hover over text pauses morphing for effortless reading
       const onEnter = () => {
         isPaused = true;
         activeAnimations.forEach((anim) => anim.pause());
@@ -251,11 +257,6 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
       aperture.addEventListener("mouseenter", onEnter);
       aperture.addEventListener("mouseleave", onLeave);
 
-      const onResize = () => {
-        // Subsequent carrier dispatches re-measure aperture width dynamically
-      };
-      window.addEventListener("resize", onResize);
-
       return () => {
         isCleanedUp = true;
         activeAnimations.forEach((anim) => anim.kill());
@@ -263,7 +264,6 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         gsap.killTweensOf([carrierA, carrierB]);
         aperture.removeEventListener("mouseenter", onEnter);
         aperture.removeEventListener("mouseleave", onLeave);
-        window.removeEventListener("resize", onResize);
       };
     },
     { dependencies: [isScrolled], scope: apertureRef }
@@ -277,58 +277,61 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         }`}
         role="banner"
       >
-        <div className={styles.brandLockup}>
-          <Link href="/" className={styles.logoAnchor} aria-label="Marca Ubi Homepage" onClick={closeDrawer}>
-            <MarcaUbiLogo
-              width={160}
-              height={34}
-              className={styles.brandLogo}
-            />
-          </Link>
-          <span className={`${styles.brandSubtitle} ${isScrolled ? styles.subtitleScrolled : ""}`}>
-            The Brand Engineering Company
-          </span>
-        </div>
+        {/* Left Cluster: Brand Logo + Scrolled In-Place Disciplines Station */}
+        <div className={styles.leftCluster}>
+          <div className={styles.brandLockup}>
+            <Link href="/" className={styles.logoAnchor} aria-label="Marca Ubi Homepage" onClick={closeDrawer}>
+              <MarcaUbiLogo
+                width={160}
+                height={34}
+                className={styles.brandLogo}
+              />
+            </Link>
+            <span className={`${styles.brandSubtitle} ${isScrolled ? styles.subtitleScrolled : ""}`}>
+              The Brand Engineering Company
+            </span>
+          </div>
 
-        {/* Dynamic Kinetic Stream Aperture (Active when scrolled inside floating capsule) */}
-        <div
-          ref={apertureRef}
-          className={`${styles.streamAperture} ${isScrolled ? styles.streamVisible : ""}`}
-          aria-hidden={!isScrolled}
-          role="region"
-          aria-label="Brand Statements Ticker"
-        >
-          <div ref={trackRef} className={styles.streamTrack}>
-            {/* Structural ghost spacer matching maximum statement width to eliminate CLS */}
-            <div className={styles.textRotator} aria-hidden="true">
-              <span className={styles.streamGhost}>
-                The Digital Experience Design Company
-              </span>
-            </div>
-
-            {/* Carrier Alpha */}
-            <div
-              ref={carrierARef}
-              className={`${styles.kineticItem} ${styles.kineticCarrier}`}
-              aria-hidden="false"
-            >
-              <div className={styles.textRotator}>
-                <span ref={textARef} className={styles.streamText}>
-                  {BRAND_STATEMENTS[0]}
+          {/* Dynamic In-Place Disciplines Station (Stationary adjacent to logo inside floating capsule) */}
+          <div
+            ref={apertureRef}
+            className={`${styles.streamAperture} ${isScrolled ? styles.streamVisible : ""}`}
+            aria-hidden={!isScrolled}
+            role="region"
+            aria-label="Brand Disciplines Ticker"
+          >
+            <div ref={trackRef} className={styles.streamTrack}>
+              {/* Structural ghost spacer matching maximum discipline width to eliminate CLS */}
+              <div className={styles.textRotator} aria-hidden="true">
+                <span className={styles.streamGhost}>
+                  Experiential Production
                 </span>
               </div>
-            </div>
 
-            {/* Carrier Beta */}
-            <div
-              ref={carrierBRef}
-              className={`${styles.kineticItem} ${styles.kineticCarrier}`}
-              aria-hidden="true"
-            >
-              <div className={styles.textRotator}>
-                <span ref={textBRef} className={styles.streamText}>
-                  {BRAND_STATEMENTS[1]}
-                </span>
+              {/* Carrier Alpha */}
+              <div
+                ref={carrierARef}
+                className={`${styles.kineticItem} ${styles.kineticCarrier}`}
+                aria-hidden="false"
+              >
+                <div className={styles.textRotator}>
+                  <span ref={textARef} className={styles.streamText}>
+                    {HEADER_DISCIPLINES[0]}
+                  </span>
+                </div>
+              </div>
+
+              {/* Carrier Beta */}
+              <div
+                ref={carrierBRef}
+                className={`${styles.kineticItem} ${styles.kineticCarrier}`}
+                aria-hidden="true"
+              >
+                <div className={styles.textRotator}>
+                  <span ref={textBRef} className={styles.streamText}>
+                    {HEADER_DISCIPLINES[1]}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

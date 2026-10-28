@@ -791,30 +791,38 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("opacity: 0;"), "subtitleScrolled must hide subtitle smoothly");
     });
 
-    test("verifies ClientHeader scrolled dynamic kinetic ticker stream and 5 statements", () => {
+    test("verifies ClientHeader scrolled anchored disciplines station and 12 core disciplines", () => {
       const headerTsx = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.tsx");
       const headerScss = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.module.scss");
 
       const tsx = fs.readFileSync(headerTsx, "utf8");
       const scss = fs.readFileSync(headerScss, "utf8");
 
-      const expectedStatements = [
-        "The Brand Engineering Company",
-        "The Brand Transformation Company",
-        "The Identity & Art Systems Company",
-        "The Digital Experience Design Company",
-        "The Communication and Growth Company",
+      const expectedDisciplines = [
+        "Brand Strategy",
+        "Visual Identity Systems",
+        "Creative Direction",
+        "Culture Marketing",
+        "Experiential Production",
+        "Digital Infrastructure",
+        "Creative Technology",
+        "Motion & Cinema",
+        "Campaign Architecture",
+        "Editorial Systems",
+        "High-Growth GTM",
+        "Spatial Brand Design",
       ];
 
-      for (const statement of expectedStatements) {
-        assert.ok(tsx.includes(statement), `ClientHeader must include statement: "${statement}"`);
+      for (const discipline of expectedDisciplines) {
+        assert.ok(tsx.includes(discipline), `ClientHeader must include discipline: "${discipline}"`);
       }
 
       assert.ok(tsx.includes("styles.streamAperture"), "ClientHeader must render streamAperture container");
       assert.ok(tsx.includes("styles.streamTrack"), "ClientHeader must render streamTrack");
+      assert.ok(tsx.includes("styles.leftCluster"), "ClientHeader must anchor leftCluster adjacent to logo");
+      assert.ok(scss.includes(".leftCluster"), "ClientHeader.module.scss must define .leftCluster");
       assert.ok(scss.includes(".streamAperture"), "ClientHeader.module.scss must define .streamAperture");
-      assert.ok(scss.includes("mask-image: linear-gradient("), "streamAperture must apply liquid glass edge gradient mask");
-      assert.ok(tsx.includes("styles.kineticItem"), "ClientHeader must render single active kineticItem");
+      assert.ok(tsx.includes("styles.kineticItem"), "ClientHeader must render kineticItem");
       assert.ok(tsx.includes("useGSAP"), "ClientHeader must drive dynamic kinetic stream via useGSAP");
       assert.ok(tsx.includes("gsap.timeline"), "ClientHeader must orchestrate master timeline");
       assert.ok(!tsx.includes("streamDot"), "ClientHeader.tsx must NOT contain streamDot (clean typography only)");
@@ -829,8 +837,8 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(tsx.includes("carrierARef"), "ClientHeader must declare Carrier Alpha ref");
       assert.ok(tsx.includes("carrierBRef"), "ClientHeader must declare Carrier Beta ref");
       assert.ok(tsx.includes("styles.kineticCarrier"), "ClientHeader must render dual kineticCarrier elements");
-      assert.ok(tsx.includes("STAGGER_INTERVAL"), "ClientHeader must enforce staggered hand-off interval");
-      assert.ok(tsx.includes("GLIDE_DURATION"), "ClientHeader must enforce calm glide duration");
+      assert.ok(tsx.includes("HOLD_DURATION"), "ClientHeader must enforce in-place hold duration");
+      assert.ok(tsx.includes("MORPH_DURATION"), "ClientHeader must enforce fluid vertical morph duration");
       assert.ok(tsx.includes("activeAnimations"), "ClientHeader must track active animations for leak-free cleanup");
     });
 
@@ -850,4 +858,33 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("prefers-reduced-motion: reduce"), "ConnectCutout.module.scss must include reduced motion guard");
     });
   });
+
+describe("Section 19: Navigation Overlay Helvetica Neue Reference Architecture", () => {
+    test("verifies physical existence of Helvetica Neue Light on disk", () => {
+      const lightFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Light.otf");
+      const romanFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Roman.otf");
+      assert.ok(fs.existsSync(lightFont), "HelveticaNeue-Light.otf must exist in public/fonts/helvetica/");
+      assert.ok(fs.existsSync(romanFont), "HelveticaNeue-Roman.otf must exist in public/fonts/helvetica/");
+    });
+
+    test("verifies Next.js localFont registers --font-helvetica-neue", () => {
+      const fontsTs = fs.readFileSync(path.join(rootDir, "src", "app", "fonts.ts"), "utf8");
+      assert.ok(fontsTs.includes("helveticaNeue"), "fonts.ts must export helveticaNeue");
+      assert.ok(fontsTs.includes("--font-helvetica-neue"), "fonts.ts must declare variable --font-helvetica-neue");
+    });
+
+    test("verifies NavigationOverlay complete arrow eradication and lowercase Swiss typography", () => {
+      const tsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.tsx"), "utf8");
+      const scss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.module.scss"), "utf8");
+
+      assert.ok(!tsx.includes("editorialArrowSvg"), "NavigationOverlay.tsx must NOT contain editorialArrowSvg (zero arrows)");
+      assert.ok(!tsx.includes("navArrow"), "NavigationOverlay.tsx must NOT render navArrow elements");
+      assert.ok(!scss.includes(".navArrow"), "NavigationOverlay.module.scss must NOT define .navArrow");
+      assert.ok(scss.includes("$font-helvetica"), "NavigationOverlay.module.scss must style .navLink with $font-helvetica");
+      assert.ok(scss.includes("text-transform: lowercase"), "NavigationOverlay.module.scss must enforce lowercase typography");
+      assert.ok(tsx.includes("Copyright 2026"), "NavigationOverlay.tsx must render clean copyright baseline");
+    });
+  });
+
+
 });

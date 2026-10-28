@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import SmoothScrollProvider from "./components/SmoothScrollProvider/SmoothScrollProvider";
-import { graphik, circularXX } from "./fonts";
+import { graphik, circularXX, helveticaNeue } from "./fonts";
 import "./globals.css";
 import "./globals.scss";
 
@@ -69,7 +69,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${graphik.variable} ${circularXX.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${graphik.variable} ${circularXX.variable} ${helveticaNeue.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preload" as="image" href="/images/marca-ubi-red-png.svg" type="image/svg+xml" />
         <script
