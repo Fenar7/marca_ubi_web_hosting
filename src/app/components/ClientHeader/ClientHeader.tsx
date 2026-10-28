@@ -43,8 +43,10 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const apertureRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
-  const kineticItemRef = useRef<HTMLDivElement | null>(null);
-  const statementRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const carrierARef = useRef<HTMLDivElement | null>(null);
+  const carrierBRef = useRef<HTMLDivElement | null>(null);
+  const textARef = useRef<HTMLSpanElement | null>(null);
+  const textBRef = useRef<HTMLSpanElement | null>(null);
 
   // 1. Scroll-Activated Frosted Glass Sensor (Passive + rAF throttled)
   useEffect(() => {
@@ -101,106 +103,164 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const closeDrawer = () => setIsDrawerOpen(false);
 
-  // 3. Dynamic Scrolled Kinetic Stream Engine (GSAP Master Timeline Loop)
+  // 3. Dynamic Scrolled Kinetic Stream Engine (Dual-Carrier Staggered Overlapping Relay)
+  // Continuous handoff: As one statement approaches the right boundary, the next statement
+  // simultaneously launches from the left boundary (right after the logo), cycling indefinitely.
   useGSAP(
     () => {
-      if (!isScrolled || !apertureRef.current || !kineticItemRef.current) return;
-
-      const aperture = apertureRef.current;
-      const carrier = kineticItemRef.current;
-      const statements = statementRefs.current.filter((el): el is HTMLSpanElement => Boolean(el));
-
-      if (statements.length < BRAND_STATEMENTS.length) return;
-
-      // Accessibility: Graceful fallback for reduced motion preference
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        gsap.set(carrier, { x: 0, opacity: 0.92 });
-        gsap.set(statements[0], { opacity: 1, visibility: "visible", y: 0 });
+      if (
+        !isScrolled ||
+        !apertureRef.current ||
+        !carrierARef.current ||
+        !carrierBRef.current ||
+        !textARef.current ||
+        !textBRef.current
+      ) {
         return;
       }
 
-      const computeDistance = () => {
+      const aperture = apertureRef.current;
+      const carrierA = carrierARef.current;
+      const carrierB = carrierBRef.current;
+      const textA = textARef.current;
+      const textB = textBRef.current;
+
+      // Accessibility: Honor reduced motion preference with static elegant display
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.set(carrierA, { x: 0, opacity: 0.95, visibility: "visible" });
+        gsap.set(carrierB, { opacity: 0, visibility: "hidden" });
+        textA.textContent = BRAND_STATEMENTS[0];
+        return;
+      }
+
+      // Initial resting state: hide carriers until dispatched
+      gsap.set([carrierA, carrierB], { x: 0, opacity: 0, visibility: "hidden" });
+
+      const activeAnimations = new Set<gsap.core.Animation>();
+      let statementIndex = 0;
+      let carrierTurn = 0; // Alternates: 0 for Carrier Alpha, 1 for Carrier Beta
+      let isPaused = false;
+      let isCleanedUp = false;
+
+      // Motion Timing Parameters:
+      // GLIDE_DURATION (9.2s): Smooth, calm velocity across the full horizontal runway
+      // STAGGER_INTERVAL (7.2s): Dispatches next carrier when current carrier enters right mask dissolve (~78% transit)
+      const GLIDE_DURATION = 9.2;
+      const STAGGER_INTERVAL = 7.2;
+
+      const computeDistance = (carrierEl: HTMLElement) => {
         const apertureWidth = aperture.clientWidth;
-        const carrierWidth = carrier.clientWidth || 260;
+        const carrierWidth = carrierEl.offsetWidth || 280;
         return Math.max(0, apertureWidth - carrierWidth - 12);
       };
 
-      const tl = gsap.timeline({
-        repeat: -1,
-        defaults: { ease: "none" },
-      });
+      const dispatchCarrier = () => {
+        if (isCleanedUp) return;
 
-      // A. Continuous horizontal glide from left boundary towards hamburger
-      tl.fromTo(
-        carrier,
-        { x: 0 },
-        {
-          x: () => computeDistance(),
-          duration: 12,
-          ease: "none",
-        },
-        0
-      );
+        const carrier = carrierTurn === 0 ? carrierA : carrierB;
+        const textEl = carrierTurn === 0 ? textA : textB;
+        const statement = BRAND_STATEMENTS[statementIndex % BRAND_STATEMENTS.length];
 
-      // B. Edge Mask Dissolves: Emerge from left mask, melt into right mask
-      tl.fromTo(carrier, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 0);
-      tl.to(carrier, { opacity: 0, duration: 0.8, ease: "power2.in" }, 11.2);
+        statementIndex++;
+        carrierTurn = 1 - carrierTurn;
 
-      // C. Deterministic initialization of all statement layers at t = 0
-      tl.set(statements[0], { y: 0, opacity: 1, filter: "blur(0px)", visibility: "visible" }, 0);
-      for (let i = 1; i < statements.length; i++) {
-        tl.set(statements[i], { y: 8, opacity: 0, filter: "blur(3px)", visibility: "hidden" }, 0);
-      }
+        // Populate statement text dynamically
+        textEl.textContent = statement;
 
-      // D. In-flight dynamic morphing across the 5 canonical statements during transit
-      const morphTimes = [2.2, 4.5, 6.8, 9.1];
-      for (let i = 0; i < morphTimes.length; i++) {
-        const t = morphTimes[i];
-        const outgoing = statements[i];
-        const incoming = statements[i + 1];
+        const travelDistance = computeDistance(carrier);
 
-        // Outgoing statement rolls upward with optical diffusion blur
-        tl.to(
-          outgoing,
+        // Orchestrate master carrier flight timeline
+        const carrierTl = gsap.timeline({
+          onComplete: () => {
+            activeAnimations.delete(carrierTl);
+            gsap.set(carrier, { x: 0, opacity: 0, visibility: "hidden" });
+          },
+        });
+
+        // Step 1: Position carrier at left boundary (immediately after logo)
+        carrierTl.set(carrier, { x: 0, opacity: 0, visibility: "visible" }, 0);
+
+        // Step 2: Linear glide from left boundary towards hamburger menu
+        carrierTl.to(
+          carrier,
           {
-            y: -8,
+            x: travelDistance,
+            duration: GLIDE_DURATION,
+            ease: "none",
+          },
+          0
+        );
+
+        // Step 3: Edge Mask Dissolves - Emerge smoothly from left edge mask (1.0s)
+        carrierTl.to(
+          carrier,
+          {
+            opacity: 1,
+            duration: 1.0,
+            ease: "power2.out",
+          },
+          0
+        );
+
+        // Step 4: Melt smoothly into right edge mask before hamburger menu (1.3s dissolve)
+        carrierTl.to(
+          carrier,
+          {
             opacity: 0,
-            filter: "blur(3px)",
-            duration: 0.35,
+            duration: 1.3,
             ease: "power2.in",
           },
-          t
+          GLIDE_DURATION - 1.3
         );
 
-        // Incoming statement elevates from below into pristine baseline lock
-        tl.fromTo(
-          incoming,
-          { y: 8, opacity: 0, filter: "blur(3px)", visibility: "visible" },
-          {
-            y: 0,
-            opacity: 1,
-            filter: "blur(0px)",
-            duration: 0.45,
-            ease: "power3.out",
-          },
-          t + 0.12
-        );
-      }
+        activeAnimations.add(carrierTl);
+        if (isPaused) {
+          carrierTl.pause();
+        }
 
-      // Micro-interaction: Hover to pause for effortless reading
-      const onEnter = () => tl.pause();
-      const onLeave = () => tl.play();
+        // Seamless Relay: Dispatch next carrier when current carrier enters the right edge dissolve zone
+        const nextTimer = gsap.delayedCall(STAGGER_INTERVAL, () => {
+          activeAnimations.delete(nextTimer);
+          dispatchCarrier();
+        });
+
+        activeAnimations.add(nextTimer);
+        if (isPaused) {
+          nextTimer.pause();
+        }
+      };
+
+      // Delay initial dispatch by 400ms to allow CSS capsule expansion transition to settle
+      const initTimer = gsap.delayedCall(0.4, () => {
+        activeAnimations.delete(initTimer);
+        dispatchCarrier();
+      });
+      activeAnimations.add(initTimer);
+
+      // Micro-interaction: Hover over stream pauses flight for effortless reading
+      const onEnter = () => {
+        isPaused = true;
+        activeAnimations.forEach((anim) => anim.pause());
+      };
+
+      const onLeave = () => {
+        isPaused = false;
+        activeAnimations.forEach((anim) => anim.resume());
+      };
+
       aperture.addEventListener("mouseenter", onEnter);
       aperture.addEventListener("mouseleave", onLeave);
 
-      // Adaptive window resize recalculation
       const onResize = () => {
-        tl.invalidate();
+        // Subsequent carrier dispatches re-measure aperture width dynamically
       };
       window.addEventListener("resize", onResize);
 
       return () => {
-        tl.kill();
+        isCleanedUp = true;
+        activeAnimations.forEach((anim) => anim.kill());
+        activeAnimations.clear();
+        gsap.killTweensOf([carrierA, carrierB]);
         aperture.removeEventListener("mouseenter", onEnter);
         aperture.removeEventListener("mouseleave", onLeave);
         window.removeEventListener("resize", onResize);
@@ -239,23 +299,36 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
           aria-label="Brand Statements Ticker"
         >
           <div ref={trackRef} className={styles.streamTrack}>
-            <div ref={kineticItemRef} className={styles.kineticItem}>
+            {/* Structural ghost spacer matching maximum statement width to eliminate CLS */}
+            <div className={styles.textRotator} aria-hidden="true">
+              <span className={styles.streamGhost}>
+                The Digital Experience Design Company
+              </span>
+            </div>
+
+            {/* Carrier Alpha */}
+            <div
+              ref={carrierARef}
+              className={`${styles.kineticItem} ${styles.kineticCarrier}`}
+              aria-hidden="false"
+            >
               <div className={styles.textRotator}>
-                {/* Structural spacer matching the longest statement to lock container geometry */}
-                <span className={styles.streamGhost} aria-hidden="true">
-                  The Digital Experience Design Company
+                <span ref={textARef} className={styles.streamText}>
+                  {BRAND_STATEMENTS[0]}
                 </span>
-                {BRAND_STATEMENTS.map((statement, idx) => (
-                  <span
-                    key={statement}
-                    ref={(el) => {
-                      statementRefs.current[idx] = el;
-                    }}
-                    className={styles.streamText}
-                  >
-                    {statement}
-                  </span>
-                ))}
+              </div>
+            </div>
+
+            {/* Carrier Beta */}
+            <div
+              ref={carrierBRef}
+              className={`${styles.kineticItem} ${styles.kineticCarrier}`}
+              aria-hidden="true"
+            >
+              <div className={styles.textRotator}>
+                <span ref={textBRef} className={styles.streamText}>
+                  {BRAND_STATEMENTS[1]}
+                </span>
               </div>
             </div>
           </div>

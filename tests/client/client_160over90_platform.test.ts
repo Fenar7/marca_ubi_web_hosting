@@ -825,6 +825,13 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes(".textRotator"), "ClientHeader.module.scss must define .textRotator");
       assert.ok(scss.includes(".streamGhost"), "ClientHeader.module.scss must define .streamGhost");
       assert.ok(scss.includes(".streamText"), "ClientHeader.module.scss must define .streamText");
+      assert.ok(scss.includes(".kineticCarrier"), "ClientHeader.module.scss must define .kineticCarrier");
+      assert.ok(tsx.includes("carrierARef"), "ClientHeader must declare Carrier Alpha ref");
+      assert.ok(tsx.includes("carrierBRef"), "ClientHeader must declare Carrier Beta ref");
+      assert.ok(tsx.includes("styles.kineticCarrier"), "ClientHeader must render dual kineticCarrier elements");
+      assert.ok(tsx.includes("STAGGER_INTERVAL"), "ClientHeader must enforce staggered hand-off interval");
+      assert.ok(tsx.includes("GLIDE_DURATION"), "ClientHeader must enforce calm glide duration");
+      assert.ok(tsx.includes("activeAnimations"), "ClientHeader must track active animations for leak-free cleanup");
     });
 
     test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {

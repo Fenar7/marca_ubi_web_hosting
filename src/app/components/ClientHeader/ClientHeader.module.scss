@@ -441,7 +441,8 @@
   align-items: center;
 }
 
-.kineticItem {
+.kineticItem,
+.kineticCarrier {
   position: absolute;
   left: 0;
   top: 50%;
@@ -450,14 +451,18 @@
   align-items: center;
   white-space: nowrap;
   will-change: transform, opacity;
+  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .textRotator {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
-  height: 20px;
-  line-height: 20px;
+  height: 22px;
+  line-height: 22px;
 }
 
 .streamGhost {
@@ -465,29 +470,25 @@
   visibility: hidden;
   pointer-events: none;
   font-family: $font-circular;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
-  letter-spacing: 0.03em;
-  line-height: 20px;
-  height: 20px;
+  letter-spacing: 0.025em;
+  line-height: 22px;
+  height: 22px;
   white-space: nowrap;
   user-select: none;
 }
 
 .streamText {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translate3d(0, -50%, 0);
+  display: inline-block;
   font-family: $font-circular;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.025em;
+  line-height: 22px;
   color: inherit;
-  opacity: 0;
-  visibility: hidden;
   white-space: nowrap;
-  will-change: transform, opacity, filter;
+  user-select: none;
   transition: color 0.2s ease;
 
   .isDark & {
@@ -499,7 +500,6 @@
   }
 
   &:hover {
-    opacity: 1;
     color: $client-accent-red;
   }
 }
