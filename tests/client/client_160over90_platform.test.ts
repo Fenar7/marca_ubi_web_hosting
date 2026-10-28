@@ -725,5 +725,26 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(tsx.includes('styles.isScrolled'), 'ClientHeader must toggle isScrolled class dynamically');
     });
   });
+
+  describe('Section 17: ProcessCurtain Typography and Slash Eradication Invariants', () => {
+    test('verifies ProcessCurtain.tsx renders capability items without slash dividers', () => {
+      const tsxPath = path.join(rootDir, 'src', 'app', 'components', 'Sections', 'ProcessCurtain.tsx');
+      const tsx = fs.readFileSync(tsxPath, 'utf8');
+
+      assert.ok(!tsx.includes('slashDivider'), 'ProcessCurtain.tsx must not contain slashDivider');
+      assert.ok(!tsx.includes('activeSlash'), 'ProcessCurtain.tsx must not contain activeSlash');
+      assert.ok(tsx.includes('styles.cloudWrapper'), 'ProcessCurtain.tsx must render cloudWrapper');
+      assert.ok(tsx.includes('styles.disciplineItem'), 'ProcessCurtain.tsx must render disciplineItem');
+    });
+
+    test('verifies ProcessCurtain.module.scss defines fluid spacing gap and eradicates slash classes', () => {
+      const scssPath = path.join(rootDir, 'src', 'app', 'components', 'Sections', 'ProcessCurtain.module.scss');
+      const scss = fs.readFileSync(scssPath, 'utf8');
+
+      assert.ok(!scss.includes('.slashDivider'), 'ProcessCurtain.module.scss must eradicate .slashDivider');
+      assert.ok(!scss.includes('.activeSlash'), 'ProcessCurtain.module.scss must eradicate .activeSlash');
+      assert.ok(scss.includes('gap: 0.85rem clamp(1.25rem, 2.5vw, 2.25rem);'), 'ProcessCurtain.module.scss must declare calibrated fluid gap');
+    });
+  });
 });
 
