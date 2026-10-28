@@ -91,11 +91,22 @@ export const graphik = localFont({
 });
 
 /**
- * Clean Swiss Editorial Typeface: Helvetica Neue Light (Whoa Mama Reference).
- * Applied to the full-canvas navigation overlay drawer.
+ * Clean Swiss Editorial Typeface: Helvetica Neue (Whoa Mama Reference).
+ * Enforces hairline/thin precision across editorial headlines and metrics,
+ * plus light cuts for the full-canvas navigation overlay drawer.
  */
 export const helveticaNeue = localFont({
   src: [
+    {
+      path: "../../public/fonts/helvetica/HelveticaNeue-Thin.otf",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/helvetica/HelveticaNeue-Thin.otf",
+      weight: "200",
+      style: "normal",
+    },
     {
       path: "../../public/fonts/helvetica/HelveticaNeue-Light.otf",
       weight: "300",

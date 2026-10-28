@@ -29,7 +29,31 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(fs.statSync(bookFont).size > 60000, "Book font must be valid WOFF2 binary > 60KB");
       assert.ok(fs.statSync(mediumFont).size > 60000, "Medium font must be valid WOFF2 binary > 60KB");
       assert.ok(fs.statSync(boldFont).size > 60000, "Bold font must be valid WOFF2 binary > 60KB");
+  describe("Section 20: Swiss Hairline Typography Architecture (Whoa Mama Reference)", () => {
+    test("verifies physical existence of Helvetica Neue Thin on disk", () => {
+      const thinFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Thin.otf");
+      assert.ok(fs.existsSync(thinFont), "HelveticaNeue-Thin.otf must exist in public/fonts/helvetica/");
+      assert.ok(fs.statSync(thinFont).size > 200000, "HelveticaNeue-Thin.otf must be valid OpenType binary > 200KB");
     });
+
+    test("verifies fonts.ts registers weight 100 and 200 for Helvetica Neue Thin", () => {
+      const fontsTs = fs.readFileSync(path.join(rootDir, "src", "app", "fonts.ts"), "utf8");
+      assert.ok(fontsTs.includes("HelveticaNeue-Thin.otf"), "fonts.ts must reference HelveticaNeue-Thin.otf");
+      assert.ok(fontsTs.includes('"100"'), "fonts.ts must register weight 100");
+      assert.ok(fontsTs.includes('"200"'), "fonts.ts must register weight 200");
+    });
+
+    test("verifies AboutCurtain and StatementCurtain adopt $font-helvetica hairline styling", () => {
+      const aboutScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "AboutCurtain.module.scss"), "utf8");
+      const statementScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "StatementCurtain.module.scss"), "utf8");
+
+      assert.ok(aboutScss.includes("$font-helvetica"), "AboutCurtain.module.scss must style headline and metrics with $font-helvetica");
+      assert.ok(aboutScss.includes("$fw-helvetica-extralight"), "AboutCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
+      assert.ok(statementScss.includes("$font-helvetica"), "StatementCurtain.module.scss must style monumentalStatement with $font-helvetica");
+      assert.ok(statementScss.includes("$fw-helvetica-extralight"), "StatementCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
+    });
+  });
+});
 
     test("verifies Next.js localFont registers --font-circular in fonts.ts", () => {
       const fontsFile = path.join(rootDir, "src", "app", "fonts.ts");
@@ -46,7 +70,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const content = fs.readFileSync(statementScss, "utf8");
 
       assert.ok(!content.includes("font-weight: 700"), "StatementCurtain must not use heavy font-weight: 700");
-      assert.ok(content.includes("font-weight: 400"), "StatementCurtain must use Book (400) matching 160over90 benchmark");
+      assert.ok(content.includes("$fw-helvetica-extralight"), "StatementCurtain must use $fw-helvetica-extralight (200 Thin) matching Whoa Mama hairline benchmark");
 
       const clientScssFiles = [
         "src/app/components/ClientHeader/ClientHeader.module.scss",
