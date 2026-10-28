@@ -18,5 +18,19 @@ To achieve flawless luxury studio presentation in the floating Apple Liquid Glas
    - Symmetrical 14px vertical sweep: Outgoing carrier rolls to `y: -14, autoAlpha: 0` while incoming carrier rolls from `y: 14, autoAlpha: 0` to `y: 0, autoAlpha: 1` over `0.46s` with `power2.inOut`.
    - Hold duration calibrated to `2.8s` for effortless readability.
    - Eradicate CSS blur filters to retain razor-sharp subpixel vector typography across high-DPI and standard screens.
-5. **Typographic Scale Elevation**:
-   - Font size scaled from `13.5px` to `clamp(14px, 1.05vw, 15px)` with `line-height: 24px`, matching Marca Ubi's interactive text standards.
+5. **Typographic Scale Elevation & Responsive Range**:
+   - Desktop: `clamp(12.5px, 1.05vw, 15px)` with `line-height: 24px`, matching Marca Ubi's interactive text standards.
+   - Tablet / Split-screen ($\le$ 768px): `font-size: 13px; margin-left: 9px;`
+   - Mobile ($\le$ 480px): `font-size: 11.5px; margin-left: 7px;`
+
+---
+
+## 2. Universal Viewport Visibility & Instant-On Rendering
+1. **Eradication of Responsive Deletion (`display: none`)**:
+   - Eradicated legacy `@media (max-width: 680px) { display: none; }` which previously hid the ticker on split-screen or smaller viewports.
+   - Ensured `.streamAperture` remains flexed and active across all viewport widths from 360px to 4K.
+2. **Instant-On CSS First Frame**:
+   - `.carrierAlpha` has `opacity: 1; visibility: visible;` declared in CSS, ensuring "Brand Strategy" renders immediately on the very first frame without waiting for GSAP execution.
+   - `.carrierBeta` has `opacity: 0; visibility: hidden;` initialized in CSS, ready to roll in on cycle 1.
+3. **Eradication of Horizontal Masks**:
+   - Eradicated legacy `-webkit-mask-image` horizontal edge gradient fades, eliminating text edge clipping.

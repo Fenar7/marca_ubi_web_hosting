@@ -410,24 +410,12 @@
   transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
-  // Optical Edge Fade Masks
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 0, 0, 1) 4%,
-    rgba(0, 0, 0, 1) 96%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 0, 0, 1) 4%,
-    rgba(0, 0, 0, 1) 96%,
-    transparent 100%
-  );
+  @media (max-width: 768px) {
+    margin-left: 9px;
+  }
 
-  @media (max-width: 680px) {
-    display: none; // Preserve luxury breathing space on small mobile
+  @media (max-width: 480px) {
+    margin-left: 7px;
   }
 }
 
@@ -456,8 +444,18 @@
   white-space: nowrap;
   will-change: transform, opacity;
   pointer-events: auto;
+}
+
+.carrierAlpha {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(0, 0, 0);
+}
+
+.carrierBeta {
   opacity: 0;
   visibility: hidden;
+  transform: translate3d(0, 14px, 0);
 }
 
 .textRotator {
@@ -474,19 +472,29 @@
   visibility: hidden;
   pointer-events: none;
   font-family: $font-circular;
-  font-size: clamp(14px, 1.05vw, 15px);
+  font-size: clamp(12.5px, 1.05vw, 15px);
   font-weight: 500;
   letter-spacing: 0.015em;
   line-height: 24px;
   height: 24px;
   white-space: nowrap;
   user-select: none;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11.5px;
+    letter-spacing: 0.01em;
+  }
 }
 
 .streamText {
   display: inline-block;
   font-family: $font-circular;
-  font-size: clamp(14px, 1.05vw, 15px);
+  font-size: clamp(12.5px, 1.05vw, 15px);
   font-weight: 500;
   letter-spacing: 0.015em;
   line-height: 24px;
@@ -494,6 +502,16 @@
   white-space: nowrap;
   user-select: none;
   transition: color 0.2s ease;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11.5px;
+    letter-spacing: 0.01em;
+  }
 
   .isDark & {
     color: rgba(255, 255, 255, 0.92);

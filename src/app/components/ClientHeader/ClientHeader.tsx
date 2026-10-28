@@ -309,7 +309,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
               {/* Carrier Alpha */}
               <div
                 ref={carrierARef}
-                className={`${styles.kineticItem} ${styles.kineticCarrier}`}
+                className={`${styles.kineticItem} ${styles.kineticCarrier} ${styles.carrierAlpha}`}
                 aria-hidden="false"
               >
                 <div className={styles.textRotator}>
@@ -322,7 +322,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
               {/* Carrier Beta */}
               <div
                 ref={carrierBRef}
-                className={`${styles.kineticItem} ${styles.kineticCarrier}`}
+                className={`${styles.kineticItem} ${styles.kineticCarrier} ${styles.carrierBeta}`}
                 aria-hidden="true"
               >
                 <div className={styles.textRotator}>
