@@ -504,24 +504,6 @@
   }
 }
 
-@keyframes streamGlideLeftToRight {
-  0% {
-    transform: translate3d(0, -50%, 0);
-    opacity: 0;
-  }
-  12% {
-    opacity: 0.95;
-  }
-  85% {
-    opacity: 0.95;
-    transform: translate3d(calc(100cqw - 100% - 16px), -50%, 0);
-  }
-  100% {
-    transform: translate3d(calc(100cqw - 100%), -50%, 0);
-    opacity: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .kineticItem {
     animation: none !important;

@@ -200,3 +200,63 @@
   margin-top: 0.75rem;
   user-select: none;
 }
+
+.rightPanel {
+  background-color: $client-canvas-black;
+  height: 100%;
+  position: relative;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
+}
+
+.framelessCloseBtn {
+  position: absolute;
+  top: clamp(2rem, 4vw, 3.5rem);
+  right: clamp(2rem, 4vw, 4rem);
+  z-index: 20;
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ffffff;
+  transition: color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    color: $client-accent-red;
+    transform: rotate(90deg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 4px;
+  }
+}
+
+.closeIconSvg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

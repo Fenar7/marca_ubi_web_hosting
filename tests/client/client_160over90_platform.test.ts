@@ -883,6 +883,10 @@ describe("Section 19: Navigation Overlay Helvetica Neue Reference Architecture",
       assert.ok(scss.includes("$font-helvetica"), "NavigationOverlay.module.scss must style .navLink with $font-helvetica");
       assert.ok(scss.includes("text-transform: lowercase"), "NavigationOverlay.module.scss must enforce lowercase typography");
       assert.ok(tsx.includes("Copyright 2026"), "NavigationOverlay.tsx must render clean copyright baseline");
+      assert.ok(scss.includes(".rightPanel"), "NavigationOverlay.module.scss must define .rightPanel");
+      assert.ok(scss.includes(".framelessCloseBtn"), "NavigationOverlay.module.scss must define .framelessCloseBtn");
+      assert.ok(scss.includes(".closeIconSvg"), "NavigationOverlay.module.scss must define .closeIconSvg");
+      assert.ok(scss.includes(".srOnly"), "NavigationOverlay.module.scss must define .srOnly screen reader style");
     });
   });
 
