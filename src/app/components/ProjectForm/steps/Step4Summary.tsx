@@ -3,6 +3,7 @@
 import React from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
+import { EditIcon } from "@sanity/icons";
 
 interface Step4Props {
   formData: ProjectFormData;
@@ -13,8 +14,9 @@ interface Step4Props {
 }
 
 /**
- * Step 4: Executive Review & Submission.
- * Clean review summary with direct communication channels and solid error handling.
+ * Step 4: Executive Brief Dossier Review & Direct CRM Pipeline Transmission.
+ * Restores all 3 comprehensive summary dossiers with dedicated edit jump actions,
+ * verified error banner states, and high-contrast dark luxury surfaces.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -28,107 +30,142 @@ export default function Step4Summary({
   return (
     <div className={styles.stepContainer}>
       <header className={styles.stepHeaderBlock}>
-        <h2 className={styles.stepTitle}>Review Your Project Brief</h2>
+        <h2 className={styles.stepTitle}>Review your project brief</h2>
         <p className={styles.stepDescription}>
-          Please verify your parameters before sending. Our partners review every brief personally.
+          Please verify your parameters and requirements before sending. Our partners personally evaluate every brief.
         </p>
       </header>
 
-      {/* Review Dossiers */}
+      {/* Dossier Clusters */}
       <div className={styles.dossierCluster}>
-        {/* Discipline & Scope */}
+        {/* Section 1: Design Scope */}
         <div className={styles.dossierCard}>
           <div className={styles.dossierHeader}>
-            <span className={styles.dossierTitle}>Focus Area</span>
+            <span className={styles.dossierTitle}>1. Design Needs</span>
             <button
               type="button"
               className={styles.editButton}
               onClick={() => goToStep(1)}
-              aria-label="Edit Discipline"
+              aria-label="Edit Design Needs"
             >
-              Edit
+              <EditIcon />
+              <span>Edit</span>
             </button>
           </div>
           <div className={styles.dossierRows}>
             <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Selected Discipline</span>
+              <span className={styles.itemLabel}>Category</span>
+              <span className={styles.itemValue}>{formData.category || "Not selected"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Service</span>
               <span className={styles.itemValue}>{formData.service || "Not selected"}</span>
             </div>
           </div>
         </div>
 
-        {/* Brand & Contact */}
+        {/* Section 2: Business & Stakeholder Details */}
         <div className={styles.dossierCard}>
           <div className={styles.dossierHeader}>
-            <span className={styles.dossierTitle}>Contact &amp; Venture</span>
+            <span className={styles.dossierTitle}>2. Business Details</span>
             <button
               type="button"
               className={styles.editButton}
               onClick={() => goToStep(2)}
-              aria-label="Edit Brand & Contact"
+              aria-label="Edit Business Details"
             >
-              Edit
+              <EditIcon />
+              <span>Edit</span>
             </button>
           </div>
           <div className={styles.dossierRows}>
             <div className={styles.dossierItem}>
               <span className={styles.itemLabel}>Contact Name</span>
-              <span className={styles.itemValue}>{formData.name}</span>
+              <span className={styles.itemValue}>{formData.name || "Not provided"}</span>
             </div>
             <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Email</span>
-              <span className={styles.itemValue}>{formData.email}</span>
+              <span className={styles.itemLabel}>Email Address</span>
+              <span className={styles.itemValue}>{formData.email || "Not provided"}</span>
             </div>
             <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Brand / Entity</span>
-              <span className={styles.itemValue}>{formData.projectName}</span>
-            </div>
-            <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Phone</span>
+              <span className={styles.itemLabel}>Phone Number</span>
               <span className={styles.itemValue}>{formData.phone || "Not provided"}</span>
             </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Instagram Handle</span>
+              <span className={styles.itemValue}>{formData.instagram || "Not provided"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Preferred Language</span>
+              <span className={styles.itemValue}>{formData.language || "Not provided"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Project / Brand Name</span>
+              <span className={styles.itemValue}>{formData.projectName || "Not provided"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Industry</span>
+              <span className={styles.itemValue}>{formData.industry || "Not provided"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Website</span>
+              <span className={styles.itemValue}>{formData.website || "Not provided"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Agency Status</span>
+              <span className={styles.itemValue}>{formData.agencyStatus || "Not provided"}</span>
+            </div>
+            <div className={styles.dossierItem}>
+              <span className={styles.itemLabel}>Referral Source</span>
+              <span className={styles.itemValue}>{formData.referral || "Not provided"}</span>
+            </div>
             <div className={`${styles.dossierItem} ${styles.fullWidth}`}>
-              <span className={styles.itemLabel}>Project Scope</span>
-              <span className={styles.itemValue}>{formData.projectDescription}</span>
+              <span className={styles.itemLabel}>Project Description</span>
+              <span className={styles.itemValue}>{formData.projectDescription || "Not provided"}</span>
             </div>
           </div>
         </div>
 
-        {/* Timeline & Parameters */}
+        {/* Section 3: Timeline & Reference Details */}
         <div className={styles.dossierCard}>
           <div className={styles.dossierHeader}>
-            <span className={styles.dossierTitle}>Timeline &amp; Parameters</span>
+            <span className={styles.dossierTitle}>3. Details &amp; Timeline</span>
             <button
               type="button"
               className={styles.editButton}
               onClick={() => goToStep(3)}
-              aria-label="Edit Timeline"
+              aria-label="Edit Details and Timeline"
             >
-              Edit
+              <EditIcon />
+              <span>Edit</span>
             </button>
           </div>
           <div className={styles.dossierRows}>
             <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Target Horizon</span>
-              <span className={styles.itemValue}>{formData.timeline || "Not specified"}</span>
+              <span className={styles.itemLabel}>Timeline</span>
+              <span className={styles.itemValue}>{formData.timeline || "Not selected"}</span>
             </div>
             <div className={styles.dossierItem}>
-              <span className={styles.itemLabel}>Attribution</span>
-              <span className={styles.itemValue}>
-                {formData.showcasePermission === "no" ? "Strict NDA Confidentiality" : "Public Release Permitted"}
-              </span>
+              <span className={styles.itemLabel}>Showcase Permission</span>
+              <span className={styles.itemValue}>{formData.showcasePermission || "Not selected"}</span>
             </div>
             {formData.inspirationLinks && (
               <div className={`${styles.dossierItem} ${styles.fullWidth}`}>
-                <span className={styles.itemLabel}>Reference Links</span>
+                <span className={styles.itemLabel}>Inspiration Reference Links</span>
                 <span className={styles.itemValue}>{formData.inspirationLinks}</span>
+              </div>
+            )}
+            {formData.extraNotes && (
+              <div className={`${styles.dossierItem} ${styles.fullWidth}`}>
+                <span className={styles.itemLabel}>Extra Notes</span>
+                <span className={styles.itemValue}>{formData.extraNotes}</span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Error Notice */}
+      {/* Submission Error Banner */}
       {submitError && (
         <div className={styles.notionCalloutError} role="alert">
           <span className={styles.calloutKicker}>Submission Notice</span>
@@ -136,7 +173,7 @@ export default function Step4Summary({
         </div>
       )}
 
-      {/* Direct Transmission Action */}
+      {/* Final Transmission Command Action */}
       <div className={styles.actionContainer}>
         <button
           type="button"

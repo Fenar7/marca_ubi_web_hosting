@@ -3,6 +3,32 @@
 import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
+import {
+  SparkleIcon,
+  HeartIcon,
+  EarthGlobeIcon,
+  UserIcon,
+  BookIcon,
+  DocumentIcon,
+  DocumentsIcon,
+  PackageIcon,
+  DesktopIcon,
+  ComponentIcon,
+  MobileDeviceIcon,
+  ImagesIcon,
+  ImageIcon,
+  EnvelopeIcon,
+  ControlsIcon,
+  TagIcon,
+  BlockElementIcon,
+  EditIcon,
+  TextIcon,
+  ColorWheelIcon,
+  StarIcon,
+  DashboardIcon,
+  BulbOutlineIcon,
+  PlayIcon,
+} from "@sanity/icons";
 
 interface Step1Props {
   formData: ProjectFormData;
@@ -10,48 +36,169 @@ interface Step1Props {
   nextStep: () => void;
 }
 
-interface AgencyPillar {
-  id: string;
-  category: string;
-  title: string;
-  tagline: string;
-  scopeList: string[];
-}
-
-const AGENCY_PILLARS: AgencyPillar[] = [
-  {
-    id: "brand-identity",
-    category: "Branding",
-    title: "Brand Strategy & Visual Identity",
-    tagline: "Institutional brand systems, positioning, visual guidelines, typography, and tone of voice.",
-    scopeList: ["Brand Strategy & Positioning", "Visual Identity Systems", "Brand Architecture", "Typography & Design Systems"],
-  },
-  {
-    id: "digital-web",
-    category: "Web & Digital",
-    title: "Digital Infrastructure & Web Platforms",
-    tagline: "Bespoke high-performance Next.js websites, mobile applications, interactive platforms, and eCommerce.",
-    scopeList: ["Flagship Corporate Websites", "Interactive Web Applications", "Mobile App UI/UX", "Full-Stack Web Engineering"],
-  },
-  {
-    id: "creative-motion",
-    category: "Creative Direction",
-    title: "Creative Direction & Motion Cinema",
-    tagline: "Cinematic 3D animation, brand films, showreels, high-impact campaign creative, and editorial content.",
-    scopeList: ["Brand Films & Showreels", "3D & Motion Graphics", "Campaign Art Direction", "Editorial & Spatial Design"],
-  },
-  {
-    id: "advisory-growth",
-    category: "Full-Suite Advisory",
-    title: "Enterprise Advisory & Full-Suite Growth",
-    tagline: "Comprehensive end-to-end agency partnership, marketing architecture, GTM strategy, and brand scaling.",
-    scopeList: ["Go-to-Market Strategy", "Integrated Marketing Architecture", "Ongoing Creative Partnership", "Brand Performance & Scale"],
-  },
+/**
+ * Complete authentic category catalog for client project intake.
+ */
+const CATEGORIES: string[] = [
+  "Logo & identity",
+  "Web & app design",
+  "Business & advertising",
+  "Clothing & merchandise",
+  "Art & illustration",
+  "Packaging & label",
+  "Book & magazine",
+  "Other",
 ];
 
 /**
- * Step 1: Core Agency Discipline Selection.
- * Replaces outdated freelance checkboxes (mugs, t-shirts, beer labels) with authentic agency disciplines.
+ * Dedicated visual iconography for every granular service item.
+ */
+const SERVICE_ICONS: Record<string, React.ReactNode> = {
+  // Logo & identity
+  "Logo design": <SparkleIcon />,
+  "Logo & brand identity pack": <StarIcon />,
+  "Logo & social media pack": <HeartIcon />,
+  "Logo & hosted website": <EarthGlobeIcon />,
+  "Logo & business card": <UserIcon />,
+  "Brand guide": <BookIcon />,
+  "Business card": <UserIcon />,
+  "Stationery": <DocumentIcon />,
+  "Logo & brand guide": <BookIcon />,
+  "Logo & product packaging": <PackageIcon />,
+
+  // Web & app design
+  "Web page design": <DesktopIcon />,
+  "WordPress theme design": <DashboardIcon />,
+  "Landing page design": <DesktopIcon />,
+  "Icon or button": <ComponentIcon />,
+  "App design": <MobileDeviceIcon />,
+  "Facebook cover": <ImagesIcon />,
+  "Social media page": <ImagesIcon />,
+  "Banner ad": <ImageIcon />,
+  "Other web or app design": <DesktopIcon />,
+
+  // Business & advertising
+  "Postcard, flyer or print": <EnvelopeIcon />,
+  "Poster": <DocumentsIcon />,
+  "Infographic": <ControlsIcon />,
+  "Brochure": <BookIcon />,
+  "Car, truck or van wrap": <ColorWheelIcon />,
+  "Signage": <BlockElementIcon />,
+  "Email": <EnvelopeIcon />,
+  "PowerPoint template": <DesktopIcon />,
+  "Menu": <TextIcon />,
+  "Other business or advertising": <BulbOutlineIcon />,
+  "Album Cover": <ImagesIcon />,
+  "Podcast": <PlayIcon />,
+
+  // Clothing & merchandise
+  "T-shirt": <TagIcon />,
+  "Clothing or apparel": <TagIcon />,
+  "Merchandise": <PackageIcon />,
+  "Cup or mug": <StarIcon />,
+  "Sticker": <SparkleIcon />,
+  "Other clothing or merchandise": <TagIcon />,
+
+  // Art & illustration
+  "Illustration or graphics": <EditIcon />,
+  "Card or invitation": <EnvelopeIcon />,
+  "Character or mascot": <UserIcon />,
+  "Tattoo": <EditIcon />,
+  "3D": <BlockElementIcon />,
+  "Other art or illustration": <EditIcon />,
+
+  // Packaging & label
+  "Product packaging": <PackageIcon />,
+  "Product label": <TagIcon />,
+  "Other packaging or label": <PackageIcon />,
+
+  // Book & magazine
+  "Book cover": <BookIcon />,
+  "Magazine cover": <ImagesIcon />,
+  "Typesetting": <TextIcon />,
+  "Typesetting with imagery": <ImagesIcon />,
+  "Other book or magazine": <BookIcon />,
+
+  // Default fallback
+  "Other design": <BulbOutlineIcon />,
+};
+
+/**
+ * 52 granular sub-services categorized by design discipline.
+ */
+const SERVICES_BY_CATEGORY: Record<string, string[]> = {
+  "Logo & identity": [
+    "Logo design",
+    "Logo & brand identity pack",
+    "Logo & social media pack",
+    "Logo & hosted website",
+    "Logo & business card",
+    "Brand guide",
+    "Business card",
+    "Stationery",
+    "Logo & brand guide",
+    "Logo & product packaging",
+  ],
+  "Web & app design": [
+    "Web page design",
+    "WordPress theme design",
+    "Landing page design",
+    "Icon or button",
+    "App design",
+    "Facebook cover",
+    "Social media page",
+    "Banner ad",
+    "Other web or app design",
+  ],
+  "Business & advertising": [
+    "Postcard, flyer or print",
+    "Poster",
+    "Infographic",
+    "Brochure",
+    "Car, truck or van wrap",
+    "Signage",
+    "Email",
+    "PowerPoint template",
+    "Menu",
+    "Other business or advertising",
+    "Album Cover",
+    "Podcast",
+  ],
+  "Clothing & merchandise": [
+    "T-shirt",
+    "Clothing or apparel",
+    "Merchandise",
+    "Cup or mug",
+    "Sticker",
+    "Other clothing or merchandise",
+  ],
+  "Art & illustration": [
+    "Illustration or graphics",
+    "Card or invitation",
+    "Character or mascot",
+    "Tattoo",
+    "3D",
+    "Other art or illustration",
+  ],
+  "Packaging & label": [
+    "Product packaging",
+    "Product label",
+    "Other packaging or label",
+  ],
+  "Book & magazine": [
+    "Book cover",
+    "Magazine cover",
+    "Typesetting",
+    "Typesetting with imagery",
+    "Other book or magazine",
+  ],
+  "Other": ["Other design"],
+};
+
+/**
+ * Step 1: Design Scope & Service Taxonomy Selection.
+ * Restores 100% of authentic categories and services while applying Swiss 2px/4px
+ * architectural dark luxury geometry and Brand Red (#ea002a) indicators.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -60,54 +207,88 @@ export default function Step1Services({
   updateFormData,
   nextStep,
 }: Step1Props) {
-  const [selectedPillarId, setSelectedPillarId] = useState<string>(() => {
-    const matched = AGENCY_PILLARS.find((p) => p.title === formData.service);
-    return matched ? matched.id : "";
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    if (formData.category && CATEGORIES.includes(formData.category)) {
+      return formData.category;
+    }
+    return CATEGORIES[0];
   });
 
-  const handleSelectPillar = (pillar: AgencyPillar) => {
-    setSelectedPillarId(pillar.id);
-    updateFormData("category", pillar.category);
-    updateFormData("service", pillar.title);
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    updateFormData("category", category);
+    // Reset service selection when changing category to avoid mismatched state
+    if (formData.category !== category) {
+      updateFormData("service", "");
+    }
   };
+
+  const handleServiceSelect = (service: string) => {
+    if (!formData.category) {
+      updateFormData("category", selectedCategory);
+    }
+    updateFormData("service", service);
+  };
+
+  const isComplete = Boolean(formData.category && formData.service);
+  const currentServices = SERVICES_BY_CATEGORY[selectedCategory] || [];
 
   return (
     <div className={styles.stepContainer}>
       <header className={styles.stepHeaderBlock}>
-        <h2 className={styles.stepTitle}>Select Your Focus Discipline</h2>
+        <h2 className={styles.stepTitle}>What do you need designed?</h2>
         <p className={styles.stepDescription}>
-          Choose the core capability required for your project. We assemble dedicated specialist teams around each engagement.
+          Select your primary discipline and specific service requirements below to begin structuring your project brief.
         </p>
       </header>
 
-      {/* 4 Authentic Agency Pillars */}
-      <div className={styles.pillarGrid} role="radiogroup" aria-label="Core Capabilities">
-        {AGENCY_PILLARS.map((pillar, idx) => {
-          const isSelected = selectedPillarId === pillar.id;
+      {/* Swiss Architectural Category Tabs */}
+      <div
+        className={styles.categoryTabs}
+        role="tablist"
+        aria-label="Design Categories"
+      >
+        {CATEGORIES.map((cat) => {
+          const isActive = selectedCategory === cat;
           return (
             <button
-              key={pillar.id}
+              key={cat}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={`${styles.categoryTab} ${isActive ? styles.active : ""}`}
+              onClick={() => handleCategorySelect(cat)}
+            >
+              <span>{cat}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Granular Service Cards Grid */}
+      <div
+        className={styles.serviceGrid}
+        role="radiogroup"
+        aria-label={`${selectedCategory} Services`}
+      >
+        {currentServices.map((service) => {
+          const isSelected = formData.service === service;
+          const icon = SERVICE_ICONS[service] || <SparkleIcon />;
+
+          return (
+            <button
+              key={service}
               type="button"
               role="radio"
               aria-checked={isSelected}
-              className={`${styles.pillarCard} ${isSelected ? styles.active : ""}`}
-              onClick={() => handleSelectPillar(pillar)}
+              className={`${styles.serviceCard} ${isSelected ? styles.active : ""}`}
+              onClick={() => handleServiceSelect(service)}
             >
-              <div className={styles.pillarTop}>
-                <span className={styles.pillarIndex}>0{idx + 1}</span>
-                <span className={styles.selectionDot} aria-hidden="true" />
+              <div className={styles.cardIcon} aria-hidden="true">
+                {icon}
               </div>
-
-              <h3 className={styles.pillarTitle}>{pillar.title}</h3>
-              <p className={styles.pillarTagline}>{pillar.tagline}</p>
-
-              <div className={styles.scopeTags}>
-                {pillar.scopeList.map((scope) => (
-                  <span key={scope} className={styles.scopeTag}>
-                    {scope}
-                  </span>
-                ))}
-              </div>
+              <span className={styles.serviceName}>{service}</span>
+              <span className={styles.selectionDot} aria-hidden="true" />
             </button>
           );
         })}
@@ -119,11 +300,13 @@ export default function Step1Services({
           type="button"
           className={styles.nextButton}
           onClick={nextStep}
-          disabled={!formData.service}
-          aria-label="Continue to venture and scope details"
+          disabled={!isComplete}
+          aria-label="Continue to business details"
         >
           <span>Continue</span>
-          <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+          <span className={styles.arrow} aria-hidden="true">
+            &rarr;
+          </span>
         </button>
       </div>
     </div>

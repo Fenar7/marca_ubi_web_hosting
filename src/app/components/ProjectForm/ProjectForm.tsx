@@ -13,6 +13,7 @@ import Step4Summary from "./steps/Step4Summary";
 /**
  * Master Project Brief Form Wizard.
  * Clean, minimal 160over90 Agency Standard with zero AI-slop metadata.
+ * Restores 100% of authentic multi-step questionnaire flow and options.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -36,25 +37,29 @@ export default function ProjectForm() {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const idempotencyKey = typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `brief-${Date.now()}`;
+    const idempotencyKey =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `brief-${Date.now()}`;
 
-    // Map pillar to CRM service category
+    // Map client category to CRM enum whitelist: 'Branding' | 'Web & Digital' | 'Mobile Apps' | 'UI/UX Design' | 'Full-Suite Advisory' | 'Other'
     const mapCategory = (cat: string) => {
       const lower = (cat || "").toLowerCase();
-      if (lower.includes("brand")) return "Branding";
+      if (lower.includes("brand") || lower.includes("logo") || lower.includes("stationery")) return "Branding";
+      if (lower.includes("app") || lower.includes("mobile")) return "Mobile Apps";
       if (lower.includes("digital") || lower.includes("web")) return "Web & Digital";
-      if (lower.includes("motion") || lower.includes("cinema")) return "Creative Direction";
-      if (lower.includes("advisory") || lower.includes("growth")) return "Full-Suite Advisory";
-      return "Web & Digital";
+      if (lower.includes("ui") || lower.includes("ux") || lower.includes("art") || lower.includes("illustration")) return "UI/UX Design";
+      if (lower.includes("advisory") || lower.includes("growth") || lower.includes("business") || lower.includes("advertising")) return "Full-Suite Advisory";
+      return "Other";
     };
 
     const combinedNotes = [
       formData.projectDescription ? `Project Scope: ${formData.projectDescription}` : "",
       formData.extraNotes ? `Additional Notes: ${formData.extraNotes}` : "",
-      formData.inspirationLinks ? `Inspiration References: ${formData.inspirationLinks}` : "",
-      formData.referral ? `Social Touchpoint: ${formData.referral}` : "",
+      formData.inspirationLinks ? `Inspiration References:\n${formData.inspirationLinks}` : "",
+      formData.instagram ? `Instagram: ${formData.instagram}` : "",
+      formData.agencyStatus ? `Agency Status: ${formData.agencyStatus}` : "",
+      formData.referral ? `Referral Channel: ${formData.referral}` : "",
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -70,7 +75,7 @@ export default function ProjectForm() {
       budget_bracket: formData.timeline.trim() || undefined,
       notes: combinedNotes || undefined,
       source_name: "Website Form",
-      source_detail: "Start Project Brief Wizard (Agency Overhaul)",
+      source_detail: "Start Project Brief Wizard",
       brief_payload: {
         category: formData.category,
         service: formData.service,
@@ -85,6 +90,7 @@ export default function ProjectForm() {
         inspirationLinks: formData.inspirationLinks,
         showcasePermission: formData.showcasePermission,
         extraNotes: formData.extraNotes,
+        instagram: formData.instagram,
         idempotencyKey,
       },
     };
@@ -119,7 +125,8 @@ export default function ProjectForm() {
         await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
       } catch (err: unknown) {
         if (attempt === maxAttempts) {
-          const msg = err instanceof Error ? err.message : "Transmission failed. Please verify connection.";
+          const msg =
+            err instanceof Error ? err.message : "Transmission failed. Please verify connection.";
           setSubmitError(msg);
         } else {
           await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
@@ -238,6 +245,7 @@ export default function ProjectForm() {
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
+            prevStep={prevStep}
           />
         )}
         {currentStep === 3 && (
@@ -245,6 +253,7 @@ export default function ProjectForm() {
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
+            prevStep={prevStep}
           />
         )}
         {currentStep === 4 && (
