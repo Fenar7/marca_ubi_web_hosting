@@ -31,7 +31,9 @@ export function MonumentalFooter() {
       <div className={styles.footerInner}>
         {/* Top Deck: Cultural Anthem */}
         <div className={styles.anthemBlock}>
-          <h2 className={styles.anthemHeadline}>Feel something. Do something.</h2>
+          <h2 className={styles.anthemHeadline}>
+            Imagine limitless. Create limitless<span className={styles.accentDot}>.</span>
+          </h2>
         </div>
 
         {/* Middle Deck: The Giant Vector Wordmark */}

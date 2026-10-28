@@ -95,11 +95,11 @@
 }
 
 .statementHeadline {
-  font-family: $font-circular;
+  font-family: $font-helvetica;
   font-size: var(--client-type-h2);
-  font-weight: 400; // CircularXXWeb-Book
-  line-height: 1.28;
-  letter-spacing: -0.01em;
+  font-weight: $fw-helvetica-extralight; // 200 (Helvetica Neue Thin)
+  line-height: 1.18;
+  letter-spacing: -0.02em;
   color: $client-text-dark;
   margin: 0;
   -webkit-font-smoothing: antialiased;
@@ -172,10 +172,10 @@
 }
 
 .metricValue {
-  font-family: $font-circular;
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
-  font-weight: 700;
-  line-height: 1;
+  font-family: $font-helvetica;
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  font-weight: $fw-helvetica-extralight; // 200 (Helvetica Neue Thin)
+  line-height: 0.95;
   letter-spacing: -0.03em;
   color: $client-text-dark;
   font-variant-numeric: tabular-nums;
@@ -184,7 +184,7 @@
 
 .metricSymbol {
   color: $client-accent-red;
-  font-weight: 700;
+  font-weight: $fw-helvetica-extralight;
   margin-left: 2px;
 }
 

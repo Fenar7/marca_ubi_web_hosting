@@ -8,11 +8,11 @@ import styles from "./NavigationOverlay.module.scss";
 import type { NavItem, NavigationOverlayProps } from "./types";
 
 const DEFAULT_NAV_ITEMS: readonly NavItem[] = [
-  { label: "Work", href: "/works" },
-  { label: "Services", href: "/#about" },
-  { label: "Locations", href: "/#network" },
-  { label: "Careers", href: "mailto:careers@marcaubi.com" },
-  { label: "Contact", href: "/start-project" },
+  { label: "work", href: "/works" },
+  { label: "services", href: "/#about" },
+  { label: "locations", href: "/#network" },
+  { label: "careers", href: "mailto:careers@marcaubi.com" },
+  { label: "contact", href: "/start-project" },
 ] as const;
 
 /**
@@ -171,74 +171,45 @@ export function NavigationOverlay({
                 onClick={onClose}
               >
                 <span className={styles.navLabel}>{item.label}</span>
-                <span className={styles.navArrow} aria-hidden="true">
-                  <svg
-                    viewBox="0 0 36 14"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={styles.editorialArrowSvg}
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M0 7H33M33 7L24 1.5M33 7L24 12.5"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="square"
-                      strokeLinejoin="miter"
-                    />
-                  </svg>
-                </span>
               </Link>
             ))}
           </div>
 
-          {/* Social Channels: Positioned Immediately Beneath Last Nav Item */}
-          <div className={styles.socialCluster} role="list" aria-label="Social Channels">
-            {/* Instagram */}
-            <a
-              href="https://instagram.com/marcaubi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.socialLink}
-              aria-label="Marca Ubi on Instagram"
-              role="listitem"
-            >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-              </svg>
-            </a>
+          {/* Secondary Channels & Baseline: Swiss Editorial Reference Standard */}
+          <div className={styles.secondaryCluster}>
+            <div className={styles.socialLinks} role="list" aria-label="Social Channels">
+              <a
+                href="https://instagram.com/marcaubi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.secondaryLink}
+                role="listitem"
+              >
+                Instagram
+              </a>
+              <a
+                href="https://linkedin.com/company/marcaubi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.secondaryLink}
+                role="listitem"
+              >
+                LinkedIn
+              </a>
+              <a
+                href="https://x.com/marcaubi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.secondaryLink}
+                role="listitem"
+              >
+                X / Twitter
+              </a>
+            </div>
 
-            {/* LinkedIn */}
-            <a
-              href="https://linkedin.com/company/marcaubi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.socialLink}
-              aria-label="Marca Ubi on LinkedIn"
-              role="listitem"
-            >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                <rect x="2" y="9" width="4" height="12" />
-                <circle cx="4" cy="4" r="2" />
-              </svg>
-            </a>
-
-            {/* X / Twitter */}
-            <a
-              href="https://x.com/marcaubi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.socialLink}
-              aria-label="Marca Ubi on X"
-              role="listitem"
-            >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-            </a>
+            <p className={styles.copyrightText}>
+              Copyright 2026 &copy; Marca Ubi
+            </p>
           </div>
         </nav>
 

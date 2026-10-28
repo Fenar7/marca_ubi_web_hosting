@@ -34,29 +34,43 @@ export function ConnectCutout({ onOpenBrief }: ConnectCutoutProps = {}) {
       data-header-theme="dark"
     >
       <div className={styles.contentStage}>
-        <h2 className={styles.displayHeadline}>Let&apos;s Build Something That Holds.</h2>
+        <h2 className={styles.displayHeadline}>
+          Let<span className={styles.accentRed}>&apos;</span>s Build Something That Holds<span className={styles.accentRed}>.</span>
+        </h2>
         <p className={styles.leadText}>
           For institutional branding, enterprise digital platforms, or global creative technology partnerships.
         </p>
 
-        {/* Studio Desks Cluster */}
+        {/* Studio Desks Cluster with Kinetic Red Photon Beam */}
         <div className={styles.desksCluster}>
+          {/* Luminous Brand Red Traveling Laser Rail */}
+          <span className={styles.beamTracer} aria-hidden="true" />
+
           <div className={styles.deskItem}>
-            <span className={styles.deskLabel}>Contact</span>
+            <span className={styles.deskLabel}>
+              <span className={styles.deskPulseIndicator} aria-hidden="true" />
+              Contact
+            </span>
             <a href="tel:+917012052472" className={styles.deskValue}>
               +91 7012 052 472
             </a>
           </div>
 
           <div className={styles.deskItem}>
-            <span className={styles.deskLabel}>General Inquiries</span>
+            <span className={styles.deskLabel}>
+              <span className={styles.deskPulseIndicator} aria-hidden="true" />
+              General Inquiries
+            </span>
             <a href="mailto:hello@marcaubi.com" className={styles.deskValue}>
               hello@marcaubi.com
             </a>
           </div>
 
           <div className={styles.deskItem}>
-            <span className={styles.deskLabel}>Kerala Studios</span>
+            <span className={styles.deskLabel}>
+              <span className={styles.deskPulseIndicator} aria-hidden="true" />
+              Kerala Studios
+            </span>
             <span className={styles.deskValueText}>
               HiLITE Business Park, Calicut &bull; Trivandrum
             </span>

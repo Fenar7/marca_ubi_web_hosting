@@ -29,7 +29,31 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(fs.statSync(bookFont).size > 60000, "Book font must be valid WOFF2 binary > 60KB");
       assert.ok(fs.statSync(mediumFont).size > 60000, "Medium font must be valid WOFF2 binary > 60KB");
       assert.ok(fs.statSync(boldFont).size > 60000, "Bold font must be valid WOFF2 binary > 60KB");
+  describe("Section 20: Swiss Hairline Typography Architecture (Whoa Mama Reference)", () => {
+    test("verifies physical existence of Helvetica Neue Thin on disk", () => {
+      const thinFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Thin.otf");
+      assert.ok(fs.existsSync(thinFont), "HelveticaNeue-Thin.otf must exist in public/fonts/helvetica/");
+      assert.ok(fs.statSync(thinFont).size > 200000, "HelveticaNeue-Thin.otf must be valid OpenType binary > 200KB");
     });
+
+    test("verifies fonts.ts registers weight 100 and 200 for Helvetica Neue Thin", () => {
+      const fontsTs = fs.readFileSync(path.join(rootDir, "src", "app", "fonts.ts"), "utf8");
+      assert.ok(fontsTs.includes("HelveticaNeue-Thin.otf"), "fonts.ts must reference HelveticaNeue-Thin.otf");
+      assert.ok(fontsTs.includes('"100"'), "fonts.ts must register weight 100");
+      assert.ok(fontsTs.includes('"200"'), "fonts.ts must register weight 200");
+    });
+
+    test("verifies AboutCurtain and StatementCurtain adopt $font-helvetica hairline styling", () => {
+      const aboutScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "AboutCurtain.module.scss"), "utf8");
+      const statementScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "StatementCurtain.module.scss"), "utf8");
+
+      assert.ok(aboutScss.includes("$font-helvetica"), "AboutCurtain.module.scss must style headline and metrics with $font-helvetica");
+      assert.ok(aboutScss.includes("$fw-helvetica-extralight"), "AboutCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
+      assert.ok(statementScss.includes("$font-helvetica"), "StatementCurtain.module.scss must style monumentalStatement with $font-helvetica");
+      assert.ok(statementScss.includes("$fw-helvetica-extralight"), "StatementCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
+    });
+  });
+});
 
     test("verifies Next.js localFont registers --font-circular in fonts.ts", () => {
       const fontsFile = path.join(rootDir, "src", "app", "fonts.ts");
@@ -46,7 +70,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const content = fs.readFileSync(statementScss, "utf8");
 
       assert.ok(!content.includes("font-weight: 700"), "StatementCurtain must not use heavy font-weight: 700");
-      assert.ok(content.includes("font-weight: 400"), "StatementCurtain must use Book (400) matching 160over90 benchmark");
+      assert.ok(content.includes("$fw-helvetica-extralight"), "StatementCurtain must use $fw-helvetica-extralight (200 Thin) matching Whoa Mama hairline benchmark");
 
       const clientScssFiles = [
         "src/app/components/ClientHeader/ClientHeader.module.scss",
@@ -749,5 +773,153 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes('gap: 0.85rem clamp(1.25rem, 2.5vw, 2.25rem);'), 'ProcessCurtain.module.scss must declare calibrated fluid gap');
     });
   });
-});
+  describe("Section 18: Master Brand & Kinetic Motion Refinement Invariants", () => {
+    test("verifies MonumentalFooter cultural anthem and trailing period red accent", () => {
+      const footerTsx = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.tsx");
+      const footerScss = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.module.scss");
 
+      const tsx = fs.readFileSync(footerTsx, "utf8");
+      const scss = fs.readFileSync(footerScss, "utf8");
+
+      assert.ok(tsx.includes("Imagine limitless. Create limitless"), "MonumentalFooter must render updated anthem headline");
+      assert.ok(tsx.includes("styles.accentDot"), "MonumentalFooter must isolate trailing period in .accentDot span");
+      assert.ok(scss.includes(".accentDot"), "MonumentalFooter.module.scss must define .accentDot");
+      assert.ok(scss.includes("color: $client-accent-red;"), "accentDot must consume $client-accent-red (#ea002a)");
+    });
+
+    test("verifies MonumentalFooter legal bar and policy links consume Brand Red with WCAG AA compliance", () => {
+      const footerScss = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.module.scss");
+      const scss = fs.readFileSync(footerScss, "utf8");
+
+      assert.ok(scss.includes(".bottomLegalBar"), "MonumentalFooter.module.scss must define .bottomLegalBar");
+      assert.ok(scss.includes("color: $client-accent-red;"), "bottomLegalBar must style copyright and text in Brand Red");
+      assert.ok(scss.includes(".legalLink"), "MonumentalFooter.module.scss must style .legalLink");
+      assert.ok(scss.includes("outline: 2px solid $client-accent-red;"), "legalLink must define accessible focus indicator");
+    });
+
+    test("verifies ClientHeader logo subtitle at rest and graceful collapse on scroll", () => {
+      const headerTsx = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.tsx");
+      const headerScss = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.module.scss");
+
+      const tsx = fs.readFileSync(headerTsx, "utf8");
+      const scss = fs.readFileSync(headerScss, "utf8");
+
+      assert.ok(tsx.includes("The Brand Engineering Company"), "ClientHeader must declare at-rest subtitle");
+      assert.ok(tsx.includes("styles.brandSubtitle"), "ClientHeader must style subtitle with .brandSubtitle");
+      assert.ok(tsx.includes("styles.subtitleScrolled"), "ClientHeader must toggle .subtitleScrolled on scroll");
+      assert.ok(scss.includes(".brandSubtitle"), "ClientHeader.module.scss must define .brandSubtitle");
+      assert.ok(scss.includes("font-size: 13.5px;"), "brandSubtitle must define calibrated 13.5px desktop font-size");
+      assert.ok(scss.includes("letter-spacing: 0.025em;"), "brandSubtitle must define calibrated 0.025em letter-spacing");
+      assert.ok(scss.includes("margin-top 0.35s"), "brandSubtitle must synchronize margin-top into transition");
+      assert.ok(scss.includes(".subtitleScrolled"), "ClientHeader.module.scss must define .subtitleScrolled collapse");
+      assert.ok(scss.includes("opacity: 0;"), "subtitleScrolled must hide subtitle smoothly");
+    });
+
+    test("verifies ClientHeader scrolled anchored disciplines station and 12 core disciplines", () => {
+      const headerTsx = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.tsx");
+      const headerScss = path.join(rootDir, "src", "app", "components", "ClientHeader", "ClientHeader.module.scss");
+
+      const tsx = fs.readFileSync(headerTsx, "utf8");
+      const scss = fs.readFileSync(headerScss, "utf8");
+
+      const expectedDisciplines = [
+        "Brand Strategy",
+        "Visual Identity Systems",
+        "Creative Direction",
+        "Culture Marketing",
+        "Experiential Production",
+        "Digital Infrastructure",
+        "Creative Technology",
+        "Motion & Cinema",
+        "Campaign Architecture",
+        "Editorial Systems",
+        "High-Growth GTM",
+        "Spatial Brand Design",
+      ];
+
+      for (const discipline of expectedDisciplines) {
+        assert.ok(tsx.includes(discipline), `ClientHeader must include discipline: "${discipline}"`);
+      }
+
+      assert.ok(tsx.includes("styles.streamAperture"), "ClientHeader must render streamAperture container");
+      assert.ok(tsx.includes("styles.streamTrack"), "ClientHeader must render streamTrack");
+      assert.ok(tsx.includes("styles.leftCluster"), "ClientHeader must anchor leftCluster adjacent to logo");
+      assert.ok(scss.includes(".leftCluster"), "ClientHeader.module.scss must define .leftCluster");
+      assert.ok(scss.includes(".streamAperture"), "ClientHeader.module.scss must define .streamAperture");
+      assert.ok(tsx.includes("styles.kineticItem"), "ClientHeader must render kineticItem");
+      assert.ok(tsx.includes("useGSAP"), "ClientHeader must drive dynamic kinetic stream via useGSAP");
+      assert.ok(tsx.includes("gsap.timeline"), "ClientHeader must orchestrate master timeline");
+      assert.ok(!tsx.includes("streamDot"), "ClientHeader.tsx must NOT contain streamDot (clean typography only)");
+      assert.ok(!scss.includes(".streamDot"), "ClientHeader.module.scss must NOT contain .streamDot");
+      assert.ok(tsx.includes("styles.textRotator"), "ClientHeader must render textRotator");
+      assert.ok(tsx.includes("styles.streamGhost"), "ClientHeader must render streamGhost spacer for CLS 0.000");
+      assert.ok(scss.includes(".kineticItem"), "ClientHeader.module.scss must define .kineticItem");
+      assert.ok(scss.includes(".textRotator"), "ClientHeader.module.scss must define .textRotator");
+      assert.ok(scss.includes(".streamGhost"), "ClientHeader.module.scss must define .streamGhost");
+      assert.ok(scss.includes(".streamText"), "ClientHeader.module.scss must define .streamText");
+      assert.ok(scss.includes(".kineticCarrier"), "ClientHeader.module.scss must define .kineticCarrier");
+      assert.ok(tsx.includes("carrierARef"), "ClientHeader must declare Carrier Alpha ref");
+      assert.ok(tsx.includes("carrierBRef"), "ClientHeader must declare Carrier Beta ref");
+      assert.ok(tsx.includes("styles.kineticCarrier"), "ClientHeader must render dual kineticCarrier elements");
+      assert.ok(tsx.includes("HOLD_DURATION"), "ClientHeader must enforce in-place hold duration");
+      assert.ok(tsx.includes("MORPH_DURATION"), "ClientHeader must enforce fluid vertical morph duration");
+      assert.ok(tsx.includes("activeAnimations"), "ClientHeader must track active animations for leak-free cleanup");
+      assert.ok(tsx.includes("TRAVEL_Y = 14"), "ClientHeader must enforce 14px slot-machine roll displacement");
+      assert.ok(tsx.includes("autoAlpha"), "ClientHeader must use autoAlpha for atomic visibility and opacity");
+      assert.ok(tsx.includes("styles.carrierAlpha"), "ClientHeader must bind carrierAlpha class to primary carrier");
+      assert.ok(scss.includes("margin-left: 12px;"), "ClientHeader.module.scss must anchor streamAperture 12px adjacent to logo");
+      assert.ok(scss.includes("clamp(12.5px, 1.05vw, 15px)"), "ClientHeader.module.scss must scale streamText to responsive clamp");
+      assert.ok(scss.includes(".carrierAlpha"), "ClientHeader.module.scss must define default visible carrierAlpha");
+      assert.ok(!scss.includes("@media (max-width: 680px)"), "ClientHeader.module.scss must not hide streamAperture on small screens");
+    });
+
+    test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {
+      const connectTsx = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.tsx");
+      const connectScss = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.module.scss");
+
+      const tsx = fs.readFileSync(connectTsx, "utf8");
+      const scss = fs.readFileSync(connectScss, "utf8");
+
+      assert.ok(tsx.includes("styles.beamTracer"), "ConnectCutout must render beamTracer");
+      assert.ok(tsx.includes("styles.deskPulseIndicator"), "ConnectCutout must render deskPulseIndicator");
+      assert.ok(scss.includes(".beamTracer"), "ConnectCutout.module.scss must define .beamTracer");
+      assert.ok(scss.includes("@keyframes kineticBeamSweepHorizontal"), "ConnectCutout.module.scss must define kineticBeamSweepHorizontal");
+      assert.ok(scss.includes("@keyframes deskGlowWave"), "ConnectCutout.module.scss must define deskGlowWave");
+      assert.ok(scss.includes("@keyframes pulseDot"), "ConnectCutout.module.scss must define pulseDot");
+      assert.ok(scss.includes("prefers-reduced-motion: reduce"), "ConnectCutout.module.scss must include reduced motion guard");
+    });
+  });
+
+describe("Section 19: Navigation Overlay Helvetica Neue Reference Architecture", () => {
+    test("verifies physical existence of Helvetica Neue Light on disk", () => {
+      const lightFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Light.otf");
+      const romanFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Roman.otf");
+      assert.ok(fs.existsSync(lightFont), "HelveticaNeue-Light.otf must exist in public/fonts/helvetica/");
+      assert.ok(fs.existsSync(romanFont), "HelveticaNeue-Roman.otf must exist in public/fonts/helvetica/");
+    });
+
+    test("verifies Next.js localFont registers --font-helvetica-neue", () => {
+      const fontsTs = fs.readFileSync(path.join(rootDir, "src", "app", "fonts.ts"), "utf8");
+      assert.ok(fontsTs.includes("helveticaNeue"), "fonts.ts must export helveticaNeue");
+      assert.ok(fontsTs.includes("--font-helvetica-neue"), "fonts.ts must declare variable --font-helvetica-neue");
+    });
+
+    test("verifies NavigationOverlay complete arrow eradication and lowercase Swiss typography", () => {
+      const tsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.tsx"), "utf8");
+      const scss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "NavigationOverlay", "NavigationOverlay.module.scss"), "utf8");
+
+      assert.ok(!tsx.includes("editorialArrowSvg"), "NavigationOverlay.tsx must NOT contain editorialArrowSvg (zero arrows)");
+      assert.ok(!tsx.includes("navArrow"), "NavigationOverlay.tsx must NOT render navArrow elements");
+      assert.ok(!scss.includes(".navArrow"), "NavigationOverlay.module.scss must NOT define .navArrow");
+      assert.ok(scss.includes("$font-helvetica"), "NavigationOverlay.module.scss must style .navLink with $font-helvetica");
+      assert.ok(scss.includes("text-transform: lowercase"), "NavigationOverlay.module.scss must enforce lowercase typography");
+      assert.ok(tsx.includes("Copyright 2026"), "NavigationOverlay.tsx must render clean copyright baseline");
+      assert.ok(scss.includes(".rightPanel"), "NavigationOverlay.module.scss must define .rightPanel");
+      assert.ok(scss.includes(".framelessCloseBtn"), "NavigationOverlay.module.scss must define .framelessCloseBtn");
+      assert.ok(scss.includes(".closeIconSvg"), "NavigationOverlay.module.scss must define .closeIconSvg");
+      assert.ok(scss.includes(".srOnly"), "NavigationOverlay.module.scss must define .srOnly screen reader style");
+    });
+  });
+
+
+});
