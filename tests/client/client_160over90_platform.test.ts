@@ -882,7 +882,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(!scss.includes("@media (max-width: 680px)"), "ClientHeader.module.scss must not hide streamAperture on small screens");
     });
 
-    test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {
+    test("verifies ConnectCutout traveling red laser photon beam, synchronized desk pulses, and kinetic text fill wave", () => {
       const connectTsx = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.tsx");
       const connectScss = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.module.scss");
 
@@ -893,6 +893,10 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(tsx.includes("styles.deskPulseIndicator"), "ConnectCutout must render deskPulseIndicator");
       assert.ok(scss.includes(".beamTracer"), "ConnectCutout.module.scss must define .beamTracer");
       assert.ok(scss.includes("@keyframes kineticBeamSweepHorizontal"), "ConnectCutout.module.scss must define kineticBeamSweepHorizontal");
+      assert.ok(scss.includes("@keyframes kineticTextFillCol1"), "ConnectCutout.module.scss must define kineticTextFillCol1");
+      assert.ok(scss.includes("@keyframes kineticTextFillCol2"), "ConnectCutout.module.scss must define kineticTextFillCol2");
+      assert.ok(scss.includes("@keyframes kineticTextFillCol3"), "ConnectCutout.module.scss must define kineticTextFillCol3");
+      assert.ok(scss.includes("background-clip: text"), "ConnectCutout.module.scss must use background-clip: text");
       assert.ok(scss.includes("@keyframes deskGlowWave"), "ConnectCutout.module.scss must define deskGlowWave");
       assert.ok(scss.includes("@keyframes pulseDot"), "ConnectCutout.module.scss must define pulseDot");
       assert.ok(scss.includes("prefers-reduced-motion: reduce"), "ConnectCutout.module.scss must include reduced motion guard");

@@ -120,6 +120,63 @@
   }
 }
 
+// 2. Kinetic Left-to-Right Red Color Fill Wave Architecture
+// High-precision 400% background-size with strictly bounded white-rest and red-illumination zones.
+// Originates at Column 1 (Contact, far left) -> Column 2 (General Inquiries, center) -> Column 3 (Kerala Studios, far right)
+@keyframes kineticTextFillCol1 {
+  0%, 4% {
+    background-position: 100% 0;
+  }
+  24% {
+    background-position: 50% 0;
+  }
+  50% {
+    background-position: 50% 0;
+  }
+  68% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+@keyframes kineticTextFillCol2 {
+  0%, 18% {
+    background-position: 100% 0;
+  }
+  38% {
+    background-position: 50% 0;
+  }
+  56% {
+    background-position: 50% 0;
+  }
+  74% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+@keyframes kineticTextFillCol3 {
+  0%, 32% {
+    background-position: 100% 0;
+  }
+  52% {
+    background-position: 50% 0;
+  }
+  62% {
+    background-position: 50% 0;
+  }
+  80% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
+}
+
 .deskItem {
   position: relative;
   display: flex;
@@ -130,14 +187,31 @@
   &:nth-child(2) {
     animation: deskGlowWave 7.5s ease-in-out infinite;
     animation-delay: 0.4s;
+
+    .deskLabel,
+    .deskValue {
+      animation: kineticTextFillCol1 8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+    }
   }
+
   &:nth-child(3) {
     animation: deskGlowWave 7.5s ease-in-out infinite;
     animation-delay: 2.2s;
+
+    .deskLabel,
+    .deskValue {
+      animation: kineticTextFillCol2 8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+    }
   }
+
   &:nth-child(4) {
     animation: deskGlowWave 7.5s ease-in-out infinite;
     animation-delay: 3.9s;
+
+    .deskLabel,
+    .deskValueText {
+      animation: kineticTextFillCol3 8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+    }
   }
 
   @media (max-width: 768px) {
@@ -206,6 +280,19 @@
   .deskItem {
     animation: none !important;
     filter: none !important;
+
+    .deskLabel,
+    .deskValue,
+    .deskValueText {
+      animation: none !important;
+      background: none !important;
+      -webkit-text-fill-color: initial !important;
+      color: #ffffff !important;
+    }
+
+    .deskLabel {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
   }
 
   .deskPulseIndicator {
@@ -221,26 +308,79 @@
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
+  display: inline-block;
+  width: fit-content;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.6) 30%,
+    $client-accent-red 37.5%,
+    $client-accent-red 62.5%,
+    rgba(255, 255, 255, 0.6) 70%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  will-change: background-position;
 }
 
 .deskValue {
   font-family: $font-circular;
   font-size: 16px;
   font-weight: 500;
-  color: #ffffff;
   text-decoration: none;
-  transition: color 0.2s ease;
+  display: inline-block;
+  width: fit-content;
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #ffffff 30%,
+    $client-accent-red 37.5%,
+    $client-accent-red 62.5%,
+    #ffffff 70%,
+    #ffffff 100%
+  );
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  will-change: background-position;
+  cursor: pointer;
+  transition: color 0.25s ease;
 
   &:hover {
-    color: $client-accent-red;
+    -webkit-text-fill-color: $client-accent-red !important;
+    background: none !important;
+    color: $client-accent-red !important;
   }
 }
 
 .deskValueText {
   font-family: $font-circular;
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  line-height: 1.45;
+  display: inline-block;
+  width: fit-content;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.9) 30%,
+    $client-accent-red 37.5%,
+    $client-accent-red 62.5%,
+    rgba(255, 255, 255, 0.9) 70%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  will-change: background-position;
 }
 
 .actionCluster {
