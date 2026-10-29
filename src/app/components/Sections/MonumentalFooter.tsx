@@ -50,7 +50,10 @@ export function MonumentalFooter() {
         <div className={styles.directoryGrid}>
           <div className={styles.column}>
             <p className={styles.columnText}>
-              The Brand Engineering Company
+              Marca Ubi - Brand Engineering<br />
+              Marca Ubi - Creatives<br />
+              Marca Ubi - Experience Design<br />
+              Marca Ubi - Brand Transformation
             </p>
           </div>
 

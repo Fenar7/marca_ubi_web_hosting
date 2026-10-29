@@ -11,6 +11,7 @@ import WorksCutout from "../Sections/WorksCutout";
 import ValuesCutout from "../Sections/ValuesCutout";
 import ProcessCurtain from "../Sections/ProcessCurtain";
 import TestimonialsCutout from "../Sections/TestimonialsCutout";
+import FaqCurtain from "../Sections/FaqCurtain";
 import DispatchesCurtain from "../Sections/DispatchesCurtain";
 import CareersCutout from "../Sections/CareersCutout";
 import GlobalLocationsCloud from "../Sections/GlobalLocationsCloud";
@@ -20,10 +21,12 @@ import ReelModal from "../ReelModal/ReelModal";
 import ProjectBriefModal from "../ProjectBriefModal/ProjectBriefModal";
 import type { SanityWork } from "../WorksSection/WorksSectionClient";
 import type { PostSummary } from "@/sanity/types/blog";
+import type { SanityFaqItem } from "@/sanity/lib/faq-queries";
 
 export interface ClientHomeExperienceProps {
   works?: SanityWork[];
   posts?: PostSummary[];
+  faqs?: SanityFaqItem[];
 }
 
 /**
@@ -33,7 +36,7 @@ export interface ClientHomeExperienceProps {
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
-export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExperienceProps) {
+export function ClientHomeExperience({ works = [], posts = [], faqs = [] }: ClientHomeExperienceProps) {
   const [isReelOpen, setIsReelOpen] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
 
@@ -87,19 +90,22 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
         {/* View 08: Client Evidence & Testimonials Curtain (Solid Pure White) */}
         <TestimonialsCutout />
 
-        {/* View 09: Studio Dispatches & Insights Curtain (Solid Pure White with latest 3 Sanity posts) */}
+        {/* View 09: Frequently Asked Questions Curtain (Solid Pure White, Swiss Hairline Thin Accordion) */}
+        <FaqCurtain faqs={faqs} />
+
+        {/* View 10: Studio Dispatches & Insights Curtain (Solid Pure White with latest 3 Sanity posts) */}
         <DispatchesCurtain posts={posts} />
 
-        {/* View 10: Careers Cutout (Transparent Living Background Video) */}
+        {/* View 11: Careers Cutout (Transparent Living Background Video) */}
         <CareersCutout />
 
-        {/* View 10: Global Studio Footprint & Synchronized Operations Curtain (Solid Pure White) */}
+        {/* View 12: Global Studio Footprint & Synchronized Operations Curtain (Solid Pure White) */}
         <GlobalLocationsCloud />
 
-        {/* View 11: Connect & Commercial Desk Cutout (Transparent Video with genuine Kerala desks) */}
+        {/* View 13: Connect & Commercial Desk Cutout (Transparent Video with genuine Kerala desks) */}
         <ConnectCutout onOpenBrief={handleOpenBrief} />
 
-        {/* View 12: Deep Obsidian Black Monumental Footer (Solid Pitch Black) */}
+        {/* View 14: Deep Obsidian Black Monumental Footer (Solid Pitch Black) */}
         <MonumentalFooter />
       </main>
 
