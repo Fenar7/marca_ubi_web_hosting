@@ -49,12 +49,20 @@ export function MonumentalFooter() {
         {/* Bottom Deck: 4-Column Directory Rail */}
         <div className={styles.directoryGrid}>
           <div className={styles.column}>
-            <p className={styles.columnText}>
-              Marca Ubi - Brand Engineering<br />
-              Marca Ubi - Creatives<br />
-              Marca Ubi - Experience Design<br />
-              Marca Ubi - Brand Transformation
-            </p>
+            <ul className={styles.linksList}>
+              <li>
+                <span className={styles.linkItem}>Marca Ubi - Brand Engineering</span>
+              </li>
+              <li>
+                <span className={styles.linkItem}>Marca Ubi - Creatives</span>
+              </li>
+              <li>
+                <span className={styles.linkItem}>Marca Ubi - Experience Design</span>
+              </li>
+              <li>
+                <span className={styles.linkItem}>Marca Ubi - Brand Transformation</span>
+              </li>
+            </ul>
           </div>
 
           <div className={styles.column}>
