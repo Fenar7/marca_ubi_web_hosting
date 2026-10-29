@@ -70,8 +70,11 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const scrolled = window.scrollY > 50;
-          setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+          setIsScrolled((prev) => {
+            if (!prev && window.scrollY > 50) return true;
+            if (prev && window.scrollY <= 30) return false;
+            return prev;
+          });
           ticking = false;
         });
         ticking = true;
