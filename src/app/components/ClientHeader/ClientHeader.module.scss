@@ -83,9 +83,9 @@
     &.isLight {
       background: linear-gradient(
         135deg,
-        rgba(255, 255, 255, 0.85) 0%,
-        rgba(248, 248, 252, 0.76) 45%,
-        rgba(255, 255, 255, 0.82) 100%
+        rgba(255, 255, 255, 0.42) 0%,
+        rgba(245, 245, 250, 0.25) 45%,
+        rgba(255, 255, 255, 0.38) 100%
       );
       // Continuous 360-degree meniscus refraction rim + atmospheric suspension
       box-shadow:
@@ -101,9 +101,9 @@
     &.isDark {
       background: linear-gradient(
         135deg,
-        rgba(25, 25, 30, 0.72) 0%,
-        rgba(12, 12, 16, 0.55) 50%,
-        rgba(20, 20, 25, 0.68) 100%
+        rgba(25, 25, 30, 0.52) 0%,
+        rgba(12, 12, 16, 0.35) 50%,
+        rgba(20, 20, 25, 0.45) 100%
       );
       box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.14),             // Outer rim
@@ -148,17 +148,14 @@
   // Accessibility Fallback for Reduced Transparency
   @media (prefers-reduced-transparency: reduce) {
     &.isScrolled {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-
       &.isLight {
-        background: #ffffff !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        background: rgba(255, 255, 255, 0.75);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
 
       &.isDark {
-        background: #0a0a0a !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+        background: rgba(10, 10, 10, 0.75);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
       }
     }
 
