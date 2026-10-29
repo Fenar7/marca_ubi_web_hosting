@@ -50,8 +50,7 @@ export function MonumentalFooter() {
         <div className={styles.directoryGrid}>
           <div className={styles.column}>
             <p className={styles.columnText}>
-              Marca Ubi Global Holdings.<br />
-              Strategic Brand Architecture, Creative Technology, and High-Performance Digital Flagships.
+              The Brand Engineering Company
             </p>
           </div>
 

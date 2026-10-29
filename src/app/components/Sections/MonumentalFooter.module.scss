@@ -140,12 +140,12 @@
   padding-top: 2rem;
   font-family: $font-mono;
   font-size: 11px;
-  color: $client-accent-red;
+  color: rgba(255, 255, 255, 0.7);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
 
   span {
-    color: $client-accent-red;
+    color: rgba(255, 255, 255, 0.7);
   }
 
   @media (max-width: 768px) {
@@ -161,13 +161,13 @@
 }
 
 .legalLink {
-  color: $client-accent-red;
+  color: #ffffff;
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
 
   &:hover {
-    color: #ffffff;
-    text-decoration: underline;
+    color: $client-accent-red;
+    text-decoration: none;
   }
 
   &:focus-visible {

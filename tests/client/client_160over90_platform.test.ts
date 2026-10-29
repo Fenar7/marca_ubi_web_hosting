@@ -792,12 +792,17 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     });
 
     test("verifies MonumentalFooter legal bar and policy links consume Brand Red with WCAG AA compliance", () => {
+      const footerTsx = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.tsx");
       const footerScss = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.module.scss");
+      const tsx = fs.readFileSync(footerTsx, "utf8");
       const scss = fs.readFileSync(footerScss, "utf8");
 
+      assert.ok(tsx.includes("The Brand Engineering Company"), "MonumentalFooter must render The Brand Engineering Company");
       assert.ok(scss.includes(".bottomLegalBar"), "MonumentalFooter.module.scss must define .bottomLegalBar");
-      assert.ok(scss.includes("color: $client-accent-red;"), "bottomLegalBar must style copyright and text in Brand Red");
+      assert.ok(scss.includes("color: rgba(255, 255, 255, 0.7);"), "bottomLegalBar must style copyright in readable white text");
       assert.ok(scss.includes(".legalLink"), "MonumentalFooter.module.scss must style .legalLink");
+      assert.ok(scss.includes("color: #ffffff;"), "legalLink must have white default color");
+      assert.ok(scss.includes("color: $client-accent-red;"), "legalLink must transition to Brand Red on hover");
       assert.ok(scss.includes("outline: 2px solid $client-accent-red;"), "legalLink must define accessible focus indicator");
     });
 
