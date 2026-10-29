@@ -43,14 +43,18 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(fontsTs.includes('"200"'), "fonts.ts must register weight 200");
     });
 
-    test("verifies AboutCurtain and StatementCurtain adopt $font-helvetica hairline styling", () => {
+    test("verifies AboutCurtain, StatementCurtain, and ServicesAccordion adopt $font-helvetica hairline styling", () => {
       const aboutScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "AboutCurtain.module.scss"), "utf8");
       const statementScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "StatementCurtain.module.scss"), "utf8");
+      const servicesScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ServicesAccordion", "ServicesAccordion.module.scss"), "utf8");
 
       assert.ok(aboutScss.includes("$font-helvetica"), "AboutCurtain.module.scss must style headline and metrics with $font-helvetica");
       assert.ok(aboutScss.includes("$fw-helvetica-extralight"), "AboutCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
       assert.ok(statementScss.includes("$font-helvetica"), "StatementCurtain.module.scss must style monumentalStatement with $font-helvetica");
       assert.ok(statementScss.includes("$fw-helvetica-extralight"), "StatementCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
+      assert.ok(servicesScss.includes("$font-helvetica"), "ServicesAccordion.module.scss must style titles and numbers with $font-helvetica");
+      assert.ok(servicesScss.includes("$fw-helvetica-light"), "ServicesAccordion.module.scss must use $fw-helvetica-light (300)");
+      assert.ok(servicesScss.includes("$fw-helvetica-extralight"), "ServicesAccordion.module.scss must use $fw-helvetica-extralight (200)");
     });
   });
 });
