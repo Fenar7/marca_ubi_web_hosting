@@ -32,7 +32,7 @@ export function MonumentalFooter() {
         {/* Top Deck: Cultural Anthem */}
         <div className={styles.anthemBlock}>
           <h2 className={styles.anthemHeadline}>
-            Imagine limitless. Create limitless<span className={styles.accentDot}>.</span>
+            Imagine limitless<span className={styles.accentDot}>.</span> Create limitless<span className={styles.accentDot}>.</span>
           </h2>
         </div>
 
@@ -50,8 +50,7 @@ export function MonumentalFooter() {
         <div className={styles.directoryGrid}>
           <div className={styles.column}>
             <p className={styles.columnText}>
-              Marca Ubi Global Holdings.<br />
-              Strategic Brand Architecture, Creative Technology, and High-Performance Digital Flagships.
+              The Brand Engineering Company
             </p>
           </div>
 

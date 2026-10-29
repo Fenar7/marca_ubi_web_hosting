@@ -26,7 +26,9 @@ export function ReelCutout({
       data-header-theme="dark"
     >
       <div className={styles.contentStage}>
-        <h2 className={styles.statementHeadline}>{headline}</h2>
+        <h2 className={styles.statementHeadline}>
+          Everything you expect<span className={styles.accentDot}>.</span> A few things you don&apos;t<span className={styles.accentDot}>.</span>
+        </h2>
 
         <div className={styles.actionCluster}>
           <button

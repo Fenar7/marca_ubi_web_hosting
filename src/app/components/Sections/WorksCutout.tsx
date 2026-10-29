@@ -43,12 +43,17 @@ export function WorksCutout({
         <div className={styles.headlineColumn}>
           {kicker ? <span className={styles.kickerBadge}>{kicker}</span> : null}
           <h2 className={styles.monumentalHeadline}>
-            {headlineLines.map((line, idx) => (
-              <React.Fragment key={idx}>
-                {line}
-                {idx < headlineLines.length - 1 && <br />}
-              </React.Fragment>
-            ))}
+            {headlineLines.map((line, idx) => {
+              const endsWithDot = line.endsWith(".");
+              const text = endsWithDot ? line.slice(0, -1) : line;
+              return (
+                <React.Fragment key={idx}>
+                  {text}
+                  {endsWithDot && <span className={styles.accentDot}>.</span>}
+                  {idx < headlineLines.length - 1 && <br />}
+                </React.Fragment>
+              );
+            })}
           </h2>
         </div>
 

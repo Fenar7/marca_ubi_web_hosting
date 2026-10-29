@@ -70,8 +70,11 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const scrolled = window.scrollY > 50;
-          setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+          setIsScrolled((prev) => {
+            if (!prev && window.scrollY > 50) return true;
+            if (prev && window.scrollY <= 30) return false;
+            return prev;
+          });
           ticking = false;
         });
         ticking = true;
@@ -273,6 +276,14 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         className={`${styles.headerHost} ${headerTheme === "light" ? styles.isLight : styles.isDark} ${
           isScrolled ? styles.isScrolled : ""
         }`}
+        style={
+          isScrolled
+            ? {
+                backdropFilter: "blur(28px) saturate(190%) contrast(106%)",
+                WebkitBackdropFilter: "blur(28px) saturate(190%) contrast(106%)",
+              }
+            : undefined
+        }
         role="banner"
       >
         {/* Left Cluster: Brand Logo + Scrolled In-Place Disciplines Station */}

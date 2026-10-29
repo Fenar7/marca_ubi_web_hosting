@@ -43,14 +43,18 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(fontsTs.includes('"200"'), "fonts.ts must register weight 200");
     });
 
-    test("verifies AboutCurtain and StatementCurtain adopt $font-helvetica hairline styling", () => {
+    test("verifies AboutCurtain, StatementCurtain, and ServicesAccordion adopt $font-helvetica hairline styling", () => {
       const aboutScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "AboutCurtain.module.scss"), "utf8");
       const statementScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "StatementCurtain.module.scss"), "utf8");
+      const servicesScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ServicesAccordion", "ServicesAccordion.module.scss"), "utf8");
 
       assert.ok(aboutScss.includes("$font-helvetica"), "AboutCurtain.module.scss must style headline and metrics with $font-helvetica");
       assert.ok(aboutScss.includes("$fw-helvetica-extralight"), "AboutCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
       assert.ok(statementScss.includes("$font-helvetica"), "StatementCurtain.module.scss must style monumentalStatement with $font-helvetica");
       assert.ok(statementScss.includes("$fw-helvetica-extralight"), "StatementCurtain.module.scss must use $fw-helvetica-extralight (200 Thin)");
+      assert.ok(servicesScss.includes("$font-helvetica"), "ServicesAccordion.module.scss must style titles and numbers with $font-helvetica");
+      assert.ok(servicesScss.includes("$fw-helvetica-light"), "ServicesAccordion.module.scss must use $fw-helvetica-light (300)");
+      assert.ok(servicesScss.includes("$fw-helvetica-extralight"), "ServicesAccordion.module.scss must use $fw-helvetica-extralight (200)");
     });
   });
 });
@@ -781,19 +785,24 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const tsx = fs.readFileSync(footerTsx, "utf8");
       const scss = fs.readFileSync(footerScss, "utf8");
 
-      assert.ok(tsx.includes("Imagine limitless. Create limitless"), "MonumentalFooter must render updated anthem headline");
+      assert.ok(tsx.includes("Imagine limitless<span className={styles.accentDot}>.</span> Create limitless<span className={styles.accentDot}>.</span>"), "MonumentalFooter must render dual red period accents on anthem headline");
       assert.ok(tsx.includes("styles.accentDot"), "MonumentalFooter must isolate trailing period in .accentDot span");
       assert.ok(scss.includes(".accentDot"), "MonumentalFooter.module.scss must define .accentDot");
       assert.ok(scss.includes("color: $client-accent-red;"), "accentDot must consume $client-accent-red (#ea002a)");
     });
 
     test("verifies MonumentalFooter legal bar and policy links consume Brand Red with WCAG AA compliance", () => {
+      const footerTsx = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.tsx");
       const footerScss = path.join(rootDir, "src", "app", "components", "Sections", "MonumentalFooter.module.scss");
+      const tsx = fs.readFileSync(footerTsx, "utf8");
       const scss = fs.readFileSync(footerScss, "utf8");
 
+      assert.ok(tsx.includes("The Brand Engineering Company"), "MonumentalFooter must render The Brand Engineering Company");
       assert.ok(scss.includes(".bottomLegalBar"), "MonumentalFooter.module.scss must define .bottomLegalBar");
-      assert.ok(scss.includes("color: $client-accent-red;"), "bottomLegalBar must style copyright and text in Brand Red");
+      assert.ok(scss.includes("color: rgba(255, 255, 255, 0.7);"), "bottomLegalBar must style copyright in readable white text");
       assert.ok(scss.includes(".legalLink"), "MonumentalFooter.module.scss must style .legalLink");
+      assert.ok(scss.includes("color: #ffffff;"), "legalLink must have white default color");
+      assert.ok(scss.includes("color: $client-accent-red;"), "legalLink must transition to Brand Red on hover");
       assert.ok(scss.includes("outline: 2px solid $client-accent-red;"), "legalLink must define accessible focus indicator");
     });
 
@@ -873,24 +882,53 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(!scss.includes("@media (max-width: 680px)"), "ClientHeader.module.scss must not hide streamAperture on small screens");
     });
 
-    test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {
+    test("verifies ConnectCutout kinetic left-to-right red text fill wave architecture", () => {
       const connectTsx = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.tsx");
       const connectScss = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.module.scss");
 
       const tsx = fs.readFileSync(connectTsx, "utf8");
       const scss = fs.readFileSync(connectScss, "utf8");
 
-      assert.ok(tsx.includes("styles.beamTracer"), "ConnectCutout must render beamTracer");
-      assert.ok(tsx.includes("styles.deskPulseIndicator"), "ConnectCutout must render deskPulseIndicator");
-      assert.ok(scss.includes(".beamTracer"), "ConnectCutout.module.scss must define .beamTracer");
-      assert.ok(scss.includes("@keyframes kineticBeamSweepHorizontal"), "ConnectCutout.module.scss must define kineticBeamSweepHorizontal");
-      assert.ok(scss.includes("@keyframes deskGlowWave"), "ConnectCutout.module.scss must define deskGlowWave");
-      assert.ok(scss.includes("@keyframes pulseDot"), "ConnectCutout.module.scss must define pulseDot");
+      assert.ok(tsx.includes("styles.desksCluster"), "ConnectCutout must render desksCluster");
+      assert.ok(tsx.includes("styles.deskItem"), "ConnectCutout must render deskItem");
+      assert.ok(tsx.includes("styles.deskLabel"), "ConnectCutout must render deskLabel");
+      assert.ok(tsx.includes("styles.deskValue"), "ConnectCutout must render deskValue");
+      assert.ok(scss.includes("@keyframes kineticTextFillCol1"), "ConnectCutout.module.scss must define kineticTextFillCol1");
+      assert.ok(scss.includes("@keyframes kineticTextFillCol2"), "ConnectCutout.module.scss must define kineticTextFillCol2");
+      assert.ok(scss.includes("@keyframes kineticTextFillCol3"), "ConnectCutout.module.scss must define kineticTextFillCol3");
+      assert.ok(scss.includes("background-clip: text"), "ConnectCutout.module.scss must use background-clip: text");
       assert.ok(scss.includes("prefers-reduced-motion: reduce"), "ConnectCutout.module.scss must include reduced motion guard");
+    });
+
+    test("verifies WorksCutout, ReelCutout, and ServicesAccordion brand red accents and active tab styling", () => {
+      const worksTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.tsx"), "utf8");
+      const worksScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.module.scss"), "utf8");
+      assert.ok(worksTsx.includes("styles.accentDot"), "WorksCutout must render trailing period in .accentDot");
+      assert.ok(worksScss.includes(".accentDot"), "WorksCutout.module.scss must define .accentDot");
+      assert.ok(worksScss.includes("color: $client-accent-red;"), "WorksCutout accentDot must use $client-accent-red");
+
+      const reelTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.tsx"), "utf8");
+      const reelScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.module.scss"), "utf8");
+      assert.ok(reelTsx.includes("styles.accentDot"), "ReelCutout must render dual periods in .accentDot");
+      assert.ok(reelScss.includes(".accentDot"), "ReelCutout.module.scss must define .accentDot");
+      assert.ok(reelScss.includes("color: $client-accent-red;"), "ReelCutout accentDot must use $client-accent-red");
+
+      const servicesScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ServicesAccordion", "ServicesAccordion.module.scss"), "utf8");
+      assert.ok(servicesScss.includes("background-color: $client-accent-red;"), "ServicesAccordion active tab button must use $client-accent-red");
+      assert.ok(servicesScss.includes("rgba(255, 255, 255, 0.24)"), "ServicesAccordion active count badge must use translucent white pill");
+    });
+
+    test("verifies AboutCurtain GSAP ScrollTrigger metric odometer counter architecture", () => {
+      const aboutTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "AboutCurtain.tsx"), "utf8");
+      assert.ok(aboutTsx.includes("useGSAP"), "AboutCurtain must use useGSAP hook");
+      assert.ok(aboutTsx.includes("ScrollTrigger.create"), "AboutCurtain must bind ScrollTrigger to metricsContainer");
+      assert.ok(aboutTsx.includes("metricsRef"), "AboutCurtain must bind metricsRef");
+      assert.ok(aboutTsx.includes("countRefs"), "AboutCurtain must bind countRefs for individual digits");
+      assert.ok(aboutTsx.includes("aria-label"), "AboutCurtain must provide accessible static aria-label for metric items");
     });
   });
 
-describe("Section 19: Navigation Overlay Helvetica Neue Reference Architecture", () => {
+  describe("Section 19: Navigation Overlay Helvetica Neue Reference Architecture", () => {
     test("verifies physical existence of Helvetica Neue Light on disk", () => {
       const lightFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Light.otf");
       const romanFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Roman.otf");
