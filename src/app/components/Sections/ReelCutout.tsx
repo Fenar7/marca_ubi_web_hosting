@@ -27,7 +27,7 @@ export function ReelCutout({
     >
       <div className={styles.contentStage}>
         <h2 className={styles.statementHeadline}>
-          Everything you expect<span className={styles.accentDot}>.</span> A few things you don&apos;t<span className={styles.accentDot}>.</span>
+          Everything you expect<span className={styles.accentDot}>.</span> A few things you don<span className={styles.accentDot}>&apos;</span>t<span className={styles.accentDot}>.</span>
         </h2>
 
         <div className={styles.actionCluster}>

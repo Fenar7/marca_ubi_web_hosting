@@ -1,0 +1,181 @@
+@import "../../styles/client-mixins.scss";
+
+.faqCurtainSection {
+  position: relative;
+  width: 100%;
+  background-color: #ffffff;
+  color: #0a0a0a;
+  padding: clamp(4rem, 7vw, 7rem) clamp(1.5rem, 5vw, 5rem);
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.stageContainer {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 4vw, 4rem);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding-bottom: 0.5rem;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+  }
+}
+
+.headlineColumn {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+  }
+}
+
+.displayHeadline {
+  font-family: $font-helvetica;
+  font-size: clamp(2.25rem, 4.8vw, 4.25rem);
+  font-weight: 100;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: #0a0a0a;
+  margin: 0;
+  text-align: right;
+  text-wrap: balance;
+
+  @media (max-width: 768px) {
+    text-align: left;
+    font-size: clamp(1.85rem, 6.5vw, 2.75rem);
+  }
+}
+
+.brandDot {
+  color: $client-accent-red;
+  display: inline-block;
+}
+
+.accordionContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.accordionItem {
+  position: relative;
+  width: 100%;
+  border-bottom: 1.5px solid #000000;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.015);
+  }
+}
+
+.questionTrigger {
+  width: 100%;
+  min-height: 56px;
+  padding: clamp(1.25rem, 2vw, 1.85rem) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  color: inherit;
+  box-sizing: border-box;
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+}
+
+.questionText {
+  font-family: $font-helvetica;
+  font-size: clamp(1.15rem, 1.75vw, 1.55rem);
+  font-weight: 200;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: #0a0a0a;
+  transition: color 0.2s ease;
+
+  .accordionItem:hover & {
+    color: $client-accent-red;
+  }
+
+  .itemOpen & {
+    color: $client-accent-red;
+  }
+}
+
+.iconIndicator {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0a0a;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+
+  .itemOpen & {
+    transform: rotate(180deg);
+    color: $client-accent-red;
+  }
+}
+
+.chevronSvg {
+  width: 16px;
+  height: 16px;
+}
+
+.answerWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.25s ease;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+
+  .itemOpen & {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.answerInner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  transition: padding 0.25s ease;
+
+  .itemOpen & {
+    padding-top: 0.5rem;
+    padding-bottom: clamp(1.5rem, 2.5vw, 2.25rem);
+  }
+}
+
+.answerText {
+  font-family: $font-circular;
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  font-weight: 400;
+  line-height: 1.65;
+  color: #444444;
+  margin: 0;
+  max-width: 880px;
+}

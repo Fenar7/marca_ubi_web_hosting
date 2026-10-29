@@ -445,7 +445,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(content.includes("worksQuery"), "page.tsx must fetch worksQuery");
       assert.ok(content.includes("postsQuery"), "page.tsx must fetch postsQuery");
       assert.ok(content.includes("export const revalidate = 60"), "page.tsx must enforce 60s ISR revalidate");
-      assert.ok(content.includes("<ClientHomeExperience works={works} posts={posts} />"), "page.tsx must pass works and posts props");
+      assert.ok(content.includes("<ClientHomeExperience works={works} posts={posts}"), "page.tsx must pass works and posts props");
     });
   });
 
@@ -798,7 +798,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const tsx = fs.readFileSync(footerTsx, "utf8");
       const scss = fs.readFileSync(footerScss, "utf8");
 
-      assert.ok(tsx.includes("The Brand Engineering Company"), "MonumentalFooter must render The Brand Engineering Company");
+      assert.ok(tsx.includes("Marca Ubi - Brand Engineering"), "MonumentalFooter must render Marca Ubi - Brand Engineering");
       assert.ok(scss.includes(".bottomLegalBar"), "MonumentalFooter.module.scss must define .bottomLegalBar");
       assert.ok(scss.includes("color: rgba(255, 255, 255, 0.7);"), "bottomLegalBar must style copyright in readable white text");
       assert.ok(scss.includes(".legalLink"), "MonumentalFooter.module.scss must style .legalLink");
@@ -924,6 +924,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const reelTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.tsx"), "utf8");
       const reelScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.module.scss"), "utf8");
       assert.ok(reelTsx.includes("styles.accentDot"), "ReelCutout must render dual periods in .accentDot");
+      assert.ok(reelTsx.includes("don<span className={styles.accentDot}>&apos;</span>t"), "ReelCutout must render red apostrophe in don't");
       assert.ok(reelScss.includes(".accentDot"), "ReelCutout.module.scss must define .accentDot");
       assert.ok(reelScss.includes("color: $client-accent-red;"), "ReelCutout accentDot must use $client-accent-red");
 
@@ -1004,6 +1005,39 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(detailTsx.includes("_hp_careers_confirm"), "Job detail form must include honeypot defense");
       assert.ok(detailTsx.includes("/api/submit-application"), "Job detail form must submit to /api/submit-application");
       assert.ok(detailScss.includes("border-bottom:"), "Job detail form inputs must feature bottom underline");
+    });
+  });
+
+  describe("Section 21: FAQ Curtain and Sanity Content Pipeline Architecture", () => {
+    test("verifies FaqCurtain component architecture, Swiss hairline typography, and accordion mechanics", () => {
+      const faqTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "FaqCurtain.tsx"), "utf8");
+      const faqScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "FaqCurtain.module.scss"), "utf8");
+      const homeExperience = fs.readFileSync(path.join(rootDir, "src", "app", "components", "ClientHomeExperience", "ClientHomeExperience.tsx"), "utf8");
+      const pageTsx = fs.readFileSync(path.join(rootDir, "src", "app", "page.tsx"), "utf8");
+
+      assert.ok(faqTsx.includes('id="faq"'), "FaqCurtain must declare id='faq'");
+      assert.ok(faqTsx.includes('data-header-theme="light"'), "FaqCurtain must set data-header-theme='light'");
+      assert.ok(faqTsx.includes("ALL YOUR QUESTIONS"), "FaqCurtain must render 'ALL YOUR QUESTIONS' headline");
+      assert.ok(faqTsx.includes("aria-expanded="), "FaqCurtain must declare aria-expanded on triggers");
+      assert.ok(faqTsx.includes("aria-controls="), "FaqCurtain must declare aria-controls on triggers");
+      assert.ok(faqScss.includes("$font-helvetica"), "FaqCurtain must style headline with $font-helvetica");
+      assert.ok(faqScss.includes("font-weight: 100"), "FaqCurtain must enforce hairline weight 100 on headline");
+      assert.ok(faqScss.includes("grid-template-rows"), "FaqCurtain must use grid-template-rows accordion transition");
+      assert.ok(homeExperience.includes("<FaqCurtain"), "ClientHomeExperience must mount FaqCurtain");
+      assert.ok(pageTsx.includes("faqsQuery"), "page.tsx must stream faqsQuery from Sanity");
+    });
+
+    test("verifies Sanity faqItem schema and query pipeline", () => {
+      const schemaTs = fs.readFileSync(path.join(rootDir, "src", "sanity", "schemas", "faqItem.ts"), "utf8");
+      const queriesTs = fs.readFileSync(path.join(rootDir, "src", "sanity", "lib", "faq-queries.ts"), "utf8");
+      const sanityConfig = fs.readFileSync(path.join(rootDir, "sanity.config.ts"), "utf8");
+
+      assert.ok(schemaTs.includes('name: "faqItem"'), "faqItem schema must have name 'faqItem'");
+      assert.ok(sanityConfig.includes("faqItemSchema"), "sanity.config.ts must register faqItemSchema");
+      assert.ok(queriesTs.includes("faqsQuery"), "faq-queries.ts must export faqsQuery");
+      assert.ok(queriesTs.includes("FALLBACK_FAQS"), "faq-queries.ts must export 5 FALLBACK_FAQS");
+      assert.ok(queriesTs.includes("What distinguishes Marca Ubi"), "FALLBACK_FAQS must contain model Q1");
+      assert.ok(queriesTs.includes("How does an engagement typically start"), "FALLBACK_FAQS must contain model Q2");
     });
   });
 });

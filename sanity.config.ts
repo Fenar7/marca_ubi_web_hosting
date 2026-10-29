@@ -11,6 +11,7 @@ import { categorySchema } from "./src/sanity/schemas/category";
 import { blockContentSchema } from "./src/sanity/schemas/blockContent";
 import { careerPostingSchema } from "./src/sanity/schemas/careerPosting";
 import { careerApplicationSchema } from "./src/sanity/schemas/careerApplication";
+import { faqItemSchema } from "./src/sanity/schemas/faqItem";
 
 export default defineConfig({
     basePath: "/studio",
@@ -28,6 +29,7 @@ export default defineConfig({
             blockContentSchema,
             careerPostingSchema,
             careerApplicationSchema,
+            faqItemSchema,
         ],
     },
     plugins: [
