@@ -1,12 +1,12 @@
 # Architectural Specification: ConnectCutout Kinetic Left-to-Right Red Text Fill Wave
 
 ## 1. Executive Summary
-Re-engineers the 3-column studio desks cluster in `ConnectCutout` ([`ConnectCutout.tsx`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/Sections/ConnectCutout.tsx) & [`ConnectCutout.module.scss`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/Sections/ConnectCutout.module.scss)) to feature a mathematical **Kinetic Left-to-Right Red Text Fill Wave**. 
+Re-engineers the 3-column studio desks cluster in `ConnectCutout` ([`ConnectCutout.tsx`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/Sections/ConnectCutout.tsx) & [`ConnectCutout.module.scss`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/Sections/ConnectCutout.module.scss)) to feature a mathematical **Kinetic Left-to-Right Red Text Fill Wave** strictly scoped to the lower content text.
 
-The text starts at a pristine white baseline, and a continuous wave of Brand Red (`#ea002a`) sweeps through the letterforms from left to right:
-1. Originates at Column 1 (`CONTACT` / `+91 7012 052 472`) on the far left.
-2. Progresses across Column 2 (`GENERAL INQUIRIES` / `hello@marcaubi.com`) in the center.
-3. Concludes across Column 3 (`KERALA STUDIOS` / `HiLITE Business Park, Calicut • Trivandrum`) reaching the final word on the far right.
+The top category labels (`CONTACT`, `GENERAL INQUIRIES`, `KERALA STUDIOS`) remain permanently static in editorial uppercase (`color: rgba(255, 255, 255, 0.6);`). The lower white content text starts at a pristine white baseline, and a continuous wave of Brand Red (`#ea002a`) sweeps through the letterforms from left to right:
+1. Originates at Column 1 (`+91 7012 052 472`) on the far left.
+2. Progresses across Column 2 (`hello@marcaubi.com`) in the center.
+3. Concludes across Column 3 (`HiLITE Business Park, Calicut • Trivandrum`) reaching the final word on the far right.
 4. Smoothly un-fills back to white in the identical left-to-right direction and rests before looping.
 
 ---

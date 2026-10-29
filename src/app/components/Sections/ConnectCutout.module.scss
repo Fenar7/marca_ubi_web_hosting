@@ -73,7 +73,8 @@
 
 // Kinetic Left-to-Right Red Color Fill Wave Architecture
 // High-precision 400% background-size with strictly bounded white-rest and red-illumination zones.
-// Originates at Column 1 (Contact, far left) -> Column 2 (General Inquiries, center) -> Column 3 (Kerala Studios, far right)
+// Originates at Column 1 (Contact phone, far left) -> Column 2 (Inquiries email, center) -> Column 3 (Kerala Studios address, far right)
+// Top category labels (.deskLabel) remain strictly static in editorial gray/white.
 @keyframes kineticTextFillCol1 {
   0%, 4% {
     background-position: 100% 0;
@@ -135,50 +136,34 @@
   gap: 0.35rem;
 
   &:nth-child(1) {
-    .deskLabel,
     .deskValue {
       animation: kineticTextFillCol1 8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
     }
   }
 
   &:nth-child(2) {
-    .deskLabel,
     .deskValue {
       animation: kineticTextFillCol2 8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
     }
   }
 
   &:nth-child(3) {
-    .deskLabel,
     .deskValueText {
       animation: kineticTextFillCol3 8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
     }
   }
 }
 
+// Pure static editorial category label — zero color change, zero animation
 .deskLabel {
   font-family: $font-mono;
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  display: inline-block;
-  width: fit-content;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.6) 0%,
-    rgba(255, 255, 255, 0.6) 30%,
-    $client-accent-red 37.5%,
-    $client-accent-red 62.5%,
-    rgba(255, 255, 255, 0.6) 70%,
-    rgba(255, 255, 255, 0.6) 100%
-  );
-  background-size: 400% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  will-change: background-position;
+  color: rgba(255, 255, 255, 0.6);
+  background: none;
+  -webkit-text-fill-color: initial;
 }
 
 .deskValue {
@@ -239,17 +224,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .deskItem {
-    .deskLabel,
     .deskValue,
     .deskValueText {
       animation: none !important;
       background: none !important;
       -webkit-text-fill-color: initial !important;
       color: #ffffff !important;
-    }
-
-    .deskLabel {
-      color: rgba(255, 255, 255, 0.6) !important;
     }
   }
 }
