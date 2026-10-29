@@ -41,20 +41,25 @@
 }
 
 .displayHeadline {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid $client-accent-red;
+  padding: clamp(0.5rem, 0.8vw, 0.75rem) clamp(1rem, 1.75vw, 1.75rem);
   font-family: $font-helvetica;
-  font-size: clamp(2.25rem, 4.8vw, 4.25rem);
+  font-size: clamp(1.15rem, 2vw, 1.75rem);
   font-weight: 100;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   color: #0a0a0a;
   margin: 0;
   text-align: right;
-  text-wrap: balance;
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
     text-align: left;
-    font-size: clamp(1.85rem, 6.5vw, 2.75rem);
+    font-size: clamp(1rem, 3.5vw, 1.35rem);
+    padding: 0.5rem 1rem;
   }
 }
 
