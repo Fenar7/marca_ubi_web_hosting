@@ -16,6 +16,7 @@
 
 .leftColumn {
   position: relative;
+  min-width: 0;
 }
 
 .stickyRail {
@@ -89,6 +90,7 @@
 }
 
 .rightColumn {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: clamp(3rem, 5vw, 5rem);

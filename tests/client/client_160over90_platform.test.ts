@@ -882,22 +882,31 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(!scss.includes("@media (max-width: 680px)"), "ClientHeader.module.scss must not hide streamAperture on small screens");
     });
 
-    test("verifies ConnectCutout kinetic left-to-right red text fill wave architecture", () => {
+    test("verifies ConnectCutout traveling red laser photon beam and synchronized desk pulses", () => {
       const connectTsx = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.tsx");
       const connectScss = path.join(rootDir, "src", "app", "components", "Sections", "ConnectCutout.module.scss");
 
       const tsx = fs.readFileSync(connectTsx, "utf8");
       const scss = fs.readFileSync(connectScss, "utf8");
 
-      assert.ok(tsx.includes("styles.desksCluster"), "ConnectCutout must render desksCluster");
-      assert.ok(tsx.includes("styles.deskItem"), "ConnectCutout must render deskItem");
-      assert.ok(tsx.includes("styles.deskLabel"), "ConnectCutout must render deskLabel");
-      assert.ok(tsx.includes("styles.deskValue"), "ConnectCutout must render deskValue");
-      assert.ok(scss.includes("@keyframes kineticTextFillCol1"), "ConnectCutout.module.scss must define kineticTextFillCol1");
-      assert.ok(scss.includes("@keyframes kineticTextFillCol2"), "ConnectCutout.module.scss must define kineticTextFillCol2");
-      assert.ok(scss.includes("@keyframes kineticTextFillCol3"), "ConnectCutout.module.scss must define kineticTextFillCol3");
-      assert.ok(scss.includes("background-clip: text"), "ConnectCutout.module.scss must use background-clip: text");
+      assert.ok(tsx.includes("styles.beamTracer"), "ConnectCutout must render beamTracer");
+      assert.ok(tsx.includes("styles.deskPulseIndicator"), "ConnectCutout must render deskPulseIndicator");
+      assert.ok(scss.includes(".beamTracer"), "ConnectCutout.module.scss must define .beamTracer");
+      assert.ok(scss.includes("@keyframes kineticBeamSweepHorizontal"), "ConnectCutout.module.scss must define kineticBeamSweepHorizontal");
+      assert.ok(scss.includes("@keyframes deskGlowWave"), "ConnectCutout.module.scss must define deskGlowWave");
+      assert.ok(scss.includes("@keyframes pulseDot"), "ConnectCutout.module.scss must define pulseDot");
       assert.ok(scss.includes("prefers-reduced-motion: reduce"), "ConnectCutout.module.scss must include reduced motion guard");
+    });
+
+    test("verifies client-swiss-grid mixin and minmax column deflation architecture", () => {
+      const mixinsPath = path.join(rootDir, "src", "app", "styles", "client-mixins.scss");
+      const aboutScssPath = path.join(rootDir, "src", "app", "components", "Sections", "AboutCurtain.module.scss");
+
+      const mixins = fs.readFileSync(mixinsPath, "utf8");
+      const aboutScss = fs.readFileSync(aboutScssPath, "utf8");
+
+      assert.ok(mixins.includes("grid-template-columns: minmax(0, 28fr) minmax(0, 72fr);"), "client-swiss-grid must use minmax(0, 28fr) minmax(0, 72fr)");
+      assert.ok(aboutScss.includes("min-width: 0;"), "AboutCurtain.module.scss columns must declare min-width: 0");
     });
 
     test("verifies WorksCutout, ReelCutout, and ServicesAccordion brand red accents and active tab styling", () => {

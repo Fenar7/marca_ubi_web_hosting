@@ -83,7 +83,7 @@ $client-video-scrim: rgba(0, 0, 0, 0.45);
 
 @mixin client-swiss-grid {
   display: grid;
-  grid-template-columns: 28% 72%;
+  grid-template-columns: minmax(0, 28fr) minmax(0, 72fr);
   column-gap: clamp(2rem, 5vw, 6rem);
   row-gap: 2rem;
   max-width: 1440px;
