@@ -360,7 +360,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const orphanedFiles = [
         "src/app/components/Sections/CapabilitiesCloud.tsx",
         "src/app/components/Sections/CapabilitiesCloud.module.scss",
-        "src/app/components/Sections/CareersCutout.tsx",
+
         "src/app/components/Sections/EditorialManifesto.tsx",
         "src/app/components/Sections/EditorialManifesto.module.scss",
       ];
@@ -432,6 +432,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       );
       assert.ok(content.includes("<TestimonialsCutout"), "View 08: TestimonialsCutout must be present");
       assert.ok(content.includes("<DispatchesCurtain"), "View 09: DispatchesCurtain must be present");
+      assert.ok(content.includes("<CareersCutout"), "CareersCutout must be present");
       assert.ok(content.includes("<GlobalLocationsCloud"), "View 10: GlobalLocationsCloud must be present");
       assert.ok(content.includes("<ConnectCutout"), "View 11: ConnectCutout must be present");
       assert.ok(content.includes("<MonumentalFooter"), "View 12: MonumentalFooter must be present");
@@ -972,5 +973,37 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
     });
   });
 
+  describe("Section 20: Careers Hub & Sanity Pipeline Architecture", () => {
+    test("verifies CareersCutout component architecture and monumental typography", () => {
+      const cutoutTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "CareersCutout.tsx"), "utf8");
+      const cutoutScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "CareersCutout.module.scss"), "utf8");
 
+      assert.ok(cutoutTsx.includes('id="careers"'), "CareersCutout must have id='careers'");
+      assert.ok(cutoutTsx.includes('data-header-theme="dark"'), "CareersCutout must set data-header-theme='dark'");
+      assert.ok(cutoutTsx.includes("Explore"), "CareersCutout must render 'Explore'");
+      assert.ok(cutoutTsx.includes("Careers"), "CareersCutout must render 'Careers'");
+      assert.ok(cutoutTsx.includes("brandDot"), "CareersCutout must render brandDot");
+      assert.ok(cutoutTsx.includes('href="/careers"'), "CareersCutout primary action must link to /careers");
+      assert.ok(cutoutTsx.includes('href="/#locations"'), "CareersCutout secondary action must link to /#locations");
+      assert.ok(cutoutScss.includes("$client-accent-red"), "CareersCutout SCSS must use $client-accent-red");
+    });
+
+    test("verifies /careers hub and /careers/[slug] Swiss hairline architecture", () => {
+      const listingTsx = fs.readFileSync(path.join(rootDir, "src", "app", "careers", "CareersListingClient.tsx"), "utf8");
+      const listingScss = fs.readFileSync(path.join(rootDir, "src", "app", "careers", "CareersListing.module.scss"), "utf8");
+      const detailTsx = fs.readFileSync(path.join(rootDir, "src", "app", "careers", "[slug]", "JobDetailClient.tsx"), "utf8");
+      const detailScss = fs.readFileSync(path.join(rootDir, "src", "app", "careers", "[slug]", "JobDetail.module.scss"), "utf8");
+
+      assert.ok(listingScss.includes("$font-helvetica"), "Careers listing must use $font-helvetica");
+      assert.ok(listingScss.includes("font-weight: 100"), "Careers listing headline must use hairline weight 100");
+      assert.ok(listingTsx.includes("team-studio.png"), "Careers listing must render team-studio.png banner");
+      assert.ok(listingTsx.includes("Apply Now"), "Careers listing must render Apply Now action");
+
+      assert.ok(detailScss.includes("$font-helvetica"), "Job detail must use $font-helvetica");
+      assert.ok(detailScss.includes("font-weight: 100"), "Job detail role title must use hairline weight 100");
+      assert.ok(detailTsx.includes("_hp_careers_confirm"), "Job detail form must include honeypot defense");
+      assert.ok(detailTsx.includes("/api/submit-application"), "Job detail form must submit to /api/submit-application");
+      assert.ok(detailScss.includes("border-bottom:"), "Job detail form inputs must feature bottom underline");
+    });
+  });
 });
