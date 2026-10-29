@@ -924,6 +924,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const reelTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.tsx"), "utf8");
       const reelScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.module.scss"), "utf8");
       assert.ok(reelTsx.includes("styles.accentDot"), "ReelCutout must render dual periods in .accentDot");
+      assert.ok(reelTsx.includes("don<span className={styles.accentDot}>&apos;</span>t"), "ReelCutout must render red apostrophe in don't");
       assert.ok(reelScss.includes(".accentDot"), "ReelCutout.module.scss must define .accentDot");
       assert.ok(reelScss.includes("color: $client-accent-red;"), "ReelCutout accentDot must use $client-accent-red");
 
@@ -1016,7 +1017,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
 
       assert.ok(faqTsx.includes('id="faq"'), "FaqCurtain must declare id='faq'");
       assert.ok(faqTsx.includes('data-header-theme="light"'), "FaqCurtain must set data-header-theme='light'");
-      assert.ok(faqTsx.includes("All your questions"), "FaqCurtain must render 'All your questions' headline");
+      assert.ok(faqTsx.includes("ALL YOUR QUESTIONS"), "FaqCurtain must render 'ALL YOUR QUESTIONS' headline");
       assert.ok(faqTsx.includes("aria-expanded="), "FaqCurtain must declare aria-expanded on triggers");
       assert.ok(faqTsx.includes("aria-controls="), "FaqCurtain must declare aria-controls on triggers");
       assert.ok(faqScss.includes("$font-helvetica"), "FaqCurtain must style headline with $font-helvetica");

@@ -33,13 +33,9 @@ export function FaqCurtain({ faqs = [] }: FaqCurtainProps) {
       <div className={styles.stageContainer}>
         {/* Top Header Row with Swiss Hairline Thin Typography */}
         <div className={styles.headerRow}>
-          <div className={styles.kickerColumn}>
-            <span className={styles.kickerBadge}>Frequently Asked Questions</span>
-          </div>
-
           <div className={styles.headlineColumn}>
             <h2 className={styles.displayHeadline}>
-              All your questions<span className={styles.brandDot}>.</span> Here<span className={styles.brandDot}>.</span>
+              ALL YOUR QUESTIONS<span className={styles.brandDot}>.</span> HERE<span className={styles.brandDot}>.</span>
             </h2>
           </div>
         </div>
