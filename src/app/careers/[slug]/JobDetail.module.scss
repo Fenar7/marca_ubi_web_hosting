@@ -118,12 +118,11 @@
 }
 
 .metadataBadge {
-  font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #444444;
+  font-family: $font-helvetica;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  color: #666666;
   padding: 0.35rem 0.75rem;
   border-radius: 2px;
   border: 1px solid rgba(0, 0, 0, 0.12);

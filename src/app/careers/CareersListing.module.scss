@@ -110,33 +110,6 @@
   width: 100%;
 }
 
-.sectionHeader {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  margin-bottom: 0;
-}
-
-.sectionTitle {
-  font-family: $font-mono;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #0a0a0a;
-  margin: 0;
-}
-
-.positionCount {
-  font-family: $font-mono;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: #666666;
-  text-transform: uppercase;
-}
-
 .positionsTable {
   display: flex;
   flex-direction: column;
@@ -150,32 +123,19 @@
   justify-content: space-between;
   gap: 2rem;
   padding: clamp(1.75rem, 2.5vw, 2.25rem) 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
   text-decoration: none;
   color: inherit;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.2s ease;
   box-sizing: border-box;
 
-  &:first-child {
-    border-top: none;
-  }
-
   &:hover {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-    background-color: rgba(0, 0, 0, 0.02);
-
     .roleTitle {
       color: $client-accent-red;
     }
 
     .applyLink {
       color: $client-accent-red;
-      border-bottom-color: $client-accent-red;
-
-      .arrowIcon {
-        transform: translateX(4px);
-      }
     }
   }
 
@@ -189,12 +149,6 @@
     align-items: flex-start;
     gap: 1.25rem;
     padding: 1.5rem 0;
-
-    &:hover {
-      padding-left: 0;
-      padding-right: 0;
-      background-color: transparent;
-    }
   }
 }
 
@@ -204,26 +158,26 @@
 }
 
 .roleTitle {
-  font-family: $font-circular;
-  font-size: clamp(1.25rem, 2vw, 1.625rem);
-  font-weight: 500;
+  font-family: $font-helvetica;
+  font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+  font-weight: 400;
   letter-spacing: -0.015em;
-  line-height: 1.25;
+  line-height: 1.3;
   color: #0a0a0a;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.35rem 0;
   transition: color 0.2s ease;
 }
 
 .roleMeta {
-  font-family: $font-circular;
-  font-size: 0.9375rem;
-  font-weight: 400;
-  color: #666666;
+  font-family: $font-helvetica;
+  font-size: 14px;
+  font-weight: 300;
+  color: #888888;
   margin: 0;
   line-height: 1.4;
 
   @media (max-width: 768px) {
-    font-size: 0.875rem;
+    font-size: 13px;
   }
 }
 
@@ -234,17 +188,16 @@
 .applyLink {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: $font-circular;
+  font-family: $font-helvetica;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 400;
   color: #0a0a0a;
-  padding-bottom: 2px;
-  border-bottom: 1.5px solid #0a0a0a;
-  transition: all 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  border-bottom: none;
+  transition: color 0.2s ease;
 
-  .arrowIcon {
-    font-size: 16px;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  &:hover {
+    color: $client-accent-red;
   }
 }

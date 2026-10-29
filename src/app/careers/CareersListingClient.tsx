@@ -52,6 +52,7 @@ export function CareersListingClient({ careers }: CareersListingClientProps) {
           width={1600}
           height={900}
           priority
+          quality={100}
           className={styles.bannerImage}
           sizes="(max-width: 768px) 100vw, (max-width: 1440px) 90vw, 1400px"
         />
@@ -59,13 +60,6 @@ export function CareersListingClient({ careers }: CareersListingClientProps) {
 
       {/* Open Positions Section */}
       <section className={styles.positionsSection} aria-label="Open Positions">
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Open Positions</h2>
-          <span className={styles.positionCount} aria-label={`${careers.length} open positions`}>
-            {careers.length < 10 ? `0${careers.length}` : careers.length} Roles Active
-          </span>
-        </div>
-
         <div className={styles.positionsTable} role="list">
           {careers.map((career) => {
             const slug = typeof career.slug === "string" ? career.slug : (career.slug as { current: string })?.current;
@@ -90,12 +84,7 @@ export function CareersListingClient({ careers }: CareersListingClientProps) {
                 </div>
 
                 <div className={styles.actionColumn}>
-                  <span className={styles.applyLink}>
-                    Apply Now
-                    <span className={styles.arrowIcon} aria-hidden="true">
-                      &rarr;
-                    </span>
-                  </span>
+                  <span className={styles.applyLink}>Apply Now</span>
                 </div>
               </Link>
             );
