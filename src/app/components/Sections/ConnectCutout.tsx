@@ -41,14 +41,10 @@ export function ConnectCutout({ onOpenBrief }: ConnectCutoutProps = {}) {
           For institutional branding, enterprise digital platforms, or global creative technology partnerships.
         </p>
 
-        {/* Studio Desks Cluster with Kinetic Red Photon Beam */}
+        {/* Studio Desks Cluster with Kinetic Left-to-Right Red Text Fill Wave */}
         <div className={styles.desksCluster}>
-          {/* Luminous Brand Red Traveling Laser Rail */}
-          <span className={styles.beamTracer} aria-hidden="true" />
-
           <div className={styles.deskItem}>
             <span className={styles.deskLabel}>
-              <span className={styles.deskPulseIndicator} aria-hidden="true" />
               Contact
             </span>
             <a href="tel:+917012052472" className={styles.deskValue}>
@@ -58,7 +54,6 @@ export function ConnectCutout({ onOpenBrief }: ConnectCutoutProps = {}) {
 
           <div className={styles.deskItem}>
             <span className={styles.deskLabel}>
-              <span className={styles.deskPulseIndicator} aria-hidden="true" />
               General Inquiries
             </span>
             <a href="mailto:hello@marcaubi.com" className={styles.deskValue}>
@@ -68,7 +63,6 @@ export function ConnectCutout({ onOpenBrief }: ConnectCutoutProps = {}) {
 
           <div className={styles.deskItem}>
             <span className={styles.deskLabel}>
-              <span className={styles.deskPulseIndicator} aria-hidden="true" />
               Kerala Studios
             </span>
             <span className={styles.deskValueText}>
