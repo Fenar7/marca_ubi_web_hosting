@@ -84,12 +84,12 @@
   }
 
   &.active {
-    background-color: $client-text-dark;
+    background-color: $client-accent-red;
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+    box-shadow: 0 4px 14px rgba(234, 0, 42, 0.28);
 
     .countBadge {
-      background-color: $client-accent-red;
+      background-color: rgba(255, 255, 255, 0.24);
       color: #ffffff;
     }
   }

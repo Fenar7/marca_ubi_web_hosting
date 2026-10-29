@@ -1,9 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import { prefersReducedMotion } from "@/app/lib/motion";
 import { ServicesAccordion } from "./ServicesAccordion/ServicesAccordion";
 import styles from "./AboutCurtain.module.scss";
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface MetricItem {
   number: string;
@@ -46,6 +52,46 @@ const METRICS: MetricItem[] = [
  * Houses authentic production content: Studio Narrative, 4 Metric Odometers, and Full-Width Services Showcase.
  */
 export function AboutCurtain() {
+  const metricsRef = useRef<HTMLDivElement | null>(null);
+  const countRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  useGSAP(
+    () => {
+      if (!metricsRef.current) return;
+      if (prefersReducedMotion()) return;
+
+      const trigger = ScrollTrigger.create({
+        trigger: metricsRef.current,
+        start: "top 85%",
+        once: true,
+        onEnter: () => {
+          METRICS.forEach((metric, index) => {
+            const targetVal = parseInt(metric.number, 10);
+            const el = countRefs.current[index];
+            if (!el || isNaN(targetVal)) return;
+
+            const proxy = { val: 0 };
+            gsap.to(proxy, {
+              val: targetVal,
+              duration: 1.8,
+              ease: "power2.out",
+              onUpdate: () => {
+                if (el) {
+                  el.textContent = Math.round(proxy.val).toString();
+                }
+              },
+            });
+          });
+        },
+      });
+
+      return () => {
+        trigger.kill();
+      };
+    },
+    { scope: metricsRef }
+  );
+
   return (
     <section
       className={styles.aboutSection}
@@ -86,14 +132,20 @@ export function AboutCurtain() {
             </p>
           </div>
 
-          {/* 4 Metric Odometers with Tabular Numerals */}
-          <div className={styles.metricsContainer}>
+          {/* 4 Metric Odometers with Tabular Numerals & GSAP ScrollTrigger Roll */}
+          <div ref={metricsRef} className={styles.metricsContainer}>
             <span className={styles.subKicker}>Quantified Delivery Scope</span>
             <div className={styles.metricsGrid}>
-              {METRICS.map((metric) => (
-                <div key={metric.title} className={styles.metricItem}>
+              {METRICS.map((metric, idx) => (
+                <div key={metric.title} className={styles.metricItem} aria-label={`${metric.number}${metric.symbol} ${metric.title}`}>
                   <span className={styles.metricValue}>
-                    {metric.number}
+                    <span
+                      ref={(el) => {
+                        countRefs.current[idx] = el;
+                      }}
+                    >
+                      {metric.number}
+                    </span>
                     <span className={styles.metricSymbol}>{metric.symbol}</span>
                   </span>
                   <h4 className={styles.metricTitle}>{metric.title}</h4>

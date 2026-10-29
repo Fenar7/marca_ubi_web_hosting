@@ -785,7 +785,7 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       const tsx = fs.readFileSync(footerTsx, "utf8");
       const scss = fs.readFileSync(footerScss, "utf8");
 
-      assert.ok(tsx.includes("Imagine limitless. Create limitless"), "MonumentalFooter must render updated anthem headline");
+      assert.ok(tsx.includes("Imagine limitless<span className={styles.accentDot}>.</span> Create limitless<span className={styles.accentDot}>.</span>"), "MonumentalFooter must render dual red period accents on anthem headline");
       assert.ok(tsx.includes("styles.accentDot"), "MonumentalFooter must isolate trailing period in .accentDot span");
       assert.ok(scss.includes(".accentDot"), "MonumentalFooter.module.scss must define .accentDot");
       assert.ok(scss.includes("color: $client-accent-red;"), "accentDot must consume $client-accent-red (#ea002a)");
@@ -899,9 +899,36 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes("background-clip: text"), "ConnectCutout.module.scss must use background-clip: text");
       assert.ok(scss.includes("prefers-reduced-motion: reduce"), "ConnectCutout.module.scss must include reduced motion guard");
     });
+
+    test("verifies WorksCutout, ReelCutout, and ServicesAccordion brand red accents and active tab styling", () => {
+      const worksTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.tsx"), "utf8");
+      const worksScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "WorksCutout.module.scss"), "utf8");
+      assert.ok(worksTsx.includes("styles.accentDot"), "WorksCutout must render trailing period in .accentDot");
+      assert.ok(worksScss.includes(".accentDot"), "WorksCutout.module.scss must define .accentDot");
+      assert.ok(worksScss.includes("color: $client-accent-red;"), "WorksCutout accentDot must use $client-accent-red");
+
+      const reelTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.tsx"), "utf8");
+      const reelScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ReelCutout.module.scss"), "utf8");
+      assert.ok(reelTsx.includes("styles.accentDot"), "ReelCutout must render dual periods in .accentDot");
+      assert.ok(reelScss.includes(".accentDot"), "ReelCutout.module.scss must define .accentDot");
+      assert.ok(reelScss.includes("color: $client-accent-red;"), "ReelCutout accentDot must use $client-accent-red");
+
+      const servicesScss = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "ServicesAccordion", "ServicesAccordion.module.scss"), "utf8");
+      assert.ok(servicesScss.includes("background-color: $client-accent-red;"), "ServicesAccordion active tab button must use $client-accent-red");
+      assert.ok(servicesScss.includes("rgba(255, 255, 255, 0.24)"), "ServicesAccordion active count badge must use translucent white pill");
+    });
+
+    test("verifies AboutCurtain GSAP ScrollTrigger metric odometer counter architecture", () => {
+      const aboutTsx = fs.readFileSync(path.join(rootDir, "src", "app", "components", "Sections", "AboutCurtain.tsx"), "utf8");
+      assert.ok(aboutTsx.includes("useGSAP"), "AboutCurtain must use useGSAP hook");
+      assert.ok(aboutTsx.includes("ScrollTrigger.create"), "AboutCurtain must bind ScrollTrigger to metricsContainer");
+      assert.ok(aboutTsx.includes("metricsRef"), "AboutCurtain must bind metricsRef");
+      assert.ok(aboutTsx.includes("countRefs"), "AboutCurtain must bind countRefs for individual digits");
+      assert.ok(aboutTsx.includes("aria-label"), "AboutCurtain must provide accessible static aria-label for metric items");
+    });
   });
 
-describe("Section 19: Navigation Overlay Helvetica Neue Reference Architecture", () => {
+  describe("Section 19: Navigation Overlay Helvetica Neue Reference Architecture", () => {
     test("verifies physical existence of Helvetica Neue Light on disk", () => {
       const lightFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Light.otf");
       const romanFont = path.join(rootDir, "public", "fonts", "helvetica", "HelveticaNeue-Roman.otf");
