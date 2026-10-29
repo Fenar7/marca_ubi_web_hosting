@@ -12,6 +12,7 @@ import ValuesCutout from "../Sections/ValuesCutout";
 import ProcessCurtain from "../Sections/ProcessCurtain";
 import TestimonialsCutout from "../Sections/TestimonialsCutout";
 import DispatchesCurtain from "../Sections/DispatchesCurtain";
+import CareersCutout from "../Sections/CareersCutout";
 import GlobalLocationsCloud from "../Sections/GlobalLocationsCloud";
 import ConnectCutout from "../Sections/ConnectCutout";
 import MonumentalFooter from "../Sections/MonumentalFooter";
@@ -88,6 +89,9 @@ export function ClientHomeExperience({ works = [], posts = [] }: ClientHomeExper
 
         {/* View 09: Studio Dispatches & Insights Curtain (Solid Pure White with latest 3 Sanity posts) */}
         <DispatchesCurtain posts={posts} />
+
+        {/* View 10: Careers Cutout (Transparent Living Background Video) */}
+        <CareersCutout />
 
         {/* View 10: Global Studio Footprint & Synchronized Operations Curtain (Solid Pure White) */}
         <GlobalLocationsCloud />
