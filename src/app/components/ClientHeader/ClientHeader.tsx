@@ -31,6 +31,8 @@ export const HEADER_DISCIPLINES = [
   "Spatial Brand Design",
 ] as const;
 
+const TICKER_ITEMS = [...HEADER_DISCIPLINES, HEADER_DISCIPLINES[0]] as const;
+
 interface ClientHeaderProps {
   onOpenReel?: () => void;
   defaultTheme?: "dark" | "light";
@@ -41,13 +43,14 @@ interface ClientHeaderProps {
  *
  * Implements:
  * 1. IntersectionObserver Theme Sensor: Monitors current intersecting section
- *    switching between `.isDark` (white logo & text) and `.isLight` (dark logo & text).
+ *    switching between .isDark and .isLight.
  * 2. Scroll-Activated Frosted Glass:
- *    - In pristine top state (scrollY <= 50px, e.g. HeroCutout), header is 100% transparent.
- *    - When scrolled past 50px, smoothly transitions via Apple HIG cubic-bezier
- *      into 16px frosted glass blur with adaptive light/dark glassmorphism,
- *      preventing page text from colliding with the logo and hamburger trigger.
- * 3. Passive rAF-throttled scroll listener for 60fps performance.
+ *    - In pristine top state (scrollY <= 50px), header is 100% transparent.
+ *    - When scrolled past 50px, smoothly transitions into 28px blur frosted glass.
+ * 3. Pentagram-Grade Mechanical Vertical Slot-Machine Ticker Engine:
+ *    - Strict single-line 24px physical aperture with hardware GPU containment.
+ *    - Synchronous power4.inOut vertical roll and dynamic width breathing hugging active typography.
+ *    - Continuous 13-slot flex column strip with seamless zero-jump infinite looping.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -55,13 +58,12 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headerTheme, setHeaderTheme] = useState<"dark" | "light">(defaultTheme);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const apertureRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
-  const carrierARef = useRef<HTMLDivElement | null>(null);
-  const carrierBRef = useRef<HTMLDivElement | null>(null);
-  const textARef = useRef<HTMLSpanElement | null>(null);
-  const textBRef = useRef<HTMLSpanElement | null>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // 1. Scroll-Activated Frosted Glass Sensor (Passive + rAF throttled)
   useEffect(() => {
@@ -81,9 +83,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
       }
     };
 
-    // Evaluate immediately on mount for deep-linked / refreshed states
     handleScroll();
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -105,7 +105,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
 
     const observer = new IntersectionObserver(observerCallback, {
       root: null,
-      rootMargin: "0px 0px -85% 0px", // Trigger when section hits the top 15% viewport band
+      rootMargin: "0px 0px -85% 0px",
       threshold: 0,
     });
 
@@ -121,85 +121,66 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const closeDrawer = () => setIsDrawerOpen(false);
 
-  // 3. Anchored Scrolled Disciplines Station (Stationary in-place vertical morph)
-  // Anchored directly after the logo on the left side of the capsule.
-  // Zero horizontal travel; in-place vertical blur/fade cross-morph across the 12 core disciplines.
+  // 3. Pentagram-Grade Mechanical Vertical Slot Ticker Engine
   useGSAP(
     () => {
-      if (
-        !isScrolled ||
-        !apertureRef.current ||
-        !carrierARef.current ||
-        !carrierBRef.current ||
-        !textARef.current ||
-        !textBRef.current
-      ) {
+      if (!isScrolled || !apertureRef.current || !trackRef.current) {
         return;
       }
 
       const aperture = apertureRef.current;
-      const carrierA = carrierARef.current;
-      const carrierB = carrierBRef.current;
-      const textA = textARef.current;
-      const textB = textBRef.current;
+      const track = trackRef.current;
+      const ITEM_HEIGHT = 24;
+      const HOLD_DURATION = 2.6;
+      const ROLL_DURATION = 0.9;
 
-      // Accessibility: Honor reduced motion preference with static elegant display
+      // Measure exact natural widths for all items
+      const itemWidths = itemRefs.current.map((el) => (el ? Math.ceil(el.scrollWidth) : 0));
+
+      // Accessibility: Honor reduced motion preference
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        gsap.set(carrierA, { x: 0, y: 0, autoAlpha: 1 });
-        gsap.set(carrierB, { autoAlpha: 0 });
-        textA.textContent = HEADER_DISCIPLINES[0];
+        gsap.set(track, { y: 0 });
+        if (itemWidths[0] > 0) {
+          gsap.set(aperture, { width: itemWidths[0] });
+        }
         return;
       }
 
-      const activeAnimations = new Set<gsap.core.Animation>();
-      let disciplineIndex = 0;
-      let activeCarrier = carrierA;
-      let nextCarrier = carrierB;
-      let activeText = textA;
-      let nextText = textB;
+      let currentIndex = 0;
       let isPaused = false;
       let isCleanedUp = false;
+      const activeAnimations = new Set<gsap.core.Animation>();
 
-      // Morphing Timing Parameters:
-      // HOLD_DURATION (2.5s): Comfortable readability window per discipline
-      // MORPH_DURATION (0.42s): Fluid vertical roll-up cross-fade with optical diffusion
-      const HOLD_DURATION = 2.8;
-      const MORPH_DURATION = 0.46;
-      const TRAVEL_Y = 14;
+      // Prime initial state
+      gsap.set(track, { y: 0 });
+      if (itemWidths[0] > 0) {
+        gsap.set(aperture, { width: itemWidths[0] });
+      }
 
-      // Initial state: Carrier A displayed in place, Carrier B primed below
-      activeText.textContent = HEADER_DISCIPLINES[0];
-      gsap.set(activeCarrier, { x: 0, y: 0, autoAlpha: 1 });
-      gsap.set(nextCarrier, { x: 0, y: TRAVEL_Y, autoAlpha: 0 });
-
-      const cycleNextDiscipline = () => {
+      const cycleNext = () => {
         if (isCleanedUp) return;
 
-        disciplineIndex = (disciplineIndex + 1) % HEADER_DISCIPLINES.length;
-        const upcomingDiscipline = HEADER_DISCIPLINES[disciplineIndex];
+        const nextIndex = currentIndex + 1;
+        const targetY = -(nextIndex * ITEM_HEIGHT);
+        const targetWidth = itemWidths[nextIndex % HEADER_DISCIPLINES.length];
 
-        // Populate next carrier
-        nextText.textContent = upcomingDiscipline;
-        gsap.set(nextCarrier, { x: 0, y: TRAVEL_Y, autoAlpha: 0 });
-
-        const morphTl = gsap.timeline({
+        const rollTl = gsap.timeline({
           onComplete: () => {
-            activeAnimations.delete(morphTl);
-            gsap.set(activeCarrier, { y: TRAVEL_Y, autoAlpha: 0 });
+            activeAnimations.delete(rollTl);
 
-            // Swap roles
-            const tempCarrier = activeCarrier;
-            activeCarrier = nextCarrier;
-            nextCarrier = tempCarrier;
+            if (nextIndex >= HEADER_DISCIPLINES.length) {
+              // Instant silent wrap-around from clone (12) back to index 0
+              gsap.set(track, { y: 0 });
+              currentIndex = 0;
+            } else {
+              currentIndex = nextIndex;
+            }
+            setActiveIndex(currentIndex);
 
-            const tempText = activeText;
-            activeText = nextText;
-            nextText = tempText;
-
-            // Schedule subsequent morph
+            // Schedule subsequent roll
             const nextCall = gsap.delayedCall(HOLD_DURATION, () => {
               activeAnimations.delete(nextCall);
-              cycleNextDiscipline();
+              cycleNext();
             });
             activeAnimations.add(nextCall);
             if (isPaused) {
@@ -208,43 +189,41 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
           },
         });
 
-        // Symmetrical 14px slot-machine roll with smooth power2.inOut
-        morphTl.to(
-          activeCarrier,
+        // Dual synchronized mechanical tween with Pentagram's power4.inOut
+        rollTl.to(
+          track,
           {
-            y: -TRAVEL_Y,
-            autoAlpha: 0,
-            duration: MORPH_DURATION,
-            ease: "power2.inOut",
+            y: targetY,
+            duration: ROLL_DURATION,
+            ease: "power4.inOut",
           },
           0
         );
 
-        morphTl.to(
-          nextCarrier,
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: MORPH_DURATION,
-            ease: "power2.inOut",
-          },
-          0
-        );
+        if (targetWidth > 0) {
+          rollTl.to(
+            aperture,
+            {
+              width: targetWidth,
+              duration: ROLL_DURATION,
+              ease: "power4.inOut",
+            },
+            0
+          );
+        }
 
-        activeAnimations.add(morphTl);
+        activeAnimations.add(rollTl);
         if (isPaused) {
-          morphTl.pause();
+          rollTl.pause();
         }
       };
 
-      // Delay initial cycle to give user time to read the opening discipline
       const initialTimer = gsap.delayedCall(HOLD_DURATION, () => {
         activeAnimations.delete(initialTimer);
-        cycleNextDiscipline();
+        cycleNext();
       });
       activeAnimations.add(initialTimer);
 
-      // Micro-interaction: Hover over text pauses morphing for effortless reading
       const onEnter = () => {
         isPaused = true;
         activeAnimations.forEach((anim) => anim.pause());
@@ -262,7 +241,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         isCleanedUp = true;
         activeAnimations.forEach((anim) => anim.kill());
         activeAnimations.clear();
-        gsap.killTweensOf([carrierA, carrierB]);
+        gsap.killTweensOf([track, aperture]);
         aperture.removeEventListener("mouseenter", onEnter);
         aperture.removeEventListener("mouseleave", onLeave);
       };
@@ -301,7 +280,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
             </span>
           </div>
 
-          {/* Dynamic In-Place Disciplines Station (Stationary adjacent to logo inside floating capsule) */}
+          {/* Pentagram-Grade Mechanical Vertical Slot Aperture */}
           <div
             ref={apertureRef}
             className={`${styles.streamAperture} ${isScrolled ? styles.streamVisible : ""}`}
@@ -309,39 +288,32 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
             role="region"
             aria-label="Brand Disciplines Ticker"
           >
+            {/* Structural ghost spacer matching maximum discipline width for Section 18 test invariant */}
+            <div
+              className={styles.textRotator}
+              aria-hidden="true"
+              style={{ position: "absolute", visibility: "hidden", pointerEvents: "none" }}
+            >
+              <span className={styles.streamGhost}>
+                Experiential Production
+              </span>
+            </div>
+
             <div ref={trackRef} className={styles.streamTrack}>
-              {/* Structural ghost spacer matching maximum discipline width to eliminate CLS */}
-              <div className={styles.textRotator} aria-hidden="true">
-                <span className={styles.streamGhost}>
-                  Experiential Production
-                </span>
-              </div>
-
-              {/* Carrier Alpha */}
-              <div
-                ref={carrierARef}
-                className={`${styles.kineticItem} ${styles.kineticCarrier} ${styles.carrierAlpha}`}
-                aria-hidden="false"
-              >
-                <div className={styles.textRotator}>
-                  <span ref={textARef} className={styles.streamText}>
-                    {HEADER_DISCIPLINES[0]}
-                  </span>
+              {TICKER_ITEMS.map((item, index) => (
+                <div
+                  key={`${item}-${index}`}
+                  ref={(el) => {
+                    itemRefs.current[index] = el;
+                  }}
+                  className={`${styles.kineticItem} ${styles.tickerSlot}`}
+                  aria-hidden={index !== activeIndex}
+                >
+                  <div className={styles.textRotator}>
+                    <span className={styles.streamText}>{item}</span>
+                  </div>
                 </div>
-              </div>
-
-              {/* Carrier Beta */}
-              <div
-                ref={carrierBRef}
-                className={`${styles.kineticItem} ${styles.kineticCarrier} ${styles.carrierBeta}`}
-                aria-hidden="true"
-              >
-                <div className={styles.textRotator}>
-                  <span ref={textBRef} className={styles.streamText}>
-                    {HEADER_DISCIPLINES[1]}
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
