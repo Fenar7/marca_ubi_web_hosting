@@ -17,30 +17,42 @@ export const BRAND_STATEMENTS = [
 ] as const;
 
 export const HEADER_DISCIPLINES = [
-  "Everything",
+  "Books",
+  "Brand Identity",
   "Brand Strategy",
-  "Visual Identity Systems",
-  "Creative Direction",
-  "Culture Marketing",
-  "Experiential Production",
-  "Digital Infrastructure",
-  "Creative Technology",
-  "Motion & Cinema",
-  "Campaign Architecture",
-  "Editorial Systems",
-  "High-Growth GTM",
-  "Spatial Brand Design",
+  "Campaigns",
+  "Data Driven Experiences",
+  "Digital Experiences",
+  "Exhibitions",
+  "Industrial/Product Design",
+  "Motion Graphics & Film",
+  "Naming",
+  "Packaging",
+  "Publications",
+  "Signage & Environmental Graphics",
+  "Typefaces",
+  "Verbal Identity",
 ] as const;
 
 export const HEADER_SECTORS = [
-  "Everyone",
   "Arts & Culture",
-  "High-Growth Tech",
-  "Enterprise Transformation",
   "Civic & Public",
-  "Luxury & Lifestyle",
-  "Media & Entertainment",
-  "Hospitality & Spaces",
+  "Climate & Sustainability",
+  "Consumer Brands",
+  "Education",
+  "Entertainment",
+  "Fashion & Beauty",
+  "Finance",
+  "Food & Drink",
+  "Health",
+  "Hospitality & Travel",
+  "Manufacturing & Industrials",
+  "Non-profits",
+  "Professional Services",
+  "Publishing",
+  "Real Estate",
+  "Technology",
+  "Transport",
 ] as const;
 
 const TICKER_DISCIPLINES = [...HEADER_DISCIPLINES, HEADER_DISCIPLINES[0]] as const;
@@ -165,23 +177,20 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
       const getWidths = () => {
         const dWidths = itemRefs.current.map((el) => {
           if (!el) return 0;
-          const textSpan = el.querySelector('span > span') as HTMLElement | null;
-          const target = textSpan || el;
-          const w = Math.ceil(target.getBoundingClientRect().width || target.scrollWidth);
-          return w > 0 ? w + 6 : 110;
+          const textSpan = el.querySelector(".streamText") as HTMLElement | null;
+          const width = textSpan?.getBoundingClientRect().width ?? el.scrollWidth;
+          return width > 0 ? Math.ceil(width) + 8 : 120;
         });
         const sWidths = sectorItemRefs.current.map((el) => {
           if (!el) return 0;
-          const textSpan = el.querySelector('span > span') as HTMLElement | null;
-          const target = textSpan || el;
-          const w = Math.ceil(target.getBoundingClientRect().width || target.scrollWidth);
-          return w > 0 ? w + 6 : 85;
+          const textSpan = el.querySelector(".streamText") as HTMLElement | null;
+          const width = textSpan?.getBoundingClientRect().width ?? el.scrollWidth;
+          return width > 0 ? Math.ceil(width) + 8 : 90;
         });
         return { dWidths, sWidths };
       };
 
       const { dWidths: discWidths, sWidths: secWidths } = getWidths();
-
       // Accessibility: Honor reduced motion preference
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         gsap.set([discTrack, secTrack], { y: 0 });
@@ -210,8 +219,8 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         const targetDiscY = -(nextDiscIndex * ITEM_HEIGHT);
         const targetSecY = -(nextSecIndex * ITEM_HEIGHT);
 
-        const targetDiscWidth = discWidths[nextDiscIndex % HEADER_DISCIPLINES.length] || 110;
-        const targetSecWidth = secWidths[nextSecIndex % HEADER_SECTORS.length] || 85;
+        const targetDiscWidth = discWidths[nextDiscIndex % HEADER_DISCIPLINES.length] || 120;
+        const targetSecWidth = secWidths[nextSecIndex % HEADER_SECTORS.length] || 90;
 
         const rollTl = gsap.timeline({
           onComplete: () => {

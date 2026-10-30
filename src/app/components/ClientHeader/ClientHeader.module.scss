@@ -373,7 +373,8 @@
   height: 24px;
   pointer-events: auto;
   z-index: 2;
-  max-width: calc(100% - 240px);
+  width: min(100%, calc(100vw - clamp(3rem, 10vw, 9rem) - 112px));
+  max-width: none;
 }
 
 .filterSentence {
@@ -387,9 +388,9 @@
   transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
               color 0.25s ease;
   font-family: $font-circular;
-  font-size: clamp(12.5px, 1.05vw, 15px);
-  font-weight: 500;
-  letter-spacing: 0.015em;
+  font-size: clamp(12px, 0.92vw, 14px);
+  font-weight: 450;
+  letter-spacing: 0.005em;
   color: rgba(255, 255, 255, 0.85);
 
   .isLight & {
@@ -416,7 +417,7 @@
 .dropdownSlot {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   background: transparent;
   border: none;
   padding: 0;
@@ -452,11 +453,11 @@
 
 .sectorAperture {
   margin-left: 0;
-  min-width: 75px;
+  min-width: 0;
 }
 
 .streamAperture {
-  display: inline-flex;
+  display: inline-block;
   align-items: flex-start;
   justify-content: flex-start;
   height: 24px;
@@ -469,7 +470,9 @@
   opacity: 1;
   will-change: width;
   box-sizing: border-box;
-  min-width: 95px;
+  min-width: 0;
+  flex: 0 0 auto;
+  vertical-align: middle;
 
   @media (max-width: 768px) {
     margin-left: 0;
@@ -489,7 +492,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
+  width: max-content;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -506,7 +509,7 @@
   white-space: nowrap;
   flex-shrink: 0;
   pointer-events: auto;
-  width: 100%;
+  width: max-content;
 }
 
 .textRotator {
@@ -524,31 +527,31 @@
   visibility: hidden;
   pointer-events: none;
   font-family: $font-circular;
-  font-size: clamp(12.5px, 1.05vw, 15px);
-  font-weight: 500;
-  letter-spacing: 0.015em;
+  font-size: clamp(12px, 0.92vw, 14px);
+  font-weight: 450;
+  letter-spacing: 0.005em;
   line-height: 24px;
   height: 24px;
   white-space: nowrap;
   user-select: none;
 
   @media (max-width: 768px) {
-    font-size: 13px;
-    letter-spacing: 0.01em;
+    font-size: 12px;
+    letter-spacing: 0.005em;
   }
 
   @media (max-width: 480px) {
-    font-size: 11.5px;
-    letter-spacing: 0.01em;
+    font-size: 11px;
+    letter-spacing: 0.005em;
   }
 }
 
 .streamText {
   display: inline-block;
   font-family: $font-circular;
-  font-size: clamp(12.5px, 1.05vw, 15px);
-  font-weight: 500;
-  letter-spacing: 0.015em;
+  font-size: clamp(12px, 0.92vw, 14px);
+  font-weight: 450;
+  letter-spacing: 0.005em;
   line-height: 24px;
   color: inherit;
   white-space: nowrap;
@@ -557,13 +560,13 @@
   transition: color 0.2s ease;
 
   @media (max-width: 768px) {
-    font-size: 13px;
-    letter-spacing: 0.01em;
+    font-size: 12px;
+    letter-spacing: 0.005em;
   }
 
   @media (max-width: 480px) {
-    font-size: 11.5px;
-    letter-spacing: 0.01em;
+    font-size: 11px;
+    letter-spacing: 0.005em;
   }
 
   .isDark & {
