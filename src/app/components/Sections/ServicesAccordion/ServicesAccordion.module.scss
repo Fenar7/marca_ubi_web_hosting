@@ -92,7 +92,7 @@
   }
 
   &.active {
-    background-color: #ff6100;
+    background-color: $client-accent-red;
     color: #ffffff;
 
     .countBadge {
@@ -204,7 +204,7 @@
   display: flex;
   flex-direction: row;
   width: 100%;
-  min-width: max-content;
+  min-width: 100%;
   height: clamp(520px, 44vw, 680px);
   gap: 1px;
   background-color: rgba(255, 255, 255, 0.08);
@@ -222,8 +222,8 @@
    calculating widths in JavaScript or forcing overflow on narrow screens. */
 .cardColumn {
   position: relative;
-  flex: 0 0 clamp(110px, 8.4vw, 150px);
-  min-width: clamp(110px, 8.4vw, 150px);
+  flex: 1 1 0;
+  min-width: 0;
   height: 100%;
   overflow: hidden;
   cursor: pointer;
@@ -232,7 +232,7 @@
   transition: flex-basis 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.3s ease;
 
   &:has(.cardTrigger[aria-expanded="true"]) {
-    flex-basis: min(54vw, 760px);
+    flex-grow: 4;
   }
 
   &:focus-visible {
@@ -242,12 +242,12 @@
   }
 
   @media (max-width: 1440px) {
-    min-width: 110px;
+    min-width: 0;
   }
 
   @media (max-width: 768px) {
-    flex-basis: 76vw;
-    min-width: 76vw;
+    flex-basis: 0;
+    min-width: 0;
   }
 }
 
@@ -384,11 +384,10 @@
 
 @media (max-width: 768px) {
   .cardColumn {
-    flex: 0 0 76vw;
+    flex: 1 1 0;
 
     &:has(.cardTrigger[aria-expanded="true"]) {
-      flex-basis: 86vw;
-      min-width: 86vw;
+      flex-grow: 4;
     }
   }
 }
