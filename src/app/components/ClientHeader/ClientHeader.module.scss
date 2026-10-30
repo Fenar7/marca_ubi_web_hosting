@@ -362,12 +362,27 @@
   height: 100%;
 }
 
+.centerCluster {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  pointer-events: auto;
+  z-index: 2;
+  max-width: calc(100% - 240px);
+}
+
 .streamAperture {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   height: 24px;
   line-height: 24px;
-  margin-left: 14px;
+  margin-left: 0;
   overflow: hidden;
   contain: paint layout;
   position: relative;
@@ -378,11 +393,11 @@
   transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
   @media (max-width: 768px) {
-    margin-left: 10px;
+    margin-left: 0;
   }
 
   @media (max-width: 480px) {
-    margin-left: 8px;
+    margin-left: 0;
   }
 }
 
@@ -395,8 +410,10 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  align-items: center;
   top: 0;
   left: 0;
+  width: 100%;
   will-change: transform;
 }
 
@@ -406,15 +423,18 @@
   line-height: 24px;
   display: flex;
   align-items: center;
+  justify-content: center;
   white-space: nowrap;
   flex-shrink: 0;
   pointer-events: auto;
+  width: 100%;
 }
 
 .textRotator {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   white-space: nowrap;
   height: 24px;
   line-height: 24px;

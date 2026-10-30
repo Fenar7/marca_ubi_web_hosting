@@ -265,7 +265,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         }
         role="banner"
       >
-        {/* Left Cluster: Brand Logo + Scrolled In-Place Disciplines Station */}
+        {/* Left Cluster: Brand Logo */}
         <div className={styles.leftCluster}>
           <div className={styles.brandLockup}>
             <Link href="/" className={styles.logoAnchor} aria-label="Marca Ubi Homepage" onClick={closeDrawer}>
@@ -279,8 +279,10 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
               The Brand Engineering Company
             </span>
           </div>
+        </div>
 
-          {/* Pentagram-Grade Mechanical Vertical Slot Aperture */}
+        {/* Center Cluster: Dead-Centered Pentagram-Grade Mechanical Vertical Slot Ticker */}
+        <div className={styles.centerCluster}>
           <div
             ref={apertureRef}
             className={`${styles.streamAperture} ${isScrolled ? styles.streamVisible : ""}`}
