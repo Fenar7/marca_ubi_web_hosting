@@ -73,9 +73,9 @@ export function ServicesAccordion() {
 
   return (
     <div className={styles.servicesShowcase}>
-      {/* Editorial Header Section with Swiss Grid Padding */}
       <div className={styles.headerContainer}>
         <div className={styles.kickerWrap}>
+          <span className={styles.sectionLabel}>SERVICES</span>
           <h3 className={styles.sectionTitle}>Capabilities &amp; Strategic Delivery</h3>
         </div>
 
@@ -124,9 +124,7 @@ export function ServicesAccordion() {
         </div>
       </div>
 
-      {/* 100% Full-Width Edge-to-Edge Cards Strip with Horizontal Navigation Rails */}
       <div className={styles.stripWrapper}>
-        {/* Left Scroll Navigation Button */}
         {canScrollLeft && (
           <button
             type="button"
@@ -170,6 +168,7 @@ export function ServicesAccordion() {
                 className={`${styles.cardColumn} ${isActive ? styles.cardActive : ""}`}
                 data-active={isActive}
                 onMouseEnter={() => setActiveServiceId(service.id)}
+                onTouchStart={() => setActiveServiceId(service.id)}
                 onMouseLeave={(event) => {
                   if (event.currentTarget.contains(document.activeElement)) {
                     return;
@@ -248,15 +247,16 @@ export function ServicesAccordion() {
                       <span className={styles.overlayNumber}>{service.number}</span>
                       <span className={styles.overlayCategory}>{activeCategory}</span>
                     </div>
-                    <h4 className={styles.overlayTitle}>{service.title}</h4>
-                    <div className={styles.accentBar} />
                     <p className={styles.overlayDesc}>{service.desc}</p>
                   </div>
 
-                  <div className={styles.overlayBottom}>
-                    <span className={styles.exploreCue}>{service.alt}</span>
-                    <span className={styles.redArrow} aria-hidden="true">&rarr;</span>
+                  <div className={styles.overlayServices}>
+                    <span className={styles.exploreCue}>WHAT WE DO</span>
+                    <ul>
+                      {service.services.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
                   </div>
+                  <h4 className={styles.overlayTitle}>{service.title}</h4>
                 </div>
               </article>
             );
