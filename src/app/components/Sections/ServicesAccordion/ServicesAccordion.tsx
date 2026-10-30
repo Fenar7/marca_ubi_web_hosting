@@ -1,26 +1,36 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { ServiceCategory, B2B_SERVICES, B2C_SERVICES } from "./types";
 import styles from "./ServicesAccordion.module.scss";
 
 /**
  * ServicesAccordion Component.
  * Full-width panoramic services showcase.
- * All cards divide space equally (strictly invariant width).
- * Hovering on a card smoothly overlays an obsidian backdrop, transitioning
- * the title from bottom to top and revealing the full descriptive copy and directional arrow.
+ * Preserves the two eight-item service groups while expanding the active panel,
+ * revealing its copy, and loading only that panel's muted loop.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function ServicesAccordion() {
   const [activeCategory, setActiveCategory] = useState<ServiceCategory>("B2B");
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const activeVideoRef = useRef<HTMLVideoElement | null>(null);
   const stripRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
   const [canScrollRight, setCanScrollRight] = useState<boolean>(true);
 
   const services = activeCategory === "B2B" ? B2B_SERVICES : B2C_SERVICES;
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setReducedMotion(media.matches);
+    updatePreference();
+    media.addEventListener("change", updatePreference);
+    return () => media.removeEventListener("change", updatePreference);
+  }, []);
 
   /**
    * Evaluates horizontal scroll metrics and manages navigation arrow visibility.
@@ -42,8 +52,10 @@ export function ServicesAccordion() {
   };
 
   const handleCategoryChange = (category: ServiceCategory) => {
+    activeVideoRef.current?.pause();
+    activeVideoRef.current = null;
     setActiveCategory(category);
-    setHoveredId(null);
+    setActiveServiceId(null);
     if (stripRef.current) {
       stripRef.current.scrollTo({ left: 0, behavior: "smooth" });
     }
@@ -72,9 +84,19 @@ export function ServicesAccordion() {
           <button
             type="button"
             role="tab"
+            id="services-tab-b2b"
+            aria-controls="services-panel"
             aria-selected={activeCategory === "B2B"}
+            tabIndex={activeCategory === "B2B" ? 0 : -1}
             className={`${styles.toggleButton} ${activeCategory === "B2B" ? styles.active : ""}`}
             onClick={() => handleCategoryChange("B2B")}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+                event.preventDefault();
+                handleCategoryChange("B2C");
+                document.getElementById("services-tab-b2c")?.focus();
+              }
+            }}
           >
             <span>B2B Enterprise</span>
             <span className={styles.countBadge}>8</span>
@@ -82,9 +104,19 @@ export function ServicesAccordion() {
           <button
             type="button"
             role="tab"
+            id="services-tab-b2c"
+            aria-controls="services-panel"
             aria-selected={activeCategory === "B2C"}
+            tabIndex={activeCategory === "B2C" ? 0 : -1}
             className={`${styles.toggleButton} ${activeCategory === "B2C" ? styles.active : ""}`}
             onClick={() => handleCategoryChange("B2C")}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+                event.preventDefault();
+                handleCategoryChange("B2B");
+                document.getElementById("services-tab-b2b")?.focus();
+              }
+            }}
           >
             <span>B2C Consumer</span>
             <span className={styles.countBadge}>8</span>
@@ -119,54 +151,98 @@ export function ServicesAccordion() {
         )}
 
         <div
+          id="services-panel"
+          role="region"
+          aria-labelledby={activeCategory === "B2B" ? "services-tab-b2b" : "services-tab-b2c"}
+          tabIndex={0}
           ref={stripRef}
           onScroll={updateScrollBounds}
           className={styles.fullWidthStrip}
-          role="region"
-          aria-label={`${activeCategory} Services Grid`}
+          aria-label={`${activeCategory} Services`}
         >
         <div className={styles.cardsRow}>
           {services.map((service) => {
-            const isHovered = hoveredId === service.id;
+            const isActive = activeServiceId === service.id;
 
             return (
               <article
                 key={service.id}
-                tabIndex={0}
-                role="region"
-                aria-label={service.title}
-                className={`${styles.cardColumn} ${isHovered ? styles.cardActive : ""}`}
-                onMouseEnter={() => setHoveredId(service.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                onClick={() => setHoveredId(service.id === hoveredId ? null : service.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setHoveredId(service.id === hoveredId ? null : service.id);
+                className={`${styles.cardColumn} ${isActive ? styles.cardActive : ""}`}
+                data-active={isActive}
+                onMouseEnter={() => setActiveServiceId(service.id)}
+                onMouseLeave={(event) => {
+                  if (event.currentTarget.contains(document.activeElement)) {
+                    return;
+                  }
+                  if (event.currentTarget.matches(":hover")) {
+                    return;
+                  }
+                  if (activeServiceId === service.id) {
+                    activeVideoRef.current?.pause();
+                    activeVideoRef.current = null;
+                    setActiveServiceId((current) => current === service.id ? null : current);
                   }
                 }}
               >
-                {/* Background Editorial Image */}
-                <div className={styles.imageLayer}>
-                  <img
+                <button
+                  type="button"
+                  className={styles.cardTrigger}
+                  aria-expanded={isActive}
+                  aria-controls={`service-details-${service.id}`}
+                  onFocus={() => setActiveServiceId(service.id)}
+                  onClick={() => setActiveServiceId((current) => current === service.id ? null : service.id)}
+                  onBlur={(event) => {
+                    if (!event.currentTarget.parentElement?.matches(":hover")) {
+                      activeVideoRef.current?.pause();
+                      activeVideoRef.current = null;
+                      setActiveServiceId((current) => current === service.id ? null : current);
+                    }
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") {
+                      activeVideoRef.current?.pause();
+                      activeVideoRef.current = null;
+                      setActiveServiceId(null);
+                      event.currentTarget.blur();
+                    }
+                  }}
+                />
+                <div className={styles.imageLayer} aria-hidden="true">
+                  <Image
                     src={service.imageUrl}
-                    alt={service.alt}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 76vw, 20vw"
                     loading="lazy"
                     decoding="async"
                   />
                 </div>
+                {isActive && !reducedMotion ? (
+                  <video
+                    ref={(video) => {
+                      if (!video) return;
+                      activeVideoRef.current = video;
+                      void video.play().catch(() => video.pause());
+                    }}
+                    className={styles.serviceVideo}
+                    src={service.videoSrc}
+                    poster={service.videoPoster}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="none"
+                    aria-hidden="true"
+                  />
+                ) : null}
 
-                {/* Resting Scrim (Dark gradient at bottom) */}
                 <div className={styles.restingScrim} />
-
-                {/* Resting Content (Visible when unhovered) */}
-                <div className={styles.restingContent} aria-hidden={isHovered}>
+                <div className={styles.restingContent} aria-hidden={isActive}>
                   <span className={styles.restingNumber}>{service.number}</span>
                   <h4 className={styles.restingTitle}>{service.title}</h4>
                 </div>
 
-                {/* Hover/Active Full Dark Overlay with Detailed Copy */}
-                <div className={styles.hoverOverlay} aria-hidden={!isHovered}>
+                <div id={`service-details-${service.id}`} className={styles.hoverOverlay} aria-hidden={!isActive}>
                   <div className={styles.overlayTop}>
                     <div className={styles.metaRow}>
                       <span className={styles.overlayNumber}>{service.number}</span>
@@ -178,7 +254,7 @@ export function ServicesAccordion() {
                   </div>
 
                   <div className={styles.overlayBottom}>
-                    <span className={styles.exploreCue}>Strategic Capability</span>
+                    <span className={styles.exploreCue}>{service.alt}</span>
                     <span className={styles.redArrow} aria-hidden="true">&rarr;</span>
                   </div>
                 </div>

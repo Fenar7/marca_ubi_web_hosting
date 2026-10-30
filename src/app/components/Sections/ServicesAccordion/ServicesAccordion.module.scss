@@ -211,7 +211,8 @@
   }
 }
 
-/* Each card strictly divides the space equally (NO width expansion) */
+/* Panels expand only while active, preserving the reference interaction without
+   calculating widths in JavaScript or forcing overflow on narrow screens. */
 .cardColumn {
   position: relative;
   flex: 1 1 0px;
@@ -221,6 +222,11 @@
   cursor: pointer;
   background-color: #0d0d0d;
   outline: none;
+  transition: flex-grow 0.65s cubic-bezier(0.19, 1, 0.22, 1);
+
+  &:has(.cardTrigger[aria-expanded="true"]) {
+    flex-grow: 2.25;
+  }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
@@ -234,6 +240,26 @@
 
   @media (max-width: 768px) {
     min-width: 240px;
+  }
+}
+
+.cardTrigger {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: -3px;
   }
 }
 
@@ -259,11 +285,22 @@
   }
 }
 
+.serviceVideo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #0d0d0d;
+  pointer-events: none;
+}
+
 /* Resting Scrim (Dark gradient at bottom for text contrast) */
 .restingScrim {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.88) 100%);
   transition: opacity 0.3s ease;
 
@@ -276,7 +313,7 @@
 .restingContent {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 4;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -319,7 +356,7 @@
 .hoverOverlay {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 7;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -336,6 +373,25 @@
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .cardColumn {
+    flex: 0 0 min(76vw, 300px);
+
+    &:has(.cardTrigger[aria-expanded="true"]) {
+      flex-basis: min(86vw, 340px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardColumn,
+  .imageLayer img,
+  .restingContent,
+  .hoverOverlay {
+    transition: none;
   }
 }
 
