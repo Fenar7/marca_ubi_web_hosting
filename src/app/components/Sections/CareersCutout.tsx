@@ -35,7 +35,7 @@ export function CareersCutout({ kicker }: CareersCutoutProps) {
           </h2>
         </div>
 
-        {/* Right Column: Dual Architectural Action Triggers */}
+        {/* Right Column: Architectural Action Trigger */}
         <div className={styles.actionColumn}>
           <div className={styles.actionCluster}>
             <Link
@@ -47,14 +47,7 @@ export function CareersCutout({ kicker }: CareersCutoutProps) {
               <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
             </Link>
 
-            <Link
-              href="/#locations"
-              className={styles.keralaStudiosPill}
-              aria-label="Kerala Studios - Explore our Calicut and Trivandrum creative workspaces"
-            >
-              <span className={styles.pillLabel}>Kerala Studios</span>
-              <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
-            </Link>
+            
           </div>
         </div>
       </div>

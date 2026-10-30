@@ -985,7 +985,8 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(cutoutTsx.includes("Careers"), "CareersCutout must render 'Careers'");
       assert.ok(cutoutTsx.includes("brandDot"), "CareersCutout must render brandDot");
       assert.ok(cutoutTsx.includes('href="/careers"'), "CareersCutout primary action must link to /careers");
-      assert.ok(cutoutTsx.includes('href="/#locations"'), "CareersCutout secondary action must link to /#locations");
+      assert.ok(!cutoutTsx.includes('href="/#locations"'), "CareersCutout must eradicate secondary Kerala Studios action");
+      assert.ok(!cutoutTsx.includes('keralaStudiosPill'), "CareersCutout must eradicate keralaStudiosPill");
       assert.ok(cutoutScss.includes("$client-accent-red"), "CareersCutout SCSS must use $client-accent-red");
     });
 
