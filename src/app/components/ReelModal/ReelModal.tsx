@@ -123,7 +123,6 @@ export function ReelModal({ isOpen, onClose, videoSrc = "/video/video-web.mp4" }
           <video
             ref={videoRef}
             src={videoSrc}
-            poster="/images/hero-image.png"
             preload="metadata"
             className={styles.reelVideo}
             autoPlay
