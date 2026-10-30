@@ -13,6 +13,12 @@ interface ReelModalProps {
  * Accessible Full-Screen Showreel Modal.
  * Traps focus, handles ESC key, pauses the background video layer,
  * and provides full custom player controls with audio.
+ *
+ * Performance enhancements:
+ * 1. Immediate luxury poster preview to eliminate initial black frames during buffer.
+ * 2. preload="metadata" to prioritize rapid modal opening without buffering delays.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function ReelModal({ isOpen, onClose, videoSrc = "/video/video-web.mp4" }: ReelModalProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -117,6 +123,7 @@ export function ReelModal({ isOpen, onClose, videoSrc = "/video/video-web.mp4" }
           <video
             ref={videoRef}
             src={videoSrc}
+            preload="metadata"
             className={styles.reelVideo}
             autoPlay
             playsInline

@@ -867,19 +867,14 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(scss.includes(".textRotator"), "ClientHeader.module.scss must define .textRotator");
       assert.ok(scss.includes(".streamGhost"), "ClientHeader.module.scss must define .streamGhost");
       assert.ok(scss.includes(".streamText"), "ClientHeader.module.scss must define .streamText");
-      assert.ok(scss.includes(".kineticCarrier"), "ClientHeader.module.scss must define .kineticCarrier");
-      assert.ok(tsx.includes("carrierARef"), "ClientHeader must declare Carrier Alpha ref");
-      assert.ok(tsx.includes("carrierBRef"), "ClientHeader must declare Carrier Beta ref");
-      assert.ok(tsx.includes("styles.kineticCarrier"), "ClientHeader must render dual kineticCarrier elements");
+      assert.ok(scss.includes("height: 24px;"), "ClientHeader.module.scss must enforce strict 24px aperture slot height");
+      assert.ok(scss.includes("contain: paint layout;"), "ClientHeader.module.scss must isolate paint containment");
+      assert.ok(tsx.includes("trackRef"), "ClientHeader must declare trackRef for vertical slot strip");
       assert.ok(tsx.includes("HOLD_DURATION"), "ClientHeader must enforce in-place hold duration");
-      assert.ok(tsx.includes("MORPH_DURATION"), "ClientHeader must enforce fluid vertical morph duration");
+      assert.ok(tsx.includes("ROLL_DURATION"), "ClientHeader must enforce mechanical roll duration");
+      assert.ok(tsx.includes("power4.inOut"), "ClientHeader must consume Pentagram power4.inOut easing");
       assert.ok(tsx.includes("activeAnimations"), "ClientHeader must track active animations for leak-free cleanup");
-      assert.ok(tsx.includes("TRAVEL_Y = 14"), "ClientHeader must enforce 14px slot-machine roll displacement");
-      assert.ok(tsx.includes("autoAlpha"), "ClientHeader must use autoAlpha for atomic visibility and opacity");
-      assert.ok(tsx.includes("styles.carrierAlpha"), "ClientHeader must bind carrierAlpha class to primary carrier");
-      assert.ok(scss.includes("margin-left: 12px;"), "ClientHeader.module.scss must anchor streamAperture 12px adjacent to logo");
       assert.ok(scss.includes("clamp(12.5px, 1.05vw, 15px)"), "ClientHeader.module.scss must scale streamText to responsive clamp");
-      assert.ok(scss.includes(".carrierAlpha"), "ClientHeader.module.scss must define default visible carrierAlpha");
       assert.ok(!scss.includes("@media (max-width: 680px)"), "ClientHeader.module.scss must not hide streamAperture on small screens");
     });
 
@@ -985,7 +980,8 @@ describe("Marca Ubi — 160over90 Client Platform Redesign Invariants", () => {
       assert.ok(cutoutTsx.includes("Careers"), "CareersCutout must render 'Careers'");
       assert.ok(cutoutTsx.includes("brandDot"), "CareersCutout must render brandDot");
       assert.ok(cutoutTsx.includes('href="/careers"'), "CareersCutout primary action must link to /careers");
-      assert.ok(cutoutTsx.includes('href="/#locations"'), "CareersCutout secondary action must link to /#locations");
+      assert.ok(!cutoutTsx.includes('href="/#locations"'), "CareersCutout must eradicate secondary Kerala Studios action");
+      assert.ok(!cutoutTsx.includes('keralaStudiosPill'), "CareersCutout must eradicate keralaStudiosPill");
       assert.ok(cutoutScss.includes("$client-accent-red"), "CareersCutout SCSS must use $client-accent-red");
     });
 

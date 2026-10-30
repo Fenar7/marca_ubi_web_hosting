@@ -11,12 +11,17 @@ interface BackgroundVideoEngineProps {
  * Single Persistent Living Video Engine.
  * Implements the 160over90 fixed background cinema pattern.
  * Remains mounted at z-index: -1 across the entire client session with GPU hardware acceleration.
+ *
+ * Performance enhancements:
+ * Keeps the video element's first decoded frame visible during buffering, with
+ * a neutral canvas for reduced-motion and autoplay-blocked environments.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function BackgroundVideoEngine({ isPausedByModal = false }: BackgroundVideoEngineProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isLowPowerMode, setIsLowPowerMode] = useState(false);
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
   useEffect(() => {
     // Respect OS-level reduced motion accessibility preferences
@@ -81,17 +86,23 @@ export function BackgroundVideoEngine({ isPausedByModal = false }: BackgroundVid
 
   return (
     <div className={styles.videoHostContainer} aria-hidden="true">
+      {/* 0ms Immediate High-Fidelity Luxury Poster to eliminate black void */}
+      <div
+        className={styles.videoCanvas}
+        aria-hidden="true"
+      />
+
       <video
         ref={videoRef}
-        className={`${styles.fixedVideoElement} ${isVideoLoaded ? styles.loaded : ""}`}
-        src="/video/video-web.mp4"
+        className={styles.fixedVideoElement}
         autoPlay
         muted
         loop
         playsInline
         preload="auto"
-        onCanPlay={() => setIsVideoLoaded(true)}
-      />
+      >
+        <source src="/video/video-web-faststart.mp4" type="video/mp4" />
+      </video>
       <div className={styles.ambientScrim} />
     </div>
   );
