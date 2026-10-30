@@ -52,15 +52,15 @@ interface ClientHeaderProps {
 }
 
 /**
- * Adaptive Header HUD with Scroll-Activated Frosted Glass & Pentagram Dual Dropdown Sentence Ticker.
+ * Adaptive Header HUD with Scroll-Activated Frosted Glass & Continuous Pentagram Dual-Slot Engine.
  *
  * Implements:
  * 1. IntersectionObserver Theme Sensor: Monitors current intersecting section switching between .isDark and .isLight.
  * 2. Scroll-Activated Frosted Glass: In pristine top state (scrollY <= 50px) header is transparent, past 50px transitions to frosted glass.
- * 3. Exact Pentagram Dual Dropdown Sentence Engine ("We design [Discipline ▾] for [Sector ▾]"):
+ * 3. Exact Pentagram Continuous Dual Slot Machine Engine ("We design [Discipline ▾] for [Sector ▾]"):
  *    - Dead-centered between brandmark and navigation trigger.
  *    - Dual vertical slot apertures with synchronized power4.inOut mechanical rolls and dynamic width morphing.
- *    - Interactive drop-down triggers with caret icons opening the navigation drawer.
+ *    - Continuous, uninterrupted ambient animation without pause or click obstruction.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -140,11 +140,10 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const closeDrawer = () => setIsDrawerOpen(false);
 
-  // 3. Pentagram Dual Dropdown Mechanical Slot Engine
+  // 3. Continuous Pentagram Dual-Slot Mechanical Rolling Engine
   useGSAP(
     () => {
       if (
-        !isScrolled ||
         !apertureRef.current ||
         !trackRef.current ||
         !sectorApertureRef.current ||
@@ -162,29 +161,41 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
       const HOLD_DURATION = 2.6;
       const ROLL_DURATION = 0.9;
 
-      // Measure exact natural scroll widths
-      const discWidths = itemRefs.current.map((el) => (el ? Math.ceil(el.scrollWidth) : 0));
-      const secWidths = sectorItemRefs.current.map((el) => (el ? Math.ceil(el.scrollWidth) : 0));
+      // Measure exact natural scroll widths with safe minimum fallbacks
+      const getWidths = () => {
+        const dWidths = itemRefs.current.map((el) => {
+          if (!el) return 0;
+          const w = Math.ceil(el.scrollWidth || el.getBoundingClientRect().width);
+          return w > 0 ? w : 110;
+        });
+        const sWidths = sectorItemRefs.current.map((el) => {
+          if (!el) return 0;
+          const w = Math.ceil(el.scrollWidth || el.getBoundingClientRect().width);
+          return w > 0 ? w : 85;
+        });
+        return { dWidths, sWidths };
+      };
 
-      // Reduced motion accessibility fallback
+      const { dWidths: discWidths, sWidths: secWidths } = getWidths();
+
+      // Accessibility: Honor reduced motion preference
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         gsap.set([discTrack, secTrack], { y: 0 });
-        if (discWidths[0] > 0) gsap.set(discAperture, { width: discWidths[0] });
-        if (secWidths[0] > 0) gsap.set(secAperture, { width: secWidths[0] });
+        gsap.set(discAperture, { width: discWidths[0] > 0 ? discWidths[0] : "auto" });
+        gsap.set(secAperture, { width: secWidths[0] > 0 ? secWidths[0] : "auto" });
         return;
       }
 
       let discIndex = 0;
       let secIndex = 0;
-      let isPaused = false;
       let isCleanedUp = false;
       const activeAnimations = new Set<gsap.core.Animation>();
 
       // Initial dimensions priming
       gsap.set(discTrack, { y: 0 });
       gsap.set(secTrack, { y: 0 });
-      if (discWidths[0] > 0) gsap.set(discAperture, { width: discWidths[0] });
-      if (secWidths[0] > 0) gsap.set(secAperture, { width: secWidths[0] });
+      gsap.set(discAperture, { width: discWidths[0] > 0 ? discWidths[0] : "auto" });
+      gsap.set(secAperture, { width: secWidths[0] > 0 ? secWidths[0] : "auto" });
 
       const cycleNext = () => {
         if (isCleanedUp) return;
@@ -195,8 +206,8 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         const targetDiscY = -(nextDiscIndex * ITEM_HEIGHT);
         const targetSecY = -(nextSecIndex * ITEM_HEIGHT);
 
-        const targetDiscWidth = discWidths[nextDiscIndex % HEADER_DISCIPLINES.length];
-        const targetSecWidth = secWidths[nextSecIndex % HEADER_SECTORS.length];
+        const targetDiscWidth = discWidths[nextDiscIndex % HEADER_DISCIPLINES.length] || 110;
+        const targetSecWidth = secWidths[nextSecIndex % HEADER_SECTORS.length] || 85;
 
         const rollTl = gsap.timeline({
           onComplete: () => {
@@ -220,19 +231,16 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
             }
             setActiveSectorIndex(secIndex);
 
-            // Schedule next roll cycle
+            // Schedule subsequent continuous roll cycle
             const nextCall = gsap.delayedCall(HOLD_DURATION, () => {
               activeAnimations.delete(nextCall);
               cycleNext();
             });
             activeAnimations.add(nextCall);
-            if (isPaused) {
-              nextCall.pause();
-            }
           },
         });
 
-        // Dual synchronized mechanical vertical roll with Pentagram power4.inOut
+        // Dual synchronized mechanical vertical roll with Pentagram's power4.inOut
         rollTl.to(
           discTrack,
           {
@@ -279,9 +287,6 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         }
 
         activeAnimations.add(rollTl);
-        if (isPaused) {
-          rollTl.pause();
-        }
       };
 
       const initialTimer = gsap.delayedCall(HOLD_DURATION, () => {
@@ -290,34 +295,14 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
       });
       activeAnimations.add(initialTimer);
 
-      const onEnter = () => {
-        isPaused = true;
-        activeAnimations.forEach((anim) => anim.pause());
-      };
-
-      const onLeave = () => {
-        isPaused = false;
-        activeAnimations.forEach((anim) => anim.resume());
-      };
-
-      const container = containerRef.current;
-      if (container) {
-        container.addEventListener("mouseenter", onEnter);
-        container.addEventListener("mouseleave", onLeave);
-      }
-
       return () => {
         isCleanedUp = true;
         activeAnimations.forEach((anim) => anim.kill());
         activeAnimations.clear();
         gsap.killTweensOf([discTrack, discAperture, secTrack, secAperture]);
-        if (container) {
-          container.removeEventListener("mouseenter", onEnter);
-          container.removeEventListener("mouseleave", onLeave);
-        }
       };
     },
-    { dependencies: [isScrolled], scope: containerRef }
+    { dependencies: [], scope: containerRef }
   );
 
   return (
@@ -352,7 +337,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
           </div>
         </div>
 
-        {/* Center Cluster: Dead-Centered Pentagram Dual-Dropdown Sentence Station */}
+        {/* Center Cluster: Dead-Centered Continuous Pentagram Dual-Slot Sentence Station */}
         <div className={styles.centerCluster} ref={containerRef}>
           <div
             className={`${styles.filterSentence} ${isScrolled ? styles.streamVisible : ""}`}
@@ -362,17 +347,10 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
             <span className={styles.sentenceStatic}>We design&nbsp;</span>
 
             {/* Dropdown Slot 1: Disciplines */}
-            <button
-              type="button"
-              className={styles.dropdownSlot}
-              onClick={toggleDrawer}
-              aria-label="Choose discipline"
-              aria-expanded={isDrawerOpen}
-            >
+            <span className={styles.dropdownSlot} aria-hidden="false">
               <span
                 ref={apertureRef}
                 className={styles.streamAperture}
-                aria-hidden={!isScrolled}
               >
                 {/* Structural ghost spacer matching maximum discipline width for Section 18 test invariant */}
                 <span
@@ -413,18 +391,12 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
               >
                 <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </button>
+            </span>
 
             <span className={styles.sentenceStatic}>&nbsp;for&nbsp;</span>
 
             {/* Dropdown Slot 2: Sectors */}
-            <button
-              type="button"
-              className={styles.dropdownSlot}
-              onClick={toggleDrawer}
-              aria-label="Choose sector"
-              aria-expanded={isDrawerOpen}
-            >
+            <span className={styles.dropdownSlot} aria-hidden="false">
               <span
                 ref={sectorApertureRef}
                 className={`${styles.streamAperture} ${styles.sectorAperture}`}
@@ -457,7 +429,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
               >
                 <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </button>
+            </span>
           </div>
         </div>
 

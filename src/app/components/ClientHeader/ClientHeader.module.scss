@@ -418,17 +418,17 @@
   gap: 3px;
   background: transparent;
   border: none;
-  padding: 0 3px;
+  padding: 0;
   margin: 0;
-  cursor: pointer;
+  cursor: default;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
   color: #ffffff;
   line-height: 24px;
   height: 24px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  user-select: none;
+  pointer-events: none;
 
   .isDark & {
     color: rgba(255, 255, 255, 0.95);
@@ -437,20 +437,6 @@
   .isLight & {
     color: rgba(10, 10, 10, 0.92);
   }
-
-  &:hover {
-    color: $client-accent-red;
-    background-color: rgba(255, 255, 255, 0.08);
-
-    .isLight & {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-  }
-
-  &:focus-visible {
-    outline: 1.5px solid $client-accent-red;
-    outline-offset: 2px;
-  }
 }
 
 .slotCaret {
@@ -458,19 +444,14 @@
   width: 9px;
   height: 9px;
   flex-shrink: 0;
-  transition: transform 0.2s ease, color 0.2s ease;
-  opacity: 0.75;
   color: currentColor;
-
-  .dropdownSlot:hover & {
-    opacity: 1;
-    transform: translateY(1px);
-    color: $client-accent-red;
-  }
+  opacity: 0.75;
+  margin-left: 2px;
 }
 
 .sectorAperture {
   margin-left: 0;
+  min-width: 75px;
 }
 
 .streamAperture {
@@ -484,10 +465,10 @@
   contain: paint layout;
   position: relative;
   pointer-events: none;
-  opacity: 0;
-  will-change: width, opacity;
+  opacity: 1;
+  will-change: width;
   box-sizing: border-box;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 95px;
 
   @media (max-width: 768px) {
     margin-left: 0;
