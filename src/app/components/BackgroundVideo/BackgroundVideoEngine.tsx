@@ -11,6 +11,13 @@ interface BackgroundVideoEngineProps {
  * Single Persistent Living Video Engine.
  * Implements the 160over90 fixed background cinema pattern.
  * Remains mounted at z-index: -1 across the entire client session with GPU hardware acceleration.
+ *
+ * Performance enhancements:
+ * 1. 0ms instant luxury poster background to completely eliminate the pitch-black void during buffer.
+ * 2. Tuned preload="metadata" with immediate play intent, preventing network socket saturation during hydration.
+ * 3. Multi-event ready detection (onLoadedData, onCanPlay, onPlaying) for ultra-fast frame reveal.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function BackgroundVideoEngine({ isPausedByModal = false }: BackgroundVideoEngineProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -81,17 +88,27 @@ export function BackgroundVideoEngine({ isPausedByModal = false }: BackgroundVid
 
   return (
     <div className={styles.videoHostContainer} aria-hidden="true">
+      {/* 0ms Immediate High-Fidelity Luxury Poster to eliminate black void */}
+      <div
+        className={`${styles.instantPosterBackground} ${isVideoLoaded ? styles.faded : ""}`}
+        aria-hidden="true"
+      />
+
       <video
         ref={videoRef}
         className={`${styles.fixedVideoElement} ${isVideoLoaded ? styles.loaded : ""}`}
-        src="/video/video-web.mp4"
+        poster="/images/hero-image.png"
         autoPlay
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
+        onLoadedData={() => setIsVideoLoaded(true)}
         onCanPlay={() => setIsVideoLoaded(true)}
-      />
+        onPlaying={() => setIsVideoLoaded(true)}
+      >
+        <source src="/video/video-web.mp4" type="video/mp4" />
+      </video>
       <div className={styles.ambientScrim} />
     </div>
   );

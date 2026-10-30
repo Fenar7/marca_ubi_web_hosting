@@ -165,13 +165,17 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
       const getWidths = () => {
         const dWidths = itemRefs.current.map((el) => {
           if (!el) return 0;
-          const w = Math.ceil(el.scrollWidth || el.getBoundingClientRect().width);
-          return w > 0 ? w : 110;
+          const textSpan = el.querySelector('span > span') as HTMLElement | null;
+          const target = textSpan || el;
+          const w = Math.ceil(target.getBoundingClientRect().width || target.scrollWidth);
+          return w > 0 ? w + 6 : 110;
         });
         const sWidths = sectorItemRefs.current.map((el) => {
           if (!el) return 0;
-          const w = Math.ceil(el.scrollWidth || el.getBoundingClientRect().width);
-          return w > 0 ? w : 85;
+          const textSpan = el.querySelector('span > span') as HTMLElement | null;
+          const target = textSpan || el;
+          const w = Math.ceil(target.getBoundingClientRect().width || target.scrollWidth);
+          return w > 0 ? w + 6 : 85;
         });
         return { dWidths, sWidths };
       };
@@ -340,7 +344,7 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         {/* Center Cluster: Dead-Centered Continuous Pentagram Dual-Slot Sentence Station */}
         <div className={styles.centerCluster} ref={containerRef}>
           <div
-            className={`${styles.filterSentence} ${isScrolled ? styles.streamVisible : ""}`}
+            className={`${styles.filterSentence} ${styles.streamVisible}`}
             role="region"
             aria-label="Capabilities Switcher"
           >

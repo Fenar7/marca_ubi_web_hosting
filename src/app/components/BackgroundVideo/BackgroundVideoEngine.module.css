@@ -12,6 +12,24 @@
   will-change: transform;
 }
 
+.instantPosterBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("/images/hero-image.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 1;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.instantPosterBackground.faded {
+  opacity: 0;
+}
+
 .fixedVideoElement {
   position: absolute;
   top: 0;
