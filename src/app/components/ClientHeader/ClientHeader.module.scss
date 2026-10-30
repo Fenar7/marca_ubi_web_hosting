@@ -376,6 +376,103 @@
   max-width: calc(100% - 240px);
 }
 
+.filterSentence {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 24px;
+  line-height: 24px;
+  opacity: 0;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: $font-circular;
+  font-size: clamp(12.5px, 1.05vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  color: rgba(255, 255, 255, 0.7);
+
+  .isLight & {
+    color: rgba(10, 10, 10, 0.65);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
+}
+
+.sentenceStatic {
+  display: inline-block;
+  user-select: none;
+  line-height: 24px;
+  height: 24px;
+  color: inherit;
+}
+
+.dropdownSlot {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  padding: 0 3px;
+  margin: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: #ffffff;
+  line-height: 24px;
+  height: 24px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  .isDark & {
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .isLight & {
+    color: rgba(10, 10, 10, 0.92);
+  }
+
+  &:hover {
+    color: $client-accent-red;
+    background-color: rgba(255, 255, 255, 0.08);
+
+    .isLight & {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  &:focus-visible {
+    outline: 1.5px solid $client-accent-red;
+    outline-offset: 2px;
+  }
+}
+
+.slotCaret {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, color 0.2s ease;
+  opacity: 0.75;
+  color: currentColor;
+
+  .dropdownSlot:hover & {
+    opacity: 1;
+    transform: translateY(1px);
+    color: $client-accent-red;
+  }
+}
+
+.sectorAperture {
+  margin-left: 0;
+}
+
 .streamAperture {
   display: inline-flex;
   align-items: center;

@@ -17,6 +17,7 @@ export const BRAND_STATEMENTS = [
 ] as const;
 
 export const HEADER_DISCIPLINES = [
+  "Everything",
   "Brand Strategy",
   "Visual Identity Systems",
   "Creative Direction",
@@ -31,7 +32,19 @@ export const HEADER_DISCIPLINES = [
   "Spatial Brand Design",
 ] as const;
 
-const TICKER_ITEMS = [...HEADER_DISCIPLINES, HEADER_DISCIPLINES[0]] as const;
+export const HEADER_SECTORS = [
+  "Everyone",
+  "Arts & Culture",
+  "High-Growth Tech",
+  "Enterprise Transformation",
+  "Civic & Public",
+  "Luxury & Lifestyle",
+  "Media & Entertainment",
+  "Hospitality & Spaces",
+] as const;
+
+const TICKER_DISCIPLINES = [...HEADER_DISCIPLINES, HEADER_DISCIPLINES[0]] as const;
+const TICKER_SECTORS = [...HEADER_SECTORS, HEADER_SECTORS[0]] as const;
 
 interface ClientHeaderProps {
   onOpenReel?: () => void;
@@ -39,18 +52,15 @@ interface ClientHeaderProps {
 }
 
 /**
- * Adaptive Header HUD with Scroll-Activated Frosted Glass.
+ * Adaptive Header HUD with Scroll-Activated Frosted Glass & Pentagram Dual Dropdown Sentence Ticker.
  *
  * Implements:
- * 1. IntersectionObserver Theme Sensor: Monitors current intersecting section
- *    switching between .isDark and .isLight.
- * 2. Scroll-Activated Frosted Glass:
- *    - In pristine top state (scrollY <= 50px), header is 100% transparent.
- *    - When scrolled past 50px, smoothly transitions into 28px blur frosted glass.
- * 3. Pentagram-Grade Mechanical Vertical Slot-Machine Ticker Engine:
- *    - Strict single-line 24px physical aperture with hardware GPU containment.
- *    - Synchronous power4.inOut vertical roll and dynamic width breathing hugging active typography.
- *    - Continuous 13-slot flex column strip with seamless zero-jump infinite looping.
+ * 1. IntersectionObserver Theme Sensor: Monitors current intersecting section switching between .isDark and .isLight.
+ * 2. Scroll-Activated Frosted Glass: In pristine top state (scrollY <= 50px) header is transparent, past 50px transitions to frosted glass.
+ * 3. Exact Pentagram Dual Dropdown Sentence Engine ("We design [Discipline ▾] for [Sector ▾]"):
+ *    - Dead-centered between brandmark and navigation trigger.
+ *    - Dual vertical slot apertures with synchronized power4.inOut mechanical rolls and dynamic width morphing.
+ *    - Interactive drop-down triggers with caret icons opening the navigation drawer.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -58,12 +68,21 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headerTheme, setHeaderTheme] = useState<"dark" | "light">(defaultTheme);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeDisciplineIndex, setActiveDisciplineIndex] = useState(0);
+  const [activeSectorIndex, setActiveSectorIndex] = useState(0);
 
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const apertureRef = useRef<HTMLDivElement | null>(null);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Slot 1: Disciplines
+  const apertureRef = useRef<HTMLSpanElement | null>(null);
+  const trackRef = useRef<HTMLSpanElement | null>(null);
+  const itemRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  // Slot 2: Sectors
+  const sectorApertureRef = useRef<HTMLSpanElement | null>(null);
+  const sectorTrackRef = useRef<HTMLSpanElement | null>(null);
+  const sectorItemRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   // 1. Scroll-Activated Frosted Glass Sensor (Passive + rAF throttled)
   useEffect(() => {
@@ -121,63 +140,87 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const closeDrawer = () => setIsDrawerOpen(false);
 
-  // 3. Pentagram-Grade Mechanical Vertical Slot Ticker Engine
+  // 3. Pentagram Dual Dropdown Mechanical Slot Engine
   useGSAP(
     () => {
-      if (!isScrolled || !apertureRef.current || !trackRef.current) {
+      if (
+        !isScrolled ||
+        !apertureRef.current ||
+        !trackRef.current ||
+        !sectorApertureRef.current ||
+        !sectorTrackRef.current
+      ) {
         return;
       }
 
-      const aperture = apertureRef.current;
-      const track = trackRef.current;
+      const discAperture = apertureRef.current;
+      const discTrack = trackRef.current;
+      const secAperture = sectorApertureRef.current;
+      const secTrack = sectorTrackRef.current;
+
       const ITEM_HEIGHT = 24;
       const HOLD_DURATION = 2.6;
       const ROLL_DURATION = 0.9;
 
-      // Measure exact natural widths for all items
-      const itemWidths = itemRefs.current.map((el) => (el ? Math.ceil(el.scrollWidth) : 0));
+      // Measure exact natural scroll widths
+      const discWidths = itemRefs.current.map((el) => (el ? Math.ceil(el.scrollWidth) : 0));
+      const secWidths = sectorItemRefs.current.map((el) => (el ? Math.ceil(el.scrollWidth) : 0));
 
-      // Accessibility: Honor reduced motion preference
+      // Reduced motion accessibility fallback
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        gsap.set(track, { y: 0 });
-        if (itemWidths[0] > 0) {
-          gsap.set(aperture, { width: itemWidths[0] });
-        }
+        gsap.set([discTrack, secTrack], { y: 0 });
+        if (discWidths[0] > 0) gsap.set(discAperture, { width: discWidths[0] });
+        if (secWidths[0] > 0) gsap.set(secAperture, { width: secWidths[0] });
         return;
       }
 
-      let currentIndex = 0;
+      let discIndex = 0;
+      let secIndex = 0;
       let isPaused = false;
       let isCleanedUp = false;
       const activeAnimations = new Set<gsap.core.Animation>();
 
-      // Prime initial state
-      gsap.set(track, { y: 0 });
-      if (itemWidths[0] > 0) {
-        gsap.set(aperture, { width: itemWidths[0] });
-      }
+      // Initial dimensions priming
+      gsap.set(discTrack, { y: 0 });
+      gsap.set(secTrack, { y: 0 });
+      if (discWidths[0] > 0) gsap.set(discAperture, { width: discWidths[0] });
+      if (secWidths[0] > 0) gsap.set(secAperture, { width: secWidths[0] });
 
       const cycleNext = () => {
         if (isCleanedUp) return;
 
-        const nextIndex = currentIndex + 1;
-        const targetY = -(nextIndex * ITEM_HEIGHT);
-        const targetWidth = itemWidths[nextIndex % HEADER_DISCIPLINES.length];
+        const nextDiscIndex = discIndex + 1;
+        const nextSecIndex = secIndex + 1;
+
+        const targetDiscY = -(nextDiscIndex * ITEM_HEIGHT);
+        const targetSecY = -(nextSecIndex * ITEM_HEIGHT);
+
+        const targetDiscWidth = discWidths[nextDiscIndex % HEADER_DISCIPLINES.length];
+        const targetSecWidth = secWidths[nextSecIndex % HEADER_SECTORS.length];
 
         const rollTl = gsap.timeline({
           onComplete: () => {
             activeAnimations.delete(rollTl);
 
-            if (nextIndex >= HEADER_DISCIPLINES.length) {
-              // Instant silent wrap-around from clone (12) back to index 0
-              gsap.set(track, { y: 0 });
-              currentIndex = 0;
+            // Silent zero-jump wrap for disciplines
+            if (nextDiscIndex >= HEADER_DISCIPLINES.length) {
+              gsap.set(discTrack, { y: 0 });
+              discIndex = 0;
             } else {
-              currentIndex = nextIndex;
+              discIndex = nextDiscIndex;
             }
-            setActiveIndex(currentIndex);
+            setActiveDisciplineIndex(discIndex);
 
-            // Schedule subsequent roll
+            // Silent zero-jump wrap for sectors
+            if (nextSecIndex >= HEADER_SECTORS.length) {
+              gsap.set(secTrack, { y: 0 });
+              secIndex = 0;
+            } else {
+              secIndex = nextSecIndex;
+            }
+            setActiveSectorIndex(secIndex);
+
+            // Schedule next roll cycle
             const nextCall = gsap.delayedCall(HOLD_DURATION, () => {
               activeAnimations.delete(nextCall);
               cycleNext();
@@ -189,22 +232,45 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
           },
         });
 
-        // Dual synchronized mechanical tween with Pentagram's power4.inOut
+        // Dual synchronized mechanical vertical roll with Pentagram power4.inOut
         rollTl.to(
-          track,
+          discTrack,
           {
-            y: targetY,
+            y: targetDiscY,
             duration: ROLL_DURATION,
             ease: "power4.inOut",
           },
           0
         );
 
-        if (targetWidth > 0) {
+        rollTl.to(
+          secTrack,
+          {
+            y: targetSecY,
+            duration: ROLL_DURATION,
+            ease: "power4.inOut",
+          },
+          0
+        );
+
+        // Independent symmetrical dynamic width morphing
+        if (targetDiscWidth > 0) {
           rollTl.to(
-            aperture,
+            discAperture,
             {
-              width: targetWidth,
+              width: targetDiscWidth,
+              duration: ROLL_DURATION,
+              ease: "power4.inOut",
+            },
+            0
+          );
+        }
+
+        if (targetSecWidth > 0) {
+          rollTl.to(
+            secAperture,
+            {
+              width: targetSecWidth,
               duration: ROLL_DURATION,
               ease: "power4.inOut",
             },
@@ -234,19 +300,24 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
         activeAnimations.forEach((anim) => anim.resume());
       };
 
-      aperture.addEventListener("mouseenter", onEnter);
-      aperture.addEventListener("mouseleave", onLeave);
+      const container = containerRef.current;
+      if (container) {
+        container.addEventListener("mouseenter", onEnter);
+        container.addEventListener("mouseleave", onLeave);
+      }
 
       return () => {
         isCleanedUp = true;
         activeAnimations.forEach((anim) => anim.kill());
         activeAnimations.clear();
-        gsap.killTweensOf([track, aperture]);
-        aperture.removeEventListener("mouseenter", onEnter);
-        aperture.removeEventListener("mouseleave", onLeave);
+        gsap.killTweensOf([discTrack, discAperture, secTrack, secAperture]);
+        if (container) {
+          container.removeEventListener("mouseenter", onEnter);
+          container.removeEventListener("mouseleave", onLeave);
+        }
       };
     },
-    { dependencies: [isScrolled], scope: apertureRef }
+    { dependencies: [isScrolled], scope: containerRef }
   );
 
   return (
@@ -281,42 +352,112 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
           </div>
         </div>
 
-        {/* Center Cluster: Dead-Centered Pentagram-Grade Mechanical Vertical Slot Ticker */}
-        <div className={styles.centerCluster}>
+        {/* Center Cluster: Dead-Centered Pentagram Dual-Dropdown Sentence Station */}
+        <div className={styles.centerCluster} ref={containerRef}>
           <div
-            ref={apertureRef}
-            className={`${styles.streamAperture} ${isScrolled ? styles.streamVisible : ""}`}
-            aria-hidden={!isScrolled}
+            className={`${styles.filterSentence} ${isScrolled ? styles.streamVisible : ""}`}
             role="region"
-            aria-label="Brand Disciplines Ticker"
+            aria-label="Capabilities Switcher"
           >
-            {/* Structural ghost spacer matching maximum discipline width for Section 18 test invariant */}
-            <div
-              className={styles.textRotator}
-              aria-hidden="true"
-              style={{ position: "absolute", visibility: "hidden", pointerEvents: "none" }}
-            >
-              <span className={styles.streamGhost}>
-                Experiential Production
-              </span>
-            </div>
+            <span className={styles.sentenceStatic}>We design&nbsp;</span>
 
-            <div ref={trackRef} className={styles.streamTrack}>
-              {TICKER_ITEMS.map((item, index) => (
-                <div
-                  key={`${item}-${index}`}
-                  ref={(el) => {
-                    itemRefs.current[index] = el;
-                  }}
-                  className={`${styles.kineticItem} ${styles.tickerSlot}`}
-                  aria-hidden={index !== activeIndex}
+            {/* Dropdown Slot 1: Disciplines */}
+            <button
+              type="button"
+              className={styles.dropdownSlot}
+              onClick={toggleDrawer}
+              aria-label="Choose discipline"
+              aria-expanded={isDrawerOpen}
+            >
+              <span
+                ref={apertureRef}
+                className={styles.streamAperture}
+                aria-hidden={!isScrolled}
+              >
+                {/* Structural ghost spacer matching maximum discipline width for Section 18 test invariant */}
+                <span
+                  className={styles.textRotator}
+                  aria-hidden="true"
+                  style={{ position: "absolute", visibility: "hidden", pointerEvents: "none" }}
                 >
-                  <div className={styles.textRotator}>
-                    <span className={styles.streamText}>{item}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  <span className={styles.streamGhost}>
+                    Experiential Production
+                  </span>
+                </span>
+
+                <span ref={trackRef} className={styles.streamTrack}>
+                  {TICKER_DISCIPLINES.map((item, index) => (
+                    <span
+                      key={`discipline-${item}-${index}`}
+                      ref={(el) => {
+                        itemRefs.current[index] = el;
+                      }}
+                      className={`${styles.kineticItem} ${styles.tickerSlot}`}
+                      aria-hidden={index !== activeDisciplineIndex}
+                    >
+                      <span className={styles.textRotator}>
+                        <span className={styles.streamText}>{item}</span>
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              </span>
+
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 12 12"
+                fill="none"
+                className={styles.slotCaret}
+                aria-hidden="true"
+              >
+                <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <span className={styles.sentenceStatic}>&nbsp;for&nbsp;</span>
+
+            {/* Dropdown Slot 2: Sectors */}
+            <button
+              type="button"
+              className={styles.dropdownSlot}
+              onClick={toggleDrawer}
+              aria-label="Choose sector"
+              aria-expanded={isDrawerOpen}
+            >
+              <span
+                ref={sectorApertureRef}
+                className={`${styles.streamAperture} ${styles.sectorAperture}`}
+              >
+                <span ref={sectorTrackRef} className={styles.streamTrack}>
+                  {TICKER_SECTORS.map((item, index) => (
+                    <span
+                      key={`sector-${item}-${index}`}
+                      ref={(el) => {
+                        sectorItemRefs.current[index] = el;
+                      }}
+                      className={`${styles.kineticItem} ${styles.tickerSlot}`}
+                      aria-hidden={index !== activeSectorIndex}
+                    >
+                      <span className={styles.textRotator}>
+                        <span className={styles.streamText}>{item}</span>
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              </span>
+
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 12 12"
+                fill="none"
+                className={styles.slotCaret}
+                aria-hidden="true"
+              >
+                <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -334,15 +475,27 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
               {isDrawerOpen ? "Close navigation menu" : "Open navigation menu"}
             </span>
             <div className={styles.burgerStack} aria-hidden="true">
-              <span className={`${styles.burgerLine} ${isDrawerOpen ? styles.lineOpenTop : ""}`} />
-              <span className={`${styles.burgerLine} ${isDrawerOpen ? styles.lineOpenMiddle : ""}`} />
-              <span className={`${styles.burgerLine} ${isDrawerOpen ? styles.lineOpenBottom : ""}`} />
+              <span
+                className={`${styles.burgerLine} ${
+                  isDrawerOpen ? styles.lineOpenTop : ""
+                }`}
+              />
+              <span
+                className={`${styles.burgerLine} ${
+                  isDrawerOpen ? styles.lineOpenMiddle : ""
+                }`}
+              />
+              <span
+                className={`${styles.burgerLine} ${
+                  isDrawerOpen ? styles.lineOpenBottom : ""
+                }`}
+              />
             </div>
           </button>
         </div>
       </header>
 
-      {/* 160/90 Benchmark Split Navigation Overlay */}
+      {/* Accessible Navigation Overlay Component */}
       <NavigationOverlay
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
