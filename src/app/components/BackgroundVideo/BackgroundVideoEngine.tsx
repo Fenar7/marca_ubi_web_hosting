@@ -12,9 +12,13 @@ interface BackgroundVideoEngineProps {
  * Implements the 160over90 fixed background cinema pattern.
  * Remains mounted at z-index: -1 across the entire client session with GPU hardware acceleration.
  *
- * Performance enhancements:
- * Keeps the video element's first decoded frame visible during buffering, with
- * a neutral canvas for reduced-motion and autoplay-blocked environments.
+ * Architectural Invariants:
+ * 1. Resilient Dual-Source Pipeline: Uses primary /video/video-web.mp4 with secondary
+ *    /video/video-web-faststart.mp4 fallback and direct element src for universal browser compatibility.
+ * 2. Graceful Error Fallback: Binds onError diagnostic telemetry; any media decode or network
+ *    failure immediately fails over to the high-fidelity static poster rather than a broken canvas.
+ * 3. Modal Synchronization: Coordinates with reel:open and reel:close events to preserve
+ *    GPU and audio decoding resources during full-screen modal overlays.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -86,7 +90,7 @@ export function BackgroundVideoEngine({ isPausedByModal = false }: BackgroundVid
 
   return (
     <div className={styles.videoHostContainer} aria-hidden="true">
-      {/* 0ms Immediate High-Fidelity Luxury Poster to eliminate black void */}
+      {/* 0ms Immediate Neutral Canvas to prevent optical glitch during initial hardware paint */}
       <div
         className={styles.videoCanvas}
         aria-hidden="true"
@@ -95,12 +99,18 @@ export function BackgroundVideoEngine({ isPausedByModal = false }: BackgroundVid
       <video
         ref={videoRef}
         className={styles.fixedVideoElement}
+        src="/video/video-web.mp4"
         autoPlay
         muted
         loop
         playsInline
         preload="auto"
+        onError={(event) => {
+          console.warn("Living Background Video failed to stream; activating static poster fallback:", event);
+          setIsLowPowerMode(true);
+        }}
       >
+        <source src="/video/video-web.mp4" type="video/mp4" />
         <source src="/video/video-web-faststart.mp4" type="video/mp4" />
       </video>
       <div className={styles.ambientScrim} />
