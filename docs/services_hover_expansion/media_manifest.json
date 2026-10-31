@@ -1,115 +1,162 @@
-﻿{
-    "provider":  "Mixkit",
-    "license":  "Mixkit Free License, applicable to free stock video items used in commercial and personal projects without attribution under the current provider terms.",
-    "licenseUrl":  "https://mixkit.co/license/",
-    "termsReviewed":  "2026-10-30",
-    "assetSourcePattern":  "https://assets.mixkit.co/videos/{id}/{id}-720.mp4",
-    "usage":  "Generic illustrative motion only. Exact catalog titles were not verified; these clips are not represented as footage of Marca Ubi clients, services, or outcomes.",
-    "encoding":  {
-                     "videoCodec":  "H.264",
-                     "container":  "MP4",
-                     "maximumWidth":  960,
-                     "frameRate":  24,
-                     "maximumDurationSeconds":  6,
-                     "audio":  "removed",
-                     "fastStart":  true
-                 },
-    "assets":  [
-                   {
-                       "id":  4781,
-                       "file":  "service-01.mp4",
-                       "poster":  "service-01.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4781/4781-720.mp4"
-                   },
-                   {
-                       "id":  4784,
-                       "file":  "service-02.mp4",
-                       "poster":  "service-02.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4784/4784-720.mp4"
-                   },
-                   {
-                       "id":  4807,
-                       "file":  "service-03.mp4",
-                       "poster":  "service-03.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4807/4807-720.mp4"
-                   },
-                   {
-                       "id":  4832,
-                       "file":  "service-04.mp4",
-                       "poster":  "service-04.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4832/4832-720.mp4"
-                   },
-                   {
-                       "id":  4873,
-                       "file":  "service-05.mp4",
-                       "poster":  "service-05.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4873/4873-720.mp4"
-                   },
-                   {
-                       "id":  4915,
-                       "file":  "service-06.mp4",
-                       "poster":  "service-06.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4915/4915-720.mp4"
-                   },
-                   {
-                       "id":  4959,
-                       "file":  "service-07.mp4",
-                       "poster":  "service-07.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4959/4959-720.mp4"
-                   },
-                   {
-                       "id":  4973,
-                       "file":  "service-08.mp4",
-                       "poster":  "service-08.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4973/4973-720.mp4"
-                   },
-                   {
-                       "id":  4990,
-                       "file":  "service-09.mp4",
-                       "poster":  "service-09.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/4990/4990-720.mp4"
-                   },
-                   {
-                       "id":  5018,
-                       "file":  "service-10.mp4",
-                       "poster":  "service-10.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/5018/5018-720.mp4"
-                   },
-                   {
-                       "id":  5056,
-                       "file":  "service-11.mp4",
-                       "poster":  "service-11.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/5056/5056-720.mp4"
-                   },
-                   {
-                       "id":  5091,
-                       "file":  "service-12.mp4",
-                       "poster":  "service-12.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/5091/5091-720.mp4"
-                   },
-                   {
-                       "id":  5123,
-                       "file":  "service-13.mp4",
-                       "poster":  "service-13.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/5123/5123-720.mp4"
-                   },
-                   {
-                       "id":  5166,
-                       "file":  "service-14.mp4",
-                       "poster":  "service-14.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/5166/5166-720.mp4"
-                   },
-                   {
-                       "id":  5211,
-                       "file":  "service-15.mp4",
-                       "poster":  "service-15.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/5211/5211-720.mp4"
-                   },
-                   {
-                       "id":  5245,
-                       "file":  "service-16.mp4",
-                       "poster":  "service-16.webp",
-                       "sourceUrl":  "https://assets.mixkit.co/videos/5245/5245-720.mp4"
-                   }
-               ]
+{
+  "provider": "Mixkit",
+  "license": "Mixkit Free License, applicable to free stock video items used in commercial and personal projects without attribution under the current provider terms.",
+  "licenseUrl": "https://mixkit.co/license/",
+  "termsReviewed": "2026-10-31",
+  "curation": "Vetted commercial agency footage matched to Marca Ubi capabilities and dark luxury brand aesthetic.",
+  "encoding": {
+    "videoCodec": "H.264",
+    "container": "MP4",
+    "resolution": "1280x720",
+    "frameRate": 24,
+    "durationSeconds": 5.5,
+    "audio": "removed",
+    "fastStart": true
+  },
+  "assets": [
+    {
+      "file": "service-01.mp4",
+      "poster": "service-01.webp",
+      "serviceId": "b2b-demand-generation",
+      "name": "Demand Generation",
+      "sourceId": 49845,
+      "sourceUrl": "https://assets.mixkit.co/videos/49845/49845-720.mp4",
+      "concept": "Night architectural tracking of corporate glass skyscrapers reflecting metropolitan transit lights"
+    },
+    {
+      "file": "service-02.mp4",
+      "poster": "service-02.webp",
+      "serviceId": "b2b-integrated-marketing",
+      "name": "Integrated Marketing",
+      "sourceId": 46680,
+      "sourceUrl": "https://assets.mixkit.co/videos/46680/46680-720.mp4",
+      "concept": "Executive strategy session in a glass boardroom reviewing campaign architecture under moody downlighting"
+    },
+    {
+      "file": "service-03.mp4",
+      "poster": "service-03.webp",
+      "serviceId": "b2b-corporate-communications",
+      "name": "Corporate Communications",
+      "sourceId": 13222,
+      "sourceUrl": "https://assets.mixkit.co/videos/13222/13222-720.mp4",
+      "concept": "Keynote leader speaking on a dramatic dark stage under architectural spotlights"
+    },
+    {
+      "file": "service-04.mp4",
+      "poster": "service-04.webp",
+      "serviceId": "b2b-social-influencer",
+      "name": "Social & Influencer Marketing (B2B)",
+      "sourceId": 44074,
+      "sourceUrl": "https://assets.mixkit.co/videos/44074/44074-720.mp4",
+      "concept": "Video editing studio close-up: creative director grading high-production footage on an OLED monitor"
+    },
+    {
+      "file": "service-05.mp4",
+      "poster": "service-05.webp",
+      "serviceId": "b2b-content-scale",
+      "name": "Content & Scale",
+      "sourceId": 12268,
+      "sourceUrl": "https://assets.mixkit.co/videos/12268/12268-720.mp4",
+      "concept": "High-velocity data stream tunnel through optical network lines and digital cubes"
+    },
+    {
+      "file": "service-06.mp4",
+      "poster": "service-06.webp",
+      "serviceId": "b2b-public-relations",
+      "name": "Public Relations (PR)",
+      "sourceId": 24357,
+      "sourceUrl": "https://assets.mixkit.co/videos/24357/24357-720.mp4",
+      "concept": "International executive press conference: podium with microphone array and dynamic flashbulb illumination"
+    },
+    {
+      "file": "service-07.mp4",
+      "poster": "service-07.webp",
+      "serviceId": "b2b-customer-marketing",
+      "name": "Customer Marketing",
+      "sourceId": 15716,
+      "sourceUrl": "https://assets.mixkit.co/videos/15716/15716-720.mp4",
+      "concept": "High-level executive partnership: close-up handshake in dark tailored suits during a closed-door agreement"
+    },
+    {
+      "file": "service-08.mp4",
+      "poster": "service-08.webp",
+      "serviceId": "b2b-abm",
+      "name": "Account-Based Marketing (ABM)",
+      "sourceId": 49846,
+      "sourceUrl": "https://assets.mixkit.co/videos/49846/49846-720.mp4",
+      "concept": "Aerial tracking over downtown financial district avenue and corporate headquarters skyscrapers at twilight"
+    },
+    {
+      "file": "service-09.mp4",
+      "poster": "service-09.webp",
+      "serviceId": "b2c-integrated-creativity",
+      "name": "Integrated Creativity",
+      "sourceId": 44818,
+      "sourceUrl": "https://assets.mixkit.co/videos/44818/44818-720.mp4",
+      "concept": "Avant-garde fluid art: organic dark ink and chromatic fluid billowing in an obsidian void"
+    },
+    {
+      "file": "service-10.mp4",
+      "poster": "service-10.webp",
+      "serviceId": "b2c-social-influencer",
+      "name": "Social & Influencer (B2C)",
+      "sourceId": 50641,
+      "sourceUrl": "https://assets.mixkit.co/videos/50641/50641-720.mp4",
+      "concept": "High-fashion editorial studio shoot: model turning to camera under rotating studio strobe lights and flashes"
+    },
+    {
+      "file": "service-11.mp4",
+      "poster": "service-11.webp",
+      "serviceId": "b2c-digital-performance",
+      "name": "Digital Performance",
+      "sourceId": 47796,
+      "sourceUrl": "https://assets.mixkit.co/videos/47796/47796-720.mp4",
+      "concept": "Real-time analytics telemetry HUD: glowing tabular figures, delta indicators, and candlestick data streams"
+    },
+    {
+      "file": "service-12.mp4",
+      "poster": "service-12.webp",
+      "serviceId": "b2c-sports-marketing",
+      "name": "Sports Marketing",
+      "sourceId": 32807,
+      "sourceUrl": "https://assets.mixkit.co/videos/32807/32807-720.mp4",
+      "concept": "Cinematic athlete in high-speed motion: runner passing above the camera along a track under moody floodlights"
+    },
+    {
+      "file": "service-13.mp4",
+      "poster": "service-13.webp",
+      "serviceId": "b2c-crm-loyalty",
+      "name": "CRM & Loyalty",
+      "sourceId": 18264,
+      "sourceUrl": "https://assets.mixkit.co/videos/18264/18264-720.mp4",
+      "concept": "Tactile luxury unboxing & payment: obsidian luxury membership card tapped on smartphone terminal"
+    },
+    {
+      "file": "service-14.mp4",
+      "poster": "service-14.webp",
+      "serviceId": "b2c-public-relations",
+      "name": "Public Relations (PR - Consumer)",
+      "sourceId": 32591,
+      "sourceUrl": "https://assets.mixkit.co/videos/32591/32591-720.mp4",
+      "concept": "Cultural gala premiere: rotating volumetric spotlights cutting through the dark with warm bokeh halos"
+    },
+    {
+      "file": "service-15.mp4",
+      "poster": "service-15.webp",
+      "serviceId": "b2c-live-experiences",
+      "name": "Live Experiences",
+      "sourceId": 48510,
+      "sourceUrl": "https://assets.mixkit.co/videos/48510/48510-720.mp4",
+      "concept": "Spatial festival activation: crowd silhouettes with hands raised under synchronized atmospheric laser lights"
+    },
+    {
+      "file": "service-16.mp4",
+      "poster": "service-16.webp",
+      "serviceId": "b2c-retail-activation",
+      "name": "Retail Activation",
+      "sourceId": 23327,
+      "sourceUrl": "https://assets.mixkit.co/videos/23327/23327-720.mp4",
+      "concept": "Architectural luxury retail: tactile hand browsing through designer apparel on a minimalist boutique rack"
+    }
+  ]
 }
