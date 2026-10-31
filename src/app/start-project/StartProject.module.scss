@@ -1,0 +1,123 @@
+@import "../styles/client-mixins.scss";
+
+/* Start a Project — light editorial intake page.
+   35vh cinematic band (main studio film, muted loop) over a white canvas.
+   Zero drop shadows; accent strictly $client-accent-red. */
+
+.pageShell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+.pageMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero band: full viewport width, 35% of screen height */
+.heroBand {
+  position: relative;
+  height: 35vh;
+  min-height: 260px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background-color: #0d0d0d;
+}
+
+.heroVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.heroVideoPlaying {
+  opacity: 1;
+}
+
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.68) 100%);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 clamp(1.5rem, 6vw, 6rem) clamp(1.75rem, 4vh, 3rem);
+  box-sizing: border-box;
+}
+
+.kicker {
+  display: block;
+  font-family: $font-circular;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 0.75rem;
+}
+
+.headline {
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-extralight;
+  font-size: clamp(2.25rem, 5.5vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0 0 0.75rem;
+  text-wrap: balance;
+}
+
+.lede {
+  font-family: $font-circular;
+  font-size: clamp(0.9375rem, 1.2vw, 1.125rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 56ch;
+  margin: 0;
+}
+
+/* Wizard stage: generous but bounded measure for form legibility */
+.formSection {
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 6vw, 6rem) clamp(5rem, 8vw, 8rem);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .heroBand {
+    min-height: 220px;
+  }
+
+  .heroContent {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .formSection {
+    padding: 2rem 1.25rem clamp(4rem, 8vw, 6rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroVideo {
+    transition: none;
+  }
+}

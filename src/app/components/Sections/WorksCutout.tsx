@@ -9,7 +9,6 @@ export interface WorksCutoutProps {
   headline?: string;
   ctaLabel?: string;
   ctaHref?: string;
-  onOpenBrief?: () => void;
 }
 
 /**
@@ -17,7 +16,7 @@ export interface WorksCutoutProps {
  * Replaces the inline works curtain with a cinematic, high-contrast video cutout.
  * The transparent background allows the persistent living background video to show through.
  * Features monumental Circular XX headline and dual action triggers:
- * 1. "Start a Project" pill opening the multi-step brief modal.
+ * 1. "Start a Project" pill navigating to the /start-project intake page.
  * 2. "View Works" pill navigating to /works.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -27,7 +26,6 @@ export function WorksCutout({
   headline = "Work\nwith us.",
   ctaLabel = "View Works",
   ctaHref = "/works",
-  onOpenBrief,
 }: WorksCutoutProps) {
   const headlineLines = headline.split("\n");
 
@@ -60,26 +58,14 @@ export function WorksCutout({
         {/* Right Column: Dual Architectural Action Triggers */}
         <div className={styles.actionColumn}>
           <div className={styles.actionCluster}>
-            {onOpenBrief ? (
-              <button
-                type="button"
-                onClick={onOpenBrief}
-                className={styles.startProjectPill}
-                aria-label="Start a Project Brief"
-              >
-                <span className={styles.pillLabel}>Start a Project</span>
-                <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
-              </button>
-            ) : (
-              <Link
-                href="/start-project"
-                className={styles.startProjectPill}
-                aria-label="Start a Project Brief"
-              >
-                <span className={styles.pillLabel}>Start a Project</span>
-                <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
-              </Link>
-            )}
+            <Link
+              href="/start-project"
+              className={styles.startProjectPill}
+              aria-label="Start a Project Brief"
+            >
+              <span className={styles.pillLabel}>Start a Project</span>
+              <span className={styles.arrowIcon} aria-hidden="true">&rarr;</span>
+            </Link>
 
             <Link
               href={ctaHref}

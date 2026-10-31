@@ -18,7 +18,6 @@ import GlobalLocationsCloud from "../Sections/GlobalLocationsCloud";
 import ConnectCutout from "../Sections/ConnectCutout";
 import MonumentalFooter from "../Sections/MonumentalFooter";
 import ReelModal from "../ReelModal/ReelModal";
-import ProjectBriefModal from "../ProjectBriefModal/ProjectBriefModal";
 import type { SanityWork } from "../WorksSection/WorksSectionClient";
 import type { PostSummary } from "@/sanity/types/blog";
 import type { SanityFaqItem } from "@/sanity/lib/faq-queries";
@@ -38,18 +37,14 @@ export interface ClientHomeExperienceProps {
  */
 export function ClientHomeExperience({ works = [], posts = [], faqs = [] }: ClientHomeExperienceProps) {
   const [isReelOpen, setIsReelOpen] = useState(false);
-  const [isBriefOpen, setIsBriefOpen] = useState(false);
 
   const handleOpenReel = () => setIsReelOpen(true);
   const handleCloseReel = () => setIsReelOpen(false);
 
-  const handleOpenBrief = () => setIsBriefOpen(true);
-  const handleCloseBrief = () => setIsBriefOpen(false);
-
   return (
     <div data-client-shell="true" style={{ position: "relative", minHeight: "100vh" }}>
       {/* 1. Persistent Living Video Engine (Fixed z-index: -1) */}
-      <BackgroundVideoEngine isPausedByModal={isReelOpen || isBriefOpen} />
+      <BackgroundVideoEngine isPausedByModal={isReelOpen} />
 
       {/* 2. Adaptive Navigation Header (Fixed z-index: 50, IntersectionObserver theme flip) */}
       <ClientHeader onOpenReel={handleOpenReel} />
@@ -78,7 +73,6 @@ export function ClientHomeExperience({ works = [], posts = [], faqs = [] }: Clie
           headline={"Work\nwith us."}
           ctaLabel="View Works"
           ctaHref="/works"
-          onOpenBrief={handleOpenBrief}
         />
 
         {/* View 06: Strategy & Delivery Methodology Curtain (Solid Pure White) */}
@@ -103,7 +97,7 @@ export function ClientHomeExperience({ works = [], posts = [], faqs = [] }: Clie
         <GlobalLocationsCloud />
 
         {/* View 13: Connect & Commercial Desk Cutout (Transparent Video with genuine Kerala desks) */}
-        <ConnectCutout onOpenBrief={handleOpenBrief} />
+        <ConnectCutout />
 
         {/* View 14: Deep Obsidian Black Monumental Footer (Solid Pitch Black) */}
         <MonumentalFooter />
@@ -114,12 +108,6 @@ export function ClientHomeExperience({ works = [], posts = [], faqs = [] }: Clie
         isOpen={isReelOpen}
         onClose={handleCloseReel}
         videoSrc="/video/video-web.mp4"
-      />
-
-      {/* Global Accessible Project Brief Modal */}
-      <ProjectBriefModal
-        isOpen={isBriefOpen}
-        onClose={handleCloseBrief}
       />
     </div>
   );
