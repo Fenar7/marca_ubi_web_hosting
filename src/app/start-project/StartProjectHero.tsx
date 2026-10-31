@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./StartProject.module.scss";
 
 /**
- * 35vh intake band carrying the studio's main film (video-web.mp4) as a muted
+ * 45vh intake band carrying the studio's main film (video-web.mp4) as a muted
  * loop. Two independent failovers keep the headline legible without motion:
  * prefers-reduced-motion users and autoplay/decode failures both render the
  * static dark canvas instead of the <video>. Zero-jump reveal via onPlaying,

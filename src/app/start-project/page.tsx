@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 /**
  * Dedicated intake page for the multi-step project brief. Replaces the former
  * homepage popup: the same ProjectForm wizard now lives on the light editorial
- * canvas beneath a 35vh cinematic band of the studio's main film.
+ * canvas beneath a 45vh cinematic band of the studio's main film.
  */
 export default function StartProjectPage() {
   return (
