@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { client } from "@/sanity/lib/client";
 import { sitemapPostsQuery } from "@/sanity/lib/blog-queries";
+import { getAllServiceSlugs } from "./services/content";
 
 export const revalidate = 3600; // Revalidate sitemap every 1 hour
 
@@ -27,6 +28,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    // Dedicated capability pages for the 16 Services Accordion entries
+    ...getAllServiceSlugs().map((slug) => ({
+      url: `${siteUrl}/services/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
   ];
 
   // Dynamic Blog Post Routes from Sanity

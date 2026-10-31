@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { subAnchorKey } from "@/app/services/types";
 import { ServiceCategory, B2B_SERVICES, B2C_SERVICES } from "./types";
 import styles from "./ServicesAccordion.module.scss";
 
@@ -81,7 +83,7 @@ export function ServicesAccordion() {
   }, [updateScrollBounds, activeCategory]);
 
   return (
-    <div className={styles.servicesShowcase}>
+    <div id="services" className={styles.servicesShowcase}>
       <div className={styles.headerContainer}>
         <div className={styles.kickerWrap}>
           <span className={styles.sectionLabel}>SERVICES</span>
@@ -275,10 +277,29 @@ export function ServicesAccordion() {
                     </div>
 
                     <div className={styles.overlayServices}>
-                      <span className={styles.exploreCue}>WHAT WE DO</span>
+                      <div className={styles.servicesCueRow}>
+                        <span className={styles.exploreCue}>WHAT WE DO</span>
+                        <Link
+                          href={`/services/${service.slug}`}
+                          className={styles.detailPageLink}
+                          tabIndex={isActive ? 0 : -1}
+                          aria-label={`View the full ${service.title} capability page`}
+                        >
+                          Full capability page
+                        </Link>
+                      </div>
                       <ul>
                         {service.services.map((item) => (
-                          <li key={item}>{item}</li>
+                          <li key={item}>
+                            {/* Anchor key derivation is shared with ServiceDetailClient via subAnchorKey */}
+                            <Link
+                              href={`/services/${service.slug}#${subAnchorKey(item)}`}
+                              className={styles.serviceBulletLink}
+                              tabIndex={isActive ? 0 : -1}
+                            >
+                              {item}
+                            </Link>
+                          </li>
                         ))}
                       </ul>
                     </div>

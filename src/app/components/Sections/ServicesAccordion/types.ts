@@ -12,6 +12,8 @@ export interface ServiceItem {
   id: string;
   number: string;
   title: string;
+  /** Canonical detail-page slug under /services/[slug]; anchors derive from bullet labels. */
+  slug: string;
   desc: string;
   services: string[];
   imageUrl: string;
@@ -26,6 +28,7 @@ export interface ServiceItem {
 export const B2B_SERVICES: ServiceItem[] = [
   {
     id: "b2b-demand-generation",
+    slug: "demand-generation",
     number: "01",
     title: "Demand Generation",
     desc: "Targeted multi-channel campaigns, paid media, and SEO that build market trust and convert brand awareness into high-value enterprise pipeline.",
@@ -37,6 +40,7 @@ export const B2B_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2b-integrated-marketing",
+    slug: "integrated-marketing",
     number: "02",
     title: "Integrated Marketing",
     desc: "Unifying digital, social, and brand communications into a cohesive strategy that delivers consistent customer experiences and accelerates growth.",
@@ -48,6 +52,7 @@ export const B2B_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2b-corporate-communications",
+    slug: "corporate-communications",
     number: "03",
     title: "Corporate Communications",
     desc: "Strategic internal and external messaging frameworks that strengthen executive credibility, corporate reputation, and stakeholder alignment.",
@@ -59,6 +64,7 @@ export const B2B_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2b-social-influencer",
+    slug: "social-influencer-marketing",
     number: "04",
     title: "Social & Influencer Marketing",
     desc: "Purposeful B2B storytelling and credible creator collaborations that expand industry reach and cultivate meaningful audience engagement.",
@@ -70,6 +76,7 @@ export const B2B_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2b-content-scale",
+    slug: "content-and-scale",
     number: "05",
     title: "Content & Scale",
     desc: "High-impact editorial content engines and targeted distribution frameworks that elevate brand authority and scale digital visibility.",
@@ -81,6 +88,7 @@ export const B2B_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2b-public-relations",
+    slug: "public-relations-pr",
     number: "06",
     title: "Public Relations (PR)",
     desc: "Strategic media relations, executive positioning, and narrative placement that secure earned trust and authoritative industry presence.",
@@ -92,6 +100,7 @@ export const B2B_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2b-customer-marketing",
+    slug: "customer-marketing",
     number: "07",
     title: "Customer Marketing",
     desc: "Retention programs, advocacy initiatives, and personalized customer touchpoints designed to expand lifetime value and build long-term loyalty.",
@@ -103,6 +112,7 @@ export const B2B_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2b-abm",
+    slug: "account-based-marketing",
     number: "08",
     title: "Account-Based Marketing (ABM)",
     desc: "Bespoke research, tailored content, and hyper-targeted outreach engineered to engage key decision-makers across high-priority enterprise accounts.",
@@ -120,6 +130,7 @@ export const B2B_SERVICES: ServiceItem[] = [
 export const B2C_SERVICES: ServiceItem[] = [
   {
     id: "b2c-integrated-creativity",
+    slug: "integrated-creativity",
     number: "01",
     title: "Integrated Creativity",
     desc: "Fusing bold design, strategic narrative, and digital experiences across touchpoints to make consumer brands culturally relevant and memorable.",
@@ -131,6 +142,7 @@ export const B2C_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2c-social-influencer",
+    slug: "social-influencer",
     number: "02",
     title: "Social & Influencer",
     desc: "Platform-native campaigns and authentic creator partnerships that spark cultural conversations, inspire discovery, and turn followers into advocates.",
@@ -142,6 +154,7 @@ export const B2C_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2c-digital-performance",
+    slug: "digital-performance",
     number: "03",
     title: "Digital Performance",
     desc: "Data-driven paid acquisition, search optimization, and conversion analytics engineered to maximize consumer reach and efficiency.",
@@ -153,6 +166,7 @@ export const B2C_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2c-sports-marketing",
+    slug: "sports-marketing",
     number: "04",
     title: "Sports Marketing",
     desc: "High-visibility athlete partnerships, sponsorships, and experiential moments that connect brands authentically with passionate fan communities.",
@@ -164,6 +178,7 @@ export const B2C_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2c-crm-loyalty",
+    slug: "crm-and-loyalty",
     number: "05",
     title: "CRM & Loyalty",
     desc: "Tailored lifecycle marketing, automated retention journeys, and rewarding loyalty programs that turn one-time shoppers into lifelong customers.",
@@ -175,6 +190,7 @@ export const B2C_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2c-public-relations",
+    slug: "public-relations",
     number: "06",
     title: "Public Relations (PR)",
     desc: "High-profile press outreach and cultural storytelling that earn consumer credibility, secure premier media coverage, and build brand fame.",
@@ -186,6 +202,7 @@ export const B2C_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2c-live-experiences",
+    slug: "live-experiences",
     number: "07",
     title: "Live Experiences",
     desc: "Immersive activations, spatial pop-ups, and premier product launches that create unforgettable real-world connections between brands and people.",
@@ -197,6 +214,7 @@ export const B2C_SERVICES: ServiceItem[] = [
   },
   {
     id: "b2c-retail-activation",
+    slug: "retail-activation",
     number: "08",
     title: "Retail Activation",
     desc: "Dynamic in-store displays, merchandising, and experiential activations designed to captivate shoppers and drive point-of-sale conversion.",
