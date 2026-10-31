@@ -1,40 +1,97 @@
 @import "../styles/client-mixins.scss";
 
-.blogPageContainer {
+/**
+ * Blog Listing Page Stylesheet (/blog)
+ *
+ * Visual system: a print contents page, not a card grid.
+ * - One 1680px container, one gutter token, four tight bands separated by a
+ *   shared vertical rhythm (never a void larger than the rhythm itself).
+ * - The masthead's right column is an issue ledger carrying live archive data,
+ *   which is what removes the dead band the previous composition left there.
+ * - The lead dossier is a flex column with justify-content: space-between and a
+ *   margin-top: auto footer, so its last line terminates on the cover's bottom
+ *   edge instead of floating above it.
+ * - The index ledger is hairline rows on a fixed six-column rule; each row
+ *   bleeds its hover wash to the container edge with negative margin-inline
+ *   matched by padding-inline, so no reflow or layout shift is possible.
+ * - Helvetica Neue 200/300 for display, Circular 400/500 for UI, monospace with
+ *   tabular figures for every measurement. Zero shadows, zero radii, accent
+ *   locked to $client-accent-red, motion on cubic-bezier(0.16, 1, 0.3, 1) with a
+ *   reduced-motion escape hatch.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.pageShell {
   position: relative;
+  width: 100%;
   min-height: 100vh;
-  background-color: #0b0b0b;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #0a0a0a;
 }
 
-.blogPageMain {
+.pageMain {
   position: relative;
   z-index: 10;
   width: 100%;
-  padding-top: clamp(7rem, 12vw, 10rem);
-  padding-bottom: clamp(6rem, 10vw, 9rem);
+  padding-top: clamp(80px, 12vh, 120px);
+  padding-bottom: 0;
+  background-color: #ffffff;
 }
 
+/* Single measure for the whole page: the gutter token is reused by the ledger
+   rows so their hover wash can bleed to the container edge without a second
+   narrower measure appearing anywhere. */
 .blogWrapper {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 clamp(1.5rem, 5vw, 5rem);
+  --gutter: clamp(1.5rem, 6vw, 6rem);
+  --band-rhythm: clamp(2.5rem, 4vw, 4rem);
+  --hairline: 1px solid rgba(0, 0, 0, 0.08);
+
   display: flex;
   flex-direction: column;
-  gap: clamp(3rem, 6vw, 6rem);
+  gap: var(--band-rhythm);
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(4rem, 6vw, 6rem);
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    --gutter: 1.25rem;
+    padding-bottom: clamp(3rem, 8vw, 4rem);
+  }
 }
 
-/* 1. Hero Stage */
-.heroHeader {
+/**
+ * Band 1: masthead.
+ * The 30% right column is filled by the issue ledger, hairline-separated, so
+ * the composition reads as an authored broadsheet nameplate.
+ */
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 30%);
+  column-gap: clamp(2rem, 4vw, 4rem);
+  align-items: end;
+  padding-bottom: clamp(2rem, 3vw, 3rem);
+  border-bottom: var(--hairline);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    row-gap: clamp(2rem, 5vw, 2.75rem);
+  }
+}
+
+.mastheadMain {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  max-width: 980px;
+  gap: 1.125rem;
+  min-width: 0;
 }
 
 .kicker {
   font-family: $font-circular;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -42,76 +99,678 @@
 }
 
 .displayTitle {
-  font-family: $font-circular;
-  font-size: clamp(3rem, 6.5vw, 6rem);
-  font-weight: 500;
-  line-height: 1.02;
-  letter-spacing: -0.04em;
-  color: #ffffff;
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-extralight;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  color: #0a0a0a;
   margin: 0;
+  text-wrap: balance;
 }
 
-.heroLead {
+.standfirst {
   font-family: $font-circular;
-  font-size: clamp(1.125rem, 1.8vw, 1.35rem);
+  font-size: clamp(1rem, 1.3vw, 1.1875rem);
+  font-weight: $fw-book;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
+  color: #444444;
   margin: 0;
-  max-width: 800px;
+  max-width: 52ch;
+  text-wrap: pretty;
 }
 
-/* 2. Typographic Category Rail (Zero Pills) */
-.categoryRail {
+/* Issue ledger: label above value, hairline between rows, tabular figures so
+   the column of numbers rules cleanly against the display type. */
+.issueLedger {
+  display: grid;
+  margin: 0;
+  min-width: 0;
+}
+
+.issueRow {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0;
+  border-bottom: var(--hairline);
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+}
+
+.issueLabel {
+  margin: 0;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.issueValue {
+  margin: 0;
+  font-family: $font-mono;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  color: #0a0a0a;
+}
+
+/**
+ * Band 2: category strip.
+ * Hairlines top and bottom, tabs separated by spacing alone. The active rule is
+ * a pseudo-element scaled on transform, so switching tabs cannot shift the
+ * baseline of the strip by even a subpixel.
+ */
+.categoryStrip {
+  display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-  padding: 1.5rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  align-items: center;
+  column-gap: clamp(1.5rem, 3vw, 2.5rem);
+  row-gap: 0.5rem;
+  padding: 1.125rem 0;
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
 }
 
 .categoryTab {
-  background: transparent;
-  border: none;
-  padding: 0.5rem 0;
-  font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  position: relative;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0.625rem 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: $font-circular;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #666666;
+  text-decoration: none;
   transition: color 0.2s ease;
+
+  // Anchored to the tab's own 44px box rather than the strip rule, so a wrapped
+  // second line of tabs still carries its indicator directly under the label.
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background-color: $client-accent-red;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  }
+
+  &:hover {
+    color: #0a0a0a;
+
+    &::after {
+      opacity: 0.24;
+      transform: scaleX(1);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+
+  &.categoryTabActive {
+    color: #0a0a0a;
+
+    &::after {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    .tabCount {
+      color: $client-accent-red;
+    }
+  }
+
+  // Zero-count tabs remain visible but inert: muted ink, default cursor, no
+  // rule on hover, so the strip's geometry never changes between filters.
+  &.categoryTabDisabled {
+    color: #999999;
+    cursor: default;
+
+    &:hover {
+      color: #999999;
+
+      &::after {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+    }
+  }
+}
+
+.tabLabel {
+  color: inherit;
+}
+
+.tabCount {
+  font-family: $font-mono;
+  font-size: 0.75em;
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/**
+ * Band 3: lead story.
+ * 62/38 split expressed in fr units (percentages plus an explicit gap would
+ * over-consume the content box); the dossier's hairline becomes a top rule when
+ * the band stacks, keeping the two columns visually joined on narrow screens.
+ */
+.leadBand {
+  width: 100%;
+}
+
+.leadCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: stretch;
+
+  &:hover .leadCoverImg {
+    transform: scale(1.02);
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+}
+
+.leadCoverFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 0;
+  background-color: #f0f0f0; // neutral letterbox while the 1400px crop decodes
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leadCoverImg {
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Slot furniture for a dispatch with no authored cover at all. */
+.leadFallbackInitial {
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-extralight;
+  font-size: clamp(4rem, 8vw, 7rem);
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.12);
+  user-select: none;
+}
+
+.leadDossier {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  border-left: var(--hairline);
+  padding-left: clamp(1.5rem, 2.5vw, 2.5rem);
+
+  @media (max-width: 1024px) {
+    border-left: 0;
+    border-top: var(--hairline);
+    padding-left: 0;
+    padding-top: 1.75rem;
+  }
+}
+
+/* Oversized index numeral: editorial furniture, deliberately low contrast and
+   removed from the accessibility tree since the ledger rows number themselves. */
+.leadIndexNum {
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-extralight;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.12);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.leadKickerRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.leadKicker {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $client-accent-red;
+}
+
+.leadCategory {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.leadTitle {
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-light;
+  font-size: clamp(1.75rem, 2.8vw, 2.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: #0a0a0a;
+  margin: 0;
+  display: -webkit-box;
+  /* Four lines, not three: the longest filed title needs a fourth line to
+     reach its final word, and a truncated lead title reads as a bug. */
+  -webkit-line-clamp: 4;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Stretched link: one href, one tab stop for the entire dossier surface. The
+   decorative CTA below is a span, never a second anchor. */
+.leadTitleLink {
+  color: inherit;
+  text-decoration: none;
 
   &::after {
     content: "";
     position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: transparent;
-    transition: background-color 0.2s ease;
+    inset: 0;
+    z-index: 2;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}
+
+.leadExcerpt {
+  font-family: $font-circular;
+  font-size: 16px;
+  font-weight: $fw-book;
+  line-height: 1.65;
+  color: #444444;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.leadFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: auto; // pins the credit row to the cover's bottom edge
+  padding-top: 1.25rem;
+  border-top: var(--hairline);
+}
+
+.leadCredit {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.leadAuthor {
+  color: #0a0a0a;
+}
+
+.leadRead {
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.leadCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: $font-circular;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #0a0a0a;
+  border-bottom: 1.5px solid #0a0a0a;
+  padding-bottom: 0.375rem;
+  transition: color 0.2s ease, border-color 0.2s ease, gap 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .leadCtaArrow {
+    font-size: 16px;
+  }
+}
+
+.leadCard:hover .leadCta {
+  color: $client-accent-red;
+  border-bottom-color: $client-accent-red;
+  gap: 0.95rem;
+}
+
+/**
+ * Band 4: the index ledger.
+ * Six fixed columns: numeral, date, category, title block, read time, arrow.
+ */
+.indexSection {
+  width: 100%;
+}
+
+.indexHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0 1rem;
+  border-bottom: var(--hairline);
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.indexHeaderLabel {
+  color: #0a0a0a;
+}
+
+.indexHeaderCount {
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/*
+ * Row geometry. margin-inline pulls the wash to the container edge while
+ * padding-inline restores the shared text alignment, so hover changes only a
+ * background colour: no inset change, therefore no shift of the hairline rule.
+ */
+.indexRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px 128px 200px minmax(0, 1fr) 160px 44px;
+  align-items: center;
+  min-height: 104px;
+  padding: 1.25rem var(--gutter);
+  margin-inline: calc(var(--gutter) * -1);
+  border-bottom: var(--hairline);
+  transition: background-color 0.25s ease;
+
+  // The closing band supplies the rule under the final row, otherwise two
+  // hairlines at 8% alpha would stack into a visibly heavier line.
+  &:last-child {
+    border-bottom: 0;
   }
 
   &:hover {
-    color: #ffffff;
-  }
+    background-color: #fafafa;
 
-  &.categoryTabActive {
-    color: #ffffff;
-
-    &::after {
-      background-color: $client-accent-red;
+    .rowTitleLink {
+      background-size: 100% 1px;
     }
 
-    .countNumeral {
-      color: $client-accent-red;
+    .rowArrow {
+      transform: translateX(4px);
+    }
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 56px minmax(0, 1fr) 44px;
+    grid-template-areas:
+      "num meta arrow"
+      "num body body";
+    min-height: 96px;
+    padding: 1rem var(--gutter);
+    gap: 0.375rem 0;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-areas:
+      "meta arrow"
+      "body body";
+    min-height: 88px;
+  }
+}
+
+/* Every cell pins to row 1 explicitly. The read-time column is declared before
+   the title column in source order (it lives in the meta wrapper for the
+   stacked layouts), so default sparse auto-placement would otherwise push the
+   title block and the arrow into a second implicit row and break the rule. */
+.rowNum {
+  grid-column: 1;
+  grid-row: 1;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+
+  @media (max-width: 1024px) {
+    grid-area: num;
+    align-self: start;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+/* display: contents promotes each meta cell into the row grid so date, category
+   and read time occupy their own columns on desktop. */
+.rowHead {
+  display: contents;
+
+  @media (max-width: 1024px) {
+    display: flex;
+    grid-area: meta;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+    min-width: 0;
+  }
+}
+
+.rowDate {
+  grid-column: 2;
+  grid-row: 1;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rowCat {
+  grid-column: 3;
+  grid-row: 1;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $client-accent-red;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowRead {
+  grid-column: 5;
+  grid-row: 1;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #666666;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+
+.rowBody {
+  grid-column: 4;
+  grid-row: 1;
+  min-width: 0;
+
+  @media (max-width: 1024px) {
+    grid-area: body;
+  }
+}
+
+/* Underline reveal driven by background-size: a border or text-decoration
+   change would alter the glyph box and jitter the row's baseline on hover. */
+.rowTitle {
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-light;
+  font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #0a0a0a;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rowTitleLink {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
+  }
+}
+
+.rowExcerpt {
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: $fw-book;
+  line-height: 1.5;
+  color: #666666;
+  margin: 0.375rem 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  @media (max-width: 1024px) {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}
+
+/* Decorative travel hint inside the stretched row; the title anchor owns the
+   navigation, so this is a span with a 44px tap box for pointer precision. */
+.rowArrow {
+  grid-column: 6;
+  grid-row: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 44px;
+  min-height: 44px;
+  font-size: 16px;
+  line-height: 1;
+  color: #0a0a0a;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 1024px) {
+    grid-area: arrow;
+    align-self: start;
+  }
+}
+
+/**
+ * Band 5: closing destinations.
+ * Hairline-topped mono row that ends the page on intent.
+ */
+.closingBand {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 2rem);
+  padding-top: clamp(2rem, 3vw, 3rem);
+  border-top: var(--hairline);
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+.closingLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 44px;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0a0a0a;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $client-accent-red-hover;
+
+    .closingArrow {
+      transform: translateX(4px);
     }
   }
 
@@ -121,313 +780,115 @@
   }
 }
 
-.countNumeral {
-  font-family: $font-mono;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
+.closingArrow {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.railSlash {
-  color: rgba(255, 255, 255, 0.2);
-  user-select: none;
-}
-
-/* 3. Featured Flagship Article (60/40 Asymmetric Split) */
-.featuredSection {
-  width: 100%;
-}
-
-.featuredCard {
-  display: grid;
-  grid-template-columns: 58% 42%;
-  gap: clamp(2rem, 4vw, 4.5rem);
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  padding: clamp(1.5rem, 3vw, 3rem);
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    padding: 1.5rem;
-  }
-}
-
-.featuredImageFrame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  border-radius: 2px;
-  background-color: #141414;
-
-  &:hover .featuredImage {
-    transform: scale(1.03);
-  }
-}
-
-.featuredImage {
-  object-fit: cover;
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.featuredDossier {
+/* Honest zero-result panel for dead-end shared filter URLs. */
+.emptyState {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 1.25rem;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.5rem);
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  border-bottom: var(--hairline);
 }
 
-.featuredMetaRow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.featuredKicker {
+.emptyText {
   font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: $client-accent-red;
-}
-
-.featuredCategory {
-  font-family: $font-mono;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-}
-
-.featuredTitle {
-  font-family: $font-circular;
-  font-size: clamp(1.75rem, 2.75vw, 2.75rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.025em;
-  color: #ffffff;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #666666;
   margin: 0;
 }
 
-.titleLink {
-  color: inherit;
-  text-decoration: none;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: $client-accent-red;
-  }
-}
-
-.featuredExcerpt {
-  font-family: $font-circular;
-  font-size: 16px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.75);
-  margin: 0;
-}
-
-.featuredFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.authorCluster {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: $font-mono;
-  font-size: 12px;
-}
-
-.authorName {
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.metaSlash {
-  color: rgba(255, 255, 255, 0.25);
-}
-
-.readingTime {
-  color: rgba(255, 255, 255, 0.6);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-}
-
-.readAction {
+.emptyAction {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
+  min-height: 44px;
   font-family: $font-circular;
-  font-size: 14px;
+  font-size: 0.9375rem;
   font-weight: 500;
-  color: #ffffff;
+  color: #0a0a0a;
   text-decoration: none;
-  transition: color 0.2s ease;
-
-  .arrow {
-    font-size: 16px;
-    transition: transform 0.2s ease;
-  }
+  border-bottom: 1.5px solid #0a0a0a;
+  padding-bottom: 0.375rem;
+  transition: color 0.2s ease, border-color 0.2s ease, gap 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
     color: $client-accent-red;
+    border-bottom-color: $client-accent-red;
+    gap: 0.95rem;
 
-    .arrow {
+    .emptyArrow {
       transform: translateX(4px);
     }
   }
-}
 
-/* 4. 3-Column Broadsheet Dispatches Grid */
-.dispatchesGridSection {
-  width: 100%;
-}
-
-.dispatchesGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(2rem, 3.5vw, 3.5rem) clamp(1.5rem, 2.5vw, 2.5rem);
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 3rem;
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 4px;
   }
 }
 
-.gridCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
+.emptyArrow {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cardImageLink {
-  display: block;
-  overflow: hidden;
-  border-radius: 2px;
-}
-
-.cardImageFrame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background-color: #141414;
-
-  &:hover .cardImage {
-    transform: scale(1.04);
-  }
-}
-
-.cardImage {
-  object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cardMetaRow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-top: 0.25rem;
-}
-
-.cardCategory {
-  color: $client-accent-red;
-}
-
-.cardMetaDivider {
-  color: rgba(255, 255, 255, 0.2);
-}
-
-.cardReadingTime {
-  color: rgba(255, 255, 255, 0.6);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-}
-
-.cardTitle {
-  font-family: $font-circular;
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: -0.015em;
-  color: #ffffff;
-  margin: 0;
-}
-
-.cardExcerpt {
-  font-family: $font-circular;
-  font-size: 14px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.cardFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 0.85rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: 0.5rem;
-}
-
-.cardDate {
-  font-family: $font-mono;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.cardReadLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 500;
-  color: #ffffff;
-  text-decoration: none;
-  transition: color 0.2s ease;
-
-  .arrow {
-    transition: transform 0.2s ease;
+@media (max-width: 768px) {
+  // The issue ledger becomes a 2-up mini grid once the masthead stacks, so the
+  // four archive figures still read as a table rather than a long thin list.
+  .issueLedger {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(1.5rem, 6vw, 2.5rem);
   }
 
-  &:hover {
-    color: $client-accent-red;
+  .issueRow {
+    border-bottom: var(--hairline);
 
-    .arrow {
-      transform: translateX(3px);
+    &:nth-last-child(-n + 2) {
+      border-bottom: 0;
+    }
+
+    &:nth-child(3) {
+      padding-top: 0;
     }
   }
 }
 
-.emptyState {
-  padding: 4rem 0;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: $font-circular;
-  font-size: 16px;
+@media (prefers-reduced-motion: reduce) {
+  .categoryTab,
+  .categoryTab::after,
+  .leadCoverImg,
+  .leadCta,
+  .indexRow,
+  .rowTitleLink,
+  .rowArrow,
+  .closingLink,
+  .closingArrow,
+  .emptyAction,
+  .emptyArrow {
+    transition: none !important;
+  }
+
+  .leadCard:hover .leadCoverImg,
+  .indexRow:hover .rowArrow,
+  .closingLink:hover .closingArrow,
+  .emptyAction:hover .emptyArrow,
+  .categoryTab:hover::after {
+    transform: none;
+  }
+
+  // The scaleX rule is the active-tab indicator itself, so it must stay visible
+  // with motion disabled; only the animation is removed.
+  .categoryTab.categoryTabActive::after {
+    transform: scaleX(1);
+  }
 }

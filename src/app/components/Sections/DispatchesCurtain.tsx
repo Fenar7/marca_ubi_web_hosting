@@ -4,13 +4,18 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { PostSummary } from "@/sanity/types/blog";
-import { urlFor } from "@/sanity/lib/image";
+import { coverUrl } from "@/sanity/lib/image";
 import styles from "./DispatchesCurtain.module.scss";
 
 interface DispatchesCurtainProps {
   posts?: PostSummary[];
 }
 
+/**
+ * UTC-pinned calendar formatting ("Oct 12, 2026"): fixing the timeZone keeps
+ * the server render and client hydration byte-identical regardless of the
+ * renderer's local offset, avoiding hydration mismatch on dated dispatches.
+ */
 function formatDate(isoString: string): string {
   if (!isoString) return "";
   try {
@@ -26,42 +31,23 @@ function formatDate(isoString: string): string {
 }
 
 /**
- * View 08: Studio Dispatches & Insights Curtain.
- * Solid pure white curtain (#ffffff) sliding over the living background video.
- * Enforces the 160over90 Swiss 30/70 editorial broadsheet layout.
- * Displays the latest 3 essays from Sanity CMS with direct links to /blog and /blog/[slug].
+ * View 08: Studio Dispatches Curtain, the approved 3-card editorial stack.
+ * Solid white curtain (#ffffff) over the living background video on a 30/70
+ * Swiss split: a sticky left rail (red mono kicker, extralight Helvetica
+ * "Thinking in Systems." headline, summary, hairline, zero-padded ledger of
+ * the live Sanity count, outline CTA) beside a right column of three vertical
+ * cards. Each card is a 16/9 hotspot-aware cover (coverUrl + lqip blur-up,
+ * first paint prioritised), a mono meta row, a 3-line clamped light Helvetica
+ * title carrying the stretched link, a 2-line excerpt and a hairline-topped
+ * footer so the stack never ragged-ends. No cover renders a per-card initial
+ * plate derived from the category, never a shared stock fallback; an empty
+ * Sanity result renders an honest note pointing at /blog instead of
+ * fabricated posts.
  */
 export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
-  // Use latest 3 posts, or safe architectural fallbacks if Sanity has no records
-  const displayPosts = posts.length > 0 ? posts.slice(0, 3) : [
-    {
-      _id: "fb-dispatch-1",
-      title: "Systems Over Style: Why Brand Identity Fails Without Structural Logic",
-      slug: "systems-over-style",
-      publishedAt: new Date().toISOString(),
-      excerpt: "Why contemporary brand identity must operate as complete living software rather than static guideline books.",
-      estimatedReadingTime: 5,
-      category: { _id: "c1", title: "Brand Architecture", slug: "brand-architecture" },
-    },
-    {
-      _id: "fb-dispatch-2",
-      title: "The Architecture of Distinction in High-Ticket Digital Platforms",
-      slug: "architecture-of-distinction",
-      publishedAt: new Date().toISOString(),
-      excerpt: "How deliberate technical precision and tactile interaction geometry establish enduring authority.",
-      estimatedReadingTime: 7,
-      category: { _id: "c2", title: "Digital Craft", slug: "digital-craft" },
-    },
-    {
-      _id: "fb-dispatch-3",
-      title: "Tactile Typography and the Cultural Velocity of Luxury Brands",
-      slug: "tactile-typography",
-      publishedAt: new Date().toISOString(),
-      excerpt: "Exploring the emotional friction of bespoke type systems in high-velocity commerce ecosystems.",
-      estimatedReadingTime: 4,
-      category: { _id: "c3", title: "Cultural Velocity", slug: "cultural-velocity" },
-    },
-  ];
+  const displayPosts = posts.slice(0, 3);
+  // Ledger mirrors the true CMS total, not the 3 rendered slots.
+  const paddedCount = String(posts.length).padStart(2, "0");
 
   return (
     <section
@@ -74,74 +60,109 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
         {/* Left Sticky Rail (30%) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
-            <h2 className={styles.railHeadline}>
-              Thinking in Systems.
-            </h2>
+            <span className={styles.railKicker}>Studio Dispatches</span>
+            <h2 className={styles.railHeadline}>Thinking in Systems.</h2>
             <p className={styles.railSummary}>
               Essays, architectural field notes, brand strategy, and digital engineering from the Marca Ubi studio floor.
             </p>
-            <div className={styles.actionWrap}>
-              <Link href="/blog" className={styles.architecturalButton}>
+            <hr className={styles.railRule} />
+            <span className={styles.ledgerLine} aria-hidden="true">
+              {paddedCount} / Dispatches
+            </span>
+            <Link href="/blog" className={styles.architecturalButton}>
+              <span>View All Dispatches</span>
+              <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+            </Link>
+          </div>
+        </aside>
+
+        {/* Right 3-Card Stack (70%) */}
+        <div className={styles.rightColumn}>
+          {displayPosts.length === 0 ? (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyNote}>New dispatches are being drafted.</p>
+              <Link href="/blog" className={styles.ctaLink}>
                 <span>View All Dispatches</span>
                 <span className={styles.arrow} aria-hidden="true">&rarr;</span>
               </Link>
             </div>
-          </div>
-        </aside>
-
-        {/* Right 3-Column Broadsheet Grid (70%) */}
-        <div className={styles.rightColumn}>
-          <div className={styles.postsGrid}>
-            {displayPosts.map((post) => {
-              const imageUrl = post.mainImage?.asset?.url
-                ? urlFor(post.mainImage).width(800).height(450).quality(85).url()
-                : "/images/what-we-stand-for.png";
+          ) : (
+            displayPosts.map((post, index) => {
+              // 1200x675 keeps the 16/9 frame exact while honouring the
+              // editor-authored hotspot; null means no cover exists at all.
+              const cover = coverUrl(post.mainImage, 1200, 675);
+              // LQIP is only valid when Sanity generated it; next/image throws
+              // on placeholder="blur" without a blurDataURL, so gate both.
+              const lqip = post.mainImage?.asset?.metadata?.lqip;
 
               return (
                 <article key={post._id} className={styles.postCard}>
-                  <Link href={`/blog/${post.slug}`} className={styles.imageLink} tabIndex={-1} aria-hidden="true">
-                    <div className={styles.imageFrame}>
+                  <div
+                    className={
+                      cover === null
+                        ? `${styles.imageFrame} ${styles.imageFrameFallback}`
+                        : styles.imageFrame
+                    }
+                  >
+                    {cover !== null ? (
                       <Image
-                        src={imageUrl}
-                        alt={post.title}
+                        src={cover}
+                        alt={post.mainImage?.alt ?? post.title}
                         fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                        sizes="(max-width: 1024px) 100vw, 62vw"
                         className={styles.postImage}
+                        priority={index === 0}
+                        loading={index === 0 ? undefined : "lazy"}
+                        placeholder={lqip ? "blur" : "empty"}
+                        blurDataURL={lqip}
                       />
-                    </div>
-                  </Link>
-
-                  <div className={styles.postMeta}>
-                    {post.category && (
-                      <span className={styles.categoryName}>{post.category.title}</span>
+                    ) : (
+                      <span className={styles.coverInitial} aria-hidden="true">
+                        {(post.category?.title ?? post.title).charAt(0).toUpperCase()}
+                      </span>
                     )}
-                    <span className={styles.metaDivider}>/</span>
-                    <span className={styles.readingTime}>
-                      {post.estimatedReadingTime || 4} MIN READ
-                    </span>
                   </div>
 
-                  <h3 className={styles.postTitle}>
-                    <Link href={`/blog/${post.slug}`} className={styles.titleLink}>
-                      {post.title}
-                    </Link>
-                  </h3>
+                  <div className={styles.cardBody}>
+                    <div className={styles.postMeta}>
+                      {post.category && (
+                        <>
+                          <span className={styles.categoryName}>{post.category.title}</span>
+                          <span className={styles.metaDivider} aria-hidden="true">/</span>
+                        </>
+                      )}
+                      {/* Legacy drafts predating the reading-time field render
+                          the studio baseline rather than a blank cell. */}
+                      <span className={styles.readingTime}>
+                        {post.estimatedReadingTime ?? 4} MIN READ
+                      </span>
+                    </div>
 
-                  <p className={styles.postExcerpt}>{post.excerpt}</p>
+                    <h3 className={styles.postTitle}>
+                      {/* Stretched link: the ::after overlay makes the whole
+                          card clickable, so every other element stays a plain
+                          span/time to keep exactly one tabbable target. */}
+                      <Link href={`/blog/${post.slug}`} className={styles.titleLink}>
+                        {post.title}
+                      </Link>
+                    </h3>
 
-                  <div className={styles.postFooter}>
-                    <time dateTime={post.publishedAt} className={styles.dateLabel}>
-                      {formatDate(post.publishedAt)}
-                    </time>
-                    <Link href={`/blog/${post.slug}`} className={styles.readMoreLink}>
-                      <span>Read</span>
-                      <span className={styles.arrow} aria-hidden="true">&rarr;</span>
-                    </Link>
+                    <p className={styles.postExcerpt}>{post.excerpt}</p>
+
+                    <div className={styles.postFooter}>
+                      <time dateTime={post.publishedAt} className={styles.dateLabel}>
+                        {formatDate(post.publishedAt)}
+                      </time>
+                      <span className={styles.readMore}>
+                        <span>Read dispatch</span>
+                        <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+                      </span>
+                    </div>
                   </div>
                 </article>
               );
-            })}
-          </div>
+            })
+          )}
         </div>
       </div>
     </section>

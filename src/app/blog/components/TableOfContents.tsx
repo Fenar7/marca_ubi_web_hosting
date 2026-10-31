@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { PortableTextBlock } from "next-sanity";
+import { slugify } from "@/app/blog/lib/slugify";
 import styles from "./BlogPostComponents.module.scss";
 
 interface TocItem {
@@ -18,15 +19,6 @@ interface HeadingBlock {
   _type?: string;
   style?: string;
   children?: PortableTextChild[];
-}
-
-function slugify(text: string, index?: number): string {
-  const slug = text
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s-]/gu, "")
-    .trim()
-    .replace(/\s+/g, "-");
-  return slug || `heading-${index ?? 0}`;
 }
 
 export default function TableOfContents({ blocks }: { blocks: PortableTextBlock[] }) {
@@ -88,7 +80,11 @@ export default function TableOfContents({ blocks }: { blocks: PortableTextBlock[
                   e.preventDefault();
                   const target = document.getElementById(item.id);
                   if (target) {
-                    target.scrollIntoView({ behavior: "smooth" });
+                    /* Honour the OS-level reduce-motion preference: instant
+                       jump instead of an animated scroll for vestibular
+                       sensitivity, matching the SCSS kill-blocks. */
+                    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    target.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
                     window.history.pushState(null, "", `#${item.id}`);
                     setActiveId(item.id);
                   }

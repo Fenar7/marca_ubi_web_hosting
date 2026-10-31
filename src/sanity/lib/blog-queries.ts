@@ -1,8 +1,10 @@
 import { groq } from "next-sanity";
 
-// All published posts for the /blog listing page
+// All published posts for the /blog listing page.
+// noIndex posts are excluded so unlisted drafts of the future never leak into
+// the public index; the sitemap query applies the same contract.
 export const postsQuery = groq`
-  *[_type == "post" && defined(slug.current) && !(_id in path('drafts.**'))] | order(publishedAt desc) {
+  *[_type == "post" && defined(slug.current) && !(_id in path('drafts.**')) && seo.noIndex != true] | order(publishedAt desc) {
     _id,
     title,
     "slug": slug.current,
@@ -20,7 +22,8 @@ export const postsQuery = groq`
         }
       },
       alt,
-      caption
+      caption,
+      hotspot
     },
     author->{
       _id,
@@ -77,7 +80,8 @@ export const postBySlugQuery = groq`
         }
       },
       alt,
-      caption
+      caption,
+      hotspot
     },
     author->{
       _id,
@@ -152,7 +156,8 @@ export const relatedPostsQuery = groq`
         _id,
         url
       },
-      alt
+      alt,
+      hotspot
     },
     category->{
       title,

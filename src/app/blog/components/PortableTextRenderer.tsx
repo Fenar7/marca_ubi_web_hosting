@@ -1,7 +1,10 @@
 import React from "react";
 import { PortableText, type PortableTextComponents, type PortableTextBlock } from "next-sanity";
 import Link from "next/link";
-import { urlFor } from "@/sanity/lib/image";
+import Image from "next/image";
+import { urlFor, coverUrl } from "@/sanity/lib/image";
+import { slugify } from "@/app/blog/lib/slugify";
+import type { SanityImageReference } from "@/sanity/types/blog";
 import styles from "./PortableTextRenderer.module.scss";
 
 interface ChildSpan {
@@ -9,21 +12,40 @@ interface ChildSpan {
   _type?: string;
 }
 
-export function slugify(text: string, index?: number): string {
-  const slug = text
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s-]/gu, "")
-    .trim()
-    .replace(/\s+/g, "-");
-  return slug || `heading-${index ?? 0}`;
+/**
+ * Portable Text block payload for the studio callout object type. `type`
+ * selects one of the three rendered variants (note / principle / warning);
+ * unknown values fall back to the neutral note wash rather than rendering
+ * dead markup.
+ */
+interface CalloutValue {
+  type?: string;
+  title?: string;
+  content?: string;
+}
+
+/** Code Block object payload: filename/lang drive the frame header only. */
+interface CodeBlockValue {
+  filename?: string;
+  language?: string;
+  code?: string;
+}
+
+/**
+ * Extracts the plain heading text from a block so the anchor id can be
+ * stamped identically to the TableOfContents resolver. Both sides import
+ * slugify from @/app/blog/lib/slugify: drift between the two silently breaks
+ * every in-page jump link.
+ */
+function headingText(value: { children?: unknown } | undefined): string {
+  const spans = (value?.children || []) as ChildSpan[];
+  return spans.map((c) => c.text || "").join("");
 }
 
 export const portableTextComponents: PortableTextComponents = {
   block: {
     h2: ({ children, value, index }) => {
-      const spans = (value?.children || []) as ChildSpan[];
-      const text = spans.map((c) => c.text || "").join("");
-      const id = slugify(text, index);
+      const id = slugify(headingText(value), index);
       return (
         <h2 id={id} className={styles.heading2}>
           <a href={`#${id}`} className={styles.headingAnchor}>
@@ -33,10 +55,10 @@ export const portableTextComponents: PortableTextComponents = {
         </h2>
       );
     },
+    /* h3 carries the same slugified id so a future multi-level TOC resolves
+       against real anchors, but stays visually quiet (no self-link marker). */
     h3: ({ children, value, index }) => {
-      const spans = (value?.children || []) as ChildSpan[];
-      const text = spans.map((c) => c.text || "").join("");
-      const id = slugify(text, index);
+      const id = slugify(headingText(value), index);
       return (
         <h3 id={id} className={styles.heading3}>
           {children}
@@ -62,6 +84,7 @@ export const portableTextComponents: PortableTextComponents = {
   marks: {
     strong: ({ children }) => <strong className={styles.strongText}>{children}</strong>,
     em: ({ children }) => <em className={styles.emText}>{children}</em>,
+    underline: ({ children }) => <span className={styles.underlineText}>{children}</span>,
     code: ({ children }) => <code className={styles.inlineCode}>{children}</code>,
     link: ({ value, children }) => {
       const href = value?.href || "#";
@@ -78,7 +101,7 @@ export const portableTextComponents: PortableTextComponents = {
           >
             {children}
             {isExternal && (
-              <span className={styles.linkArrowIcon} aria-hidden="true">&nearr;</span>
+              <span className={styles.linkArrowIcon} aria-hidden="true">{"\u2197"}</span>
             )}
           </a>
         );
@@ -92,45 +115,58 @@ export const portableTextComponents: PortableTextComponents = {
   },
   types: {
     callout: ({ value }) => {
-      const type = value?.type || "note";
+      const data = (value || {}) as CalloutValue;
+      const type = data.type || "note";
       return (
         <aside className={`${styles.calloutCard} ${styles[`callout_${type}`] || ""}`}>
           <div className={styles.calloutHeader}>
             <span className={styles.calloutDot} aria-hidden="true" />
-            <p className={styles.calloutTitle}>{value?.title || "Studio Insight"}</p>
+            <p className={styles.calloutTitle}>{data.title || "Studio Insight"}</p>
           </div>
-          <p className={styles.calloutContent}>{value?.content}</p>
+          <div className={styles.calloutBody}>
+            <p>{data.content}</p>
+          </div>
         </aside>
       );
     },
+    /* In-body imagery goes through the same hotspot-aware crop pipeline as
+       the covers (raw Sanity originals were shipping multi-MB <img> tags),
+       with the authored lqip as the blur-up placeholder when present. */
     image: ({ value }) => {
-      const url = value?.asset?.url || (value?.asset ? urlFor(value).url() : null);
-      if (!url) return null;
+      const source = value as SanityImageReference | undefined;
+      if (!source?.asset?.url) return null;
+      const src = coverUrl(source, 1200, 800) ?? urlFor(source).width(1200).url();
+      const lqip = source.asset.metadata?.lqip;
       return (
         <figure className={styles.figure}>
           <div className={styles.imageWrap}>
-            <img
-              src={url}
-              alt={value.alt || "Article visual"}
-              className={styles.contentImage}
+            <Image
+              src={src}
+              alt={source.alt || "Article visual"}
+              width={1200}
+              height={800}
+              sizes="(max-width: 1024px) 92vw, 72ch"
               loading="lazy"
+              className={styles.contentImage}
+              {...(lqip ? { placeholder: "blur" as const, blurDataURL: lqip } : {})}
             />
           </div>
-          {value.caption && <figcaption className={styles.figcaption}>{value.caption}</figcaption>}
+          {source.caption && <figcaption className={styles.figcaption}>{source.caption}</figcaption>}
         </figure>
       );
     },
     codeBlock: ({ value }) => {
+      const data = (value || {}) as CodeBlockValue;
       return (
         <div className={styles.codeContainer}>
-          {(value?.filename || value?.language) && (
+          {(data.filename || data.language) && (
             <div className={styles.codeHeader}>
-              <span className={styles.codeFilename}>{value?.filename || ""}</span>
-              {value?.language && <span className={styles.codeLang}>{value.language}</span>}
+              <span className={styles.codeFilename}>{data.filename || ""}</span>
+              {data.language && <span className={styles.codeLang}>{data.language}</span>}
             </div>
           )}
           <pre className={styles.pre}>
-            <code>{value?.code}</code>
+            <code>{data.code}</code>
           </pre>
         </div>
       );

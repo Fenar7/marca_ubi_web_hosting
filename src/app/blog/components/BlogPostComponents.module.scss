@@ -1,5 +1,20 @@
 @import "../../styles/client-mixins.scss";
 
+/**
+ * Rail and banner styling for the article reading surface (/blog/[slug]).
+ *
+ * Visual system:
+ * - Light editorial canon: #666666 micro labels (4.5:1+ on white), hairline
+ *   rails rgba(0,0,0,0.08), radius 2px, zero shadows, red reserved for the
+ *   active TOC rule, hover accents and the copy-confirmation state.
+ * - TOC active item swaps a transparent 2px left border to red with a -1px
+ *   offset against the list rail, so selection never shifts layout.
+ * - Every interactive control clears the 44px WCAG tap target via padding or
+ *   min-height, and transitions are killed under prefers-reduced-motion.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 /* Table of Contents */
 .tocNav {
   display: flex;
@@ -8,10 +23,10 @@
 }
 
 .tocTitle {
-  color: $client-text-muted-dark;
+  color: #666666;
   font-family: $font-mono;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin: 0;
@@ -23,21 +38,22 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .tocItem {
   margin: 0;
 }
 
+/* Padding (not gap) carries the vertical rhythm so each row meets the 44px
+   tap target without invisible dead zones between links. */
 .tocLink {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
+  color: #444444;
   font-family: $font-circular;
   font-size: 13px;
   line-height: 1.45;
-  padding-left: 1rem;
+  padding: 0.875rem 0.5rem 0.875rem 1rem;
   text-decoration: none;
   transition: color 0.2s ease, border-color 0.2s ease;
   position: relative;
@@ -45,17 +61,17 @@
   border-left: 2px solid transparent;
 
   &:hover {
-    color: #ffffff;
+    color: #0a0a0a;
   }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
-    outline-offset: 3px;
+    outline-offset: 2px;
   }
 }
 
 .tocLinkActive {
-  color: #ffffff;
+  color: #0a0a0a;
   font-weight: 500;
   border-left-color: $client-accent-red;
 }
@@ -66,14 +82,14 @@
   flex-direction: column;
   gap: 0.85rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .shareTitle {
-  color: $client-text-muted-dark;
+  color: #666666;
   font-family: $font-mono;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin: 0;
@@ -90,33 +106,42 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  min-height: 38px;
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0 0.875rem;
+  min-height: 44px;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 2px;
-  color: rgba(255, 255, 255, 0.85);
+  color: #0a0a0a;
   font-family: $font-circular;
   font-size: 12px;
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease;
 
   svg {
-    opacity: 0.8;
+    opacity: 0.7;
   }
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
+    border-color: $client-accent-red;
+    color: $client-accent-red;
+
+    svg {
+      opacity: 1;
+    }
   }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
     outline-offset: 2px;
   }
+}
+
+/* Transient clipboard confirmation, red to stay inside the accent language. */
+.copiedBtn {
+  border-color: $client-accent-red;
+  color: $client-accent-red;
 }
 
 /* Studio Conversion CTA Banner */
@@ -126,8 +151,8 @@
   justify-content: space-between;
   gap: 2.5rem;
   padding: clamp(2.5rem, 5vw, 4rem);
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #fbfbfb;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-left: 3px solid $client-accent-red;
   border-radius: 2px;
   margin-top: clamp(4rem, 7vw, 7rem);
@@ -151,19 +176,19 @@
   gap: 8px;
   font-family: $font-mono;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: $client-accent-red;
 }
 
 .ctaHeading {
-  font-family: $font-circular;
-  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
-  font-weight: 700;
+  font-family: $font-helvetica;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: $fw-helvetica-light;
   line-height: 1.2;
-  letter-spacing: -0.025em;
-  color: #ffffff;
+  letter-spacing: -0.02em;
+  color: #0a0a0a;
   margin: 0;
 }
 
@@ -171,7 +196,7 @@
   font-family: $font-circular;
   font-size: 15px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.75);
+  color: #444444;
   margin: 0;
 }
 
@@ -182,6 +207,7 @@
   min-width: 240px;
 }
 
+/* Outline button inverts to solid ink on hover (no fill-swap slop, no glow). */
 .ctaPrimaryButton {
   display: inline-flex;
   align-items: center;
@@ -191,8 +217,8 @@
   height: 48px;
   min-height: 44px;
   border-radius: 2px;
-  border: 1.5px solid #ffffff;
-  background-color: #ffffff;
+  border: 1.5px solid #0a0a0a;
+  background-color: transparent;
   color: #0a0a0a;
   font-family: $font-circular;
   font-size: 14px;
@@ -200,15 +226,15 @@
   letter-spacing: 0.02em;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   .arrow {
     transition: transform 0.2s ease;
   }
 
   &:hover {
-    background-color: $client-accent-red;
-    border-color: $client-accent-red;
+    background-color: #0a0a0a;
     color: #ffffff;
 
     .arrow {
@@ -229,7 +255,7 @@
   font-family: $font-circular;
   font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
+  color: #444444;
   text-decoration: none;
   transition: color 0.2s ease;
 
@@ -243,5 +269,26 @@
     .arrow {
       transform: translateX(3px);
     }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tocLink,
+  .shareBtn,
+  .ctaPrimaryButton,
+  .ctaPrimaryButton .arrow,
+  .ctaSecondaryLink,
+  .ctaSecondaryLink .arrow {
+    transition: none !important;
+  }
+
+  .ctaPrimaryButton:hover .arrow,
+  .ctaSecondaryLink:hover .arrow {
+    transform: none;
   }
 }

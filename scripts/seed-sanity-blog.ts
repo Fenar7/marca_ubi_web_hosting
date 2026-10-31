@@ -61,7 +61,9 @@ async function seed() {
   const avatarAssetId = await uploadImage("public/images/marca-ubi.png");
   const img1AssetId = await uploadImage("public/images/bg-cover-image-2.png");
   const img2AssetId = await uploadImage("public/images/how-we-work1.png");
-  const img3AssetId = await uploadImage("public/images/bg-cover-image-3.png");
+  // bg-cover-image-3.png is the same building shot as bg-cover-image-2.png;
+  // post 3 would duplicate post 1's cover on the listing grid.
+  const img3AssetId = await uploadImage("public/images/work-image.png");
   const img4AssetId = await uploadImage("public/images/what-we-stand-for.png");
 
   // 1. Author
