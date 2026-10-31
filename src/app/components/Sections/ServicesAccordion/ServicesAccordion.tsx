@@ -7,9 +7,16 @@ import styles from "./ServicesAccordion.module.scss";
 
 /**
  * ServicesAccordion Component.
- * Full-width panoramic services showcase.
- * Preserves the two eight-item service groups while expanding the active panel,
- * revealing its copy, and loading only that panel's muted loop.
+ * Full-width panoramic services showcase with fluid flex expansion,
+ * hardware-accelerated crossfades, and responsive mobile strip handling.
+ *
+ * Architectural Invariants:
+ * 1. Synchronized Flex Interpolation: Panel expansion animates both flex-grow and flex-basis
+ *    with cubic-bezier(0.16, 1, 0.3, 1) for 60fps layout stability without JavaScript geometry math.
+ * 2. Asynchronous Video Decode: Next.js Image poster remains fully visible underneath while
+ *    video buffers; videoLoaded class crossfades the frame upon first onPlaying event.
+ * 3. Mobile Non-Blocking Gestures: Touch interactions on mobile utilize native horizontal scroll snapping
+ *    without intercepting vertical swipes or triggering accidental expansion.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -17,6 +24,7 @@ export function ServicesAccordion() {
   const [activeCategory, setActiveCategory] = useState<ServiceCategory>("B2B");
   const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [videoReadyMap, setVideoReadyMap] = useState<Record<string, boolean>>({});
   const activeVideoRef = useRef<HTMLVideoElement | null>(null);
   const stripRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
@@ -56,6 +64,7 @@ export function ServicesAccordion() {
     activeVideoRef.current = null;
     setActiveCategory(category);
     setActiveServiceId(null);
+    setVideoReadyMap({});
     if (stripRef.current) {
       stripRef.current.scrollTo({ left: 0, behavior: "smooth" });
     }
@@ -158,110 +167,126 @@ export function ServicesAccordion() {
           className={styles.fullWidthStrip}
           aria-label={`${activeCategory} Services`}
         >
-        <div className={styles.cardsRow}>
-          {services.map((service) => {
-            const isActive = activeServiceId === service.id;
+          <div className={styles.cardsRow}>
+            {services.map((service) => {
+              const isActive = activeServiceId === service.id;
 
-            return (
-              <article
-                key={service.id}
-                className={`${styles.cardColumn} ${isActive ? styles.cardActive : ""}`}
-                data-active={isActive}
-                onMouseEnter={() => setActiveServiceId(service.id)}
-                onTouchStart={() => setActiveServiceId(service.id)}
-                onMouseLeave={(event) => {
-                  if (event.currentTarget.contains(document.activeElement)) {
-                    return;
-                  }
-                  if (event.currentTarget.matches(":hover")) {
-                    return;
-                  }
-                  if (activeServiceId === service.id) {
-                    activeVideoRef.current?.pause();
-                    activeVideoRef.current = null;
-                    setActiveServiceId((current) => current === service.id ? null : current);
-                  }
-                }}
-              >
-                <button
-                  type="button"
-                  className={styles.cardTrigger}
-                  aria-expanded={isActive}
-                  aria-controls={`service-details-${service.id}`}
-                  onFocus={() => setActiveServiceId(service.id)}
-                  onClick={() => setActiveServiceId((current) => current === service.id ? null : service.id)}
-                  onBlur={(event) => {
-                    if (!event.currentTarget.parentElement?.matches(":hover")) {
-                      activeVideoRef.current?.pause();
-                      activeVideoRef.current = null;
-                      setActiveServiceId((current) => current === service.id ? null : current);
+              return (
+                <article
+                  key={service.id}
+                  className={`${styles.cardColumn} ${isActive ? styles.cardActive : ""}`}
+                  data-active={isActive}
+                  onMouseEnter={() => {
+                    // Activate only on fine pointer devices (desktop hover)
+                    if (typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches) {
+                      setActiveServiceId(service.id);
                     }
                   }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Escape") {
+                  onMouseLeave={(event) => {
+                    if (event.currentTarget.contains(document.activeElement)) {
+                      return;
+                    }
+                    if (event.currentTarget.matches(":hover")) {
+                      return;
+                    }
+                    if (activeServiceId === service.id) {
                       activeVideoRef.current?.pause();
                       activeVideoRef.current = null;
-                      setActiveServiceId(null);
-                      event.currentTarget.blur();
+                      setActiveServiceId((current) => (current === service.id ? null : current));
                     }
                   }}
-                />
-                <div className={styles.imageLayer} aria-hidden="true">
-                  <Image
-                    src={service.imageUrl}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 76vw, 20vw"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-                {isActive && !reducedMotion ? (
-                  <video
-                    ref={(video) => {
-                      if (!video) return;
-                      activeVideoRef.current = video;
-                      void video.play().catch(() => video.pause());
+                >
+                  <button
+                    type="button"
+                    className={styles.cardTrigger}
+                    aria-expanded={isActive}
+                    aria-controls={`service-details-${service.id}`}
+                    onFocus={() => setActiveServiceId(service.id)}
+                    onClick={(event) => {
+                      const nextId = activeServiceId === service.id ? null : service.id;
+                      setActiveServiceId(nextId);
+                      if (nextId && typeof window !== "undefined" && window.innerWidth <= 1024) {
+                        const cardArticle = event.currentTarget.closest("article");
+                        cardArticle?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                      }
                     }}
-                    className={styles.serviceVideo}
-                    src={service.videoSrc}
-                    poster={service.videoPoster}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
-                    aria-hidden="true"
+                    onBlur={(event) => {
+                      if (!event.currentTarget.parentElement?.matches(":hover")) {
+                        activeVideoRef.current?.pause();
+                        activeVideoRef.current = null;
+                        setActiveServiceId((current) => (current === service.id ? null : current));
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        activeVideoRef.current?.pause();
+                        activeVideoRef.current = null;
+                        setActiveServiceId(null);
+                        event.currentTarget.blur();
+                      }
+                    }}
                   />
-                ) : null}
+                  <div className={styles.imageLayer} aria-hidden="true">
+                    <Image
+                      src={service.imageUrl}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 82vw, (max-width: 1200px) 35vw, 20vw"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  {isActive && !reducedMotion ? (
+                    <video
+                      ref={(video) => {
+                        if (!video) return;
+                        activeVideoRef.current = video;
+                        void video.play().catch(() => video.pause());
+                      }}
+                      className={`${styles.serviceVideo} ${videoReadyMap[service.id] ? styles.videoLoaded : ""}`}
+                      src={service.videoSrc}
+                      poster={service.videoPoster}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="none"
+                      aria-hidden="true"
+                      onPlaying={() => {
+                        setVideoReadyMap((prev) => (prev[service.id] ? prev : { ...prev, [service.id]: true }));
+                      }}
+                    />
+                  ) : null}
 
-                <div className={styles.restingScrim} />
-                <div className={styles.restingContent} aria-hidden={isActive}>
-                  <span className={styles.restingNumber}>{service.number}</span>
-                  <h4 className={styles.restingTitle}>{service.title}</h4>
-                </div>
+                  <div className={styles.restingScrim} />
+                  <div className={styles.restingContent} aria-hidden={isActive}>
+                    <span className={styles.restingNumber}>{service.number}</span>
+                    <h4 className={styles.restingTitle}>{service.title}</h4>
+                  </div>
 
-                <div id={`service-details-${service.id}`} className={styles.hoverOverlay} aria-hidden={!isActive}>
-                  <div className={styles.overlayTop}>
-                    <div className={styles.metaRow}>
-                      <span className={styles.overlayNumber}>{service.number}</span>
-                      <span className={styles.overlayCategory}>{activeCategory}</span>
+                  <div id={`service-details-${service.id}`} className={styles.hoverOverlay} aria-hidden={!isActive}>
+                    <div className={styles.overlayTop}>
+                      <div className={styles.metaRow}>
+                        <span className={styles.overlayNumber}>{service.number}</span>
+                        <span className={styles.overlayCategory}>{activeCategory}</span>
+                      </div>
+                      <h4 className={styles.overlayTitle}>{service.title}</h4>
+                      <p className={styles.overlayDesc}>{service.desc}</p>
                     </div>
-                    <p className={styles.overlayDesc}>{service.desc}</p>
-                  </div>
 
-                  <div className={styles.overlayServices}>
-                    <span className={styles.exploreCue}>WHAT WE DO</span>
-                    <ul>
-                      {service.services.map((item) => <li key={item}>{item}</li>)}
-                    </ul>
+                    <div className={styles.overlayServices}>
+                      <span className={styles.exploreCue}>WHAT WE DO</span>
+                      <ul>
+                        {service.services.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                  <h4 className={styles.overlayTitle}>{service.title}</h4>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
 
         {/* Right Scroll Indicator & Navigation Button */}

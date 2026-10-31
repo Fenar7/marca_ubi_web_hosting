@@ -1,5 +1,19 @@
 @import "../../../styles/client-mixins.scss";
 
+/**
+ * ServicesAccordion Stylesheet
+ *
+ * Visual System & Motion Architecture:
+ * - Fluid Flex Interpolation: Coordinates flex-grow and flex-basis with bezier timing (0.16, 1, 0.3, 1)
+ *   to ensure silky 60fps transitions without reflow stutter.
+ * - Architectural Typographical Hierarchy: Swiss editorial styling with text-wrap: balance and
+ *   word-break: normal to prevent mid-character word breaking.
+ * - Hardware Accelerated Video Layer: Smooth opacity fade once video fires onPlaying.
+ * - Responsive Strip Reflow: Graceful tablet horizontal scrolling and mobile snap navigation.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .servicesShowcase {
   width: 100%;
   margin-top: clamp(4rem, 7vw, 7rem);
@@ -205,34 +219,41 @@
   flex-direction: row;
   width: 100%;
   min-width: 100%;
-  height: clamp(520px, 44vw, 680px);
+  height: clamp(540px, 46vw, 700px);
   gap: 1px;
   background-color: rgba(255, 255, 255, 0.08);
 
-  @media (max-width: 1280px) {
-    height: 520px;
+  @media (max-width: 1024px) {
+    height: 560px;
   }
 
   @media (max-width: 768px) {
-    height: 480px;
+    height: 520px;
+    padding: 0 0.75rem;
+    scroll-snap-type: x mandatory;
   }
 }
 
-/* Panels expand only while active, preserving the reference interaction without
-   calculating widths in JavaScript or forcing overflow on narrow screens. */
+/* Fluid Panel Flex Expansion Architecture */
 .cardColumn {
   position: relative;
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 1 0%;
+  min-width: 90px;
   height: 100%;
   overflow: hidden;
   cursor: pointer;
   background-color: #0d0d0d;
   outline: none;
-  transition: flex-basis 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.3s ease;
+  contain: layout paint;
+  will-change: flex-grow, flex-basis;
+  transition: flex-grow 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              flex-basis 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.35s ease;
 
+  &.cardActive,
   &:has(.cardTrigger[aria-expanded="true"]) {
     flex-grow: 4;
+    flex-basis: 440px;
   }
 
   &:focus-visible {
@@ -241,13 +262,29 @@
     z-index: 10;
   }
 
-  @media (max-width: 1440px) {
-    min-width: 0;
+  @media (max-width: 1024px) {
+    flex: 0 0 120px;
+    min-width: 120px;
+
+    &.cardActive,
+    &:has(.cardTrigger[aria-expanded="true"]) {
+      flex: 0 0 420px;
+      min-width: 420px;
+    }
   }
 
   @media (max-width: 768px) {
-    flex-basis: 0;
-    min-width: 0;
+    flex: 0 0 76px;
+    min-width: 76px;
+    scroll-snap-align: start;
+
+    &.cardActive,
+    &:has(.cardTrigger[aria-expanded="true"]) {
+      flex: 0 0 84vw;
+      min-width: 310px;
+      max-width: 380px;
+      scroll-snap-align: center;
+    }
   }
 }
 
@@ -293,6 +330,7 @@
   }
 }
 
+/* Hardware Decoded Active Video Layer */
 .serviceVideo {
   position: absolute;
   inset: 0;
@@ -302,6 +340,12 @@
   object-fit: cover;
   background: #0d0d0d;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease 0.1s;
+
+  &.videoLoaded {
+    opacity: 1;
+  }
 }
 
 /* Resting Scrim (Dark gradient at bottom for text contrast) */
@@ -309,11 +353,11 @@
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.08) 45%, rgba(0, 0, 0, 0.62) 100%);
-  transition: opacity 0.3s ease;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.08) 45%, rgba(0, 0, 0, 0.72) 100%);
+  transition: opacity 0.35s ease;
 
   .cardActive & {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.56) 0%, rgba(0, 0, 0, 0.08) 43%, rgba(0, 0, 0, 0.76) 100%);
+    opacity: 0;
   }
 }
 
@@ -348,9 +392,9 @@
 
 .restingTitle {
   font-family: $font-helvetica;
-  font-size: clamp(1.15rem, 1.35vw, 1.45rem);
+  font-size: clamp(1.1rem, 1.3vw, 1.35rem);
   font-weight: $fw-helvetica-light; // 300 (Helvetica Neue Light)
-  line-height: 1.18;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   color: #ffffff;
   margin: 0;
@@ -368,11 +412,11 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(1.5rem, 3vw, 3rem);
-  background: transparent;
+  padding: clamp(1.5rem, 3vw, 2.75rem);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(13, 13, 13, 0.72) 45%, rgba(13, 13, 13, 0.95) 100%);
   opacity: 0;
   pointer-events: none;
-  transform: none;
+  transform: translateY(6px);
   transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
   .cardActive & {
@@ -382,36 +426,11 @@
   }
 }
 
-@media (max-width: 768px) {
-  .cardColumn {
-    flex: 1 1 0;
-
-    &:has(.cardTrigger[aria-expanded="true"]) {
-      flex-grow: 4;
-    }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cardColumn,
-  .imageLayer img,
-  .restingContent,
-  .hoverOverlay {
-    transition: none;
-  }
-}
-
 .overlayTop {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  max-width: min(100%, 34rem);
-  overflow-y: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  gap: 0.85rem;
+  max-width: 100%;
 }
 
 .metaRow {
@@ -441,49 +460,50 @@
 
 .overlayTitle {
   font-family: $font-helvetica;
-  align-self: flex-start;
-  max-width: 100%;
-  font-size: clamp(3.2rem, 9vw, 8.5rem);
+  font-size: clamp(1.65rem, 2.4vw, 2.35rem);
   font-weight: $fw-helvetica-extralight;
-  line-height: 0.82;
-  letter-spacing: -0.055em;
-  text-transform: uppercase;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
   color: #ffffff;
-  margin: auto 0 0;
+  margin: 0;
+  text-transform: none;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  text-wrap: balance;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .overlayDesc {
   font-family: $font-circular;
-  font-size: clamp(14px, 1.1vw, 17px);
+  font-size: clamp(13px, 1.05vw, 15px);
   font-weight: 400; // CircularXXWeb-Book
   line-height: 1.55;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.88);
   margin: 0;
+  max-width: 32rem;
 }
 
 .overlayServices {
-  margin-top: 1rem;
-  max-width: 34rem;
+  margin-top: auto;
+  max-width: 100%;
 
   ul {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem 1.5rem;
+    gap: 0.55rem 1.25rem;
     list-style: none;
-    margin: 0.9rem 0 0;
+    margin: 0.75rem 0 0;
     padding: 0;
   }
 
   li {
-    border-top: 1px solid rgba(255, 255, 255, 0.44);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     padding-top: 0.55rem;
-    color: #ffffff;
+    color: rgba(255, 255, 255, 0.88);
     font-family: $font-circular;
-    font-size: clamp(12px, 0.9vw, 14px);
+    font-size: clamp(12px, 0.88vw, 13.5px);
     line-height: 1.35;
   }
 }
@@ -498,18 +518,18 @@
 }
 
 @media (max-width: 768px) {
-  .cardsRow {
-    height: min(78vh, 680px);
-    min-height: 520px;
-  }
-
   .hoverOverlay {
     padding: 1.4rem;
+    gap: 1rem;
   }
 
   .overlayTitle {
-    font-size: clamp(2.8rem, 15vw, 5rem);
-    margin-top: 1.3rem;
+    font-size: clamp(1.4rem, 5.2vw, 1.85rem);
+  }
+
+  .overlayDesc {
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   .overlayServices ul {
@@ -518,12 +538,12 @@
   }
 }
 
-.redArrow {
-  font-size: 18px;
-  color: $client-accent-red;
-  transition: transform 0.25s ease;
-
-  .cardColumn:hover & {
-    transform: translateX(4px);
+@media (prefers-reduced-motion: reduce) {
+  .cardColumn,
+  .imageLayer img,
+  .restingContent,
+  .hoverOverlay,
+  .serviceVideo {
+    transition: none !important;
   }
 }
