@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./ProjectForm.module.scss";
 import { ProjectFormData, initialFormData } from "./types";
@@ -24,6 +24,17 @@ export default function ProjectForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submissionReceipt, setSubmissionReceipt] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mountedStepRef = useRef(currentStep);
+
+  // Page-resident wizard (no modal scroll container): on step transitions,
+  // bring the form header back into view so long option lists never leave the
+  // user mid-scroll on the next step. Skipped for the initial mount.
+  useEffect(() => {
+    if (mountedStepRef.current === currentStep) return;
+    mountedStepRef.current = currentStep;
+    containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [currentStep]);
 
   const updateFormData = (field: keyof ProjectFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -195,7 +206,7 @@ export default function ProjectForm() {
   }
 
   return (
-    <div className={styles.formContainer}>
+    <div ref={containerRef} className={styles.formContainer}>
       <header className={styles.formHeader}>
         {/* Step Indicator Controls */}
         <div className={styles.stepIndicatorContainer}>
