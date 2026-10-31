@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import ClientHeader from "@/app/components/ClientHeader/ClientHeader";
 import MonumentalFooter from "@/app/components/Sections/MonumentalFooter";
@@ -32,9 +33,16 @@ export const metadata: Metadata = {
 };
 
 /**
- * Editorial Blog Listing Server Page.
- * Concurrently streams dispatches and category taxonomy from Sanity CMS,
- * wrapping the broadsheet reader in the 160over90 design shell.
+ * Editorial Blog Listing Server Page (/blog).
+ * Concurrently fetches dispatch summaries and the category taxonomy (with
+ * live post counts) from Sanity, then renders the light editorial shell that
+ * mirrors /services/[slug]: ClientHeader locked to its light theme and the
+ * MonumentalFooter beneath.
+ *
+ * BlogListingClient reads useSearchParams for URL-synced category filtering,
+ * so the App Router requires a Suspense boundary around it; fallback is null
+ * because the server shell already paints the full-page canvas during
+ * streaming and a skeleton would fight with the hero type.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -56,10 +64,12 @@ export default async function BlogPage() {
   }
 
   return (
-    <div data-client-shell="true" className={styles.blogPageContainer}>
-      <ClientHeader defaultTheme="dark" />
-      <main id="main-content" className={styles.blogPageMain} data-header-theme="dark">
-        <BlogListingClient posts={posts} categories={categories} />
+    <div data-client-shell="true" className={styles.pageShell}>
+      <ClientHeader defaultTheme="light" />
+      <main id="main-content" className={styles.pageMain} data-header-theme="light">
+        <Suspense fallback={null}>
+          <BlogListingClient posts={posts} categories={categories} />
+        </Suspense>
       </main>
       <MonumentalFooter />
     </div>

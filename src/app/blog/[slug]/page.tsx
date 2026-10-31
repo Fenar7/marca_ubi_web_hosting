@@ -12,7 +12,7 @@ import {
 } from "@/sanity/lib/blog-queries";
 import type { Post, PostSummary } from "@/sanity/types/blog";
 import { calculateReadingTime } from "@/sanity/types/blog";
-import { urlFor } from "@/sanity/lib/image";
+import { urlFor, coverUrl } from "@/sanity/lib/image";
 import PortableTextRenderer from "../components/PortableTextRenderer";
 import TableOfContents from "../components/TableOfContents";
 import SocialShareBar from "../components/SocialShareBar";
@@ -20,6 +20,10 @@ import BlogCtaBanner from "../components/BlogCtaBanner";
 import styles from "./BlogPost.module.scss";
 
 export const revalidate = 60; // ISR cache revalidation
+
+/** One calendar day in ms: the tolerance before an _updatedAt bump is worth
+ *  surfacing as an "Updated" stamp to the reader (typo-level edits stay quiet). */
+const DAY_MS = 86_400_000;
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -35,6 +39,13 @@ export async function generateStaticParams() {
   }
 }
 
+/**
+ * og:image is served through the same hotspot-aware crop pipeline as the
+ * on-page covers: the declared 1200x630 now matches the delivered bytes
+ * (previously the multi-MB Sanity original was announced at 1200x630).
+ * When neither an authored OG card nor a main image exists the block is
+ * omitted entirely rather than pointing crawlers at a broken URL.
+ */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await client.fetch<Post>(postBySlugQuery, { slug });
@@ -47,7 +58,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const metaTitle = post.seo?.metaTitle || `${post.title} | Marca Ubi Insights`;
   const metaDescription = post.seo?.metaDescription || post.excerpt;
-  const ogImageUrl = post.seo?.ogImage?.asset?.url || post.mainImage?.asset?.url;
+  const ogImageUrl = coverUrl(post.seo?.ogImage || post.mainImage, 1200, 630);
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
   const canonicalUrl = post.seo?.canonicalUrl || `${siteUrl}/blog/${post.slug}`;
 
@@ -79,7 +90,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-function formatDate(isoString: string): string {
+function formatDateLong(isoString: string): string {
   if (!isoString) return "";
   try {
     return new Date(isoString).toLocaleDateString("en-US", {
@@ -93,10 +104,49 @@ function formatDate(isoString: string): string {
   }
 }
 
+function formatDateCard(isoString: string): string {
+  if (!isoString) return "";
+  try {
+    return new Date(isoString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  } catch {
+    return "";
+  }
+}
+
 /**
- * Editorial Article Reader Server Component.
- * Monolithic Swiss 30/70 asymmetrical reading canvas with sticky table of contents,
- * styled portable text, author dossier, and related dispatches stream.
+ * Mirrors calculateReadingTime's extraction so BlogPosting.wordCount reflects
+ * the exact prose the reader sees (block children only; images, code blocks
+ * and callouts carry no visible paragraph text and are excluded upstream).
+ */
+interface RawBodyBlock {
+  _type?: string;
+  children?: Array<{ text?: string }>;
+}
+
+function countBodyWords(body: Post["body"]): number {
+  const raw = (body || []) as unknown as RawBodyBlock[];
+  return raw
+    .filter((b) => b._type === "block")
+    .flatMap((b) => b.children || [])
+    .map((c) => c.text || "")
+    .join(" ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
+/**
+ * Editorial Article Reader (light surface).
+ * Single 1680px container carries breadcrumb, header band, cover and the
+ * 280px-rail + 72ch-column reading grid so all copy shares one left edge.
+ * Covers and related cards flow through coverUrl()'s hotspot-aware crops,
+ * the TOC/share rail sticks beside the body, and JSON-LD pairs BlogPosting
+ * (with wordCount/articleSection) and a BreadcrumbList graph.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -124,8 +174,20 @@ export default async function BlogPostPage({ params }: PageProps) {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
   const postUrl = `${siteUrl}/blog/${post.slug}`;
   const readingMinutes = post.estimatedReadingTime || calculateReadingTime(post.body);
+  const heroCover = coverUrl(post.mainImage, 1680, 880);
+  const schemaImage = coverUrl(post.mainImage, 1200, 630);
+  const wordCount = countBodyWords(post.body);
 
-  // JSON-LD Structured Data
+  // An update stamp only earns editorial real estate once it clears a full
+  // day over the publication date, so silent same-day fixes never mislead.
+  const updatedDelta = post._updatedAt
+    ? new Date(post._updatedAt).getTime() - new Date(post.publishedAt).getTime()
+    : NaN;
+  const updatedLabel =
+    !Number.isNaN(updatedDelta) && updatedDelta > DAY_MS
+      ? `Updated ${formatDateCard(post._updatedAt as string)}`
+      : null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -136,10 +198,12 @@ export default async function BlogPostPage({ params }: PageProps) {
     },
     headline: post.title,
     description: post.excerpt,
-    image: post.mainImage?.asset?.url ? [post.mainImage.asset.url] : [],
+    image: schemaImage ? [schemaImage] : [],
     datePublished: post.publishedAt,
     dateModified: post._updatedAt || post.publishedAt,
-    inLanguage: "en-US",
+    inLanguage: "en",
+    wordCount: wordCount > 0 ? wordCount : undefined,
+    articleSection: post.category?.title || undefined,
     author: {
       "@type": "Person",
       name: post.author?.name || "Marca Ubi",
@@ -162,6 +226,31 @@ export default async function BlogPostPage({ params }: PageProps) {
     keywords: post.seo?.keywords?.join(", "),
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: `${siteUrl}/blog`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: post.title,
+        item: postUrl,
+      },
+    ],
+  };
+
   return (
     <div data-client-shell="true" className={styles.articlePageMain}>
       {/* JSON-LD Rich Results */}
@@ -169,64 +258,72 @@ export default async function BlogPostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
 
-      <ClientHeader defaultTheme="dark" />
+      <ClientHeader defaultTheme="light" />
 
-      <main id="main-content" data-header-theme="dark">
+      <main id="main-content" className={styles.articleMain} data-header-theme="light">
         <article className={styles.articleContainer}>
           {/* Breadcrumb Navigation */}
-          <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
-            <Link href="/">Home</Link>
-            <span className={styles.breadcrumbSeparator}>/</span>
-            <Link href="/blog">Dispatches</Link>
-            {post.category && (
-              <>
-                <span className={styles.breadcrumbSeparator}>/</span>
-                <span>{post.category.title}</span>
-              </>
-            )}
-            <span className={styles.breadcrumbSeparator}>/</span>
-            <span className={styles.currentBreadcrumb} aria-current="page">
-              {post.title}
-            </span>
+          <nav aria-label="Breadcrumb" className={styles.breadcrumbNav}>
+            <ol className={styles.breadcrumbList}>
+              <li>
+                <Link href="/">Home</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link href="/blog">Blog</Link>
+              </li>
+              {post.category && (
+                <>
+                  <li aria-hidden="true">/</li>
+                  <li aria-current="page">{post.category.title}</li>
+                </>
+              )}
+            </ol>
           </nav>
 
-          {/* Article Header Stage */}
+          {/* Article Header Band */}
           <header className={styles.articleHeader}>
-            <div className={styles.headerMetaRow}>
-              {post.category?.title && (
-                <span className={styles.categoryBadge}>{post.category.title}</span>
-              )}
-              {post.publishedAt && (
-                <>
-                  <span className={styles.metaDot}>/</span>
-                  <time className={styles.dateText} dateTime={post.publishedAt}>
-                    {formatDate(post.publishedAt)}
-                  </time>
-                </>
-              )}
-              {readingMinutes > 0 && (
-                <>
-                  <span className={styles.metaDot}>/</span>
-                  <span className={styles.readingTimeText}>{readingMinutes} MIN READ</span>
-                </>
-              )}
-            </div>
+            {post.category?.title && (
+              <span className={styles.kicker}>{post.category.title}</span>
+            )}
 
             <h1 className={styles.articleTitle}>{post.title}</h1>
             <p className={styles.articleStandfirst}>{post.excerpt}</p>
 
+            <div className={styles.metaRow}>
+              {post.publishedAt && (
+                <time dateTime={post.publishedAt}>{formatDateLong(post.publishedAt)}</time>
+              )}
+              {readingMinutes > 0 && (
+                <>
+                  <span className={styles.metaSlash} aria-hidden="true">/</span>
+                  <span>{readingMinutes} MIN READ</span>
+                </>
+              )}
+              {updatedLabel && (
+                <>
+                  <span className={styles.metaSlash} aria-hidden="true">/</span>
+                  <span>{updatedLabel}</span>
+                </>
+              )}
+            </div>
+
             {post.author && (
               <div className={styles.authorRow}>
                 {post.author.avatar?.asset?.url && (
-                  <div className={styles.authorAvatar}>
+                  <span className={styles.authorAvatar}>
                     <Image
-                      src={post.author.avatar.asset.url}
-                      alt={post.author.name}
+                      src={urlFor(post.author.avatar).width(88).height(88).url()}
                       width={44}
                       height={44}
+                      alt={post.author.avatar.alt || post.author.name}
                     />
-                  </div>
+                  </span>
                 )}
                 <div className={styles.authorDetails}>
                   <span className={styles.authorName}>{post.author.name}</span>
@@ -236,54 +333,49 @@ export default async function BlogPostPage({ params }: PageProps) {
             )}
           </header>
 
-          {/* Hero Panoramic Image */}
-          {post.mainImage?.asset?.url && (
-            <div className={styles.heroMediaWrap}>
-              <div className={styles.heroImageContainer}>
+          {/* Cover Plate: full container width, hotspot-aware 1680px crop */}
+          {heroCover && (
+            <figure className={styles.heroMediaWrap}>
+              <div className={styles.heroImageFrame}>
                 <Image
-                  src={post.mainImage.asset.url}
-                  alt={post.mainImage.alt || post.title}
+                  src={heroCover}
+                  alt={post.mainImage?.alt || post.title}
                   fill
                   priority
-                  sizes="(max-width: 1440px) 100vw, 1440px"
+                  sizes="(max-width: 768px) 100vw, 1680px"
                 />
               </div>
-              {post.mainImage.caption && (
-                <p className={styles.heroCaption}>{post.mainImage.caption}</p>
+              {post.mainImage?.caption && (
+                <figcaption className={styles.heroCaption}>{post.mainImage.caption}</figcaption>
               )}
-            </div>
+            </figure>
           )}
 
-          {/* 30/70 Swiss Editorial Reading Experience */}
-          <div className={styles.editorialLayout}>
-            {/* Left Sticky Rail */}
-            <aside className={styles.stickyRail}>
-              <Link href="/blog" className={styles.backLink}>
-                <span aria-hidden="true">&larr;</span>
-                <span>All Dispatches</span>
-              </Link>
-
-              <TableOfContents blocks={post.body} />
+          {/* Rail + Body Reading Grid */}
+          <div className={styles.readingGrid}>
+            <aside className={styles.stickyRail} aria-label="Article contents and sharing">
+              <div className={styles.railToc}>
+                <TableOfContents blocks={post.body} />
+              </div>
 
               <SocialShareBar title={post.title} url={postUrl} />
             </aside>
 
-            {/* Main Reading Column */}
-            <section className={styles.mainReadingColumn}>
+            <div className={styles.bodyColumn}>
               <PortableTextRenderer value={post.body} />
 
-              {/* Author Bio Card */}
+              {/* Author Dossier */}
               {post.author && (
-                <div className={styles.authorBioCard}>
+                <aside className={styles.authorDossier} aria-label={`About the author ${post.author.name}`}>
                   {post.author.avatar?.asset?.url && (
-                    <div className={styles.bioAvatar}>
+                    <span className={styles.bioAvatar}>
                       <Image
-                        src={post.author.avatar.asset.url}
-                        alt={post.author.name}
+                        src={urlFor(post.author.avatar).width(128).height(128).url()}
                         width={64}
                         height={64}
+                        alt={post.author.avatar.alt || post.author.name}
                       />
-                    </div>
+                    </span>
                   )}
                   <div className={styles.bioContent}>
                     <span className={styles.bioTag}>Author Dossier</span>
@@ -293,26 +385,44 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                     {post.author.socialLinks && post.author.socialLinks.length > 0 && (
                       <div className={styles.bioSocials}>
-                        {post.author.socialLinks.map((link, idx) => (
+                        {post.author.socialLinks.map((link) => (
                           <a
-                            key={idx}
+                            key={`${link.platform}-${link.url}`}
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
                             <span>{link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}</span>
-                            <span aria-hidden="true">&nearr;</span>
+                            <span aria-hidden="true">{"\u2197"}</span>
                           </a>
                         ))}
                       </div>
                     )}
                   </div>
-                </div>
+                </aside>
               )}
-            </section>
+            </div>
           </div>
 
-          {/* Related Articles Section */}
+          {/* Closing Editorial CTA Row */}
+          <div className={styles.ctaRow}>
+            <Link href="/start-project" className={styles.ctaLink}>
+              Start a conversation
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </Link>
+          </div>
+
+          {/* Related Dispatches: same card anatomy as the /blog listing grid */}
           {relatedPosts.length > 0 && (
             <section className={styles.relatedSection} aria-labelledby="related-heading">
               <div className={styles.relatedHeader}>
@@ -327,34 +437,53 @@ export default async function BlogPostPage({ params }: PageProps) {
 
               <div className={styles.relatedGrid}>
                 {relatedPosts.map((related) => {
-                  const imageUrl = related.mainImage?.asset?.url
-                    ? urlFor(related.mainImage).width(800).height(450).quality(85).url()
-                    : "/images/what-we-stand-for.png";
+                  const cover = coverUrl(related.mainImage, 800, 450);
+                  const minutes = related.estimatedReadingTime || 4;
 
                   return (
                     <article key={related._id} className={styles.relatedCard}>
-                      <Link href={`/blog/${related.slug}`} className={styles.relatedImageFrame}>
-                        <Image
-                          src={imageUrl}
-                          alt={related.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                        />
-                      </Link>
-                      <div className={styles.relatedCardMeta}>
-                        {related.category?.title && (
-                          <span className={styles.relatedCategory}>
-                            {related.category.title}
+                      <Link
+                        href={`/blog/${related.slug}`}
+                        className={styles.relatedImageFrame}
+                        tabIndex={-1}
+                        aria-hidden="true"
+                      >
+                        {cover ? (
+                          <Image
+                            src={cover}
+                            alt={related.mainImage?.alt || related.title}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <span className={styles.relatedFallback} aria-hidden="true">
+                            {(related.category?.title || related.title).charAt(0)}
                           </span>
                         )}
-                        <span>/</span>
-                        <span>{formatDate(related.publishedAt)}</span>
+                      </Link>
+
+                      <div className={styles.relatedMetaRow}>
+                        {related.category?.title && (
+                          <span className={styles.relatedCategory}>{related.category.title}</span>
+                        )}
+                        <span className={styles.relatedMetaSlash} aria-hidden="true">/</span>
+                        <time dateTime={related.publishedAt}>{formatDateCard(related.publishedAt)}</time>
+                        <span className={styles.relatedMetaSlash} aria-hidden="true">/</span>
+                        <span>{minutes} MIN READ</span>
                       </div>
+
                       <h3 className={styles.relatedCardTitle}>
-                        <Link href={`/blog/${related.slug}`}>
-                          {related.title}
-                        </Link>
+                        <Link href={`/blog/${related.slug}`}>{related.title}</Link>
                       </h3>
+
+                      <p className={styles.relatedExcerpt}>{related.excerpt}</p>
+
+                      <div className={styles.relatedCardFooter}>
+                        <Link href={`/blog/${related.slug}`} className={styles.relatedReadLink}>
+                          <span>Read</span>
+                          <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+                        </Link>
+                      </div>
                     </article>
                   );
                 })}

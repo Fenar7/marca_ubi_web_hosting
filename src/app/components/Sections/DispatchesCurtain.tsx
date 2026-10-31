@@ -4,13 +4,18 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { PostSummary } from "@/sanity/types/blog";
-import { urlFor } from "@/sanity/lib/image";
+import { coverUrl } from "@/sanity/lib/image";
 import styles from "./DispatchesCurtain.module.scss";
 
 interface DispatchesCurtainProps {
   posts?: PostSummary[];
 }
 
+/**
+ * UTC-pinned calendar formatting ("Oct 12, 2026"): fixing the timeZone keeps
+ * the server render and client hydration byte-identical regardless of the
+ * renderer's local offset, avoiding hydration mismatch on dated dispatches.
+ */
 function formatDate(isoString: string): string {
   if (!isoString) return "";
   try {
@@ -26,42 +31,29 @@ function formatDate(isoString: string): string {
 }
 
 /**
- * View 08: Studio Dispatches & Insights Curtain.
- * Solid pure white curtain (#ffffff) sliding over the living background video.
- * Enforces the 160over90 Swiss 30/70 editorial broadsheet layout.
- * Displays the latest 3 essays from Sanity CMS with direct links to /blog and /blog/[slug].
+ * View 08: Studio Dispatches Curtain, light-editorial broadsheet composition.
+ * Solid pure white curtain (#ffffff) sliding over the living background video,
+ * on the Swiss 28fr/72fr client grid with a sticky left rail. The right column
+ * runs ONE lead dispatch (hotspot-aware cover via coverUrl in a 5/3 letterboxed
+ * frame, mono meta row, extralight Helvetica headline, 2-line excerpt and an
+ * editorial ctaLink) followed by TWO compact hairline index rows without images.
+ * Only real Sanity records render: a missing CMS never gets fabricated posts,
+ * just an honest empty state pointing at /blog.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
-  // Use latest 3 posts, or safe architectural fallbacks if Sanity has no records
-  const displayPosts = posts.length > 0 ? posts.slice(0, 3) : [
-    {
-      _id: "fb-dispatch-1",
-      title: "Systems Over Style: Why Brand Identity Fails Without Structural Logic",
-      slug: "systems-over-style",
-      publishedAt: new Date().toISOString(),
-      excerpt: "Why contemporary brand identity must operate as complete living software rather than static guideline books.",
-      estimatedReadingTime: 5,
-      category: { _id: "c1", title: "Brand Architecture", slug: "brand-architecture" },
-    },
-    {
-      _id: "fb-dispatch-2",
-      title: "The Architecture of Distinction in High-Ticket Digital Platforms",
-      slug: "architecture-of-distinction",
-      publishedAt: new Date().toISOString(),
-      excerpt: "How deliberate technical precision and tactile interaction geometry establish enduring authority.",
-      estimatedReadingTime: 7,
-      category: { _id: "c2", title: "Digital Craft", slug: "digital-craft" },
-    },
-    {
-      _id: "fb-dispatch-3",
-      title: "Tactile Typography and the Cultural Velocity of Luxury Brands",
-      slug: "tactile-typography",
-      publishedAt: new Date().toISOString(),
-      excerpt: "Exploring the emotional friction of bespoke type systems in high-velocity commerce ecosystems.",
-      estimatedReadingTime: 4,
-      category: { _id: "c3", title: "Cultural Velocity", slug: "cultural-velocity" },
-    },
-  ];
+  // Featured record owns the lead slot; otherwise the newest date-ordered post leads.
+  const lead = posts.find((post) => post.featured) ?? posts[0] ?? null;
+  // Index rows take the next two records after the lead, never repeating its photo.
+  const indexPosts = lead
+    ? posts.filter((post) => post._id !== lead._id).slice(0, 2)
+    : [];
+
+  // 1200x720 crop honours the editor-authored hotspot; null means no cover exists,
+  // so the lead degrades to a text-only broadsheet entry instead of a stock photo.
+  const leadCover = lead ? coverUrl(lead.mainImage, 1200, 720) : null;
+  const leadLqip = lead?.mainImage?.asset?.metadata?.lqip;
 
   return (
     <section
@@ -71,7 +63,7 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
       data-header-theme="light"
     >
       <div className={styles.gridContainer}>
-        {/* Left Sticky Rail (30%) */}
+        {/* Left Sticky Rail (28fr) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
             <h2 className={styles.railHeadline}>
@@ -89,59 +81,93 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
           </div>
         </aside>
 
-        {/* Right 3-Column Broadsheet Grid (70%) */}
+        {/* Right Broadsheet Column (72fr) */}
         <div className={styles.rightColumn}>
-          <div className={styles.postsGrid}>
-            {displayPosts.map((post) => {
-              const imageUrl = post.mainImage?.asset?.url
-                ? urlFor(post.mainImage).width(800).height(450).quality(85).url()
-                : "/images/what-we-stand-for.png";
-
-              return (
-                <article key={post._id} className={styles.postCard}>
-                  <Link href={`/blog/${post.slug}`} className={styles.imageLink} tabIndex={-1} aria-hidden="true">
-                    <div className={styles.imageFrame}>
-                      <Image
-                        src={imageUrl}
-                        alt={post.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                        className={styles.postImage}
-                      />
-                    </div>
+          {lead === null ? (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyNote}>New dispatches are being drafted.</p>
+              <Link href="/blog" className={styles.ctaLink}>
+                <span>View All Dispatches</span>
+                <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <article className={styles.leadDispatch}>
+                {leadCover !== null && (
+                  <Link
+                    href={`/blog/${lead.slug}`}
+                    className={styles.leadCover}
+                    tabIndex={-1}
+                  >
+                    <Image
+                      src={leadCover}
+                      alt={lead.mainImage?.alt ?? lead.title}
+                      fill
+                      sizes="(max-width: 1024px) calc(100vw - 3rem), 70vw"
+                      className={styles.leadCoverImage}
+                      placeholder={leadLqip ? "blur" : "empty"}
+                      blurDataURL={leadLqip}
+                    />
                   </Link>
+                )}
 
-                  <div className={styles.postMeta}>
-                    {post.category && (
-                      <span className={styles.categoryName}>{post.category.title}</span>
-                    )}
-                    <span className={styles.metaDivider}>/</span>
-                    <span className={styles.readingTime}>
-                      {post.estimatedReadingTime || 4} MIN READ
-                    </span>
-                  </div>
+                <div className={styles.leadMeta}>
+                  {lead.category && (
+                    <>
+                      <span className={styles.categoryKicker}>{lead.category.title}</span>
+                      <span className={styles.metaDivider} aria-hidden="true">/</span>
+                    </>
+                  )}
+                  <time dateTime={lead.publishedAt} className={styles.leadDate}>
+                    {formatDate(lead.publishedAt)}
+                  </time>
+                  <span className={styles.metaDivider} aria-hidden="true">/</span>
+                  {/* Sanity computes reading time at build; 3 MIN mirrors the
+                      calculateReadingTime default for legacy drafts. */}
+                  <span className={styles.leadReadTime}>
+                    {lead.estimatedReadingTime ?? 3} MIN READ
+                  </span>
+                </div>
 
-                  <h3 className={styles.postTitle}>
-                    <Link href={`/blog/${post.slug}`} className={styles.titleLink}>
-                      {post.title}
+                <h3 className={styles.leadTitle}>
+                  <Link href={`/blog/${lead.slug}`} className={styles.leadTitleLink}>
+                    {lead.title}
+                  </Link>
+                </h3>
+
+                <p className={styles.leadExcerpt}>{lead.excerpt}</p>
+
+                <Link href={`/blog/${lead.slug}`} className={styles.ctaLink}>
+                  <span>Read dispatch</span>
+                  <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+                </Link>
+              </article>
+
+              {indexPosts.length > 0 && (
+                <div className={styles.indexRows}>
+                  {indexPosts.map((post) => (
+                    <Link
+                      key={post._id}
+                      href={`/blog/${post.slug}`}
+                      className={styles.indexRow}
+                    >
+                      <time dateTime={post.publishedAt} className={styles.indexDate}>
+                        {formatDate(post.publishedAt)}
+                      </time>
+                      {/* Uncategorised legacy drafts fall back to the generic
+                          label rather than an invented category name. */}
+                      <span className={styles.indexCategory}>
+                        {post.category ? post.category.title : "Dispatch"}
+                      </span>
+                      <span className={styles.indexTitle}>{post.title}</span>
+                      <span className={styles.indexArrow} aria-hidden="true">&rarr;</span>
                     </Link>
-                  </h3>
-
-                  <p className={styles.postExcerpt}>{post.excerpt}</p>
-
-                  <div className={styles.postFooter}>
-                    <time dateTime={post.publishedAt} className={styles.dateLabel}>
-                      {formatDate(post.publishedAt)}
-                    </time>
-                    <Link href={`/blog/${post.slug}`} className={styles.readMoreLink}>
-                      <span>Read</span>
-                      <span className={styles.arrow} aria-hidden="true">&rarr;</span>
-                    </Link>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </section>
