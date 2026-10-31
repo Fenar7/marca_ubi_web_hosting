@@ -72,7 +72,7 @@ const VETTED_ASSETS = [
     num: "08",
     id: "b2b-abm",
     name: "Account-Based Marketing (ABM)",
-    url: "https://assets.mixkit.co/videos/18000/18000-720.mp4",
+    url: "https://assets.mixkit.co/videos/49846/49846-720.mp4",
     duration: 5.5,
   },
   {

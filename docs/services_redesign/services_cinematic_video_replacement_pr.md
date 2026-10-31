@@ -7,16 +7,18 @@ This pull request delivers a comprehensive visual and media overhaul for the Ser
    - Replaced with `color: $client-text-dark;` (`#0a0a0a`), providing **16.1:1 WCAG AAA contrast**.
    - Updated the top border to `border-top: 1px solid $client-border-editorial;` (`rgba(0, 0, 0, 0.08)`) to establish an elegant, visible hairline section boundary.
 2. **2400px Ultra-HD Luxury Resting Imagery (All 16 Services)**:
-   - Purged outdated, low-res 2017 stock clichés (coffee mugs, sticky notes, casual park selfies).
+   - Purged outdated, low-res 2017 stock clichés (coffee mugs, sticky notes, casual park selfies, desert mountains).
    - Upgraded all 16 resting cards in `types.ts` to verified 2400px ultra-high-resolution (`q=85`, `auto=format`) architectural and editorial photography matching Marca Ubi's Swiss dark luxury identity.
-3. **Curated Commercial Video Assets**:
-   - Purged mismatched placeholder home clips (e.g. birthday cake for Demand Generation, street mime for Integrated Marketing) and replaced them with 16 high-production, commercial-grade video loops.
+   - Specifically replaced Card 08 (Account-Based Marketing) red canyon mountain with LaSalle Street Chicago financial district headquarters corridor at twilight (`photo-1519501025264-65ba15a82390`).
+3. **Curated Commercial Video Assets & ABM Calibrated**:
+   - Purged mismatched placeholder home clips (e.g. birthday cake for Demand Generation, street mime for Integrated Marketing, yellow matrix rain for ABM).
+   - Specifically updated Card 08 (Account-Based Marketing) video loop to Mixkit `49846` (an aerial tracking shot over downtown financial district avenue and corporate headquarters skyscrapers at twilight with red architectural accents).
 4. **Fast-Start H.264 MP4 Container Optimization**:
    - Re-encoded all 16 loops with `-movflags +faststart` to place the `moov` atom header at the front of each file, enabling instantaneous video buffering on card hover without waiting for full download.
 5. **Zero-Jump WebP Poster Synchronization**:
    - Extracted frame 0 directly from each finalized MP4 to serve as the WebP poster (`service-XX.webp`), ensuring 0px shift and 0ms color jump when transitioning from resting image to active video playback.
 6. **Bandwidth Optimization**:
-   - Audio stripped completely (`-an`) across all loops. Payloads range between 0.4MB and 3.3MB (all optimized for fast edge CDN delivery).
+   - Audio stripped completely (`-an`) across all loops. Payloads range between 0.4MB and 2.9MB (all optimized for fast edge CDN delivery).
 7. **Data & Manifest Integrity**:
    - Synchronized `src/app/components/Sections/ServicesAccordion/types.ts` and `docs/services_hover_expansion/media_manifest.json` with verified catalog IDs, source URLs, and high-fidelity accessibility `alt` descriptions.
 
@@ -32,7 +34,7 @@ This pull request delivers a comprehensive visual and media overhaul for the Ser
 - **05 Content & Scale** (`service-05.mp4` / 2.93MB): High-velocity optical data network and digital distribution cubes.
 - **06 Public Relations (PR)** (`service-06.mp4` / 0.86MB): International executive press conference podium with microphone battery and camera flash moments.
 - **07 Customer Marketing** (`service-07.mp4` / 0.60MB): High-level executive partnership handshake in dark tailored suits during a closed-door agreement.
-- **08 Account-Based Marketing (ABM)** (`service-08.mp4` / 3.38MB): Abstract 3D geometric network mesh with glowing interconnection nodes on an obsidian sphere.
+- **08 Account-Based Marketing (ABM)** (`service-08.mp4` / 1.62MB): Aerial tracking shot over downtown financial district avenue and corporate headquarters skyscrapers at twilight *(replaces desert mountain and yellow matrix)*.
 
 ### B2C Consumer Capabilities (09 – 16)
 - **09 Integrated Creativity** (`service-09.mp4` / 1.82MB): Avant-garde fluid art: organic dark ink and chromatic fluid billowing in an obsidian void.
@@ -49,7 +51,7 @@ This pull request delivers a comprehensive visual and media overhaul for the Ser
 ## 4-Block Delivery Gate Report
 
 ### Block 1: Type Safety & Compilation
-- `npx tsc --noEmit`: **0 errors** (PASSED).
+- `tsc --noEmit`: **0 errors** (PASSED).
 - Strict TypeScript mode maintained across all component types and data datasets.
 
 ### Block 2: Zero AI Slop & Code Hygiene
