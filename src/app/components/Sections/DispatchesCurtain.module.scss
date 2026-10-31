@@ -1,17 +1,19 @@
 @import "../../styles/client-mixins.scss";
 
 /**
- * View 08: Dispatches Curtain Stylesheet (light editorial broadsheet).
+ * View 08: Dispatches Curtain Stylesheet (approved 3-card editorial stack).
  *
  * Visual System:
- * - Pure white canvas curtain with the section-level box-shadow lift (shared
- *   TestimonialsCutout idiom); card-level shadows stay banned.
- * - 28fr sticky rail / 72fr index column on the Swiss grid, hairline row
- *   dividers (rgba(0,0,0,0.08)), #f0f0f0 letterbox behind every cover frame.
- * - Display type is Helvetica Neue extralight, meta rows are monospace with
- *   tabular figures; interactive accent is strictly $client-accent-red.
- *
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ * - Pure white canvas curtain, no section-level shadow (card and section
+ *   shadows are banned by the brand canon; the curtain reads on contrast
+ *   alone against the video cutouts above and below).
+ * - 30/70 Swiss split: sticky mono-kicker rail on the left, three vertical
+ *   hairline-topped cards stacked on the right so the sequence reads as a
+ *   designed ledger, not floating boxes.
+ * - Display type is Helvetica Neue extralight (rail) and light (card titles);
+ *   meta rows are monospace with tabular figures; the only interactive
+ *   accent is $client-accent-red, revealed via background-size underline
+ *   growth that never shifts layout.
  */
 
 .dispatchesSection {
@@ -20,14 +22,24 @@
   width: 100%;
   background-color: $client-canvas-white;
   color: $client-text-dark;
-  padding: clamp(4.5rem, 7.5vw, 7rem) 0;
-  box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.18);
+  padding: clamp(5rem, 9vw, 8.5rem) 0;
 }
 
 .gridContainer {
-  @include client-swiss-grid;
+  display: grid;
+  grid-template-columns: minmax(280px, 30%) 1fr;
+  column-gap: clamp(3rem, 6vw, 7rem);
+  align-items: start;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 clamp(1.5rem, 6vw, 6rem);
 
-  @media (max-width: 640px) {
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    row-gap: 2.5rem;
+  }
+
+  @media (max-width: 768px) {
     padding: 0 1.25rem;
   }
 }
@@ -38,38 +50,63 @@
 
 .stickyRail {
   position: sticky;
-  top: 7rem;
+  top: clamp(120px, 18vh, 200px);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  align-items: flex-start;
+  gap: 1.25rem;
 
-  // The swiss grid collapses to one column here; a sticky rail would otherwise
-  // pin the headline over the index rows while scrolling.
+  // The grid collapses to one column here; a sticky rail would pin the
+  // headline over the cards while scrolling.
   @media (max-width: 1024px) {
     position: static;
   }
 }
 
+.railKicker {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $client-accent-red;
+}
+
 .railHeadline {
-  font-family: $font-circular;
-  font-size: clamp(2rem, 3.2vw, 3rem);
-  font-weight: 500;
-  line-height: 1.15;
+  font-family: $font-helvetica;
+  font-size: clamp(2.5rem, 4vw, 4.25rem);
+  font-weight: $fw-helvetica-extralight;
+  line-height: 0.98;
   letter-spacing: -0.03em;
   color: $client-text-dark;
   margin: 0;
+  text-wrap: balance;
 }
 
 .railSummary {
   font-family: $font-circular;
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 17px;
+  font-weight: $fw-book;
+  line-height: 1.65;
   color: $client-text-body-dark;
   margin: 0;
+  max-width: 34ch;
 }
 
-.actionWrap {
-  margin-top: 1rem;
+.railRule {
+  width: 100%;
+  height: 0;
+  border: none;
+  border-top: 1px solid $client-border-editorial;
+  margin: 0.5rem 0 0;
+}
+
+.ledgerLine {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $client-text-muted-dark;
+  font-variant-numeric: tabular-nums;
 }
 
 .architecturalButton {
@@ -79,7 +116,7 @@
   gap: 1rem;
   padding: 0 1.5rem;
   height: 48px;
-  min-height: 44px;
+  min-height: 44px; // WCAG tap target
   border-radius: 2px;
   border: 1.5px solid $client-text-dark;
   background-color: transparent;
@@ -90,6 +127,7 @@
   letter-spacing: 0.02em;
   text-decoration: none;
   cursor: pointer;
+  margin-top: 0.5rem;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   .arrow {
@@ -115,25 +153,126 @@
 .rightColumn {
   display: flex;
   flex-direction: column;
-  gap: clamp(2.5rem, 4vw, 3.5rem);
+  gap: clamp(2.5rem, 4vw, 4rem);
 }
 
-/* Lead dispatch */
-.leadDispatch {
+.postCard {
+  position: relative; // anchor for the stretched title link overlay
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 1rem;
+  border-top: 1px solid $client-border-editorial;
+  padding-top: clamp(1.5rem, 2.5vw, 2rem);
 }
 
-.leadCover {
+.imageFrame {
   position: relative;
-  display: block;
   width: 100%;
-  aspect-ratio: 5 / 3;
-  border-radius: 2px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
+  border-radius: 0;
   background-color: #f0f0f0; // neutral letterbox while the 1200px crop decodes
+}
+
+.imageFrameFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+}
+
+.coverInitial {
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-extralight;
+  font-size: clamp(3rem, 6vw, 5rem);
+  color: rgba(0, 0, 0, 0.12);
+  line-height: 1;
+}
+
+.postImage {
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.postCard:hover .postImage {
+  transform: scale(1.03);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  flex: 1;
+  // Negative margins bleed the hover wash past the text edges while the
+  // padding keeps every line aligned with the image frame above.
+  margin: 1rem -0.75rem 0;
+  padding: 0 0.75rem;
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.postCard:hover .cardBody {
+  background-color: #fafafa;
+}
+
+.postMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.categoryName {
+  color: $client-accent-red;
+}
+
+.metaDivider {
+  color: $client-text-muted-dark;
+}
+
+.readingTime {
+  color: $client-text-muted-dark;
+}
+
+.postTitle {
+  font-family: $font-helvetica;
+  font-size: clamp(1.375rem, 2.1vw, 1.9rem);
+  font-weight: $fw-helvetica-light;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: $client-text-dark;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  // Red underline reveal sits on the clamped box (not the inline anchor) so
+  // it grows once across the final line; background-size never shifts text.
+  background-image: linear-gradient($client-accent-red, $client-accent-red);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.postCard:hover .postTitle {
+  background-size: 100% 2px;
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    cursor: pointer;
+  }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
@@ -141,66 +280,13 @@
   }
 }
 
-.leadCoverImage {
-  object-fit: cover;
-}
-
-.leadMeta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: $font-mono;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-top: 0.25rem;
-}
-
-.categoryKicker {
-  font-weight: 500;
-  color: $client-accent-red;
-}
-
-.metaDivider {
-  color: rgba(0, 0, 0, 0.2);
-}
-
-.leadDate,
-.leadReadTime {
-  color: $client-text-muted-dark;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-}
-
-.leadTitle {
-  font-family: $font-helvetica;
-  font-weight: $fw-helvetica-extralight;
-  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: $client-text-dark;
-  margin: 0;
-  text-wrap: balance;
-}
-
-.leadTitleLink {
-  color: inherit;
-  text-decoration: none;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: $client-accent-red;
-  }
-}
-
-.leadExcerpt {
+.postExcerpt {
   font-family: $font-circular;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: $fw-book;
   line-height: 1.6;
   color: $client-text-body-dark;
   margin: 0;
-  max-width: 68ch;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -208,8 +294,42 @@
   overflow: hidden;
 }
 
-/* Editorial link idiom lifted from ServiceDetail .ctaLink: hairline underline
-   that reddens and widens its gap toward the arrow on hover */
+.postFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid $client-border-editorial;
+}
+
+.dateLabel {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: $client-text-muted-dark;
+  font-variant-numeric: tabular-nums;
+}
+
+.readMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 500;
+  color: $client-text-dark;
+
+  .arrow {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+.postCard:hover .readMore .arrow {
+  transform: translateX(4px);
+}
+
 .ctaLink {
   display: inline-flex;
   align-items: center;
@@ -222,7 +342,6 @@
   text-decoration: none;
   border-bottom: 1.5px solid $client-text-dark;
   padding-bottom: 0.375rem;
-  margin-top: 0.25rem;
   transition: color 0.2s ease, border-color 0.2s ease, gap 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
@@ -237,104 +356,13 @@
   }
 }
 
-/* Compact index rows */
-.indexRows {
-  display: flex;
-  flex-direction: column;
-}
-
-.indexRow {
-  display: grid;
-  grid-template-columns: minmax(0, 96px) minmax(0, 200px) minmax(0, 1fr) auto;
-  grid-template-areas: "date category title arrow";
-  align-items: center;
-  column-gap: 1.5rem;
-  min-height: 72px;
-  padding: 1rem 0.75rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  color: $client-text-dark;
-  text-decoration: none;
-  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-
-  // Title stays ink-black on hover; only the wash and the arrow respond.
-  &:hover {
-    background-color: #fafafa;
-
-    .indexArrow {
-      transform: translateX(4px);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 3px;
-  }
-
-  @media (max-width: 1024px) {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      "date category arrow"
-      "title title title";
-    row-gap: 0.5rem;
-  }
-
-  @media (max-width: 768px) {
-    min-height: 60px;
-  }
-}
-
-.indexDate {
-  grid-area: date;
-  font-family: $font-mono;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: $client-text-muted-dark;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.indexCategory {
-  grid-area: category;
-  font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: $client-accent-red;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.indexTitle {
-  grid-area: title;
-  font-family: $font-circular;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1.36;
-  letter-spacing: -0.01em;
-  color: $client-text-dark;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.indexArrow {
-  grid-area: arrow;
-  justify-self: end;
-  font-size: 16px;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 /* Honest empty state: no records, no fabricated posts */
 .emptyState {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 1.25rem;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid $client-border-editorial;
   border-radius: 2px;
   padding: clamp(2rem, 4vw, 3rem);
 }
@@ -352,9 +380,16 @@
   .architecturalButton,
   .architecturalButton .arrow,
   .ctaLink,
-  .leadTitleLink,
-  .indexRow,
-  .indexArrow {
+  .cardBody,
+  .postImage,
+  .postTitle,
+  .readMore .arrow {
     transition: none !important;
+  }
+
+  .postCard:hover .postImage,
+  .postCard:hover .readMore .arrow,
+  .architecturalButton:hover .arrow {
+    transform: none !important;
   }
 }

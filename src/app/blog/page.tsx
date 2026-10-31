@@ -35,14 +35,16 @@ export const metadata: Metadata = {
 /**
  * Editorial Blog Listing Server Page (/blog).
  * Concurrently fetches dispatch summaries and the category taxonomy (with
- * live post counts) from Sanity, then renders the light editorial shell that
- * mirrors /services/[slug]: ClientHeader locked to its light theme and the
- * MonumentalFooter beneath.
+ * live post counts) from Sanity, then renders the light magazine contents
+ * shell that mirrors /services/[slug]: ClientHeader locked to its light theme
+ * and the MonumentalFooter beneath. The category postCount and the total
+ * dispatch count also drive the masthead issue ledger, so both queries are
+ * load-bearing for the nameplate, not only for the filter strip.
  *
  * BlogListingClient reads useSearchParams for URL-synced category filtering,
  * so the App Router requires a Suspense boundary around it; fallback is null
  * because the server shell already paints the full-page canvas during
- * streaming and a skeleton would fight with the hero type.
+ * streaming and a skeleton would fight with the masthead type.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */

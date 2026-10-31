@@ -31,29 +31,23 @@ function formatDate(isoString: string): string {
 }
 
 /**
- * View 08: Studio Dispatches Curtain, light-editorial broadsheet composition.
- * Solid pure white curtain (#ffffff) sliding over the living background video,
- * on the Swiss 28fr/72fr client grid with a sticky left rail. The right column
- * runs ONE lead dispatch (hotspot-aware cover via coverUrl in a 5/3 letterboxed
- * frame, mono meta row, extralight Helvetica headline, 2-line excerpt and an
- * editorial ctaLink) followed by TWO compact hairline index rows without images.
- * Only real Sanity records render: a missing CMS never gets fabricated posts,
- * just an honest empty state pointing at /blog.
- *
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ * View 08: Studio Dispatches Curtain, the approved 3-card editorial stack.
+ * Solid white curtain (#ffffff) over the living background video on a 30/70
+ * Swiss split: a sticky left rail (red mono kicker, extralight Helvetica
+ * "Thinking in Systems." headline, summary, hairline, zero-padded ledger of
+ * the live Sanity count, outline CTA) beside a right column of three vertical
+ * cards. Each card is a 16/9 hotspot-aware cover (coverUrl + lqip blur-up,
+ * first paint prioritised), a mono meta row, a 3-line clamped light Helvetica
+ * title carrying the stretched link, a 2-line excerpt and a hairline-topped
+ * footer so the stack never ragged-ends. No cover renders a per-card initial
+ * plate derived from the category, never a shared stock fallback; an empty
+ * Sanity result renders an honest note pointing at /blog instead of
+ * fabricated posts.
  */
 export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
-  // Featured record owns the lead slot; otherwise the newest date-ordered post leads.
-  const lead = posts.find((post) => post.featured) ?? posts[0] ?? null;
-  // Index rows take the next two records after the lead, never repeating its photo.
-  const indexPosts = lead
-    ? posts.filter((post) => post._id !== lead._id).slice(0, 2)
-    : [];
-
-  // 1200x720 crop honours the editor-authored hotspot; null means no cover exists,
-  // so the lead degrades to a text-only broadsheet entry instead of a stock photo.
-  const leadCover = lead ? coverUrl(lead.mainImage, 1200, 720) : null;
-  const leadLqip = lead?.mainImage?.asset?.metadata?.lqip;
+  const displayPosts = posts.slice(0, 3);
+  // Ledger mirrors the true CMS total, not the 3 rendered slots.
+  const paddedCount = String(posts.length).padStart(2, "0");
 
   return (
     <section
@@ -63,27 +57,28 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
       data-header-theme="light"
     >
       <div className={styles.gridContainer}>
-        {/* Left Sticky Rail (28fr) */}
+        {/* Left Sticky Rail (30%) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
-            <h2 className={styles.railHeadline}>
-              Thinking in Systems.
-            </h2>
+            <span className={styles.railKicker}>Studio Dispatches</span>
+            <h2 className={styles.railHeadline}>Thinking in Systems.</h2>
             <p className={styles.railSummary}>
               Essays, architectural field notes, brand strategy, and digital engineering from the Marca Ubi studio floor.
             </p>
-            <div className={styles.actionWrap}>
-              <Link href="/blog" className={styles.architecturalButton}>
-                <span>View All Dispatches</span>
-                <span className={styles.arrow} aria-hidden="true">&rarr;</span>
-              </Link>
-            </div>
+            <hr className={styles.railRule} />
+            <span className={styles.ledgerLine} aria-hidden="true">
+              {paddedCount} / Dispatches
+            </span>
+            <Link href="/blog" className={styles.architecturalButton}>
+              <span>View All Dispatches</span>
+              <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+            </Link>
           </div>
         </aside>
 
-        {/* Right Broadsheet Column (72fr) */}
+        {/* Right 3-Card Stack (70%) */}
         <div className={styles.rightColumn}>
-          {lead === null ? (
+          {displayPosts.length === 0 ? (
             <div className={styles.emptyState}>
               <p className={styles.emptyNote}>New dispatches are being drafted.</p>
               <Link href="/blog" className={styles.ctaLink}>
@@ -92,81 +87,81 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
               </Link>
             </div>
           ) : (
-            <>
-              <article className={styles.leadDispatch}>
-                {leadCover !== null && (
-                  <Link
-                    href={`/blog/${lead.slug}`}
-                    className={styles.leadCover}
-                    tabIndex={-1}
+            displayPosts.map((post, index) => {
+              // 1200x675 keeps the 16/9 frame exact while honouring the
+              // editor-authored hotspot; null means no cover exists at all.
+              const cover = coverUrl(post.mainImage, 1200, 675);
+              // LQIP is only valid when Sanity generated it; next/image throws
+              // on placeholder="blur" without a blurDataURL, so gate both.
+              const lqip = post.mainImage?.asset?.metadata?.lqip;
+
+              return (
+                <article key={post._id} className={styles.postCard}>
+                  <div
+                    className={
+                      cover === null
+                        ? `${styles.imageFrame} ${styles.imageFrameFallback}`
+                        : styles.imageFrame
+                    }
                   >
-                    <Image
-                      src={leadCover}
-                      alt={lead.mainImage?.alt ?? lead.title}
-                      fill
-                      sizes="(max-width: 1024px) calc(100vw - 3rem), 70vw"
-                      className={styles.leadCoverImage}
-                      placeholder={leadLqip ? "blur" : "empty"}
-                      blurDataURL={leadLqip}
-                    />
-                  </Link>
-                )}
+                    {cover !== null ? (
+                      <Image
+                        src={cover}
+                        alt={post.mainImage?.alt ?? post.title}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 62vw"
+                        className={styles.postImage}
+                        priority={index === 0}
+                        loading={index === 0 ? undefined : "lazy"}
+                        placeholder={lqip ? "blur" : "empty"}
+                        blurDataURL={lqip}
+                      />
+                    ) : (
+                      <span className={styles.coverInitial} aria-hidden="true">
+                        {(post.category?.title ?? post.title).charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
 
-                <div className={styles.leadMeta}>
-                  {lead.category && (
-                    <>
-                      <span className={styles.categoryKicker}>{lead.category.title}</span>
-                      <span className={styles.metaDivider} aria-hidden="true">/</span>
-                    </>
-                  )}
-                  <time dateTime={lead.publishedAt} className={styles.leadDate}>
-                    {formatDate(lead.publishedAt)}
-                  </time>
-                  <span className={styles.metaDivider} aria-hidden="true">/</span>
-                  {/* Sanity computes reading time at build; 3 MIN mirrors the
-                      calculateReadingTime default for legacy drafts. */}
-                  <span className={styles.leadReadTime}>
-                    {lead.estimatedReadingTime ?? 3} MIN READ
-                  </span>
-                </div>
+                  <div className={styles.cardBody}>
+                    <div className={styles.postMeta}>
+                      {post.category && (
+                        <>
+                          <span className={styles.categoryName}>{post.category.title}</span>
+                          <span className={styles.metaDivider} aria-hidden="true">/</span>
+                        </>
+                      )}
+                      {/* Legacy drafts predating the reading-time field render
+                          the studio baseline rather than a blank cell. */}
+                      <span className={styles.readingTime}>
+                        {post.estimatedReadingTime ?? 4} MIN READ
+                      </span>
+                    </div>
 
-                <h3 className={styles.leadTitle}>
-                  <Link href={`/blog/${lead.slug}`} className={styles.leadTitleLink}>
-                    {lead.title}
-                  </Link>
-                </h3>
+                    <h3 className={styles.postTitle}>
+                      {/* Stretched link: the ::after overlay makes the whole
+                          card clickable, so every other element stays a plain
+                          span/time to keep exactly one tabbable target. */}
+                      <Link href={`/blog/${post.slug}`} className={styles.titleLink}>
+                        {post.title}
+                      </Link>
+                    </h3>
 
-                <p className={styles.leadExcerpt}>{lead.excerpt}</p>
+                    <p className={styles.postExcerpt}>{post.excerpt}</p>
 
-                <Link href={`/blog/${lead.slug}`} className={styles.ctaLink}>
-                  <span>Read dispatch</span>
-                  <span className={styles.arrow} aria-hidden="true">&rarr;</span>
-                </Link>
-              </article>
-
-              {indexPosts.length > 0 && (
-                <div className={styles.indexRows}>
-                  {indexPosts.map((post) => (
-                    <Link
-                      key={post._id}
-                      href={`/blog/${post.slug}`}
-                      className={styles.indexRow}
-                    >
-                      <time dateTime={post.publishedAt} className={styles.indexDate}>
+                    <div className={styles.postFooter}>
+                      <time dateTime={post.publishedAt} className={styles.dateLabel}>
                         {formatDate(post.publishedAt)}
                       </time>
-                      {/* Uncategorised legacy drafts fall back to the generic
-                          label rather than an invented category name. */}
-                      <span className={styles.indexCategory}>
-                        {post.category ? post.category.title : "Dispatch"}
+                      <span className={styles.readMore}>
+                        <span>Read dispatch</span>
+                        <span className={styles.arrow} aria-hidden="true">&rarr;</span>
                       </span>
-                      <span className={styles.indexTitle}>{post.title}</span>
-                      <span className={styles.indexArrow} aria-hidden="true">&rarr;</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </>
+                    </div>
+                  </div>
+                </article>
+              );
+            })
           )}
         </div>
       </div>
