@@ -20,7 +20,7 @@
   width: 100%;
   margin-top: clamp(4rem, 7vw, 7rem);
   padding-top: clamp(3rem, 5vw, 5rem);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid $client-border-editorial;
   display: flex;
   flex-direction: column;
   background-color: transparent;
@@ -60,7 +60,7 @@
   font-weight: $fw-helvetica-extralight; // 200 (Helvetica Neue Thin)
   line-height: 1.15;
   letter-spacing: -0.025em;
-  color: #ffffff;
+  color: $client-text-dark;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
