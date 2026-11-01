@@ -4,6 +4,12 @@ import React, { useState, useMemo } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
 import {
+  INTAKE_CATEGORIES,
+  MULTI_VALUE_SEPARATOR,
+  SERVICES_BY_CATEGORY,
+  SERVICE_TO_CATEGORY,
+} from "@/app/lib/intake/intakeOptions";
+import {
   SparkleIcon,
   HeartIcon,
   EarthGlobeIcon,
@@ -38,17 +44,12 @@ interface Step1Props {
 
 /**
  * Complete authentic category catalog for client project intake.
+ *
+ * Aliased from `@/app/lib/intake/intakeOptions` rather than restated here: the Chat Pod intake asks
+ * the same eight questions and must store the same strings, or the CRM gains a second spelling of
+ * every discipline. The parity test asserts both surfaces hold the identical imported reference.
  */
-const CATEGORIES: string[] = [
-  "Logo & identity",
-  "Web & app design",
-  "Business & advertising",
-  "Clothing & merchandise",
-  "Art & illustration",
-  "Packaging & label",
-  "Book & magazine",
-  "Other",
-];
+const CATEGORIES = INTAKE_CATEGORIES;
 
 /**
  * Dedicated visual iconography for every granular service item.
@@ -124,90 +125,6 @@ const SERVICE_ICONS: Record<string, React.ReactNode> = {
 };
 
 /**
- * 52 granular sub-services categorized by design discipline.
- */
-const SERVICES_BY_CATEGORY: Record<string, string[]> = {
-  "Logo & identity": [
-    "Logo design",
-    "Logo & brand identity pack",
-    "Logo & social media pack",
-    "Logo & hosted website",
-    "Logo & business card",
-    "Brand guide",
-    "Business card",
-    "Stationery",
-    "Logo & brand guide",
-    "Logo & product packaging",
-  ],
-  "Web & app design": [
-    "Web page design",
-    "WordPress theme design",
-    "Landing page design",
-    "Icon or button",
-    "App design",
-    "Facebook cover",
-    "Social media page",
-    "Banner ad",
-    "Other web or app design",
-  ],
-  "Business & advertising": [
-    "Postcard, flyer or print",
-    "Poster",
-    "Infographic",
-    "Brochure",
-    "Car, truck or van wrap",
-    "Signage",
-    "Email",
-    "PowerPoint template",
-    "Menu",
-    "Other business or advertising",
-    "Album Cover",
-    "Podcast",
-  ],
-  "Clothing & merchandise": [
-    "T-shirt",
-    "Clothing or apparel",
-    "Merchandise",
-    "Cup or mug",
-    "Sticker",
-    "Other clothing or merchandise",
-  ],
-  "Art & illustration": [
-    "Illustration or graphics",
-    "Card or invitation",
-    "Character or mascot",
-    "Tattoo",
-    "3D",
-    "Other art or illustration",
-  ],
-  "Packaging & label": [
-    "Product packaging",
-    "Product label",
-    "Other packaging or label",
-  ],
-  "Book & magazine": [
-    "Book cover",
-    "Magazine cover",
-    "Typesetting",
-    "Typesetting with imagery",
-    "Other book or magazine",
-  ],
-  "Other": ["Other design"],
-};
-
-/**
- * Pre-computed inverted lookup mapping every service name to its parent category.
- */
-const SERVICE_TO_CATEGORY: Record<string, string> = Object.entries(
-  SERVICES_BY_CATEGORY
-).reduce((acc, [category, services]) => {
-  services.forEach((service) => {
-    acc[service] = category;
-  });
-  return acc;
-}, {} as Record<string, string>);
-
-/**
  * Step 1: Design Scope & Multi-Service Taxonomy Selection Engine.
  * Supports selecting multiple services within and across all 8 design disciplines,
  * with cross-category selection persistence, category badge counts, and Brand Red styling.
@@ -223,7 +140,7 @@ export default function Step1Services({
   const selectedServices = useMemo<string[]>(() => {
     if (!formData.service) return [];
     return formData.service
-      .split(", ")
+      .split(MULTI_VALUE_SEPARATOR)
       .map((s) => s.trim())
       .filter(Boolean);
   }, [formData.service]);
@@ -234,8 +151,8 @@ export default function Step1Services({
       const firstCat = SERVICE_TO_CATEGORY[selectedServices[0]];
       if (firstCat && CATEGORIES.includes(firstCat)) return firstCat;
     }
-    if (formData.category && CATEGORIES.includes(formData.category.split(", ")[0])) {
-      return formData.category.split(", ")[0];
+    if (formData.category && CATEGORIES.includes(formData.category.split(MULTI_VALUE_SEPARATOR)[0])) {
+      return formData.category.split(MULTI_VALUE_SEPARATOR)[0];
     }
     return CATEGORIES[0];
   });
@@ -273,8 +190,8 @@ export default function Step1Services({
       )
     );
 
-    updateFormData("service", updatedServices.join(", "));
-    updateFormData("category", updatedCategories.join(", "));
+    updateFormData("service", updatedServices.join(MULTI_VALUE_SEPARATOR));
+    updateFormData("category", updatedCategories.join(MULTI_VALUE_SEPARATOR));
   };
 
   // Clear all selections across all categories

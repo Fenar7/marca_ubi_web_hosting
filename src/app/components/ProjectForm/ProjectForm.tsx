@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./ProjectForm.module.scss";
 import { ProjectFormData, initialFormData } from "./types";
+import { buildIngestPayload, WEBSITE_FORM_SOURCE } from "@/app/lib/intake/ingestPayload";
 import { ArrowLeftIcon, CheckmarkIcon } from "@sanity/icons";
 import Step1Services from "./steps/Step1Services";
 import Step2Business from "./steps/Step2Business";
@@ -53,70 +54,13 @@ export default function ProjectForm() {
         ? crypto.randomUUID()
         : `brief-${Date.now()}`;
 
-    // Map client categories to CRM enum whitelist: 'Branding' | 'Web & Digital' | 'Mobile Apps' | 'UI/UX Design' | 'Full-Suite Advisory' | 'Other'
-    const mapCategory = (cat: string) => {
-      const lower = (cat || "").toLowerCase();
-      const categoriesCount = cat.split(", ").filter(Boolean).length;
-      if (categoriesCount > 2) return "Full-Suite Advisory";
-      if (lower.includes("brand") || lower.includes("logo") || lower.includes("stationery")) return "Branding";
-      if (lower.includes("app") || lower.includes("mobile")) return "Mobile Apps";
-      if (lower.includes("digital") || lower.includes("web")) return "Web & Digital";
-      if (lower.includes("ui") || lower.includes("ux") || lower.includes("art") || lower.includes("illustration")) return "UI/UX Design";
-      if (lower.includes("advisory") || lower.includes("growth") || lower.includes("business") || lower.includes("advertising")) return "Full-Suite Advisory";
-      return "Other";
-    };
-
-    const serviceList = formData.service
-      ? formData.service.split(", ").filter(Boolean)
-      : [];
-    const categoryList = formData.category
-      ? formData.category.split(", ").filter(Boolean)
-      : [];
-
-    const combinedNotes = [
-      formData.projectDescription ? `Project Scope: ${formData.projectDescription}` : "",
-      serviceList.length > 0 ? `Requested Services (${serviceList.length}):\n• ${serviceList.join("\n• ")}` : "",
-      formData.extraNotes ? `Additional Notes: ${formData.extraNotes}` : "",
-      formData.inspirationLinks ? `Inspiration References:\n${formData.inspirationLinks}` : "",
-      formData.instagram ? `Instagram: ${formData.instagram}` : "",
-      formData.agencyStatus ? `Agency Status: ${formData.agencyStatus}` : "",
-      formData.referral ? `Referral Channel: ${formData.referral}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n\n");
-
-    const payload = {
-      name: formData.name.trim(),
-      email: formData.email.trim() || undefined,
-      phone: formData.phone.trim() || undefined,
-      company: formData.projectName.trim() || undefined,
-      company_website: formData.website.trim() || undefined,
-      industry: formData.industry.trim() || undefined,
-      service_category: mapCategory(formData.category),
-      budget_bracket: formData.timeline.trim() || undefined,
-      notes: combinedNotes || undefined,
-      source_name: "Website Form",
-      source_detail: "Start Project Brief Wizard (Multi-Service)",
-      brief_payload: {
-        category: formData.category,
-        service: formData.service,
-        services: serviceList,
-        categories: categoryList,
-        language: formData.language,
-        projectName: formData.projectName,
-        projectDescription: formData.projectDescription,
-        industry: formData.industry,
-        website: formData.website,
-        agencyStatus: formData.agencyStatus,
-        referral: formData.referral,
-        timeline: formData.timeline,
-        inspirationLinks: formData.inspirationLinks,
-        showcasePermission: formData.showcasePermission,
-        extraNotes: formData.extraNotes,
-        instagram: formData.instagram,
-        idempotencyKey,
-      },
-    };
+    // Built by the shared intake module, the same one the Chat Pod submits through. The wizard's body
+    // is unchanged by this: one builder, two surfaces, so a field added on one side cannot be missing
+    // on the other.
+    const payload = buildIngestPayload(formData, {
+      idempotencyKey,
+      source: WEBSITE_FORM_SOURCE,
+    });
 
     let attempt = 0;
     const maxAttempts = 3;
