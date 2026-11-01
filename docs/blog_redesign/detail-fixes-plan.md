@@ -128,3 +128,28 @@ single-owner with an adversarial audit:
    #104 updates. The PR stays OPEN; no merge.
 
 Estimated: one build pass, one audit round, one fix round.
+
+## 7. Round 14d - the numeral rail is gone, the prose takes its width
+
+Reported from two screenshots of the live article at 1440.
+
+| # | Defect | Fix |
+|---|--------|-----|
+| D1 | A 96px hanging rail + 57.6px gap reserved 153px of empty gutter on the left of the prose purely to carry `01`/`02` section counters - numbers that restate what the heading already says | Rail deleted end to end: `--numeral-w`, `--bleed`, `.readingGridGutter`, `.heroCaptionBandGutter`, the CSS counters, `.heading2::before`, `hasSectionNumerals()` and `marginaliaGutter` |
+| D2 | Text held 720px inside a 949px reading column, so ~230px of dead space sat between the prose and the right rail | Prose steps 17px to 20px (21px above 1500px, 18px on tablet, 17px on phones) and `--measure` is derived from it: `calc(var(--prose-size) * 42.3)` = 85 characters = 846px at 1440 |
+| D3 | Breakout widths were expressed as `calc(100% + var(--bleed))`, meaningless once nothing bleeds | Breakout rule deleted; figures, pull quotes and code simply fill the column |
+| D4 | A per-element `ch` cap would resolve against each element's own font size, putting headings, callouts and the mono caption on three different right edges | One shared absolute length, consumed as `min(100%, var(--measure))` |
+| D5 | Callout body ran 15px absolute inside a paragraph-width card: ~106 characters | `font-size: 0.95em`, so the note tracks the prose and holds the same band |
+| D6 | `data-variant` on every callout was a hook no stylesheet read any more, with a comment claiming gutter rules that no longer exist | Attribute and both stale comments removed |
+| D7 | Share rows were text links only; the rail read as a plain `<ul>` | Real X and LinkedIn marks (path data copied from simple-icons, `currentColor`, no brand colour) plus a neutral chain glyph for copy, each paired with its mono label; 44px contiguous tap targets, hairline dividers dropped |
+| D8 | `variant="inline"` existed on the share bar with no mount, and the tablet strip already flattened rows through `[data-share-variant]` | Prop and `.shareBarInline` deleted; the rail mount is the only state |
+| D9 | `.listItem` pinned 17px against 20px paragraphs | Inherits the prose size; leading 1.75 to 1.65 for the wider measure |
+
+Kept deliberately: the `01`/`02`/`03` in the "More from the journal" ledger at the
+foot of the page. That numbers a list of three different articles and mirrors the
+index ledger on `/blog`; the deleted numerals counted sections inside one article,
+which nothing reads as data.
+
+Gates: `npx tsc --noEmit` exit 0, no `numeral`/`bleed`/`Gutter` symbol left in the
+article surface, and no new build, dev server or browser run - the owner asked for
+none.

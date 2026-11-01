@@ -6,22 +6,25 @@
  * Geometry (the reason this file exists in its current form): the earlier build
  * parked a 72ch column in a wide container with a barren 277px left gutter, so
  * the prose read as 49% of its own width. Every band now answers to one
- * horizontal rhythm and the *page* goes wide while only the *prose* stays at a
- * reading measure:
+ * horizontal rhythm and the *page* goes wide while the *prose* takes everything
+ * the reading column can honestly carry:
  *
  *   --page-gutter   container padding            clamp(1.5rem, 6vw, 6rem)
- *   --numeral-w     hanging-numeral rail         96px, 0px below 1201px
- *   --measure       prose column                 min(100%, 45rem), 47.5rem wide
- *                                                   above 1500px (720px / 760px)
- *   --rail-w        sticky right rail            260px
+ *   --measure       prose column                 calc(--prose-size x 42.3)
+ *   --prose-size    body copy                    18px, 20px above 1201px,
+ *                                                 21px above 1500px, 17px on phones
+ *   --rail-w        sticky right rail            260px, 300px above 1500px
  *   --grid-gap      inter-column gap             clamp(2rem, 4vw, 4rem)
  *
- * The measure is capped in rem rather than ch so the line stays inside the
- * 65-85 character band at the 17px prose size while the column still reaches
- * 720px at 1440 and 760px at 1680 (where the prose steps to 18px to hold the
- * same character count). Figures, pull quotes, code and callouts break out of
- * the measure and bleed left into the numeral rail to span the whole container,
- * so the read alternates narrow measure and full width the way print does.
+ * 42.3 is the width of 85 characters at this type face (average advance
+ * 0.498em), so the measure is written against --prose-size rather than in ch:
+ * one shared length that stays at 85 characters however the size steps, and one
+ * value every element in the column can align to — a ch cap would resolve
+ * against each element's own font size and put headings, callouts and the mono
+ * caption on three different right edges. Stepping the prose to 20px therefore
+ * widens the column to 846px inside the 949px reading track at 1440 instead of
+ * pushing the line past legible. Figures, pull quotes and code fill the whole
+ * column, so the read alternates measure and full width the way print does.
  * Masthead, byline bar, cover plate and the closing bands run the full
  * container width; only the text-bearing measure is capped.
  *
@@ -50,10 +53,9 @@
 .articleContainer {
   --page-gutter: clamp(1.5rem, 6vw, 6rem);
   --grid-gap: clamp(2rem, 4vw, 4rem);
-  --numeral-w: 96px;
   --rail-w: 260px;
-  --measure: min(100%, 45rem);
-  --prose-size: 1.0625rem;
+  --measure: calc(var(--prose-size) * 42.3);
+  --prose-size: 1.125rem;
 
   width: 100%;
   max-width: 1680px;
@@ -61,17 +63,19 @@
   padding: clamp(2.5rem, 5vw, 4rem) var(--page-gutter) clamp(5rem, 8vw, 8rem);
   box-sizing: border-box;
 
-  /* Above 1500px the canvas is wide enough to hold a longer column while the
-     prose size steps to 18px, keeping the line inside the character band. */
-  @media (min-width: 1500px) {
-    --measure: min(100%, 47.5rem);
-    --prose-size: 1.125rem;
+  /* On a two-column read the prose earns its full width, so the type steps to
+     20px. --measure is derived from --prose-size, so the same jump widens the
+     column to 846px while the line holds at 85 characters. */
+  @media (min-width: 1201px) {
+    --prose-size: 1.25rem;
   }
 
-  /* Numeral rail is retired first: it only carries section counters, so below
-     the desktop breakpoint it collapses to zero and the prose keeps its anchor. */
-  @media (max-width: 1200px) {
-    --numeral-w: 0px;
+  /* Above 1500px the container is capped, so the reading column only grows by
+     giving the right rail more of it: 300px holds contents and sharing without
+     crowding, and the type settles at 21px. */
+  @media (min-width: 1500px) {
+    --prose-size: 1.3125rem;
+    --rail-w: 300px;
   }
 
   /* Rail becomes a hairline strip above the prose; single stacked column. */
@@ -82,6 +86,7 @@
   @media (max-width: 768px) {
     --page-gutter: 1.25rem;
     --grid-gap: 1.75rem;
+    --prose-size: 1.0625rem;
     padding-bottom: clamp(3.5rem, 6vw, 5rem);
   }
 }
@@ -298,7 +303,7 @@
 }
 
 /* Cover caption sits directly under the image, left-aligned against the prose
-   column's left edge (indented past the numeral rail when the rail exists). */
+   column's left edge. */
 .heroCaptionBand {
   margin: 0.75rem 0 0;
 }
@@ -309,37 +314,21 @@
   line-height: 1.5;
   color: #666666;
   margin: 0;
-  max-width: var(--measure);
+  /* --measure is one shared length (prose size × 42.3em), so the caption stops
+     at the same right edge the paragraphs do. */
+  max-width: min(100%, var(--measure));
   text-align: left;
 }
 
-/* Gutter breakpoint is exclusive (min-width 1201 vs max-width 1200) so a
-   viewport of exactly 1200px never lands in both the allocated and the retired
-   rail state. When the numeral rail exists the caption is pushed to the prose
-   edge instead of the container edge. */
-@media (min-width: 1201px) {
-  .heroCaptionBandGutter {
-    padding-left: calc(var(--numeral-w) + var(--grid-gap));
-  }
-}
-
-/* Reading grid: numeral rail + prose measure on the left, sticky rail on the
-   right. The grid spans the full container so the page reads wide; --bleed is
-   the amount a figure/quote/code/callout is pulled left out of the measure and
-   across the numeral rail to the container edge. It is zero whenever the rail
-   is not reserved, so those elements simply fill the measure. */
+/* Reading grid: prose measure on the left, sticky rail on the right. The grid
+   spans the full container so the page reads wide, and the prose column soaks up
+   every pixel the numeral rail used to reserve. */
 .readingGrid {
-  --bleed: 0px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(200px, var(--rail-w));
   column-gap: var(--grid-gap);
   align-items: start;
   width: 100%;
-}
-
-.readingGridGutter {
-  --bleed: calc(var(--numeral-w) + var(--grid-gap));
-  grid-template-columns: var(--numeral-w) minmax(0, 1fr) minmax(200px, var(--rail-w));
 }
 
 .bodyColumn {
@@ -359,33 +348,6 @@
   min-width: 0;
 }
 
-@media (min-width: 1201px) {
-  .readingGridGutter .bodyColumn {
-    grid-column: 2;
-  }
-
-  .readingGridGutter .stickyRail {
-    grid-column: 3;
-  }
-}
-
-/* Below the numeral-rail breakpoint the rail collapses away, so the grid drops
-   back to two tracks and the bleed returns to zero. */
-@media (max-width: 1200px) {
-  .readingGridGutter {
-    --bleed: 0px;
-    grid-template-columns: minmax(0, 1fr) minmax(200px, var(--rail-w));
-
-    .bodyColumn {
-      grid-column: 1;
-    }
-
-    .stickyRail {
-      grid-column: 2;
-    }
-  }
-}
-
 .railProgress {
   padding-bottom: 1.25rem;
 }
@@ -400,23 +362,20 @@
    indexes a long read; on tablet the article is scanned, so contents and
    progress drop out and the single share affordance stays reachable. */
 @media (max-width: 1024px) {
-  .readingGrid,
-  .readingGrid.readingGridGutter {
+  .readingGrid {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 0;
     max-width: 100%;
   }
 
-  .readingGrid .bodyColumn,
-  .readingGrid.readingGridGutter .bodyColumn {
+  .readingGrid .bodyColumn {
     grid-column: 1;
     grid-row: 2;
     margin-inline: auto;
     width: 100%;
   }
 
-  .readingGrid .stickyRail,
-  .readingGrid.readingGridGutter .stickyRail {
+  .readingGrid .stickyRail {
     grid-column: 1;
     grid-row: 1;
     order: -1;
@@ -436,8 +395,8 @@
     padding: 0;
     border-top: 0;
 
-    /* In the horizontal strip the rail's stacked text links flatten to one row
-       with vertical hairline separators. The class is hashed by the component
+    /* In the horizontal strip the rail's icon rows flatten to one row with
+       vertical hairline separators. The classes are hashed by the component
        module, so the override rides the unhashed data-share-variant hook and
        element structure instead of the class name. */
     [data-share-variant="stacked"] {

@@ -128,18 +128,15 @@ function formatDateCard(isoString: string): string {
 /**
  * Editorial Article Reader (light surface).
  * One wide canvas carries breadcrumb, masthead, byline bar, cover plate and a
- * three-zone reading grid: a 96px hanging-numeral rail, a measure-capped prose
- * column and a sticky 260px right rail. The prose stays at a reading measure,
- * but media, pull quotes, code and callouts break out across the numeral rail
- * into the full container, so the page alternates narrow measure and full width
- * the way print does instead of parking a narrow column in a wide void.
+ * two-zone reading grid: a prose column capped at 85 characters and a sticky
+ * right rail. Media, pull quotes and code fill the whole reading column, so the
+ * page alternates measure and full width the way print does instead of parking
+ * a narrow column in a wide void.
  *
- * The single 96px numeral rail is the only permanent marginalia: it carries the
- * `01`/`02` section counter for every h2, so it earns its width on any article
- * that has sections and collapses to zero when there are none. Captions and
- * studio notes no longer float into a gutter (they sit beneath/break out in the
- * measure), which is why the ledger, rail and grid no longer reserve a wide
- * decorative left column that reads as an empty void.
+ * Nothing floats into a left gutter. An earlier build reserved 96px beside the
+ * prose for a `01`/`02` section counter, which bought the page an empty void and
+ * a number that carried no information a heading does not already carry. The
+ * rail is gone and the prose takes the width it was sitting in.
  *
  * Covers and related rows flow through coverUrl()'s hotspot-aware crops and
  * JSON-LD pairs BlogPosting (with wordCount/articleSection) and a
@@ -175,16 +172,6 @@ export default async function BlogPostPage({ params }: PageProps) {
   const heroLqip = post.mainImage?.asset?.metadata?.lqip;
   const schemaImage = coverUrl(post.mainImage, 1200, 630);
   const wordCount = countBodyWords(post.body);
-
-  /**
-   * The 96px numeral rail is only reserved when the body actually renders an
-   * h2, because the section counter hanging in that rail is its sole occupant.
-   * A post with no h2 has no numerals to hang, so the grid drops the rail and
-   * the prose starts flush at the container edge rather than beside a void.
-   * Captions and studio notes are no longer marginalia (they sit in the
-   * measure), so they never buy a gutter.
-   */
-  const marginaliaGutter = hasSectionNumerals(post.body);
 
   // An update stamp only earns editorial real estate once it clears a full
   // day over the publication date, so silent same-day fixes never mislead. The
@@ -363,28 +350,15 @@ export default async function BlogPostPage({ params }: PageProps) {
                 />
               </div>
               {post.mainImage?.caption && (
-                <div
-                  className={
-                    marginaliaGutter
-                      ? `${styles.heroCaptionBand} ${styles.heroCaptionBandGutter}`
-                      : styles.heroCaptionBand
-                  }
-                >
+                <div className={styles.heroCaptionBand}>
                   <figcaption className={styles.heroCaption}>{post.mainImage.caption}</figcaption>
                 </div>
               )}
             </figure>
           )}
 
-          {/* Reading grid: numeral rail + prose measure (left, breakouts bleed
-              into the rail) and the sticky right rail. */}
-          <div
-            className={
-              marginaliaGutter
-                ? `${styles.readingGrid} ${styles.readingGridGutter}`
-                : styles.readingGrid
-            }
-          >
+          {/* Reading grid: prose measure on the left, sticky rail on the right. */}
+          <div className={styles.readingGrid}>
             <div className={styles.bodyColumn} data-article-prose="true">
               <PortableTextRenderer value={post.body} />
             </div>
@@ -399,7 +373,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
 
               <div className={styles.railShare}>
-                <SocialShareBar title={post.title} url={postUrl} variant="stacked" />
+                <SocialShareBar title={post.title} url={postUrl} />
               </div>
 
               {/* No "next entry" card: it was fed by relatedPosts[0], the very
@@ -537,7 +511,6 @@ export default async function BlogPostPage({ params }: PageProps) {
  */
 interface RawBodyBlock {
   _type?: string;
-  style?: string;
   type?: string;
   caption?: string;
   children?: Array<{ text?: string }>;
@@ -553,16 +526,4 @@ function countBodyWords(body: Post["body"]): number {
     .trim()
     .split(/\s+/)
     .filter(Boolean).length;
-}
-
-/**
- * Decides whether the desktop layout earns the 96px hanging-numeral rail. The
- * rail's only occupant is the h2 section counter, so the reserve is bought by
- * an h2 and nothing else: with no sections there are no numerals to hang, and a
- * rail that can never be filled is exactly the barren column this layout is
- * meant to avoid, so the grid drops to two tracks.
- */
-function hasSectionNumerals(body: Post["body"]): boolean {
-  const raw = (body || []) as unknown as RawBodyBlock[];
-  return raw.some((block) => block._type === "block" && block.style === "h2");
 }

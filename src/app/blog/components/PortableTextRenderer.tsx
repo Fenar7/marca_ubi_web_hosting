@@ -137,10 +137,8 @@ export const portableTextComponents: PortableTextComponents = {
             ? styles.calloutWarning
             : styles.calloutNote;
 
-      /* data-variant is a stable, unhashed hook for the reading-grid rules that
-         float a studio note into the left gutter at desktop widths. */
       return (
-        <aside className={`${styles.calloutCard} ${variantClass}`} data-variant={variant}>
+        <aside className={`${styles.calloutCard} ${variantClass}`}>
           <div className={styles.calloutHeader}>
             <span className={styles.calloutDot} aria-hidden="true" />
             <p className={styles.calloutTitle}>{data.title || "Studio Insight"}</p>
