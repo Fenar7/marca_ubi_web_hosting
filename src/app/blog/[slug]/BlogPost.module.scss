@@ -10,18 +10,14 @@
  * capped short of the space it has been given:
  *
  *   --page-gutter   container padding            clamp(1.5rem, 6vw, 6rem)
- *   --prose-size    body copy                    clamp(18px, 1rem + 0.35vw, 22px)
+ *   --prose-size    body copy                    clamp(16px, 0.94rem + 0.28vw, 18px)
  *   --rail-w        sticky right rail            260px, 300px above 1500px
  *   --grid-gap      inter-column gap             clamp(2rem, 4vw, 4rem)
  *
- * Line length is held by the type, not by a max-width: the prose size scales
- * with the viewport, so the characters per line stay in the same band from
- * phone to 1680px while the text always reaches the column edge. At 1440 that
- * is a 949px column at 21px; at 1680 it is 1124px at 22px. Media, pull quotes
- * and code take the same width, so the read no longer alternates between a
- * narrow text strip and full-bleed objects inside one column.
- * Masthead, byline bar, cover plate and the closing bands run the full
- * container width.
+ * There is no max-width cap anywhere in the reading column: text, headings,
+ * lists, callouts and code all reach the column edge, and the fluid prose size
+ * keeps the line in a readable band from phone to 1680px. Masthead, byline bar,
+ * cover plate and the closing bands run the full container width.
  *
  * Visual system: Helvetica 200 display, mono-red kicker, hairlines
  * rgba(0,0,0,0.08), #f0f0f0 letterbox, #fafafa wash, radius 0 on the cover
@@ -49,8 +45,10 @@
   --page-gutter: clamp(1.5rem, 6vw, 6rem);
   --grid-gap: clamp(2rem, 4vw, 4rem);
   --rail-w: 260px;
-  /* One fluid size does the work the old stepped breakpoints did. */
-  --prose-size: clamp(1.125rem, 1rem + 0.35vw, 1.375rem);
+  /* One fluid size does the work the old stepped breakpoints did: 16px at phone
+     width up to 18px on a desktop, so the column is filled without the type
+     ever reading oversized next to the rail. */
+  --prose-size: clamp(1rem, 0.94rem + 0.28vw, 1.125rem);
 
   width: 100%;
   max-width: 1680px;
@@ -152,8 +150,8 @@
 .articleTitle {
   font-family: $font-helvetica;
   font-weight: $fw-helvetica-extralight;
-  font-size: clamp(2.25rem, 5vw, 4.5rem);
-  line-height: 1;
+  font-size: clamp(2rem, 3.4vw, 3.25rem);
+  line-height: 1.04;
   letter-spacing: -0.03em;
   color: #0a0a0a;
   margin: 0;
@@ -163,11 +161,11 @@
 
 .articleStandfirst {
   font-family: $font-circular;
-  font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+  font-size: clamp(1rem, 1.1vw, 1.1875rem);
   line-height: 1.6;
   color: #444444;
   margin: 0;
-  max-width: 60ch;
+  max-width: 68ch;
   text-wrap: pretty;
 }
 
