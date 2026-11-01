@@ -8,10 +8,9 @@
  *   prose), display heads locked to #0a0a0a. Weight ladder is strictly
  *   Helvetica 300 (H2) / Circular 500 (H3, H4, emphasis) / 400 (prose); the
  *   former 700/450 mixture never rendered on the loaded Circular XX cuts.
- * - Text runs at 20px / 1.65 inside a measure held at 85 characters (the page
- *   shell derives --measure from --prose-size), so the line stays legible at
- *   every breakpoint while filling most of the reading column. Media, pull
- *   quotes and code fill the whole column.
+ * - Text fills the reading column at the fluid --prose-size set by the page
+ *   shell (18-22px), with the type carrying the line length instead of a
+ *   max-width cap. Media, pull quotes and code take the same width.
  * - Pull quote reuses the TestimonialsCutout block anatomy (#fbfbfb wash,
  *   3px red left rule, hairline sides); callouts are hairline-bordered,
  *   radius 2px, zero shadows, with real note/principle/warning variants.
@@ -29,21 +28,6 @@
      eye loses the line on the return sweep. */
   line-height: 1.65;
   overflow-wrap: break-word;
-
-  /* Only text keeps the reading measure; media, quotes and code fill the whole
-     column, so the page alternates narrow text with wide objects. A callout is
-     in the text group because it is a paragraph of reading copy — left at full
-     column width its body measured about 106 characters per line, well outside
-     the band every other paragraph respects. */
-  > .paragraph,
-  > .heading2,
-  > .heading3,
-  > .heading4,
-  > .bulletList,
-  > .numberedList,
-  > .calloutCard {
-    max-width: min(100%, var(--measure));
-  }
 }
 
 /* Heading ladder: Helvetica Light display H2, Circular Medium H3/H4.

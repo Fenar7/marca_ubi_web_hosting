@@ -153,3 +153,11 @@ which nothing reads as data.
 Gates: `npx tsc --noEmit` exit 0, no `numeral`/`bleed`/`Gutter` symbol left in the
 article surface, and no new build, dev server or browser run - the owner asked for
 none.
+
+### 7.1 Follow-up on the same day: the cap itself went
+
+D2 still left the text short of the column edge, which is what the surface is for.
+The `--measure` variable is deleted rather than re-tuned: paragraphs, headings,
+lists, callouts and code now all fill the reading column, and line length is held
+by the fluid `--prose-size` (clamp 18-22px) instead of a max-width. 949px of text
+at 1440, 1124px at 1680.
