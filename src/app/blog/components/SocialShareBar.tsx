@@ -3,9 +3,76 @@
 import { useState } from "react";
 import styles from "./BlogPostComponents.module.scss";
 
+/**
+ * The rail mounts this exactly once, so there is never a second share cluster
+ * competing with it. On tablet the surrounding strip flattens the rows through
+ * the unhashed `data-share-variant` hook in BlogPost.module.scss.
+ */
 interface SocialShareBarProps {
   title: string;
   url: string;
+}
+
+/**
+ * Brand marks are the genuine X and LinkedIn glyphs. Their `d` data is copied
+ * verbatim from the simple-icons set (viewBox 0 0 24 24) rather than
+ * approximated from memory, so the silhouette is correct. They carry no colour
+ * of their own: fill resolves to `currentColor`, letting one CSS rule drive the
+ * ink-at-rest to accent-on-hover shift across every row.
+ */
+function XBrandMark() {
+  return (
+    <svg
+      className={styles.shareBarIcon}
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z" />
+    </svg>
+  );
+}
+
+function LinkedInBrandMark() {
+  return (
+    <svg
+      className={styles.shareBarIcon}
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
+
+/**
+ * Copy-link is an action, not a brand, so it takes a neutral hand-drawn chain
+ * mark rather than a logo: two facing open clips joined by a bar. Stroked with
+ * currentColor so it shares the same hover shift as the brand marks, and marked
+ * decorative so the button label alone names the action.
+ */
+function LinkActionMark() {
+  return (
+    <svg
+      className={`${styles.shareBarIcon} ${styles.shareBarIconStroke}`}
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M9.5 8H8a4 4 0 0 0 0 8h1.5" />
+      <path d="M14.5 8H16a4 4 0 0 1 0 8h-1.5" />
+      <path d="M9 12h6" />
+    </svg>
+  );
 }
 
 export default function SocialShareBar({ title, url }: SocialShareBarProps) {
@@ -16,8 +83,11 @@ export default function SocialShareBar({ title, url }: SocialShareBarProps) {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2400);
-    } catch {
-      // Fallback
+    } catch (error) {
+      /* Clipboard writes fail on insecure contexts and on denied permissions.
+         The control stays honest (aria-live never claims "Copied" without the
+         write) and the reason is logged rather than swallowed. */
+      console.warn("Article link copy failed:", error);
       setCopied(false);
     }
   };
@@ -29,46 +99,43 @@ export default function SocialShareBar({ title, url }: SocialShareBarProps) {
   const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
 
   return (
-    <div className={styles.shareContainer}>
-      <p className={styles.shareTitle}>Share</p>
-      <div className={styles.shareButtons}>
+    <div
+      className={`${styles.shareBar} ${styles.shareBarStacked}`}
+      data-share-variant="stacked"
+      role="group"
+      aria-label="Share this article"
+    >
+      <span className={styles.shareBarLabel}>Share</span>
+      <div className={styles.shareBarList}>
         <a
           href={twitterShareUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={styles.shareBtn}
-          aria-label="Share on X (Twitter)"
+          className={styles.shareBarRow}
         >
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-          </svg>
-          <span>Post</span>
+          <XBrandMark />
+          <span className={styles.shareBarText}>Post on X</span>
         </a>
 
         <a
           href={linkedInShareUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={styles.shareBtn}
-          aria-label="Share on LinkedIn"
+          className={styles.shareBarRow}
         >
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-          </svg>
-          <span>Share</span>
+          <LinkedInBrandMark />
+          <span className={styles.shareBarText}>LinkedIn</span>
         </a>
 
         <button
           type="button"
           onClick={handleCopy}
-          className={`${styles.shareBtn} ${copied ? styles.copiedBtn : ""}`}
-          aria-label="Copy link to article"
+          className={`${styles.shareBarRow} ${copied ? styles.shareBarRowCopied : ""}`}
         >
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
-          <span aria-live="polite">{copied ? "Copied!" : "Copy link"}</span>
+          <LinkActionMark />
+          <span className={styles.shareBarText} aria-live="polite">
+            {copied ? "Copied" : "Copy link"}
+          </span>
         </button>
       </div>
     </div>

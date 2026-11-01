@@ -4,8 +4,9 @@ import styles from "./BlogPostComponents.module.scss";
 
 /**
  * Studio Conversion CTA Banner for Editorial Dispatches.
- * Monolithic Swiss architectural block with high-contrast actions.
- * Zero AI-slop pills, zero asterisk decorations.
+ * Light editorial block (#fbfbfb wash, 3px red left rule, hairline sides)
+ * mirroring the pull-quote anatomy, closed by an outline action that fills
+ * to solid ink on hover. Zero pills, zero shadows.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */

@@ -15,6 +15,12 @@ export interface SanityImageReference {
   };
   alt?: string;
   caption?: string;
+  hotspot?: {
+    x: number;
+    y: number;
+    height?: number;
+    width?: number;
+  };
 }
 
 export interface Author {

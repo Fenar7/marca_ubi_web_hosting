@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { label: "Selected Works", href: "/works" },
   { label: "Methodology", href: "/#process" },
   { label: "Guiding Principles", href: "/#values" },
-  { label: "Studio Dispatches", href: "/blog" },
+  { label: "Journal", href: "/blog" },
   { label: "Studio Corridors", href: "/#network" },
   { label: "Initiate Brief", href: "/start-project" },
 ];
