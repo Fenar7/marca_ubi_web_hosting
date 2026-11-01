@@ -9,11 +9,39 @@
  *   active TOC rule, hover accents and the copy-confirmation state.
  * - TOC active item swaps a transparent 2px left border to red with a -1px
  *   offset against the list rail, so selection never shifts layout.
+ * - The progress rule is a compositor-only scaleX transform on a 2px red bar
+ *   over a #f0f0f0 track; it never animates via transition because the scroll
+ *   handler already republishes it once per animation frame.
  * - Every interactive control clears the 44px WCAG tap target via padding or
  *   min-height, and transitions are killed under prefers-reduced-motion.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
+
+/* Reading progress rule (sticky rail, desktop only). The rail's CONTENTS
+   heading is the only label: the rule reads as a widget filling to 2px red
+   against the #f0f0f0 track, not as a bare hairline under a "PROGRESS" caption. */
+.progressWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.progressTrack {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  background-color: #f0f0f0;
+  overflow: hidden;
+}
+
+.progressRule {
+  position: absolute;
+  inset: 0;
+  background-color: $client-accent-red;
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
 
 /* Table of Contents */
 .tocNav {
@@ -76,13 +104,17 @@
   border-left-color: $client-accent-red;
 }
 
-/* Social Share Bar */
+/* Social Share Bar. A single hairline text-link affordance (one mount on the
+   page): mono uppercase labels, #666666 resting to #0a0a0a with a red hover,
+   separated by 1px hairlines. No border boxes, no background fills. The rail's
+   CONTENTS block already owns the top hairline, so this container carries none
+   of its own; stacked = vertical rows in the 260px rail, inline = one row for
+   the tablet strip (reached via the unhashed data-share-variant hook). */
 .shareContainer {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .shareTitle {
@@ -93,54 +125,78 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin: 0;
+  flex-shrink: 0;
 }
 
-.shareButtons {
+.shareLinks {
   display: flex;
+  flex-direction: column;
+}
+
+.shareStacked {
+  .shareLinks {
+    flex-direction: column;
+  }
+}
+
+.shareInline {
+  flex-direction: row;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
+
+  .shareLinks {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .shareLink {
+    border-bottom: 0;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 0 0.75rem 0 0;
+
+    &:last-child {
+      border-right: 0;
+      padding-right: 0;
+    }
+  }
 }
 
-.shareBtn {
+.shareLink {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 0.875rem;
+  gap: 0.5rem;
   min-height: 44px;
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.16);
-  border-radius: 2px;
-  color: #0a0a0a;
-  font-family: $font-circular;
-  font-size: 12px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: $font-mono;
+  font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  color: #666666;
   text-decoration: none;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s ease;
 
-  svg {
-    opacity: 0.7;
+  &:last-child {
+    border-bottom: 0;
   }
 
   &:hover {
-    border-color: $client-accent-red;
-    color: $client-accent-red;
-
-    svg {
-      opacity: 1;
-    }
+    color: #0a0a0a;
   }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
-    outline-offset: 2px;
+    outline-offset: 4px;
   }
 }
 
 /* Transient clipboard confirmation, red to stay inside the accent language. */
-.copiedBtn {
-  border-color: $client-accent-red;
+.copiedLink {
   color: $client-accent-red;
 }
 
@@ -167,7 +223,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  max-width: 600px;
+  max-width: 38rem;
 }
 
 .ctaTag {
@@ -279,11 +335,17 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tocLink,
-  .shareBtn,
+  .shareLink,
   .ctaPrimaryButton,
   .ctaPrimaryButton .arrow,
   .ctaSecondaryLink,
   .ctaSecondaryLink .arrow {
+    transition: none !important;
+  }
+
+  /* The progress bar keeps tracking scroll (it is information, not decoration)
+     but never eases: the handler writes the transform once per frame. */
+  .progressRule {
     transition: none !important;
   }
 

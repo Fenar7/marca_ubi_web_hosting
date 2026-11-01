@@ -3,18 +3,31 @@
 /**
  * Article page shell (/blog/[slug]) as a light editorial reading surface.
  *
- * Visual system (continuity with /services/[slug] and /blog listing):
- * - One 1680px container carries breadcrumb, header band, cover and reading
- *   grid, so every block shares a single left edge (the previous dark page
- *   scattered title/cover/prose across three).
- * - Helvetica 200 display headline, kicker in mono-red, hairline rails
- *   rgba(0,0,0,0.08), #f0f0f0 letterboxes, radius 2px (0 on the cover frame),
- *   zero drop shadows, zero legacy accents.
- * - Cover bleeds into the gutter below 768px with the same negative-margin
- *   arithmetic as the service hero (1.25rem gutters, calc(100% + 2.5rem)).
- * - Related dispatches reuse the listing card anatomy verbatim: 16/9 cover,
- *   mono meta row, 3-line title clamp, 2-line excerpt, hairline-anchored
- *   Read footer with margin-top auto so card bottoms align.
+ * Geometry (the reason this file exists in its current form): the earlier build
+ * parked a 72ch column in a wide container with a barren 277px left gutter, so
+ * the prose read as 49% of its own width. Every band now answers to one
+ * horizontal rhythm and the *page* goes wide while only the *prose* stays at a
+ * reading measure:
+ *
+ *   --page-gutter   container padding            clamp(1.5rem, 6vw, 6rem)
+ *   --numeral-w     hanging-numeral rail         96px, 0px below 1201px
+ *   --measure       prose column                 min(100%, 45rem), 47.5rem wide
+ *                                                   above 1500px (720px / 760px)
+ *   --rail-w        sticky right rail            260px
+ *   --grid-gap      inter-column gap             clamp(2rem, 4vw, 4rem)
+ *
+ * The measure is capped in rem rather than ch so the line stays inside the
+ * 65-85 character band at the 17px prose size while the column still reaches
+ * 720px at 1440 and 760px at 1680 (where the prose steps to 18px to hold the
+ * same character count). Figures, pull quotes, code and callouts break out of
+ * the measure and bleed left into the numeral rail to span the whole container,
+ * so the read alternates narrow measure and full width the way print does.
+ * Masthead, byline bar, cover plate and the closing bands run the full
+ * container width; only the text-bearing measure is capped.
+ *
+ * Visual system: Helvetica 200 display, mono-red kicker, hairlines
+ * rgba(0,0,0,0.08), #f0f0f0 letterbox, #fafafa wash, radius 0 on the cover
+ * frame, zero drop shadows, accent strictly #ea002a.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -35,15 +48,40 @@
 }
 
 .articleContainer {
+  --page-gutter: clamp(1.5rem, 6vw, 6rem);
+  --grid-gap: clamp(2rem, 4vw, 4rem);
+  --numeral-w: 96px;
+  --rail-w: 260px;
+  --measure: min(100%, 45rem);
+  --prose-size: 1.0625rem;
+
   width: 100%;
   max-width: 1680px;
   margin: 0 auto;
-  padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 6vw, 6rem) clamp(5rem, 8vw, 8rem);
+  padding: clamp(2.5rem, 5vw, 4rem) var(--page-gutter) clamp(5rem, 8vw, 8rem);
   box-sizing: border-box;
 
+  /* Above 1500px the canvas is wide enough to hold a longer column while the
+     prose size steps to 18px, keeping the line inside the character band. */
+  @media (min-width: 1500px) {
+    --measure: min(100%, 47.5rem);
+    --prose-size: 1.125rem;
+  }
+
+  /* Numeral rail is retired first: it only carries section counters, so below
+     the desktop breakpoint it collapses to zero and the prose keeps its anchor. */
+  @media (max-width: 1200px) {
+    --numeral-w: 0px;
+  }
+
+  /* Rail becomes a hairline strip above the prose; single stacked column. */
+  @media (max-width: 1024px) {
+    --rail-w: 0px;
+  }
+
   @media (max-width: 768px) {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    --page-gutter: 1.25rem;
+    --grid-gap: 1.75rem;
     padding-bottom: clamp(3.5rem, 6vw, 5rem);
   }
 }
@@ -88,12 +126,23 @@
   }
 }
 
-/* Header band */
-.articleHeader {
+/* Masthead: lead copy left, compact production ledger flush right. The ledger
+   is a tight mono stack with a single hairline column rule separating it from
+   the lead, so it meets the title block instead of leaving a dead band. */
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 24%);
+  column-gap: clamp(2.5rem, 5vw, 5rem);
+  row-gap: clamp(2rem, 3vw, 2.5rem);
+  align-items: start;
+  margin-bottom: clamp(2rem, 3.5vw, 2.75rem);
+}
+
+.mastheadLead {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  margin-bottom: clamp(2.5rem, 4vw, 3.5rem);
+  min-width: 0;
 }
 
 .kicker {
@@ -107,14 +156,17 @@
   margin: 0;
 }
 
+/* 30ch (up from 20ch) lets the display line reach the ledger column instead of
+   opening a void between the title block and the spec sheet on the right. */
 .articleTitle {
   font-family: $font-helvetica;
   font-weight: $fw-helvetica-extralight;
   font-size: clamp(2.25rem, 5vw, 4.5rem);
-  line-height: 1.04;
+  line-height: 1;
   letter-spacing: -0.03em;
   color: #0a0a0a;
   margin: 0;
+  max-width: 30ch;
   text-wrap: balance;
 }
 
@@ -124,36 +176,62 @@
   line-height: 1.6;
   color: #444444;
   margin: 0;
-  max-width: 72ch;
+  max-width: 60ch;
   text-wrap: pretty;
 }
 
-/* Mono meta strip: long date / read time / updated stamp, tabular figures */
-.metaRow {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+.specStack {
+  margin: 0;
+  padding: 0.25rem 0 0.25rem 1.5rem;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
   font-family: $font-mono;
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #666666;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
 }
 
-.metaSlash {
-  color: $client-slash-neutral;
+.specItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  padding: 0.5rem 0;
+
+  & + & {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
 }
 
-.authorRow {
+.specLabel {
+  margin: 0;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.specValue {
+  margin: 0;
+  text-align: right;
+  letter-spacing: 0.04em;
+  color: #0a0a0a;
+}
+
+/* Byline bar: authorship only (sharing lives in the rail), hairline framed. */
+.bylineBar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+.bylinePerson {
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  min-width: 0;
 }
 
 .authorAvatar {
@@ -200,10 +278,10 @@
 .heroImageFrame {
   position: relative;
   width: 100%;
-  aspect-ratio: 21 / 11;
+  aspect-ratio: 21 / 9;
   overflow: hidden;
   border-radius: 0;
-  background-color: #f0f0f0; // neutral letterbox while the 1680px cover decodes
+  background-color: #f0f0f0; // neutral letterbox while the wide cover decodes
 
   img {
     object-fit: cover;
@@ -219,79 +297,193 @@
   }
 }
 
+/* Cover caption sits directly under the image, left-aligned against the prose
+   column's left edge (indented past the numeral rail when the rail exists). */
+.heroCaptionBand {
+  margin: 0.75rem 0 0;
+}
+
 .heroCaption {
   font-family: $font-mono;
   font-size: 11px;
+  line-height: 1.5;
   color: #666666;
-  margin-top: 0.75rem;
-  text-align: right;
+  margin: 0;
+  max-width: var(--measure);
+  text-align: left;
 }
 
-/* Reading grid: 280px sticky rail + 72ch body column, inside the shared
-   container so the body column inherits the page's single left edge system. */
+/* Gutter breakpoint is exclusive (min-width 1201 vs max-width 1200) so a
+   viewport of exactly 1200px never lands in both the allocated and the retired
+   rail state. When the numeral rail exists the caption is pushed to the prose
+   edge instead of the container edge. */
+@media (min-width: 1201px) {
+  .heroCaptionBandGutter {
+    padding-left: calc(var(--numeral-w) + var(--grid-gap));
+  }
+}
+
+/* Reading grid: numeral rail + prose measure on the left, sticky rail on the
+   right. The grid spans the full container so the page reads wide; --bleed is
+   the amount a figure/quote/code/callout is pulled left out of the measure and
+   across the numeral rail to the container edge. It is zero whenever the rail
+   is not reserved, so those elements simply fill the measure. */
 .readingGrid {
+  --bleed: 0px;
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  column-gap: clamp(2.5rem, 4vw, 5rem);
+  grid-template-columns: minmax(0, 1fr) minmax(200px, var(--rail-w));
+  column-gap: var(--grid-gap);
+  align-items: start;
   width: 100%;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    row-gap: 2.5rem;
-  }
 }
 
-.stickyRail {
-  position: sticky;
-  top: 7rem;
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-
-  @media (max-width: 1024px) {
-    position: static;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.5rem;
-    order: -1;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 1rem 0;
-  }
-}
-
-/* The TOC indexes headings for a long reading session; on tablet and below
-   the article is scanned, not navigated, so the rail degrades to a share
-   strip rather than a collapsed disclosure. */
-.railToc {
-  @media (max-width: 1024px) {
-    display: none;
-  }
+.readingGridGutter {
+  --bleed: calc(var(--numeral-w) + var(--grid-gap));
+  grid-template-columns: var(--numeral-w) minmax(0, 1fr) minmax(200px, var(--rail-w));
 }
 
 .bodyColumn {
+  grid-column: 1;
   min-width: 0;
-  max-width: 72ch;
   display: flex;
   flex-direction: column;
 }
 
-/* Author Dossier: #fafafa block, hairline, red mono tag */
+.stickyRail {
+  grid-column: 2;
+  position: sticky;
+  top: clamp(100px, 14vh, 140px);
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (min-width: 1201px) {
+  .readingGridGutter .bodyColumn {
+    grid-column: 2;
+  }
+
+  .readingGridGutter .stickyRail {
+    grid-column: 3;
+  }
+}
+
+/* Below the numeral-rail breakpoint the rail collapses away, so the grid drops
+   back to two tracks and the bleed returns to zero. */
+@media (max-width: 1200px) {
+  .readingGridGutter {
+    --bleed: 0px;
+    grid-template-columns: minmax(0, 1fr) minmax(200px, var(--rail-w));
+
+    .bodyColumn {
+      grid-column: 1;
+    }
+
+    .stickyRail {
+      grid-column: 2;
+    }
+  }
+}
+
+.railProgress {
+  padding-bottom: 1.25rem;
+}
+
+.railToc,
+.railShare {
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Tablet and below: the rail becomes a hairline strip above the prose. The TOC
+   indexes a long read; on tablet the article is scanned, so contents and
+   progress drop out and the single share affordance stays reachable. */
+@media (max-width: 1024px) {
+  .readingGrid,
+  .readingGrid.readingGridGutter {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+    max-width: 100%;
+  }
+
+  .readingGrid .bodyColumn,
+  .readingGrid.readingGridGutter .bodyColumn {
+    grid-column: 1;
+    grid-row: 2;
+    margin-inline: auto;
+    width: 100%;
+  }
+
+  .readingGrid .stickyRail,
+  .readingGrid.readingGridGutter .stickyRail {
+    grid-column: 1;
+    grid-row: 1;
+    order: -1;
+    position: static;
+    width: 100%;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .railProgress,
+  .railToc {
+    display: none;
+  }
+
+  .railShare {
+    padding: 0;
+    border-top: 0;
+
+    /* In the horizontal strip the rail's stacked text links flatten to one row
+       with vertical hairline separators. The class is hashed by the component
+       module, so the override rides the unhashed data-share-variant hook and
+       element structure instead of the class name. */
+    [data-share-variant="stacked"] {
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    [data-share-variant="stacked"] > div {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    [data-share-variant="stacked"] > div > * {
+      min-height: 44px;
+      border-bottom: 0;
+      border-right: 1px solid rgba(0, 0, 0, 0.08);
+      padding-right: 0.75rem;
+    }
+
+    [data-share-variant="stacked"] > div > *:last-child {
+      border-right: 0;
+      padding-right: 0;
+    }
+  }
+}
+
+/* Author Dossier band: bio left, kicker and socials in the right cell. */
 .authorDossier {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 26%);
+  column-gap: clamp(2rem, 4vw, 4rem);
+  row-gap: 1.75rem;
+  align-items: start;
+  padding: clamp(2rem, 4vw, 3rem) 0;
+  background-color: #fafafa;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  margin-top: clamp(3rem, 5vw, 4.5rem);
+}
+
+.dossierBio {
   display: flex;
   gap: 1.5rem;
-  padding: 2rem;
-  background-color: #fafafa;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 2px;
-  margin-top: clamp(3rem, 5vw, 4.5rem);
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    padding: 1.5rem;
-  }
+  min-width: 0;
 }
 
 .bioAvatar {
@@ -313,6 +505,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .bioTag {
@@ -346,10 +539,16 @@
   margin: 0.5rem 0 0;
 }
 
+.dossierAside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
 .bioSocials {
   display: flex;
   gap: 1rem;
-  margin-top: 0.75rem;
   flex-wrap: wrap;
 
   a {
@@ -369,52 +568,20 @@
 
     &:focus-visible {
       outline: 2px solid $client-accent-red;
-      outline-offset: 2px;
+      outline-offset: 4px;
     }
   }
 }
 
-/* Closing editorial CTA row: exact .ctaLink idiom from /services/[slug] */
-.ctaRow {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: clamp(3rem, 6vw, 5rem);
-}
-
-.ctaLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  font-family: $font-circular;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: #0a0a0a;
-  text-decoration: none;
-  border-bottom: 1.5px solid #0a0a0a;
-  padding-bottom: 0.375rem;
-  transition: color 0.2s ease, border-color 0.2s ease, gap 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover {
-    color: $client-accent-red;
-    border-bottom-color: $client-accent-red;
-    gap: 0.95rem;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 4px;
-  }
-}
-
-/* Related Dispatches */
+/* Related Dispatches: full-width hairline ledger rows, identical anatomy to
+   the /blog listing so the page bottom spans the container edge to edge. */
 .relatedSection {
   margin-top: clamp(5rem, 8vw, 8rem);
   padding-top: clamp(3rem, 5vw, 4.5rem);
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: clamp(2rem, 3vw, 3rem);
 }
 
 .relatedHeader {
@@ -463,63 +630,60 @@
   }
 }
 
-.relatedGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2.5rem 2rem;
+.relatedLedger {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
 
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
+/* The row bleeds its hover wash into the container padding via a negative
+   inline margin and an equal compensating inline padding, so content edges
+   stay on the page axis while the wash reaches the container frame. */
+.ledgerRow {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  margin-inline: calc(-1 * var(--page-gutter));
+}
+
+.ledgerLink {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) minmax(0, 22ch) 44px;
+  align-items: center;
+  column-gap: clamp(1.25rem, 2.5vw, 2.5rem);
+  min-height: 104px;
+  padding: 1.25rem var(--page-gutter);
+  text-decoration: none;
+  color: inherit;
+
+  /* The wash lands instantly: only transforms animate on this surface, so the
+     row's motion budget goes to the title underline and the arrow. */
+  &:hover {
+    background-color: #fafafa;
   }
 
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
+  &:focus-visible {
+    outline: 2px solid $client-accent-red;
+    outline-offset: -4px;
   }
 }
 
-/* margin-top:auto on the footer aligns card bottoms regardless of title
-   length, fixing the ragged-bottom defect inherited from the dark grid. */
-.relatedCard {
+.ledgerNumeral {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.ledgerBody {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.375rem;
+  min-width: 0;
 }
 
-.relatedImageFrame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 2px;
-  background-color: #f0f0f0;
-
-  &:hover img {
-    transform: scale(1.04);
-  }
-
-  img {
-    object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-}
-
-/* Monogram frame for covers without an asset: per-post initial on #fafafa,
-   replacing the single shared PNG fallback that showed the same building. */
-.relatedFallback {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #fafafa;
-  font-family: $font-helvetica;
-  font-weight: $fw-helvetica-light;
-  font-size: 2.5rem;
-  color: #666666;
-  text-transform: uppercase;
-}
-
-.relatedMetaRow {
+.ledgerMeta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -527,14 +691,14 @@
   font-family: $font-mono;
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #666666;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
 }
 
-.relatedCategory {
+.ledgerCategory {
   color: $client-accent-red;
 }
 
@@ -542,101 +706,137 @@
   color: $client-slash-neutral;
 }
 
-.relatedCardTitle {
-  font-family: $font-circular;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
+.ledgerTitle {
+  font-family: $font-helvetica;
+  font-weight: $fw-helvetica-light;
+  font-size: clamp(1.25rem, 1.9vw, 1.625rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: #0a0a0a;
   margin: 0;
+}
+
+.ledgerTitleText {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  position: relative;
+  transition: color 0.2s ease;
 
-  a {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.2s ease;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 2px;
+    background-color: $client-accent-red;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-    &:hover {
-      color: $client-accent-red;
-    }
-
-    &:focus-visible {
-      outline: 2px solid $client-accent-red;
-      outline-offset: 3px;
-    }
+  .ledgerLink:hover & {
+    transform: scaleX(1);
   }
 }
 
-.relatedExcerpt {
+.ledgerExcerpt {
   font-family: $font-circular;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.55;
   color: #666666;
-  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.relatedCardFooter {
-  display: flex;
-  align-items: center;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  margin-top: auto;
-  padding-top: 0.875rem;
-}
-
-.relatedReadLink {
+.ledgerArrow {
+  justify-self: end;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  font-family: $font-circular;
-  font-size: 13px;
-  font-weight: 500;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   color: #0a0a0a;
-  text-decoration: none;
-  transition: color 0.2s ease;
+  font-size: 18px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
 
-  .arrow {
-    transition: transform 0.2s ease;
-  }
-
-  &:hover {
+  .ledgerLink:hover & {
     color: $client-accent-red;
+    transform: translateX(4px);
+  }
+}
 
-    .arrow {
-      transform: translateX(4px);
-    }
+@media (max-width: 768px) {
+  .masthead {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 3px;
+  .bylineBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .authorDossier {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dossierBio {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ledgerLink {
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+    grid-template-areas:
+      "numeral body arrow"
+      "meta    body arrow";
+    align-items: start;
+    row-gap: 0.75rem;
+    padding-block: 1.25rem;
+  }
+
+  .ledgerNumeral {
+    grid-area: numeral;
+  }
+
+  .ledgerBody {
+    grid-area: body;
+  }
+
+  .ledgerArrow {
+    grid-area: arrow;
+    width: 44px;
+    height: 44px;
+  }
+
+  .ledgerExcerpt {
+    -webkit-line-clamp: 3;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .breadcrumbList a,
-  .ctaLink,
   .relatedViewAll,
   .relatedViewAll .arrow,
-  .relatedImageFrame img,
-  .relatedCardTitle a,
-  .relatedReadLink,
-  .relatedReadLink .arrow,
+  .ledgerLink,
+  .ledgerTitleText,
+  .ledgerArrow,
   .bioSocials a {
     transition: none !important;
   }
 
-  .relatedImageFrame:hover img,
+  .ledgerTitleText::after {
+    transition: none !important;
+  }
+
   .relatedViewAll:hover .arrow,
-  .relatedReadLink:hover .arrow {
+  .ledgerLink:hover .ledgerTitleText::after,
+  .ledgerLink:hover .ledgerArrow {
     transform: none;
   }
 }

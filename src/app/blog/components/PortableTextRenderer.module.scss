@@ -8,8 +8,10 @@
  *   prose), display heads locked to #0a0a0a. Weight ladder is strictly
  *   Helvetica 300 (H2) / Circular 500 (H3, H4, emphasis) / 400 (prose); the
  *   former 700/450 mixture never rendered on the loaded Circular XX cuts.
- * - 17px / 1.75 measure capped at 72ch so the column matches the standfirst
- *   and the cover, killing the historical three-left-edge misalignment.
+ * - Text runs at 17px / 1.75 inside a rem-capped reading measure (min(100%,
+ *   45rem), 47.5rem above 1500px) so the line stays inside the 65-85 character
+ *   band; media, pull quotes, code and callouts break out of that measure and
+ *   bleed across the numeral rail to the container edge.
  * - Pull quote reuses the TestimonialsCutout block anatomy (#fbfbfb wash,
  *   3px red left rule, hairline sides); callouts are hairline-bordered,
  *   radius 2px, zero shadows, with real note/principle/warning variants.
@@ -22,10 +24,41 @@
 .articleContent {
   color: #333333;
   font-family: $font-circular;
-  font-size: 1.0625rem;
+  font-size: var(--prose-size, 1.0625rem);
   line-height: 1.75;
-  max-width: 72ch;
   overflow-wrap: break-word;
+  /* Section numerals are counted here rather than in JS: the counter is the
+     only ordinal that stays in step with the rendered H2 sequence when a post
+     mixes headings, figures and callouts in any order. */
+  counter-reset: section;
+
+  /* Only text keeps the reading measure. Media, quotes and code are the
+     breakouts below and run wider. */
+  > .paragraph,
+  > .heading2,
+  > .heading3,
+  > .heading4,
+  > .bulletList,
+  > .numberedList,
+  > .calloutCard {
+    max-width: var(--measure, 45rem);
+  }
+}
+
+/* Breakouts fill the measure track and then bleed left across the numeral rail
+   to the container edge, so the page alternates narrow measure and full width.
+   --bleed is 0 whenever the rail is not reserved, collapsing them to the measure.
+
+   A callout is deliberately NOT in this list. It broke out to 950px and its body
+   copy measured 900px at 17px, about 106 characters per line, well outside the
+   65-85ch band every other paragraph on the page respects. Figures, pull quotes
+   and code are objects and can carry the extra width; a callout is a paragraph
+   of reading text, so it stays at the measure. */
+.articleContent > .figure,
+.articleContent > .blockquote,
+.articleContent > .codeContainer {
+  width: calc(100% + var(--bleed, 0px));
+  margin-left: calc(-1 * var(--bleed, 0px));
 }
 
 /* Heading ladder: Helvetica Light display H2, Circular Medium H3/H4.
@@ -40,6 +73,7 @@
   margin: 2.75rem 0 1rem;
   scroll-margin-top: 7rem;
   position: relative;
+  counter-increment: section;
 
   &:hover .anchorSymbol,
   &:focus-within .anchorSymbol {
@@ -206,7 +240,7 @@
   vertical-align: middle;
 }
 
-/* In-body figure: full measure inside the 72ch column, no bleed. */
+/* In-body figure: a full-container breakout; the caption rides beneath it. */
 .figure {
   margin: 3rem 0;
   width: 100%;
@@ -227,12 +261,15 @@
   display: block;
 }
 
+/* Caption sits directly beneath its figure, left-aligned against the prose
+   edge in muted mono. It no longer floats into a margin column. */
 .figcaption {
   font-family: $font-mono;
   font-size: 11px;
+  line-height: 1.5;
   color: #666666;
   margin-top: 0.75rem;
-  text-align: right;
+  text-align: left;
 }
 
 /* Code blocks: #fafafa frame, mono 13px, filename/lang header on a hairline. */
@@ -280,8 +317,10 @@
   }
 }
 
-/* Callout base frame: hairline, radius 2px, zero shadow. Variants below
-   recolour the wash and the left rule; the dot is a note-only marker. */
+/* Callout base frame: hairline, radius 2px, zero shadow. Variants recolour
+   the wash and the rules; the dot is a note-only marker. Variant classes are
+   camelCase because CSS Modules hash-map the export names under the loaded
+   convention, and data-variant on the node mirrors the same three values. */
 .calloutCard {
   padding: 1.5rem;
   border-radius: 2px;
@@ -290,15 +329,15 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.callout_note {
+.calloutNote {
   background-color: #fafafa;
 }
 
-.callout_principle {
+.calloutPrinciple {
   border-left: 3px solid $client-accent-red;
 }
 
-.callout_warning {
+.calloutWarning {
   background-color: #fff4f5;
   border-color: rgba(234, 0, 42, 0.35);
 }
@@ -316,7 +355,7 @@
   border-radius: 50%;
   background-color: $client-accent-red;
 
-  .callout_principle & {
+  .calloutPrinciple & {
     display: none;
   }
 }
@@ -347,5 +386,36 @@
   .headingAnchor,
   .articleLink {
     transition: none !important;
+  }
+}
+
+/* Hanging section numeral.
+   Above the rail breakpoint (1201px, exclusive of the 1200px retirement so a
+   viewport never sits in both states) the reading grid reserves the 96px
+   numeral rail to the left of the measure. Only the H2 counter hangs there; a
+   studio note and a figure caption are no longer marginalia (the note breaks
+   out as a callout, the caption sits beneath its figure), so the rail never
+   carries anything that cannot be populated on an article with sections. Below
+   the breakpoint the rail collapses, the numeral drops out entirely and the
+   headings fall back to plain in-measure type. */
+@media (min-width: 1201px) {
+  .heading2::before {
+    content: counter(section, decimal-leading-zero);
+    position: absolute;
+    right: 100%;
+    top: 0.35em;
+    margin-right: var(--grid-gap);
+    width: var(--numeral-w, 96px);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    font-family: $font-mono;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-align: right;
+    color: #666666;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
   }
 }

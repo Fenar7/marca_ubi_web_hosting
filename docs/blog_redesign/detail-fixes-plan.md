@@ -1,6 +1,7 @@
 # Phase 14b: Article Detail Width + Anti-Slop Pass (Plan)
 
-Status: **AWAITING APPROVAL — no code written.**
+Status: **EXECUTING** - build pass in flight (S1-S9 + 4.1), audit round landed
+(§5), verification pending.
 Surface: `/blog/[slug]` only. The homepage rail and `/blog` listing are already
 verified and are NOT in scope.
 
@@ -86,7 +87,30 @@ work; today they are not.
   shared `slugify` import, reduced-motion gates, the `{"\u2197"}` entity fix, the
   24h `Updated` gate, all nine Portable Text classes and the three callout variants.
 
-## 5. Execution model
+## 5. Independent audit round (A1-A10, second fix pass)
+
+A read-only auditor judged the surface against the accepted `/blog` listing and
+returned ten defects beyond S1-S9. Verdict: the listing treats every figure as
+live archive truth and never repeats an item, while the article decorates with a
+sticky rail that re-shows content already on the page.
+
+| # | Defect | Keeper rule |
+| --- | --- | --- |
+| A1 | Rail "Next dispatch" is `relatedPosts[0]`, which the bottom ledger also renders - same title, excerpt and meta twice | Ledger maps `relatedPosts.slice(1)`; the rail keeps only genuinely additive content |
+| A2 | Inline share variant prints a `Share` label next to a button also called `Share` | Label renders in one variant only; the LinkedIn action is labelled by its brand |
+| A3 | Dates mix `en-US` + upper-cased ledger text against the listing's `en-GB` sentence case, and the page's own word count uses `en-GB` | One locale, one case: `en-GB`, sentence case, site-wide |
+| A4 | Two `/start-project` CTAs stacked under different labels, plus an `Explore` verb repeated in the banner and the "Explore All" link | One `/start-project` link, one `Explore` verb |
+| A5 | `related.estimatedReadingTime \|\| 4` invents a read time - `PostSummary` carries no body, so the number cannot be substantiated | Omit the duration cell when the field is absent (R-17) |
+| A6 | Breadcrumb ends on the category with `aria-current="page"`, so it never names the current page and repeats the kicker | Terminal crumb is the article title, plain text |
+| A7 | `<dt>Revised</dt><dd>Updated Oct 31, 2026</dd>` - label and value say the same thing | Value is the bare date |
+| A8 | Callout falls back to a fabricated "Studio Insight" heading and mounts a decorative dot that carries no data | Header renders only when the editor supplied a title |
+| A9 | `charAt(0).toUpperCase()` produces "Linkedin" / "Twitter" | Brand-correct labels ("LinkedIn", "X") |
+| A10 | Cover caption right-aligns inside the narrow reading band while the image spans the container, so its edge hangs mid-image | No-gutter caption aligns to the cover's own edge |
+
+Gates for this round: A1-A10 cleared, the S1-S7 and 4.1 gates still hold, and no
+rail block re-renders data already present in the body.
+
+## 6. Execution model
 
 Parallel writes to one stylesheet caused the last round of drift, so this pass is
 single-owner with an adversarial audit:

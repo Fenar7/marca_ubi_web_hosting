@@ -317,7 +317,7 @@
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Slot furniture for a dispatch with no authored cover at all. */
+/* Slot furniture for an entry with no authored cover at all. */
 .leadFallbackInitial {
   font-family: $font-helvetica;
   font-weight: $fw-helvetica-extralight;
@@ -455,7 +455,14 @@
   color: #0a0a0a;
 }
 
+/* The credit row is uppercase furniture, but the reading-time figure is the
+   one string on this surface that has an exact-phrase contract (lowercase
+   `min read`, matching .rowRead below). Opting this cell out of the inherited
+   transform and using the ledger's tracking keeps the featured card and the
+   index rows spelling the measurement identically. */
 .leadRead {
+  text-transform: none;
+  letter-spacing: 0.06em;
   color: #666666;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;

@@ -15,10 +15,20 @@ interface BlogListingClientProps {
 
 /**
  * Archive furniture numbers are always two glyphs so the ledger's monospace
- * columns stay optically aligned from 1 dispatch up to 99.
+ * columns stay optically aligned from 1 entry up to 99.
  */
 function pad2(value: number): string {
   return String(Math.max(0, value)).padStart(2, "0");
+}
+
+/**
+ * Reading time is an authored field, never an inferred one. PostSummary omits
+ * the body, so a listing row or lead dossier has nothing to measure: an absent
+ * (or zero) figure renders as no cell at all rather than a guessed duration.
+ * Returning null keeps the "omit" decision in one place for both bands.
+ */
+function authoredReadingMinutes(value: number | undefined): number | null {
+  return typeof value === "number" && value > 0 ? value : null;
 }
 
 /**
@@ -52,7 +62,7 @@ function lqipFor(image: SanityImageReference | undefined): string | undefined {
 }
 
 /**
- * Lead-cover fallback: when a dispatch has no mainImage at all, the frame
+ * Lead-cover fallback: when an entry has no mainImage at all, the frame
  * carries the category initial in Helvetica 200 so the slot reads as authored
  * editorial furniture rather than a recycled stock PNG.
  */
@@ -83,7 +93,7 @@ function latestPublishedAt(posts: PostSummary[]): string {
  * Client-side interactive editorial index (/blog).
  *
  * Composition is a print "contents" page, not a card grid: a full-bleed
- * masthead whose right column is filled by a real issue ledger (year, dispatch
+ * masthead whose right column is filled by a real issue ledger (year, entry
  * count, category count, last filing), a hairline category strip, one
  * asymmetric lead story whose dossier pins its footer to the cover's bottom
  * edge, then hairline numbered rows that scan in a single pass.
@@ -120,7 +130,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
   }, [posts, activeCategory]);
 
   // The flagship split is reserved for the unfiltered view and only earns its
-  // space when there is a second dispatch to index beneath it.
+  // space when there is a second entry to index beneath it.
   const featuredPost = useMemo(() => {
     if (activeCategory !== "all" || filteredPosts.length < 2) return null;
     return filteredPosts.find((post) => post.featured) || filteredPosts[0] || null;
@@ -143,7 +153,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
     const latestYear = latest ? new Date(latest).getUTCFullYear() : new Date().getFullYear();
     return [
       { label: "Issue", value: String(Number.isFinite(latestYear) ? latestYear : new Date().getFullYear()) },
-      { label: "Dispatches", value: pad2(posts.length) },
+      { label: "Entries", value: pad2(posts.length) },
       { label: "Categories", value: pad2(categories.length) },
       { label: "Last filed", value: latest ? formatDate(latest) : "None yet" },
     ];
@@ -152,6 +162,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
   // Hotspot-aware fixed-crop URL; null when the editor never attached a cover.
   const featuredCover = featuredPost ? coverUrl(featuredPost.mainImage, 1400, 933) : null;
   const featuredLqip = lqipFor(featuredPost?.mainImage);
+  const featuredReadingMinutes = authoredReadingMinutes(featuredPost?.estimatedReadingTime);
 
   const tabClass = (isActive: boolean, isDisabled: boolean) =>
     [
@@ -168,7 +179,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
           archive data, which is what removes the dead space the owner flagged. */}
       <header className={styles.masthead}>
         <div className={styles.mastheadMain}>
-          <span className={styles.kicker}>Studio Dispatches</span>
+          <span className={styles.kicker}>Journal</span>
           <h1 className={styles.displayTitle}>Thinking in Systems.</h1>
           <p className={styles.standfirst}>
             Essays, strategic field notes and technical observations on brand architecture,
@@ -195,7 +206,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
           className={tabClass(activeCategory === "all", false)}
           onClick={() => selectCategory("all")}
         >
-          <span className={styles.tabLabel}>All dispatches</span>
+          <span className={styles.tabLabel}>All entries</span>
           <span className={styles.tabCount}>({posts.length})</span>
         </button>
 
@@ -229,7 +240,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
 
       {/* Band 3: lead story, unfiltered view only. */}
       {featuredPost && (
-        <section className={styles.leadBand} aria-label="Featured dispatch">
+        <section className={styles.leadBand} aria-label="Featured entry">
           <article className={styles.leadCard}>
             <div className={styles.leadCoverFrame}>
               {featuredCover ? (
@@ -256,7 +267,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
               </span>
 
               <div className={styles.leadKickerRow}>
-                <span className={styles.leadKicker}>Featured dispatch</span>
+                <span className={styles.leadKicker}>Featured</span>
                 {featuredPost.category?.title && (
                   <span className={styles.leadCategory}>/ {featuredPost.category.title}</span>
                 )}
@@ -279,15 +290,15 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
                   {featuredPost.author?.name && (
                     <span className={styles.leadAuthor}>{featuredPost.author.name}</span>
                   )}
-                  <span className={styles.leadRead}>
-                    {featuredPost.estimatedReadingTime || 5} min read
-                  </span>
+                  {featuredReadingMinutes !== null && (
+                    <span className={styles.leadRead}>{featuredReadingMinutes} min read</span>
+                  )}
                 </div>
 
                 {/* The title anchor paints the inset-0 overlay, so the CTA is a
                     span: one href, one tab stop, no nested interactive nodes. */}
                 <span className={styles.leadCta} aria-hidden="true">
-                  <span>Read full dispatch</span>
+                  <span>Read the full entry</span>
                   <span className={styles.leadCtaArrow}>&rarr;</span>
                 </span>
               </div>
@@ -297,14 +308,14 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
       )}
 
       {/* Band 4: the index ledger. Hairline rows replace the card grid. */}
-      <section className={styles.indexSection} aria-label="Dispatch index">
+      <section className={styles.indexSection} aria-label="Journal index">
         {ledgerPosts.length === 0 ? (
           <div className={styles.emptyState}>
             <p className={styles.emptyText}>
-              No dispatches filed under this category yet.
+              Nothing filed under this category yet.
             </p>
             <Link href={pathname} className={styles.emptyAction}>
-              <span>View all dispatches</span>
+              <span>Read the journal</span>
               <span className={styles.emptyArrow} aria-hidden="true">
                 &rarr;
               </span>
@@ -320,7 +331,7 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
             </div>
 
             {ledgerPosts.map((post, index) => {
-              const readingMinutes = post.estimatedReadingTime || 4;
+              const readingMinutes = authoredReadingMinutes(post.estimatedReadingTime);
 
               return (
                 <article key={post._id} className={styles.indexRow}>
@@ -330,7 +341,8 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
 
                   {/* display: contents on desktop lets each meta cell occupy its
                       own ledger column; the narrow layouts switch this wrapper
-                      to flex so the same three cells form one meta line. */}
+                      to flex so the authored meta cells form one line. The read
+                      cell is the one that may be absent entirely. */}
                   <div className={styles.rowHead}>
                     <time dateTime={post.publishedAt} className={styles.rowDate}>
                       {formatDate(post.publishedAt)}
@@ -338,7 +350,9 @@ export default function BlogListingClient({ posts, categories }: BlogListingClie
                     {post.category?.title && (
                       <span className={styles.rowCat}>{post.category.title}</span>
                     )}
-                    <span className={styles.rowRead}>{readingMinutes} min read</span>
+                    {readingMinutes !== null && (
+                      <span className={styles.rowRead}>{readingMinutes} min read</span>
+                    )}
                   </div>
 
                   <div className={styles.rowBody}>

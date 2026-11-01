@@ -1,7 +1,7 @@
 @import "../../styles/client-mixins.scss";
 
 /**
- * View 08: Dispatches Curtain Stylesheet (approved 3-card editorial stack).
+ * Journal teaser curtain (the approved 3-card editorial stack).
  *
  * Visual System:
  * - Pure white canvas curtain, no section-level shadow (card and section
@@ -44,23 +44,31 @@
   }
 }
 
+/**
+ * Sticky lives on the grid ITEM, not on the inner `.stickyRail` wrapper.
+ * `.gridContainer` uses `align-items: start`, which sizes `.leftColumn` to its
+ * own content (395px measured). A sticky box is confined to its containing
+ * block, so declaring it on the wrapper pins it inside a box of its own height
+ * and yields zero travel, which is why the rail never stuck. On the item, the
+ * constraint rect is the grid AREA, which spans the full row and so tracks the
+ * whole card stack. Do not move these two declarations back down a level.
+ */
 .leftColumn {
-  position: relative;
+  top: clamp(120px, 18vh, 200px);
+  position: sticky;
+
+  // The grid collapses to one column here; a pinned rail would overlay the
+  // headline across the cards while scrolling.
+  @media (max-width: 1024px) {
+    position: static;
+  }
 }
 
 .stickyRail {
-  position: sticky;
-  top: clamp(120px, 18vh, 200px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 1.25rem;
-
-  // The grid collapses to one column here; a sticky rail would pin the
-  // headline over the cards while scrolling.
-  @media (max-width: 1024px) {
-    position: static;
-  }
 }
 
 .railKicker {
@@ -226,14 +234,6 @@
 
 .categoryName {
   color: $client-accent-red;
-}
-
-.metaDivider {
-  color: $client-text-muted-dark;
-}
-
-.readingTime {
-  color: $client-text-muted-dark;
 }
 
 .postTitle {

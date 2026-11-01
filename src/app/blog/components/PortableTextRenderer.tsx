@@ -32,6 +32,19 @@ interface CodeBlockValue {
 }
 
 /**
+ * Studio callout variants. The class names are resolved from this literal set
+ * instead of a computed `callout_${type}` key: CSS Modules camelCase the
+ * exported names, so a bracket lookup on the underscored original silently
+ * returned undefined and every callout rendered unvariant.
+ */
+type CalloutVariant = "note" | "principle" | "warning";
+
+function resolveCalloutVariant(type?: string): CalloutVariant {
+  if (type === "principle" || type === "warning") return type;
+  return "note";
+}
+
+/**
  * Extracts the plain heading text from a block so the anchor id can be
  * stamped identically to the TableOfContents resolver. Both sides import
  * slugify from @/app/blog/lib/slugify: drift between the two silently breaks
@@ -116,9 +129,18 @@ export const portableTextComponents: PortableTextComponents = {
   types: {
     callout: ({ value }) => {
       const data = (value || {}) as CalloutValue;
-      const type = data.type || "note";
+      const variant = resolveCalloutVariant(data.type);
+      const variantClass =
+        variant === "principle"
+          ? styles.calloutPrinciple
+          : variant === "warning"
+            ? styles.calloutWarning
+            : styles.calloutNote;
+
+      /* data-variant is a stable, unhashed hook for the reading-grid rules that
+         float a studio note into the left gutter at desktop widths. */
       return (
-        <aside className={`${styles.calloutCard} ${styles[`callout_${type}`] || ""}`}>
+        <aside className={`${styles.calloutCard} ${variantClass}`} data-variant={variant}>
           <div className={styles.calloutHeader}>
             <span className={styles.calloutDot} aria-hidden="true" />
             <p className={styles.calloutTitle}>{data.title || "Studio Insight"}</p>
@@ -145,7 +167,7 @@ export const portableTextComponents: PortableTextComponents = {
               alt={source.alt || "Article visual"}
               width={1200}
               height={800}
-              sizes="(max-width: 1024px) 92vw, 72ch"
+              sizes="(max-width: 1024px) 92vw, 60rem"
               loading="lazy"
               className={styles.contentImage}
               {...(lqip ? { placeholder: "blur" as const, blurDataURL: lqip } : {})}

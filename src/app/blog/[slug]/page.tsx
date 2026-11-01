@@ -10,11 +10,11 @@ import {
   postSlugsQuery,
   relatedPostsQuery,
 } from "@/sanity/lib/blog-queries";
-import type { Post, PostSummary } from "@/sanity/types/blog";
+import type { Author, Post, PostSummary } from "@/sanity/types/blog";
 import { calculateReadingTime } from "@/sanity/types/blog";
 import { urlFor, coverUrl } from "@/sanity/lib/image";
 import PortableTextRenderer from "../components/PortableTextRenderer";
-import TableOfContents from "../components/TableOfContents";
+import TableOfContents, { ReadingProgressRule } from "../components/TableOfContents";
 import SocialShareBar from "../components/SocialShareBar";
 import BlogCtaBanner from "../components/BlogCtaBanner";
 import styles from "./BlogPost.module.scss";
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!post) {
     return {
-      title: "Dispatch Not Found | Marca Ubi",
+      title: "Entry not found | Marca Ubi",
     };
   }
 
@@ -90,24 +90,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-function formatDateLong(isoString: string): string {
-  if (!isoString) return "";
-  try {
-    return new Date(isoString).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  } catch {
-    return "";
-  }
-}
+/**
+ * Brand-correct labels for the four author platforms the Sanity schema allows.
+ * Capitalising the first letter of the stored key produced "Linkedin" and
+ * mislabelled the X profile as "Twitter", so the dossier named none of them
+ * correctly.
+ */
+const AUTHOR_PLATFORM_LABELS: Record<
+  NonNullable<Author["socialLinks"]>[number]["platform"],
+  string
+> = {
+  linkedin: "LinkedIn",
+  twitter: "X",
+  instagram: "Instagram",
+  website: "Website",
+};
 
+/**
+ * The one date formatter for this surface. `en-GB` sentence case ("31 Oct 2026")
+ * matches the accepted /blog listing and this page's own word count; a US
+ * "Oct 31, 2026" on the article contradicted the archive it links back to.
+ */
 function formatDateCard(isoString: string): string {
   if (!isoString) return "";
   try {
-    return new Date(isoString).toLocaleDateString("en-US", {
+    return new Date(isoString).toLocaleDateString("en-GB", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -119,34 +126,24 @@ function formatDateCard(isoString: string): string {
 }
 
 /**
- * Mirrors calculateReadingTime's extraction so BlogPosting.wordCount reflects
- * the exact prose the reader sees (block children only; images, code blocks
- * and callouts carry no visible paragraph text and are excluded upstream).
- */
-interface RawBodyBlock {
-  _type?: string;
-  children?: Array<{ text?: string }>;
-}
-
-function countBodyWords(body: Post["body"]): number {
-  const raw = (body || []) as unknown as RawBodyBlock[];
-  return raw
-    .filter((b) => b._type === "block")
-    .flatMap((b) => b.children || [])
-    .map((c) => c.text || "")
-    .join(" ")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
-}
-
-/**
  * Editorial Article Reader (light surface).
- * Single 1680px container carries breadcrumb, header band, cover and the
- * 280px-rail + 72ch-column reading grid so all copy shares one left edge.
- * Covers and related cards flow through coverUrl()'s hotspot-aware crops,
- * the TOC/share rail sticks beside the body, and JSON-LD pairs BlogPosting
- * (with wordCount/articleSection) and a BreadcrumbList graph.
+ * One wide canvas carries breadcrumb, masthead, byline bar, cover plate and a
+ * three-zone reading grid: a 96px hanging-numeral rail, a measure-capped prose
+ * column and a sticky 260px right rail. The prose stays at a reading measure,
+ * but media, pull quotes, code and callouts break out across the numeral rail
+ * into the full container, so the page alternates narrow measure and full width
+ * the way print does instead of parking a narrow column in a wide void.
+ *
+ * The single 96px numeral rail is the only permanent marginalia: it carries the
+ * `01`/`02` section counter for every h2, so it earns its width on any article
+ * that has sections and collapses to zero when there are none. Captions and
+ * studio notes no longer float into a gutter (they sit beneath/break out in the
+ * measure), which is why the ledger, rail and grid no longer reserve a wide
+ * decorative left column that reads as an empty void.
+ *
+ * Covers and related rows flow through coverUrl()'s hotspot-aware crops and
+ * JSON-LD pairs BlogPosting (with wordCount/articleSection) and a
+ * BreadcrumbList graph.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -174,18 +171,31 @@ export default async function BlogPostPage({ params }: PageProps) {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
   const postUrl = `${siteUrl}/blog/${post.slug}`;
   const readingMinutes = post.estimatedReadingTime || calculateReadingTime(post.body);
-  const heroCover = coverUrl(post.mainImage, 1680, 880);
+  const heroCover = coverUrl(post.mainImage, 1680, 720);
+  const heroLqip = post.mainImage?.asset?.metadata?.lqip;
   const schemaImage = coverUrl(post.mainImage, 1200, 630);
   const wordCount = countBodyWords(post.body);
 
+  /**
+   * The 96px numeral rail is only reserved when the body actually renders an
+   * h2, because the section counter hanging in that rail is its sole occupant.
+   * A post with no h2 has no numerals to hang, so the grid drops the rail and
+   * the prose starts flush at the container edge rather than beside a void.
+   * Captions and studio notes are no longer marginalia (they sit in the
+   * measure), so they never buy a gutter.
+   */
+  const marginaliaGutter = hasSectionNumerals(post.body);
+
   // An update stamp only earns editorial real estate once it clears a full
-  // day over the publication date, so silent same-day fixes never mislead.
+  // day over the publication date, so silent same-day fixes never mislead. The
+  // value is the bare date because the row's own label already says "Revised";
+  // "Revised / Updated 31 Oct 2026" was a label echoing its own value.
   const updatedDelta = post._updatedAt
     ? new Date(post._updatedAt).getTime() - new Date(post.publishedAt).getTime()
     : NaN;
   const updatedLabel =
     !Number.isNaN(updatedDelta) && updatedDelta > DAY_MS
-      ? `Updated ${formatDateCard(post._updatedAt as string)}`
+      ? formatDateCard(post._updatedAt as string)
       : null;
 
   const jsonLd = {
@@ -266,8 +276,10 @@ export default async function BlogPostPage({ params }: PageProps) {
       <ClientHeader defaultTheme="light" />
 
       <main id="main-content" className={styles.articleMain} data-header-theme="light">
-        <article className={styles.articleContainer}>
-          {/* Breadcrumb Navigation */}
+        <article className={styles.articleContainer} data-article-reader="true">
+          {/* Breadcrumb ends on the article, not the category: the terminal crumb
+              is what tells the reader (and the accessible path) which page they
+              are on, and a category here only restated the red kicker. */}
           <nav aria-label="Breadcrumb" className={styles.breadcrumbNav}>
             <ol className={styles.breadcrumbList}>
               <li>
@@ -277,44 +289,48 @@ export default async function BlogPostPage({ params }: PageProps) {
               <li>
                 <Link href="/blog">Blog</Link>
               </li>
-              {post.category && (
-                <>
-                  <li aria-hidden="true">/</li>
-                  <li aria-current="page">{post.category.title}</li>
-                </>
-              )}
+              <li aria-hidden="true">/</li>
+              <li aria-current="page">{post.title}</li>
             </ol>
           </nav>
 
-          {/* Article Header Band */}
-          <header className={styles.articleHeader}>
-            {post.category?.title && (
-              <span className={styles.kicker}>{post.category.title}</span>
-            )}
+          {/* Masthead: lead copy left, compact production ledger flush right.
+              The ledger keeps only the two rows that add facts the page does
+              not already state (read time, revision). Section restates the red
+              kicker, Published restates the byline date and Words contradicted
+              the authored read time, so all three are gone from the UI while
+              wordCount survives inside the BlogPosting JSON-LD. */}
+          <header className={styles.masthead}>
+            <div className={styles.mastheadLead}>
+              {post.category?.title && (
+                <span className={styles.kicker}>{post.category.title}</span>
+              )}
 
-            <h1 className={styles.articleTitle}>{post.title}</h1>
-            <p className={styles.articleStandfirst}>{post.excerpt}</p>
-
-            <div className={styles.metaRow}>
-              {post.publishedAt && (
-                <time dateTime={post.publishedAt}>{formatDateLong(post.publishedAt)}</time>
-              )}
-              {readingMinutes > 0 && (
-                <>
-                  <span className={styles.metaSlash} aria-hidden="true">/</span>
-                  <span>{readingMinutes} MIN READ</span>
-                </>
-              )}
-              {updatedLabel && (
-                <>
-                  <span className={styles.metaSlash} aria-hidden="true">/</span>
-                  <span>{updatedLabel}</span>
-                </>
-              )}
+              <h1 className={styles.articleTitle}>{post.title}</h1>
+              <p className={styles.articleStandfirst}>{post.excerpt}</p>
             </div>
 
-            {post.author && (
-              <div className={styles.authorRow}>
+            <dl className={styles.specStack}>
+              {readingMinutes > 0 && (
+                <div className={styles.specItem}>
+                  <dt className={styles.specLabel}>Read time</dt>
+                  <dd className={styles.specValue}>{readingMinutes} min</dd>
+                </div>
+              )}
+              {updatedLabel && (
+                <div className={styles.specItem}>
+                  <dt className={styles.specLabel}>Last revised</dt>
+                  <dd className={styles.specValue}>{updatedLabel}</dd>
+                </div>
+              )}
+            </dl>
+          </header>
+
+          {/* Byline bar: authorship only. Sharing lives in the rail as a single
+              affordance so the article never mounts two share clusters. */}
+          {post.author && (
+            <div className={styles.bylineBar}>
+              <div className={styles.bylinePerson}>
                 {post.author.avatar?.asset?.url && (
                   <span className={styles.authorAvatar}>
                     <Image
@@ -330,10 +346,10 @@ export default async function BlogPostPage({ params }: PageProps) {
                   <span className={styles.authorRole}>{post.author.role}</span>
                 </div>
               </div>
-            )}
-          </header>
+            </div>
+          )}
 
-          {/* Cover Plate: full container width, hotspot-aware 1680px crop */}
+          {/* Cover Plate: full container width, hotspot-aware 21/9 letterbox */}
           {heroCover && (
             <figure className={styles.heroMediaWrap}>
               <div className={styles.heroImageFrame}>
@@ -342,161 +358,211 @@ export default async function BlogPostPage({ params }: PageProps) {
                   alt={post.mainImage?.alt || post.title}
                   fill
                   priority
-                  sizes="(max-width: 768px) 100vw, 1680px"
+                  sizes="(max-width: 768px) 100vw, min(1680px, 100vw)"
+                  {...(heroLqip ? { placeholder: "blur" as const, blurDataURL: heroLqip } : {})}
                 />
               </div>
               {post.mainImage?.caption && (
-                <figcaption className={styles.heroCaption}>{post.mainImage.caption}</figcaption>
+                <div
+                  className={
+                    marginaliaGutter
+                      ? `${styles.heroCaptionBand} ${styles.heroCaptionBandGutter}`
+                      : styles.heroCaptionBand
+                  }
+                >
+                  <figcaption className={styles.heroCaption}>{post.mainImage.caption}</figcaption>
+                </div>
               )}
             </figure>
           )}
 
-          {/* Rail + Body Reading Grid */}
-          <div className={styles.readingGrid}>
+          {/* Reading grid: numeral rail + prose measure (left, breakouts bleed
+              into the rail) and the sticky right rail. */}
+          <div
+            className={
+              marginaliaGutter
+                ? `${styles.readingGrid} ${styles.readingGridGutter}`
+                : styles.readingGrid
+            }
+          >
+            <div className={styles.bodyColumn} data-article-prose="true">
+              <PortableTextRenderer value={post.body} />
+            </div>
+
             <aside className={styles.stickyRail} aria-label="Article contents and sharing">
+              <div className={styles.railProgress}>
+                <ReadingProgressRule />
+              </div>
+
               <div className={styles.railToc}>
                 <TableOfContents blocks={post.body} />
               </div>
 
-              <SocialShareBar title={post.title} url={postUrl} />
+              <div className={styles.railShare}>
+                <SocialShareBar title={post.title} url={postUrl} variant="stacked" />
+              </div>
+
+              {/* No "next entry" card: it was fed by relatedPosts[0], the very
+                  first row the "More from the journal" ledger below renders, so
+                  the same title, meta and excerpt appeared twice in one page
+                  view. The rail now carries only what is unique to it -
+                  progress, contents, sharing. */}
             </aside>
-
-            <div className={styles.bodyColumn}>
-              <PortableTextRenderer value={post.body} />
-
-              {/* Author Dossier */}
-              {post.author && (
-                <aside className={styles.authorDossier} aria-label={`About the author ${post.author.name}`}>
-                  {post.author.avatar?.asset?.url && (
-                    <span className={styles.bioAvatar}>
-                      <Image
-                        src={urlFor(post.author.avatar).width(128).height(128).url()}
-                        width={64}
-                        height={64}
-                        alt={post.author.avatar.alt || post.author.name}
-                      />
-                    </span>
-                  )}
-                  <div className={styles.bioContent}>
-                    <span className={styles.bioTag}>Author Dossier</span>
-                    <h3 className={styles.bioName}>{post.author.name}</h3>
-                    <span className={styles.bioRole}>{post.author.role}</span>
-                    {post.author.bio && <p className={styles.bioText}>{post.author.bio}</p>}
-
-                    {post.author.socialLinks && post.author.socialLinks.length > 0 && (
-                      <div className={styles.bioSocials}>
-                        {post.author.socialLinks.map((link) => (
-                          <a
-                            key={`${link.platform}-${link.url}`}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <span>{link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}</span>
-                            <span aria-hidden="true">{"\u2197"}</span>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </aside>
-              )}
-            </div>
           </div>
 
-          {/* Closing Editorial CTA Row */}
-          <div className={styles.ctaRow}>
-            <Link href="/start-project" className={styles.ctaLink}>
-              Start a conversation
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </Link>
-          </div>
+          {/* Closing editorial CTA row removed: the commissions banner below is
+              the single call to action, so no lone "Start a conversation" link
+              doubles it. */}
 
-          {/* Related Dispatches: same card anatomy as the /blog listing grid */}
-          {relatedPosts.length > 0 && (
-            <section className={styles.relatedSection} aria-labelledby="related-heading">
-              <div className={styles.relatedHeader}>
-                <h2 id="related-heading" className={styles.relatedTitle}>
-                  Related Dispatches
-                </h2>
-                <Link href="/blog" className={styles.relatedViewAll}>
-                  <span>Explore All</span>
-                  <span className={styles.arrow} aria-hidden="true">&rarr;</span>
-                </Link>
+          {/* Author Dossier: bio left, kicker and socials right */}
+          {post.author && (
+            <aside
+              className={styles.authorDossier}
+              aria-label={`About the author ${post.author.name}`}
+            >
+              <div className={styles.dossierBio}>
+                {post.author.avatar?.asset?.url && (
+                  <span className={styles.bioAvatar}>
+                    <Image
+                      src={urlFor(post.author.avatar).width(128).height(128).url()}
+                      width={64}
+                      height={64}
+                      alt={post.author.avatar.alt || post.author.name}
+                    />
+                  </span>
+                )}
+                <div className={styles.bioContent}>
+                  <h3 className={styles.bioName}>{post.author.name}</h3>
+                  <span className={styles.bioRole}>{post.author.role}</span>
+                  {post.author.bio && <p className={styles.bioText}>{post.author.bio}</p>}
+                </div>
               </div>
 
-              <div className={styles.relatedGrid}>
-                {relatedPosts.map((related) => {
-                  const cover = coverUrl(related.mainImage, 800, 450);
-                  const minutes = related.estimatedReadingTime || 4;
+              <div className={styles.dossierAside}>
+                <span className={styles.bioTag}>Author dossier</span>
 
-                  return (
-                    <article key={related._id} className={styles.relatedCard}>
-                      <Link
-                        href={`/blog/${related.slug}`}
-                        className={styles.relatedImageFrame}
-                        tabIndex={-1}
-                        aria-hidden="true"
+                {post.author.socialLinks && post.author.socialLinks.length > 0 && (
+                  <div className={styles.bioSocials}>
+                    {post.author.socialLinks.map((link) => (
+                      <a
+                        key={`${link.platform}-${link.url}`}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        {cover ? (
-                          <Image
-                            src={cover}
-                            alt={related.mainImage?.alt || related.title}
-                            fill
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          />
-                        ) : (
-                          <span className={styles.relatedFallback} aria-hidden="true">
-                            {(related.category?.title || related.title).charAt(0)}
-                          </span>
-                        )}
-                      </Link>
-
-                      <div className={styles.relatedMetaRow}>
-                        {related.category?.title && (
-                          <span className={styles.relatedCategory}>{related.category.title}</span>
-                        )}
-                        <span className={styles.relatedMetaSlash} aria-hidden="true">/</span>
-                        <time dateTime={related.publishedAt}>{formatDateCard(related.publishedAt)}</time>
-                        <span className={styles.relatedMetaSlash} aria-hidden="true">/</span>
-                        <span>{minutes} MIN READ</span>
-                      </div>
-
-                      <h3 className={styles.relatedCardTitle}>
-                        <Link href={`/blog/${related.slug}`}>{related.title}</Link>
-                      </h3>
-
-                      <p className={styles.relatedExcerpt}>{related.excerpt}</p>
-
-                      <div className={styles.relatedCardFooter}>
-                        <Link href={`/blog/${related.slug}`} className={styles.relatedReadLink}>
-                          <span>Read</span>
-                          <span className={styles.arrow} aria-hidden="true">&rarr;</span>
-                        </Link>
-                      </div>
-                    </article>
-                  );
-                })}
+                        <span>{link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}</span>
+                        <span aria-hidden="true">{"\u2197"}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
-            </section>
+            </aside>
           )}
 
           {/* Studio Conversion CTA Banner */}
           <BlogCtaBanner />
+
+          {/* Journal ledger: full-width hairline rows using the listing anatomy */}
+          {relatedPosts.length > 0 && (
+            <section className={styles.relatedSection} aria-labelledby="related-heading">
+              <div className={styles.relatedHeader}>
+                <h2 id="related-heading" className={styles.relatedTitle}>
+                  More from the journal
+                </h2>
+                <Link href="/blog" className={styles.relatedViewAll}>
+                  <span>All entries</span>
+                  <span className={styles.arrow} aria-hidden="true">&rarr;</span>
+                </Link>
+              </div>
+
+              <ol className={styles.relatedLedger}>
+                {relatedPosts.map((related, index) => {
+                  return (
+                    <li key={related._id} className={styles.ledgerRow}>
+                      <Link href={`/blog/${related.slug}`} className={styles.ledgerLink}>
+                        <span className={styles.ledgerNumeral} aria-hidden="true">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+
+                        <span className={styles.ledgerBody}>
+                          <span className={styles.ledgerMeta}>
+                            {related.category?.title && (
+                              <span className={styles.ledgerCategory}>{related.category.title}</span>
+                            )}
+                            <span className={styles.relatedMetaSlash} aria-hidden="true">/</span>
+                            <time dateTime={related.publishedAt}>
+                              {formatDateCard(related.publishedAt)}
+                            </time>
+                            {/* A summary row carries no body, so a duration here can
+                                only ever be invented. Shown when Sanity authored one,
+                                omitted when it did not. */}
+                            {related.estimatedReadingTime ? (
+                              <>
+                                <span className={styles.relatedMetaSlash} aria-hidden="true">/</span>
+                                <span>{related.estimatedReadingTime} min</span>
+                              </>
+                            ) : null}
+                          </span>
+
+                          <h3 className={styles.ledgerTitle}>
+                            <span className={styles.ledgerTitleText}>{related.title}</span>
+                          </h3>
+
+                          <span className={styles.ledgerExcerpt}>{related.excerpt}</span>
+                        </span>
+
+                        <span className={styles.ledgerArrow} aria-hidden="true">
+                          &rarr;
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          )}
         </article>
       </main>
 
       <MonumentalFooter />
     </div>
   );
+}
+
+/**
+ * Mirrors calculateReadingTime's extraction so BlogPosting.wordCount reflects
+ * the exact prose the reader sees (block children only; images, code blocks
+ * and callouts carry no visible paragraph text and are excluded upstream).
+ */
+interface RawBodyBlock {
+  _type?: string;
+  style?: string;
+  type?: string;
+  caption?: string;
+  children?: Array<{ text?: string }>;
+}
+
+function countBodyWords(body: Post["body"]): number {
+  const raw = (body || []) as unknown as RawBodyBlock[];
+  return raw
+    .filter((b) => b._type === "block")
+    .flatMap((b) => b.children || [])
+    .map((c) => c.text || "")
+    .join(" ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
+/**
+ * Decides whether the desktop layout earns the 96px hanging-numeral rail. The
+ * rail's only occupant is the h2 section counter, so the reserve is bought by
+ * an h2 and nothing else: with no sections there are no numerals to hang, and a
+ * rail that can never be filled is exactly the barren column this layout is
+ * meant to avoid, so the grid drops to two tracks.
+ */
+function hasSectionNumerals(body: Post["body"]): boolean {
+  const raw = (body || []) as unknown as RawBodyBlock[];
+  return raw.some((block) => block._type === "block" && block.style === "h2");
 }

@@ -12,14 +12,15 @@ interface DispatchesCurtainProps {
 }
 
 /**
- * UTC-pinned calendar formatting ("Oct 12, 2026"): fixing the timeZone keeps
- * the server render and client hydration byte-identical regardless of the
- * renderer's local offset, avoiding hydration mismatch on dated dispatches.
+ * UTC-pinned calendar formatting ("12 Oct 2026", en-GB to match the /blog index
+ * and the article page): fixing the timeZone keeps the server render and client
+ * hydration byte-identical regardless of the renderer's local offset, avoiding
+ * a hydration mismatch on dated entries.
  */
 function formatDate(isoString: string): string {
   if (!isoString) return "";
   try {
-    return new Date(isoString).toLocaleDateString("en-US", {
+    return new Date(isoString).toLocaleDateString("en-GB", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -31,18 +32,19 @@ function formatDate(isoString: string): string {
 }
 
 /**
- * View 08: Studio Dispatches Curtain, the approved 3-card editorial stack.
+ * Journal teaser, the approved 3-card editorial stack.
  * Solid white curtain (#ffffff) over the living background video on a 30/70
  * Swiss split: a sticky left rail (red mono kicker, extralight Helvetica
- * "Thinking in Systems." headline, summary, hairline, zero-padded ledger of
- * the live Sanity count, outline CTA) beside a right column of three vertical
- * cards. Each card is a 16/9 hotspot-aware cover (coverUrl + lqip blur-up,
- * first paint prioritised), a mono meta row, a 3-line clamped light Helvetica
- * title carrying the stretched link, a 2-line excerpt and a hairline-topped
- * footer so the stack never ragged-ends. No cover renders a per-card initial
- * plate derived from the category, never a shared stock fallback; an empty
- * Sanity result renders an honest note pointing at /blog instead of
- * fabricated posts.
+ * headline, summary, hairline, zero-padded count of the live Sanity total,
+ * outline CTA) beside a right column of three vertical cards. Each card is a
+ * 16/9 hotspot-aware cover (coverUrl + lqip blur-up, first paint prioritised),
+ * a mono category label, a 3-line clamped light Helvetica title carrying the
+ * stretched link, a 2-line excerpt and a hairline-topped footer so the stack
+ * never ragged-ends. Reading time is omitted here on purpose: a `PostSummary`
+ * carries no body, so any duration shown would be invented. No cover renders a
+ * per-card initial plate derived from the category, never a shared stock
+ * fallback; an empty Sanity result renders an honest note pointing at /blog
+ * instead of fabricated posts.
  */
 export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
   const displayPosts = posts.slice(0, 3);
@@ -52,25 +54,27 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
   return (
     <section
       className={styles.dispatchesSection}
+      // Deliberately not renamed: external deep links already target this id,
+      // while all user-facing copy reads as the journal.
       id="dispatches"
-      aria-label="Studio Dispatches and Field Notes"
+      aria-label="Journal"
       data-header-theme="light"
     >
       <div className={styles.gridContainer}>
         {/* Left Sticky Rail (30%) */}
         <aside className={styles.leftColumn}>
           <div className={styles.stickyRail}>
-            <span className={styles.railKicker}>Studio Dispatches</span>
-            <h2 className={styles.railHeadline}>Thinking in Systems.</h2>
+            <span className={styles.railKicker}>Journal</span>
+            <h2 className={styles.railHeadline}>From the studio floor.</h2>
             <p className={styles.railSummary}>
               Essays, architectural field notes, brand strategy, and digital engineering from the Marca Ubi studio floor.
             </p>
             <hr className={styles.railRule} />
             <span className={styles.ledgerLine} aria-hidden="true">
-              {paddedCount} / Dispatches
+              {paddedCount} entries
             </span>
             <Link href="/blog" className={styles.architecturalButton}>
-              <span>View All Dispatches</span>
+              <span>Read the journal</span>
               <span className={styles.arrow} aria-hidden="true">&rarr;</span>
             </Link>
           </div>
@@ -80,9 +84,9 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
         <div className={styles.rightColumn}>
           {displayPosts.length === 0 ? (
             <div className={styles.emptyState}>
-              <p className={styles.emptyNote}>New dispatches are being drafted.</p>
+              <p className={styles.emptyNote}>New entries are being drafted.</p>
               <Link href="/blog" className={styles.ctaLink}>
-                <span>View All Dispatches</span>
+                <span>Read the journal</span>
                 <span className={styles.arrow} aria-hidden="true">&rarr;</span>
               </Link>
             </div>
@@ -124,19 +128,14 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
                   </div>
 
                   <div className={styles.cardBody}>
-                    <div className={styles.postMeta}>
-                      {post.category && (
-                        <>
-                          <span className={styles.categoryName}>{post.category.title}</span>
-                          <span className={styles.metaDivider} aria-hidden="true">/</span>
-                        </>
-                      )}
-                      {/* Legacy drafts predating the reading-time field render
-                          the studio baseline rather than a blank cell. */}
-                      <span className={styles.readingTime}>
-                        {post.estimatedReadingTime ?? 4} MIN READ
-                      </span>
-                    </div>
+                    {/* Category only: `PostSummary` has no body, so a reading
+                        time here could not be measured and is omitted rather
+                        than guessed. */}
+                    {post.category && (
+                      <div className={styles.postMeta}>
+                        <span className={styles.categoryName}>{post.category.title}</span>
+                      </div>
+                    )}
 
                     <h3 className={styles.postTitle}>
                       {/* Stretched link: the ::after overlay makes the whole
@@ -154,7 +153,7 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
                         {formatDate(post.publishedAt)}
                       </time>
                       <span className={styles.readMore}>
-                        <span>Read dispatch</span>
+                        <span>Read</span>
                         <span className={styles.arrow} aria-hidden="true">&rarr;</span>
                       </span>
                     </div>
