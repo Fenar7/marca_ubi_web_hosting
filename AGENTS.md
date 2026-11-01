@@ -76,3 +76,16 @@ For UI, copy, people, mobile layout, or code comments work, load the antislop sk
 - Code comments: `antislop-code`
 Before starting, ask the user when antislop applies: during the work, or after it is done.
 <!-- antislop:end -->
+
+<!-- session-context:start -->
+## SESSION CONTEXT REGISTER (read first, every fresh chat)
+`docs/context/context.md` is the authoritative hand-off for current work: active branch, open
+PR, latest commit, what is finished vs pending, and the rules learned the hard way. Read it
+before touching any surface it mentions; the linked dated register under `docs/context/` holds
+the full detail per phase.
+- Current: branch `feature/blog-redesign`, PR #104 OPEN, Phase 14 blog surfaces — including the
+  standing rule that the article reading column has NO `max-width` cap and body type stays
+  16-18px (five rejections, do not re-litigate).
+- Update `docs/context/context.md` (pointer) plus a new dated register file whenever a phase
+  ships or a decision reverses, so the next chat inherits the state without re-reading git.
+<!-- session-context:end -->
