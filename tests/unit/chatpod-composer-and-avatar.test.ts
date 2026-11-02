@@ -196,52 +196,60 @@ describe("Chat Pod: Concierge Photographic Profile Avatar & Disclosure Contract"
   });
 });
 
-describe("Chat Pod: Dark Luxury Obsidian Frosted Glass & Surface Physics Contract", () => {
+describe("Chat Pod: Swiss Light Editorial Luxury Surface Contract", () => {
   const scssSource = fs.readFileSync(CHAT_POD_SCSS_PATH, "utf8");
 
-  it("enforces deep obsidian frosted glass modal container with 28px blur and 14px radius", () => {
+  it("enforces pure white paper canvas modal container with 16px radius and layered elevation", () => {
     assert.ok(
-      scssSource.includes("$pod-glass-bg: rgba(12, 12, 16, 0.94);") &&
-      scssSource.includes("backdrop-filter: blur(28px) saturate(180%);") &&
-      scssSource.includes("border-radius: 14px;"),
-      "ChatPod panel must apply obsidian frosted glass with 28px blur and 14px radius"
+      scssSource.includes("$pod-canvas: #ffffff;") &&
+      scssSource.includes("border-radius: 16px;") &&
+      scssSource.includes("box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.16)"),
+      "ChatPod panel must apply pure white paper canvas with 16px radius and layered elevation"
     );
   });
 
-  it("applies Apple HIG floating capsule geometry (border-radius: 9999px) on launcher button", () => {
+  it("applies Apple HIG floating black capsule geometry (border-radius: 9999px) on launcher button", () => {
     assert.ok(
       scssSource.includes(".launcher {") &&
       scssSource.includes("border-radius: 9999px;") &&
-      scssSource.includes("backdrop-filter: blur(16px);"),
-      "Launcher button must be styled as a floating frosted glass capsule"
+      scssSource.includes("background: #0a0a0a;") &&
+      scssSource.includes("height: 52px;"),
+      "Launcher button must be styled as a floating black capsule pill"
     );
   });
 
-  it("configures quick-action chips and action buttons as Linear/Raycast fluid capsules (9999px)", () => {
+  it("configures quick-action chips and action buttons as Linear/Raycast fluid Swiss pills (9999px)", () => {
     assert.ok(
       scssSource.includes(".chip {") &&
-      scssSource.includes("border-radius: 9999px;"),
-      "Chips must adopt fluid pill capsule geometry"
+      scssSource.includes("border-radius: 9999px;") &&
+      scssSource.includes("background: #ffffff;"),
+      "Chips must adopt fluid Swiss pill capsule geometry"
     );
     assert.ok(
       scssSource.includes(".headerBtn,") &&
       scssSource.includes(".iconButton {") &&
-      scssSource.includes("border-radius: 9999px;"),
+      scssSource.includes("border-radius: 9999px;") &&
+      scssSource.includes("background: rgba(0, 0, 0, 0.04);"),
       "Header action buttons must adopt fluid pill capsule geometry"
     );
   });
 
-  it("implements vibrant Marca Orange send button with tactile press feedback", () => {
+  it("implements signature Brand Red (#ea002a) send button with tactile press feedback and strictly zero #ff6100 orange", () => {
     assert.ok(
       scssSource.includes(".send {") &&
-      scssSource.includes("#ff6100") &&
-      scssSource.includes("linear-gradient(135deg, #ff6100 0%, #e05500 100%)"),
-      "Send button must use signature Marca Orange gradient"
+      scssSource.includes("background: #ea002a;") &&
+      scssSource.includes("$client-accent-red: #ea002a;"),
+      "Send button must use signature Marca Ubi Brand Red (#ea002a)"
     );
     assert.ok(
       scssSource.includes("&:active {") &&
-      scssSource.includes("transform: scale(0.95);"),
+      scssSource.includes("transform: scale(0.96);"),
       "Send button must provide tactile active press feedback"
+    );
+    assert.strictEqual(
+      scssSource.includes("#ff6100"),
+      false,
+      "ChatPod styles must never contain legacy #ff6100 orange"
     );
   });
 
@@ -253,17 +261,17 @@ describe("Chat Pod: Dark Luxury Obsidian Frosted Glass & Surface Physics Contrac
     );
     assert.ok(
       scssSource.includes(".sendIdle {") &&
-      scssSource.includes("background: rgba(255, 255, 255, 0.08);"),
-      "Send idle state must use subtle dark obsidian glass tone"
+      scssSource.includes("background: rgba(0, 0, 0, 0.04);"),
+      "Send idle state must use subtle soft neutral tone"
     );
   });
 
-  it("maintains high-contrast typography satisfying WCAG AA 4.5:1 across dark surfaces", () => {
+  it("maintains high-contrast typography satisfying WCAG AA 4.5:1 across Swiss light surfaces", () => {
     assert.ok(
-      scssSource.includes("$ink: #f4f4f5;") &&
-      scssSource.includes("$muted: #a1a1aa;") &&
-      scssSource.includes("$quiet: #9ca3af;"),
-      "Dark theme color tokens must guarantee WCAG AA 4.5:1 text contrast"
+      scssSource.includes("$ink: #0a0a0a;") &&
+      scssSource.includes("$muted: #767676;") &&
+      scssSource.includes("$quiet: #8e8e93;"),
+      "Swiss light editorial theme color tokens must guarantee WCAG AA 4.5:1 text contrast"
     );
   });
 });

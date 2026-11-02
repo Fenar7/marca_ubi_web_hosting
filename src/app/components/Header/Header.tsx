@@ -74,6 +74,7 @@ export default function Header() {
           document.body.classList.add("menu-open");
           document.documentElement.classList.add("menu-open");
           dispatchMenuEvent("menu:open");
+          window.dispatchEvent(new Event("chatpod:close"));
           overlay.style.pointerEvents = "auto";
         },
         onComplete: () => {
@@ -280,6 +281,12 @@ export default function Header() {
     return () => {
       window.removeEventListener("scroll", syncHeader);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleCloseNav = () => setIsMenuOpen(false);
+    window.addEventListener("navigation:close", handleCloseNav);
+    return () => window.removeEventListener("navigation:close", handleCloseNav);
   }, []);
 
   useEffect(() => {
