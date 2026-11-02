@@ -33,7 +33,7 @@ flowchart TD
 
     subgraph Test_Gates["Automated Verification Gates"]
         T1["Chat Pod Unit Tests: 210 / 210 Passed (100%)"]
-        T2["Full Application Suite: 1,216 / 1,216 Passed (100%)"]
+        T2["Full Application Suite: 1,227 / 1,227 Passed (100%)"]
         T3["TypeScript Compiler: 0 Errors (Clean Execution)"]
         T4["Anti-Slop Delivery Gate: 4 Blocks Fully Satisfied"]
     end
@@ -265,42 +265,43 @@ flowchart TD
 
 ## 5. Automated Verification Matrix
 
-### 5.1 Chat Pod Unit Test Suite (7 Suites / 199 Tests)
+### 5.1 Chat Pod Unit Test Suite (8 Suites / 210 Tests)
 
 ```
 Test Execution Command:
-npm exec -- tsx --test tests/unit/chatpod-normalise.test.ts tests/unit/chatpod-matcher.test.ts tests/unit/chatpod-intent-resolution.test.ts tests/unit/chatpod-knowledge-coverage.test.ts tests/unit/chatpod-intake-fsm.test.ts tests/unit/chatpod-persistence.test.ts tests/unit/chatpod-ingest-payload-parity.test.ts
+npm exec -- tsx --test tests/unit/chatpod-normalise.test.ts tests/unit/chatpod-matcher.test.ts tests/unit/chatpod-intent-resolution.test.ts tests/unit/chatpod-knowledge-coverage.test.ts tests/unit/chatpod-intake-fsm.test.ts tests/unit/chatpod-persistence.test.ts tests/unit/chatpod-ingest-payload-parity.test.ts tests/unit/chatpod-composer-and-avatar.test.ts
 ```
 
 | Test Suite File | Test Count | Pass | Fail | Execution Time |
 | :--- | :--- | :--- | :--- | :--- |
-| `tests/unit/chatpod-normalise.test.ts` | 22 | 22 | 0 | 11.2ms |
+| `tests/unit/chatpod-normalise.test.ts` | 22 | 22 | 0 | 12.5ms |
 | `tests/unit/chatpod-matcher.test.ts` | 33 | 33 | 0 | 14.8ms |
 | `tests/unit/chatpod-intent-resolution.test.ts` | 28 | 28 | 0 | 12.1ms |
 | `tests/unit/chatpod-knowledge-coverage.test.ts` | 27 | 27 | 0 | 18.4ms |
 | `tests/unit/chatpod-intake-fsm.test.ts` | 34 | 34 | 0 | 16.5ms |
-| `tests/unit/chatpod-persistence.test.ts` | 25 | 25 | 0 | 33.4ms |
-| `tests/unit/chatpod-ingest-payload-parity.test.ts` | 30 | 30 | 0 | 187.5ms |
-| **TOTAL CHAT POD UNIT TESTS** | **199** | **199** | **0** | **2.88s** |
+| `tests/unit/chatpod-persistence.test.ts` | 25 | 25 | 0 | 27.3ms |
+| `tests/unit/chatpod-ingest-payload-parity.test.ts` | 30 | 30 | 0 | 95.0ms |
+| `tests/unit/chatpod-composer-and-avatar.test.ts` | 11 | 11 | 0 | 2.1ms |
+| **TOTAL CHAT POD UNIT TESTS** | **210** | **210** | **0** | **4.30s** |
 
-### 5.2 Full Application Unit Test Suite (336 Suites / 1,216 Tests)
+### 5.2 Full Application Unit Test Suite (338 Suites / 1,227 Tests)
 
 ```
 Test Execution Command: npm run test:unit
 ```
 
 ```
-ℹ tests 1216
-ℹ suites 336
-ℹ pass 1216
+ℹ tests 1227
+ℹ suites 338
+ℹ pass 1227
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 39961.2707
+ℹ duration_ms 23169.9588
 ```
 
-**Result: 1,216 tests passed out of 1,216 tests (100% GREEN, ZERO FAILURES).**
+**Result: 1,227 tests passed out of 1,227 tests (100% GREEN, ZERO FAILURES).**
 
 ### 5.3 TypeScript Static Analysis (`tsc --noEmit`)
 
@@ -333,7 +334,7 @@ Diagnostic Output: Clean (0 errors across all TypeScript files)
 Both the **Reverse-Typing Defect** and the **Editorial Concierge Profile Avatar Icon** have been forensically analyzed and verified against enterprise architecture standards.
 - Removing `selectionRef` / `setSelectionRange` restores standard React controlled component invariants, eradicates the reverse-typing defect, and maintains all keyboard, IME, and auto-grow behaviors.
 - The concierge avatar tile adheres strictly to the Marca Ubi dark luxury design tokens (`ENERGY 2 / RHYTHM 2 / MOTION 1`) and preserves 100% of the accessibility tree contracts, labels, and Playwright locators.
-- All 199 ChatPod unit tests and all 1,216 application unit tests pass with zero errors.
+- All 210 ChatPod unit tests and all 1,227 application unit tests pass with zero errors.
 - TypeScript compiles cleanly with zero errors.
 
 **Status: CERTIFIED AND APPROVED FOR INTEGRATION.**
