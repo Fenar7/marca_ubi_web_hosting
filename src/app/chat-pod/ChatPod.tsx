@@ -162,8 +162,8 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const [storageFailed, setStorageFailed] = useState(false);
   /** Height in px currently covered by an on-screen keyboard. */
   const [keyboardInset, setKeyboardInset] = useState(0);
-  /** Panel position and scale origin, measured from the launcher on the turn the visitor presses it. */
-  const [anchor, setAnchor] = useState<{ x: number; y: number; originX: number } | null>(null);
+  /** Panel position and scale origin, measured from the right-docked launcher when opened. */
+  const [anchor, setAnchor] = useState<{ right: number; y: number; originX: number } | null>(null);
 
   const launcherRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -233,7 +233,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     if (node) {
       const rect = node.getBoundingClientRect();
       setAnchor({
-        x: rect.left,
+        right: Math.max(0, window.innerWidth - rect.right),
         // The panel sits above the button, so its bottom edge is the launcher's top edge plus the gap.
         y: window.innerHeight - rect.top + PANEL_GAP,
         originX: rect.width / 2,
@@ -885,10 +885,10 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     "--pod-keyboard": `${keyboardInset}px`,
     ...(anchor
       ? {
-          "--pod-x": `${anchor.x}px`,
+          "--pod-right": `${anchor.right}px`,
           "--pod-y": `${anchor.y}px`,
-          // §05 §1.2: the panel grows out of the button that was pressed, not out of a hard-coded corner.
-          "--pod-origin": `${anchor.originX}px 100%`,
+          // §05 §1.2: the panel grows out of the launcher button docked at bottom-right.
+          "--pod-origin": `calc(100% - ${anchor.originX}px) 100%`,
         }
       : null),
   } as CSSProperties;
