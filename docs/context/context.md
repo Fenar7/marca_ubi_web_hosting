@@ -3,12 +3,12 @@
 > **Start here.** This is the live pointer file; the detail lives in the linked register.
 > Any agent (human or AI) opening this project should read this file first, then the register.
 
-**Recorded At:** `2026-11-02T17:40:00+05:30`
+**Recorded At:** `2026-11-02T17:55:00+05:30`
 **Current Branch:** `remediation/turbopack-compaction-dev-server` (sub-branch under `redesign/chat-pod-luxury-interaction`)
 **Base Branch:** `redesign/chat-pod-luxury-interaction` (which targets `feature/chat-pod` in PR #106)
-**Latest State:** `Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Fluid Pill Micro-Geometry`
-**Open Pull Requests:**
-- [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Swiss Light Editorial Overhaul, Brand Red & Launcher Avatar` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
+**Latest State:** `Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar Complete`
+**Open Pull Requests (ALL STRICTLY OPEN):**
+- [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
 - [PR #106 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (`redesign/chat-pod-luxury-interaction` → `feature/chat-pod`)
 - [PR #105 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/105): `Phase 15: Chat Pod Deterministic Assistant and Conversational Intake Architecture` (`feature/chat-pod` → `master`)
 **Author Identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`
@@ -17,40 +17,30 @@
 
 ---
 
-## 1. Active work: Chat Pod (conversational intake assistant)
+## 1. Active Work: Chat Pod Swiss Light Editorial Luxury Overhaul & Remediation
 
-A site-wide `Ubi` pod: launcher + dialog, a server-compiled knowledge base matched client-side by a
-deterministic 3-tier engine, and an 17-slot intake FSM that produces the *same* payload
-`POST /api/sales-funnel/ingest` already accepts, so a pod lead lands in the CRM exactly like a form lead.
+The latest active phase resolved five core defects identified during live browser smoke testing:
+1. **Turbopack RocksDB Compaction Lock on Windows NTFS**: Created `scripts/clean-dev-cache.js` with atomic directory rename protocol (`.next` → `.next_trash_<timestamp>`) in $<5\text{ms}$ to bypass Windows file locks and eliminate the 194.9s startup freeze.
+2. **Reverse Typing & Caret Drops in Composer**: Eradicated programmatic `setSelectionRange()` in React 19 controlled input; isolated IME composition sessions via `isComposingRef` and delegated length constraints to native DOM `maxLength`.
+3. **Focus Theft from 3.5s Slot Machine Ticker**: Guarded unconditional focus in `NavigationOverlay.tsx` with a `prevOpenRef` transition lock and memoized `closeDrawer` in `ClientHeader.tsx`.
+4. **Complete Eradication of Legacy Letter "U" Tile**: Integrated Sophia Sterling's authentic photographic portrait (`/avatars/sophia-sterling.jpg`) + active emerald beacon (`#22c55e`) across both the modal header (38px squircle) and resting launcher pill (34px circle).
+5. **Swiss Light Editorial Luxury Overhaul**: Replaced rejected dark obsidian styling with pure white paper canvas (`#ffffff`, 16px radius, layered diffusion shadow), Linear/Raycast fluid capsule pills (`border-radius: 9999px`), and signature Brand Red (`#ea002a`) send button. Completely purged `#ff6100` orange and `#cccccc` grey from public surfaces.
+6. **Overlay Mutual Exclusion**: Synchronized `Header.tsx` and `ChatPod.tsx` via `navigation:close` and `chatpod:close` events so both full-screen overlays can never remain open simultaneously.
 
-Plan, milestones, budgets and the delivery gate live in [`docs/chat_pod/`](../chat_pod/06-implementation-milestones.md).
-Gate evidence: [`docs/chat_pod/07-delivery-gate-and-verification.md`](../chat_pod/07-delivery-gate-and-verification.md).
+Full architectural specifications, root cause post-mortems, token contracts, and test evidence:
+👉 [`docs/context/2026-11-02_17-55-00.md`](./2026-11-02_17-55-00.md)
 
-What a new session needs before touching it — the full architecture (mount gate, knowledge compile,
-deterministic matcher, 17-slot intake, one payload builder, storage contract), the six closed decisions
-(D1 intake reuses the live ingest pipeline, D2 name `Ubi`, D3 no face, D4 branch, D5 idle nudge, D6
-analytics deferred), the twelve audit findings and how each was fixed and proven, the ten rules already
-paid for, the exact verification protocol this user permits, and what is still open (the e2e spec needs
-four updates and a re-run, `07-delivery-gate` still records pre-fix numbers, then the push/PR ask):
+Previous session register (initial build & audit):
 👉 [`docs/context/2026-11-02_09-51-45.md`](./2026-11-02_09-51-45.md)
-
-The pre-audit register — trap-by-trap detail on the build itself, including the launcher naming defect:
-👉 [`docs/context/2026-11-01_23-39-48.md`](./2026-11-01_23-39-48.md)
 
 ---
 
-## 2. Previous phases
+## 2. Previous Phases
 
-1. **Phase 14 (PR #104 - Merged `3f1318a`):** Blog redesign — homepage **Journal** rail, `/blog` masthead +
-   index ledger, `/blog/[slug]` article. Five rejection rounds, all about reserved-but-empty space.
-   **The rule that ended the argument:** the reading column *is* the measure. No `max-width` cap on prose,
-   normal type (16-18px body). Do not restore a 65-85ch measure and do not inflate the type — both tried,
-   both rejected. Detail: [`docs/context/2026-11-01_19-45-56.md`](./2026-11-01_19-45-56.md); plans in
-   [`docs/blog_redesign/`](../blog_redesign/plan.md).
+1. **Phase 14 (PR #104 - Merged `3f1318a`):** Blog redesign — homepage **Journal** rail, `/blog` masthead + index ledger, `/blog/[slug]` article. The reading column *is* the measure: no `max-width` cap on prose, 16-18px body type. Detail: [`docs/context/2026-11-01_19-45-56.md`](./2026-11-01_19-45-56.md); plans in [`docs/blog_redesign/`](../blog_redesign/plan.md).
 2. **Phase 8 (PR #98 - Merged):** Pentagram header dual-slot vertical aperture alignment, 0ms background video poster crossfade.
 3. **Phase 9 (PR #99 - Merged):** Services Accordion horizontal hover expansion engine with video loop playback.
 4. **Phase 10 (PR #100 - Merged):** GSAP fluid motion (`power3.out`), clear aperture dual-zone scrim, responsive mobile touch architecture.
 5. **Phase 11 (PR #101 - Merged):** White-curtain title contrast, 16 resting cards at 2400px, Card 08 media swap, H.264 faststart loops with zero-jump WebP posters.
 6. **Phase 12 (PR #102 - Merged):** 16 `/services/[slug]` detail pages, light editorial theme, deep-linked accordion bullets.
 7. **Phase 13 (PR #103 - Merged):** `/start-project` rebuilt as a light page under a cinematic video hero; brief popup retired in favour of the dedicated intake route.
-
