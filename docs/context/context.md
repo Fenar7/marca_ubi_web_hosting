@@ -3,17 +3,17 @@
 > **Start here.** This is the live pointer file; the detail lives in the linked register.
 > Any agent (human or AI) opening this project should read this file first, then the register.
 
-**Recorded At:** `2026-11-02T15:55:00+05:30`
+**Recorded At:** `2026-11-02T17:10:00+05:30`
 **Current Branch:** `remediation/turbopack-compaction-dev-server` (sub-branch under `redesign/chat-pod-luxury-interaction`)
 **Base Branch:** `redesign/chat-pod-luxury-interaction` (which targets `feature/chat-pod` in PR #106)
-**Latest State:** `Focus Invariant Protection, Modal Overlay Mutual Exclusion & Concierge Photographic Portrait`
+**Latest State:** `Chat Pod Dark Luxury Frosted Glass Overhaul & Concierge Launcher Avatar Remediation`
 **Open Pull Requests:**
-- [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Turbopack Compaction, Focus Invariant Protection & Concierge Photographic Portrait` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
+- [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Dark Luxury Overhaul, Concierge Launcher Avatar & Compaction Fixes` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
 - [PR #106 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (`redesign/chat-pod-luxury-interaction` → `feature/chat-pod`)
 - [PR #105 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/105): `Phase 15: Chat Pod Deterministic Assistant and Conversational Intake Architecture` (`feature/chat-pod` → `master`)
 **Author Identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`
 **TypeScript Status:** `0 errors` (`node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit`)
-**Unit Tests:** `217 pass / 0 fail` (Chat Pod 39 suites); `1234 pass / 0 fail` (Full suite 339 suites)
+**Unit Tests:** `226 pass / 0 fail` (Chat Pod 40 suites); `1243 pass / 0 fail` (Full suite 340 suites)
 
 ---
 
