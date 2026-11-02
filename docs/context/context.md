@@ -3,17 +3,16 @@
 > **Start here.** This is the live pointer file; the detail lives in the linked register.
 > Any agent (human or AI) opening this project should read this file first, then the register.
 
-**Recorded At:** `2026-11-02T09:51:45+05:30`
-**Current Branch:** `feature/chat-pod` (cut from `master`)
-**Base Branch:** `master`
-**Latest Commits On Branch:** `c84c230` — *Chat Pod: Ubi, the deterministic assistant and conversational intake*
-→ `f6caede` — *Docs: record the Chat Pod plan, contract and measured delivery gate*. The audit fix pass
-(12 source files + 3 test files, 1 of them new) is **uncommitted**.
-**Open Pull Request:** none yet — nothing has been pushed; the Chat Pod PR opens only on the owner's word
-and must stay OPEN
+**Recorded At:** `2026-11-02T12:52:00+05:30`
+**Current Branch:** `redesign/chat-pod-luxury-interaction` (sub-branch under `feature/chat-pod`)
+**Base Branch:** `feature/chat-pod` (which targets `master` in PR #105)
+**Latest Commit:** `dc4ab71` — *Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine*
+**Open Pull Requests:**
+- [PR #106 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (`redesign/chat-pod-luxury-interaction` → `feature/chat-pod`)
+- [PR #105 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/105): `Phase 15: Chat Pod Deterministic Assistant and Conversational Intake Architecture` (`feature/chat-pod` → `master`)
 **Author Identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`
-**TypeScript Status:** `0 errors` (`npx tsc --noEmit`)
-**Unit Tests:** `npx tsx --test tests/unit/chatpod-*.test.ts` → **199 pass / 0 fail** (7 suites)
+**TypeScript Status:** `0 errors` (`tsc --noEmit`)
+**Unit Tests:** `199 pass / 0 fail` (Chat Pod 7 suites); `1216 pass / 0 fail` (Full suite 336 suites)
 
 ---
 
