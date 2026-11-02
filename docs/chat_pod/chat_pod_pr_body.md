@@ -13,12 +13,21 @@ This pull request delivers **Ubi**, the Marca Ubi conversational intake assistan
 3. **Storage & Privacy Hardening**:
    - 14-day retention with 3-state consent model (`true`, `false`, `null`).
    - Resilient storage wrappers protecting against Safari private mode exceptions and browser quota limits.
+   - Strict protocol enforcement (`/`, `https://`, `mailto:`, `tel:`) preventing unsafe link injection from restored local storage drafts.
 4. **Swiss Dark Luxury UI & WCAG AAA Compliance**:
    - Inherits typography (`--font-circular` / `--font-graphik`), obsidian palette, and `$client-accent-red` highlights.
    - WCAG SC 2.5.3 compliant launcher naming derived directly from visible text (`Ubi Ask/Close the digital assistant for Marca Ubi`).
    - Single polite live region for message transcript, capture-phase Tab focus trap, and contextual Escape handling.
-5. **12 Adversarial Audit Defects Resolved**:
-   - Complete resolution of channel receipt interpolation, draft restoration FSM synchronization, derived category alignment, and timer cleanup.
+5. **Adversarial CTO Audit Pass & 10 Remediation Resolutions**:
+   - Resolved React 19 Concurrent / Strict Mode submission cancellation hang (`F-01`).
+   - Closed modal and unlocked body scroll on internal bubble links and route chip clicks (`F-02`).
+   - Aligned submission exhaustion copy with true client storage state (`F-03`).
+   - Dynamic `maxLength` configured across Composer and slot definitions up to 2,000 chars (`F-04`).
+   - Category edit synchronization in review mode clearing outmoded services (`F-05`).
+   - Decoupled initial panel autofocus from menu toggles (`F-06`).
+   - Enforced safe protocols on restored links (`F-07`).
+   - 5-link maximum enforced before affirmative confirmation (`F-08`).
+   - IME composition Enter keydown guard (`F-09`).
 
 ---
 
@@ -29,7 +38,7 @@ This pull request delivers **Ubi**, the Marca Ubi conversational intake assistan
 - Strict TypeScript mode maintained across all pod and shared intake modules.
 
 ### Block 2: Unit & Regression Verification
-- `chatpod-*.test.ts`: **199 passed / 0 failed** across 7 test suites (3.39s duration).
+- `chatpod-*.test.ts`: **199 passed / 0 failed** across 7 test suites (3.16s duration).
   - Intake FSM: 46 tests
   - Ingest Payload Parity: 33 tests
   - Persistence & Storage Hardening: 29 tests
