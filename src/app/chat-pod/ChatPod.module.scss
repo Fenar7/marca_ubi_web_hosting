@@ -186,26 +186,27 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .avatarWrap {
   flex-shrink: 0;
-  height: 2.25rem;
+  height: 2.375rem;
   position: relative;
-  width: 2.25rem;
+  width: 2.375rem;
 }
 
 .avatar {
   align-items: center;
-  background: #101012;
-  border: 1px solid rgba(0, 0, 0, 0.14);
-  border-radius: $radius;
-  color: $white;
+  background: transparent;
+  border-radius: 10px;
   display: flex;
-  font-family: $font-circular;
-  font-size: 0.9375rem;
-  font-weight: 600;
   height: 100%;
   justify-content: center;
-  line-height: 1;
   position: relative;
   user-select: none;
+  width: 100%;
+}
+
+.avatarSvg {
+  border-radius: 10px;
+  display: block;
+  height: 100%;
   width: 100%;
 }
 
@@ -216,12 +217,13 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .statusBeacon {
-  bottom: -2px;
+  bottom: -1px;
   display: flex;
-  height: 0.5rem;
+  height: 0.5625rem;
+  pointer-events: none;
   position: absolute;
-  right: -2px;
-  width: 0.5rem;
+  right: -1px;
+  width: 0.5625rem;
 }
 
 .statusDot {

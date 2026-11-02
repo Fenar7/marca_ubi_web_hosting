@@ -2,29 +2,31 @@
 
 /**
  * @file Composer.tsx
- * @description The text intake and dispatch affordance.
+ * @description The conversational intake textarea and send affordance.
  *
  *              Architectural Rationale & Invariants:
- *              - Caret & Selection Stability: In React 19 controlled components, invoking `.slice()` on
- *                every keystroke triggers a forced DOM value synchronization. When `node.value` is
- *                re-assigned, browser engines collapse active selection ranges and prematurely cancel
- *                IME composition (Windows predictive text, macOS dead keys, mobile touch swipe).
- *                Length constraints are delegated to native `maxLength={limit}`, composition status
- *                is isolated via `isComposingRef`, and selection bounds are preserved in `selectionRef`.
- *              - Fluid Non-Thrashing Auto-Grow: Progressive enhancement via CSS `field-sizing: content;`
- *                complemented by a non-destructive `useLayoutEffect` threshold check (clamped to 40px - 140px).
- *                Avoids forced synchronous layout reflow loops on rapid keystrokes.
- *              - Accessible Invariant: `aria-disabled` rather than the HTML `disabled` attribute retains
- *                element presence in the accessibility tree and keyboard tab order while blocking send.
+ *              - Caret & Selection Stability: Controlled React 19 `<textarea>` elements natively
+ *                preserve the cursor position and text selection range as long as `node.value` is
+ *                not programmatically overwritten with stale state or manual `setSelectionRange()` calls.
+ *                Length limits are enforced by the native DOM `maxLength={limit}` attribute, with defensive
+ *                clamping on paste. Composition sessions (IME/accents/mobile swipe) are tracked via
+ *                `isComposingRef` to avoid premature form submission during character composition.
+ *              - Progressive Auto-Growth: Leverages modern CSS `field-sizing: content;` when supported
+ *                by the client browser engine. In legacy engines, a non-destructive `useLayoutEffect`
+ *                adjusts `textarea.style.height` between 40px and 140px based on `scrollHeight` without
+ *                triggering layout thrashing or selection drops.
+ *              - Accessibility: `aria-disabled` retains the control in the tab order and accessibility
+ *                tree during network activity rather than removing it with the HTML `disabled` attribute.
+ *
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
 import { memo, useCallback, useLayoutEffect, useRef, useState } from "react";
-import type { ChangeEvent, KeyboardEvent, RefObject, SyntheticEvent } from "react";
+import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
 
 import styles from "../ChatPod.module.scss";
 
-/** Matching is a lookup over a bounded corpus; a novel beyond the first sentences is not an answer. */
+/** Maximum input character count enforced across free-form conversational queries. */
 const MAX_CHARS = 500;
 
 interface Props {
@@ -53,7 +55,6 @@ function Composer({
   const [value, setValue] = useState("");
   const limit = maxLength ?? MAX_CHARS;
   const isComposingRef = useRef(false);
-  const selectionRef = useRef<{ start: number; end: number } | null>(null);
 
   const empty = value.trim().length === 0;
 
@@ -62,7 +63,6 @@ function Composer({
     if (text.length === 0 || blocked) return;
     onSubmit(text);
     setValue("");
-    selectionRef.current = null;
     const textarea = inputRef.current;
     if (textarea) {
       textarea.style.height = "auto";
@@ -71,40 +71,20 @@ function Composer({
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const next = event.target.value;
-    // Native maxLength limits user keystrokes; only slice if external paste exceeds limit
+    // Native maxLength limits user keystrokes; defensive slice handles external oversized clipboard pastes
     setValue(next.length > limit ? next.slice(0, limit) : next);
-  };
-
-  const handleSelect = (event: SyntheticEvent<HTMLTextAreaElement>) => {
-    const target = event.currentTarget;
-    selectionRef.current = {
-      start: target.selectionStart,
-      end: target.selectionEnd,
-    };
   };
 
   useLayoutEffect(() => {
     const textarea = inputRef.current;
     if (!textarea) return;
 
-    // Preserve caret position across re-renders if active and not in an active IME composition
-    if (
-      selectionRef.current &&
-      document.activeElement === textarea &&
-      !isComposingRef.current
-    ) {
-      const { start, end } = selectionRef.current;
-      if (textarea.selectionStart !== start || textarea.selectionEnd !== end) {
-        textarea.setSelectionRange(start, end);
-      }
-    }
-
-    // Modern progressive auto-grow: if CSS field-sizing is supported, browser engine handles height
+    // Progressive enhancement: CSS field-sizing: content handles dynamic height natively in modern engines
     if (typeof CSS !== "undefined" && CSS.supports && CSS.supports("field-sizing", "content")) {
       return;
     }
 
-    // Fallback auto-grow for older engines without layout thrashing
+    // Non-destructive fallback auto-growth for older browser engines
     const prevHeight = textarea.offsetHeight;
     const targetHeight = Math.min(Math.max(textarea.scrollHeight, 40), 140);
     if (Math.abs(prevHeight - targetHeight) > 2) {
@@ -136,13 +116,11 @@ function Composer({
         autoCorrect="off"
         spellCheck={false}
         onChange={handleChange}
-        onSelect={handleSelect}
         onCompositionStart={() => {
           isComposingRef.current = true;
         }}
-        onCompositionEnd={(event) => {
+        onCompositionEnd={() => {
           isComposingRef.current = false;
-          handleSelect(event);
         }}
         onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
           if (event.nativeEvent.isComposing || isComposingRef.current) return;
