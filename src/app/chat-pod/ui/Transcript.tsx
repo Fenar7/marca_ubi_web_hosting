@@ -30,11 +30,17 @@ interface Props {
   messages: TranscriptMessage[];
   typing: boolean;
   onEditSlot: (slot: SlotId) => void;
+  /** Whether any card on this screen still answers an edit. True only while the review card is open. */
+  rowsActive: boolean;
 }
 
-export default function Transcript({ messages, typing, onEditSlot }: Props) {
+export default function Transcript({ messages, typing, onEditSlot, rowsActive }: Props) {
   const region = useRef<HTMLDivElement>(null);
   const [unseen, setUnseen] = useState(false);
+
+  // One card is editable at a time: an older copy of the same brief would jump to a question the
+  // visitor has already passed, and two cards claiming to be current is a transcript that lies.
+  const lastReview = messages.reduce((found, message, index) => (message.reviewRows?.length ? index : found), -1);
 
   const atBottom = () => {
     const node = region.current;
@@ -72,8 +78,8 @@ export default function Transcript({ messages, typing, onEditSlot }: Props) {
         tabIndex={0}
         aria-label="Conversation"
       >
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} onEditSlot={onEditSlot} />
+        {messages.map((message, index) => (
+          <MessageBubble key={message.id} message={message} onEditSlot={onEditSlot} rowsActive={rowsActive && index === lastReview} />
         ))}
 
         {/* Reserved height, so the arrival of the indicator moves nothing: this is the CLS-0 rule. */}

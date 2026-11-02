@@ -47,7 +47,8 @@ export interface SlotDefinition {
   kind: SlotKind;
   /** Refused on `SKIP`, with a reason. */
   required: boolean;
-  /** Present for every closed set; `SKIP` is then never offered on a required one. */
+  /** The static members of a closed set. `services` is the one exception: its set is scoped to the
+   *  disciplines already chosen, so it is derived by `slotOptions` rather than held here. */
   options?: SlotOption[];
   placeholder?: string;
   validate: (raw: SlotValue, slots: Record<SlotId, SlotValue>) => SlotAnswer;
@@ -334,18 +335,23 @@ export function allowedServices(categories: SlotValue): string[] {
   return list;
 }
 
+/**
+ * The answer set for a slot: its own options, or, for the services question, the services under the
+ * disciplines already chosen. Both the chips and the typed-answer matcher read this, so a question that
+ * can be tapped can also be typed.
+ */
+export function slotOptions(slot: SlotDefinition, slots: Record<SlotId, SlotValue>): SlotOption[] {
+  if (slot.options) return slot.options;
+  return slot.kind === "multi" ? chipsFrom(allowedServices(slots.categories)) : [];
+}
+
 /** Chips for the current slot: the closed-set options, scoped to the categories already picked. */
 export function slotChips(slot: SlotDefinition, slots: Record<SlotId, SlotValue>): Chip[] {
-  if (slot.kind === "multi") {
-    const options = slot.options ?? chipsFrom(allowedServices(slots.categories));
-    return options.map((option) => ({
-      label: option.chip,
-      action: { kind: "slot-toggle", slot: slot.id, value: option.value },
-    }));
-  }
-  if (!slot.options) return [];
-  return slot.options.map((option) => ({
+  return slotOptions(slot, slots).map((option) => ({
     label: option.chip,
-    action: { kind: "slot-pick", slot: slot.id, value: option.value },
+    action:
+      slot.kind === "multi"
+        ? { kind: "slot-toggle", slot: slot.id, value: option.value }
+        : { kind: "slot-pick", slot: slot.id, value: option.value },
   }));
 }

@@ -108,7 +108,7 @@ export type ChipAction =
   | { kind: "slot-skip"; slot: SlotId }
   /** Jump from a review row back to that one question, keeping everything else. */
   | { kind: "slot-edit"; slot: SlotId }
-  | { kind: "intake-action"; action: "submit" | "edit" | "later" | "retry" | "exit" };
+  | { kind: "intake-action"; action: "submit" | "later" | "retry" | "exit" };
 
 export interface Chip {
   label: string;

@@ -32,6 +32,11 @@ export interface ChatEngine {
   reset: () => void;
   /** Read live: the panel persists it, and a stale copy would unlock the matcher on return. */
   fallbackCount: () => number;
+  /**
+   * Re-apply a persisted count on the way in. Restoring the transcript without the counter would hand a
+   * returning visitor three fresh guesses on the question that already exhausted them.
+   */
+  seedFallbacks: (count: number) => void;
 }
 
 /** Ordinary matching is switched off after this many misses. See `FALLBACK_LIMIT` in `match.ts`. */
@@ -78,6 +83,11 @@ export function useChatEngine(knowledge: KnowledgeBase): ChatEngine {
       },
       fallbackCount() {
         return fallbacks.current;
+      },
+      seedFallbacks(count: number) {
+        // Clamped, because the number came off disk. Anything at the ceiling is the same state to the
+        // matcher, and a negative or NaN copy must not unlock it again.
+        fallbacks.current = Number.isFinite(count) ? Math.max(0, Math.min(LOCK_AFTER, Math.trunc(count))) : LOCK_AFTER;
       },
     }),
     [index, knowledge, byIdMap],

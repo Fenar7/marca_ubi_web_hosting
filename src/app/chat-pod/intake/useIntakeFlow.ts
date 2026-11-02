@@ -3,33 +3,40 @@
  * @description The intake state machine: a pure `transition` plus the one React wrapper that calls it.
  *
  *              Purity is the point. Seventeen slots, a conditional required-contact rule, an
- *              idempotency key that must survive three retries, and an edit path that has to land back
- *              on the review card are exactly the logic that becomes untestable once it is spread
- *              across event handlers. As a pure function over `(state, event)`, every legal and every
- *              illegal transition is asserted in `chatpod-intake-fsm.test.ts` without a DOM.
+ *              idempotency key that has to survive retries, and an edit path that has to land back on
+ *              the review card are exactly the logic that becomes untestable once it is spread across
+ *              event handlers. As a pure function over `(state, event)`, every legal and every illegal
+ *              transition is asserted in `chatpod-intake-fsm.test.ts` without a DOM.
  *
- *              Four invariants the rest of the module depends on:
+ *              Five invariants the rest of the module depends on:
  *              1. A required slot is never advanced past, and never skipped silently.
- *              2. The idempotency key is minted once per submission intent and reused by every retry,
- *                 because a retry under a new key creates a second lead.
- *              3. After the third failed submission round the next attempt mints a **new** key: the
- *                 old one may already be recorded server-side, and replaying it would return a cached
- *                 verdict for a request that never landed.
+ *              2. One key per submission intent, reused by every retry and recorded inside
+ *                 `brief_payload`, so a human reading the CRM can see that three requests were one
+ *                 brief. The deduplication itself is the route's: it matches an existing lead on email
+ *                 or phone and merges into it (`ingest/route.ts`), and no server code reads this key,
+ *                 so nothing here may claim to prevent a duplicate on its own.
+ *              3. After the third failed round the pod stops offering to send, because a fourth attempt
+ *                 on a route that is not answering is a waste of the visitor's time, not a fix.
  *              4. Email and phone are individually optional but jointly required, matching the
  *                 `.refine()` in `ingestLeadSchema`. Skipping one promotes the other.
+ *              5. `SUBMITTING` is terminal until the request comes back. Nothing a key press can do
+ *                 mid-flight may change the mode, because the effect that owns the response is cleaned
+ *                 up the moment it is, and a lead the visitor never heard about is worse than a short
+ *                 wait.
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
 import { useCallback, useMemo, useReducer } from "react";
 
+import { replyChannel } from "./review";
 import { SLOTS, SLOT_ORDER } from "./slots";
 import type { SlotId, SlotValue } from "../types";
 
-export type IntakeMode = "CHAT" | "INTAKE_FORM" | "REVIEW" | "SUBMITTING" | "HANDOFF" | "DONE" | "ERROR";
+export type IntakeMode = "CHAT" | "INTAKE_FORM" | "REVIEW" | "SUBMITTING" | "DONE" | "ERROR";
 
 export interface IntakeState {
   mode: IntakeMode;
-  /** Index into `SLOT_ORDER`, so `BACK` and `NEXT` can never land on a gap. */
+  /** Index into `SLOT_ORDER`, so a resumed brief cannot land on a gap. */
   slotIndex: number;
   slots: Record<SlotId, SlotValue>;
   /** Slots the visitor actually answered. Drives which review rows are editable. */
@@ -42,25 +49,32 @@ export interface IntakeState {
   phoneRequired: boolean;
   /** Set by `EDIT_SLOT`: the next accepted answer returns to REVIEW instead of walking the tail. */
   editing: boolean;
+  /**
+   * Where the studio will reply, captured on the turn the send succeeded. `SUBMITTING` clears the
+   * answers so a second brief starts blank, and the success line has to survive that.
+   */
+  sentTo: string;
 }
 
 export type IntakeEvent =
   | { t: "START_INTAKE" }
   | { t: "ANSWER"; slot: SlotId; value: SlotValue }
   | { t: "SKIP"; slot: SlotId }
-  | { t: "NEXT" }
-  | { t: "BACK" }
   | { t: "EDIT_SLOT"; slot: SlotId }
   | { t: "SUBMIT"; idempotencyKey: string }
   | { t: "RETRY"; idempotencyKey: string }
   | { t: "SUBMIT_OK" }
   | { t: "SUBMIT_FAIL"; status: number; message: string; slot?: SlotId }
   | { t: "EXIT_TO_CHAT" }
-  | { t: "HANDOFF" }
+  /**
+   * Rehydrate a draft written earlier on this device. Only legal from chat, on the way in. Partial
+   * because that is what storage holds: a brief abandoned at question three has no later keys at all.
+   */
+  | { t: "RESTORE_DRAFT"; slots: Partial<Record<SlotId, SlotValue>> }
   /** Clear the answers and return to chat. Separate from `EXIT_TO_CHAT`, which keeps them. */
   | { t: "RESET" };
 
-/** Submission rounds after which the copy stops offering the same key back. */
+/** Failed rounds after which the pod stops offering to send and points at a person instead. */
 export const MAX_SUBMIT_ATTEMPTS = 3;
 
 /** First slot of the optional tail. The panel prints its one bridge line when it enters this index. */
@@ -97,6 +111,7 @@ export function initialIntakeState(): IntakeState {
     error: null,
     phoneRequired: false,
     editing: false,
+    sentTo: "",
   };
 }
 
@@ -108,6 +123,20 @@ function isFilled(value: SlotValue): boolean {
   return Array.isArray(value) ? value.length > 0 : String(value ?? "").trim().length > 0;
 }
 
+/** Every question has an answer, which is the only condition under which a restored brief opens the card. */
+function isComplete(slots: Record<SlotId, SlotValue>): boolean {
+  return SLOT_ORDER.every((slot) => isFilled(slots[slot]));
+}
+
+/**
+ * Where a resumed or restored brief starts asking: the first question with nothing in it. A brief with
+ * no gap left returns the last index, and `START_INTAKE` sends that case straight to the card.
+ */
+function firstUnansweredIndex(slots: Record<SlotId, SlotValue>): number {
+  const index = SLOT_ORDER.findIndex((slot) => !isFilled(slots[slot]));
+  return index === -1 ? SLOT_ORDER.length - 1 : index;
+}
+
 /**
  * Whether this slot must be answered before the review card is reachable. `phone` is required only
  * once `email` has been declined: the ingest schema needs one contact channel, not two.
@@ -117,11 +146,24 @@ export function isRequired(slot: SlotId, state: IntakeState): boolean {
   return SLOTS[slot].required;
 }
 
-/** Every required answer present, and at least one contact channel. Blocks `SUBMIT` otherwise. */
+/** Every required answer present, and at least one contact channel. `SUBMIT` refuses a brief without it. */
 export function canSubmit(state: IntakeState): boolean {
   const required = SLOT_ORDER.filter((slot) => isRequired(slot, state));
   if (!required.every((slot) => isFilled(state.slots[slot]))) return false;
   return isFilled(state.slots.email) || isFilled(state.slots.phone);
+}
+
+/**
+ * The first question that makes this brief unsendable, in ask order, or `null` when it can go.
+ *
+ * `canSubmit` says only that something is missing; the panel cannot print that and leave the visitor
+ * staring at a card with nothing to tap, because an emptied contact line is exactly the case where the
+ * review card has no row left to edit. So the reason and the remedy come from one function.
+ */
+export function blockingSlot(state: IntakeState): SlotId | null {
+  const missing = SLOT_ORDER.find((slot) => isRequired(slot, state) && !isFilled(state.slots[slot]));
+  if (missing) return missing;
+  return isFilled(state.slots.email) || isFilled(state.slots.phone) ? null : "email";
 }
 
 function withSlot(state: IntakeState, slot: SlotId, value: SlotValue): IntakeState {
@@ -154,8 +196,32 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
   switch (event.t) {
     case "START_INTAKE": {
       if (state.mode === "INTAKE_FORM" || state.mode === "REVIEW" || state.mode === "SUBMITTING") return state;
+      // A brief that came back from storage with every answer in it opens the card rather than
+      // re-asking the last question the visitor already answered.
+      if (isComplete(state.slots)) return { ...state, mode: "REVIEW", error: null, editing: false, slotIndex: SLOT_ORDER.length - 1 };
       // Returning after `EXIT_TO_CHAT` resumes where the visitor stopped; the slots were kept on purpose.
       return { ...state, mode: "INTAKE_FORM", error: null, editing: false };
+    }
+
+    case "RESTORE_DRAFT": {
+      if (state.mode !== "CHAT") return state;
+      const merged: Record<SlotId, SlotValue> = { ...EMPTY_SLOTS };
+      // Keys outside `SLOT_ORDER` are dropped and so is anything that is not a string or a list of
+      // strings: this is the last stop before an answer is filed as a lead, and a stored object would
+      // otherwise reach the CRM as `[object Object]` in a name field.
+      for (const slot of SLOT_ORDER) {
+        const value = event.slots[slot];
+        if (typeof value === "string") merged[slot] = value;
+        else if (Array.isArray(value)) merged[slot] = value.filter((item) => typeof item === "string");
+      }
+      return {
+        ...state,
+        slots: merged,
+        touched: SLOT_ORDER.filter((slot) => isFilled(merged[slot])),
+        // An empty email means the number carries the reply, exactly as it would have during the ask.
+        phoneRequired: !isFilled(merged.email),
+        slotIndex: firstUnansweredIndex(merged),
+      };
     }
 
     case "ANSWER": {
@@ -201,46 +267,43 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
       return { ...state, mode: "INTAKE_FORM", slotIndex: index, editing: true, error: null };
     }
 
-    case "NEXT": {
-      if (state.mode !== "INTAKE_FORM") return state;
-      const nextIndex = Math.min(state.slotIndex + 1, SLOT_ORDER.length - 1);
-      const next = SLOT_ORDER[nextIndex];
-      // Walking forward past a required question is not the same as skipping it.
-      if (isRequired(next, state) && !state.editing && !isFilled(state.slots[next])) return state;
-      return { ...state, slotIndex: nextIndex, error: null };
-    }
-
-    case "BACK": {
-      if (state.mode !== "INTAKE_FORM" && state.mode !== "REVIEW") return state;
-      return {
-        ...state,
-        mode: "INTAKE_FORM",
-        slotIndex: Math.max(state.slotIndex - 1, 0),
-        editing: false,
-        error: null,
-      };
-    }
-
     case "SUBMIT": {
       // A re-entrant submit is refused rather than queued: two in flight under one key is precisely
-      // the duplicate the key exists to prevent.
+      // the duplicate the key exists to make visible.
       if (state.mode === "SUBMITTING" || state.mode === "DONE") return state;
       if (state.mode !== "REVIEW" && state.mode !== "ERROR") return state;
-      if (!canSubmit(state)) return { ...state, mode: "REVIEW", error: { message: "A couple of answers are still missing." } };
+      // Invariant 3, enforced here as well as by the chip row: a fourth request to a route that is not
+      // answering spends the visitor's time without spending anything of ours. Scoped to the failure
+      // path on purpose, because a `422` also counts attempts and a brief that filled every field after
+      // three of those is still a brief the visitor is entitled to send.
+      if (state.mode === "ERROR" && state.attempt >= MAX_SUBMIT_ATTEMPTS) return state;
+
+      const blocking = blockingSlot(state);
+      if (blocking) {
+        // Pressing send with a hole in the brief goes back to the one question that is empty, with the
+        // reason above it. A card that says "something is missing" and offers nothing to tap is the
+        // dead end this machine is supposed to make impossible.
+        return {
+          ...state,
+          mode: "INTAKE_FORM",
+          slotIndex: SLOT_ORDER.indexOf(blocking),
+          editing: true,
+          error: { slot: blocking, message: `I still need ${SLOTS[blocking].label.toLowerCase()} before I can send this.` },
+        };
+      }
       return { ...state, mode: "SUBMITTING", error: null, idempotencyKey: state.idempotencyKey ?? event.idempotencyKey };
     }
 
     case "RETRY": {
       if (state.mode !== "ERROR") return state;
-      // The round counter is deliberately not reset here: "after the third failed round, use a new
-      // key" is only reachable if the rounds accumulate. Resetting it would retry the same dead key
-      // forever and print the stop-after-three copy that never arrives.
-      const key = state.attempt >= MAX_SUBMIT_ATTEMPTS ? event.idempotencyKey : (state.idempotencyKey ?? event.idempotencyKey);
-      return { ...state, mode: "SUBMITTING", error: null, idempotencyKey: key };
+      if (state.attempt >= MAX_SUBMIT_ATTEMPTS) return state;
+      // One key for the whole submission intent, so the three requests a struggling network produced
+      // stay recognisable as one brief in `brief_payload`.
+      return { ...state, mode: "SUBMITTING", error: null, idempotencyKey: state.idempotencyKey ?? event.idempotencyKey };
     }
 
     case "SUBMIT_OK":
-      return { ...initialIntakeState(), mode: "DONE" };
+      return { ...initialIntakeState(), mode: "DONE", sentTo: replyChannel(state.slots) };
 
     case "SUBMIT_FAIL": {
       const attempt = state.attempt + 1;
@@ -261,14 +324,16 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
       return { ...state, mode: "ERROR", attempt, error: { message: event.message } };
     }
 
-    case "HANDOFF":
-      return { ...state, mode: "HANDOFF", error: null };
-
     case "EXIT_TO_CHAT":
+      // Refused mid-flight. Leaving intake changes the mode, the effect that owns the in-flight request
+      // is torn down with it, and the visitor is left holding a lead the studio may already have.
+      // `ChatPod.tsx` keeps the control out of reach as well; this is the half that cannot be bypassed.
+      if (state.mode === "SUBMITTING") return state;
       // Slots are kept deliberately: "stop asking questions" is not "throw my answers away".
       return { ...state, mode: "CHAT", error: null, editing: false };
 
     case "RESET":
+      if (state.mode === "SUBMITTING") return state;
       return initialIntakeState();
 
     default: {

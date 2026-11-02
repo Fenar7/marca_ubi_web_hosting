@@ -24,9 +24,10 @@ import { PROCESS_PRINCIPLES, STUDIO } from "./corpus";
 export const JOURNAL_LIMIT = 12;
 
 /**
- * Raw inputs to the compiler. `null` means the source was unavailable at compile time, an empty
- * array means the site genuinely publishes none. The distinction matters because the answers differ:
- * an outage is disclosed, an empty archive is not reported as a failure.
+ * Raw inputs to the compiler. `null` is legal on the two Sanity halves so a caller can say "I never got
+ * an answer" out loud, and it compiles to the same empty list as a genuinely quiet archive. That
+ * collapse is deliberate: `collect.ts` serves a timeout as `[]`, so the pod cannot tell an outage from
+ * zero posts and must not claim either one. See `work.journal` in `intents.ts`.
  */
 export interface KnowledgeSources {
   posts: PostSummary[] | null;

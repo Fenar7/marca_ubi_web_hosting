@@ -70,13 +70,29 @@ function Block({ block }: { block: AnswerBlock }) {
   );
 }
 
+/** The label/value pair, shared by the tappable and the settled form of a review row. */
+function RowContent({ label, value }: { label: string; value: string }) {
+  return (
+    <>
+      <span className={styles.reviewLabel}>{label}</span>
+      <span className={styles.reviewValue}>{value}</span>
+    </>
+  );
+}
+
 interface Props {
   message: TranscriptMessage;
   /** Review rows are the only in-transcript control: tapping a line jumps back to that question. */
   onEditSlot?: (slot: SlotId) => void;
+  /**
+   * Whether the rows on this card can still be tapped. The card stays readable after a send, but the
+   * machine refuses an edit once the brief has gone, so leaving the buttons up would be a row of
+   * controls that cannot control anything.
+   */
+  rowsActive?: boolean;
 }
 
-export default function MessageBubble({ message, onEditSlot }: Props) {
+export default function MessageBubble({ message, onEditSlot, rowsActive = true }: Props) {
   const visitor = message.speaker === "visitor";
   const rows = message.reviewRows ?? [];
 
@@ -91,10 +107,15 @@ export default function MessageBubble({ message, onEditSlot }: Props) {
           <ul className={styles.reviewRows}>
             {rows.map((row) => (
               <li key={row.slot}>
-                <button type="button" className={styles.reviewRow} onClick={() => onEditSlot?.(row.slot)}>
-                  <span className={styles.reviewLabel}>{row.label}</span>
-                  <span className={styles.reviewValue}>{row.value}</span>
-                </button>
+                {rowsActive ? (
+                  <button type="button" className={styles.reviewRow} onClick={() => onEditSlot?.(row.slot)}>
+                    <RowContent label={row.label} value={row.value} />
+                  </button>
+                ) : (
+                  <div className={`${styles.reviewRow} ${styles.reviewRowStatic}`}>
+                    <RowContent label={row.label} value={row.value} />
+                  </div>
+                )}
               </li>
             ))}
           </ul>

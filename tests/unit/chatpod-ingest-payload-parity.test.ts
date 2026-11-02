@@ -42,6 +42,7 @@ import {
 } from '@/app/lib/intake/intakeOptions';
 import { buildPodPayload, reviewRows, slotsToFields } from '@/app/chat-pod/intake/review';
 import { SLOTS, SLOT_ORDER } from '@/app/chat-pod/intake/slots';
+import { initialIntakeState, transition } from '@/app/chat-pod/intake/useIntakeFlow';
 import { ingestLeadSchema } from '@/app/lib/validations/ingest';
 import { initialFormData } from '@/app/components/ProjectForm/types';
 import type { IngestPayload } from '@/app/lib/intake/ingestPayload';
@@ -110,10 +111,47 @@ function readSource(...segments: string[]): string {
   return readFileSync(join(process.cwd(), ...segments), 'utf8');
 }
 
+/**
+ * The same brief collected by walking the machine a visitor uses, rather than by the literal above.
+ * `POD` is what a test says the answers look like; this is what the reducer actually holds at the
+ * review card, and the two must be the same object for the parity claim to mean anything.
+ */
+function podSlotsFromMachine(): Record<SlotId, SlotValue> {
+  let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
+  for (const slot of SLOT_ORDER) state = transition(state, { t: 'ANSWER', slot, value: POD[slot] });
+  assert.equal(state.mode, 'REVIEW', 'the walk has to reach the card, or it collected nothing');
+  return state.slots;
+}
+
 describe('Chat Pod and wizard payload parity', () => {
   describe('§8.2-8.3 one builder, two surfaces', () => {
     it('produces the identical payload apart from the two attribution strings', () => {
       assert.deepStrictEqual(withoutSource(formPayload(FORM)), withoutSource(buildPodPayload(POD, IDEMPOTENCY_KEY)));
+    });
+
+    it('files the same lead from the machine as from the mirrored answers', () => {
+      const walked = podSlotsFromMachine();
+      assert.deepEqual(walked, POD, 'the intake machine does not produce the brief the tests claim');
+      assert.deepStrictEqual(withoutSource(formPayload(FORM)), withoutSource(buildPodPayload(walked, IDEMPOTENCY_KEY)));
+    });
+
+    it('routes by the services picked, not by the disciplines tapped through', () => {
+      // The discipline question scopes the 52 services down to the ones on offer. A visitor can tap
+      // three of them and then order one product, and `Step1Services` has always filed the single
+      // parent of that product, because `mapCategory` escalates on the count of what it is handed.
+      const taps = ['Logo & identity', 'Web & app design', 'Packaging & label'];
+      const pod = buildPodPayload({ ...POD, categories: taps, services: ['Product packaging'] }, IDEMPOTENCY_KEY);
+      const form = formPayload({ ...FORM, category: 'Packaging & label', service: 'Product packaging' });
+      assert.deepStrictEqual(withoutSource(pod), withoutSource(form));
+      assert.equal(reviewRows({ ...POD, categories: taps, services: ['Product packaging'] }).find((row) => row.slot === 'categories')?.value, 'Packaging & label');
+    });
+
+    it('escalates to the whole programme on the derived count, on either surface', () => {
+      const spread = { ...POD, categories: ['Logo & identity'], services: ['Logo design', 'Web page design', 'Product packaging'] };
+      const pod = buildPodPayload(spread, IDEMPOTENCY_KEY);
+      const form = formPayload({ ...FORM, category: ['Logo & identity', 'Web & app design', 'Packaging & label'].join(MULTI_VALUE_SEPARATOR), service: spread.services.join(MULTI_VALUE_SEPARATOR) });
+      assert.equal(pod.service_category, 'Full-Suite Advisory');
+      assert.deepStrictEqual(withoutSource(pod), withoutSource(form));
     });
 
     it('differs only in source_name and source_detail', () => {

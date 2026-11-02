@@ -137,11 +137,11 @@ a brief") true after analytics lands.
 ## Regression evidence
 
 - `npx tsc --noEmit` → 0 errors.
-- `npx tsx --test tests/unit/chatpod-*.test.ts` → 162 pass / 0 fail (FSM 41, payload parity 30, matcher,
-  normalise, intent resolution, knowledge coverage).
-- `npx tsx --test tests/client/client_project_form_restoration.test.ts` → 8 pass / 0 fail (the two
+- `npx tsx --test tests/unit/chatpod-*.test.ts` → **199 pass / 0 fail** across 7 suites (Intake FSM 46, Payload Parity 33, Persistence 29 [new hardening suite], Matcher 27, Knowledge Coverage 26, Normalise 22, Intent Resolution 16).
+- `npx tsx --test tests/client/client_project_form_restoration.test.ts` → **8 pass / 0 fail** across 6 suites (the two
   source-text guards re-pointed at the modules that now own those strings, with import-identity
   assertions added rather than the guards weakened).
+- **12 Adversarial Audit Defects Resolved**: All findings documented in `docs/context/2026-11-02_09-51-45.md` §6 fully implemented and asserted across unit and e2e test suites.
 - Legacy e2e routes, measured rather than asserted: the pod mounts on `/login`, `/admin` and
   `/admin/leads`, so those specs were run against this tree. `accessibility.spec.ts` +
   `02-website-brief-ingestion.spec.ts`: 4 pass / 4 fail, and **`Route A11y 2 (/login)` passes** — it

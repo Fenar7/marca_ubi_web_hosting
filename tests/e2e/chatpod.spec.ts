@@ -393,7 +393,9 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     expect(focus.inside, `focus escaped the dialog and landed on "${focus.landed}"`).toBe(true);
 
     await press(send, page);
-    await expect(log(page).getByText(/Sent\. It is with the studio now/)).toBeVisible({ timeout: 15_000 });
+    await expect(
+      log(page).getByText(/Sent\. It is with the studio now, and someone will come back to you at asha@studio\.example\./),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test('Tab stays inside the dialog and Escape leaves it', async ({ page }) => {
@@ -426,6 +428,43 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     // Same slot, still standing there, and the chips are back for another attempt.
     await expect(tray(page).getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
   });
+
+  test('typing an abort word like "stop" leaves the intake questions and preserves draft answers', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+
+    await composer(page).focus();
+    await page.keyboard.type('stop', { delay: 12 });
+    await page.keyboard.press('Enter');
+    await settle(page);
+
+    // Menu chips re-appear in chat mode
+    await expect(tray(page).getByRole('button', { name: 'Start a project', exact: true })).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('a restored draft resumes mid-brief where the visitor left off', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+
+    // Answer the first slot (categories)
+    const categoryChip = tray(page).getByRole('button').filter({ hasText: /Strategy|Design|Development/ }).first();
+    if (await categoryChip.count()) {
+      await categoryChip.click();
+    }
+    const cont = tray(page).getByRole('button', { name: 'Continue', exact: true });
+    await press(cont.first(), page);
+
+    // Exit to chat via Escape
+    await page.keyboard.press('Escape');
+
+    // Menu offers to start a project
+    const startProj = tray(page).getByRole('button', { name: 'Start a project', exact: true });
+    await expect(startProj).toBeVisible({ timeout: 10_000 });
+    await press(startProj, page);
+
+    // Resumes at the services slot (slot 1) rather than resetting to slot 0
+    await expect(log(page).getByText(/Which specific services/)).toBeVisible({ timeout: 10_000 });
+  });
 });
 
 test.describe('Chat Pod: submission outcomes', () => {
@@ -441,7 +480,9 @@ test.describe('Chat Pod: submission outcomes', () => {
     const send = await walkToReview(page);
 
     await send.click();
-    await expect(log(page).getByText(/Sent\. It is with the studio now/)).toBeVisible({ timeout: 15_000 });
+    await expect(
+      log(page).getByText(/Sent\. It is with the studio now, and someone will come back to you at asha@studio\.example\./),
+    ).toBeVisible({ timeout: 15_000 });
     await page.waitForTimeout(400);
     expect(posts, 'the panel POSTed more than once for one press').toBe(1);
   });
@@ -501,6 +542,24 @@ test.describe('Chat Pod: the D5 idle nudge', () => {
     test.setTimeout(70_000);
     await gotoPod(page);
 
+    // Track data-nudge attribute transitions with MutationObserver
+    await page.evaluate(() => {
+      (window as unknown as { __nudgeTransitions: number }).__nudgeTransitions = 0;
+      const el = document.querySelector('[aria-controls="mubi-pod-panel"]') || document.querySelector('button[aria-label*="Ubi"]');
+      if (el) {
+        const obs = new MutationObserver((mutations) => {
+          for (const m of mutations) {
+            if (m.type === 'attributes' && m.attributeName === 'data-nudge') {
+              if ((m.target as HTMLElement).getAttribute('data-nudge') === 'true') {
+                (window as unknown as { __nudgeTransitions: number }).__nudgeTransitions += 1;
+              }
+            }
+          }
+        });
+        obs.observe(el, { attributes: true, attributeFilter: ['data-nudge'] });
+      }
+    });
+
     await page.waitForFunction(
       () => window.sessionStorage.getItem('mubi.pod.nudged') === '1',
       undefined,
@@ -512,6 +571,9 @@ test.describe('Chat Pod: the D5 idle nudge', () => {
     await page.waitForTimeout(25_000);
     const marks = await page.evaluate(() => window.sessionStorage.getItem('mubi.pod.nudged'));
     expect(marks).toBe('1');
+
+    const transitions = await page.evaluate(() => (window as unknown as { __nudgeTransitions?: number }).__nudgeTransitions ?? 0);
+    expect(transitions, 'the visual nudge re-fired more than once').toBeLessThanOrEqual(1);
   });
 
   test('a visitor who is reading past the halfway mark is never nudged', async ({ page }) => {

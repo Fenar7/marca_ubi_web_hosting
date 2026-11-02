@@ -8,6 +8,7 @@ import {
   MULTI_VALUE_SEPARATOR,
   SERVICES_BY_CATEGORY,
   SERVICE_TO_CATEGORY,
+  categoriesForServices,
 } from "@/app/lib/intake/intakeOptions";
 import {
   SparkleIcon,
@@ -168,12 +169,7 @@ export default function Step1Services({
   }, [selectedServices]);
 
   // Unique categories derived from all currently selected services
-  const uniqueCategories = useMemo<string[]>(() => {
-    const cats = selectedServices
-      .map((s) => SERVICE_TO_CATEGORY[s])
-      .filter((cat): cat is string => Boolean(cat));
-    return Array.from(new Set(cats));
-  }, [selectedServices]);
+  const uniqueCategories = useMemo<string[]>(() => categoriesForServices(selectedServices), [selectedServices]);
 
   // Toggle selection for a service item
   const handleServiceToggle = (service: string) => {
@@ -182,16 +178,8 @@ export default function Step1Services({
       ? selectedServices.filter((s) => s !== service)
       : [...selectedServices, service];
 
-    const updatedCategories = Array.from(
-      new Set(
-        updatedServices
-          .map((s) => SERVICE_TO_CATEGORY[s])
-          .filter((cat): cat is string => Boolean(cat))
-      )
-    );
-
     updateFormData("service", updatedServices.join(MULTI_VALUE_SEPARATOR));
-    updateFormData("category", updatedCategories.join(MULTI_VALUE_SEPARATOR));
+    updateFormData("category", categoriesForServices(updatedServices).join(MULTI_VALUE_SEPARATOR));
   };
 
   // Clear all selections across all categories

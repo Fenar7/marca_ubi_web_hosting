@@ -483,6 +483,16 @@ $surface: rgba(0, 0, 0, 0.035);
   }
 }
 
+/* A settled card keeps the row's measure and loses its affordances: after a send the lines stay
+   readable but nothing happens on them, so the pointer and the hover cue have to go with it. */
+.reviewRowStatic {
+  cursor: default;
+
+  &:hover .reviewValue {
+    text-decoration: none;
+  }
+}
+
 .reviewLabel {
   color: $muted;
   flex: 0 0 auto;

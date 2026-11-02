@@ -8,10 +8,11 @@
  *              refusal below is the reason the panel can stay thin: the reducer, not the click handler,
  *              decides what is allowed.
  *
- *              Four invariants get their own tests because they are the ones a future edit could break
- *              quietly: a required slot is never advanced past, the idempotency key survives retries and
- *              is only replaced after the third failed round, email-OR-phone mirrors the `.refine()` in
- *              `ingestLeadSchema`, and editing from the review card returns to the card.
+ *              Five invariants get their own tests because they are the ones a future edit could break
+ *              quietly: a required slot is never advanced past, one idempotency key carries the whole
+ *              submission intent including every retry, email-OR-phone mirrors the `.refine()` in
+ *              `ingestLeadSchema`, editing from the review card returns to the card, and nothing but the
+ *              response itself can move the machine out of `SUBMITTING`.
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -21,6 +22,7 @@ import assert from 'node:assert/strict';
 import {
   MAX_SUBMIT_ATTEMPTS,
   OPTIONAL_TAIL_START,
+  blockingSlot,
   canSubmit,
   currentSlot,
   initialIntakeState,
@@ -231,12 +233,26 @@ describe('Chat Pod intake machine', () => {
       assert.match(refused.error?.message ?? '', /I need this one/);
     });
 
-    it('will not send a brief with no contact channel at all', () => {
+    it('sends a brief with no contact channel back to the question that can fix it', () => {
       const state = fill({ email: '', phone: '' });
       assert.equal(canSubmit(state), false);
+      assert.equal(blockingSlot(state), 'phone', 'skipping the email promoted the number, so that is the hole');
+
       const blocked = transition(state, { t: 'SUBMIT', idempotencyKey: 'k1' });
-      assert.equal(blocked.mode, 'REVIEW');
-      assert.match(blocked.error?.message ?? '', /still missing/);
+      assert.equal(blocked.mode, 'INTAKE_FORM', 'the card cannot show a reason the visitor can act on; the question can');
+      assert.equal(currentSlot(blocked), 'phone');
+      assert.match(blocked.error?.message ?? '', /still need phone/);
+      assert.equal(blocked.editing, true, 'the filled answer returns to the card rather than walking the tail');
+
+      const answered = transition(blocked, { t: 'ANSWER', slot: 'phone', value: VALID.phone });
+      assert.equal(answered.mode, 'REVIEW');
+      assert.equal(canSubmit(answered), true);
+    });
+
+    it('names the first unanswered required slot as the blocker', () => {
+      const state = transition(initialIntakeState(), { t: 'START_INTAKE' });
+      assert.equal(blockingSlot(state), 'categories');
+      assert.equal(blockingSlot(fill()), null);
     });
 
     it('sends when either channel is present', () => {
@@ -263,29 +279,6 @@ describe('Chat Pod intake machine', () => {
     it('refuses to skip outside the form', () => {
       const reviewed = fill();
       assert.deepEqual(transition(reviewed, { t: 'SKIP', slot: 'extraNotes' }), reviewed);
-    });
-  });
-
-  describe('walking back and forth', () => {
-    it('moves back one question and keeps the answers', () => {
-      let state = fill({ name: 'Second thought' });
-      state = transition(state, { t: 'BACK' });
-      assert.equal(state.mode, 'INTAKE_FORM');
-      assert.equal(state.slots.name, 'Second thought');
-    });
-
-    it('will not walk forward into an unanswered required slot', () => {
-      let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-      state = transition(state, { t: 'ANSWER', slot: 'categories', value: [CATEGORY] });
-      const stuck = transition(state, { t: 'NEXT' });
-      assert.equal(stuck, state, 'NEXT onto the blank services slot is a no-op, not a skip');
-    });
-
-    it('allows forward movement over a slot that is already answered', () => {
-      let state = transition(fill(), { t: 'BACK' });
-      assert.equal(currentSlot(state), 'showcasePermission');
-      state = transition(state, { t: 'NEXT' });
-      assert.equal(currentSlot(state), 'extraNotes');
     });
   });
 
@@ -350,17 +343,18 @@ describe('Chat Pod intake machine', () => {
       assert.equal(retried.mode, 'SUBMITTING');
     });
 
-    it('mints a fresh key only after the third failed round', () => {
+    it('keeps the one key through every retry and stops after the third failure', () => {
       let state = transition(fill(), { t: 'SUBMIT', idempotencyKey: 'key-one' });
       for (let round = 1; round <= MAX_SUBMIT_ATTEMPTS; round += 1) {
         state = transition(state, { t: 'SUBMIT_FAIL', status: 503, message: 'Unavailable' });
         assert.equal(state.attempt, round);
-        if (round < MAX_SUBMIT_ATTEMPTS) state = transition(state, { t: 'RETRY', idempotencyKey: `key-${round}` });
-        assert.equal(state.idempotencyKey, 'key-one');
+        if (round < MAX_SUBMIT_ATTEMPTS) state = transition(state, { t: 'RETRY', idempotencyKey: 'key-offer' });
+        assert.equal(state.idempotencyKey, 'key-one', 'a second key for one brief forks it into two CRM rows');
       }
 
-      const refreshed = transition(state, { t: 'RETRY', idempotencyKey: 'key-fresh' });
-      assert.equal(refreshed.idempotencyKey, 'key-fresh', 'the old key may already be recorded server-side');
+      const refused = transition(state, { t: 'RETRY', idempotencyKey: 'key-offer' });
+      assert.equal(refused, state, 'the machine refuses a fourth send, not only the chip row');
+      assert.equal(transition(state, { t: 'SUBMIT', idempotencyKey: 'key-offer' }), state);
     });
 
     it('refuses a second send while one is in flight', () => {
@@ -380,12 +374,81 @@ describe('Chat Pod intake machine', () => {
       assert.deepEqual(transition(reviewed, { t: 'RETRY', idempotencyKey: 'k' }), reviewed);
     });
 
-    it('clears the answers on a successful send and marks it done', () => {
+    it('clears the answers on a successful send and keeps where the reply goes', () => {
       const submitting = transition(fill(), { t: 'SUBMIT', idempotencyKey: 'key-one' });
       const done = transition(submitting, { t: 'SUBMIT_OK' });
       assert.equal(done.mode, 'DONE');
       assert.equal(done.slots.name, '');
       assert.equal(done.idempotencyKey, null, 'the next brief is a new submission intent');
+      // The success line is the visitor's receipt for the send, so the channel has to be captured on
+      // the turn that clears the answers it came from, not read back afterwards.
+      assert.equal(done.sentTo, VALID.email);
+    });
+
+    it('reports the number as the channel when the email was declined', () => {
+      const submitting = transition(fill({ email: '' }), { t: 'SUBMIT', idempotencyKey: 'k' });
+      assert.equal(transition(submitting, { t: 'SUBMIT_OK' }).sentTo, VALID.phone);
+    });
+
+    it('refuses to leave intake while a request is in flight', () => {
+      const submitting = transition(fill(), { t: 'SUBMIT', idempotencyKey: 'k' });
+      // The request is owned by an effect keyed on the mode: changing it mid-flight drops the response
+      // and leaves the visitor holding a lead the studio may already have.
+      assert.deepEqual(transition(submitting, { t: 'EXIT_TO_CHAT' }), submitting);
+      assert.deepEqual(transition(submitting, { t: 'RESET' }), submitting);
+    });
+
+    it('keeps the answers when the questions stop and drops them only on reset', () => {
+      const stopped = transition(fill(), { t: 'EXIT_TO_CHAT' });
+      assert.equal(stopped.mode, 'CHAT');
+      assert.equal(stopped.slots.name, VALID.name, '"stop asking" is not "throw my answers away"');
+      assert.equal(transition(stopped, { t: 'RESET' }).slots.name, '');
+    });
+  });
+
+  describe('restoring a draft', () => {
+    const partial = { name: 'Asha Menon', email: 'asha@studio.example', projectName: 'Desert Bloom' };
+
+    it('resumes on the first question that has no answer', () => {
+      const restored = transition(initialIntakeState(), { t: 'RESTORE_DRAFT', slots: partial });
+      assert.equal(restored.mode, 'CHAT', 'a restored brief waits for the visitor to ask for it');
+      assert.equal(restored.slots.name, 'Asha Menon');
+      // The walk restarts at the disciplines, not at the tail: three answers recovered from storage are
+      // still missing the two that route the lead, and a gap before them would go unfilled forever.
+      assert.equal(restored.slotIndex, 0);
+      assert.deepEqual(restored.touched, ['name', 'email', 'projectName']);
+      assert.equal(restored.phoneRequired, false, 'an email on file keeps the number optional');
+    });
+
+    it('promotes the number when the stored brief has no email', () => {
+      const restored = transition(initialIntakeState(), { t: 'RESTORE_DRAFT', slots: { name: 'Asha Menon' } });
+      assert.equal(restored.phoneRequired, true);
+      assert.equal(restored.slotIndex, 0);
+    });
+
+    it('starts asking at the gap and opens the card when there is none', () => {
+      const resumed = transition(transition(initialIntakeState(), { t: 'RESTORE_DRAFT', slots: partial }), { t: 'START_INTAKE' });
+      assert.equal(resumed.mode, 'INTAKE_FORM');
+      assert.equal(currentSlot(resumed), 'categories');
+
+      const complete = transition(transition(initialIntakeState(), { t: 'RESTORE_DRAFT', slots: VALID }), { t: 'START_INTAKE' });
+      assert.equal(complete.mode, 'REVIEW', 'a brief with every answer is not re-asked from the last gap');
+    });
+
+    it('drops keys and values it does not collect', () => {
+      const restored = transition(initialIntakeState(), {
+        t: 'RESTORE_DRAFT',
+        slots: { name: { first: 'Asha' }, categories: ['Logo & identity', 7, null], budget: '40k', services: null } as never,
+      });
+      assert.equal(restored.slots.name, '', 'an object is not an answer, and String() would file a shape');
+      assert.deepEqual(restored.slots.categories, ['Logo & identity']);
+      assert.deepEqual(restored.slots.services, [], 'a null list slot stays the empty list the slot began as');
+      assert.equal('budget' in restored.slots, false);
+    });
+
+    it('refuses a restore once the visitor is already talking', () => {
+      const asking = transition(initialIntakeState(), { t: 'START_INTAKE' });
+      assert.deepEqual(transition(asking, { t: 'RESTORE_DRAFT', slots: partial }), asking);
     });
   });
 
@@ -418,16 +481,6 @@ describe('Chat Pod intake machine', () => {
       const submitting = transition(fill(), { t: 'SUBMIT', idempotencyKey: 'k' });
       const failed = transition(submitting, { t: 'SUBMIT_FAIL', status: 422, message: 'The brief was not accepted' });
       assert.equal(failed.mode, 'ERROR');
-    });
-  });
-
-  describe('handoff', () => {
-    it('enters the handoff state and can return to the brief', () => {
-      const handed = transition(fill(), { t: 'HANDOFF' });
-      assert.equal(handed.mode, 'HANDOFF');
-      const back = transition(handed, { t: 'START_INTAKE' });
-      assert.equal(back.mode, 'INTAKE_FORM');
-      assert.equal(back.slots.name, VALID.name);
     });
   });
 });

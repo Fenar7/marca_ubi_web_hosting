@@ -360,29 +360,34 @@ const STATIC_INTENTS: Intent[] = [
     ],
     keywords: ["journal", "blog", "articles", "writing", "insights"],
     respond: (kb) => {
-      if (kb.counts.journalPosts === 0) {
+      // No claim about *why* there is nothing to list. `collect.ts` folds a timeout and an empty
+      // archive into the same source array, so the pod cannot tell an outage from a quiet journal and
+      // must not say "I could not read it" when the truth may be "there is nothing yet".
+      if (kb.journal.length === 0) {
         return {
           blocks: [
             {
               t: "p",
-              text: "The journal lives at /blog. I could not read it when this page was built, so I will not list entries from memory.",
+              text: "The journal lives at /blog. I have no entries compiled into this page, so I will send you to the index rather than list from memory.",
             },
           ],
           chips: [asChip.route("Open the journal", "/blog")],
         };
       }
+      // The line names no count: `counts.journalPosts` is the whole compiled window (up to
+      // `JOURNAL_LIMIT`), while this bubble prints five of them, and a figure that does not match the
+      // list under it is the invention this module forbids.
+      const shown = kb.journal.slice(0, 5);
       return {
         blocks: [
-          { t: "p", text: `The ${kb.counts.journalPosts} most recent entries:` },
+          { t: "p", text: "The most recent entries, in the order the journal prints them:" },
           {
             t: "list",
-            items: kb.journal
-              .slice(0, 5)
-              .map((post) => ({ label: post.title, sub: [post.category, post.date].filter(Boolean).join(" · ") })),
+            items: shown.map((post) => ({ label: post.title, sub: [post.category, post.date].filter(Boolean).join(" · ") })),
           },
         ],
         chips: [
-          ...kb.journal.slice(0, 5).map((post) => asChip.route(post.title, `/blog/${post.slug}`)),
+          ...shown.map((post) => asChip.route(post.title, `/blog/${post.slug}`)),
           asChip.route("All entries", "/blog"),
         ],
       };
@@ -599,14 +604,18 @@ const STATIC_INTENTS: Intent[] = [
           chips: [asChip.external("Email careers", `mailto:${kb.studio.careersEmail}`), asChip.route("Careers page", "/careers")],
         };
       }
+      // One slice for the list and the chips, so the bubble never names a role it will not open, and
+      // no count line: the figure above a five-deep cut of a longer list would be a number the visitor
+      // cannot check against what they can see.
+      const shown = kb.careers.slice(0, 5);
       return {
         blocks: [
-          { t: "p", text: `${kb.counts.openRoles} open roles:` },
-          { t: "list", items: kb.careers.slice(0, 6).map((role) => ({ label: role.title, sub: role.location })) },
+          { t: "p", text: "Roles the studio has open:" },
+          { t: "list", items: shown.map((role) => ({ label: role.title, sub: role.location })) },
           { t: "p", text: `Applications go to ${kb.studio.careersEmail}.` },
         ],
         chips: [
-          ...kb.careers.slice(0, 5).map((role) => asChip.route(role.title, `/careers/${role.slug}`)),
+          ...shown.map((role) => asChip.route(role.title, `/careers/${role.slug}`)),
           asChip.route("All roles", "/careers"),
           asChip.external("Email careers", `mailto:${kb.studio.careersEmail}`),
         ],

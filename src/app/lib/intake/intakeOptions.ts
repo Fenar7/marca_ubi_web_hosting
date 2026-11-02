@@ -179,6 +179,20 @@ export const INTAKE_TIMELINE_OPTIONS: readonly IntakeTimelineOption[] = [
   },
 ];
 
+/**
+ * The disciplines implied by a service list, in the order the services were picked, de-duplicated.
+ *
+ * This is the wizard's own derivation and the only one: `Step1Services` has always recomputed
+ * `formData.category` from the selected services rather than storing what a visitor clicked, and
+ * `mapCategory` reads that result. So every surface that files a lead has to go through here, or the
+ * CRM's primary routing column means one thing on the form and another in chat, which is the drift
+ * this module exists to prevent.
+ */
+export function categoriesForServices(services: readonly string[]): string[] {
+  const parents = services.map((service) => SERVICE_TO_CATEGORY[service]).filter((category): category is string => Boolean(category));
+  return Array.from(new Set(parents));
+}
+
 /** Display labels for closed-set values too long to fit a chip. Never stored. */
 export const AGENCY_STATUS_CHIP_LABELS: Readonly<Record<string, string>> = {
   "Yes and I'm interested in agency services": "Yes, interested",

@@ -28,10 +28,11 @@ import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 
 import { prefersReducedMotion } from "@/app/lib/motion";
-import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, slotChips } from "./intake/slots";
+import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, slotChips, slotOptions } from "./intake/slots";
 import type { SlotOption } from "./intake/slots";
 import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
-import { buildPodPayload, replyChannel, reviewRows } from "./intake/review";
+import type { IntakeMode } from "./intake/useIntakeFlow";
+import { buildPodPayload, reviewRows } from "./intake/review";
 import { createIdempotencyKey, submitBrief } from "./intake/submit";
 import { useChatEngine } from "./engine/useChatEngine";
 import { PERSISTENT_MENU, PERSONA } from "./knowledge/corpus";
@@ -60,8 +61,19 @@ const PANEL_GAP = 12;
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-/** Words that mean "I am not answering this" when typed instead of tapped. */
-const SKIP_WORDS = /^(skip|no|none|pass|nothing|not now)$/i;
+/**
+ * Words that mean "stop asking me". Checked before every other reading of a typed message, so `stop`
+ * can never be filed as the answer to a question. This is the typed half of the `intake.exit` intent,
+ * which the matcher cannot reach while the panel is in intake.
+ */
+const ABORT_WORDS = /^(stop|cancel|exit|quit|never mind|not now)$/i;
+
+/**
+ * Words that mean "I am not answering this". A slot's closed set is matched before this list, because
+ * `No` is a stored answer to the showcase question and treating it as a decline loses a decision the
+ * visitor actually made.
+ */
+const SKIP_WORDS = /^(skip|no|none|pass|nothing)$/i;
 
 function replyWeight(reply: Reply): number {
   const length = reply.blocks.reduce(
@@ -88,6 +100,19 @@ function isFilled(value: SlotValue): boolean {
 }
 
 /**
+ * Highest turn number in a restored transcript. Ids are a letter plus a counter, and a new row that
+ * reuses a restored id hands React two messages with the same key, which drops one of them.
+ */
+function lastTurnNumber(messages: TranscriptMessage[]): number {
+  let max = 0;
+  for (const message of messages) {
+    const parsed = Number.parseInt(message.id.replace(/^\D+/, ""), 10);
+    if (Number.isFinite(parsed)) max = Math.max(max, parsed);
+  }
+  return max;
+}
+
+/**
  * Maps what the visitor typed onto a closed set. Matching is case-insensitive but never fuzzy:
  * "techology" is not silently repaired into "Technology", it is re-asked, because a guess that files
  * the wrong industry in the CRM is worse than one more question.
@@ -105,6 +130,19 @@ function scrollDepthPct(): number {
   const travel = doc.scrollHeight - window.innerHeight;
   if (travel <= 0) return 0;
   return Math.min(100, (window.scrollY / travel) * 100);
+}
+
+/**
+ * The menu as the current mode can actually act on it. `Start a project` is the one entry that means
+ * something different once a brief is open: pressing it mid-intake would restart what is already
+ * running, so it is replaced by the exit the intake machine honours.
+ */
+function menuForMode(mode: IntakeMode): Chip[] {
+  if (mode === "CHAT") return [...PERSISTENT_MENU];
+  return [
+    ...PERSISTENT_MENU.filter((chip) => chip.action.kind !== "intake"),
+    { label: "Stop the questions", action: { kind: "intake-action", action: "exit" } },
+  ];
 }
 
 export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
@@ -131,24 +169,30 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sequence = useRef(0);
-  const timers = useRef<number[]>([]);
+  const timers = useRef(new Set<number>());
   const emittedTurn = useRef("");
   const submittedKey = useRef<string | null>(null);
   const seeded = useRef(false);
+  const chipCount = useRef(0);
+  /** Focus recovery is a keyboard concern only: see the effect that reads it. */
+  const usedKeyboard = useRef(false);
 
+  // A Set that is never reassigned. An array replaced on each firing leaves the unmount cleanup holding
+  // a stale reference, and the timers added afterwards survive the panel.
   const later = useCallback((fn: () => void, ms: number) => {
+    const pending = timers.current;
     const id = window.setTimeout(() => {
-      timers.current = timers.current.filter((entry) => entry !== id);
+      pending.delete(id);
       fn();
     }, ms);
-    timers.current.push(id);
+    pending.add(id);
   }, []);
 
   useEffect(() => {
     const pending = timers.current;
     return () => {
       pending.forEach((id) => window.clearTimeout(id));
-      pending.length = 0;
+      pending.clear();
     };
   }, []);
 
@@ -210,20 +254,30 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
 
     const { time, timeFull } = timestamps(new Date());
     const draft = readDraft();
-    const restored = draft && draft.messages.length > 0 ? draft.messages : null;
 
-    if (restored) {
-      // Restored history is real conversation, so it sits under the greeting rather than above it:
-      // re-reading the intro after their own last question would read as amnesia.
+    if (draft && draft.messages.length > 0) {
+      // Restored history is real conversation, so it sits under the resume line rather than above the
+      // visitor's own last question, which would read as amnesia.
+      sequence.current = Math.max(sequence.current, lastTurnNumber(draft.messages));
+      engine.seedFallbacks(draft.fallbackCount);
+
+      // The answers go into the machine, not only onto the screen. A resume line that promised "carry
+      // on with your brief" while the slots stayed empty sent the visitor back to question one, which
+      // is the opposite of what the draft was written for.
+      send({ t: "RESTORE_DRAFT", slots: draft.slots });
+      const hasAnswers = SLOT_ORDER.some((entry) => isFilled(draft.slots[entry] ?? ""));
+
       setMessages([
-        ...restored,
+        ...draft.messages,
         {
-          id: `r${(sequence.current += 1)}`,
+          id: `t${(sequence.current += 1)}`,
           speaker: "assistant",
           blocks: [
             {
               t: "p",
-              text: "I still have this conversation from earlier in this browser. Ask me anything, or carry on with your brief.",
+              text: hasAnswers
+                ? "I still have your answers from earlier in this browser. Press Start a project and I will pick up at the first question you left open."
+                : "I still have this conversation from earlier in this browser. Ask me anything, or start a brief.",
             },
           ],
           time,
@@ -235,9 +289,9 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     }
 
     sequence.current += 1;
-    setMessages([{ id: `o${sequence.current}`, speaker: "assistant", blocks: engine.opening.blocks, time, timeFull }]);
+    setMessages([{ id: `t${sequence.current}`, speaker: "assistant", blocks: engine.opening.blocks, time, timeFull }]);
     setChips(engine.opening.chips);
-  }, [engine.opening, open]);
+  }, [engine, open, send]);
 
   useEffect(() => {
     if (!open) return;
@@ -307,6 +361,38 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
 
   useEffect(() => setConsented(hasGrantedConsent()), []);
 
+  // Focus discipline: which device the visitor is working with decides whether focus is handed back.
+  useEffect(() => {
+    const onKey = () => {
+      usedKeyboard.current = true;
+    };
+    const onPointer = () => {
+      usedKeyboard.current = false;
+    };
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("pointerdown", onPointer, true);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("pointerdown", onPointer, true);
+    };
+  }, []);
+
+  /**
+   * A tapped chip unmounts with the turn that printed it, and focus on a removed node lands on the
+   * document body. The trap recovers it on the next Tab, but the visitor has lost their place, so the
+   * composer takes it here. It is `aria-disabled` rather than `disabled` while a send is in flight,
+   * which is what keeps it a legal target. Pointer visitors get nothing: refocusing a text area on a
+   * phone raises the keyboard unasked.
+   */
+  useEffect(() => {
+    const previous = chipCount.current;
+    chipCount.current = chips.length;
+    if (previous === 0 || !usedKeyboard.current) return;
+    const node = panelRef.current;
+    const active = document.activeElement;
+    if (node && (active === null || active === document.body)) inputRef.current?.focus();
+  }, [chips]);
+
   const grantConsent = useCallback((allowed: boolean) => {
     recordConsent(allowed);
     setConsented(allowed);
@@ -317,7 +403,10 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
 
   // Persistence
   useEffect(() => {
-    if (!open || consented !== true || messages.length === 0) return;
+    // `DONE` is the one state that must not reach storage. The send succeeded, the machine cleared the
+    // answers, and a draft written now reappears next load as a receipt for a brief already with the
+    // studio, with `clearDraft()` in the success turn undone.
+    if (!open || consented !== true || messages.length === 0 || state.mode === "DONE") return;
 
     const id = window.setTimeout(() => {
       const stored = writeDraft({ messages, slots: state.slots, fallbackCount: engine.fallbackCount() });
@@ -327,7 +416,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     }, DRAFT_WRITE_MS);
 
     return () => window.clearTimeout(id);
-  }, [consented, engine, messages, open, state.slots]);
+  }, [consented, engine, messages, open, state.mode, state.slots]);
 
   // Intake turns
   const chipsForSlot = useCallback(
@@ -368,7 +457,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       if (failureMessage.length > 0) {
         say({
           blocks: [{ t: "p", text: failureMessage }, ...blocks, { t: "p", text: definition.question }],
-          chips: failureSlot && failureSlot === active ? chipsForSlot(active) : [...PERSISTENT_MENU],
+          chips: failureSlot && failureSlot === active ? chipsForSlot(active) : menuForMode(state.mode),
         });
         return;
       }
@@ -413,16 +502,12 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       return;
     }
 
-    if (state.mode === "HANDOFF") {
-      const reply = engine.byId("contact");
-      if (reply) say({ ...reply, chips: [{ label: "Back to the brief", action: { kind: "intake" } }] });
-      return;
-    }
-
     if (state.mode === "DONE") {
-      const channel = replyChannel(state.slots);
+      // `sentTo` comes off the machine rather than being recomputed from `state.slots`: `SUBMIT_OK`
+      // cleared the answers on the same turn, so the contact fields are empty by now and this line
+      // would end with "come back to you at" and nothing after it.
       say({
-        blocks: [{ t: "p", text: `Sent. It is with the studio now, and someone will come back to you at ${channel}.` }],
+        blocks: [{ t: "p", text: `Sent. It is with the studio now, and someone will come back to you at ${state.sentTo}.` }],
         chips: [...PERSISTENT_MENU.slice(0, 3), { label: "Close", action: { kind: "close" } }],
       });
       clearDraft();
@@ -432,21 +517,25 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
 
     if (state.mode === "ERROR") {
       const exhausted = state.attempt >= MAX_SUBMIT_ATTEMPTS;
+      const options: Chip[] = [
+        { label: "Open the full form", action: { kind: "route", href: "/start-project" } },
+        { label: "Talk to a person", action: { kind: "intent", id: "contact" } },
+      ];
+      // Withheld once the machine has stopped accepting a send, so the row cannot offer a press that
+      // the reducer will refuse.
+      if (!exhausted) options.unshift({ label: "Send it again", action: { kind: "intake-action", action: "retry" } });
+
       say({
         blocks: [
           { t: "p", text: failureMessage.length > 0 ? failureMessage : "That did not reach us." },
           {
             t: "p",
             text: exhausted
-              ? "I have tried three times and I will stop here rather than keep sending. Your answers are still on this device."
-              : "Nothing was recorded twice. Your answers are kept.",
+              ? "Three tries is where I stop rather than keep you here. Your answers are still on this device, so the full form starts where this one left off."
+              : "I cannot tell whether that reached us. If you send again from the same contact details the studio updates the lead rather than opening a second one.",
           },
         ],
-        chips: [
-          { label: "Send it again", action: { kind: "intake-action", action: "retry" } },
-          { label: "Open the full form", action: { kind: "route", href: "/start-project" } },
-          { label: "Talk to a person", action: { kind: "intent", id: "contact" } },
-        ],
+        chips: options,
       });
     }
   }, [chipsForSlot, engine, say, state]);
@@ -516,20 +605,19 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const toggleIntoSelection = useCallback(
     (value: string, target: SlotId) => {
       const definition = SLOTS[target];
-      const label = definition.options?.find((option) => option.value === value)?.chip ?? value;
-      setSelection((prev) => {
-        const next = prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value];
-        append(
-          {
-            speaker: "assistant",
-            blocks: [{ t: "p", text: `${label}${next.includes(value) ? "" : " removed"}. ${next.length} picked.` }],
-          },
-          chipsForSlot(target),
-        );
-        return next;
-      });
+      // Read through `slotOptions`, not `definition.options`: the services question has no static set,
+      // so a label looked up here would fall back to the raw value for every service chip.
+      const label = slotOptions(definition, state.slots).find((option) => option.value === value)?.chip ?? value;
+      const next = selection.includes(value) ? selection.filter((item) => item !== value) : [...selection, value];
+      setSelection(next);
+      // Outside the state updater: React may run an updater twice, and an `append` in here would print
+      // the count line twice under the same tap.
+      append(
+        { speaker: "assistant", blocks: [{ t: "p", text: `${label}${next.includes(value) ? " added" : " removed"}. ${next.length} picked.` }] },
+        chipsForSlot(target),
+      );
     },
-    [append, chipsForSlot],
+    [append, chipsForSlot, selection, state.slots],
   );
 
   const editSlot = useCallback(
@@ -568,7 +656,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
         case "intake": {
-          if (state.mode === "CHAT" || state.mode === "HANDOFF") startIntake();
+          if (state.mode === "CHAT") startIntake();
           return;
         }
         case "slot-toggle": {
@@ -624,6 +712,13 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       if (state.mode === "SUBMITTING") return;
 
       if (state.mode === "INTAKE_FORM" && slot) {
+        // Before every other reading of the word: "stop" typed at a question has to leave the questions,
+        // not become the answer to them.
+        if (ABORT_WORDS.test(trimmed)) {
+          send({ t: "EXIT_TO_CHAT" });
+          return;
+        }
+
         const definition = SLOTS[slot];
 
         if (definition.kind === "links") {
@@ -641,24 +736,31 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
 
-        if (SKIP_WORDS.test(trimmed)) {
+        const options = slotOptions(definition, state.slots);
+        const matched = matchOption(trimmed, options);
+
+        // A closed set is tried first. `No` is the stored answer to the showcase question, and a skip
+        // test that runs ahead of it loses a decision the visitor actually made.
+        if (matched === null && SKIP_WORDS.test(trimmed)) {
           send({ t: "SKIP", slot });
           return;
         }
 
         if (definition.kind === "multi") {
-          const matched = matchOption(trimmed, definition.options ?? []);
-          if (matched) {
-            toggleIntoSelection(matched, slot);
-            return;
-          }
-          say({ blocks: [{ t: "p", text: "Pick one of the buttons, or type the name of one exactly." }], chips: chipsForSlot(slot) });
+          if (matched) toggleIntoSelection(matched, slot);
+          else say({ blocks: [{ t: "p", text: "Pick one of the buttons, or type the name of one exactly." }], chips: chipsForSlot(slot) });
           return;
         }
 
-        if (definition.options) {
-          const matched = matchOption(trimmed, definition.options);
-          send({ t: "ANSWER", slot, value: matched ?? trimmed });
+        if (matched) {
+          send({ t: "ANSWER", slot, value: matched });
+          return;
+        }
+
+        // A typed answer for a question with buttons never goes to the validator as free text: a
+        // misspelt industry has to be re-asked, not filed.
+        if (options.length > 0) {
+          say({ blocks: [{ t: "p", text: "I can only choose from the options I showed you, or skip." }], chips: chipsForSlot(slot) });
           return;
         }
 
@@ -688,28 +790,34 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
 
   // Idle nudge (D5)
   useEffect(() => {
-    if (open || hasBeenNudged() || prefersReducedMotion()) return;
+    if (open || prefersReducedMotion()) return;
 
-    let cancel: () => void = () => {};
-    const arm = () => {
-      cancel();
-      const id = window.setTimeout(() => {
+    const events: (keyof WindowEventMap)[] = ["pointermove", "pointerdown", "keydown", "scroll", "wheel"];
+    let timer = 0;
+
+    const restart = () => {
+      // Checked at the moment of the cue as well as when the effect ran: without this, a second tab
+      // opened in the same session would fire its own nudge, and D5 allows one per session.
+      if (hasBeenNudged()) {
+        window.clearTimeout(timer);
+        events.forEach((name) => window.removeEventListener(name, restart));
+        return;
+      }
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
         // Past the halfway mark the visitor is reading, not browsing, and a cue is an interruption.
         if (scrollDepthPct() > MAX_SCROLL_DEPTH_PCT) return;
         markNudged();
         setNudge(true);
         later(() => setNudge(false), NUDGE_CUE_MS);
       }, IDLE_NUDGE_MS);
-      cancel = () => window.clearTimeout(id);
     };
 
-    arm();
-    const events: (keyof WindowEventMap)[] = ["pointermove", "pointerdown", "keydown", "scroll", "wheel"];
-    const restart = () => arm();
+    restart();
     events.forEach((name) => window.addEventListener(name, restart, { passive: true }));
 
     return () => {
-      cancel();
+      window.clearTimeout(timer);
       events.forEach((name) => window.removeEventListener(name, restart));
     };
   }, [later, open]);
@@ -812,20 +920,24 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
               />
             </span>
             <span className={styles.progressValue}>{`${progress.answered} of ${progress.total}`}</span>
-            <button type="button" className={styles.progressExit} onClick={() => send({ t: "EXIT_TO_CHAT" })}>
-              Stop the questions
-            </button>
+            {/* Hidden rather than inert mid-flight: the machine refuses to leave intake while a request
+                is outstanding, and a control that cannot do its job is a defect, not an affordance. */}
+            {state.mode !== "SUBMITTING" ? (
+              <button type="button" className={styles.progressExit} onClick={() => send({ t: "EXIT_TO_CHAT" })}>
+                Stop the questions
+              </button>
+            ) : null}
           </div>
         ) : null}
 
         {menuOpen ? (
           <div id="mubi-pod-menu" className={styles.menu}>
             <p className={styles.menuNote}>What I can do</p>
-            <ChipRow chips={PERSISTENT_MENU} onChip={onChip} ariaLabel="Persistent menu" />
+            <ChipRow chips={menuForMode(state.mode)} onChip={onChip} ariaLabel="Persistent menu" />
           </div>
         ) : null}
 
-        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} />
+        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} />
 
         <div className={styles.tray} data-count={chips.length}>
           <ChipRow chips={chips} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />
