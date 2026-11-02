@@ -24,7 +24,7 @@ function isInternal(href: string): boolean {
   return href.startsWith("/");
 }
 
-function Block({ block }: { block: AnswerBlock }) {
+function Block({ block, onNavigate }: { block: AnswerBlock; onNavigate?: () => void }) {
   if (block.t === "p") return <p className={styles.text}>{block.text}</p>;
 
   if (block.t === "list") {
@@ -48,7 +48,7 @@ function Block({ block }: { block: AnswerBlock }) {
         if (isInternal(item.href)) {
           return (
             <li key={key}>
-              <Link href={item.href} className={styles.link}>
+              <Link href={item.href} className={styles.link} onClick={onNavigate}>
                 {item.label}
                 {sub}
               </Link>
@@ -90,9 +90,11 @@ interface Props {
    * controls that cannot control anything.
    */
   rowsActive?: boolean;
+  /** Invoked when an internal route link is clicked so the panel closes and unlocks the viewport. */
+  onNavigate?: () => void;
 }
 
-export default function MessageBubble({ message, onEditSlot, rowsActive = true }: Props) {
+export default function MessageBubble({ message, onEditSlot, rowsActive = true, onNavigate }: Props) {
   const visitor = message.speaker === "visitor";
   const rows = message.reviewRows ?? [];
 
@@ -100,7 +102,7 @@ export default function MessageBubble({ message, onEditSlot, rowsActive = true }
     <div className={`${styles.row} ${visitor ? styles.rowVisitor : styles.rowAssistant}`}>
       <div className={`${styles.bubble} ${visitor ? styles.bubbleVisitor : styles.bubbleAssistant} ${message.kind === "error" ? styles.bubbleError : ""}`}>
         {message.blocks.map((block, index) => (
-          <Block key={index} block={block} />
+          <Block key={index} block={block} onNavigate={onNavigate} />
         ))}
 
         {rows.length > 0 ? (

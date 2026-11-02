@@ -342,13 +342,17 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     };
 
     document.addEventListener("keydown", onKeyDown, true);
-    const focusId = window.setTimeout(() => inputRef.current?.focus(), 150);
 
     return () => {
       document.removeEventListener("keydown", onKeyDown, true);
-      window.clearTimeout(focusId);
     };
   }, [closePanel, menuOpen, open, send, state.mode]);
+
+  useEffect(() => {
+    if (!open) return;
+    const focusId = window.setTimeout(() => inputRef.current?.focus(), 150);
+    return () => window.clearTimeout(focusId);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -531,7 +535,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           {
             t: "p",
             text: exhausted
-              ? "Three tries is where I stop rather than keep you here. Your answers are still on this device, so the full form starts where this one left off."
+              ? "Three tries is where I stop rather than keep you here. Your answers are still saved in this chat on this device, or you can use the full form to start fresh."
               : "I cannot tell whether that reached us. If you send again from the same contact details the studio updates the lead rather than opening a second one.",
           },
         ],
@@ -587,6 +591,9 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     void run();
     return () => {
       cancelled = true;
+      if (submittedKey.current === key) {
+        submittedKey.current = null;
+      }
     };
   }, [knowledge.studio.email, knowledge.studio.phone, send, state.idempotencyKey, state.mode, state.slots]);
 
@@ -642,6 +649,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
         case "route": {
+          closePanel();
           router.push(action.href);
           return;
         }
@@ -727,10 +735,25 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
             say({ blocks: [{ t: "p", text: "I need the full link, starting with https." }], chips: chipsForSlot(slot) });
             return;
           }
+          if (selection.length >= 5) {
+            say({
+              blocks: [{ t: "p", text: "I can take up to 5 links at most. Press continue to move on." }],
+              chips: chipsForSlot(slot),
+            });
+            return;
+          }
           const next = [...selection, link];
           setSelection(next);
           say({
-            blocks: [{ t: "p", text: `Got it, ${next.length} so far. Another one, or is that everything?` }],
+            blocks: [
+              {
+                t: "p",
+                text:
+                  next.length >= 5
+                    ? "Got it, that is 5 links (the maximum). Press continue to move on."
+                    : `Got it, ${next.length} so far. Another one, or is that everything?`,
+              },
+            ],
             chips: chipsForSlot(slot),
           });
           return;
@@ -937,7 +960,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           </div>
         ) : null}
 
-        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} />
+        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} onNavigate={closePanel} />
 
         <div className={styles.tray} data-count={chips.length}>
           <ChipRow chips={chips} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />
@@ -979,6 +1002,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           blocked={composerBlocked}
           blockReason="Sending your brief. One moment."
           placeholder={activeDefinition?.placeholder}
+          maxLength={activeDefinition?.maxLength}
           helper={
             activeDefinition && isFilled(state.slots[activeDefinition.id]) ? `${activeDefinition.label} is already answered. Typing replaces it.` : undefined
           }

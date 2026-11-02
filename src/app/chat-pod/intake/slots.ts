@@ -51,6 +51,7 @@ export interface SlotDefinition {
    *  disciplines already chosen, so it is derived by `slotOptions` rather than held here. */
   options?: SlotOption[];
   placeholder?: string;
+  maxLength?: number;
   validate: (raw: SlotValue, slots: Record<SlotId, SlotValue>) => SlotAnswer;
 }
 
@@ -188,6 +189,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "text",
     required: true,
     placeholder: "Your name",
+    maxLength: LIMITS.name,
     validate: textSlot(LIMITS.name, true, "your name"),
   },
   email: {
@@ -199,6 +201,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     // the moment this one is skipped without one.
     required: false,
     placeholder: "you@company.com",
+    maxLength: LIMITS.email,
     validate: (raw): SlotAnswer => {
       const value = typeof raw === "string" ? raw.trim() : "";
       if (value.length === 0) return { ok: true, value: "" };
@@ -214,6 +217,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "text",
     required: false,
     placeholder: "+91 7012 052 472",
+    maxLength: LIMITS.phone,
     validate: textSlot(LIMITS.phone, false, "a number"),
   },
   projectName: {
@@ -223,6 +227,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "text",
     required: false,
     placeholder: "Packaging for an organic beverage brand",
+    maxLength: LIMITS.projectName,
     validate: textSlot(LIMITS.projectName, false, "a project name"),
   },
   industry: {
@@ -241,6 +246,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "multiline",
     required: false,
     placeholder: "Deliverables, audience, anything already decided",
+    maxLength: LIMITS.projectDescription,
     validate: textSlot(LIMITS.projectDescription, false, "the scope"),
   },
   website: {
@@ -250,6 +256,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "text",
     required: false,
     placeholder: "https://yourcompany.com",
+    maxLength: LIMITS.website,
     validate: textSlot(LIMITS.website, false, "a website"),
   },
   instagram: {
@@ -259,6 +266,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "text",
     required: false,
     placeholder: "@yourbrand",
+    maxLength: LIMITS.instagram,
     validate: textSlot(LIMITS.instagram, false, "a handle"),
   },
   language: {
@@ -295,6 +303,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "links",
     required: false,
     placeholder: "https://",
+    maxLength: LIMITS.link,
     validate: (raw): SlotAnswer => {
       const links = Array.isArray(raw) ? raw.map((link) => link.trim()).filter(Boolean) : [];
       if (links.length === 0) return { ok: true, value: [] };
@@ -320,6 +329,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     kind: "multiline",
     required: false,
     placeholder: "Constraints, reference files, deadlines",
+    maxLength: LIMITS.extraNotes,
     validate: textSlot(LIMITS.extraNotes, false, "those notes"),
   },
 };

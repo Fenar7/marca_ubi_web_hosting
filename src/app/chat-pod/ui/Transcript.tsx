@@ -32,9 +32,11 @@ interface Props {
   onEditSlot: (slot: SlotId) => void;
   /** Whether any card on this screen still answers an edit. True only while the review card is open. */
   rowsActive: boolean;
+  /** Invoked when an internal route link is clicked so the panel closes and unlocks the viewport. */
+  onNavigate?: () => void;
 }
 
-export default function Transcript({ messages, typing, onEditSlot, rowsActive }: Props) {
+export default function Transcript({ messages, typing, onEditSlot, rowsActive, onNavigate }: Props) {
   const region = useRef<HTMLDivElement>(null);
   const [unseen, setUnseen] = useState(false);
 
@@ -79,7 +81,13 @@ export default function Transcript({ messages, typing, onEditSlot, rowsActive }:
         aria-label="Conversation"
       >
         {messages.map((message, index) => (
-          <MessageBubble key={message.id} message={message} onEditSlot={onEditSlot} rowsActive={rowsActive && index === lastReview} />
+          <MessageBubble
+            key={message.id}
+            message={message}
+            onEditSlot={onEditSlot}
+            rowsActive={rowsActive && index === lastReview}
+            onNavigate={onNavigate}
+          />
         ))}
 
         {/* Reserved height, so the arrival of the indicator moves nothing: this is the CLS-0 rule. */}

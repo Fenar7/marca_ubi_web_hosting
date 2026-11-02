@@ -34,12 +34,15 @@ interface Props {
   blockReason: string;
   /** The slot's own example, so an answer like a phone number is not typed as a sentence. */
   placeholder?: string;
+  /** Maximum length allowed for input, dynamically configured by slot definition. */
+  maxLength?: number;
   /** Tells the visitor the question they are on is already answered, so typing replaces it. */
   helper?: string;
 }
 
-export default function Composer({ inputRef, onSubmit, blocked, blockReason, placeholder, helper }: Props) {
+export default function Composer({ inputRef, onSubmit, blocked, blockReason, placeholder, maxLength, helper }: Props) {
   const [value, setValue] = useState("");
+  const limit = maxLength ?? MAX_CHARS;
 
   const empty = value.trim().length === 0;
 
@@ -58,14 +61,15 @@ export default function Composer({ inputRef, onSubmit, blocked, blockReason, pla
         ref={inputRef}
         className={styles.field}
         rows={1}
-        maxLength={MAX_CHARS}
+        maxLength={limit}
         value={value}
         aria-label="Message"
         aria-disabled={blocked || undefined}
         aria-describedby={describedBy}
         placeholder={blocked ? "" : (placeholder ?? "Ask about the work, the services, or a project")}
-        onChange={(event) => setValue(event.target.value.slice(0, MAX_CHARS))}
+        onChange={(event) => setValue(event.target.value.slice(0, limit))}
         onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing) return;
           if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
             send();

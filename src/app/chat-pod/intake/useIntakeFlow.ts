@@ -180,7 +180,21 @@ function advance(state: IntakeState, slot: SlotId, value: SlotValue): IntakeStat
 
   // Editing from the review card returns to the card, not to the next unanswered slot: the rest of the
   // tail was already offered, and walking it again would re-ask questions already answered.
-  if (state.editing) return { ...filled, mode: "REVIEW", editing: false, error: null };
+  // Exception: if editing categories, the old services may no longer match the new disciplines.
+  // We clear the old services and route to the services slot so the visitor re-picks valid services.
+  if (state.editing) {
+    if (slot === "categories") {
+      const servicesIndex = SLOT_ORDER.indexOf("services");
+      return {
+        ...filled,
+        slots: { ...filled.slots, services: [] },
+        slotIndex: servicesIndex,
+        editing: true,
+        error: null,
+      };
+    }
+    return { ...filled, mode: "REVIEW", editing: false, error: null };
+  }
 
   const nextIndex = state.slotIndex + 1;
   if (nextIndex >= SLOT_ORDER.length) return { ...filled, mode: "REVIEW", error: null };

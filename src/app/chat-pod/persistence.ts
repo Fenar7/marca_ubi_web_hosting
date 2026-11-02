@@ -165,7 +165,12 @@ function isBlocks(value: unknown): boolean {
       if (typeof item !== "object" || item === null) return false;
       const entry = item as { label?: unknown; href?: unknown };
       if (typeof entry.label !== "string") return false;
-      return block.t === "links" ? typeof entry.href === "string" : true;
+      if (block.t === "links") {
+        if (typeof entry.href !== "string") return false;
+        const href = entry.href.trim().toLowerCase();
+        return href.startsWith("/") || href.startsWith("https://") || href.startsWith("mailto:") || href.startsWith("tel:");
+      }
+      return true;
     });
   });
 }
