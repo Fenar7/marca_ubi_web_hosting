@@ -25,6 +25,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { prefersReducedMotion } from "@/app/lib/motion";
@@ -917,9 +918,28 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         aria-haspopup="dialog"
         aria-controls="mubi-pod-panel"
       >
-        <span className={styles.launcherGlyph} aria-hidden="true">
-          {open ? "×" : "U"}
-        </span>
+        {open ? (
+          <span className={styles.launcherGlyph} aria-hidden="true">
+            ×
+          </span>
+        ) : (
+          <div className={styles.launcherAvatarWrap} aria-hidden="true">
+            <div className={styles.launcherAvatar}>
+              <Image
+                src="/avatars/sophia-sterling.jpg"
+                alt="Sophia Sterling"
+                width={34}
+                height={34}
+                className={styles.launcherAvatarImg}
+                priority
+              />
+              <span className={styles.statusBeacon} aria-hidden="true">
+                <span className={styles.statusPulse} />
+                <span className={styles.statusDot} />
+              </span>
+            </div>
+          </div>
+        )}
         <span className={styles.launcherText}>
           <span className={styles.launcherName}>{PERSONA.name}</span>
           <span className={styles.launcherHint}>{open ? "Close" : "Ask"}</span>

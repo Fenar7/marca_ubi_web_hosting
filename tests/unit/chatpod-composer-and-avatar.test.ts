@@ -151,6 +151,121 @@ describe("Chat Pod: Concierge Photographic Profile Avatar & Disclosure Contract"
       "ChatPod styles must never contain generic blue #2563eb"
     );
   });
+
+  it("renders Sophia Sterling photographic portrait thumbnail on resting launcher button", () => {
+    const chatPodSource = fs.readFileSync(CHAT_POD_PATH, "utf8");
+    assert.ok(
+      chatPodSource.includes('src="/avatars/sophia-sterling.jpg"') &&
+      chatPodSource.includes("styles.launcherAvatarImg"),
+      "ChatPod launcher must render Sophia Sterling portrait thumbnail in resting state"
+    );
+    assert.ok(
+      chatPodSource.includes('import Image from "next/image"'),
+      "ChatPod must import Next.js Image component for launcher avatar"
+    );
+    assert.ok(
+      chatPodSource.includes("styles.statusBeacon") &&
+      chatPodSource.includes("styles.statusPulse") &&
+      chatPodSource.includes("styles.statusDot"),
+      "ChatPod launcher must include active emerald status beacon on resting avatar"
+    );
+  });
+
+  it("strictly forbids legacy letter 'U' tile on launcher button", () => {
+    const chatPodSource = fs.readFileSync(CHAT_POD_PATH, "utf8");
+    assert.strictEqual(
+      chatPodSource.includes('{open ? "×" : "U"}'),
+      false,
+      "ChatPod launcher must never render legacy letter 'U' glyph tile"
+    );
+    assert.strictEqual(
+      chatPodSource.includes('>U<'),
+      false,
+      "ChatPod launcher must not contain naked 'U' letter text node"
+    );
+  });
+
+  it("renders minimal luxury typographic crosshair when launcher is open", () => {
+    const chatPodSource = fs.readFileSync(CHAT_POD_PATH, "utf8");
+    assert.ok(
+      chatPodSource.includes('{open ? (') &&
+      chatPodSource.includes("styles.launcherGlyph") &&
+      chatPodSource.includes("×"),
+      "ChatPod launcher must render refined crosshair glyph when panel is open"
+    );
+  });
+});
+
+describe("Chat Pod: Dark Luxury Obsidian Frosted Glass & Surface Physics Contract", () => {
+  const scssSource = fs.readFileSync(CHAT_POD_SCSS_PATH, "utf8");
+
+  it("enforces deep obsidian frosted glass modal container with 28px blur and 14px radius", () => {
+    assert.ok(
+      scssSource.includes("$pod-glass-bg: rgba(12, 12, 16, 0.94);") &&
+      scssSource.includes("backdrop-filter: blur(28px) saturate(180%);") &&
+      scssSource.includes("border-radius: 14px;"),
+      "ChatPod panel must apply obsidian frosted glass with 28px blur and 14px radius"
+    );
+  });
+
+  it("applies Apple HIG floating capsule geometry (border-radius: 9999px) on launcher button", () => {
+    assert.ok(
+      scssSource.includes(".launcher {") &&
+      scssSource.includes("border-radius: 9999px;") &&
+      scssSource.includes("backdrop-filter: blur(16px);"),
+      "Launcher button must be styled as a floating frosted glass capsule"
+    );
+  });
+
+  it("configures quick-action chips and action buttons as Linear/Raycast fluid capsules (9999px)", () => {
+    assert.ok(
+      scssSource.includes(".chip {") &&
+      scssSource.includes("border-radius: 9999px;"),
+      "Chips must adopt fluid pill capsule geometry"
+    );
+    assert.ok(
+      scssSource.includes(".headerBtn,") &&
+      scssSource.includes(".iconButton {") &&
+      scssSource.includes("border-radius: 9999px;"),
+      "Header action buttons must adopt fluid pill capsule geometry"
+    );
+  });
+
+  it("implements vibrant Marca Orange send button with tactile press feedback", () => {
+    assert.ok(
+      scssSource.includes(".send {") &&
+      scssSource.includes("#ff6100") &&
+      scssSource.includes("linear-gradient(135deg, #ff6100 0%, #e05500 100%)"),
+      "Send button must use signature Marca Orange gradient"
+    );
+    assert.ok(
+      scssSource.includes("&:active {") &&
+      scssSource.includes("transform: scale(0.95);"),
+      "Send button must provide tactile active press feedback"
+    );
+  });
+
+  it("strictly purges legacy #cccccc grey from send idle and composer states", () => {
+    assert.strictEqual(
+      scssSource.includes("#cccccc"),
+      false,
+      "ChatPod styles must never contain dated #cccccc grey slab"
+    );
+    assert.ok(
+      scssSource.includes(".sendIdle {") &&
+      scssSource.includes("background: rgba(255, 255, 255, 0.08);"),
+      "Send idle state must use subtle dark obsidian glass tone"
+    );
+  });
+
+  it("maintains high-contrast typography satisfying WCAG AA 4.5:1 across dark surfaces", () => {
+    assert.ok(
+      scssSource.includes("$ink: #f4f4f5;") &&
+      scssSource.includes("$muted: #a1a1aa;") &&
+      scssSource.includes("$quiet: #9ca3af;"),
+      "Dark theme color tokens must guarantee WCAG AA 4.5:1 text contrast"
+    );
+  });
 });
 
 describe("Modal Overlay Mutual Exclusion & Focus Invariant Protection", () => {
