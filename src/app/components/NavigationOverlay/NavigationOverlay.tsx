@@ -35,6 +35,7 @@ export function NavigationOverlay({
   const desktopCloseBtnRef = useRef<HTMLButtonElement | null>(null);
   const mobileCloseBtnRef = useRef<HTMLButtonElement | null>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
+  const prevOpenRef = useRef(false);
 
   // Focus trap & keyboard lifecycle
   const handleKeyDown = useCallback(
@@ -77,7 +78,10 @@ export function NavigationOverlay({
   // Body scroll lock with scrollbar width compensation
   useEffect(() => {
     if (isOpen) {
-      previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+      const isInitialOpen = !prevOpenRef.current;
+      if (isInitialOpen) {
+        previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+      }
 
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
@@ -85,25 +89,31 @@ export function NavigationOverlay({
         document.body.style.paddingRight = `${scrollbarWidth}px`;
       }
 
-      // Shift focus into overlay
-      const focusTarget =
-        window.innerWidth > 1024
-          ? desktopCloseBtnRef.current
-          : mobileCloseBtnRef.current;
-      focusTarget?.focus();
+      // Shift focus into overlay strictly on false -> true edge transition
+      if (isInitialOpen) {
+        const focusTarget =
+          window.innerWidth > 1024
+            ? desktopCloseBtnRef.current
+            : mobileCloseBtnRef.current;
+        focusTarget?.focus();
+      }
 
       window.addEventListener("keydown", handleKeyDown);
     } else {
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";
 
-      // Restore focus to trigger
-      if (triggerRef?.current) {
-        triggerRef.current.focus();
-      } else if (previousActiveElementRef.current) {
-        previousActiveElementRef.current.focus();
+      // Restore focus to trigger strictly on open -> closed transition
+      if (prevOpenRef.current) {
+        if (triggerRef?.current) {
+          triggerRef.current.focus();
+        } else if (previousActiveElementRef.current) {
+          previousActiveElementRef.current.focus();
+        }
       }
     }
+
+    prevOpenRef.current = isOpen;
 
     return () => {
       document.body.style.overflow = "";

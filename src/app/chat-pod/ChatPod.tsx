@@ -244,7 +244,18 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     // The same event pair the header and the modals use: the smooth-scroll controller stops Lenis so
     // the page behind the panel cannot move while the transcript owns the wheel.
     window.dispatchEvent(new Event("menu:open"));
+    // Overlay mutual exclusion: dismiss the site navigation overlay if open
+    window.dispatchEvent(new Event("navigation:close"));
   }, []);
+
+  // Overlay mutual exclusion: dismiss chat pod when chatpod:close event is received
+  useEffect(() => {
+    const handleClosePod = () => closePanel();
+    window.addEventListener("chatpod:close", handleClosePod);
+    return () => {
+      window.removeEventListener("chatpod:close", handleClosePod);
+    };
+  }, [closePanel]);
 
   // Greeting or restored history, exactly once per page load. A ref rather than a length check
   // because React 19 double-invokes effects in dev, and two greetings would be a bug a visitor sees.

@@ -10,9 +10,9 @@
  *                the visitor is continuously informed they are interacting with software regardless
  *                of transcript scroll depth, strictly satisfying Anti-Slop Rule R-16/R-36 and
  *                Playwright E2E line 666.
- *              - Concierge Profile Avatar: Bespoke Swiss digital concierge vector silhouette inside
- *                an Apple HIG continuous squircle with an integrated active emerald radar beacon (#22c55e),
- *                protective isolation ring, and specular lens gleam.
+ *              - Concierge Profile Avatar: Editorial photographic portrait of lady concierge
+ *                (/avatars/sophia-sterling.jpg) inside an Apple HIG continuous squircle (rx=10px) with
+ *                subtle specular border and an integrated active emerald radar beacon (#22c55e).
  *              - Controls: Retain visible text nodes ("Menu", "Close") alongside micro-SVG icons,
  *                guaranteeing full conformance with Playwright `getByText('Menu')` and WCAG AA 4.5:1.
  *
@@ -20,6 +20,7 @@
  */
 
 import { memo } from "react";
+import Image from "next/image";
 import { PERSONA } from "../knowledge/corpus";
 import styles from "../ChatPod.module.scss";
 
@@ -37,77 +38,19 @@ function PersonaHeader({ titleId, onMenu, onClose, menuOpen }: Props) {
       <div className={styles.headerMain}>
         <div className={styles.avatarWrap} aria-hidden="true">
           <div className={styles.avatar}>
-            <svg
-              className={styles.avatarSvg}
-              width="38"
-              height="38"
-              viewBox="0 0 38 38"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-              role="img"
-            >
-              <defs>
-                <linearGradient id="conciergeSurface" x1="4" y1="4" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#24242b" />
-                  <stop offset="50%" stopColor="#141418" />
-                  <stop offset="100%" stopColor="#0a0a0c" />
-                </linearGradient>
-                <linearGradient id="conciergeSpecular" x1="19" y1="0" x2="19" y2="38" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="rgba(255, 255, 255, 0.22)" />
-                  <stop offset="40%" stopColor="rgba(255, 255, 255, 0.06)" />
-                  <stop offset="100%" stopColor="rgba(0, 0, 0, 0.8)" />
-                </linearGradient>
-                <linearGradient id="conciergeGlyph" x1="19" y1="9" x2="19" y2="30" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#FFFFFF" />
-                  <stop offset="70%" stopColor="#EDEDF0" />
-                  <stop offset="100%" stopColor="#B8B8C2" />
-                </linearGradient>
-              </defs>
-
-              {/* Base Continuous Squircle Container (38x38, rx=10) */}
-              <rect
-                x="0.75"
-                y="0.75"
-                width="36.5"
-                height="36.5"
-                rx="10"
-                fill="url(#conciergeSurface)"
-                stroke="url(#conciergeSpecular)"
-                strokeWidth="1.25"
-              />
-
-              {/* Specular Top Sheen Arc */}
-              <path
-                d="M 5 13 C 5 7.5 8 5 13 5 L 25 5 C 30 5 33 7.5 33 13"
-                stroke="rgba(255, 255, 255, 0.12)"
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
-
-              {/* Concierge Head */}
-              <circle cx="19" cy="13.2" r="4.8" fill="url(#conciergeGlyph)" />
-
-              {/* Concierge Shoulders & Tailored Bust */}
-              <path
-                d="M 9.5 28.5 C 9.5 23.2 13.5 19.8 19 19.8 C 24.5 19.8 28.5 23.2 28.5 28.5 C 28.5 28.9 28.1 29.2 27.7 29.2 L 10.3 29.2 C 9.9 29.2 9.5 28.9 9.5 28.5 Z"
-                fill="url(#conciergeGlyph)"
-              />
-
-              {/* Swiss Tailored Lapel V-Notch (Precision Negative Space) */}
-              <path
-                d="M 15.8 20.2 L 19 24.6 L 22.2 20.2"
-                stroke="#141418"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Image
+              src="/avatars/sophia-sterling.jpg"
+              alt="Ubi, Concierge"
+              width={38}
+              height={38}
+              className={styles.avatarImg}
+              priority
+            />
+            <span className={styles.statusBeacon} aria-hidden="true">
+              <span className={styles.statusPulse} />
+              <span className={styles.statusDot} />
+            </span>
           </div>
-          <span className={styles.statusBeacon}>
-            <span className={styles.statusPulse} />
-            <span className={styles.statusDot} />
-          </span>
         </div>
 
         <div className={styles.identity}>
