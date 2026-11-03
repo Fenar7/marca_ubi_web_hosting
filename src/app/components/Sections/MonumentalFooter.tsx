@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: "Guiding Principles", href: "/#values" },
   { label: "Journal", href: "/blog" },
   { label: "Studio Corridors", href: "/#network" },
+  { label: "Contact", href: "/contact" },
   { label: "Initiate Brief", href: "/start-project" },
 ];
 
@@ -82,6 +83,11 @@ export function MonumentalFooter() {
           <div className={styles.column}>
             <nav aria-label="Direct Desks">
               <ul className={styles.linksList}>
+                <li>
+                  <Link href="/contact" className={styles.linkItem}>
+                    Contact Studio &rarr;
+                  </Link>
+                </li>
                 <li>
                   <Link href="/start-project" className={styles.linkItem}>
                     Start a Project Brief &rarr;

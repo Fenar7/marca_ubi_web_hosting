@@ -208,6 +208,12 @@ describe('Contact Portal: Technical SEO & Metadata Architecture', () => {
     const sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
     assert.match(sitemapContent, /\${siteUrl}\/contact/);
   });
+
+  it('wires hamburger NavigationOverlay contact link to /contact', () => {
+    const navOverlayPath = path.join(process.cwd(), 'src/app/components/NavigationOverlay/NavigationOverlay.tsx');
+    const navOverlayContent = fs.readFileSync(navOverlayPath, 'utf8');
+    assert.match(navOverlayContent, /\{\s*label:\s*["']contact["'],\s*href:\s*["']\/contact["']\s*\}/);
+  });
 });
 
 describe('Contact Portal: Server Action Boundary Compliance', () => {
