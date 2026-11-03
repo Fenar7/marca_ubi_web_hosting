@@ -6,7 +6,7 @@
 **Recorded At:** `2026-11-03T11:23:34+05:30`
 **Current Branch:** `remediation/turbopack-compaction-dev-server` (sub-branch under `redesign/chat-pod-luxury-interaction`)
 **Base Branch:** `redesign/chat-pod-luxury-interaction` (which targets `feature/chat-pod` in PR #106)
-**Latest State:** `Chat Pod comprehension engine (Part A) + motion & contrast contract (Part B) — committed 15b2183, pushed, PR #107 updated and OPEN`
+**Latest State:** `Chat Pod comprehension + motion/contrast contract + transcript follow fix — commits 15b2183, a3a6a82, 6238aa7 pushed; PR #107 updated and OPEN`
 **Open Pull Requests (ALL STRICTLY OPEN):**
 - [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
 - [PR #106 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (`redesign/chat-pod-luxury-interaction` → `feature/chat-pod`)
@@ -39,9 +39,14 @@ Read the **Re-certification, 2 November 2026** block in
 [`docs/chat_pod/07-delivery-gate-and-verification.md`](../chat_pod/07-delivery-gate-and-verification.md)
 before quoting any PASS from that table — it supersedes R-25, R-19, R-02 and R-23.
 
-**Shipped in this phase:** commit `15b2183` pushed to `remediation/turbopack-compaction-dev-server`, PR #107
-retitled and its body rewritten with the re-certification table. PRs #105/#106/#107 remain OPEN; the agent
-never merges. The single open item is the portrait provenance question in §7 of the register.
+**Shipped in this phase:** `15b2183` (comprehension + motion/contrast), `a3a6a82` (hand-off docs),
+`6238aa7` (the stuck transcript the owner found by using the pod: the follow test measured the distance
+*after* the new row was painted, so a reader at the end read as 120px away from it and the pod stopped
+following forever, with no pill to explain why). All pushed to
+`remediation/turbopack-compaction-dev-server`; PR #107 retitled and its body rewritten with the
+re-certification table. PRs #105/#106/#107 remain OPEN; the agent never merges. The single open item is the
+portrait provenance question in §7 of the register. **Known gap:** the follow behaviour has no e2e gate, and
+the fix has not been run in a browser (the host had no memory for a dev server); see doc 21 §5.
 
 ---
 
