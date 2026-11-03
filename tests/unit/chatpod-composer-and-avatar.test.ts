@@ -266,12 +266,17 @@ describe("Chat Pod: Swiss Light Editorial Luxury Surface Contract", () => {
     );
   });
 
-  it("maintains high-contrast typography satisfying WCAG AA 4.5:1 across Swiss light surfaces", () => {
+  it("leaves the contrast promise to the test that measures it", () => {
+    // The three ink tokens are pinned in `chatpod-contrast.test.ts`, which reads them out of this very
+    // stylesheet and computes each pair against the surface it is painted on. Asserting the hexes twice
+    // here would only have preserved the old failure: a comment claiming 4.5:1 for a tone at 3.3:1.
     assert.ok(
-      scssSource.includes("$ink: #0a0a0a;") &&
-      scssSource.includes("$muted: #767676;") &&
-      scssSource.includes("$quiet: #8e8e93;"),
-      "Swiss light editorial theme color tokens must guarantee WCAG AA 4.5:1 text contrast"
+      scssSource.includes("$ink:") && scssSource.includes("$muted:") && scssSource.includes("$quiet:"),
+      "The Swiss light ink scale must stay three tones, named, so the contrast suite can measure it"
+    );
+    assert.ok(
+      fs.readFileSync(path.resolve("tests/unit/chatpod-contrast.test.ts"), "utf8").includes("Chat Pod contrast contract"),
+      "The stylesheet's AA claim must have a measuring test behind it"
     );
   });
 });

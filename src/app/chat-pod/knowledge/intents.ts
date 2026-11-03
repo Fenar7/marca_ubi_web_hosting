@@ -9,9 +9,12 @@
  *              the content moves on.
  *
  *              Three rules the table obeys and that are easy to break by accident:
- *              1. Tier 1 utterances are globally unique. An ambiguous phrase belongs in `keywords`
- *                 so it reaches the disambiguation chips instead of being won by whichever intent
- *                 was declared first.
+ *              1. A Tier 1 name may be authored by more than one intent, and when it is, the phrase
+ *                 resolves to both of them at once. The name dictionary is multi-owner, so a contested
+ *                 name reaches the disambiguation chips instead of being won by whichever intent was
+ *                 declared first. That is what lets two published lines share a title ("Public
+ *                 Relations (PR)" is published under both splits) without the pod having to invent a
+ *                 tie-break. Author the shared name on every owner; do not suppress it on one of them.
  *              2. Only routes that exist in `src/app` may be linked. `/about` and `/clients` were
  *                 in the script and are not on this site, so those answers point at real pages.
  *              3. Utterances are full sentence forms, not just topic nouns. Tier 3 blends token
@@ -24,7 +27,6 @@
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
-import { normalise } from "../engine/normalise";
 import type { Chip, Intent, KnowledgeBase, Reply } from "../types";
 import {
   ALL_SERVICES_HREF,
@@ -56,6 +58,46 @@ function keywordsFrom(phrase: string, cap = 6): string[] {
     if (out.length >= cap) break;
   }
   return out;
+}
+
+/**
+ * One rendering for both halves of the catalogue, so the business and consumer lists cannot drift
+ * apart in shape or in length.
+ *
+ * Each row carries the line's first two published deliverable labels as its `sub` rather than its
+ * `shortDescription`: across the sixteen decks those summaries run 211 to 290 characters, so eight of
+ * them stacked under one title is close to two thousand characters in a single bubble and a list
+ * nobody scrolls on a phone. Two labels is the same corpus cut to what sits beside a title, and the
+ * whole summary is one tap away on that line's own intent.
+ *
+ * The chips are intent chips, not route chips: a tap should explain the service inside the
+ * conversation instead of navigating the page out from under the visitor. They are not sliced, because
+ * dropping the tail of the list from the tap path is how a published line becomes unfindable, and the
+ * count is bounded by the split itself (eight). The switch to the other half rides on the persistent
+ * menu's "Services" chip, which the panel renders in chat mode, so it needs no chip of its own.
+ */
+function listSplitReply(kb: KnowledgeBase, split: "B2B" | "B2C"): Reply {
+  const lines = kb.services.filter((service) => service.split === split);
+  const count = split === "B2B" ? kb.counts.servicesB2B : kb.counts.servicesB2C;
+  return {
+    blocks: [
+      {
+        t: "p",
+        text:
+          split === "B2B"
+            ? `${count} lines aimed at businesses. Tap one and I will explain it:`
+            : `${count} lines aimed at consumer brands. Tap one and I will explain it:`,
+      },
+      {
+        t: "list",
+        items: lines.map((line) => ({ label: line.title, sub: line.covers.slice(0, 2).join(", ") })),
+      },
+    ],
+    chips: [
+      ...lines.map((line) => asChip.intent(line.title, `services.detail.${line.slug}`)),
+      asChip.route("All service pages", ALL_SERVICES_HREF),
+    ],
+  };
 }
 
 /**
@@ -160,32 +202,53 @@ const STATIC_INTENTS: Intent[] = [
     id: "services.overview",
     label: "What we do",
     source: "src/app/services/content.ts:95 SERVICE_DETAILS; src/app/components/Sections/ServicesAccordion/types.ts:28,130",
+    // The sentence forms visitors actually type, authored rather than rescued by a threshold: "what
+    // are the services available" once scored 0.774 on arithmetic and came back as three chips,
+    // because the only word in it nobody had written down was "available". Tier 1 answers a phrase an
+    // author published with a decision, so every phrasing this studio is willing to understand is
+    // listed here and pinned in the typed table.
     utterances: [
       "what do you do",
       "what do you offer",
       "what services do you offer",
       "what are your services",
+      "what are the services",
+      "what is the services",
+      "what are the services available",
+      "what services are available",
+      "what services do you have",
+      "what services you provide",
+      "services available",
+      "available services",
+      "tell me about your services",
+      "list of services",
+      "full list of services",
+      "service list",
+      "services",
+      "your services",
       "what do you sell",
       "what can you do for me",
       "help me with marketing",
-      "services",
-      "service list",
-      "your services",
     ],
-    keywords: ["services", "service", "offer", "marketing", "do", "help"],
+    // "services" must stay first: the leading keyword carries the topic weight, "available" is the
+    // word that was missing from the denominator, and appending it cannot demote the subject noun.
+    keywords: ["services", "service", "offer", "marketing", "available", "do", "help"],
     respond: (kb) => ({
       blocks: [
         {
           t: "p",
-          text: `We publish ${kb.counts.servicePages} service lines: ${kb.counts.servicesB2B} aimed at businesses and ${kb.counts.servicesB2C} at consumer brands. Each one has a page setting out the deliverables.`,
+          text: "Who do you sell to, other businesses or consumers? That is the question worth answering first, because the work is organised by it.",
         },
-        { t: "p", text: "Which group is closest to what you need?" },
+        {
+          t: "p",
+          text: `Business-facing lines run ${kb.counts.servicesB2B}, consumer-facing lines run ${kb.counts.servicesB2C}, and each one has a page setting out its deliverables.`,
+        },
       ],
       chips: [
-        asChip.intent("Business work", "services.b2b"),
-        asChip.intent("Consumer work", "services.b2c"),
-        asChip.route("All service pages", ALL_SERVICES_HREF),
+        asChip.intent("Business-to-business", "services.b2b"),
+        asChip.intent("Consumer brands", "services.b2c"),
         asChip.intent("Not sure which", "services.whichone"),
+        asChip.route("All service pages", ALL_SERVICES_HREF),
       ],
     }),
   },
@@ -200,21 +263,10 @@ const STATIC_INTENTS: Intent[] = [
       "business to business services",
       "what do you do for businesses",
       "enterprise work",
+      "business facing services",
     ],
     keywords: ["b2b", "business", "enterprise", "services"],
-    respond: (kb) => {
-      const lines = kb.services.filter((service) => service.split === "B2B");
-      return {
-        blocks: [
-          { t: "p", text: "Business-to-business work:" },
-          { t: "list", items: lines.map((line) => ({ label: line.title })) },
-        ],
-        chips: [
-          ...lines.slice(0, 8).map((line) => asChip.route(line.title, `/services/${line.slug}`)),
-          asChip.route("All service pages", ALL_SERVICES_HREF),
-        ],
-      };
-    },
+    respond: (kb) => listSplitReply(kb, "B2B"),
   },
   {
     id: "services.b2c",
@@ -227,21 +279,10 @@ const STATIC_INTENTS: Intent[] = [
       "business to consumer services",
       "what do you do for consumer brands",
       "retail work",
+      "consumer facing services",
     ],
     keywords: ["b2c", "consumer", "retail", "services"],
-    respond: (kb) => {
-      const lines = kb.services.filter((service) => service.split === "B2C");
-      return {
-        blocks: [
-          { t: "p", text: "Business-to-consumer work:" },
-          { t: "list", items: lines.map((line) => ({ label: line.title })) },
-        ],
-        chips: [
-          ...lines.slice(0, 8).map((line) => asChip.route(line.title, `/services/${line.slug}`)),
-          asChip.route("All service pages", ALL_SERVICES_HREF),
-        ],
-      };
-    },
+    respond: (kb) => listSplitReply(kb, "B2C"),
   },
   {
     id: "services.whichone",
@@ -570,7 +611,12 @@ const STATIC_INTENTS: Intent[] = [
       "your social media",
       "where do you publish",
     ],
-    keywords: ["social", "follow", "instagram", "linkedin", "twitter"],
+    // "social" is deliberately absent from the keyword list: it is the subject noun of two published
+    // service lines, and carrying it here let "explain social media marketing" be answered with the
+    // studio's Instagram link. This intent is about where the studio publishes, which is what its
+    // aliases already say ("social channels", "where do you publish"), so nothing here loses a phrase
+    // anybody authored.
+    keywords: ["channels", "instagram", "linkedin", "twitter", "follow"],
     respond: (kb) => ({
       blocks: [
         { t: "p", text: "Where the studio publishes outside this site:" },
@@ -714,26 +760,27 @@ const STATIC_INTENTS: Intent[] = [
 ];
 
 /**
- * One intent per published service line. The bare title is only authored as an alias where it is
- * unique across the sixteen: Public Relations (PR) is the title of both a B2B and a B2C line, and
- * letting a dictionary first-wins decide which page "public relations" means is precisely the
- * arbitrary behaviour the margin rule exists to prevent. Colliding titles stay as keywords, so the
- * visitor gets the two candidates as chips and chooses.
+ * One intent per published service line, authored under the line's published title plus the names
+ * people actually use for it.
+ *
+ * The title is authored even when a second line publishes the same title. Tier 1 is multi-owner:
+ * "Public Relations (PR)" is the name of a B2B and a B2C deck, so both claim it, both come back at
+ * score 1, and `decide` answers the tie with chips. Skipping the duplicate title was the fix from the
+ * window when the dictionary kept only the first writer, and leaving it out pushed the phrase down to
+ * Tier 2 keyword arithmetic, which silently favoured whichever deck carried more matching keywords and
+ * answered "public relations" with one page. A contested published name is now the intended outcome,
+ * not something to author around.
+ *
+ * `ctx.expanded` is the second ask on the same line ("tell me more"), where the summary has already
+ * been read: the full published deliverable list replaces the three-label cut, and the sibling line in
+ * the same split is named so there is something to compare it against. With no context the short answer
+ * stays, because the first ask should not open with everything.
  */
 function serviceDetailIntents(kb: KnowledgeBase): Intent[] {
-  const titleKeyCounts = new Map<string, number>();
-  for (const service of kb.services) {
-    const key = normalise(service.title);
-    titleKeyCounts.set(key, (titleKeyCounts.get(key) ?? 0) + 1);
-  }
-
   return kb.services.map((service, index) => {
     const siblings = kb.services.filter((other) => other.split === service.split && other.slug !== service.slug);
     const related = siblings.length > 0 ? siblings[index % siblings.length] : undefined;
-
-    const utterances: string[] = [];
-    if ((titleKeyCounts.get(normalise(service.title)) ?? 0) === 1) utterances.push(service.title);
-    for (const alias of SERVICE_ALIASES[service.slug] ?? []) utterances.push(alias);
+    const utterances: string[] = [service.title, ...(SERVICE_ALIASES[service.slug] ?? [])];
 
     return {
       id: `services.detail.${service.slug}`,
@@ -744,18 +791,34 @@ function serviceDetailIntents(kb: KnowledgeBase): Intent[] {
         ...keywordsFrom(service.title),
         ...service.covers.slice(0, 2).flatMap((cover) => keywordsFrom(cover, 2)),
       ].slice(0, 8),
-      respond: () => ({
-        blocks: [
-          { t: "p", text: service.summary },
-          { t: "p", text: "What it covers:" },
-          { t: "list", items: service.covers.slice(0, 3).map((cover) => ({ label: cover })) },
-        ],
-        chips: [
-          asChip.route("Open the page", `/services/${service.slug}`),
-          ...(related ? [asChip.intent(related.title, `services.detail.${related.slug}`)] : []),
-          asChip.intake(),
-        ],
-      }),
+      respond: (_kb, ctx) => {
+        const expanded = ctx?.expanded === true;
+        const listed = expanded ? service.covers : service.covers.slice(0, 3);
+        return {
+          blocks: [
+            { t: "p", text: service.summary },
+            { t: "p", text: expanded ? "Everything this line publishes:" : "What it covers:" },
+            { t: "list", items: listed.map((cover) => ({ label: cover })) },
+            // The sibling is only named on the deep pass: on the first answer the visitor has not yet
+            // seen what this line does, and a second name in the same breath is a choice made too early.
+            ...(expanded && related
+              ? [
+                  {
+                    t: "p" as const,
+                    text: `On the same side of the catalogue, ${related.title} covers ${related.covers.slice(0, 2).join(" and ")}.`,
+                  },
+                ]
+              : []),
+          ],
+          chips: [
+            asChip.route("Open the page", `/services/${service.slug}`),
+            ...(related ? [asChip.intent(related.title, `services.detail.${related.slug}`)] : []),
+            asChip.intent("All business lines", "services.b2b"),
+            asChip.intent("All consumer lines", "services.b2c"),
+            asChip.intake(),
+          ],
+        };
+      },
     };
   });
 }
@@ -776,19 +839,56 @@ function faqIntents(kb: KnowledgeBase): Intent[] {
 }
 
 /**
+ * Journal categories that are also names of things the studio sells.
+ *
+ * Two published categories read exactly like deliverables ("Brand Strategy", "Design Systems"), and
+ * before this the pod answered "what is brand strategy" with a list of posts while the deck that does
+ * that work never came up. The map is built from the corpus rather than a hardcoded pair list, so a new
+ * category or a renamed deliverable creates or removes the bridge on its own.
+ * Keys are lower-cased because the category title and the deliverable label are written by different
+ * people in different cases, and that difference is not a fact about the subject.
+ */
+function serviceBridgeByTopic(kb: KnowledgeBase): Map<string, { id: string; label: string }[]> {
+  const bridge = new Map<string, { id: string; label: string }[]>();
+  const add = (name: string, entry: { id: string; label: string }) => {
+    const key = name.toLowerCase();
+    if (key.length === 0) return;
+    const existing = bridge.get(key);
+    if (!existing) bridge.set(key, [entry]);
+    else if (!existing.some((item) => item.id === entry.id)) existing.push(entry);
+  };
+  for (const service of kb.services) {
+    const entry = { id: `services.detail.${service.slug}`, label: service.title };
+    for (const name of [service.title, ...service.covers, ...(SERVICE_ALIASES[service.slug] ?? [])]) add(name, entry);
+  }
+  return bridge;
+}
+
+/**
  * One intent per published journal category. Only titles are compiled, so the answer stays inside
  * the twelve entries the pod was given and sends anything it cannot place to the full index rather
  * than implying it knows the whole archive.
+ *
+ * A category whose title is also a published deliverable is answered as the journal half of the
+ * subject and hands the visitor the service line as a chip. It is not silently re-routed to the deck:
+ * the `work.journal.topic.` discount in `match.ts` keeps the blog reading second to the service on a
+ * shared phrase, and both end up offered. That is the honest shape of "what is brand strategy", where
+ * the studio both writes about brand strategy and sells it.
  */
 function journalTopicIntents(kb: KnowledgeBase): Intent[] {
+  const bridge = serviceBridgeByTopic(kb);
   return kb.journalCategories
     .filter((title) => title.trim().length > 0)
     .map((title) => {
       const matching = kb.journal.filter((post) => post.category === title);
+      const services = bridge.get(title.toLowerCase()) ?? [];
       return {
         id: `work.journal.topic.${title}`,
         label: `${title} entries`,
         source: `src/sanity/lib/blog-queries.ts:51 categoriesQuery`,
+        // Only the reading forms are authored here. The bare title is also a service name, and the
+        // service intent publishes it as its own alias, so the plain phrase is contested at Tier 1 and
+        // answered with both owners rather than being won by whichever table was assembled first.
         utterances: [title, `${title} articles`, `${title} journal`],
         keywords: keywordsFrom(title, 4),
         respond: () => ({
@@ -809,6 +909,7 @@ function journalTopicIntents(kb: KnowledgeBase): Intent[] {
                 ],
           chips: [
             ...matching.slice(0, 3).map((post) => asChip.route(post.title, `/blog/${post.slug}`)),
+            ...services.map((service) => asChip.intent(`${service.label} service`, service.id)),
             asChip.route("All entries", "/blog"),
           ],
         }),
@@ -851,18 +952,35 @@ export function openingReply(): Reply {
  * The three published fallback states. Kept out of the intent table because they are chosen by the
  * resolver's score, never by a matcher lookup, and an intent here would be answerable by typing the
  * words "fallback hard".
+ *
+ * The three states are different situations, not three phrasings of one apology:
+ * - `soft` is not a failure at all. The matcher found real candidates and is asking which one, so this
+ *   copy does not apologise; it puts the question and the chips next to each other.
+ * - `hard` is the first miss. Matching is still live, so the way forward is to say the same thing in
+ *   words this site actually publishes, with a person and a brief behind it.
+ * - `capped` is the state after `FALLBACK_LIMIT` misses, where the engine has switched ordinary
+ *   matching off. Repeating "I do not know" twice in a row is what makes a pod read as evasive, so this
+ *   one states the change instead of the failure: only the escape-hatch intents still answer, which is
+ *   why its chips are the two reliable routes and nothing else. None of the three promises to learn,
+ *   because nothing here learns.
  */
 export const FALLBACK_REPLIES = {
   soft: (candidates: Intent[]): Reply => ({
-    blocks: [{ t: "p", text: "That could mean a few things. Which is closest?" }],
+    blocks: [
+      {
+        t: "p",
+        text: "A few published things match that. Which one is closest, or none of them?",
+      },
+    ],
     chips: candidates.map((candidate) => asChip.intent(candidate.label, candidate.id)),
   }),
   hard: (): Reply => ({
     blocks: [
       {
         t: "p",
-        text: "I do not have an answer for that. I only know what is published on this site. Here is what I can do.",
+        text: "Nothing published on this site matches that, so I am not going to guess at it. Try the name of a service, or the outcome you want from one.",
       },
+      { t: "p", text: "A person can answer what I cannot, and a brief starts the same conversation properly." },
     ],
     chips: [...PERSISTENT_MENU],
   }),
@@ -870,7 +988,11 @@ export const FALLBACK_REPLIES = {
     blocks: [
       {
         t: "p",
-        text: "I am going to stop guessing. I only know what is on this site, and I would rather tell you that than make something up.",
+        text: `That is twice I have missed, so I am stopping the guessing for this conversation. From here I will only route you, not interpret you.`,
+      },
+      {
+        t: "p",
+        text: `Call the studio on ${STUDIO.phone} or send ${STUDIO.email}, and either works as a brief.`,
       },
     ],
     chips: [

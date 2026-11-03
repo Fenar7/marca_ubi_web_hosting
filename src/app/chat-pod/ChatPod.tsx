@@ -296,7 +296,11 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           timeFull,
         },
       ]);
+      // The resume line is put on screen by hand, so the resolver has to be told what the visitor is
+      // looking at. Without `seedTurn` a returning visitor who answers this row with "the second one" is
+      // counted against the opening menu the engine remembered, not the menu actually rendered.
       setChips([...PERSISTENT_MENU]);
+      engine.seedTurn(PERSISTENT_MENU);
       return;
     }
 
@@ -448,9 +452,41 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     [state],
   );
 
+  // The mode the last emitted turn belonged to. Only a *change* into chat may speak: the machine's state
+  // is `CHAT` before the first message and after a send, and a reply printed there would be the panel
+  // announcing that nothing is happening.
+  const emittedMode = useRef<typeof state.mode | null>(null);
+
   useEffect(() => {
+    const previous = emittedMode.current;
+    emittedMode.current = state.mode;
+
     if (state.mode === "CHAT") {
       emittedTurn.current = "";
+      // Every way out of the questions (`stop`, `Esc`, the menu's own "Stop the questions", the exit link
+      // in the progress row) dispatches this one event, so the acknowledgement lives on the transition
+      // rather than at four call sites. Without it the panel goes silent the moment it is asked to be
+      // quiet, and the chip row goes with it: the visitor has said "stop" to a machine that answers by
+      // removing everything, which reads as a crash. The menu comes back because the answers are kept,
+      // and "Start a project" is the control that proves it.
+      if (previous !== null && previous !== "CHAT" && previous !== "DONE" && previous !== "SUBMITTING") {
+        // The promise has to match the ledger. Most exits happen after at least one answer, but a visitor
+        // who stops on the first question is told the truth about the resume: there is nothing to pick up.
+        const kept = state.touched.length > 0;
+        const reply = {
+          blocks: [
+            {
+              t: "p" as const,
+              text: kept
+                ? `Stopped. Your ${state.touched.length === 1 ? "answer" : `${state.touched.length} answers`} stay in this draft, so Start a project picks up at the next question rather than the first.`
+                : "Stopped. Nothing was recorded yet, so Start a project begins again at the first question.",
+            },
+          ],
+          chips: menuForMode("CHAT"),
+        };
+        say(reply);
+        engine.seedTurn(reply.chips);
+      }
       return;
     }
 
@@ -657,7 +693,12 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       switch (action.kind) {
         case "intent": {
           const reply = engine.byId(action.id);
-          if (reply) say(reply);
+          if (!reply) return;
+          // §05 §1.5: the tapped label becomes the visitor's own line. A chip that produces only an
+          // answer looks like the panel decided to talk about something unprompted, and an option row
+          // that answers a question already echoes the choice, so this was the one asymmetry left.
+          rememberVisitor(chip.label);
+          say(reply);
           return;
         }
         case "route": {

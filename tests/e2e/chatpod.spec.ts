@@ -3,7 +3,13 @@
  * @description The Chat Pod gates that cannot be settled by reading the code: that the launcher shares the
  *              bottom band without colliding, that the panel holds its geometry at every width we ship,
  *              that the whole intake is walkable from the keyboard, that the pod contributes no layout
- *              shift, and that axe finds nothing critical or serious in the dialog or the launcher.
+ *              shift, that axe finds nothing critical or serious in the dialog or the launcher, and that a
+ *              second message means something against the first one.
+ *
+ *              That last group is the reason this file is longer than a smoke test. The engine keeps its
+ *              turn and its fallback counter in refs, so anaphora and the two-strike rule only exist across
+ *              two renders of the live panel; a unit test can call `followUp` but cannot show that the
+ *              panel fed it the chips a visitor was actually looking at.
  *
  *              Run against the dev server already on the port (`npm run dev` binds 3003), never a
  *              second one: the pod mounts behind the intro-loader event, and a fresh server would be a
@@ -347,6 +353,11 @@ test.describe('Chat Pod: touch targets', () => {
     // engine that gets to fail it. Chromium and the mobile projects both report coarse.
     test.skip(!coarse, 'this engine reports no coarse pointer, so the touch lift cannot be measured');
 
+    // A thumb target is the resting geometry, and `getBoundingClientRect` reports the animated one: the
+    // chip entrance lifts through a scale, so measured mid-flight a 44px row reads as 43.1. Wait for rest
+    // for the same reason the axe scan does.
+    await chipsAtRest(page);
+
     const boxes = await panel(page).evaluate((node) =>
       Array.from(node.querySelectorAll<HTMLElement>('button')).map((button) => {
         const rect = button.getBoundingClientRect();
@@ -442,19 +453,17 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     await expect(tray(page).getByRole('button', { name: 'Start a project', exact: true })).toBeVisible({ timeout: 10_000 });
   });
 
-  test('a restored draft resumes mid-brief where the visitor left off', async ({ page }) => {
+  test('a brief paused mid-way resumes at the next question, not the first', async ({ page }) => {
     await openPanel(page);
     await startIntake(page);
 
-    // Answer the first slot (categories)
-    const categoryChip = tray(page).getByRole('button').filter({ hasText: /Strategy|Design|Development/ }).first();
-    if (await categoryChip.count()) {
-      await categoryChip.click();
-    }
-    const cont = tray(page).getByRole('button', { name: 'Continue', exact: true });
-    await press(cont.first(), page);
+    // One slot answered, keyboard only and keyed off the tray's own shape rather than a category label,
+    // so a taxonomy edit cannot silently leave this test with zero answers filed.
+    await answerTurn(page);
+    const servicesQuestion = log(page).getByText(/Which of these do you need/);
+    await expect(servicesQuestion).toBeVisible({ timeout: 10_000 });
 
-    // Exit to chat via Escape
+    // Escape pauses the questions; it does not discard them.
     await page.keyboard.press('Escape');
 
     // Menu offers to start a project
@@ -462,8 +471,10 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     await expect(startProj).toBeVisible({ timeout: 10_000 });
     await press(startProj, page);
 
-    // Resumes at the services slot (slot 1) rather than resetting to slot 0
-    await expect(log(page).getByText(/Which specific services/)).toBeVisible({ timeout: 10_000 });
+    // Resumes at the services slot (slot 1) rather than resetting to slot 0. Read as the newest line so a
+    // re-ask of the first question further up the transcript cannot satisfy it by accident.
+    await expect(log(page).locator('p').last()).toContainText('Which of these do you need');
+    await expect(tray(page).getByRole('button', { name: 'Continue', exact: true })).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -594,9 +605,11 @@ test.describe('Chat Pod: the D5 idle nudge', () => {
 });
 
 /**
- * Chips arrive on a 40ms stagger and `animation-fill-mode: both` holds each one at opacity 0 until its
- * turn, so a scan taken during the entrance measures a frame of an animation, not the design. Contrast is
- * a property of the resting state: wait for it, and fail loudly if a chip is still invisible a second later.
+ * Chips arrive on a 40ms stagger and `animation-fill-mode: backwards` holds each one at opacity 0 through
+ * its delay, so a scan taken during the entrance measures a frame of an animation, not the design. Contrast
+ * is a property of the resting state: wait for it, and fail loudly if a chip is still invisible a second
+ * later. (`backwards`, not `both`: a filled animation keeps owning `transform` after it ends, which would
+ * deaden the hover lift the chips also publish.)
  */
 async function chipsAtRest(page: Page): Promise<void> {
   await expect
@@ -677,3 +690,125 @@ test.describe('Chat Pod: accessibility', () => {
     await expect(launcher(page)).not.toHaveAttribute('data-nudge', 'true');
   });
 });
+
+/**
+ * The comprehension gates. Everything above proves the pod can be driven; these prove it is worth
+ * driving, and they are the surface a unit test cannot reach: `useChatEngine` keeps its turn and its
+ * fallback counter in refs, so a follow-up only means something across two renders of the real panel.
+ *
+ * The assertions quote published copy on purpose. A re-worded answer fails these tests loudly, which is
+ * the intended contract: the copy is sourced from `knowledge/intents.ts` and is not free text.
+ */
+test.describe('Chat Pod: comprehension and conversation state', () => {
+  /** Say something the way a visitor types it, then wait for the answer to land. */
+  async function ask(page: Page, text: string): Promise<void> {
+    await composer(page).focus();
+    await page.keyboard.type(text, { delay: 12 });
+    await page.keyboard.press('Enter');
+    await settle(page);
+  }
+
+  test('the services question answers with the branch, not with a count', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'what are the services available');
+
+    // The studio runs eight lines per side. Told that, a visitor still has to read sixteen pages; told
+    // who they sell to, they get a shortlist in one tap. This is the complaint the branch exists to fix,
+    // so the question and both branch chips have to arrive in the same turn.
+    await expect(log(page).getByText(/^Who do you sell to, other businesses or consumers\?/)).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Business-to-business', exact: true })).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Consumer brands', exact: true })).toBeVisible();
+
+    // The branch is a question, not a dead end: each side answers with its own list.
+    await press(tray(page).getByRole('button', { name: 'Business-to-business', exact: true }), page);
+    await expect(log(page).getByText(/^8 lines aimed at businesses\./)).toBeVisible();
+  });
+
+  test('a tapped chip becomes the visitor’s own line', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'what are the services available');
+    await press(tray(page).getByRole('button', { name: 'Business-to-business', exact: true }), page);
+
+    // §05 §1.5. Without the echo, a chip-driven transcript is an assistant answering itself, and someone
+    // scrolling back cannot tell which branch they took. Scoped to the log: the chips live in the tray,
+    // so a match here can only be a transcript row.
+    await expect(log(page).getByText('Business-to-business', { exact: true })).toBeVisible();
+  });
+
+  test('an answer has a deeper pass, and the second ask says so', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'demand generation');
+    await expect(log(page).getByText('What it covers:', { exact: true })).toBeVisible();
+
+    await ask(page, 'tell me more');
+    await expect(log(page).getByText('Everything this line publishes:', { exact: true })).toBeVisible();
+
+    // A third ask would re-print the same page. Repeating an answer looks like the pod stopped listening,
+    // so it says what has run out instead, and a visitor reading the transcript can see which of the
+    // three turns was a real answer.
+    await ask(page, 'tell me more');
+    await expect(log(page).getByText(/^That is the whole of what this site publishes on it\./)).toBeVisible();
+    expect(await log(page).getByText('Everything this line publishes:', { exact: true }).count()).toBe(1);
+  });
+
+  test('a contested name asks which one, and an ordinal picks it', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'public relations');
+
+    await expect(log(page).getByText(/^A few published things match that\./)).toBeVisible();
+    // Two published lines really do carry that name, on opposite sides of the catalogue. One of them
+    // silently winning is how a pod gets remembered as wrong.
+    expect(await tray(page).getByRole('button', { name: 'Public Relations (PR)' }).count()).toBe(2);
+
+    await ask(page, 'the first one');
+    await expect(log(page).getByText(/^Earned attention carries a credibility paid reach cannot buy/)).toBeVisible();
+
+    // Ordinals are also typed as digits. "the 9th one" used to be read as two numbers and refused as an
+    // unrecognised question; the honest answer is the size of the list the visitor is looking at.
+    await ask(page, 'the 9th one');
+    await expect(log(page).getByText(/I offered \d+ options, counted from the first\./)).toBeVisible();
+  });
+
+  test('naming a chip on screen answers it instead of re-ranking the corpus', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'demand generation');
+    await ask(page, 'integrated marketing');
+
+    // The second message is authored copy for a different line, so authoring outranks the idiom layer,
+    // but it is also on screen as a chip, and either route lands on the same answer. What must not happen
+    // is the pod treating a visible option as a miss.
+    await expect(log(page).getByText(/^One idea, many channels, no dilution\./)).toBeVisible();
+    expect(await log(page).getByText(/^Nothing published on this site matches that/).count()).toBe(0);
+  });
+
+  test('two misses, and the pod stops guessing without spending a guess on a follow-up', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'qwertyuiop');
+    await ask(page, 'zxcvbnm');
+
+    const hardMisses = log(page).getByText(/^Nothing published on this site matches that/);
+    expect(await hardMisses.count()).toBe(2);
+
+    // "tell me more" after a refusal is legible as a reference to nothing, and is answered as such.
+    // Spending a guess here would cap the pod after two misses plus one idiom, i.e. three questions.
+    await ask(page, 'tell me more');
+    await expect(log(page).getByText(/^Nothing I have answered yet can be taken further\./)).toBeVisible();
+    expect(await hardMisses.count()).toBe(2);
+
+    await ask(page, 'asdfghjkl');
+    await expect(
+      log(page).getByText(/^That is twice I have missed, so I am stopping the guessing for this conversation\./),
+    ).toBeVisible();
+  });
+
+  test('the refusal routes instead of stalling: a capped pod still hands over the phone', async ({ page }) => {
+    await openPanel(page);
+    for (const miss of ['qwertyuiop', 'zxcvbnm', 'asdfghjkl']) await ask(page, miss);
+
+    // "From here I will only route you, not interpret you" is a promise, so the chips have to be the
+    // studio's own contact routes rather than the guess menu that just failed three times.
+    await expect(tray(page).getByRole('button', { name: /^Call \+91/ })).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Talk to a person', exact: true })).toBeVisible();
+  });
+});
+

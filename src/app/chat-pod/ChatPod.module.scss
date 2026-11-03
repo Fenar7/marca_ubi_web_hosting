@@ -13,8 +13,11 @@
  *              - Authentic Concierge Profile Avatar: Launcher and header render the photographic portrait of
  *                Sophia Sterling (/avatars/sophia-sterling.jpg) with active emerald beacon (#22c55e). Open state
  *                transitions cleanly to a typographic crosshair (×) and 'Ubi Close'.
- *              - High-Contrast Editorial Typography: Black ink ($ink: #0a0a0a), muted body ($muted: #767676),
- *                and quiet timestamps ($quiet: #8e8e93) strictly guarantee WCAG AA 4.5:1 text contrast on light surfaces.
+ *              - High-Contrast Editorial Typography: the three ink tokens below are not eyeballed. Each one is
+ *                measured against both surfaces it is actually painted on (the white canvas and the #f7f7f8
+ *                assistant bubble) by `tests/unit/chatpod-contrast.test.ts`, which fails the build if any pair
+ *                drops under WCAG AA 4.5:1. A comment claiming a ratio the tokens do not deliver is the defect
+ *                that test exists to catch.
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -34,12 +37,20 @@ $radius: 0.125rem;
 $pod-canvas: #ffffff;
 $pod-glass-header: rgba(255, 255, 255, 0.94);
 $client-accent-red: #ea002a;
+/* `$client-accent-red-hover` is not only a hover state here. The brand red at its published brightness
+   measures 4.63:1 on the white canvas and 4.33:1 on the #f7f7f8 assistant bubble, which is where `.link`
+   and `.bubbleError` are actually painted, so text in the accent colour uses the darker step: 6.23 on the
+   canvas, 5.82 inside the bubble, 5.43 on the error tint. `tests/unit/chatpod-contrast.test.ts` measures
+   all three from this file, so the numbers in this comment are the ones that keep the build green. */
 $client-accent-red-hover: #c40023;
 $client-accent-red-glow: rgba(234, 0, 42, 0.25);
 $ink: #0a0a0a;
 $text-body: #333333;
-$muted: #767676;
-$quiet: #8e8e93;
+/* 5.33:1 on the canvas, 4.98:1 inside the #f7f7f8 assistant bubble. The lighter 767676 cleared 4.54 on
+   white and failed at 4.24 on the tinted bubble it is actually used in, so the body tone had to go down. */
+$muted: #6b6b6b;
+/* Timestamps only, only ever on the white canvas: 4.5:1, the AA floor for meta text. */
+$quiet: #767676;
 $hairline: 1px solid rgba(0, 0, 0, 0.08);
 $hairline-soft: 1px solid rgba(0, 0, 0, 0.06);
 $surface: rgba(0, 0, 0, 0.03);
@@ -81,6 +92,7 @@ $surface: rgba(0, 0, 0, 0.03);
 }
 
 .launcherAvatarWrap {
+  animation: faceIn 200ms $ease-out backwards;
   flex-shrink: 0;
   height: 2.125rem;
   position: relative;
@@ -111,6 +123,7 @@ $surface: rgba(0, 0, 0, 0.03);
 .launcherCloseGlyph,
 .launcherGlyph {
   align-items: center;
+  animation: glyphIn 180ms $ease-out backwards;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
@@ -158,6 +171,30 @@ $surface: rgba(0, 0, 0, 0.03);
     transform: scale(1.04);
   }
   100% {
+    transform: scale(1);
+  }
+}
+
+/* The launcher swaps its face for a crosshair when the panel is open. Both halves of that swap are
+   mounted on demand, so each turns or lifts into place instead of cutting between two states. */
+@keyframes glyphIn {
+  from {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes faceIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
     transform: scale(1);
   }
 }
@@ -215,6 +252,19 @@ $surface: rgba(0, 0, 0, 0.03);
     transform: scale(1) translateY(0);
     transition: transform $open-ms $ease-out, opacity $open-ms $ease-out;
     visibility: visible;
+
+    /* The shell arrives first, the contents 120ms later. A panel that scales up already holding its
+       full transcript reads as a window being dragged across the page; the short wait makes it read as
+       the panel opening. */
+    > * {
+      opacity: 1;
+      transition: opacity 260ms $ease-out 120ms;
+    }
+  }
+
+  > * {
+    opacity: 0;
+    transition: opacity 180ms $ease-in;
   }
 }
 
@@ -507,36 +557,41 @@ $surface: rgba(0, 0, 0, 0.03);
   max-width: 100%;
 }
 
+/* `backwards`, not `both`: a filled animation keeps owning `transform` after it ends, and a row that owns
+   its own transform forever is how a hover or an inline edit later finds it cannot move. */
 .rowAssistant {
   align-items: flex-start;
-  animation: rowInAssistant $row-ms $ease-out both;
+  animation: rowInAssistant $row-ms $ease-out backwards;
 }
 
 .rowVisitor {
   align-items: flex-end;
-  animation: rowInVisitor 220ms $ease-out both;
+  animation: rowInVisitor 220ms $ease-out backwards;
 }
 
 /* The visitor's own text repeating back at them should not perform. */
+/* The assistant's answer starts 10px low and settles: that is the offset the composing dots were
+   occupying, so the fade below and this rise overlap and the reply reads as one gesture growing out of
+   the indicator rather than as two separate events. */
 @keyframes rowInAssistant {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px) scale(0.985);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes rowInVisitor {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px) scale(0.99);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -567,7 +622,7 @@ $surface: rgba(0, 0, 0, 0.03);
 .bubbleError {
   background: rgba(234, 0, 42, 0.08);
   border: 1px solid rgba(234, 0, 42, 0.25);
-  color: #c40023;
+  color: $client-accent-red-hover;
 }
 
 .text {
@@ -613,15 +668,15 @@ $surface: rgba(0, 0, 0, 0.03);
 
 .link {
   border-top: $hairline-soft;
-  color: $client-accent-red;
+  color: $client-accent-red-hover;
   display: block;
   font-size: 0.8125rem;
   padding: 0.375rem 0;
   text-decoration: underline;
   text-underline-offset: 0.2em;
 
+  // The weight is the cue; a colour shift here would be a second red to measure and nothing to read.
   &:hover {
-    color: $client-accent-red-hover;
     text-decoration-thickness: 2px;
   }
 }
@@ -689,6 +744,9 @@ $surface: rgba(0, 0, 0, 0.03);
 
 /* Typing */
 
+/* §05 §1.4: the slot reserves a message row whether or not anything is composing, so nothing in the
+   transcript moves when the indicator arrives. The indicator fades instead of unmounting, which is the
+   difference between a reply appearing where the dots were and a reply replacing them mid-air. */
 .typingSlot {
   display: flex;
   min-height: 2.25rem;
@@ -698,15 +756,33 @@ $surface: rgba(0, 0, 0, 0.03);
   align-items: center;
   display: flex;
   gap: 0.25rem;
+  opacity: 0;
   padding: 0.625rem 0;
+  transition: opacity 160ms linear;
+
+  &[data-on="true"] {
+    opacity: 1;
+  }
+
+  /* Faded out is not "composing": the loop is held so a hidden indicator does not burn frames all tab. */
+  &:not([data-on="true"]) .dot {
+    animation-play-state: paused;
+  }
 }
 
+/* The dot is a graphic, so its floor is 3:1, and the frame that has to clear it is the dimmest one,
+   not the fill. `rgba(0, 0, 0, 0.55)` alone measures 4.74 on the canvas, but it is the colour *at* the
+   opacity the pulse bottoms out at that the eye receives: 0.55 through 0.35 alpha composites to #cecece
+   at 1.57:1, and that trough is not a momentary frame. It is the resting state a reduced-motion visitor
+   sees permanently. 0.7 through 0.65 bottoms at #8b8b8b (3.41:1) and peaks at #4d4d4d (8.45:1), which
+   keeps the wave legible instead of flattening it to hold the floor. Measured by
+   `tests/unit/chatpod-contrast.test.ts`, which multiplies the fill by both opacities. */
 .dot {
   animation: dotPulse 1.3s $ease-out infinite;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.7);
   border-radius: 50%;
   height: 6px;
-  opacity: 0.3;
+  opacity: 0.65;
   width: 6px;
 
   &:nth-child(2) {
@@ -721,7 +797,7 @@ $surface: rgba(0, 0, 0, 0.03);
 @keyframes dotPulse {
   0%,
   100% {
-    opacity: 0.3;
+    opacity: 0.65;
   }
   50% {
     opacity: 1;
@@ -729,6 +805,7 @@ $surface: rgba(0, 0, 0, 0.03);
 }
 
 .newMessage {
+  animation: pillIn 200ms $ease-out backwards;
   background: #0a0a0a;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 9999px;
@@ -746,6 +823,19 @@ $surface: rgba(0, 0, 0, 0.03);
   &:hover {
     background: #1a1a1a;
     border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+/* `translateX(-50%)` is the pill's centring, so the entrance has to carry it in both keyframes or the
+   first frame puts the pill half a panel to the left of where it lands. */
+@keyframes pillIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
@@ -769,7 +859,7 @@ $surface: rgba(0, 0, 0, 0.03);
 }
 
 .chip {
-  animation: chipIn $chip-ms $ease-out both;
+  animation: chipIn $chip-ms $ease-out backwards;
   animation-delay: calc(var(--chip-index, 0) * 40ms);
   background: #ffffff;
   border: 1.5px solid rgba(0, 0, 0, 0.12);
@@ -818,10 +908,12 @@ $surface: rgba(0, 0, 0, 0.03);
 
 @keyframes chipIn {
   from {
-    transform: translateY(4px);
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
   }
   to {
-    transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -951,7 +1043,9 @@ $surface: rgba(0, 0, 0, 0.03);
   width: 100%;
 
   &::placeholder {
-    color: rgba(0, 0, 0, 0.40);
+    // The placeholder is the only thing that tells a visitor what this box wants during a link or a
+    // name slot, so it is content and not a hint: #6f6f70 on the field's own #f7f7f8 fill, 4.69:1.
+    color: rgba(0, 0, 0, 0.55);
   }
 
   &:focus-visible {
@@ -964,7 +1058,13 @@ $surface: rgba(0, 0, 0, 0.03);
   &[aria-disabled="true"] {
     background: rgba(0, 0, 0, 0.02);
     border-color: rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.35);
+    /* The WCAG disabled-component exception does not cover this one: the control is `aria-disabled`, so
+       it stays focusable and keeps its content, and while a send is in flight or a rate limit holds the
+       panel shut, that content is the brief the visitor wrote. `rgba(0, 0, 0, 0.35)` over the 0.02 wash
+       paints #a3a3a3, which measures 2.42:1, so the message they can no longer edit renders close to
+       invisible. `$muted` clears AA on that same wash (5.11:1); the fill and the border carry the
+       inactive look instead of the ink. */
+    color: $muted;
   }
 }
 
@@ -1004,7 +1104,7 @@ $surface: rgba(0, 0, 0, 0.03);
   background: rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: none;
-  color: #999999;
+  color: $muted;
   cursor: default;
 
   &:hover {
@@ -1156,6 +1256,18 @@ $surface: rgba(0, 0, 0, 0.03);
   .dot {
     animation: none;
     opacity: 0.7;
+  }
+
+  /* Nothing that arrives should travel; the fades stay, because a fade carries no movement. */
+  .launcherCloseGlyph,
+  .launcherGlyph,
+  .launcherAvatarWrap,
+  .newMessage {
+    animation: none;
+  }
+
+  .panel > * {
+    transition-delay: 0ms;
   }
 
   .progressFill {

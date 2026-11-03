@@ -9,11 +9,33 @@ Run date: 1 November 2026. Branch `feature/chat-pod`, base `master` (PR #104 mer
 
 ---
 
+## Re-certification, 2 November 2026 (read before any line below)
+
+The block below is the record of the build as it shipped on 1 November and is not edited: an audit trail
+that rewrites its own verdicts is no trail at all. Four of its lines no longer describe the tree on
+`remediation/turbopack-compaction-dev-server` (PR #107), and this section says which and what replaced
+them. The evidence for all four is `20-comprehension-and-conversation-state.md` (the resolver and the
+conversation layer) and `21-motion-and-contrast-remediation.md` (the tones, the motion and the
+measurements), and the gates were re-run against the finished tree on 2 November: 1283 unit tests, 266
+chat-pod unit tests, 28 Playwright tests on the live panel, `tsc --noEmit` clean, boundaries clean.
+
+| Line | Verdict then | What the tree does now |
+|---|---|---|
+| R-25 contrast | PASS, pairs listed by hand | Superseded. Two of those pairs (`$quiet` and the typing dots) were measured against the wrong surface, and `$quiet` failed 4.24:1 inside the assistant bubble it is used in. The promise is a build gate now: `tests/unit/chatpod-contrast.test.ts` parses the shipped SCSS, composites every translucent tone over its real backing fill, multiplies each fill by the opacity that paints it, and fails the pair. Every current figure is in `21` §2. |
+| R-19 animation | PASS, "four timings" | Superseded in quantity and in kind: the pod was re-read at MOTION 2 with the owner and the panel now arrives in two beats, the rows and chips enter on `backwards` rather than `both`, and the composing indicator fades in a height-reserved slot instead of mounting. The timings and what each beat is for are in `21` §3; the contract that keeps them is the second describe of the same test file. |
+| Design Read, Block 3 | ENERGY 2 / RHYTHM 2 / MOTION 1 | ENERGY 2 / RHYTHM 2 / **MOTION 2** for this module, set with the owner when the "there should be fluid motions" complaint was turned into work. The site-wide canon is unchanged. |
+| R-23 persona face | PASS, "no `<img>`, no portrait" | No longer true of the build. The launcher paints `/avatars/sophia-sterling.jpg` while closed and a `×` while open, and the panel header repeats the portrait (`ChatPod.tsx:962-983`, `ui/PersonaHeader.tsx:42`). What the rule actually protects is intact: the control is `aria-hidden` decoration, the accessible name is `Ubi` + `Ask`/`Close` + the disclosure, and the header states `Digital assistant · Not a person`. **Open question for the owner:** the portrait is a named person, and no document in this repo records that it is a consented photograph of a real one. If it is a generated or stock face, R-23 and C-5 are not satisfied by the disclosure alone and it should come off the launcher. |
+
+Unchanged and still passing: R-02, R-03, R-17, R-18, R-24, R-26, R-27, R-28, R-32, R-33, R-34, R-36,
+R-38, and the whole of Block 2. R-35 (click-through) is re-satisfied by the 28-test live run named above.
+
+---
+
 ## Block 1 — Hard Gate (all answers must be no)
 
 | Rule | Verdict | Evidence |
 |---|---|---|
-| R-02 em dash in text | PASS | `grep -P '[\x{2013}\x{2014}]'` over `src/app/chat-pod`, `src/app/lib/intake`, the six `tests/unit/chatpod-*.test.ts` suites, `tests/e2e/chatpod.spec.ts` and `tests/playwright.chatpod.config.ts` returns three hits, all functional rather than textual: the character class in `engine/normalise.ts:16` (`[/\\&,_\-–—]`, which strips the dash *from visitor input*), the guard regex in `chatpod-knowledge-coverage.test.ts:372` that fails the build if authored copy ever contains one, and the sample utterance in `chatpod-normalise.test.ts:30` that feeds a dash to that stripper. Zero em dashes in any emitted string, chip label or comment. |
+| R-02 em dash in text | PASS | `grep -P '[\x{2013}\x{2014}]'` over `src/app/chat-pod`, `src/app/lib/intake`, the ten `tests/unit/chatpod-*.test.ts` suites, `tests/e2e/chatpod.spec.ts` and `tests/playwright.chatpod.config.ts` returns four hits on the final tree (re-run 3 Nov 2026; the prose hits this row previously hid were comment em dashes in `types.ts`, `engine/context.ts`, `engine/useChatEngine.ts`, `chatpod-persistence.test.ts` and two `chatpod.spec.ts` annotations, and they are gone), all four functional rather than textual: the character class in `engine/normalise.ts:16` (`[/\\&,_\-–—]`, which strips the dash *from visitor input*), the two guards that fail the build if copy ever carries one (`chatpod-knowledge-coverage.test.ts:452` for authored knowledge, `chatpod-conversation-state.test.ts:174` for turn copy), and the sample utterance in `chatpod-normalise.test.ts:30` that feeds a dash to that stripper. Zero em dashes in any emitted string, chip label or comment. |
 | R-03 mobile overflow / 44px targets | PASS | e2e `the panel holds its box and its chips at every shipped width` walks 360 / 390 / 768 / 1024 / 1440 and asserts no sideways scroll on the document or the panel, the panel inside the viewport, no clipped `<p>`, every chip inside its group. e2e `every control in the open dialog is a finger-sized box` runs under `isMobile + hasTouch` and measures every `<button>` in the dialog at ≥44×44 (`@media (pointer: coarse)` lift in `ChatPod.module.scss`). |
 | R-17 statistics without a source | PASS | The only numbers the pod can say come from `kb.counts`, and `chatpod-knowledge-coverage.test.ts` asserts each count equals the length of the array it is derived from (`servicePages === services.length`, `servicesB2B + servicesB2C === services.length`, `journalPosts`, `faqs`, `openRoles`), and that every quotable number in the corpus is one of those. Live compile: 16 service pages, 8+8 services, 52 service options, 8 categories, 4 journal posts, 5 FAQs, 3 open roles. |
 | R-18 fictional testimonials | PASS | No testimonial block exists in the pod. Answers are transcriptions of published Sanity content and the studio's own components; `chatpod-knowledge-coverage.test.ts` fails if an intent has no `source`. |

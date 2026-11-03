@@ -130,6 +130,20 @@ export interface Reply {
   chips: Chip[];
 }
 
+/**
+ * What the pod knows about the conversation, beyond the message it just received.
+ *
+ * Only one field exists today, and it exists because the depth of an answer is a property of the
+ * turn, not of the intent: "tell me more" must render the same service with its sub-service list
+ * attached, which means `respond` has to be able to see that it is being asked a second time.
+ * Optional at the call site so every intent authored before this concept stays valid. An intent
+ * that ignores `ctx` is not wrong, it just has no deeper version to give.
+ */
+export interface AnswerContext {
+  /** The visitor already had the summary and asked again. Give the expanded form. */
+  expanded?: boolean;
+}
+
 export interface Intent {
   id: string;
   /** Human phrase used when this intent appears as a disambiguation chip. */
@@ -144,7 +158,7 @@ export interface Intent {
   utterances: string[];
   /** Whole-word tokens scored at Tier 2. First token carries weight 1.0, the rest 0.6. */
   keywords: string[];
-  respond: (kb: KnowledgeBase) => Reply;
+  respond: (kb: KnowledgeBase, ctx?: AnswerContext) => Reply;
 }
 
 export type Speaker = "assistant" | "visitor";

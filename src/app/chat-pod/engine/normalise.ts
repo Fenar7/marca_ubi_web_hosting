@@ -46,6 +46,73 @@ export function tokens(normalised: string): string[] {
 }
 
 /**
+ * Question scaffolding: the words a visitor wraps a topic in, not the topic itself.
+ *
+ * These are dropped when *scoring* and never when keying. A Tier 1 alias is still stored and
+ * looked up as the full authored phrase, so "what are your services" remains exactly one alias in
+ * the dictionary; only Tier 2 and Tier 3 see the residue, which is "{service}". That distinction is
+ * the whole reason the set lives here instead of inside `normalise`: folding these words into the
+ * canonical form would rewrite every alias key and silently orphan the ones that read like speech
+ * ("that is all", "what is it you do").
+ *
+ * The list is closed-class plus the verbs of asking. "tell", "show", "explain" and "want" state that
+ * the visitor is requesting something; they never name the thing requested, so keeping them in the
+ * denominator punished every polite sentence for being polite. Words that can genuinely be the subject
+ * of a question are kept: "help", "need", "cost", "charge", "work", "hire", and "availability", which
+ * is what the timeline intent is actually about. Dropping those is how an intent stops being findable
+ * by the one word that names its subject.
+ */
+export const QUERY_STOPWORDS: ReadonlySet<string> = new Set([
+  "a", "an", "about", "all", "also", "and", "any", "are", "as", "at", "be", "been", "but", "by",
+  "can", "could", "describe", "did", "do", "does", "down", "explain", "for", "from", "get", "give",
+  "had", "has", "have", "he", "her", "him", "his", "how", "i", "if", "in", "into", "is", "it", "its",
+  "just", "kind", "kinds", "know", "like", "lot", "me", "might", "many", "much", "more", "most", "my",
+  "no", "nor", "not", "of", "off", "on", "once", "or", "our", "out", "own", "please", "provide",
+  "provided", "provides", "really", "said", "say", "see", "she", "should", "show", "so", "some",
+  "such", "tell", "than", "that", "the", "their", "them", "then", "there", "these", "they", "thing",
+  "things", "this", "those", "through", "to", "too", "us", "want", "we", "were", "what", "when",
+  "where", "which", "who", "whom", "why", "will", "with", "would", "you", "your",
+]);
+
+/**
+ * Morphological fold used on both sides of every scored comparison, so the keyword "service" reaches
+ * the word "services" and the alias "cases" reaches "case".
+ *
+ * Deliberately crude: plurals, then a trailing silent "e". Two rules and no library is the entire
+ * budget. It is lossy on purpose ("service" and "services" both become "servic") and it must stay
+ * lossy in only that direction, so the short-circuits below exist: words under four characters are
+ * returned untouched (a fold of "art" would collide with nothing useful but a fold of "the" to "th"
+ * makes a token unsearchable), and a stem is never allowed to eat the last vowel of a word, which is
+ * why the "e" strip is gated on length rather than applied blind.
+ */
+export function stem(token: string): string {
+  if (token.length < 4) return token;
+  if (token.endsWith("ies")) return `${token.slice(0, -3)}y`;
+  if (token.endsWith("ss")) return token;
+  let folded = token.endsWith("s") ? token.slice(0, -1) : token;
+  if (folded.length >= 4 && folded.endsWith("e")) folded = folded.slice(0, -1);
+  return folded;
+}
+
+/**
+ * Topic tokens of a query: stop-word free, stemmed, in first-seen order.
+ * Returns the stems of the full token list when nothing survives, so a message that is pure
+ * scaffolding ("what is it") still scores against the corpus instead of producing an empty vector
+ * that silently matches nothing. That fallback is the difference between "I did not understand" and
+ * a crash-shaped hole in the resolver.
+ */
+export function contentTokens(normalised: string): string[] {
+  const all: string[] = [];
+  const kept: string[] = [];
+  for (const token of tokens(normalised)) {
+    const folded = stem(token);
+    if (all.indexOf(folded) === -1) all.push(folded);
+    if (!QUERY_STOPWORDS.has(token) && kept.indexOf(folded) === -1) kept.push(folded);
+  }
+  return kept.length > 0 ? kept : all;
+}
+
+/**
  * Character trigrams with word boundaries padded in, so "hi" yields [" hi", "hi ", " h i"]-style
  * context rather than nothing. Padding is what lets two-character and three-character inputs
  * produce a usable overlap score; unpadded, "hi" has zero trigrams and every short greeting
@@ -71,7 +138,7 @@ export function editDistance(a: string, b: string): number {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
 
-  let previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+  const previous = Array.from({ length: b.length + 1 }, (_, i) => i);
   const current = new Array<number>(b.length + 1);
 
   for (let i = 1; i <= a.length; i++) {

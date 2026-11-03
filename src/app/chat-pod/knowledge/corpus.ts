@@ -73,32 +73,50 @@ export const PROCESS_PRINCIPLES: { title: string; body: string }[] = [
 ];
 
 /**
- * Aliases per published service line. Ambiguous terms that belong to two lines ("pr", "public
- * relations", "social") are authored as *keywords* in `intents.ts`, never as utterances here:
- * Tier 1 aliases must stay globally unique, and a genuinely ambiguous phrase has to reach the
- * disambiguation chips rather than be resolved by a first-wins dictionary.
+ * Aliases per published service line. Every alias names something the line actually publishes:
+ * "seo" is the sub-service label at src/app/services/content/b2c.ts:141 under `digital-performance`;
+ * a colloquial name that no deck carries ("logo", "app development") is not authored, because routing
+ * a visitor to a page that never claims that work is a claim the pod cannot support.
  *
- * Every alias names something the line actually publishes. "seo" is the sub-service label at
- * src/app/services/content/b2c.ts:141 under `digital-performance`; a colloquial name that no deck
- * carries ("logo", "app development") is not authored, because routing a visitor to a page that
- * never claims that work is a claim the pod cannot support.
+ * A phrase that genuinely belongs to two lines is authored on *both* of them, not demoted to keywords.
+ * Tier 1 is multi-owner, so "public relations" and "social media marketing" come back as a tie at
+ * score 1 and the pod asks which one, which is the honest answer when the catalogue itself repeats the
+ * name. Uniqueness is only enforced against a single writer being chosen by declaration order.
+ *
+ * The interrogative form is authored when the visitor's phrasing carries a word the deck never uses:
+ * "do you offer branding" scores 0.61 on arithmetic because the line's published words are "Brand
+ * strategy" and "Brand identity", not "branding", so the phrase is written down instead of the
+ * threshold being moved.
  * Provenance: slug list from ServicesAccordion/types.ts, covered by the coverage test.
  */
 export const SERVICE_ALIASES: Record<string, string[]> = {
   "demand-generation": ["demand gen", "lead generation", "pipeline generation"],
   "integrated-marketing": ["integrated campaigns", "channel orchestration"],
   "corporate-communications": ["internal comms", "stakeholder messaging", "executive communications"],
-  "social-influencer-marketing": ["influencer partnerships", "creator collaborations", "b2b social"],
+  "social-influencer-marketing": [
+    "influencer partnerships",
+    "creator collaborations",
+    "b2b social",
+    "social media marketing",
+  ],
   "content-and-scale": ["content production", "content operations"],
-  "public-relations-pr": ["b2b public relations", "corporate pr", "press relations", "media relations"],
+  "public-relations-pr": ["public relations", "b2b public relations", "corporate pr", "press relations", "media relations"],
   "customer-marketing": ["customer retention marketing", "lifecycle marketing"],
   "account-based-marketing": ["abm", "account based marketing", "enterprise account campaigns"],
-  "integrated-creativity": ["brand identity", "creative campaign", "art direction"],
-  "social-influencer": ["consumer influencer", "b2c social", "community building"],
+  "integrated-creativity": [
+    "brand identity",
+    "brand strategy",
+    "branding",
+    "branding services",
+    "do you offer branding",
+    "creative campaign",
+    "art direction",
+  ],
+  "social-influencer": ["consumer influencer", "b2c social", "community building", "social media marketing"],
   "digital-performance": ["performance marketing", "paid media", "media buying", "seo", "search engine optimisation"],
   "sports-marketing": ["sports sponsorship", "team marketing", "athlete partnerships"],
   "crm-and-loyalty": ["loyalty programme", "crm", "retention programme", "membership scheme"],
-  "public-relations": ["consumer pr", "brand publicity", "product launches press"],
+  "public-relations": ["public relations", "consumer pr", "brand publicity", "product launches press"],
   "live-experiences": ["events", "brand activations", "experiential"],
   "retail-activation": ["in-store activation", "retail merchandising", "trade marketing"],
 };

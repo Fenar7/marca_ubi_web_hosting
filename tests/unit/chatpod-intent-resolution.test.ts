@@ -67,11 +67,30 @@ const TYPED: [string, string][] = [
   ['see you later', 'goodbye'],
   // Services
   ['what are your services', 'services.overview'],
+  ['what are the services', 'services.overview'],
+  ['what is the services', 'services.overview'],
+  ['what are the services available', 'services.overview'],
+  ['what services are available', 'services.overview'],
+  ['what services do you have', 'services.overview'],
+  ['what services you provide', 'services.overview'],
+  ['services available', 'services.overview'],
+  ['available services', 'services.overview'],
+  ['list of services', 'services.overview'],
+  ['full list of services', 'services.overview'],
+  ['tell me about your services', 'services.overview'],
   ['service list', 'services.overview'],
+  ['your services', 'services.overview'],
+  ['services', 'services.overview'],
+  ['what do you offer', 'services.overview'],
+  ['what do you sell', 'services.overview'],
+  ['what can you do for me', 'services.overview'],
+  ['help me with marketing', 'services.overview'],
   ['b2b', 'services.b2b'],
   ['business to business services', 'services.b2b'],
+  ['business facing services', 'services.b2b'],
   ['b2c', 'services.b2c'],
   ['business to consumer services', 'services.b2c'],
+  ['consumer facing services', 'services.b2c'],
   ['which service is right for me', 'services.whichone'],
   ['i do not know which service', 'services.whichone'],
   // Pricing
@@ -118,7 +137,24 @@ const TYPED: [string, string][] = [
   ['i would like a proposal', 'intake.trigger'],
   ['cancel that', 'intake.exit'],
   ['stop asking questions', 'intake.exit'],
-  // Published service lines, every alias on every slug
+  // Published service lines, every alias on every slug. Titles are aliases too now that Tier 1 is
+  // multi-owner, so a line's own name is a route to it rather than a keyword accident. The two decks
+  // titled "Public Relations (PR)" are not here: a contested name disambiguates, and that is asserted
+  // by its own test below.
+  ['Demand Generation', 'services.detail.demand-generation'],
+  ['Integrated Marketing', 'services.detail.integrated-marketing'],
+  ['Corporate Communications', 'services.detail.corporate-communications'],
+  ['Social & Influencer Marketing', 'services.detail.social-influencer-marketing'],
+  ['Content & Scale', 'services.detail.content-and-scale'],
+  ['Customer Marketing', 'services.detail.customer-marketing'],
+  ['Account-Based Marketing (ABM)', 'services.detail.account-based-marketing'],
+  ['Integrated Creativity', 'services.detail.integrated-creativity'],
+  ['Social & Influencer', 'services.detail.social-influencer'],
+  ['Digital Performance', 'services.detail.digital-performance'],
+  ['Sports Marketing', 'services.detail.sports-marketing'],
+  ['CRM & Loyalty', 'services.detail.crm-and-loyalty'],
+  ['Live Experiences', 'services.detail.live-experiences'],
+  ['Retail Activation', 'services.detail.retail-activation'],
   ['demand gen', 'services.detail.demand-generation'],
   ['lead generation', 'services.detail.demand-generation'],
   ['pipeline generation', 'services.detail.demand-generation'],
@@ -142,6 +178,9 @@ const TYPED: [string, string][] = [
   ['account based marketing', 'services.detail.account-based-marketing'],
   ['enterprise account campaigns', 'services.detail.account-based-marketing'],
   ['brand identity', 'services.detail.integrated-creativity'],
+  ['branding', 'services.detail.integrated-creativity'],
+  ['branding services', 'services.detail.integrated-creativity'],
+  ['do you offer branding', 'services.detail.integrated-creativity'],
   ['creative campaign', 'services.detail.integrated-creativity'],
   ['art direction', 'services.detail.integrated-creativity'],
   ['consumer influencer', 'services.detail.social-influencer'],
@@ -240,11 +279,56 @@ describe('Chat Pod resolution over the published table', () => {
   });
 
   it('asks instead of guessing when a phrase belongs to two published lines', () => {
-    const result = outcome('public relations');
-    assert.equal(result.kind, 'disambiguate', 'a shared PR title must offer both pages, not pick one');
-    const ids = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
-    assert.ok(ids.includes('services.detail.public-relations-pr'));
-    assert.ok(ids.includes('services.detail.public-relations'));
+    // Sanctioned collisions: the name is published under more than one intent, so Tier 1 returns every
+    // owner at score 1 and the margin rule turns that into chips. The list is a contract with the
+    // catalogue, not a workaround; `chatpod-knowledge-coverage` asserts no other phrase collides.
+    const contested: [string, string[]][] = [
+      ['public relations', ['services.detail.public-relations-pr', 'services.detail.public-relations']],
+      ['Public Relations (PR)', ['services.detail.public-relations-pr', 'services.detail.public-relations']],
+      ['social media marketing', ['services.detail.social-influencer-marketing', 'services.detail.social-influencer']],
+    ];
+
+    for (const [phrase, ids] of contested) {
+      const result = outcome(phrase);
+      assert.equal(result.kind, 'disambiguate', `"${phrase}" must offer both pages, not pick one`);
+      const offered = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
+      for (const id of ids) assert.ok(offered.includes(id), `"${phrase}" dropped the owner ${id}`);
+    }
+  });
+
+  it('does not answer a question about a service with the studio social links', () => {
+    // The complaint this authoring answers: "explain social media marketing" used to return the
+    // Instagram and LinkedIn rail, because "social" was a keyword on that intent. It is a question about
+    // what the studio sells, so the two social service lines are offered and the rail is not the answer.
+    const result = outcome('explain social media marketing');
+    assert.notEqual(
+      result.kind === 'answer' ? result.intent.id : '',
+      'contact.socials',
+      'a service question was answered by the publishing rail',
+    );
+    assert.equal(result.kind, 'disambiguate');
+    const offered = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
+    assert.ok(offered.includes('services.detail.social-influencer-marketing'));
+    assert.ok(offered.includes('services.detail.social-influencer'));
+
+    // The rail still answers the phrases that actually ask for it.
+    assert.equal(answered('social channels'), 'contact.socials');
+    assert.equal(answered('where do you publish'), 'contact.socials');
+    assert.equal(answered('social media'), 'contact.socials');
+  });
+
+  it('offers the service and the journal category for a subject the studio both sells and writes about', () => {
+    // "Brand Strategy" is a published journal category and a published deliverable label of the
+    // creative deck. The decision is to show the visitor both rather than silently answering with blog
+    // posts: the deck authors the shared name, so the exact phrase contests at Tier 1, and the
+    // `work.journal.topic.` discount keeps the journal second on the longer question.
+    for (const phrase of ['brand strategy', 'what is brand strategy']) {
+      const result = outcome(phrase);
+      assert.equal(result.kind, 'disambiguate', `"${phrase}" resolved as ${result.kind}`);
+      const offered = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
+      assert.ok(offered.includes('services.detail.integrated-creativity'), `"${phrase}" hid the service line`);
+      assert.ok(offered.includes('work.journal.topic.Brand Strategy'), `"${phrase}" hid the journal category`);
+    }
   });
 
   it('treats a pricing question as unanswerable rather than inventing a range', () => {

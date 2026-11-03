@@ -14,7 +14,8 @@ import assert from 'node:assert/strict';
 
 import { B2B_SERVICES, B2C_SERVICES } from '@/app/components/Sections/ServicesAccordion/types';
 import { INTAKE_TIMELINE_OPTIONS } from '@/app/lib/intake/intakeOptions';
-import { ALWAYS_RESOLVABLE, buildIndex } from '@/app/chat-pod/engine/match';
+import { ALWAYS_RESOLVABLE, buildIndex, decide, rank } from '@/app/chat-pod/engine/match';
+import { normalise } from '@/app/chat-pod/engine/normalise';
 import { compileKnowledgeBase, JOURNAL_LIMIT, type KnowledgeSources } from '@/app/chat-pod/knowledge/compile';
 import { ALL_SERVICES_HREF, BANNED_TERMS, PROCESS_PRINCIPLES, PERSISTENT_MENU, STUDIO } from '@/app/chat-pod/knowledge/corpus';
 import { buildIntentTable, FALLBACK_REPLIES, openingReply } from '@/app/chat-pod/knowledge/intents';
@@ -110,6 +111,40 @@ function blocksOfText(blocks: Reply['blocks']): string {
     .join('\n');
 }
 
+/** The labels of every `list` block in a reply, for depth assertions that must not read prose. */
+function listLabels(reply: Reply): string[] {
+  return reply.blocks.flatMap((block) => (block.t === 'list' ? block.items.map((item) => item.label) : []));
+}
+
+/**
+ * Tier 1 names that more than one intent publishes under, and every intent that does.
+ *
+ * These are sanctioned, not tolerated. The catalogue really does have two lines called
+ * "Public Relations (PR)", one per split, and "brand strategy" is simultaneously a published journal
+ * category and a published deliverable label of the creative deck. A shared name is a fact about the
+ * content, and the multi-owner dictionary turns it into a choice offered to the visitor. This list
+ * exists so a *new* collision still fails the run: an accidental shared name would silently convert a
+ * question the pod used to answer into a disambiguation, and only an intentional one earns a row here.
+ */
+const SHARED_AUTHORED_NAMES: { key: string; owners: string[] }[] = [
+  {
+    key: 'public relations pr',
+    owners: ['services.detail.public-relations-pr', 'services.detail.public-relations'],
+  },
+  {
+    key: 'public relations',
+    owners: ['services.detail.public-relations-pr', 'services.detail.public-relations'],
+  },
+  {
+    key: 'social media marketing',
+    owners: ['services.detail.social-influencer-marketing', 'services.detail.social-influencer'],
+  },
+  {
+    key: 'brand strategy',
+    owners: ['services.detail.integrated-creativity', 'work.journal.topic.Brand Strategy'],
+  },
+];
+
 /** Internal hrefs the pod is allowed to navigate to, checked against the real route tree. */
 function routeResolves(href: string): boolean {
   const [pathBeforeHash] = href.split('#');
@@ -136,9 +171,54 @@ describe('Chat Pod knowledge coverage and provenance', () => {
     assert.deepEqual(unsource.map((entry) => entry.id), []);
   });
 
-  it('keeps Tier 1 aliases globally unique so no phrase is resolved by declaration order', () => {
-    const { duplicates } = buildIndex(intents);
-    assert.deepEqual(duplicates, []);
+  it('shares a Tier 1 name only where every owner is sanctioned, and answers it with a choice', () => {
+    const { duplicates, index } = buildIndex(intents);
+    const sharedKeys = [...new Set(duplicates.map((entry) => entry.slice(0, entry.indexOf(' ('))))].sort();
+    assert.deepEqual(
+      sharedKeys,
+      SHARED_AUTHORED_NAMES.map((entry) => entry.key).sort(),
+      'an unsanctioned phrase is now claimed by two intents, or a sanctioned pair stopped colliding',
+    );
+
+    for (const { key, owners } of SHARED_AUTHORED_NAMES) {
+      const authors = intents
+        .filter((entry) => entry.utterances.some((utterance) => normalise(utterance) === key))
+        .map((entry) => entry.id)
+        .sort();
+      assert.deepEqual(authors, [...owners].sort(), `"${key}" is not authored by exactly its sanctioned owners`);
+
+      // The point of authoring the collision rather than avoiding it: the visitor gets every owner as
+      // a chip, so the pod never picks a page by declaration order or by keyword arithmetic.
+      const outcome = decide(rank(index, key));
+      assert.equal(outcome.kind, 'disambiguate', `"${key}" resolved as ${outcome.kind} instead of asking`);
+      const offered = outcome.kind === 'disambiguate' ? outcome.candidates.map((entry) => entry.intent.id).sort() : [];
+      assert.deepEqual(offered, [...owners].sort(), `"${key}" did not offer every owner`);
+    }
+  });
+
+  it('goes deeper on the second ask about a service line', () => {
+    // Asserted against the authored branch directly. `types.ts` widens `respond` with `AnswerContext`,
+    // and `context.ts` produces the `{ kind: "depth", ctx: { expanded: true } }` follow-up, but
+    // `useChatEngine` still calls `respond(knowledge)` with no context on either the typed or the
+    // chip path, so nothing at runtime can reach this branch yet. The wiring is a separate workstream;
+    // this pins that the depth answer exists and is strictly fuller than the first one.
+    for (const deck of SERVICE_DETAILS) {
+      const entry = byId.get(`services.detail.${deck.slug}`);
+      assert.ok(entry, `no intent for service "${deck.slug}"`);
+      const shallow = entry!.respond(kb);
+      const deep = entry!.respond(kb, { expanded: true });
+      const service = kb.services.find((line) => line.slug === deck.slug)!;
+
+      assert.deepEqual(listLabels(shallow), service.covers.slice(0, 3), `${deck.slug}: the first answer is not the short cut`);
+      assert.deepEqual(listLabels(deep), service.covers, `${deck.slug}: the expanded answer is not the full published list`);
+      assert.notEqual(blocksOfText(shallow.blocks), blocksOfText(deep.blocks), `${deck.slug}: expanding changes nothing`);
+
+      const siblings = kb.services.filter((line) => line.split === service.split && line.slug !== service.slug);
+      assert.ok(
+        siblings.some((line) => blocksOfText(deep.blocks).includes(line.title)),
+        `${deck.slug}: the expanded answer never names another line in the same split`,
+      );
+    }
   });
 
   it('holds one intent per published service slug, across both accordion tiers', () => {
