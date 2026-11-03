@@ -131,7 +131,8 @@ so nothing glided; a restored draft never scrolled to its end and offered a "new
 content already on screen; and the "following" decision was recomputed inside the effect that also writes
 it, which the hook rules are right to reject. Now a scroll listener owns `following`, an arrival glides
 only when the reader was already at the bottom, the first fill snaps, and reduced motion swaps smooth for
-auto instead of disabling the follow. The pill says "Jump to the latest", which is what it does.
+auto instead of disabling the follow. The pill says "Jump to the latest", which is what it does. The follow
+rule this paragraph claims to have fixed was still broken, and §3.6 is the correction.
 
 **3.5 Saying "stop" made the panel look broken.** Four controls leave the questions (`stop` in the
 composer, `Esc`, the "Stop the questions" button, the exit link in the progress row) and all four dispatch
@@ -143,6 +144,28 @@ message, `DONE` and `SUBMITTING` after a send) stay silent and only the exit get
 sentence is charged to the ledger rather than assumed: one wording when answers are on file, naming how
 many and saying the next question rather than the first is where `Start a project` picks up, and a plain
 "nothing was recorded yet" when none are. Both branches are gated live by the two intake tests in §5.
+
+**3.6 §3.4 was wrong, and the owner found it by using the pod.** Its last line claimed an arrival now
+glides whenever the reader was at the bottom. It did not. The check was `distanceFromEnd() <= ANCHOR_PX`
+evaluated inside the post-paint effect, which means the distance it measures *already contains the row that
+just arrived*: a reader parked exactly at the end reads as 120px from the end the moment a reply lands, so
+the condition fails, nothing scrolls, and because no scroll event ever fires, `following` stays `true` and
+the pill that would explain the gap never appears either. The first exchange looked fine, then every reply
+after it piled up below the fold while the greeting stayed on screen. Measured against the state *before*
+the arrival, the same rule works.
+
+`Transcript.tsx` now holds the reader's position in a ref written only by the scroll handler, and the
+arrival effect asks that ref rather than the DOM it has just changed. Two edges come with it: the frames a
+programmatic glide produces are not the reader's opinion, so they cannot clear the anchor (the frame back
+inside the window ends the glide, and a 600ms timer settles it if the glide never arrives); and a `wheel`,
+`touchstart` or `keydown` on the region is a takeover, which resolves the in-flight movement against where
+the reader actually left it. Reduced motion still snaps instead of gliding, and a reader who scrolled up to
+re-read is still never pulled back down.
+
+This defect had no gate. Nothing in the e2e file asserted that the newest row is on screen after a reply,
+which is why a pass that rewrote this whole block could ship it broken; the follow behaviour is the one
+part of §3 that only a browser can prove, and it is listed as a known gap in §5 rather than claimed as
+covered.
 
 ## 4. What the guard test holds
 
@@ -182,6 +205,16 @@ suites 266 passed / 0 failed, and the strict type-check over every file this PR 
 whole-project `tsc` died again on host memory (~1 GB free, `young object promotion failed`), so the scoped
 run stands in for it; no file outside `src/app/chat-pod`, `src/app/lib/intake`, the pod unit suites and
 `chatpod.spec.ts` is modified by this branch.
+
+A third pass on 3 November fixed §3.6, the stuck transcript the owner found by using the pod.
+**Verification, stated plainly:** the 38 source guards that read `Transcript.tsx` pass, the pod suites re-run
+at 266 passed / 0 failed, `eslint` reports no new item in this file, and the strict type-check over the same
+subgraph is 0 errors. **What is not gated is the behaviour itself:** no assertion anywhere checks that the
+newest row is on screen after a reply, which is exactly how the pass that rewrote this block shipped a
+transcript that stops following after the first exchange. Only a browser can prove the fix, and this host
+could not run one at the time of writing (the dev server was stopped to free memory for the compiler). The
+gate this file owes, and does not yet have: send two messages, assert the last row's box sits inside the
+region's client box, then scroll up, send a third, and assert the region did not move and the pill appeared.
 
 The lint items are recorded rather than fixed, and the reason is that each one is a shape this module
 deliberately keeps. `ChatPod.tsx:382` is `useEffect(() => setConsented(hasGrantedConsent()), [])` — the

@@ -10,6 +10,33 @@ Design Read for this surface: **ENERGY 2 / RHYTHM 2 / MOTION 2** (set with the o
 
 ---
 
+## Follow-up found in use: the transcript stopped following (commit after `15b2183`)
+
+The owner's report: "when I keep chatting this is still at top, messages should go the last". Real, and the
+cause was arithmetic rather than animation. `ui/Transcript.tsx` decided whether to follow the end by
+measuring `distanceFromEnd()` inside the post-paint effect, so the distance it read already contained the
+row that had just arrived. A reader parked exactly at the bottom measured about 120px from the bottom, the
+`<= 80` test failed, nothing scrolled, and because nothing scrolled, no scroll event ever fired to update
+`following` either, so the "Jump to the latest" pill stayed hidden too. The first exchange looked correct
+and every reply after it landed below the fold.
+
+The reader's position is now held in a ref written only by the scroll handler, and the arrival effect asks
+that ref instead of the DOM it has just changed. The frames a programmatic glide produces cannot clear the
+anchor (the frame back inside the window ends it, and a 600ms timer settles an interrupted one), and a
+`wheel`, `touchstart` or `keydown` on the region is a takeover that resolves the movement against where the
+reader actually left it. Reduced motion still snaps; a reader who scrolled up to re-read is still never
+pulled back down.
+
+**Verification, stated plainly:** the 266 pod assertions pass, the strict type check over the subgraph is
+0 errors, and `eslint` reports nothing new in this file, but the behaviour itself has no automated gate.
+Nothing in the e2e file asserts that the newest row is on screen after a reply, which is exactly how the
+earlier pass in this PR could rewrite the scroll block and ship it broken. It was also not run in a browser:
+the host was at about 1 GB free and the compiler needed the memory. The gate this PR still owes, and the
+reason to click through it by hand: send two messages, assert the last row sits inside the region's client
+box, then scroll up, send a third, and assert the region did not move and the pill appeared.
+
+---
+
 ## Pass 2: comprehension (Part A)
 
 The owner's complaint, verbatim: asking "what are the services available" was answered with a count of the

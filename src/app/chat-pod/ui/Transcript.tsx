@@ -8,7 +8,12 @@
  *
  *              Scroll discipline is the part that decides whether this is usable. Auto-scrolling on
  *              every arrival yanks a visitor who has scrolled up to re-read an answer, so the region
- *              only follows when the reader is already at the bottom, and otherwise offers the pill.
+ *              only follows when the reader was already at the bottom, and otherwise offers the pill.
+ *              "Was" is the whole problem: the distance has to be remembered from before the new row
+ *              exists, because measured afterwards it includes that row, and a reply taller than the
+ *              anchor window reads as "the reader left" and stops the follow for the rest of the
+ *              conversation. The reader's position is therefore held in a ref written by the scroll
+ *              handler, and the glide's own intermediate frames are not allowed to overwrite it.
  *
  *              The chips are not here. §05 §1.5 puts them above the composer so they stay reachable
  *              after a scroll, and a chip row inside the flow would scroll away with the message that
@@ -27,6 +32,16 @@ import styles from "../ChatPod.module.scss";
 /** Distance from the bottom that still counts as "the reader is following the end". */
 const ANCHOR_PX = 80;
 
+/** How long a programmatic glide is allowed to take before the region's real position is trusted
+ *  again. Chrome and Firefox land a `scrollTo` of this distance well inside it; the timer only exists
+ *  so an interrupted glide cannot leave the reader pinned to a bottom they walked away from. */
+const GLIDE_MS = 600;
+
+function distanceFromEnd(node: HTMLDivElement | null): number {
+  if (!node) return 0;
+  return node.scrollHeight - node.scrollTop - node.clientHeight;
+}
+
 interface Props {
   messages: TranscriptMessage[];
   typing: boolean;
@@ -42,16 +57,26 @@ export default function Transcript({ messages, typing, onEditSlot, rowsActive, o
   /** Where the reader is, held as external state so the pill is a fact about the DOM and not a guess. */
   const [following, setFollowing] = useState(true);
   const rowCount = useRef(0);
+  /** The reader's position as of the last settled frame, which is the only frame that predates the row arriving. */
+  const anchored = useRef(true);
+  const gliding = useRef(false);
+  const glideTimer = useRef<number | null>(null);
 
   // One card is editable at a time: an older copy of the same brief would jump to a question the
   // visitor has already passed, and two cards claiming to be current is a transcript that lies.
   const lastReview = messages.reduce((found, message, index) => (message.reviewRows?.length ? index : found), -1);
 
-  const distanceFromEnd = () => {
-    const node = region.current;
-    if (!node) return 0;
-    return node.scrollHeight - node.scrollTop - node.clientHeight;
-  };
+  /** Stop treating the region as in motion and let its measured position decide what happens next. */
+  const settle = useCallback(() => {
+    gliding.current = false;
+    if (glideTimer.current !== null) {
+      window.clearTimeout(glideTimer.current);
+      glideTimer.current = null;
+    }
+    const atEnd = distanceFromEnd(region.current) <= ANCHOR_PX;
+    anchored.current = atEnd;
+    setFollowing(atEnd);
+  }, []);
 
   // The reader's position is a property of the browser, not of React, so it is subscribed to. Written
   // only from the scroll event: an effect that measured and set it on every paint is the version that
@@ -59,18 +84,59 @@ export default function Transcript({ messages, typing, onEditSlot, rowsActive, o
   useEffect(() => {
     const node = region.current;
     if (!node) return;
-    const onScroll = () => setFollowing(node.scrollHeight - node.scrollTop - node.clientHeight <= ANCHOR_PX);
+    const onScroll = () => {
+      // Frames produced by our own glide say nothing about the reader's position, so they cannot clear
+      // the anchor. What they do say is that the region is moving toward its end, which is the moment
+      // the pill stops being true. The last frame, the one back inside the window, ends the glide.
+      if (gliding.current) {
+        if (distanceFromEnd(node) <= ANCHOR_PX) settle();
+        else setFollowing(true);
+        return;
+      }
+      const atEnd = distanceFromEnd(node) <= ANCHOR_PX;
+      anchored.current = atEnd;
+      setFollowing(atEnd);
+    };
+    // Any input the reader makes with their own hand is a takeover: the glide stops being ours from
+    // that moment, and where they leave the region is the position the next reply is judged against.
+    const takeover = () => {
+      if (gliding.current) settle();
+    };
     node.addEventListener("scroll", onScroll, { passive: true });
-    return () => node.removeEventListener("scroll", onScroll);
-  }, []);
+    node.addEventListener("wheel", takeover, { passive: true });
+    node.addEventListener("touchstart", takeover, { passive: true });
+    node.addEventListener("keydown", takeover);
+    return () => {
+      node.removeEventListener("scroll", onScroll);
+      node.removeEventListener("wheel", takeover);
+      node.removeEventListener("touchstart", takeover);
+      node.removeEventListener("keydown", takeover);
+      if (glideTimer.current !== null) window.clearTimeout(glideTimer.current);
+    };
+  }, [settle]);
+
+  /** Moves the region and writes no React state. The pill and the anchor are facts about the reader, and
+   *  they are settled by the scroll events this movement produces, not asserted here before the browser
+   *  has moved anything. */
+  const scrollToLatest = useCallback(() => {
+    const node = region.current;
+    if (!node) return;
+    if (!prefersReducedMotion()) {
+      gliding.current = true;
+      if (glideTimer.current !== null) window.clearTimeout(glideTimer.current);
+      glideTimer.current = window.setTimeout(settle, GLIDE_MS);
+    }
+    node.scrollTo({ top: node.scrollHeight, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    anchored.current = true;
+  }, [settle]);
 
   // Runs after paint so `scrollHeight` already includes the new row and the typing reserve.
   //
   // Three cases, and only one of them moves the reader on their own account:
   // - the first fill (a restored brief is read from its end, and a fresh one has nothing to read yet)
   //   snaps instantly, while the panel is still animating in;
-  // - an arrival while the reader is already following the end glides, which is the beat that makes a
-  //   reply look delivered rather than pasted;
+  // - an arrival while the reader was following the end glides, which is the beat that makes a reply
+  //   look delivered rather than pasted;
   // - the typing indicator is a 2.25rem height change inside the same beat, so it snaps: smoothing that
   //   too would leave the reader mid-glide twice per message, which reads as lag, not motion.
   //
@@ -84,18 +150,14 @@ export default function Transcript({ messages, typing, onEditSlot, rowsActive, o
 
     if (firstFill) {
       node.scrollTop = node.scrollHeight;
+      // No `setFollowing` here: the region has never been scrolled at this point, so the reader is
+      // wherever the initial state already says they are, and writing it again is a render to answer a
+      // question the transcript has not been asked yet.
+      anchored.current = true;
       return;
     }
-    if (arrived && distanceFromEnd() <= ANCHOR_PX) {
-      node.scrollTo({ top: node.scrollHeight, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-    }
-  }, [messages, typing]);
-
-  const jumpToLatest = useCallback(() => {
-    const node = region.current;
-    if (!node) return;
-    node.scrollTo({ top: node.scrollHeight, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-  }, []);
+    if (arrived && anchored.current) scrollToLatest();
+  }, [messages, typing, scrollToLatest]);
 
   return (
     <div className={styles.transcriptWrap}>
@@ -135,7 +197,7 @@ export default function Transcript({ messages, typing, onEditSlot, rowsActive, o
       {/* The pill is the reader's own scroll position made visible, so its copy promises exactly that
           and not "a message arrived": a cue that lies about why it is here is worse than no cue. */}
       {!following ? (
-        <button type="button" className={styles.newMessage} onClick={jumpToLatest}>
+        <button type="button" className={styles.newMessage} onClick={scrollToLatest}>
           Jump to the latest
         </button>
       ) : null}
