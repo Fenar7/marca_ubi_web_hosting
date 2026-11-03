@@ -13,6 +13,7 @@ export const contactTrackEnum = z.enum([
   'new-business',
   'press-media',
   'partnerships',
+  'general',
 ]);
 
 export type ContactTrack = z.infer<typeof contactTrackEnum>;

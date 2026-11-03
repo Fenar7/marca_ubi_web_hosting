@@ -157,9 +157,10 @@ describe('Contact Portal: Swiss Light Editorial Design Tokens & Anti-Slop Audit'
   const scssPath = path.join(process.cwd(), 'src/app/contact/Contact.module.scss');
   const scssContent = fs.readFileSync(scssPath, 'utf8');
 
-  it('enforces pure white canvas (#ffffff) and warm paper (#f7f7f8)', () => {
+  it('enforces pure white canvas (#ffffff), obsidian black masthead (#000000), and soft blush pink (#ffd6e7)', () => {
     assert.match(scssContent, /#ffffff/);
-    assert.match(scssContent, /#f7f7f8/);
+    assert.match(scssContent, /#000000/);
+    assert.match(scssContent, /#ffd6e7/);
   });
 
   it('enforces Brand Red (#ea002a) as surgical accent', () => {
@@ -178,9 +179,17 @@ describe('Contact Portal: Swiss Light Editorial Design Tokens & Anti-Slop Audit'
     assert.match(scssContent, /border-radius:\s*9999px/);
   });
 
-  it('enforces touch targets >= 44px (min-height: 44px or 52px)', () => {
-    assert.match(scssContent, /min-height:\s*44px/);
+  it('enforces touch targets >= 44px (min-height: 48px and height: 52px)', () => {
+    assert.match(scssContent, /min-height:\s*48px/);
     assert.match(scssContent, /height:\s*52px/);
+  });
+
+  it('verifies complete elimination of AI-slop ticking clocks and pulsating radar dots', () => {
+    const pagePath = path.join(process.cwd(), 'src/app/contact/page.tsx');
+    const pageContent = fs.readFileSync(pagePath, 'utf8');
+    assert.doesNotMatch(pageContent, /StudioCorridors/);
+    assert.doesNotMatch(pageContent, /useStudioClocks/);
+    assert.doesNotMatch(pageContent, /TALK TO US\./);
   });
 });
 

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import ClientHeader from '@/app/components/ClientHeader/ClientHeader';
 import MonumentalFooter from '@/app/components/Sections/MonumentalFooter';
-import DirectDesks from './components/DirectDesks';
-import StudioCorridors from './components/StudioCorridors';
-import TalentDiversion from './components/TalentDiversion';
+import ContactHero from './components/ContactHero';
 import InquiryComposer from './components/InquiryComposer';
+import StudioCards from './components/StudioCards';
+import WantToWorkWithUs from './components/WantToWorkWithUs';
 import styles from './Contact.module.scss';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcaubi.com').replace(/\/+$/, '');
@@ -181,8 +181,10 @@ const jsonLdGraph = {
 
 /**
  * View: Full Contact & Studio Directory Page (/contact).
- * Provides direct studio desks, live operational timezones, talent diversion,
- * and an interactive inquiry composer integrated with the commercial CRM.
+ * Combines 160/90 Solid Obsidian Black Hero Masthead with Whoa Mama Swiss Light Editorial
+ * minimal form architecture, clean studio hub location cards, and targeted careers talent diversion.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export default function ContactPage() {
   return (
@@ -193,33 +195,22 @@ export default function ContactPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
       />
 
-      <ClientHeader defaultTheme="light" />
+      <ClientHeader defaultTheme="dark" />
+
+      {/* 160/90 Solid Obsidian Black Hero Masthead (White Nav & Brandmark Contrast) */}
+      <ContactHero />
 
       <main id="contact-main" className={styles.pageMain} data-header-theme="light">
-        {/* Editorial Masthead */}
-        <header className={styles.masthead}>
-          <div className={styles.eyebrow}>
-            <span className={styles.eyebrowDot} aria-hidden="true" />
-            <span>Direct Intake & Studio Desks</span>
-          </div>
-          <h1 className={styles.headline}>TALK TO US.</h1>
-          <p className={styles.subheadline}>
-            Whether initiating an enterprise brand commission, scheduling an executive briefing,
-            or inquiring with our studio desks, all direct communication channels begin here.
-          </p>
-        </header>
-
         {/* Asymmetric 2-Column Swiss Editorial Grid */}
-        <div className={styles.editorialGrid}>
-          {/* Left Column: Direct Desks & Corridors */}
-          <div className={styles.leftColumn}>
-            <DirectDesks />
-            <StudioCorridors />
-            <TalentDiversion />
-          </div>
-
-          {/* Right Column: Inquiry Composer Form */}
+        <div className={styles.editorialLayoutGrid}>
+          {/* Left Column: 160/90 Intent Pills & Minimal Business Inquiry Form */}
           <InquiryComposer />
+
+          {/* Right Column: Quiet Studio Hub Cards & Mandated Soft Pink Talent Card */}
+          <aside className={styles.rightColumnStack} aria-label="Studio locations and careers">
+            <StudioCards />
+            <WantToWorkWithUs />
+          </aside>
         </div>
       </main>
 
