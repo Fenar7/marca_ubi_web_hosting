@@ -237,6 +237,14 @@ describe("Chat Pod motion contract (fluid, and switched off when motion is refus
     assert.ok(transcript.includes("node.scrollTop = node.scrollHeight"), "a restored conversation lands at its end instead of at a question already answered");
   });
 
+  it("hands the wheel to the reader while the page behind is locked", () => {
+    // Opening the panel calls `lenis.stop()`, and a stopped Lenis cancels every wheel and touchmove
+    // outside a `data-lenis-prevent` subtree. Without the opt-out the transcript renders a scrollbar
+    // that no mouse can move, which is a bug no unit test could see until the owner reported it.
+    assert.ok(transcript.includes("data-lenis-prevent"), "the scroll region must opt out of the smooth-scroll hijack");
+    assert.ok(pod.includes('window.dispatchEvent(new Event("menu:open"))'), "the panel does stop the page scroller, so the opt-out is load-bearing");
+  });
+
   it("echoes a tapped reply chip as the visitor's own line", () => {
     // §05 §1.5: the pressed label becomes their message, so the transcript always shows the question
     // before the answer. `slot-pick` already did this; `intent` was the asymmetry left over.

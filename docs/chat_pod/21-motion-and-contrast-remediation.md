@@ -167,6 +167,32 @@ which is why a pass that rewrote this whole block could ship it broken; the foll
 part of §3 that only a browser can prove, and it is listed as a known gap in §5 rather than claimed as
 covered.
 
+**3.7 The same owner report, one day later: the transcript would not scroll at all.** The wheel turned and
+nothing moved, while the scrollbar thumb sat there looking scrollable and the timestamp row was cut off under
+the chip rail. This is not a transcript bug, it is an interaction between the pod and the site's page
+scroller, and the pod was the half that was wrong.
+
+`openPanel()` dispatches `menu:open`, which is how the pod tells `SmoothScrollProvider` to stop Lenis so the
+page behind the panel cannot move (`ChatPod.tsx:247`). Stopping the scroller is the right call. The cost was
+invisible: in the installed Lenis (1.3.17), `onVirtualScroll` cancels any cancelable `wheel` or `touchmove`
+that is not inside a `data-lenis-prevent` subtree *including while it is stopped*
+(`node_modules/lenis/dist/lenis.mjs:632`), because a stopped scroller still owns the input, it just refuses
+to act on it. The transcript is a nested scroll container, so the browser never got to scroll it. Dragging
+the thumb worked, `Tab` into the region and pressing arrows worked, and the region was genuinely overflowing
+with `overflow-y: auto` and `overscroll-behavior: contain`, which is why every static check in §5 stayed
+green while the surface was unusable with a mouse.
+
+The fix is the opt-out Lenis documents: `data-lenis-prevent` on the scroll region in `Transcript.tsx`, which
+puts the wheel and the touch gesture back in the reader's hands for that subtree and for nothing else. The
+page behind stays locked, because that lock is `lenis.stop()` plus `body { overflow: hidden }`, neither of
+which the attribute touches.
+
+What gates it is one source assertion in `chatpod-contrast.test.ts` ("hands the wheel to the reader while the
+page behind is locked"), which checks both halves: the attribute on the region and the `menu:open` dispatch
+that makes the attribute load-bearing. That is a regression fence, not a proof: a source guard cannot
+observe a wheel event. The behaviour still needs the browser pass §5 already records as owed, and this
+defect is the second reason it is not optional.
+
 ## 4. What the guard test holds
 
 `tests/unit/chatpod-contrast.test.ts` is two describes. The contrast one does the arithmetic above from
@@ -215,6 +241,15 @@ transcript that stops following after the first exchange. Only a browser can pro
 could not run one at the time of writing (the dev server was stopped to free memory for the compiler). The
 gate this file owes, and does not yet have: send two messages, assert the last row's box sits inside the
 region's client box, then scroll up, send a third, and assert the region did not move and the pill appeared.
+
+A fourth pass on 3 November fixed §3.7, the unscrollable transcript, reported by the same owner while using
+the pod. **Verification, stated plainly:** the pod suites re-run (the contrast and motion file 12/12, the
+persistence file 29/29), `eslint` reports nothing new on either changed file, and the strict type-check over
+the same subgraph is 0 errors. **What is not gated is the gesture:** the new assertion checks that the
+`data-lenis-prevent` attribute and the `menu:open` dispatch both exist, which is a fence against deleting the
+fix, not evidence that a wheel event reaches the region. Adding to the browser pass this file owes: put the
+pointer over the transcript, dispatch a wheel, and assert `scrollTop` moved while the document behind it did
+not.
 
 The lint items are recorded rather than fixed, and the reason is that each one is a shape this module
 deliberately keeps. `ChatPod.tsx:382` is `useEffect(() => setConsented(hasGrantedConsent()), [])` — the

@@ -169,6 +169,10 @@ export default function Transcript({ messages, typing, onEditSlot, rowsActive, o
         aria-relevant="additions"
         tabIndex={0}
         aria-label="Conversation"
+        // The site runs Lenis for smooth scrolling, and opening the panel calls `lenis.stop()`. A stopped
+        // Lenis still cancels every wheel and touchmove it sees, except inside a `data-lenis-prevent`
+        // subtree: without this attribute the transcript has a scrollbar that no mouse can move.
+        data-lenis-prevent
       >
         {messages.map((message, index) => (
           <MessageBubble

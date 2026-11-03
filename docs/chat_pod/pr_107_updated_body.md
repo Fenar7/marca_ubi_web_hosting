@@ -10,7 +10,9 @@ Design Read for this surface: **ENERGY 2 / RHYTHM 2 / MOTION 2** (set with the o
 
 ---
 
-## Follow-up found in use: the transcript stopped following (commit after `15b2183`)
+## Follow-ups found in use (commits after `15b2183`)
+
+### The transcript stopped following
 
 The owner's report: "when I keep chatting this is still at top, messages should go the last". Real, and the
 cause was arithmetic rather than animation. `ui/Transcript.tsx` decided whether to follow the end by
@@ -34,6 +36,32 @@ earlier pass in this PR could rewrite the scroll block and ship it broken. It wa
 the host was at about 1 GB free and the compiler needed the memory. The gate this PR still owes, and the
 reason to click through it by hand: send two messages, assert the last row sits inside the region's client
 box, then scroll up, send a third, and assert the region did not move and the pill appeared.
+
+### The transcript would not scroll at all
+
+The owner's second report, one day later: the wheel turned and nothing moved, while the scrollbar thumb sat
+there looking scrollable and the newest row was cut off under the chip rail.
+
+This one is not the transcript's arithmetic, it is the pod's handshake with the site's page scroller.
+`openPanel()` dispatches `menu:open` so `SmoothScrollProvider` calls `lenis.stop()` and the page behind the
+panel cannot move. Stopping the scroller is correct; the cost was invisible. In the installed Lenis (1.3.17),
+`onVirtualScroll` cancels every cancelable `wheel` and `touchmove` that is not inside a `data-lenis-prevent`
+subtree, *including while it is stopped* (`node_modules/lenis/dist/lenis.mjs:632`): a stopped scroller still
+owns the input, it just refuses to act on it. The transcript is a nested scroll container, so the browser
+never received the gesture. Dragging the thumb worked, tabbing in and pressing arrows worked, and the region
+did overflow correctly with `overflow-y: auto` and `overscroll-behavior: contain`, which is why every static
+check stayed green while the surface was unusable with a mouse.
+
+The fix is Lenis's documented opt-out on the scroll region: `data-lenis-prevent`, which returns the wheel and
+the touch gesture to that subtree and nothing else. The page behind remains locked, because that lock is
+`lenis.stop()` plus the body overflow guard, neither of which the attribute touches.
+
+**Verification, stated plainly:** the contrast and motion suite is 12/12 with a new assertion covering both
+halves of the interaction (the attribute on the region, and the `menu:open` dispatch that makes it
+load-bearing), the persistence suite is 29/29, `eslint` reports nothing new on either changed file, and the
+strict type check over the subgraph is 0 errors. What that does not prove is the gesture itself: a source
+guard cannot observe a wheel event, so the browser pass still has to dispatch one over the transcript and
+assert `scrollTop` moved while the document behind it did not.
 
 ---
 
