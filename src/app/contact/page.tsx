@@ -201,16 +201,15 @@ export default function ContactPage() {
       <ContactHero />
 
       <main id="contact-main" className={styles.pageMain} data-header-theme="light">
-        {/* Asymmetric 2-Column Swiss Editorial Grid */}
-        <div className={styles.editorialLayoutGrid}>
-          {/* Left Column: 160/90 Intent Pills & Minimal Business Inquiry Form */}
+        <div className={styles.flowContainer}>
+          {/* 1. Full-Width 160/90 Intent Pills & Whoa Mama Business Enquiries Form */}
           <InquiryComposer />
 
-          {/* Right Column: Quiet Studio Hub Cards & Mandated Soft Pink Talent Card */}
-          <aside className={styles.rightColumnStack} aria-label="Studio locations and careers">
-            <StudioCards />
-            <WantToWorkWithUs />
-          </aside>
+          {/* 2. Full-Width Soft Pink Talent Diversion Card (Exact match of Screenshot 155749) */}
+          <WantToWorkWithUs />
+
+          {/* 3. Studio Location Hubs: Calicut & Trivandrum (Whoa Mama Screenshot 155756) */}
+          <StudioCards />
         </div>
       </main>
 

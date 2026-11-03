@@ -14,12 +14,14 @@ import styles from "../Contact.module.scss";
  */
 export default function WantToWorkWithUs() {
   return (
-    <div id="careers-callout" className={styles.wantToWorkCard}>
-      <h2 className={styles.wantToWorkTitle}>Want to work with us?</h2>
-      <p className={styles.wantToWorkSubtitle}>Careers &amp; Internships</p>
-      <Link href="/careers" className={styles.wantToWorkLink}>
-        View Current Openings
-      </Link>
-    </div>
+    <section id="careers-callout" className={styles.wantToWorkSection} aria-label="Careers and internships">
+      <div className={styles.wantToWorkCard}>
+        <h2 className={styles.wantToWorkTitle}>Want to work with us?</h2>
+        <p className={styles.wantToWorkSubtitle}>Careers &amp; Internships</p>
+        <Link href="/careers" className={styles.wantToWorkLink}>
+          View Current Openings
+        </Link>
+      </div>
+    </section>
   );
 }

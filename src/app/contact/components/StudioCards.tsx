@@ -42,28 +42,30 @@ const STUDIOS: StudioLocation[] = [
  */
 export default function StudioCards() {
   return (
-    <div className={styles.studioCardsStack}>
-      {STUDIOS.map((studio) => (
-        <div key={studio.city} className={styles.studioCard}>
-          <h3 className={styles.studioCity}>{studio.city}</h3>
-          <p className={styles.studioSubhead}>{studio.subhead}</p>
-          <address className={styles.studioAddress}>
-            {studio.lines.map((line, idx) => (
-              <span key={idx} className={styles.addressLine}>
-                {line}
-              </span>
-            ))}
-          </address>
-          <a
-            href={studio.directionsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.directionsLink}
-          >
-            Get Directions
-          </a>
-        </div>
-      ))}
+    <section className={styles.studioSection} aria-label="Studio locations and direct desks">
+      <div className={styles.studioGrid}>
+        {STUDIOS.map((studio) => (
+          <div key={studio.city} className={styles.studioCard}>
+            <h3 className={styles.studioCity}>{studio.city}</h3>
+            <p className={styles.studioSubhead}>{studio.subhead}</p>
+            <address className={styles.studioAddress}>
+              {studio.lines.map((line, idx) => (
+                <span key={idx} className={styles.addressLine}>
+                  {line}
+                </span>
+              ))}
+            </address>
+            <a
+              href={studio.directionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.directionsLink}
+            >
+              Get Directions
+            </a>
+          </div>
+        ))}
+      </div>
 
       {/* Direct Contact Desks */}
       <div className={styles.directDeskCard}>
@@ -80,6 +82,6 @@ export default function StudioCards() {
           </a>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
