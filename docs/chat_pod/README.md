@@ -38,6 +38,7 @@ The module was cut from `master` at `3f1318a` (Phase 14 / PR #104 merged) as `fe
 | 19 | [`19-cto-audit-swiss-light-editorial.md`](./19-cto-audit-swiss-light-editorial.md) | Senior CTO audit of the Swiss light editorial build (commit `d40e965`) |
 | 20 | [`20-comprehension-and-conversation-state.md`](./20-comprehension-and-conversation-state.md) | The resolver as arithmetic: the three tiers and their frozen thresholds, contested authored names, and the conversation layer that makes "tell me more" and "the second one" mean something |
 | 21 | [`21-motion-and-contrast-remediation.md`](./21-motion-and-contrast-remediation.md) | Part B of the same pass: measured ink contrast, the entrance-motion contract, and the fluidity fixes (typing hand-off, scroll follow, panel stagger) with the guard test that holds them |
+| 22 | [`22-comprehension-continuity-and-intake-remediation.md`](./22-comprehension-continuity-and-intake-remediation.md) | Part C: typed messages against authored ones (chat abbreviations, one-keystroke forgiveness, residue naming), the continuity second pass, the measured resolver table, and the ten intake defects with their causes |
 
 ---
 

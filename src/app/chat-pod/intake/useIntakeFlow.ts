@@ -50,6 +50,13 @@ export interface IntakeState {
   /** Set by `EDIT_SLOT`: the next accepted answer returns to REVIEW instead of walking the tail. */
   editing: boolean;
   /**
+   * The question index to walk back to after an edit that began in the middle of the questions, or
+   * `null` for the review-card path, which returns to the card. Without this, correcting an early
+   * answer while still being asked dumps the visitor onto a review card for a brief they have not
+   * finished answering, which is the reason there was no way to go back at all.
+   */
+  editReturn: number | null;
+  /**
    * Where the studio will reply, captured on the turn the send succeeded. `SUBMITTING` clears the
    * answers so a second brief starts blank, and the success line has to survive that.
    */
@@ -111,6 +118,7 @@ export function initialIntakeState(): IntakeState {
     error: null,
     phoneRequired: false,
     editing: false,
+    editReturn: null,
     sentTo: "",
   };
 }
@@ -190,10 +198,22 @@ function advance(state: IntakeState, slot: SlotId, value: SlotValue): IntakeStat
         slots: { ...filled.slots, services: [] },
         slotIndex: servicesIndex,
         editing: true,
+        // The return point survives the detour through `services`: an edit made mid-questions still
+        // owes the visitor the question they were on, not a review card for half a brief.
+        editReturn: state.editReturn,
         error: null,
       };
     }
-    return { ...filled, mode: "REVIEW", editing: false, error: null };
+    if (state.editReturn !== null) {
+      return {
+        ...filled,
+        slotIndex: Math.min(state.editReturn, SLOT_ORDER.length - 1),
+        editing: false,
+        editReturn: null,
+        error: null,
+      };
+    }
+    return { ...filled, mode: "REVIEW", editing: false, editReturn: null, error: null };
   }
 
   const nextIndex = state.slotIndex + 1;
@@ -212,9 +232,10 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
       if (state.mode === "INTAKE_FORM" || state.mode === "REVIEW" || state.mode === "SUBMITTING") return state;
       // A brief that came back from storage with every answer in it opens the card rather than
       // re-asking the last question the visitor already answered.
-      if (isComplete(state.slots)) return { ...state, mode: "REVIEW", error: null, editing: false, slotIndex: SLOT_ORDER.length - 1 };
+      if (isComplete(state.slots))
+        return { ...state, mode: "REVIEW", error: null, editing: false, editReturn: null, slotIndex: SLOT_ORDER.length - 1 };
       // Returning after `EXIT_TO_CHAT` resumes where the visitor stopped; the slots were kept on purpose.
-      return { ...state, mode: "INTAKE_FORM", error: null, editing: false };
+      return { ...state, mode: "INTAKE_FORM", error: null, editing: false, editReturn: null };
     }
 
     case "RESTORE_DRAFT": {
@@ -275,10 +296,24 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
     }
 
     case "EDIT_SLOT": {
-      if (state.mode !== "REVIEW") return state;
+      // Legal from the review card and from the middle of the questions. Refusing the second is what
+      // made an early mistake uncorrectable without abandoning the brief: the only way back to a wrong
+      // answer was to stop, and stopping reads as giving up.
+      if (state.mode !== "REVIEW" && state.mode !== "INTAKE_FORM") return state;
       const index = SLOT_ORDER.indexOf(event.slot);
       if (index === -1) return state;
-      return { ...state, mode: "INTAKE_FORM", slotIndex: index, editing: true, error: null };
+      // Asking for the question already on screen is a no-op in the questions, where the index is the
+      // truth about what is being asked. From the card it is not: a brief that walked to the last slot
+      // carries that index into REVIEW, and refusing to re-open the final row there would freeze it.
+      if (state.mode === "INTAKE_FORM" && index === state.slotIndex) return state;
+      return {
+        ...state,
+        mode: "INTAKE_FORM",
+        slotIndex: index,
+        editing: true,
+        editReturn: state.mode === "INTAKE_FORM" ? state.slotIndex : null,
+        error: null,
+      };
     }
 
     case "SUBMIT": {
@@ -302,6 +337,7 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
           mode: "INTAKE_FORM",
           slotIndex: SLOT_ORDER.indexOf(blocking),
           editing: true,
+          editReturn: null,
           error: { slot: blocking, message: `I still need ${SLOTS[blocking].label.toLowerCase()} before I can send this.` },
         };
       }
@@ -332,6 +368,7 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
           attempt,
           slotIndex: index === -1 ? state.slotIndex : index,
           editing: true,
+          editReturn: null,
           error: { slot: event.slot, message: event.message },
         };
       }
@@ -344,7 +381,7 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
       // `ChatPod.tsx` keeps the control out of reach as well; this is the half that cannot be bypassed.
       if (state.mode === "SUBMITTING") return state;
       // Slots are kept deliberately: "stop asking questions" is not "throw my answers away".
-      return { ...state, mode: "CHAT", error: null, editing: false };
+      return { ...state, mode: "CHAT", error: null, editing: false, editReturn: null };
 
     case "RESET":
       if (state.mode === "SUBMITTING") return state;

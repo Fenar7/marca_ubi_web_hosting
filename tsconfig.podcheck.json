@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/app/chat-pod/**/*.ts",
+    "src/app/chat-pod/**/*.tsx",
+    "tests/unit/chatpod-*.test.ts"
+  ]
+}

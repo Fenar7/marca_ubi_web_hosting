@@ -31,6 +31,7 @@ import type { Chip, Intent, KnowledgeBase, Reply } from "../types";
 import {
   ALL_SERVICES_HREF,
   DRAFT_RETENTION_DAYS,
+  FAQ_HREF,
   PERSONA,
   PERSISTENT_MENU,
   SERVICE_ALIASES,
@@ -199,6 +200,65 @@ const STATIC_INTENTS: Intent[] = [
   },
 
   {
+    id: "identity.studio",
+    label: "Who we are",
+    source: "src/sanity/lib/faq-queries.ts:22-24; src/app/components/Sections/ServicesAccordion/types.ts:28,130",
+    // The company question, which had no owner anywhere in this table until now. "what do you do" was
+    // authored under `services.overview`, whose answer opens by asking the visitor who they sell to, so
+    // a first-time visitor asking what the studio is got a sales qualification question back and read
+    // the pod as not listening. This is the other half of that: a question about us, answered about us.
+    //
+    // "who are you" and "about you" moved here from `process.team`, which answered them with two street
+    // addresses. "what are you" stays with `smalltalk.areyouhuman` on purpose: that one asks what is
+    // talking, this one asks what is behind the door.
+    utterances: [
+      "what do you do",
+      "what do you actually do",
+      "what do you guys do",
+      "what does marka ubi do",
+      "who are you",
+      "who are you guys",
+      "who is behind this",
+      "about you",
+      "what is marka ubi",
+      "are you an agency",
+      "are you a creative agency",
+      "is this an agency",
+      "what kind of company are you",
+      "tell me about yourself",
+      "tell me about your studio",
+      "tell me about the company",
+      "about the studio",
+    ],
+    // "studio" leads: it is the noun a visitor uses for this company, and the only one of these five
+    // that a question about the offering does not also need. "services" is deliberately absent, or this
+    // intent would meet every services question at the table.
+    keywords: ["studio", "company", "agency", "identity", "positioning"],
+    respond: (kb) => ({
+      blocks: [
+        {
+          t: "p",
+          text: "Brand work and software from one studio. Plenty of firms split those across an agency and a build shop; Marca Ubi keeps how a brand reads and the systems it runs on in the same team, which is the position the FAQ sets out at greater length.",
+        },
+        {
+          t: "p",
+          text: `${kb.counts.servicePages} of that has a page of its own: ${kb.counts.servicesB2B} lines aimed at businesses and ${kb.counts.servicesB2C} at consumer brands.`,
+        },
+        {
+          t: "p",
+          text: `The ${kb.studio.locations.length} studios are in Kerala, and the people in them are on the careers page.`,
+        },
+      ],
+      chips: [
+        asChip.intent("What we sell", "services.overview"),
+        asChip.intent("See the work", "work.overview"),
+        asChip.route("Open roles", "/careers"),
+        asChip.route("Read the FAQ", FAQ_HREF),
+      ],
+    }),
+  },
+
+  {
     id: "services.overview",
     label: "What we do",
     source: "src/app/services/content.ts:95 SERVICE_DETAILS; src/app/components/Sections/ServicesAccordion/types.ts:28,130",
@@ -208,7 +268,6 @@ const STATIC_INTENTS: Intent[] = [
     // author published with a decision, so every phrasing this studio is willing to understand is
     // listed here and pinned in the typed table.
     utterances: [
-      "what do you do",
       "what do you offer",
       "what services do you offer",
       "what are your services",
@@ -290,13 +349,13 @@ const STATIC_INTENTS: Intent[] = [
     source: "src/app/services/content.ts:95 SERVICE_DETAILS",
     utterances: [
       "not sure",
-      "which service",
+      "which service should i pick",
       "which service do i need",
       "which service is right for me",
       "what do i need",
       "recommend",
       "help me choose",
-      "i do not know which service",
+      "i do not know which service to pick",
     ],
     keywords: ["which", "service", "choose", "recommend", "need"],
     respond: () => ({
@@ -336,6 +395,17 @@ const STATIC_INTENTS: Intent[] = [
       "budget",
       "expensive",
       "cheap",
+      // Pricing asked about a named thing, which is how the question actually arrives. "how much does a
+      // rebrand cost" shares one authored word with this intent ("cost") and one with a service page
+      // ("rebrand"), so the arithmetic puts it in the ambiguous band every time; a visitor who wants a
+      // number is asking this question whatever noun they hang it on, and there is no rate card to be
+      // wrong about. The service pages keep their own names.
+      "how much does a rebrand cost",
+      "what does a rebrand cost",
+      "how much does branding cost",
+      "how much does a website cost",
+      "how much does an app cost",
+      "how much for a campaign",
     ],
     keywords: ["price", "pricing", "cost", "rates", "quote", "budget", "charge", "fees"],
     respond: (kb) => ({
@@ -531,8 +601,7 @@ const STATIC_INTENTS: Intent[] = [
       "team",
       "people",
       "founder",
-      "who are you",
-      "about you",
+      "how many people work there",
     ],
     keywords: ["team", "people", "founder", "studio", "works"],
     respond: (kb) => ({
@@ -675,6 +744,7 @@ const STATIC_INTENTS: Intent[] = [
     utterances: [
       "where are you",
       "where are you located",
+      "where are you based",
       "where is your studio",
       "your address",
       "which city are you in",
@@ -720,6 +790,20 @@ const STATIC_INTENTS: Intent[] = [
       "proposal",
       "i would like a proposal",
       "work with you",
+      // The highest-value sentence a visitor can type and the corpus has no page for. Neither half of
+      // the published catalogue is titled "website" or "app", so there is no service page to answer
+      // with, and arithmetic on "i want a website" produced a fallback for a lead. Authoring it here is
+      // the honest route: the brief is what actually takes a build request. The keywords are unchanged
+      // on purpose, or every message that mentions a website would start competing with the service
+      // pages that do not exist.
+      "i want a website",
+      "i need a website",
+      "we need a website",
+      "build me a website",
+      "can you build a website",
+      "can you build an app",
+      "do you build apps",
+      "i want an app built",
     ],
     keywords: ["project", "brief", "enquiry", "hire", "proposal", "start"],
     respond: () => ({

@@ -29,7 +29,7 @@ import {
   isRequired,
   transition,
 } from '@/app/chat-pod/intake/useIntakeFlow';
-import { SLOTS, SLOT_ORDER } from '@/app/chat-pod/intake/slots';
+import { SLOTS, SLOT_ORDER, polarityMatch, slotOptions } from '@/app/chat-pod/intake/slots';
 import {
   INTAKE_AGENCY_STATUS_OPTIONS,
   INTAKE_CATEGORIES,
@@ -66,6 +66,14 @@ const VALID: Record<SlotId, SlotValue> = {
   showcasePermission: INTAKE_SHOWCASE_CHOICES[0],
   extraNotes: 'The launch window is the end of the year.',
 };
+
+/**
+ * A brief with nothing in it. The closed sets under test here are static — none of them is scoped to an
+ * earlier answer — so an empty brief is enough to read them the way the panel does.
+ */
+const EMPTY: Record<SlotId, SlotValue> = Object.fromEntries(
+  SLOT_ORDER.map((slot) => [slot, Array.isArray(VALID[slot]) ? [] : '']),
+) as Record<SlotId, SlotValue>;
 
 /** Walk the machine with the visitor: answer every slot in ask order. */
 function fill(overrides: Partial<Record<SlotId, SlotValue>> = {}): IntakeState {
@@ -282,7 +290,48 @@ describe('Chat Pod intake machine', () => {
     });
   });
 
-  describe('editing from the review card', () => {
+  describe('reading a bare yes or no', () => {
+    // The exact matcher cannot see these. "Are you an agency?" offers `No, I'm not an agency`, and a
+    // visitor who types `no` has answered the question, not declined it.
+    it('files the denial the visitor actually made', () => {
+      const matched = polarityMatch('no', slotOptions(SLOTS.agencyStatus, EMPTY));
+      assert.deepEqual(matched, { kind: 'match', value: INTAKE_AGENCY_STATUS_OPTIONS[2] });
+    });
+
+    it('is case and punctuation indifferent, because a phone keyboard is', () => {
+      assert.deepEqual(polarityMatch('NO', slotOptions(SLOTS.agencyStatus, EMPTY)), {
+        kind: 'match',
+        value: INTAKE_AGENCY_STATUS_OPTIONS[2],
+      });
+    });
+
+    it('refuses to choose between two yeses it cannot tell apart', () => {
+      // Both members begin with "Yes"; picking one would file a preference about agency services that
+      // the visitor never stated, which is the mistake the closed set exists to prevent.
+      const ambiguous = polarityMatch('yes', slotOptions(SLOTS.agencyStatus, EMPTY));
+      assert.equal(ambiguous?.kind, 'ambiguous');
+      assert.equal(ambiguous?.kind === 'ambiguous' ? ambiguous.values.length : 0, 2);
+    });
+
+    it('declines to invent a yes or no where the set has neither', () => {
+      // A bare "no" against a set that does not mean it is the visitor declining the question, which is
+      // what the skip path already does. Returning a value here would file nonsense in the CRM.
+      assert.equal(polarityMatch('no', slotOptions(SLOTS.language, EMPTY)), null);
+      assert.equal(polarityMatch('maybe', slotOptions(SLOTS.agencyStatus, EMPTY)), null);
+    });
+
+    it('agrees with the exact match where the option is the bare word', () => {
+      // The showcase set literally is ["Yes", "No"], so the existing exact path already files it. This
+      // pins that the polarity reading reaches the same value rather than a third one, so the two rules
+      // cannot disagree about what "no" means on a question that offers yes and no.
+      assert.deepEqual(polarityMatch('no', slotOptions(SLOTS.showcasePermission, EMPTY)), {
+        kind: 'match',
+        value: INTAKE_SHOWCASE_CHOICES[1],
+      });
+    });
+  });
+
+  describe('editing an answer already given', () => {
     it('jumps to the named slot and returns to the card after one answer', () => {
       const reviewed = fill();
       const editing = transition(reviewed, { t: 'EDIT_SLOT', slot: 'name' });
@@ -302,9 +351,46 @@ describe('Chat Pod intake machine', () => {
       assert.deepEqual(bogus, reviewed, 'a stray slot name must not move the card');
     });
 
-    it('refuses an edit outside the review card', () => {
-      const state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-      assert.deepEqual(transition(state, { t: 'EDIT_SLOT', slot: 'name' }), state);
+    it('refuses an edit for the question that is already on screen', () => {
+      const mid = toSlot('name');
+      assert.deepEqual(transition(mid, { t: 'EDIT_SLOT', slot: 'name' }), mid, 're-asking the live question must not start an edit');
+    });
+
+    it('walks back to the question it interrupted rather than to the card', () => {
+      // The whole point of allowing an edit mid-form: a visitor who spots a wrong answer two questions
+      // back must land on the question they were answering, not on a review card for a brief that is
+      // half empty. Returning to the card there is the defect, not the remedy.
+      const mid = toSlot('projectName');
+      assert.equal(mid.mode, 'INTAKE_FORM');
+      const editing = transition(mid, { t: 'EDIT_SLOT', slot: 'timeline' });
+      assert.equal(editing.mode, 'INTAKE_FORM');
+      assert.equal(editing.editing, true);
+      assert.equal(currentSlot(editing), 'timeline');
+      assert.equal(editing.editReturn, SLOT_ORDER.indexOf('projectName'));
+
+      const answered = transition(editing, { t: 'ANSWER', slot: 'timeline', value: INTAKE_TIMELINE_OPTIONS[2].value });
+      assert.equal(answered.mode, 'INTAKE_FORM', 'a mid-form edit must not open the review card');
+      assert.equal(currentSlot(answered), 'projectName', 'and must return to the question that was interrupted');
+      assert.equal(answered.editing, false);
+      assert.equal(answered.editReturn, null);
+      assert.equal(answered.slots.timeline, INTAKE_TIMELINE_OPTIONS[2].value);
+    });
+
+    it('keeps the return point across the categories detour', () => {
+      // Editing the disciplines invalidates the services underneath them, so the machine routes through
+      // `services` before honouring the edit. The return point has to survive that hop.
+      const mid = toSlot('name');
+      const editing = transition(mid, { t: 'EDIT_SLOT', slot: 'categories' });
+      assert.equal(currentSlot(editing), 'categories');
+      assert.equal(editing.editReturn, SLOT_ORDER.indexOf('name'));
+
+      const repicked = transition(editing, { t: 'ANSWER', slot: 'categories', value: [CATEGORY] });
+      assert.equal(currentSlot(repicked), 'services', 'the disciplines changed, so the services under them are asked again');
+      assert.equal(repicked.editReturn, SLOT_ORDER.indexOf('name'), 'still owing the visitor the question they left');
+
+      const reservices = transition(repicked, { t: 'ANSWER', slot: 'services', value: [SERVICE] });
+      assert.equal(currentSlot(reservices), 'name');
+      assert.equal(reservices.mode, 'INTAKE_FORM');
     });
   });
 

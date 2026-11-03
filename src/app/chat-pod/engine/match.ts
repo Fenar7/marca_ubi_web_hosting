@@ -19,7 +19,17 @@
  */
 
 import type { Intent } from "../types";
-import { contentTokens, editSimilarity, normalise, QUERY_STOPWORDS, stem, tokens, trigramSimilarity } from "./normalise";
+import {
+  contentTokens,
+  editSimilarity,
+  isScaffold,
+  normalise,
+  QUERY_STOPWORDS,
+  residue,
+  stem,
+  tokens,
+  trigramSimilarity,
+} from "./normalise";
 /** Best score still treated as a confident answer. */
 export const ACCEPT_THRESHOLD = 0.8;
 /** How far the leader must clear the runner-up before it is answered without asking. */
@@ -30,6 +40,27 @@ export const FLOOR_THRESHOLD = 0.55;
 export const DISAMBIGUATION_WIDTH = 3;
 /** Fallbacks tolerated in one session before ordinary matching is switched off. */
 export const FALLBACK_LIMIT = 2;
+
+/**
+ * How much the subject of the previous turn is worth when this message could not be resolved alone.
+ *
+ * A visitor who has just been answered about services and types "explain each service" is not asking a
+ * cold question, but the resolver is a pure function of one message and scores it as one: that sentence
+ * reached 0.775 against a 0.8 accept, so the pod put up three chips and looked like it had forgotten
+ * what the conversation was about. The boost closes the gap the arithmetic cannot see, and nothing more.
+ *
+ * Deliberately small. At 1.08 a candidate needs to be at least 0.741 cold to be lifted over the accept
+ * line, which is a message already mostly about the last subject; a 0.6 would need this factor to be
+ * 1.33. Bigger numbers make the pod sticky, and a sticky pod answers about services for the rest of the
+ * session no matter what the visitor asks.
+ */
+export const CONTINUITY_PRIOR = 1.08;
+
+/** The family an intent id belongs to: the first dotted segment, which is how `INTENT_DISCOUNTS` reads it too. */
+function familyRoot(id: string): string {
+  const dot = id.indexOf(".");
+  return dot === -1 ? id : id.slice(0, dot);
+}
 
 /**
  * Ranking discounts by id prefix, applied after scoring and before the margin comparison.
@@ -114,6 +145,13 @@ interface AliasEntry {
   /** The alias's raw tokens, kept for the single-word typo rule, which must measure the word a
    *  visitor actually typed against the word an author actually wrote, not two stems. */
   raw: string[];
+  /**
+   * The alias's topic words, sorted and joined. Two phrasings that ask for the same thing in
+   * different numbers of polite words share this key, which is what lets "the services", "services" and
+   * "ok can you please tell me about the services" reach the same author instead of three different
+   * scores.
+   */
+  residueKey: string;
 }
 
 /** Compiled index of Tier 1 aliases, keyed by normalised utterance. */
@@ -134,6 +172,25 @@ export interface IntentIndex {
    *  Also a list: a bare word two intents both authored is contested in exactly the way a whole
    *  phrase is, and gets the same treatment. */
   bare: Map<string, Intent[]>;
+  /**
+   * Every word form the corpus actually uses, raw and stemmed, across keywords and authored aliases.
+   * This is what makes "unknown" a meaningful test rather than a guess: a token outside this set is
+   * either one keystroke from a word we do use, or it names a subject we do not publish, and those two
+   * cases have to be treated differently or every typed message becomes a miss.
+   */
+  vocabulary: Set<string>;
+  /**
+   * Deletion variants of every vocabulary stem, mapped to the stems that produce them. Two strings one
+   * edit apart always share a deletion variant, so looking a token's own variants up here finds every
+   * stem within one keystroke without a distance loop across the corpus.
+   */
+  stemNeighbours: Map<string, string[]>;
+  /**
+   * Authored aliases grouped by the topic words they ask for, ignoring how the author wrapped them.
+   * A visitor whose message reduces to exactly one author's set of topic words has said a thing this
+   * studio decided how to answer, which is the same class of evidence as typing the alias itself.
+   */
+  residueOwners: Map<string, Intent[]>;
 }
 
 /**
@@ -149,7 +206,9 @@ export function buildIndex(intents: Intent[]): { index: IntentIndex; duplicates:
   const keywordSets = new Map<string, KeywordEntry[]>();
   const aliases = new Map<string, AliasEntry[]>();
   const bare = new Map<string, Intent[]>();
+  const residueOwners = new Map<string, Intent[]>();
   const duplicates: string[] = [];
+  const vocabulary = new Set<string>();
 
   for (const intent of intents) {
     // A keyword that is question scaffolding is not a topic. Leaving it in charges the intent for a
@@ -192,8 +251,19 @@ export function buildIndex(intents: Intent[]): { index: IntentIndex; duplicates:
         all: everyStem,
         content: normalisedUtterance,
         raw: tokens(normalisedUtterance),
+        residueKey: "",
       };
     });
+    for (const alias of aliasEntries) {
+      alias.residueKey = alias.stems.slice().sort().join(" ");
+      if (alias.residueKey.length === 0) continue;
+      const owners = residueOwners.get(alias.residueKey);
+      if (owners) {
+        if (!owners.includes(intent)) owners.push(intent);
+      } else {
+        residueOwners.set(alias.residueKey, [intent]);
+      }
+    }
 
     // A one-word alias is an author stating what the bare word means. Collected here so a visitor who
     // types exactly one word can be answered by that statement instead of by arithmetic; see
@@ -212,6 +282,11 @@ export function buildIndex(intents: Intent[]): { index: IntentIndex; duplicates:
 
     keywordSets.set(intent.id, entries);
     aliases.set(intent.id, aliasEntries);
+    for (const entry of entries) vocabulary.add(entry.stem);
+    for (const alias of aliasEntries) {
+      for (const raw of alias.raw) vocabulary.add(raw);
+      for (const folded of alias.all) vocabulary.add(folded);
+    }
 
     for (const utterance of intent.utterances) {
       const key = normalise(utterance);
@@ -227,7 +302,62 @@ export function buildIndex(intents: Intent[]): { index: IntentIndex; duplicates:
     }
   }
 
-  return { index: { exact, intents, keywordSets, aliases, bare }, duplicates };
+  // Only words long enough to survive a keystroke join the neighbour index. A three-letter word has so
+  // few neighbours that it is within one edit of almost everything, which is how "art" reaches "start"
+  // and an illustration enquiry becomes a project brief.
+  const stemNeighbours = new Map<string, string[]>();
+  for (const word of vocabulary) {
+    if (word.length < 5) continue;
+    const variants = [word];
+    for (let i = 0; i < word.length; i++) variants.push(word.slice(0, i) + word.slice(i + 1));
+    for (let i = 0; i < word.length - 1; i++) {
+      variants.push(word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2));
+    }
+    for (const variant of variants) {
+      const bucket = stemNeighbours.get(variant);
+      if (bucket) {
+        if (!bucket.includes(word)) bucket.push(word);
+      } else {
+        stemNeighbours.set(variant, [word]);
+      }
+    }
+  }
+
+  return {
+    index: { exact, intents, keywordSets, aliases, bare, vocabulary, stemNeighbours, residueOwners },
+    duplicates,
+  };
+}
+
+/**
+ * The vocabulary words a typed message misspelled, split by whether the corpus offers one answer or
+ * several.
+ *
+ * Only tokens the corpus has never seen are tested, so this can never rewrite a real word into another
+ * one: "work" stays "work" and "price" stays "price". A token with exactly one vocabulary neighbour is
+ * forgiven completely, because one keystroke and no alternative reading is a typo rather than a
+ * question. A token with several ("organis" reaching both "organise" and "organic") is worth half,
+ * because the pod that guesses which one the visitor meant is the pod that answers about the wrong
+ * thing with total confidence.
+ */
+function typoStems(queryRaw: string[], index: IntentIndex): { full: Set<string>; partial: Set<string> } {
+  const full = new Set<string>();
+  const partial = new Set<string>();
+  for (const token of queryRaw) {
+    if (token.length < 5 || index.vocabulary.has(token)) continue;
+    const hits = new Set<string>();
+    for (let i = 0; i <= token.length; i++) {
+      const bucket = index.stemNeighbours.get(token.slice(0, i) + token.slice(i + 1));
+      if (bucket) for (const word of bucket) hits.add(word);
+    }
+    if (hits.size === 0) continue;
+    const target = hits.size === 1 ? full : partial;
+    for (const word of hits) {
+      target.add(word);
+      target.add(stem(word));
+    }
+  }
+  return { full, partial };
 }
 
 /**
@@ -244,16 +374,29 @@ export function buildIndex(intents: Intent[]): { index: IntentIndex; duplicates:
  * query side is the discipline: the visitor's own topic words are the denominator, so a keyword that
  * explains one word in five is a hint about the subject, not the answer.
  */
-function keywordScore(queryStems: Set<string>, queryTopicCount: number, entries: KeywordEntry[]): number {
+function keywordScore(
+  queryStems: Set<string>,
+  queryTopicCount: number,
+  entries: KeywordEntry[],
+  typos: { full: Set<string>; partial: Set<string> },
+): number {
   if (entries.length === 0 || queryTopicCount === 0) return 0;
   let matchedWeight = 0;
   let matchedCount = 0;
   let totalWeight = 0;
   for (const entry of entries) {
     totalWeight += entry.weight;
-    if (queryStems.has(entry.stem)) {
-      matchedWeight += entry.weight;
-      matchedCount += 1;
+    // A misspelling the corpus can only read one way is the word; several readings is a hint.
+    const credit = queryStems.has(entry.stem)
+      ? 1
+      : typos.full.has(entry.stem)
+        ? 1
+        : typos.partial.has(entry.stem)
+          ? 0.5
+          : 0;
+    if (credit > 0) {
+      matchedWeight += entry.weight * credit;
+      matchedCount += credit;
     }
   }
   if (matchedCount === 0 || totalWeight === 0) return 0;
@@ -282,22 +425,32 @@ function keywordScore(queryStems: Set<string>, queryTopicCount: number, entries:
  * was a city name. A word we do not publish is evidence that we may not cover the subject, so it stays
  * in the denominator and the phrasings the pod must understand get authored instead of assumed.
  *
+ * Two exceptions, both about typing rather than subject, and both bounded to one keystroke: a word that
+ * is one edit from a piece of scaffolding ("plese", "wtih") is grammar the visitor mis-hit, and a word
+ * with exactly one neighbour in the whole corpus ("servces") can only be read one way. A word with
+ * several neighbours is charged half a word, because the reading is genuinely open.
+ *
  * A query that shares no topic word with anything cannot win on spelling alone, because the term
  * character similarity is allowed to add is multiplied by what containment failed to reach. The
  * character term compares the whole authored phrase with the whole query, so it is a typo signal and
  * nothing more: it is the same measure that made "servces" reach "services", and it is deliberately
  * not computed on stripped stems, where two unrelated sentences reduced to one shared word would look
- * identical and score a perfect match.
+ * identical and score a perfect match. The scaffolding-free variant of that comparison is gated on the
+ * same rule from the other side: it only runs when the alias explains every topic word in the message.
  *
- * Edit distance participates only when both sides are one word, because across a phrase it is
- * meaningless and would reward length.
+ * Whole-phrase edit distance still participates only when both sides are one word, because across a
+ * phrase it is meaningless and would reward length. Multi-word spelling is carried by the neighbour
+ * lookup above, which is per word and capped at one keystroke.
  */
 function fuzzyScore(
   queryStems: string[],
   queryStemSet: Set<string>,
   queryPhrase: string,
+  queryCore: string,
+  coreAllowed: boolean,
   queryRaw: string[],
   entries: AliasEntry[],
+  typos: { full: Set<string>; partial: Set<string> },
 ): number {
   let best = 0;
   const singleToken = queryRaw.length === 1;
@@ -306,6 +459,8 @@ function fuzzyScore(
     let shared = 0;
     for (const folded of alias.stems) {
       if (queryStemSet.has(folded)) shared += 1;
+      else if (typos.full.has(folded)) shared += 1;
+      else if (typos.partial.has(folded)) shared += 0.5;
     }
 
     let lexical = 0;
@@ -315,7 +470,18 @@ function fuzzyScore(
       lexical = Math.sqrt(aliasSide * covered);
     }
 
-    const character = trigramSimilarity(queryPhrase, alias.content);
+    // The second comparison is against the message with its scaffolding taken out. The full phrase is
+    // the honest one for spelling, but a visitor who writes "ok can you please tell me about the
+    // services" is not writing a less similar sentence than one who writes "the services", and the
+    // trigram measure cannot see that difference on its own.
+    //
+    // `coreAllowed` is the guard on that: stripping the scaffolding also strips the sentence's evidence,
+    // and "weather in calicut" reduces to a city name this studio publishes, which measured against the
+    // bare alias starts to look like the whole question. When the message contains a word the corpus has
+    // never used, that word stays visible to the spelling term as well as to the denominator.
+    const character = coreAllowed
+      ? Math.max(trigramSimilarity(queryPhrase, alias.content), trigramSimilarity(queryCore, alias.content))
+      : trigramSimilarity(queryPhrase, alias.content);
     let candidate = lexical + (1 - lexical) * character;
 
     if (singleToken && alias.raw.length === 1) {
@@ -344,16 +510,19 @@ function namedOwners(index: IntentIndex, query: string, queryRaw: string[]): Int
 }
 
 /**
- * True when an intent authored this exact phrase as its own name. The conversation-state layer asks
- * this before it treats a message as a follow-up: an idiom that is also somebody's authored alias
- * ("more roles", "contact us") is a question with an answer, not a reference back to the last turn,
- * and authoring is the more specific evidence. Checking the same predicate `rank` checks, rather than
- * a second copy of the lookup, is what keeps the two from disagreeing about what "authored" means.
+ * True when an intent authored this message, either as its own name or as the same set of topic words
+ * under different wrapping. The conversation-state layer asks this before it treats a message as a
+ * follow-up: an idiom that is also somebody's authored alias ("more roles", "contact us") is a question
+ * with an answer, not a reference back to the last turn, and authoring is the more specific evidence.
+ * Checking the same predicates `rank` checks, rather than a second copy of the lookup, is what keeps the
+ * two from disagreeing about what "authored" means.
  */
 export function isAuthoredName(index: IntentIndex, rawInput: string): boolean {
   const query = normalise(rawInput);
   if (query.length === 0) return false;
-  return namedOwners(index, query, tokens(query)).length > 0;
+  if (namedOwners(index, query, tokens(query)).length > 0) return true;
+  const residueKey = residue(query, index.vocabulary).slice().sort().join(" ");
+  return residueKey.length > 0 && (index.residueOwners.get(residueKey)?.length ?? 0) === 1;
 }
 
 /**
@@ -361,14 +530,26 @@ export function isAuthoredName(index: IntentIndex, rawInput: string): boolean {
  * made, and it must not be outvoted by scoring heuristics. A name that more than one intent published
  * under short-circuits too, but to a tie at the top of the list, which `decide` turns into chips
  * rather than into a guess about which of the studio's two identically named lines was meant.
+ *
+ * `prior` is the intent the previous turn answered, and `resolve` only ever supplies it after the same
+ * message has failed to resolve without it. That ordering is the safety: continuity never overrides an
+ * answer the pod could reach on its own, it only breaks a tie the pod could not reach at all.
  */
-export function rank(index: IntentIndex, rawInput: string): Candidate[] {
+export function rank(index: IntentIndex, rawInput: string, prior?: string | null): Candidate[] {
   const query = normalise(rawInput);
   if (query.length === 0) return [];
 
-  const queryStems = contentTokens(query);
+  const queryStems = residue(query, index.vocabulary);
   const queryStemSet = new Set(queryStems);
   const queryRaw = tokens(query);
+  const typos = typoStems(queryRaw, index);
+  // The same message with its scaffolding removed, unstemmed, for the spelling term only.
+  const queryCore =
+    queryRaw.filter((token) => !isScaffold(token, index.vocabulary)).join(" ") || query;
+  // The stripped message may only meet an alias on spelling when every topic word in it is a word this
+  // corpus has used. A word nobody published is the one piece of evidence a message might be about
+  // something the studio does not sell, and the denominator keeps it for exactly that reason.
+  const coreAllowed = queryStems.every((folded) => index.vocabulary.has(folded));
 
   const named = namedOwners(index, query, queryRaw);
   if (named.length > 0) {
@@ -378,15 +559,57 @@ export function rank(index: IntentIndex, rawInput: string): Candidate[] {
       .map((intent) => ({ intent, score: 1, tier: 1 as const }));
   }
 
+  // The same evidence one layer of politeness down. An author who wrote "what are the services" and an
+  // author who wrote "services" both stated what those topic words mean; a visitor who wraps them in
+  // more courtesy is not asking a different question. Scored as an authored hit rather than re-derived
+  // from containment, because containment left this at 1.000 against two runners-up at 0.883 and the
+  // margin rule then sent a visitor asking about services back to three chips, which is the exact
+  // behaviour the owner called unintelligent.
+  //
+  // Only when one intent owns that set of words. A residue several intents claim is not a decision, it
+  // is a shared topic noun, and promoting it would rank the junk above the arithmetic: "can i see the
+  // work" reduces to "work", which three unrelated intents happen to mention, and the pod that answers
+  // those at a perfect score stops answering the work question at all. Contested residues therefore
+  // fall through to scoring, and the coverage test keeps the authoring honest about them.
+  const residueKey = queryStems.slice().sort().join(" ");
+  const residueNamed = residueKey.length > 0 ? (index.residueOwners.get(residueKey) ?? []) : [];
+  if (residueNamed.length === 1) {
+    return [{ intent: residueNamed[0], score: 1, tier: 1 as const }];
+  }
+  // A contested residue the visitor has already been talking about is not an open question. They asked
+  // about services, the pod asked which kind, and they have just said "the services" again: the two
+  // owners are still both real, but the conversation says which one is being continued. Only the
+  // previous turn's own intent wins here, so this can never invent an answer, only pick between phrasings
+  // somebody already authored.
+  if (residueNamed.length > 1 && prior && residueNamed.some((owner) => owner.id === prior)) {
+    const continued = index.intents.find((intent) => intent.id === prior);
+    if (continued) return [{ intent: continued, score: 1, tier: 1 as const }];
+  }
+
   const scored: Candidate[] = [];
 
   for (const intent of index.intents) {
-    const keyword = keywordScore(queryStemSet, queryStems.length, index.keywordSets.get(intent.id) ?? []);
-    const fuzzy = fuzzyScore(queryStems, queryStemSet, query, queryRaw, index.aliases.get(intent.id) ?? []);
-    const score = Math.max(keyword, fuzzy) * intentPrior(intent.id);
-    if (score > 0) {
-      scored.push({ intent, score, tier: keyword >= fuzzy ? 2 : 3 });
-    }
+    const keyword = keywordScore(queryStemSet, queryStems.length, index.keywordSets.get(intent.id) ?? [], typos);
+    const fuzzy = fuzzyScore(
+      queryStems,
+      queryStemSet,
+      query,
+      queryCore,
+      coreAllowed,
+      queryRaw,
+      index.aliases.get(intent.id) ?? [],
+      typos,
+    );
+    const cold = Math.max(keyword, fuzzy) * intentPrior(intent.id);
+    if (cold === 0) continue;
+    // Continuity lifts a candidate that was already in the conversation's range. Applying it to a 0.2
+    // would turn a fallback into a question about the wrong subject, and a pod that asks after the
+    // wrong thing twice has lost the visitor.
+    const score =
+      prior && cold >= FLOOR_THRESHOLD && familyRoot(intent.id) === familyRoot(prior)
+        ? Math.min(1, cold * CONTINUITY_PRIOR)
+        : cold;
+    scored.push({ intent, score, tier: keyword >= fuzzy ? 2 : 3 });
   }
 
   // Score first, then id: without the tiebreaker the order depends on Array.sort internals and
@@ -420,11 +643,16 @@ export function decide(candidates: Candidate[]): MatchOutcome {
  * Resolves one visitor message. `locked` is the post-cap state: ordinary candidates are ignored and
  * only the escape-hatch intents still resolve, because a visitor who has already failed to be
  * understood twice must not also find the way out locked.
+ *
+ * `prior` is the intent the previous turn answered. It is applied as a second pass, only when the
+ * message did not resolve on its own, so the conversation can only ever break a tie the resolver could
+ * not break alone; it cannot change an answer the pod was already confident about, and a visitor who
+ * moves to a new subject moves to it cleanly.
  */
 export function resolve(
   index: IntentIndex,
   rawInput: string,
-  options: { locked: boolean },
+  options: { locked: boolean; prior?: string | null },
 ): MatchOutcome {
   if (options.locked) {
     // The same published policy, applied to the survivors: filtering the candidates is not the same
@@ -438,5 +666,7 @@ export function resolve(
     return outcome.kind === "answer" ? outcome : { kind: "fallback", candidates: [] };
   }
 
-  return decide(rank(index, rawInput));
+  const cold = decide(rank(index, rawInput));
+  if (cold.kind === "answer" || !options.prior) return cold;
+  return decide(rank(index, rawInput, options.prior));
 }

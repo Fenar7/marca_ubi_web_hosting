@@ -845,6 +845,16 @@ $surface: rgba(0, 0, 0, 0.03);
   border-top: $hairline-soft;
   padding: 0.625rem 1rem 0.25rem;
 
+  /* Sixteen services plus Continue is not one row. Uncapped, the rail grew until it pushed the composer
+     off the panel and the transcript above it out of reading distance — so the row takes three lines and
+     scrolls the rest, on the same terms the transcript does: contain the overscroll so the wheel that
+     reaches the end of the chips does not carry the page behind the panel away with it. */
+  max-height: 7.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  scrollbar-width: thin;
+
   /* §05 §1.5: an empty tray is not padding. Dead chrome above the composer is the slop the rule warns
      about, so the row leaves the layout entirely when there is nothing to offer. */
   &[data-count="0"] {

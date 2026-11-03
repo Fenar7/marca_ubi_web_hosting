@@ -130,6 +130,13 @@ export const SERVICE_ALIASES: Record<string, string[]> = {
 export const ALL_SERVICES_HREF = "/#services";
 
 /**
+ * The published questions on the homepage, which is where the pod sends a visitor who wants the
+ * positioning stated at length rather than in its own words. The anchor is the section id in
+ * `src/app/components/Sections/FaqCurtain.tsx:29`, so the link and the cutout move together or not at all.
+ */
+export const FAQ_HREF = "/#faq";
+
+/**
  * How long a saved intake draft survives on the device. Authored here because the pod tells
  * visitors this number in `intake.exit` and the persistence module enforces it; a literal in the
  * copy and a literal in the expiry maths would be two answers to one question.

@@ -65,6 +65,26 @@ const TYPED: [string, string][] = [
   ['thank you so much', 'thanks'],
   ['many thanks', 'thanks'],
   ['see you later', 'goodbye'],
+  // Who the studio is. This family had no owner at all until `identity.studio`: "what do you do" was
+  // authored under `services.overview`, whose first line asks the visitor who they sell to, so the
+  // company question came back as a sales qualification question.
+  ['what do you do', 'identity.studio'],
+  ['what do you actually do', 'identity.studio'],
+  ['what do you guys do', 'identity.studio'],
+  ['what does marka ubi do', 'identity.studio'],
+  ['who are you', 'identity.studio'],
+  ['who are you guys', 'identity.studio'],
+  ['who is behind this', 'identity.studio'],
+  ['about you', 'identity.studio'],
+  ['what is marka ubi', 'identity.studio'],
+  ['are you an agency', 'identity.studio'],
+  ['are you a creative agency', 'identity.studio'],
+  ['is this an agency', 'identity.studio'],
+  ['what kind of company are you', 'identity.studio'],
+  ['tell me about yourself', 'identity.studio'],
+  ['tell me about your studio', 'identity.studio'],
+  ['tell me about the company', 'identity.studio'],
+  ['about the studio', 'identity.studio'],
   // Services
   ['what are your services', 'services.overview'],
   ['what are the services', 'services.overview'],
@@ -92,10 +112,16 @@ const TYPED: [string, string][] = [
   ['business to consumer services', 'services.b2c'],
   ['consumer facing services', 'services.b2c'],
   ['which service is right for me', 'services.whichone'],
-  ['i do not know which service', 'services.whichone'],
+  // The alias runs to "pick" rather than ending at "service" on purpose: stripped of its scaffolding the
+  // old form reduced to the single word "service", which `services.overview` also owns, and a contested
+  // residue is a question the pod asks back instead of the answer it gives. The table is where that
+  // authoring fact is pinned, so a future edit that shortens this phrase back fails here.
+  ['i do not know which service to pick', 'services.whichone'],
   // Pricing
   ['how much do you charge', 'pricing'],
   ['what does a project cost', 'pricing'],
+  ['how much does a rebrand cost', 'pricing'],
+  ['how much does a website cost', 'pricing'],
   ['rate card', 'pricing'],
   ['fees', 'pricing'],
   ['what are your fees', 'pricing'],
@@ -134,6 +160,13 @@ const TYPED: [string, string][] = [
   ['send a brief', 'intake.trigger'],
   ['submit a brief', 'intake.trigger'],
   ['can we work together', 'intake.trigger'],
+  // A build request the catalogue has no page for still has to reach the brief. These four lines are
+  // the whole reason they are authored rather than scored: nothing in the corpus contains "website"
+  // next to "want", so the arithmetic had no route and a lead arrived as a fallback.
+  ['i want a website', 'intake.trigger'],
+  ['build me a website', 'intake.trigger'],
+  ['can you build an app', 'intake.trigger'],
+  ['do you build apps', 'intake.trigger'],
   ['i would like a proposal', 'intake.trigger'],
   ['cancel that', 'intake.exit'],
   ['stop asking questions', 'intake.exit'],
@@ -263,12 +296,57 @@ describe('Chat Pod resolution over the published table', () => {
     }
   });
 
+  it('carries the subject of the previous turn into a message it could not resolve alone', () => {
+    // The resolver is a pure function of one message, which is right for a first question and wrong for
+    // a second one. "explain each service" reaches 0.775 cold and comes back as three chips; after a
+    // turn that was already about services the same message is a continuation, and `CONTINUITY_PRIOR`
+    // is what says so. The three assertions below are the three ways this could be a lie: it must fire
+    // on the right family, stay silent on the wrong one, and never outvote an answer already reached.
+    const cold = resolve(index, 'explain each service', { locked: false });
+    assert.equal(cold.kind, 'disambiguate', 'the cold pass must not answer this on its own');
+
+    const continued = resolve(index, 'explain each service', { locked: false, prior: 'services.b2b' });
+    assert.equal(continued.kind, 'answer', 'the same message after a services turn must be answered');
+    assert.equal(
+      continued.kind === 'answer' ? continued.intent.id : '',
+      'services.overview',
+      'continuity lifts the leader, it does not choose a different subject',
+    );
+
+    const offTopic = resolve(index, 'explain each service', { locked: false, prior: 'contact' });
+    assert.equal(offTopic.kind, 'disambiguate', 'a turn about a different family must not drag this one');
+
+    const alreadyAnswered = resolve(index, 'what do you do', { locked: false, prior: 'process.team' });
+    assert.equal(
+      alreadyAnswered.kind === 'answer' ? alreadyAnswered.intent.id : '',
+      'identity.studio',
+      'the previous turn never overrules an intent the message reaches by itself',
+    );
+  });
+
   it('routes service questions to the services intents', () => {
-    assert.equal(answered('what do you do'), 'services.overview');
     assert.equal(answered('what services do you offer'), 'services.overview');
     assert.equal(answered('b2b services'), 'services.b2b');
     assert.equal(answered('consumer brands'), 'services.b2c');
     assert.equal(answered('which service do i need'), 'services.whichone');
+  });
+
+  it('answers the company question about the company, not with a sales qualification', () => {
+    // The defect this authoring closes: `services.overview` owned "what do you do" and its reply opens
+    // by asking who the visitor sells to, so the first question a new visitor asks got the answer to a
+    // different question. Ownership moved to `identity.studio`; the services intent keeps every
+    // phrasing that names the offer, and this test is what stops the two drifting back onto each other.
+    assert.equal(answered('what do you do'), 'identity.studio');
+    assert.equal(answered('who are you'), 'identity.studio');
+    assert.equal(answered('what is marka ubi'), 'identity.studio');
+    assert.notEqual(answered('what do you offer'), 'identity.studio');
+  });
+
+  it('forgives a mistyped company name without losing the company question', () => {
+    // "whta is marka ubi" is a transposition in the brand's own name, which the corpus spells but no
+    // author lists every way a visitor can misspell. The neighbour lookup reaches it; the assertion
+    // exists because a fold this loose is only safe while it still answers the right intent.
+    assert.equal(answered('whta is marka ubi'), 'identity.studio');
   });
 
   it('reaches individual service pages from what people call them', () => {

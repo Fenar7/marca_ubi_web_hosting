@@ -29,13 +29,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { prefersReducedMotion } from "@/app/lib/motion";
-import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, slotChips, slotOptions } from "./intake/slots";
+import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, polarityMatch, slotChips, slotOptions } from "./intake/slots";
 import type { SlotOption } from "./intake/slots";
 import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
 import type { IntakeMode } from "./intake/useIntakeFlow";
 import { buildPodPayload, reviewRows } from "./intake/review";
 import { createIdempotencyKey, submitBrief } from "./intake/submit";
 import { useChatEngine } from "./engine/useChatEngine";
+import { looksLikeQuestion } from "./engine/normalise";
 import { PERSISTENT_MENU, PERSONA } from "./knowledge/corpus";
 import { clearDraft, hasBeenNudged, hasGrantedConsent, markNudged, readDraft, recordConsent, writeDraft } from "./persistence";
 import ChipRow from "./ui/ChipRow";
@@ -75,6 +76,14 @@ const ABORT_WORDS = /^(stop|cancel|exit|quit|never mind|not now)$/i;
  * visitor actually made.
  */
 const SKIP_WORDS = /^(skip|no|none|pass|nothing)$/i;
+
+/**
+ * The same decline carrying politeness. A closed list rather than a length limit, because "no
+ * particular deadline" and "nothing fixed yet" are genuine answers to an open question, and a pattern
+ * loose enough to catch "no thanks" catches those too — and an optional slot answered by a skip loses
+ * the one sentence the visitor wrote for it.
+ */
+const SKIP_PHRASES = /^(no thanks|no thank you|none thanks|nothing thanks|not really|not this one|pass on that|pass for now|skip that|skip it|skip for now)$/i;
 
 function replyWeight(reply: Reply): number {
   const length = reply.blocks.reduce(
@@ -204,14 +213,35 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     setChips(attached);
   }, []);
 
+  /**
+   * The moment the next line is allowed to land. Two replies scheduled in the same tick must arrive in
+   * the order they were spoken: `startIntake` says the rules while the machine's emitter prints the
+   * first question, and before this existed the shorter of the two won — the panel asked "What kind of
+   * work is this?" before it had introduced the questions, which is the half-second that reads as broken.
+   */
+  const speakAt = useRef(0);
+  /** Lines still in flight. The typing beat ends when the last of them lands, not the first. */
+  const pendingLines = useRef(0);
+
   /** Say something as the assistant, with the typing beat that makes a lookup look like a reply. */
   const say = useCallback(
     (reply: Reply, extra?: { kind?: TranscriptMessage["kind"]; rows?: TranscriptMessage["reviewRows"] }) => {
       setTyping(true);
+      // The buttons on screen belong to the question that printed them. While the next line is still
+      // being spoken they describe a turn that has already passed, and a row of buttons that no longer
+      // answers anything is worse than none: the visitor taps, nothing happens, and the panel reads as
+      // stalled. The reply brings its own buttons the moment it lands.
+      setChips([]);
+      const weight = replyWeight(reply);
+      const now = Date.now();
+      const landsAt = Math.max(now, speakAt.current) + weight;
+      speakAt.current = landsAt;
+      pendingLines.current += 1;
       later(() => {
-        setTyping(false);
+        pendingLines.current -= 1;
+        if (pendingLines.current === 0) setTyping(false);
         append({ speaker: "assistant", blocks: reply.blocks, kind: extra?.kind, reviewRows: extra?.rows }, reply.chips);
-      }, replyWeight(reply));
+      }, Math.max(0, landsAt - now));
     },
     [append, later],
   );
@@ -321,6 +351,13 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         }
         // §05 §2.4: during intake the first `Esc` stops the questions and keeps the answers. Only a
         // second press closes the panel, so nobody loses a brief by reaching for the wrong key.
+        // `SUBMITTING` is the exception the machine enforces: leaving it tears down the request that is
+        // in flight, so the key is refused there — and a refused key that says nothing is felt as a
+        // freeze. Say what is happening instead, in the transcript the visitor is already watching.
+        if (state.mode === "SUBMITTING") {
+          say({ blocks: [{ t: "p", text: "It is mid-send, so I will not cut it off. One moment." }], chips: [] });
+          return;
+        }
         if (state.mode !== "CHAT" && state.mode !== "DONE") {
           send({ t: "EXIT_TO_CHAT" });
           return;
@@ -362,7 +399,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     return () => {
       document.removeEventListener("keydown", onKeyDown, true);
     };
-  }, [closePanel, menuOpen, open, send, state.mode]);
+  }, [closePanel, menuOpen, open, say, send, state.mode]);
 
   useEffect(() => {
     if (!open) return;
@@ -444,10 +481,20 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       const definition = SLOTS[target];
       const optionChips = slotChips(definition, state.slots);
 
-      if (definition.kind === "multi") return [...optionChips, { label: "Continue", action: { kind: "slot-continue", slot: target } }];
-      if (definition.kind === "links") return [...optionChips, { label: "That is every link", action: { kind: "slot-continue", slot: target } }];
-      if (isRequired(target, state)) return optionChips;
-      return [...optionChips, { label: "Skip", action: { kind: "slot-skip", slot: target } }];
+      // The way back to an earlier answer, offered on every question after the first. Without it a
+      // mistake two questions ago was uncorrectable except by stopping, and stopping reads as giving up
+      // on a brief the visitor had already spent time on.
+      const previous = state.slotIndex > 0 ? SLOT_ORDER[state.slotIndex - 1] : null;
+      const goBack: Chip[] = previous
+        ? [{ label: `Back to ${SLOTS[previous].label}`, action: { kind: "slot-edit", slot: previous } }]
+        : [];
+
+      if (definition.kind === "multi")
+        return [...optionChips, { label: "Continue", action: { kind: "slot-continue", slot: target } }, ...goBack];
+      if (definition.kind === "links")
+        return [...optionChips, { label: "That is every link", action: { kind: "slot-continue", slot: target } }, ...goBack];
+      if (isRequired(target, state)) return [...optionChips, ...goBack];
+      return [...optionChips, { label: "Skip", action: { kind: "slot-skip", slot: target } }, ...goBack];
     },
     [state],
   );
@@ -685,6 +732,72 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     [rememberVisitor, send, state.slots],
   );
 
+  /**
+   * Say why a control did nothing.
+   *
+   * Every chip stays on screen as long as the row that printed it is readable, so a tap aimed at a
+   * question the machine has already moved past is legal to make and illegal to honour. The reducer
+   * refuses it — correctly, because filing a categories answer against the phone number would corrupt
+   * the brief — and a refusal with no line under it is what a visitor reads as a dead button. So the
+   * refusal names the question it turned down, says which one is live, and puts that one's own buttons
+   * back where the tap landed.
+   */
+  const answerMovedOn = useCallback(
+    (asked: SlotId | null) => {
+      const active = state.mode === "INTAKE_FORM" ? currentSlot(state) : null;
+      if (active) {
+        say({
+          blocks: [
+            {
+              t: "p",
+              text: asked
+                ? `That was an answer to "${SLOTS[asked].label}". I am on "${SLOTS[active].label}" now, and those buttons are below.`
+                : `Nothing is answered from that button any more. I am on "${SLOTS[active].label}" now, and those buttons are below.`,
+            },
+          ],
+          chips: chipsForSlot(active),
+        });
+        return;
+      }
+      if (state.mode === "REVIEW") {
+        say({
+          blocks: [{ t: "p", text: "The questions are done, so there is nothing left to answer. Tap a line on the card to change it." }],
+          chips: reviewRows(state.slots).map((row) => ({ label: row.label, action: { kind: "slot-edit", slot: row.slot } as const })),
+        });
+        return;
+      }
+      say({
+        blocks: [{ t: "p", text: "That button belongs to a turn that has passed. Ask me something, or start a brief." }],
+        chips: menuForMode(state.mode),
+      });
+    },
+    [chipsForSlot, say, state.mode, state.slots],
+  );
+
+  /**
+   * Answer the one question that has no answer in the machine: where the brief is. "Start a project"
+   * stays visible in the menu while a brief is open, and so does every intent chip that resolves to it,
+   * so both routes have to say which question is live instead of restarting the run or saying nothing.
+   */
+  const whereIsTheBrief = useCallback(() => {
+    if (state.mode === "SUBMITTING") {
+      say({ blocks: [{ t: "p", text: "It is on its way. I will tell you the moment it lands." }], chips: [] });
+      return;
+    }
+    if (state.mode === "INTAKE_FORM") {
+      const active = currentSlot(state);
+      say({
+        blocks: [{ t: "p", text: `Your brief is already running — I am on "${SLOTS[active].label}". Answer this one, or press Stop the questions.` }],
+        chips: chipsForSlot(active),
+      });
+      return;
+    }
+    say({
+      blocks: [{ t: "p", text: "Your brief is open on the card above. Press send it when it reads right, or tap a line to change it." }],
+      chips: menuForMode(state.mode),
+    });
+  }, [chipsForSlot, say, state]);
+
   const onChip = useCallback(
     (chip: Chip) => {
       const action = chip.action;
@@ -717,24 +830,40 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
         case "intake": {
-          if (state.mode === "CHAT") startIntake();
+          // Pressing "Start a project" while a brief is open must not restart it, and must not be
+          // silence either: a pressed button that says nothing is the dead control this module exists to
+          // avoid, and the menu entry is exactly what a visitor reaches for when they lose their place.
+          if (state.mode === "CHAT") {
+            startIntake();
+            return;
+          }
+          whereIsTheBrief();
           return;
         }
         case "slot-toggle": {
-          if (currentSlot(state) !== action.slot) return;
+          if (currentSlot(state) !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
           toggleIntoSelection(action.value, action.slot);
           return;
         }
         case "slot-pick": {
           const active = currentSlot(state);
-          if (active !== action.slot) return;
+          if (active !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
           rememberVisitor(chip.label);
           send({ t: "ANSWER", slot: active, value: action.value });
           return;
         }
         case "slot-continue": {
           const active = currentSlot(state);
-          if (active !== action.slot) return;
+          if (active !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
           rememberVisitor(selection.length > 0 ? selection.join(", ") : "Nothing more");
           send({ t: "ANSWER", slot: active, value: [...selection] });
           setSelection([]);
@@ -742,7 +871,10 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         }
         case "slot-skip": {
           const active = currentSlot(state);
-          if (active !== action.slot) return;
+          if (active !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
           rememberVisitor("Skip");
           send({ t: "SKIP", slot: active });
           return;
@@ -760,7 +892,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         }
       }
     },
-    [closePanel, editSlot, engine, rememberVisitor, router, selection, send, startIntake, state, toggleIntoSelection],
+    [answerMovedOn, closePanel, editSlot, engine, rememberVisitor, router, selection, say, send, startIntake, state, toggleIntoSelection, whereIsTheBrief],
   );
 
   // Free text
@@ -815,9 +947,53 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         const options = slotOptions(definition, state.slots);
         const matched = matchOption(trimmed, options);
 
-        // A closed set is tried first. `No` is the stored answer to the showcase question, and a skip
-        // test that runs ahead of it loses a decision the visitor actually made.
-        if (matched === null && SKIP_WORDS.test(trimmed)) {
+        // An option named exactly is an answer whatever else the sentence could mean: `Brand Strategy`
+        // is both a discipline on this card and the residue of a services question, and the reading that
+        // files a real answer has to win. Everything below is reached only when nothing was named.
+        if (matched === null) {
+          const polarity = polarityMatch(trimmed, options);
+          if (polarity?.kind === "match") {
+            send({ t: "ANSWER", slot, value: polarity.value });
+            return;
+          }
+          if (polarity?.kind === "ambiguous") {
+            // Two options begin with the word they typed. Picking one would put a preference in the CRM
+            // that the visitor never stated, so the pod asks which and leaves the buttons up.
+            const named = polarity.values
+              .map((value) => options.find((option) => option.value === value)?.chip ?? value)
+              .join(" or ");
+            say({
+              blocks: [{ t: "p", text: `That is a yes, and this question has two of them: ${named}. Which one is it?` }],
+              chips: chipsForSlot(slot),
+            });
+            return;
+          }
+        }
+
+        // A question asked in the middle of a brief is a question, not an answer to it. Where the slot is
+        // a blank the visitor writes into, the message also has to be shaped like a question, because
+        // "Kerala, for the temple project" is somebody answering; on a question with buttons no shape is
+        // needed, since nothing typed there can be filed as an answer anyway. The live question comes
+        // back with its own buttons, so a detour that turns out to be wrong costs a re-read and not the
+        // answer — which is the right side of the trade against a name field holding "who are you".
+        const writesAnAnswer = options.length === 0 && (definition.kind === "text" || definition.kind === "multiline");
+        if (matched === null && (!writesAnAnswer || looksLikeQuestion(trimmed))) {
+          const detour = engine.lookup(trimmed);
+          if (detour) {
+            if (detour.intentId === "intake.exit") {
+              send({ t: "EXIT_TO_CHAT" });
+              return;
+            }
+            if (detour.intentId === "intake.trigger") {
+              whereIsTheBrief();
+              return;
+            }
+            say({ blocks: detour.reply.blocks, chips: chipsForSlot(slot) });
+            return;
+          }
+        }
+
+        if (matched === null && (SKIP_WORDS.test(trimmed) || SKIP_PHRASES.test(trimmed))) {
           send({ t: "SKIP", slot });
           return;
         }
@@ -861,7 +1037,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       }
       say(turn.reply);
     },
-    [chipsForSlot, engine, rememberVisitor, say, selection, send, slot, startIntake, state],
+    [chipsForSlot, engine, rememberVisitor, say, selection, send, slot, startIntake, state, whereIsTheBrief],
   );
 
   // Idle nudge (D5)
@@ -922,10 +1098,22 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     };
   }, []);
 
+  /**
+   * The brief's position, in whichever currency the visitor is in. While a question is on screen that is
+   * the number of the question being asked: "4 of 17" answers "how far have I got", whereas counting
+   * filled slots makes the row go backwards whenever an answer is corrected, and stays where it was when
+   * an optional question is skipped — so the bar claimed to be broken for a brief that was simply being
+   * answered honestly. Outside the questions there is nothing being asked, so the filled count is the
+   * truth about what will be sent.
+   */
   const progress = useMemo(() => {
     const answered = SLOT_ORDER.filter((entry) => isFilled(state.slots[entry])).length;
-    return { answered, total: SLOT_ORDER.length };
-  }, [state.slots]);
+    return {
+      answered,
+      total: SLOT_ORDER.length,
+      asking: state.mode === "INTAKE_FORM" ? Math.min(state.slotIndex + 1, SLOT_ORDER.length) : 0,
+    };
+  }, [state.mode, state.slotIndex, state.slots]);
 
   const activeDefinition = slot ? SLOTS[slot] : null;
   const composerBlocked = state.mode === "SUBMITTING";
@@ -1011,10 +1199,16 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
             <span className={styles.progressRail} aria-hidden="true">
               <span
                 className={styles.progressFill}
-                style={{ "--fill": `${Math.round((progress.answered / progress.total) * 100)}%` } as CSSProperties}
+                style={
+                  {
+                    "--fill": `${Math.round(((progress.asking > 0 ? progress.asking : progress.answered) / progress.total) * 100)}%`,
+                  } as CSSProperties
+                }
               />
             </span>
-            <span className={styles.progressValue}>{`${progress.answered} of ${progress.total}`}</span>
+            <span className={styles.progressValue}>
+              {progress.asking > 0 ? `Question ${progress.asking} of ${progress.total}` : `${progress.answered} of ${progress.total} answered`}
+            </span>
             {/* Hidden rather than inert mid-flight: the machine refuses to leave intake while a request
                 is outstanding, and a control that cannot do its job is a defect, not an affordance. */}
             {state.mode !== "SUBMITTING" ? (

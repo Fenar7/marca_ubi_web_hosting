@@ -38,6 +38,18 @@ export interface ChatEngine {
   ask: (text: string) => Turn;
   /** Answer an intent directly, which is what a chip tap does. */
   byId: (id: string) => Reply | null;
+  /**
+   * What `ask` would answer for this text, without the conversation hearing about it.
+   *
+   * The one caller is the brief, which would rather interrupt itself than file a question as somebody's
+   * name. The asymmetry decides the bar: a detour that turns out to be wrong costs a re-read of the
+   * question the visitor is already looking at, and their words stay in the transcript; a question filed
+   * as an answer goes into the CRM as a lead the studio reads wrongly. So it takes the same confident
+   * answer `ask` would give — past the accept threshold, clear of its runner-up — and nothing that would
+   * only produce a disambiguation. Consumes no fallback and records no turn, because a detour is not
+   * what the conversation is about; the question the visitor is answering still is.
+   */
+  lookup: (text: string) => { intentId: string; reply: Reply } | null;
   /** After a successful send, so a new conversation starts with all three guesses available. */
   reset: () => void;
   /** Read live: the panel persists it, and a stale copy would unlock the matcher on return. */
@@ -138,7 +150,10 @@ export function useChatEngine(knowledge: KnowledgeBase): ChatEngine {
           if (referenced) return referenced;
         }
 
-        const outcome = resolve(index, trimmed, { locked: fallbacks.current >= LOCK_AFTER });
+        const outcome = resolve(index, trimmed, {
+          locked: fallbacks.current >= LOCK_AFTER,
+          prior: last.current.intentId,
+        });
 
         if (outcome.kind === "answer") {
           const reply = outcome.intent.respond(knowledge);
@@ -171,6 +186,15 @@ export function useChatEngine(knowledge: KnowledgeBase): ChatEngine {
         // more" must expand. Recording it here is what lets a chip-driven conversation keep going.
         last.current = record(id, reply);
         return reply;
+      },
+      lookup(text: string) {
+        const trimmed = text.trim();
+        if (trimmed.length === 0) return null;
+        // No `prior`: a question asked in the middle of a brief is the visitor changing the subject, and
+        // pulling it back toward the slot they are answering is how a form starts guessing.
+        const outcome = resolve(index, trimmed, { locked: false });
+        if (outcome.kind !== "answer") return null;
+        return { intentId: outcome.intent.id, reply: outcome.intent.respond(knowledge) };
       },
       reset() {
         fallbacks.current = 0;

@@ -67,12 +67,91 @@ export const QUERY_STOPWORDS: ReadonlySet<string> = new Set([
   "can", "could", "describe", "did", "do", "does", "down", "explain", "for", "from", "get", "give",
   "had", "has", "have", "he", "her", "him", "his", "how", "i", "if", "in", "into", "is", "it", "its",
   "just", "kind", "kinds", "know", "like", "lot", "me", "might", "many", "much", "more", "most", "my",
-  "no", "nor", "not", "of", "off", "on", "once", "or", "our", "out", "own", "please", "provide",
+  "no", "nor", "not", "of", "off", "on", "once", "or", "our", "out", "own", "ok", "okay", "please", "provide",
   "provided", "provides", "really", "said", "say", "see", "she", "should", "show", "so", "some",
   "such", "tell", "than", "that", "the", "their", "them", "then", "there", "these", "they", "thing",
   "things", "this", "those", "through", "to", "too", "us", "want", "we", "were", "what", "when",
   "where", "which", "who", "whom", "why", "will", "with", "would", "you", "your",
 ]);
+
+/**
+ * Abbreviations of the chat register, folded to the word they stand for before the scaffolding test.
+ *
+ * These are not typos: they are a way of writing, and they carry no more subject than the word they
+ * replace. The list is deliberately short and closed-class only. "svc" or "mktg" are not here because
+ * they name a subject, and a subject the corpus does not spell out must stay visible in the
+ * denominator rather than be smoothed into a guess.
+ */
+export const CHAT_ABBREVIATIONS: Readonly<Record<string, string>> = {
+  abt: "about",
+  th: "the",
+  u: "you",
+  ur: "your",
+  pls: "please",
+  plz: "please",
+};
+
+/**
+ * Deletion-neighbourhood index over the scaffolding vocabulary, built once at module load.
+ *
+ * Two strings one edit apart always share a deletion variant (delete the differing character from each
+ * and the results are equal), so testing membership here answers "is this token one keystroke from a
+ * scaffolding word" in linear time and exactly at distance 1. Adjacent swaps are indexed too, because
+ * "whta" is the most common mistyping there is and it sits two edits from "what" under deletion while
+ * being one keystroke from it under transposition. Distance 2 in the substitution sense is deliberately
+ * excluded: it is where "art" starts reaching "are" and a topic word gets eaten by the grammar filter.
+ */
+const SCAFFOLD_NEIGHBOURS: Set<string> = (() => {
+  const out = new Set<string>();
+  const sources = [...QUERY_STOPWORDS, ...Object.keys(CHAT_ABBREVIATIONS)];
+  for (const word of sources) {
+    out.add(word);
+    for (let i = 0; i < word.length; i++) out.add(word.slice(0, i) + word.slice(i + 1));
+    for (let i = 0; i < word.length - 1; i++) {
+      out.add(word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2));
+    }
+  }
+  return out;
+})();
+
+/** The scaffolding word a token stands for, or the token itself. */
+function folded(token: string): string {
+  return CHAT_ABBREVIATIONS[token] ?? token;
+}
+
+/**
+ * True when a token is grammar rather than subject: an authored stop word, a chat abbreviation of one,
+ * or a one-keystroke misspelling of one ("plese", "teell", "wtih").
+ *
+ * The `known` guard is what keeps this honest. A word the corpus actually uses is never treated as a
+ * typo of a stop word, so "town" stays a subject even though it is one edit from "down", and the
+ * forgiveness can only ever reach for words that carry no meaning here anyway.
+ */
+export function isScaffold(token: string, known: ReadonlySet<string>): boolean {
+  const word = folded(token);
+  if (QUERY_STOPWORDS.has(word)) return true;
+  if (token.length < 5 || known.has(token) || known.has(word)) return false;
+  return SCAFFOLD_NEIGHBOURS.has(token);
+}
+
+/**
+ * Topic tokens of a query: scaffolding out, stemmed, first-seen order.
+ *
+ * This is `contentTokens` with the two forgiveness rules above applied, which is what a typed message
+ * needs and an authored alias does not. Returns the stems of the whole message when nothing survives,
+ * so a message that is pure scaffolding ("what is it") still scores against the corpus instead of
+ * producing an empty vector that silently matches nothing.
+ */
+export function residue(normalised: string, known: ReadonlySet<string>): string[] {
+  const all: string[] = [];
+  const kept: string[] = [];
+  for (const token of tokens(normalised)) {
+    const stemOf = stem(folded(token));
+    if (all.indexOf(stemOf) === -1) all.push(stemOf);
+    if (!isScaffold(token, known) && kept.indexOf(stemOf) === -1) kept.push(stemOf);
+  }
+  return kept.length > 0 ? kept : all;
+}
 
 /**
  * Morphological fold used on both sides of every scored comparison, so the keyword "service" reaches
@@ -184,4 +263,27 @@ export function tokenOverlap(queryTokens: string[], utteranceTokens: string[]): 
     if (haystack.has(token)) hits++;
   }
   return hits / utteranceTokens.length;
+}
+
+/**
+ * Openings that make English a question. Deliberately short: every word here is one a blank answer
+ * rarely begins with, which is why "any", "have" and "is it" style declaratives are absent — a scope
+ * answer legitimately starts "need a logo and a website", and a name legitimately starts "Arjun".
+ */
+const QUESTION_LEAD =
+  /^(what|whats|when|where|which|who|whom|whose|why|how|is|are|do|does|did|can|could|will|would|should|tell|explain)\b/;
+
+/**
+ * Whether a message is built in the shape of a question.
+ *
+ * The brief needs this because nothing in the corpus does: at a blank the visitor types into, "who are
+ * you" is a detour and "Kerala, for the temple project" is the answer, and both are words the pod has
+ * seen. So the test reads the shape the message arrives in — an interrogative opening, or a mark the
+ * visitor put there themselves — and never a score, which is what keeps it out of the resolver's way.
+ */
+export function looksLikeQuestion(raw: string): boolean {
+  const text = raw.trim();
+  if (text.length === 0) return false;
+  if (text.endsWith("?")) return true;
+  return QUESTION_LEAD.test(normalise(text));
 }

@@ -365,3 +365,34 @@ export function slotChips(slot: SlotDefinition, slots: Record<SlotId, SlotValue>
         : { kind: "slot-pick", slot: slot.id, value: option.value },
   }));
 }
+
+/** Bare affirmations and denials, as a phone keyboard types them. Compared folded and whole. */
+const YES_WORDS = new Set(["yes", "yeah", "yep", "yup", "sure", "correct"]);
+const NO_WORDS = new Set(["no", "nah", "nope", "not"]);
+
+/**
+ * What a bare "yes" or "no" stands for in this slot's set.
+ *
+ * The exact matcher cannot see these: "Are you an agency?" offers `No, I'm not an agency`, and a
+ * visitor who types `no` has answered it, not declined it. Reading that as a skip loses a decision
+ * they actually made, and the CRM receives an empty field. So a bare polarity word is resolved
+ * against the options that begin with that word — and only when exactly one does. Two of them start
+ * with "Yes" on that same question, so `yes` comes back ambiguous, which the panel turns into the two
+ * buttons rather than into a guess the studio will read as a preference the visitor never stated.
+ */
+export function polarityMatch(
+  raw: string,
+  options: SlotOption[],
+): { kind: "match"; value: string } | { kind: "ambiguous"; values: string[] } | null {
+  const word = raw.trim().toLowerCase();
+  const affirmative = YES_WORDS.has(word);
+  if (!affirmative && !NO_WORDS.has(word)) return null;
+
+  const lead = affirmative ? /^yes\b/i : /^no\b/i;
+  const hits = options.filter((option) => lead.test(option.value.trim()));
+  if (hits.length === 1) return { kind: "match", value: hits[0].value };
+  if (hits.length > 1) return { kind: "ambiguous", values: hits.map((hit) => hit.value) };
+  // A bare "no" where nothing in the set means no is the visitor declining the question, which is
+  // what the caller's skip path already does.
+  return null;
+}
