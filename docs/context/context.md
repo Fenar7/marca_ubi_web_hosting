@@ -3,22 +3,41 @@
 > **Start here.** This is the live pointer file; the detail lives in the linked register.
 > Any agent (human or AI) opening this project should read this file first, then the register.
 
-**Recorded At:** `2026-11-03T12:06:25+05:30`
+**Recorded At:** `2026-11-03T14:55:00+05:30`
 **Current Branch:** `remediation/turbopack-compaction-dev-server` (sub-branch under `redesign/chat-pod-luxury-interaction`)
 **Base Branch:** `redesign/chat-pod-luxury-interaction` (which targets `feature/chat-pod` in PR #106)
-**Latest State:** `Chat Pod comprehension + motion/contrast contract + two transcript scroll fixes — commits 15b2183, a3a6a82, 6238aa7, 844b131 pushed; PR #107 updated and OPEN`
+**Latest State:** `Chat Pod Part C — typed-message comprehension, continuity, identity ownership and the ten intake defects — commit eff95ed pushed; PR #107 updated and OPEN`
 **Open Pull Requests (ALL STRICTLY OPEN):**
 - [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
 - [PR #106 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (`redesign/chat-pod-luxury-interaction` → `feature/chat-pod`)
 - [PR #105 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/105): `Phase 15: Chat Pod Deterministic Assistant and Conversational Intake Architecture` (`feature/chat-pod` → `master`)
 **Author Identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`
 **TypeScript Status:** `0 errors`. Whole-project `tsc` (`node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit`) was green at the last full run and then died twice on host memory (`young object promotion failed`, ~1 GB free) — not a type failure. The final pass was re-checked with the same strict options over every file this PR touches (`src/app/chat-pod/**`, `src/app/lib/intake/**`, `tests/unit/chatpod-*.test.ts`, `tests/e2e/chatpod.spec.ts`): **0 errors, exit 0**.
-**Unit Tests:** `266 pass / 0 fail` (Chat Pod, 44 suites — re-run on the final tree); `1283 pass / 0 fail` (full suite)
+**Unit Tests:** `1308 pass / 0 fail` across `348 suites` (full suite, re-run on the final tree); the Chat Pod engine/intake suites are `40` matcher, `36` normalise, `53` intake-fsm, `21` intent-resolution. Scoped typecheck for this surface: `node --max-old-space-size=3072 node_modules/typescript/bin/tsc -p tsconfig.podcheck.json` → 0 errors.
 **E2E:** `28 passed in 4.2m` (`tests/playwright.chatpod.config.ts`, against a server already on `127.0.0.1:3003`)
 
 ---
 
-## 1. Active Work: Chat Pod Part A (comprehension) + Part B (motion & contrast)
+## 1. Active Work: Chat Pod Parts A–C (comprehension, motion & contrast, typed-message intake)
+
+**Part C — 3 November, commit `eff95ed`.** The owner used the pod again, on a phone, and reported two more
+things: asking *what do you do* got the services qualification question back, and the brief "feels broken".
+Thirteen causes behind two sentences. The engine learned that a typed message is not an authored one (chat
+abbreviations, one-keystroke forgiveness for grammar and for unknown topic words, aliases grouped by topic
+words so a polite sentence reaches the same author as a terse one); continuity was added as a *second*
+pass that can only break a tie the cold pass could not, never overturn an answer; `identity.studio` was
+authored because the company question had no owner anywhere in the table. Ten intake defects were fixed —
+a mid-brief question filed as the live slot's answer, a bare `no` skipped instead of matched, correct
+refusals emitted in silence, two replies racing into the transcript, a stale tray, a tray that grew past
+the panel, progress that moved backwards, an edit that needed a full stop, and Esc mid-send. The general
+finding: **the machine's refusals were right and its lines were missing.**
+👉 [`docs/context/2026-11-03_14-55-00.md`](./2026-11-03_14-55-00.md), with mechanism and the measured
+resolver table in
+[`docs/chat_pod/22-comprehension-continuity-and-intake-remediation.md`](../chat_pod/22-comprehension-continuity-and-intake-remediation.md).
+No threshold moved, no dependency added, no network call, no model. **Still unrun: a real browser pass over
+the intake fixes** — the host had no memory for a dev server, and there is no e2e gate for them.
+
+Parts A and B are below.
 
 The owner's two complaints were that the pod answered the wrong question about services ("there are 16
 services" is a count, not a description) and that the surface felt dead. The phase ran a plan the owner
