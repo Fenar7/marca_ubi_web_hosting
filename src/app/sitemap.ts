@@ -28,6 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      url: `${siteUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     // Dedicated capability pages for the 16 Services Accordion entries
     ...getAllServiceSlugs().map((slug) => ({
       url: `${siteUrl}/services/${slug}`,
