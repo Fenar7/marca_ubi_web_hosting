@@ -11,8 +11,8 @@ const DEFAULT_NAV_ITEMS: readonly NavItem[] = [
   { label: "work", href: "/works" },
   { label: "services", href: "/#about" },
   { label: "locations", href: "/#network" },
-  { label: "careers", href: "mailto:careers@marcaubi.com" },
-  { label: "contact", href: "/start-project" },
+  { label: "careers", href: "/careers" },
+  { label: "contact", href: "/contact" },
 ] as const;
 
 /**
