@@ -16,6 +16,8 @@
  *   radius 2px, zero shadows, with real note/principle/warning variants.
  * - Red is reserved for markers, rules and decoration so it never competes
  *   with body copy contrast.
+ * - Extends GEO blocks (comparisonTable, executiveSummary, statCallout, faqSection)
+ *   with dark luxury monolith styling (#0d0d0d, tabular figures, crisp hairlines).
  *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -350,10 +352,344 @@
   }
 }
 
+/* ──────────────────────────────────────────────────────────────
+   GEO Block 1: Structured Comparison Table (Dark Luxury Token)
+   ────────────────────────────────────────────────────────────── */
+.tableWrapper {
+  margin: 2.5rem 0;
+}
+
+.tableTitle {
+  font-family: $font-circular;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #0a0a0a;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.tableScrollFrame {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #0d0d0d;
+}
+
+.comparisonTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: $font-circular;
+  text-align: left;
+
+  th {
+    background-color: #141414;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.875rem 1.125rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    white-space: nowrap;
+  }
+
+  td {
+    color: #e0e0e0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    padding: 0.875rem 1.125rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-variant-numeric: tabular-nums;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.tableCaption {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: #777777;
+  margin: 0.625rem 0 0;
+  letter-spacing: 0.02em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   GEO Block 2: Executive Summary / Direct Answer Card
+   ────────────────────────────────────────────────────────────── */
+.executiveSummaryCard {
+  margin: 2.5rem 0;
+  padding: 2rem;
+  background-color: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid $client-accent-red;
+  border-radius: 0 4px 4px 0;
+  color: #ffffff;
+}
+
+.executiveSummaryKicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.875rem;
+}
+
+.kickerDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: $client-accent-red;
+}
+
+.kickerText {
+  font-family: $font-mono;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: $client-accent-red;
+  font-weight: 500;
+}
+
+.executiveSummaryTitle {
+  font-family: $font-helvetica;
+  font-weight: 300;
+  font-size: clamp(1.25rem, 1.8vw, 1.625rem);
+  color: #ffffff;
+  margin: 0 0 1rem;
+  line-height: 1.25;
+}
+
+.executiveSummaryText {
+  font-family: $font-circular;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: #d6d6d6;
+  margin: 0;
+}
+
+.takeawaysSection {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.takeawaysHeading {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a0a0a0;
+  margin: 0 0 0.75rem;
+}
+
+.takeawaysList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.takeawayItem {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #e0e0e0;
+}
+
+.takeawayMarker {
+  color: $client-accent-red;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   GEO Block 3: Verifiable Stat Callout Card
+   ────────────────────────────────────────────────────────────── */
+.statCalloutCard {
+  margin: 2.5rem 0;
+  padding: 2rem;
+  background-color: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #ffffff;
+}
+
+.statMetricRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.statMetricValue {
+  font-family: $font-circular;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.statMetricBadge {
+  font-family: $font-mono;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  background: rgba(234, 0, 42, 0.12);
+  color: #ff3344;
+  border: 1px solid rgba(234, 0, 42, 0.3);
+  border-radius: 2px;
+}
+
+.statMetricLabel {
+  font-family: $font-circular;
+  font-weight: 500;
+  font-size: 1.125rem;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5rem;
+}
+
+.statMetricDescription {
+  font-family: $font-circular;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #a8a8a8;
+  margin: 0 0 1.25rem;
+}
+
+.statSourceRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: $font-mono;
+  font-size: 0.6875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+}
+
+.statSourceTag {
+  color: $client-accent-red;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.statSourceText {
+  color: #888888;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   GEO Block 4: In-Body Accordion FAQ Section
+   ────────────────────────────────────────────────────────────── */
+.faqSection {
+  margin: 3rem 0;
+  padding: 2rem;
+  background-color: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #ffffff;
+}
+
+.faqSectionTitle {
+  font-family: $font-helvetica;
+  font-weight: 300;
+  font-size: clamp(1.25rem, 1.8vw, 1.625rem);
+  color: #ffffff;
+  margin: 0 0 1.5rem;
+  line-height: 1.25;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.faqItem {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.125rem 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.faqSummary {
+  font-family: $font-circular;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: #ffffff;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  transition: color 0.2s ease;
+  outline: none;
+
+  &:hover {
+    color: $client-accent-red;
+  }
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.faqQuestion {
+  flex: 1;
+}
+
+.faqChevron {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid $client-accent-red;
+  border-bottom: 2px solid $client-accent-red;
+  transform: rotate(45deg);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+
+  .faqItem[open] & {
+    transform: rotate(-135deg);
+  }
+}
+
+.faqAnswer {
+  font-family: $font-circular;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: #b3b3b3;
+  margin-top: 0.875rem;
+  padding-right: 1.5rem;
+
+  p {
+    margin: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .anchorSymbol,
   .headingAnchor,
-  .articleLink {
+  .articleLink,
+  .faqChevron,
+  .faqSummary {
     transition: none !important;
   }
 }

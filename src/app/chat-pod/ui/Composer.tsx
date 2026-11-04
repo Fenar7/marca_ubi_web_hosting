@@ -2,28 +2,31 @@
 
 /**
  * @file Composer.tsx
- * @description The text field. Three behaviours in it are deliberate and all three are easy to "fix"
- *              the wrong way later:
+ * @description The conversational intake textarea and send affordance.
  *
- *              `aria-disabled` rather than the `disabled` attribute. A disabled input leaves the tab
- *              order and disappears from accessibility trees, so a visitor mid-search loses their
- *              place; `aria-disabled` keeps the caret, keeps the announcement and refuses the send.
+ *              Architectural Rationale & Invariants:
+ *              - Caret & Selection Stability: Controlled React 19 `<textarea>` elements natively
+ *                preserve the cursor position and text selection range as long as `node.value` is
+ *                not programmatically overwritten with stale state or manual `setSelectionRange()` calls.
+ *                Length limits are enforced by the native DOM `maxLength={limit}` attribute, with defensive
+ *                clamping on paste. Composition sessions (IME/accents/mobile swipe) are tracked via
+ *                `isComposingRef` to avoid premature form submission during character composition.
+ *              - Progressive Auto-Growth: Leverages modern CSS `field-sizing: content;` when supported
+ *                by the client browser engine. In legacy engines, a non-destructive `useLayoutEffect`
+ *                adjusts `textarea.style.height` between 40px and 140px based on `scrollHeight` without
+ *                triggering layout thrashing or selection drops.
+ *              - Accessibility: `aria-disabled` retains the control in the tab order and accessibility
+ *                tree during network activity rather than removing it with the HTML `disabled` attribute.
  *
- *              Enter sends, Shift+Enter breaks a line. This is what people expect from a chat field,
- *              and the newline matters because the pod reads multi-line questions as one utterance.
- *
- *              The send control goes grey on an empty field but stays focusable and keeps a `title`
- *              saying why. It never disappears, because a control that vanishes as you type is a
- *              layout shift at the exact moment the visitor is looking at it.
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
-import { useCallback, useState } from "react";
-import type { RefObject } from "react";
+import { memo, useCallback, useLayoutEffect, useRef, useState } from "react";
+import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
 
 import styles from "../ChatPod.module.scss";
 
-/** Matching is a lookup over a bounded corpus; a novel beyond the first sentences is not an answer. */
+/** Maximum input character count enforced across free-form conversational queries. */
 const MAX_CHARS = 500;
 
 interface Props {
@@ -40,9 +43,18 @@ interface Props {
   helper?: string;
 }
 
-export default function Composer({ inputRef, onSubmit, blocked, blockReason, placeholder, maxLength, helper }: Props) {
+function Composer({
+  inputRef,
+  onSubmit,
+  blocked,
+  blockReason,
+  placeholder,
+  maxLength,
+  helper,
+}: Props) {
   const [value, setValue] = useState("");
   const limit = maxLength ?? MAX_CHARS;
+  const isComposingRef = useRef(false);
 
   const empty = value.trim().length === 0;
 
@@ -51,9 +63,41 @@ export default function Composer({ inputRef, onSubmit, blocked, blockReason, pla
     if (text.length === 0 || blocked) return;
     onSubmit(text);
     setValue("");
-  }, [blocked, onSubmit, value]);
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+    }
+  }, [blocked, onSubmit, value, inputRef]);
 
-  const describedBy = [blocked ? "mubi-pod-blocked" : null, helper ? "mubi-pod-helper" : null].filter(Boolean).join(" ") || undefined;
+  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const next = event.target.value;
+    // Native maxLength limits user keystrokes; defensive slice handles external oversized clipboard pastes
+    setValue(next.length > limit ? next.slice(0, limit) : next);
+  };
+
+  useLayoutEffect(() => {
+    const textarea = inputRef.current;
+    if (!textarea) return;
+
+    // Progressive enhancement: CSS field-sizing: content handles dynamic height natively in modern engines
+    if (typeof CSS !== "undefined" && CSS.supports && CSS.supports("field-sizing", "content")) {
+      return;
+    }
+
+    // Non-destructive fallback auto-growth for older browser engines
+    const prevHeight = textarea.offsetHeight;
+    const targetHeight = Math.min(Math.max(textarea.scrollHeight, 40), 140);
+    if (Math.abs(prevHeight - targetHeight) > 2) {
+      textarea.style.height = `${targetHeight}px`;
+    }
+  }, [value, inputRef]);
+
+  const describedBy = [
+    blocked ? "mubi-pod-blocked" : null,
+    helper ? "mubi-pod-helper" : null,
+  ]
+    .filter(Boolean)
+    .join(" ") || undefined;
 
   return (
     <div className={styles.composer}>
@@ -67,9 +111,18 @@ export default function Composer({ inputRef, onSubmit, blocked, blockReason, pla
         aria-disabled={blocked || undefined}
         aria-describedby={describedBy}
         placeholder={blocked ? "" : (placeholder ?? "Ask about the work, the services, or a project")}
-        onChange={(event) => setValue(event.target.value.slice(0, limit))}
-        onKeyDown={(event) => {
-          if (event.nativeEvent.isComposing) return;
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        onChange={handleChange}
+        onCompositionStart={() => {
+          isComposingRef.current = true;
+        }}
+        onCompositionEnd={() => {
+          isComposingRef.current = false;
+        }}
+        onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
+          if (event.nativeEvent.isComposing || isComposingRef.current) return;
           if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
             send();
@@ -99,3 +152,5 @@ export default function Composer({ inputRef, onSubmit, blocked, blockReason, pla
     </div>
   );
 }
+
+export default memo(Composer);

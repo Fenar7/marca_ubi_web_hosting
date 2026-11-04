@@ -6,8 +6,8 @@
  *              `persistence.ts` is the only place the pod remembers anything, and every branch of it
  *              is a decision about someone's data: what is trustworthy enough to repaint, how long a
  *              brief is kept, and what happens on the browsers that refuse storage rather than
- *              returning null. Those are all silent failures — a visitor sees a panel that simply
- *              forgot, and the only trace is a console line — so they are asserted here instead of
+ *              returning null. Those are all silent failures: a visitor sees a panel that simply
+ *              forgot, and the only trace is a console line, so they are asserted here instead of
  *              inferred from the happy path.
  *
  *              `window` is replaced per test rather than once for the file, because the interesting
@@ -65,11 +65,11 @@ interface Fixture {
 /**
  * The three ways a browser can decline to remember, each of which the module survives differently:
  *
- * - `no-store` — Safari private browsing and a cookies-blocked Chrome, where reading
+ * - `no-store`: Safari private browsing and a cookies-blocked Chrome, where reading
  *   `window.localStorage` throws before any method is reached.
- * - `method-fails` — the store object exists and every call on it throws, which is what the guarded
+ * - `method-fails`: the store object exists and every call on it throws, which is what the guarded
  *   `readKey`/`removeKey`/`writeFlag` helpers are for.
- * - `write-fails` — a working browser whose disk is full: reads succeed, one write is refused.
+ * - `write-fails`: a working browser whose disk is full. Reads succeed, one write is refused.
  */
 type BrowserMode = 'working' | 'no-store' | 'method-fails' | 'write-fails';
 
@@ -178,6 +178,17 @@ describe('Chat Pod persistence', () => {
   });
 
   describe('a working browser', () => {
+    it('round-trips additive service interest and company slots without rewriting legacy values', () => {
+      installWindow();
+      try {
+        const slots = { serviceInterest: ['account-based-marketing'], company: 'Acme Ltd', projectName: 'Launch', services: ['Postcard, flyer or print'] };
+        assert.equal(writeDraft(draft({ slots })), true);
+        assert.deepEqual(readDraft()?.slots, slots);
+      } finally {
+        uninstallWindow();
+      }
+    });
+
     it('brings back the answers exactly as they were given', () => {
       installWindow();
       try {

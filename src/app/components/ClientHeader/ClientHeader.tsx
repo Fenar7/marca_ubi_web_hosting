@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import Link from "next/link";
@@ -150,7 +150,25 @@ export function ClientHeader({ defaultTheme = "dark" }: ClientHeaderProps) {
   }, []);
 
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
-  const closeDrawer = () => setIsDrawerOpen(false);
+  const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
+
+  // Overlay mutual exclusion: dismiss drawer when navigation:close or chatpod:open fires
+  useEffect(() => {
+    const handleCloseDrawer = () => setIsDrawerOpen(false);
+    window.addEventListener("navigation:close", handleCloseDrawer);
+    window.addEventListener("chatpod:open", handleCloseDrawer);
+    return () => {
+      window.removeEventListener("navigation:close", handleCloseDrawer);
+      window.removeEventListener("chatpod:open", handleCloseDrawer);
+    };
+  }, []);
+
+  // Overlay mutual exclusion: when drawer opens, dismiss chatpod
+  useEffect(() => {
+    if (isDrawerOpen) {
+      window.dispatchEvent(new Event("chatpod:close"));
+    }
+  }, [isDrawerOpen]);
 
   // 3. Continuous Pentagram Dual-Slot Mechanical Rolling Engine
   useGSAP(

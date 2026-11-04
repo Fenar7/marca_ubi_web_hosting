@@ -1,3 +1,18 @@
+/**
+ * @file src/app/blog/components/PortableTextRenderer.tsx
+ * @description Master Portable Text React renderer for Marca Ubi editorial dispatches.
+ *              Implements the dark luxury visual hierarchy with custom renderers for:
+ *              - Headings (H2 with slugified anchors, H3, H4)
+ *              - Editorial Callouts (Note, Principle, Warning)
+ *              - Hotspot-optimized and LQIP-blurred figures
+ *              - Syntax-highlighted code blocks
+ *              - GEO Block 1: Structured Comparison Tables with scroll frames
+ *              - GEO Block 2: Executive Summary & Direct Answer Boxes
+ *              - GEO Block 3: Verifiable Metric & Stat Callout Cards
+ *              - GEO Block 4: In-Body Accordion FAQ Sections
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 import React from "react";
 import { PortableText, type PortableTextComponents, type PortableTextBlock } from "next-sanity";
 import Link from "next/link";
@@ -29,6 +44,42 @@ interface CodeBlockValue {
   filename?: string;
   language?: string;
   code?: string;
+}
+
+/** GEO Comparison Table payload */
+interface ComparisonTableValue {
+  title?: string;
+  caption?: string;
+  headers?: string[];
+  rows?: Array<{
+    _key?: string;
+    cells?: string[];
+  }>;
+}
+
+/** GEO Executive Summary payload */
+interface ExecutiveSummaryValue {
+  title?: string;
+  content?: string;
+  keyTakeaways?: string[];
+}
+
+/** GEO Stat Callout payload */
+interface StatCalloutValue {
+  value?: string;
+  label?: string;
+  description?: string;
+  sourceCitation?: string;
+}
+
+/** GEO In-Body FAQ Section payload */
+interface FaqSectionValue {
+  title?: string;
+  items?: Array<{
+    _key?: string;
+    question?: string;
+    answer?: string;
+  }>;
 }
 
 /**
@@ -189,6 +240,123 @@ export const portableTextComponents: PortableTextComponents = {
             <code>{data.code}</code>
           </pre>
         </div>
+      );
+    },
+
+    // ── GEO Block 1: Structured Comparison Table
+    comparisonTable: ({ value }) => {
+      const data = (value || {}) as ComparisonTableValue;
+      if (!data.headers || data.headers.length === 0) return null;
+      return (
+        <div className={styles.tableWrapper}>
+          {data.title && <h4 className={styles.tableTitle}>{data.title}</h4>}
+          <div className={styles.tableScrollFrame}>
+            <table className={styles.comparisonTable}>
+              <thead>
+                <tr>
+                  {data.headers.map((header, idx) => (
+                    <th key={idx} scope="col">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(data.rows || []).map((row, rIdx) => (
+                  <tr key={row._key || rIdx}>
+                    {(row.cells || []).map((cell, cIdx) => (
+                      <td key={cIdx}>{cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {data.caption && <p className={styles.tableCaption}>{data.caption}</p>}
+        </div>
+      );
+    },
+
+    // ── GEO Block 2: Executive Summary / Direct Answer Box
+    executiveSummary: ({ value }) => {
+      const data = (value || {}) as ExecutiveSummaryValue;
+      if (!data.content) return null;
+      return (
+        <aside className={styles.executiveSummaryCard} aria-label="Executive Summary">
+          <div className={styles.executiveSummaryKicker}>
+            <span className={styles.kickerDot} aria-hidden="true" />
+            <span className={styles.kickerText}>EXECUTIVE THESIS // STRATEGIC SUMMARY</span>
+          </div>
+          {data.title && <h3 className={styles.executiveSummaryTitle}>{data.title}</h3>}
+          <p className={styles.executiveSummaryText}>{data.content}</p>
+          {Array.isArray(data.keyTakeaways) && data.keyTakeaways.length > 0 && (
+            <div className={styles.takeawaysSection}>
+              <p className={styles.takeawaysHeading}>Key Strategic Takeaways</p>
+              <ul className={styles.takeawaysList}>
+                {data.keyTakeaways.map((takeaway, idx) => (
+                  <li key={idx} className={styles.takeawayItem}>
+                    <span className={styles.takeawayMarker} aria-hidden="true">
+                      {"\u2014"}
+                    </span>
+                    <span>{takeaway}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </aside>
+      );
+    },
+
+    // ── GEO Block 3: Verifiable Stat Callout
+    statCallout: ({ value }) => {
+      const data = (value || {}) as StatCalloutValue;
+      if (!data.value || !data.label) return null;
+      return (
+        <div className={styles.statCalloutCard}>
+          <div className={styles.statMetricRow}>
+            <span className={styles.statMetricValue}>{data.value}</span>
+            <span className={styles.statMetricBadge}>VERIFIED METRIC</span>
+          </div>
+          <p className={styles.statMetricLabel}>{data.label}</p>
+          {data.description && (
+            <p className={styles.statMetricDescription}>{data.description}</p>
+          )}
+          {data.sourceCitation && (
+            <div className={styles.statSourceRow}>
+              <span className={styles.statSourceTag}>SOURCE</span>
+              <span className={styles.statSourceText}>{data.sourceCitation}</span>
+            </div>
+          )}
+        </div>
+      );
+    },
+
+    // ── GEO Block 4: In-Body Accordion FAQ Section
+    faqSection: ({ value }) => {
+      const data = (value || {}) as FaqSectionValue;
+      const items = (data.items || []).filter((item) => item.question && item.answer);
+      if (items.length === 0) return null;
+      return (
+        <section
+          className={styles.faqSection}
+          aria-label={data.title || "Frequently Asked Questions"}
+        >
+          <h3 className={styles.faqSectionTitle}>{data.title || "Frequently Asked Questions"}</h3>
+          <div className={styles.faqList}>
+            {items.map((item, idx) => (
+              <details key={item._key || idx} className={styles.faqItem}>
+                <summary className={styles.faqSummary}>
+                  <span className={styles.faqQuestion}>{item.question}</span>
+                  <span className={styles.faqChevron} aria-hidden="true" />
+                </summary>
+                <div className={styles.faqAnswer}>
+                  <p>{item.answer}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
       );
     },
   },

@@ -13,6 +13,9 @@ export const revalidate = 60; // 60-second Incremental Static Regeneration
  * Concurrently streams dynamic client case studies, editorial dispatches, and FAQs from Sanity CMS,
  * feeding them into the 160over90 alternating living video stream.
  *
+ * Emits dynamic Schema.org FAQPage structured data to feed search engine rich snippets
+ * and provide authoritative grounding for Generative AI search pipelines (Perplexity, SearchGPT).
+ *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export default async function Home() {
@@ -38,5 +41,32 @@ export default async function Home() {
     faqs = FALLBACK_FAQS;
   }
 
-  return <ClientHomeExperience works={works} posts={posts} faqs={faqs} />;
+  const faqSchema =
+    faqs && faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "@id": "https://marcaubi.com/#faq",
+          mainEntity: faqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        }
+      : null;
+
+  return (
+    <>
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+      <ClientHomeExperience works={works} posts={posts} faqs={faqs} />
+    </>
+  );
 }

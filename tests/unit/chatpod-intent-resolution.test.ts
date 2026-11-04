@@ -11,7 +11,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ALWAYS_RESOLVABLE, buildIndex, resolve } from '@/app/chat-pod/engine/match';
+import { ALWAYS_RESOLVABLE, ACCEPT_THRESHOLD, CONTINUITY_PRIOR, buildIndex, rank, resolve } from '@/app/chat-pod/engine/match';
 import { compileKnowledgeBase } from '@/app/chat-pod/knowledge/compile';
 import { buildIntentTable } from '@/app/chat-pod/knowledge/intents';
 import { FALLBACK_FAQS } from '@/sanity/lib/faq-queries';
@@ -65,18 +65,67 @@ const TYPED: [string, string][] = [
   ['thank you so much', 'thanks'],
   ['many thanks', 'thanks'],
   ['see you later', 'goodbye'],
+  // Who the studio is. This family had no owner at all until `identity.studio`: "what do you do" was
+  // authored under `services.overview`, whose first line asks the visitor who they sell to, so the
+  // company question came back as a sales qualification question.
+  ['what do you do', 'identity.studio'],
+  ['what do you actually do', 'identity.studio'],
+  ['what do you guys do', 'identity.studio'],
+  ['what does marka ubi do', 'identity.studio'],
+  ['who are you', 'identity.studio'],
+  ['what do yu do', 'identity.studio'],
+  ['who are you guys', 'identity.studio'],
+  ['who is behind this', 'identity.studio'],
+  ['about you', 'identity.studio'],
+  ['what is marka ubi', 'identity.studio'],
+  ['are you an agency', 'identity.studio'],
+  ['are you a creative agency', 'identity.studio'],
+  ['is this an agency', 'identity.studio'],
+  ['what kind of company are you', 'identity.studio'],
+  ['tell me about yourself', 'identity.studio'],
+  ['tell me about your studio', 'identity.studio'],
+  ['tell me about the company', 'identity.studio'],
+  ['about the studio', 'identity.studio'],
   // Services
   ['what are your services', 'services.overview'],
+  ['what are the services', 'services.overview'],
+  ['what is the services', 'services.overview'],
+  ['what are the services available', 'services.overview'],
+  ['what services are available', 'services.overview'],
+  ['what services do you have', 'services.overview'],
+  ['what services you provide', 'services.overview'],
+  ['services available', 'services.overview'],
+  ['available services', 'services.overview'],
+  ['list of services', 'services.overview'],
+  ['full list of services', 'services.overview'],
+  ['tell me about your services', 'services.overview'],
+  ['can yu pls tell me about services', 'services.overview'],
+  ['can yu tell me about ur services', 'services.overview'],
+  ['pls tell me abt th services', 'services.overview'],
   ['service list', 'services.overview'],
+  ['your services', 'services.overview'],
+  ['services', 'services.overview'],
+  ['what do you offer', 'services.overview'],
+  ['what do you sell', 'services.overview'],
+  ['what can you do for me', 'services.overview'],
+  ['help me with marketing', 'services.overview'],
   ['b2b', 'services.b2b'],
   ['business to business services', 'services.b2b'],
+  ['business facing services', 'services.b2b'],
   ['b2c', 'services.b2c'],
   ['business to consumer services', 'services.b2c'],
+  ['consumer facing services', 'services.b2c'],
   ['which service is right for me', 'services.whichone'],
-  ['i do not know which service', 'services.whichone'],
+  // The alias runs to "pick" rather than ending at "service" on purpose: stripped of its scaffolding the
+  // old form reduced to the single word "service", which `services.overview` also owns, and a contested
+  // residue is a question the pod asks back instead of the answer it gives. The table is where that
+  // authoring fact is pinned, so a future edit that shortens this phrase back fails here.
+  ['i do not know which service to pick', 'services.whichone'],
   // Pricing
   ['how much do you charge', 'pricing'],
   ['what does a project cost', 'pricing'],
+  ['how much does a rebrand cost', 'pricing'],
+  ['how much does a website cost', 'pricing'],
   ['rate card', 'pricing'],
   ['fees', 'pricing'],
   ['what are your fees', 'pricing'],
@@ -115,10 +164,32 @@ const TYPED: [string, string][] = [
   ['send a brief', 'intake.trigger'],
   ['submit a brief', 'intake.trigger'],
   ['can we work together', 'intake.trigger'],
+  // Capability enquiries answer before offering an explicit project action.
+  ['i want a website', 'capabilities.digital'],
+  ['build me a website', 'capabilities.digital'],
+  ['can you build an app', 'capabilities.digital'],
+  ['do you build apps', 'capabilities.digital'],
   ['i would like a proposal', 'intake.trigger'],
   ['cancel that', 'intake.exit'],
   ['stop asking questions', 'intake.exit'],
-  // Published service lines, every alias on every slug
+  // Published service lines, every alias on every slug. Titles are aliases too now that Tier 1 is
+  // multi-owner, so a line's own name is a route to it rather than a keyword accident. The two decks
+  // titled "Public Relations (PR)" are not here: a contested name disambiguates, and that is asserted
+  // by its own test below.
+  ['Demand Generation', 'services.detail.demand-generation'],
+  ['Integrated Marketing', 'services.detail.integrated-marketing'],
+  ['Corporate Communications', 'services.detail.corporate-communications'],
+  ['Social & Influencer Marketing', 'services.detail.social-influencer-marketing'],
+  ['Content & Scale', 'services.detail.content-and-scale'],
+  ['Customer Marketing', 'services.detail.customer-marketing'],
+  ['Account-Based Marketing (ABM)', 'services.detail.account-based-marketing'],
+  ['Integrated Creativity', 'services.detail.integrated-creativity'],
+  ['Social & Influencer', 'services.detail.social-influencer'],
+  ['Digital Performance', 'services.detail.digital-performance'],
+  ['Sports Marketing', 'services.detail.sports-marketing'],
+  ['CRM & Loyalty', 'services.detail.crm-and-loyalty'],
+  ['Live Experiences', 'services.detail.live-experiences'],
+  ['Retail Activation', 'services.detail.retail-activation'],
   ['demand gen', 'services.detail.demand-generation'],
   ['lead generation', 'services.detail.demand-generation'],
   ['pipeline generation', 'services.detail.demand-generation'],
@@ -142,6 +213,9 @@ const TYPED: [string, string][] = [
   ['account based marketing', 'services.detail.account-based-marketing'],
   ['enterprise account campaigns', 'services.detail.account-based-marketing'],
   ['brand identity', 'services.detail.integrated-creativity'],
+  ['branding', 'services.detail.integrated-creativity'],
+  ['branding services', 'services.detail.integrated-creativity'],
+  ['do you offer branding', 'services.detail.integrated-creativity'],
   ['creative campaign', 'services.detail.integrated-creativity'],
   ['art direction', 'services.detail.integrated-creativity'],
   ['consumer influencer', 'services.detail.social-influencer'],
@@ -181,15 +255,23 @@ describe('Chat Pod resolution over the published table', () => {
   });
 
   it('refuses to answer what the studio does not publish', () => {
-    for (const phrase of [
-      'do you write academic dissertations',
-      'can you repair my printer',
-      'what is the weather in calicut',
-      'i need a visa reference letter',
-    ]) {
-      const result = outcome(phrase);
-      assert.notEqual(result.kind, 'answer', `"${phrase}" must not be answered`);
-    }
+    // Pinned to the measured state of each phrase rather than to "not an answer", which an earlier
+    // version of this test accepted as enough. Two of these fall below the floor outright; two sit in
+    // the ambiguous band and come back as a disambiguation — `location`, `services.overview`,
+    // `work.clients` are the real published things that share a word with the sentence, which is what
+    // the soft state tells the visitor. Moving either pair into `fallback` would need a threshold, and
+    // the thresholds are frozen, so this records where the line actually is: an off-topic phrase never
+    // receives a confident answer, and the pod names the closest published candidates instead. Which
+    // phrase lands in which state is measured behaviour, so a drift either way is a resolver change.
+    assert.deepEqual(
+      [
+        'do you write academic dissertations',
+        'can you repair my printer',
+        'what is the weather in calicut',
+        'i need a visa reference letter',
+      ].map((phrase) => outcome(phrase).kind),
+      ['fallback', 'fallback', 'disambiguate', 'disambiguate'],
+    );
   });
 
   it('gives every intent a label and at least one authored phrase', () => {
@@ -224,12 +306,67 @@ describe('Chat Pod resolution over the published table', () => {
     }
   });
 
+  it('carries the subject of the previous turn into a message it could not resolve alone', () => {
+    // This held-out phrase remains below acceptance alone, but a services turn provides enough
+    // continuity. "explain each service" now has a deliberate catalogue interpretation instead.
+    const cold = resolve(index, 'service information', { locked: false });
+    assert.equal(cold.kind, 'disambiguate', 'the cold pass must not answer this on its own');
+
+    // The boundary itself, worked out on a real phrase instead of quoted from a comment. The prior only
+    // ever lifts a message that was already mostly about the last subject, and that line is arithmetic:
+    // `ACCEPT_THRESHOLD / CONTINUITY_PRIOR`. This phrase sits under the accept line and above the line
+    // the prior can reach, which is the whole of what the constant is for — a prior that crept upward
+    // would start answering messages the visitor never connected to the conversation, and this is the
+    // assertion that notices.
+    const leader = rank(index, 'service information')[0];
+    assert.ok(leader.score < ACCEPT_THRESHOLD, 'the cold pass has to be the one that fails here');
+    assert.ok(
+      leader.score * CONTINUITY_PRIOR >= ACCEPT_THRESHOLD,
+      `the boost no longer reaches the accept line it was measured against`,
+    );
+
+    const continued = resolve(index, 'service information', { locked: false, prior: 'services.b2b' });
+    assert.equal(continued.kind, 'answer', 'the same message after a services turn must be answered');
+    assert.equal(
+      continued.kind === 'answer' ? continued.intent.id : '',
+      'services.overview',
+      'continuity lifts the leader, it does not choose a different subject',
+    );
+
+    const offTopic = resolve(index, 'service information', { locked: false, prior: 'contact' });
+    assert.equal(offTopic.kind, 'disambiguate', 'a turn about a different family must not drag this one');
+
+    const alreadyAnswered = resolve(index, 'what do you do', { locked: false, prior: 'process.team' });
+    assert.equal(
+      alreadyAnswered.kind === 'answer' ? alreadyAnswered.intent.id : '',
+      'identity.studio',
+      'the previous turn never overrules an intent the message reaches by itself',
+    );
+  });
+
   it('routes service questions to the services intents', () => {
-    assert.equal(answered('what do you do'), 'services.overview');
     assert.equal(answered('what services do you offer'), 'services.overview');
     assert.equal(answered('b2b services'), 'services.b2b');
     assert.equal(answered('consumer brands'), 'services.b2c');
     assert.equal(answered('which service do i need'), 'services.whichone');
+  });
+
+  it('answers the company question about the company, not with a sales qualification', () => {
+    // The defect this authoring closes: `services.overview` owned "what do you do" and its reply opens
+    // by asking who the visitor sells to, so the first question a new visitor asks got the answer to a
+    // different question. Ownership moved to `identity.studio`; the services intent keeps every
+    // phrasing that names the offer, and this test is what stops the two drifting back onto each other.
+    assert.equal(answered('what do you do'), 'identity.studio');
+    assert.equal(answered('who are you'), 'identity.studio');
+    assert.equal(answered('what is marka ubi'), 'identity.studio');
+    assert.notEqual(answered('what do you offer'), 'identity.studio');
+  });
+
+  it('forgives a mistyped company name without losing the company question', () => {
+    // "whta is marka ubi" is a transposition in the brand's own name, which the corpus spells but no
+    // author lists every way a visitor can misspell. The neighbour lookup reaches it; the assertion
+    // exists because a fold this loose is only safe while it still answers the right intent.
+    assert.equal(answered('whta is marka ubi'), 'identity.studio');
   });
 
   it('reaches individual service pages from what people call them', () => {
@@ -240,11 +377,56 @@ describe('Chat Pod resolution over the published table', () => {
   });
 
   it('asks instead of guessing when a phrase belongs to two published lines', () => {
-    const result = outcome('public relations');
-    assert.equal(result.kind, 'disambiguate', 'a shared PR title must offer both pages, not pick one');
-    const ids = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
-    assert.ok(ids.includes('services.detail.public-relations-pr'));
-    assert.ok(ids.includes('services.detail.public-relations'));
+    // Sanctioned collisions: the name is published under more than one intent, so Tier 1 returns every
+    // owner at score 1 and the margin rule turns that into chips. The list is a contract with the
+    // catalogue, not a workaround; `chatpod-knowledge-coverage` asserts no other phrase collides.
+    const contested: [string, string[]][] = [
+      ['public relations', ['services.detail.public-relations-pr', 'services.detail.public-relations']],
+      ['Public Relations (PR)', ['services.detail.public-relations-pr', 'services.detail.public-relations']],
+      ['social media marketing', ['services.detail.social-influencer-marketing', 'services.detail.social-influencer']],
+    ];
+
+    for (const [phrase, ids] of contested) {
+      const result = outcome(phrase);
+      assert.equal(result.kind, 'disambiguate', `"${phrase}" must offer both pages, not pick one`);
+      const offered = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
+      for (const id of ids) assert.ok(offered.includes(id), `"${phrase}" dropped the owner ${id}`);
+    }
+  });
+
+  it('does not answer a question about a service with the studio social links', () => {
+    // The complaint this authoring answers: "explain social media marketing" used to return the
+    // Instagram and LinkedIn rail, because "social" was a keyword on that intent. It is a question about
+    // what the studio sells, so the two social service lines are offered and the rail is not the answer.
+    const result = outcome('explain social media marketing');
+    assert.notEqual(
+      result.kind === 'answer' ? result.intent.id : '',
+      'contact.socials',
+      'a service question was answered by the publishing rail',
+    );
+    assert.equal(result.kind, 'disambiguate');
+    const offered = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
+    assert.ok(offered.includes('services.detail.social-influencer-marketing'));
+    assert.ok(offered.includes('services.detail.social-influencer'));
+
+    // The rail still answers the phrases that actually ask for it.
+    assert.equal(answered('social channels'), 'contact.socials');
+    assert.equal(answered('where do you publish'), 'contact.socials');
+    assert.equal(answered('social media'), 'contact.socials');
+  });
+
+  it('offers the service and the journal category for a subject the studio both sells and writes about', () => {
+    // "Brand Strategy" is a published journal category and a published deliverable label of the
+    // creative deck. The decision is to show the visitor both rather than silently answering with blog
+    // posts: the deck authors the shared name, so the exact phrase contests at Tier 1, and the
+    // `work.journal.topic.` discount keeps the journal second on the longer question.
+    for (const phrase of ['brand strategy', 'what is brand strategy']) {
+      const result = outcome(phrase);
+      assert.equal(result.kind, 'disambiguate', `"${phrase}" resolved as ${result.kind}`);
+      const offered = result.kind === 'disambiguate' ? result.candidates.map((entry) => entry.intent.id) : [];
+      assert.ok(offered.includes('services.detail.integrated-creativity'), `"${phrase}" hid the service line`);
+      assert.ok(offered.includes('work.journal.topic.Brand Strategy'), `"${phrase}" hid the journal category`);
+    }
   });
 
   it('treats a pricing question as unanswerable rather than inventing a range', () => {

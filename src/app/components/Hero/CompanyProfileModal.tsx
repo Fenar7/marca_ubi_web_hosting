@@ -4,6 +4,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
+import { useOverlayScrollLock } from "@/app/lib/overlayScrollLock";
 import {
   COMPANY_PROFILE_SUBMISSION_FIELD_ORDER,
   EMPTY_COMPANY_PROFILE_SUBMISSION,
@@ -41,6 +42,12 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // The page holds still while this form is up. It used to be a class on `body` plus a
+  // `profile-modal:open`/`close` pair that the scroll controller read back; the class stays because the
+  // stylesheet keys off it, and the hold moves to the shared refcount so it survives an overlay opening
+  // on top of this one and leaving the page locked underneath.
+  useOverlayScrollLock(isOpen, "company-profile");
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -154,9 +161,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
   useEffect(() => {
     const timeline = timelineRef.current;
-    const isOpening = isOpen && !wasOpenRef.current;
-
-    if (timeline) {
+    const isOpening = isOpen && !wasOpenRef.current;    if (timeline) {
       if (isOpen) {
         timeline.play();
       } else {
@@ -170,7 +175,6 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       document.documentElement.classList.add("profile-modal-open");
 
       if (isOpening) {
-        window.dispatchEvent(new Event("profile-modal:open"));
         submissionIdRef.current = crypto.randomUUID();
 
         if (focusTimerRef.current !== null) {
@@ -189,10 +193,6 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
     document.body.classList.remove("profile-modal-open");
     document.documentElement.classList.remove("profile-modal-open");
-
-    if (wasOpenRef.current) {
-      window.dispatchEvent(new Event("profile-modal:close"));
-    }
 
     wasOpenRef.current = false;
 
@@ -220,10 +220,6 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
     return () => {
       document.body.classList.remove("profile-modal-open");
       document.documentElement.classList.remove("profile-modal-open");
-
-      if (wasOpenRef.current) {
-        window.dispatchEvent(new Event("profile-modal:close"));
-      }
 
       if (focusTimerRef.current !== null) {
         window.clearTimeout(focusTimerRef.current);
@@ -378,6 +374,10 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       aria-hidden={!isOpen}
       className={styles.overlay}
       ref={overlayRef}
+      // This element is the scroll root (`overflow-y: auto` over the whole viewport), and a stopped
+      // Lenis cancels every wheel outside a `data-lenis-prevent` subtree. Without the exemption the
+      // form's own lower half is unreachable by a mouse the moment the modal holds the page.
+      data-lenis-prevent={isOpen || undefined}
     >
       <button
         aria-label="Close company profile form"

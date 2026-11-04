@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "//": [
+    "The gate for the surfaces this branch touches. The project-wide `tsc --noEmit` exhausts the heap on",
+    "the admin tree, so the audited scope is listed here instead: the chat pod, its unit and browser",
+    "contracts, and the overlay scroll-lifecycle surfaces the pod shares the viewport with. The e2e file is",
+    "included because Playwright transpiles its specs without type-checking them, so a gate that reads a",
+    "property the DOM does not have otherwise passes by being wrong in a way nobody measures."
+  ],
+  "include": [
+    "next-env.d.ts",
+    "src/app/chat-pod/**/*.ts",
+    "src/app/chat-pod/**/*.tsx",
+    "src/app/lib/overlayScrollLock.ts",
+    "src/app/lib/motion.ts",
+    "src/app/components/SmoothScrollProvider/**/*.tsx",
+    "src/app/components/Header/**/*.tsx",
+    "src/app/components/NavigationOverlay/**/*.tsx",
+    "src/app/components/ReelModal/**/*.tsx",
+    "src/app/components/Hero/CompanyProfileModal.tsx",
+    "tests/unit/chatpod-*.test.ts",
+    "tests/unit/overlay-scroll-lock.test.ts",
+    "tests/e2e/chatpod.spec.ts"
+  ]
+}
