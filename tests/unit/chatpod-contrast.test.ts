@@ -250,13 +250,20 @@ describe("Chat Pod motion contract (fluid, and switched off when motion is refus
   it("keeps the conversation and the replies on offer in one scroll surface", () => {
     // Two nested scroll areas inside a fixed-height panel was the defect the owner reported: a wheel
     // that moved one box and then a second. The rail is now the tail of the column, so the transcript
-    // takes it as children and the panel has exactly one element with `overflow-y: auto`.
+    // takes it as children and the panel scrolls one column.
     assert.ok(pod.includes("<Transcript") && /<Transcript[\s\S]*?styles\.tray[\s\S]*?<\/Transcript>/.test(pod), "the chip rail has to live inside the scroll column");
-    const scrollers = scss
-      .split(/\n(?=[.@:])/)
-      .filter((block) => /overflow-y: auto/.test(block))
-      .map((block) => block.match(/^[.@][\w-]+/)?.[0] ?? "?")
-      .sort();
+    // The owners of every scrolling declaration in the stylesheet, found by walking the lines and
+    // remembering the last selector seen. Matching on `overflow-y: auto` alone was the hole: a
+    // regression to the `overflow` shorthand, to `scroll`, or to a form with no space would have kept
+    // this contract green while putting a second scrollbar back in the panel.
+    const owners: string[] = [];
+    let current = "?";
+    for (const line of scss.split(/\r?\n/)) {
+      const selector = /^\s*([.@#][\w-]+)[^{]*\{/.exec(line);
+      if (selector) current = selector[1];
+      if (/^\s*overflow(-x|-y)?\s*:\s*(auto|scroll)/.test(line)) owners.push(current);
+    }
+    const scrollers = [...new Set(owners)].sort();
     // `.flow` is the conversation and the only thing in the panel that scrolls it. `.field` is the
     // composer, exempt for one reason: it holds text nobody published, and a `max-height` box with
     // `overflow: hidden` makes the visitor's own brief unreachable — a form control scrolling its own

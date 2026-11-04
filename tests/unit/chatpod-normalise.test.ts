@@ -331,6 +331,29 @@ describe('Chat Pod text primitives', () => {
       }
     });
 
+    it('pays for the shape test with the proper nouns that open like questions', () => {
+      // Disclosed, not hidden, and pinned so it cannot drift silently. A project called
+      // `Tell Me Nothing` or `Who Wants a Proposal` opens on exactly the words a question opens on,
+      // and the shape test cannot tell a title from an imperative because case is folded away before
+      // it reads the sentence. The pod refuses these at a verbatim blank rather than filing them,
+      // which is the lesser error — a refusal is re-answerable, a stored question is a corrupt CRM
+      // record. The honest fix is a re-ask at the blank ("is that the name of your project?"), not a
+      // name heuristic, and it is recorded as the open item in `docs/chat_pod/23-` §8.
+      for (const text of [
+        'who wants a proposal',
+        'what the heck studio',
+        'do it forward',
+        'tell me nothing',
+        'how to damp the roof',
+      ]) {
+        assert.equal(looksLikeQuestion(text), true, `"${text}" reads as a question, and that is the known cost`);
+      }
+      // And the half that still works: the ordinary names the studio actually receives.
+      for (const text of ['will of the people', 'can on the water', 'arjun mehta', 'the marketing club']) {
+        assert.equal(looksLikeQuestion(text), false, `"${text}" is still filed as the answer it is`);
+      }
+    });
+
     it('is empty-safe', () => {
       assert.equal(looksLikeQuestion(''), false);
       assert.equal(looksLikeQuestion('   '), false);
