@@ -30,7 +30,8 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:3003',
+    // An isolated worktree can test its own server without rebinding the owner's development port.
+    baseURL: process.env.CHAT_POD_BASE_URL ?? 'http://127.0.0.1:3003',
     trace: 'off',
     screenshot: 'only-on-failure',
     video: 'off',

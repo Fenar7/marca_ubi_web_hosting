@@ -1,11 +1,11 @@
 /**
  * @file slots.ts
- * @description The seventeen intake questions, their order, and what a legal answer looks like.
+ * @description Short brief questions, optional enrichment, and their accepted answers.
  *
  *              Two rules shape this file. First, **one question per turn**: a message that asks for a
  *              name and an email at once gets one of the two answered, and the visitor has to notice
- *              which one was missed. Second, **six of the seventeen are closed sets**, and a closed
- *              set validates by membership in the same array the wizard renders, never by string
+ *              which one was missed. Second, a closed set validates by membership in the same array
+ *              the wizard renders, never by string
  *              length. "technology" in lower case passes a length check and silently becomes a lead no
  *              CRM filter matches, so membership is the only acceptable test.
  *
@@ -27,6 +27,7 @@ import {
   SERVICES_BY_CATEGORY,
 } from "@/app/lib/intake/intakeOptions";
 import type { Chip, SlotId, SlotValue } from "../types";
+import { SERVICE_INTEREST_OPTIONS, UNDECIDED_SERVICE, validateServiceInterests } from "./serviceInterest";
 
 export type SlotKind = "multi" | "single" | "text" | "multiline" | "links";
 
@@ -118,16 +119,22 @@ const TIMELINE_OPTIONS: SlotOption[] = INTAKE_TIMELINE_OPTIONS.map((option) => (
  * every one of it. The visitor reaches "your name and email" only after the conversation has earned
  * the ask, and the tail never reads like an interrogation.
  */
-export const SLOT_ORDER: readonly SlotId[] = [
-  "categories",
-  "services",
-  "timeline",
+export const SHORT_BRIEF_SLOTS: readonly SlotId[] = [
+  "serviceInterest",
+  "projectDescription",
   "name",
   "email",
   "phone",
+  "timeline",
+];
+
+export const SLOT_ORDER: readonly SlotId[] = [
+  ...SHORT_BRIEF_SLOTS,
+  "categories",
+  "services",
+  "company",
   "projectName",
   "industry",
-  "projectDescription",
   "website",
   "instagram",
   "language",
@@ -140,19 +147,40 @@ export const SLOT_ORDER: readonly SlotId[] = [
 
 /** Bridge line printed once, between the required answers and the optional tail. */
 export const OPTIONAL_TAIL_INTRO =
-  "That is the required part done. The rest is optional and helps us prepare, and you can skip any of it.";
+  "Your brief is ready to review. You can add optional details or send it after checking the answers.";
 
 export const SLOTS: Record<SlotId, SlotDefinition> = {
+  serviceInterest: {
+    id: "serviceInterest",
+    label: "Service interest",
+    question: "Which services interest you? Choose any that apply, or choose Not sure yet.",
+    kind: "multi",
+    required: true,
+    options: [...SERVICE_INTEREST_OPTIONS, { value: UNDECIDED_SERVICE, chip: "Not sure yet" }],
+    validate: (raw): SlotAnswer => {
+      const value = validateServiceInterests(raw);
+      return value ? { ok: true, value } : { ok: false, message: "Choose published services, or choose Not sure yet on its own." };
+    },
+  },
+  company: {
+    id: "company",
+    label: "Company",
+    question: "What is your company called, if this is for a company?",
+    kind: "text",
+    required: false,
+    placeholder: "Company name (optional)",
+    maxLength: 120,
+    validate: textSlot(120, false, "the company name"),
+  },
   categories: {
     id: "categories",
     label: "Work",
     question: "What kind of work is this? Pick any that apply, then press continue.",
     kind: "multi",
-    required: true,
+    required: false,
     options: chipsFrom(INTAKE_CATEGORIES),
     validate: (raw): SlotAnswer => {
       const picked = Array.isArray(raw) ? raw.filter((item) => item.length > 0) : [];
-      if (picked.length === 0) return { ok: false, message: "Choose at least one kind of work." };
       const unknown = picked.filter((item) => !INTAKE_CATEGORIES.includes(item));
       if (unknown.length > 0) return { ok: false, message: "I can only choose from the options I showed you." };
       return { ok: true, value: picked };
@@ -163,10 +191,9 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     label: "Services",
     question: "Which of these do you need? Pick as many as apply, then press continue.",
     kind: "multi",
-    required: true,
+    required: false,
     validate: (raw, slots): SlotAnswer => {
       const picked = Array.isArray(raw) ? raw.filter((item) => item.length > 0) : [];
-      if (picked.length === 0) return { ok: false, message: "Choose at least one service." };
       const allowed = new Set(allowedServices(slots.categories));
       const unknown = picked.filter((item) => !allowed.has(item));
       if (unknown.length > 0) return { ok: false, message: "Those belong to a category you did not pick." };
@@ -178,9 +205,9 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     label: "Timeline",
     question: "When do you need it?",
     kind: "single",
-    required: true,
+    required: false,
     options: TIMELINE_OPTIONS,
-    validate: closedSet(TIMELINE_VALUES, true),
+    validate: closedSet(TIMELINE_VALUES, false),
   },
   name: {
     id: "name",
@@ -213,7 +240,7 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
   phone: {
     id: "phone",
     label: "Phone",
-    question: "And a number, in case email is slow?",
+    question: "What number should the studio reply to?",
     kind: "text",
     required: false,
     placeholder: "+91 7012 052 472",
@@ -244,10 +271,10 @@ export const SLOTS: Record<SlotId, SlotDefinition> = {
     label: "Scope",
     question: "In a sentence or two, what do you need?",
     kind: "multiline",
-    required: false,
+    required: true,
     placeholder: "Deliverables, audience, anything already decided",
     maxLength: LIMITS.projectDescription,
-    validate: textSlot(LIMITS.projectDescription, false, "the scope"),
+    validate: textSlot(LIMITS.projectDescription, true, "what you need"),
   },
   website: {
     id: "website",
@@ -364,4 +391,35 @@ export function slotChips(slot: SlotDefinition, slots: Record<SlotId, SlotValue>
         ? { kind: "slot-toggle", slot: slot.id, value: option.value }
         : { kind: "slot-pick", slot: slot.id, value: option.value },
   }));
+}
+
+/** Bare affirmations and denials, as a phone keyboard types them. Compared folded and whole. */
+const YES_WORDS = new Set(["yes", "yeah", "yep", "yup", "sure", "correct"]);
+const NO_WORDS = new Set(["no", "nah", "nope", "not"]);
+
+/**
+ * What a bare "yes" or "no" stands for in this slot's set.
+ *
+ * The exact matcher cannot see these: "Are you an agency?" offers `No, I'm not an agency`, and a
+ * visitor who types `no` has answered it, not declined it. Reading that as a skip loses a decision
+ * they actually made, and the CRM receives an empty field. So a bare polarity word is resolved
+ * against the options that begin with that word — and only when exactly one does. Two of them start
+ * with "Yes" on that same question, so `yes` comes back ambiguous, which the panel turns into the two
+ * buttons rather than into a guess the studio will read as a preference the visitor never stated.
+ */
+export function polarityMatch(
+  raw: string,
+  options: SlotOption[],
+): { kind: "match"; value: string } | { kind: "ambiguous"; values: string[] } | null {
+  const word = raw.trim().toLowerCase();
+  const affirmative = YES_WORDS.has(word);
+  if (!affirmative && !NO_WORDS.has(word)) return null;
+
+  const lead = affirmative ? /^yes\b/i : /^no\b/i;
+  const hits = options.filter((option) => lead.test(option.value.trim()));
+  if (hits.length === 1) return { kind: "match", value: hits[0].value };
+  if (hits.length > 1) return { kind: "ambiguous", values: hits.map((hit) => hit.value) };
+  // A bare "no" where nothing in the set means no is the visitor declining the question, which is
+  // what the caller's skip path already does.
+  return null;
 }

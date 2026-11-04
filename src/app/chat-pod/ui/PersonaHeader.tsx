@@ -10,15 +10,17 @@
  *                the visitor is continuously informed they are interacting with software regardless
  *                of transcript scroll depth, strictly satisfying Anti-Slop Rule R-16/R-36 and
  *                Playwright E2E line 666.
- *              - Identity Tile: Rendered as a Swiss luxury letterpress monogram seal (strict 2px
- *                radius) with an active emerald radar beacon (#22c55e, >= 3:1 contrast) indicating
- *                real-time intake readiness. Zero fake stock headshots or deceptive humanoid graphics.
+ *              - Concierge Profile Avatar: Editorial photographic portrait of lady concierge
+ *                (/avatars/sophia-sterling.jpg) inside an Apple HIG continuous squircle (rx=10px) with
+ *                subtle specular border and an integrated active emerald radar beacon (#22c55e).
  *              - Controls: Retain visible text nodes ("Menu", "Close") alongside micro-SVG icons,
  *                guaranteeing full conformance with Playwright `getByText('Menu')` and WCAG AA 4.5:1.
+ *
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
 import { memo } from "react";
+import Image from "next/image";
 import { PERSONA } from "../knowledge/corpus";
 import styles from "../ChatPod.module.scss";
 
@@ -36,12 +38,19 @@ function PersonaHeader({ titleId, onMenu, onClose, menuOpen }: Props) {
       <div className={styles.headerMain}>
         <div className={styles.avatarWrap} aria-hidden="true">
           <div className={styles.avatar}>
-            <span className={styles.avatarGlyph}>U</span>
+            <Image
+              src="/avatars/sophia-sterling.jpg"
+              alt="Ubi, Concierge"
+              width={38}
+              height={38}
+              className={styles.avatarImg}
+              priority
+            />
+            <span className={styles.statusBeacon} aria-hidden="true">
+              <span className={styles.statusPulse} />
+              <span className={styles.statusDot} />
+            </span>
           </div>
-          <span className={styles.statusBeacon}>
-            <span className={styles.statusPulse} />
-            <span className={styles.statusDot} />
-          </span>
         </div>
 
         <div className={styles.identity}>

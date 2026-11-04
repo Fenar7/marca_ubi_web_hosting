@@ -68,6 +68,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * full-bleed hero and the "What we do" sub-service accordion. Homepage accordion
  * bullets deep-link here via `#<anchor-key>` which auto-expands the matching row.
  *
+ * Implements unified Schema.org graph linking the service provider directly to
+ * the root organization anchor (@id: https://marcaubi.com/#organization) and
+ * providing full BreadcrumbList navigation structured data.
+ *
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 export default async function ServiceDetailPage({ params }: PageProps) {
@@ -80,28 +84,58 @@ export default async function ServiceDetailPage({ params }: PageProps) {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Service",
-    name: service.title,
-    serviceType: service.title,
-    description: service.shortDescription,
-    url: `${siteUrl}/services/${service.slug}`,
-    provider: {
-      "@type": "Organization",
-      name: "Marca Ubi",
-      url: siteUrl,
-    },
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: `What we do — ${service.title}`,
-      itemListElement: service.subServices.map((sub) => ({
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Service",
-          name: sub.label,
-          description: sub.summary,
+    "@graph": [
+      {
+        "@type": "Service",
+        "@id": `${siteUrl}/services/${service.slug}#service`,
+        name: service.title,
+        serviceType: service.title,
+        description: service.shortDescription,
+        url: `${siteUrl}/services/${service.slug}`,
+        provider: {
+          "@type": "Organization",
+          "@id": "https://marcaubi.com/#organization",
+          name: "Marca Ubi Enterprise Agency",
+          url: "https://marcaubi.com",
         },
-      })),
-    },
+        hasOfferCatalog: {
+          "@type": "OfferCatalog",
+          name: `What we do — ${service.title}`,
+          itemListElement: service.subServices.map((sub) => ({
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: sub.label,
+              description: sub.summary,
+            },
+          })),
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${siteUrl}/services/${service.slug}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${siteUrl}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Services",
+            item: `${siteUrl}/#services`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: service.title,
+            item: `${siteUrl}/services/${service.slug}`,
+          },
+        ],
+      },
+    ],
   };
 
   return (

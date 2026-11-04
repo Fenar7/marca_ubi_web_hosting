@@ -6,6 +6,7 @@ import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { shouldUseMobileMotion } from "@/app/lib/motion";
+import { isOverlayScrollLocked, onOverlayScrollLockChange } from "@/app/lib/overlayScrollLock";
 
 type SmoothScrollProviderProps = Readonly<{
   children: React.ReactNode;
@@ -26,6 +27,8 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     let resizeTimerId: number | null = null;
     const burstTimerIds: number[] = [];
     const deferredTimerIds: number[] = [];
+    /** One-shot subscriptions a queued anchor scroll is still waiting on when the page unmounts. */
+    const lockSubscriptions: (() => void)[] = [];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const useNativeSmoothScroll = prefersReducedMotion || shouldUseMobileMotion();
 
@@ -50,6 +53,9 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
           window.clearTimeout(timerId);
         }
       }
+      while (lockSubscriptions.length > 0) {
+        lockSubscriptions.pop()?.();
+      }
     };
 
     const scheduleRefreshBurst = () => {
@@ -67,20 +73,16 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       window.history.scrollRestoration = "manual";
     }
 
+    // The loader finishing is not the page being free: if a dialog owns the viewport at that moment,
+    // starting the scroll-hijack here is what makes the page behind it move under a closed lid.
     const handleInitialLoaderLift = () => {
-      const isAnyOverlayOpen =
-        document.body.classList.contains("menu-open") ||
-        document.body.classList.contains("profile-modal-open");
-      if (!isAnyOverlayOpen) {
+      if (!isOverlayScrollLocked()) {
         lenis?.start();
       }
     };
 
     const handleInitialLoaderComplete = () => {
-      const isAnyOverlayOpen =
-        document.body.classList.contains("menu-open") ||
-        document.body.classList.contains("profile-modal-open");
-      if (!isAnyOverlayOpen) {
+      if (!isOverlayScrollLocked()) {
         lenis?.start();
       }
       scheduleRefreshBurst();
@@ -214,13 +216,18 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       updateAddressBar(url, isTopLink);
     };
 
+    // An anchor inside the navigation has to be scrolled to after the overlay is off the screen, not
+    // while it is still covering the page. The wait is on the lock, not on a body class or a bespoke
+    // event: the lock is the thing that says a surface is on top of the page, and the timer only exists
+    // so a hold that never releases cannot swallow the visitor's click forever.
     const queueScrollAfterMenuClose = (callback: () => void) => {
-      if (!document.body.classList.contains("menu-open")) {
+      if (!isOverlayScrollLocked()) {
         callback();
         return;
       }
 
       let hasRun = false;
+      let unsubscribe: (() => void) | null = null;
 
       const run = () => {
         if (hasRun) {
@@ -228,11 +235,22 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
         }
 
         hasRun = true;
-        window.removeEventListener("menu:close", run);
+        unsubscribe?.();
         callback();
       };
 
-      window.addEventListener("menu:close", run, { once: true });
+      unsubscribe = onOverlayScrollLockChange((locked) => {
+        if (!locked) {
+          run();
+        }
+      });
+
+      // A subscription handed out on a click is a subscription that must not survive the page it was
+      // queued on, so it is registered for teardown as well as for the release it is waiting on.
+      lockSubscriptions.push(() => {
+        hasRun = true;
+        unsubscribe?.();
+      });
 
       const timerId = window.setTimeout(run, 520);
       deferredTimerIds.push(timerId);
@@ -375,47 +393,27 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     gsap.ticker.add(onTick);
     gsap.ticker.fps(120);
 
-    const syncOverlayScrollState = () => {
-      const isAnyOverlayOpen =
-        document.body.classList.contains("menu-open") ||
-        document.body.classList.contains("profile-modal-open");
-
-      if (isAnyOverlayOpen) {
+    // Lenis answers to the lock, not to a class somebody remembered to set.
+    //
+    // This used to be four window events plus a read of `document.body.classList`, which is a promise
+    // the surfaces on top of the page never actually made: the header released its hold from a GSAP
+    // `onReverseComplete` that an interrupted reverse never reaches, and the pod's close dispatched
+    // into the same channel the navigation uses, so whichever of them closed second decided whether the
+    // page could scroll. A subscriber that is told the current truth on mount cannot get out of step, and
+    // it costs the five surfaces nothing to be correct, because the lock they already hold is the source.
+    const releaseLockSubscription = onOverlayScrollLockChange((locked) => {
+      if (locked) {
         lenisInstance.stop();
         return;
       }
-
       lenisInstance.start();
       scheduleRefreshBurst();
-    };
+    });
 
-    const handleMenuOpen = () => {
+    // The opening page holds the scroll while the loader is still up, on its own account: the lock says
+    // nothing about it, and the loader's own completion event is what hands the page back.
+    if (isLoaderActive) {
       lenisInstance.stop();
-    };
-
-    const handleMenuClose = () => {
-      syncOverlayScrollState();
-    };
-
-    const handleProfileModalOpen = () => {
-      lenisInstance.stop();
-    };
-
-    const handleProfileModalClose = () => {
-      syncOverlayScrollState();
-    };
-
-    window.addEventListener("menu:open", handleMenuOpen);
-    window.addEventListener("menu:close", handleMenuClose);
-    window.addEventListener("profile-modal:open", handleProfileModalOpen);
-    window.addEventListener("profile-modal:close", handleProfileModalClose);
-
-    if (
-      isLoaderActive ||
-      document.body.classList.contains("menu-open") ||
-      document.body.classList.contains("profile-modal-open")
-    ) {
-      handleMenuOpen();
     }
 
     scheduleRefreshBurst();
@@ -426,10 +424,7 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
 
     return () => {
       cleanupRefreshListeners();
-      window.removeEventListener("menu:open", handleMenuOpen);
-      window.removeEventListener("menu:close", handleMenuClose);
-      window.removeEventListener("profile-modal:open", handleProfileModalOpen);
-      window.removeEventListener("profile-modal:close", handleProfileModalClose);
+      releaseLockSubscription();
       gsap.ticker.remove(onTick);
       lenisInstance.off("scroll", ScrollTrigger.update);
       lenisInstance.destroy();

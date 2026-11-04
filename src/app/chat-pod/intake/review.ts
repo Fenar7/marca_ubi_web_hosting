@@ -14,10 +14,11 @@
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
-import { buildIngestPayload, CHAT_POD_SOURCE, type IngestPayload, type IntakeBriefFields } from "@/app/lib/intake/ingestPayload";
+import { assembleCombinedNotes, buildIngestPayload, CHAT_POD_SOURCE, truncateNotes, NOTES_OVERFLOW_KEY, type IngestPayload, type IntakeBriefFields } from "@/app/lib/intake/ingestPayload";
 import { LINK_VALUE_SEPARATOR, MULTI_VALUE_SEPARATOR, categoriesForServices } from "@/app/lib/intake/intakeOptions";
 import { SLOTS, SLOT_ORDER } from "./slots";
 import type { SlotId, SlotValue } from "../types";
+import { SERVICE_INTEREST_ROUTING, serviceInterestLabel, UNDECIDED_SERVICE, validateServiceInterests } from "./serviceInterest";
 
 /** Row of the review card. `label` matches the wizard's own field names so the two read alike. */
 export interface ReviewRow {
@@ -78,7 +79,8 @@ export function reviewRows(slots: Record<SlotId, SlotValue>): ReviewRow[] {
   const fields = slotsToFields(slots);
   const rows: ReviewRow[] = [];
   for (const slot of SLOT_ORDER) {
-    const value = slot === "categories" ? fields.category : displayValue(slots[slot]);
+    const value = slot === "categories" ? fields.category : slot === "serviceInterest" && Array.isArray(slots.serviceInterest)
+      ? slots.serviceInterest.map(serviceInterestLabel).join("; ") : displayValue(slots[slot]);
     if (value.length === 0) continue;
     rows.push({ slot, label: SLOTS[slot].label, value });
   }
@@ -91,11 +93,55 @@ export function reviewRows(slots: Record<SlotId, SlotValue>): ReviewRow[] {
  * long brief should not get a 422 after pressing send.
  */
 export function buildPodPayload(slots: Record<SlotId, SlotValue>, idempotencyKey: string): IngestPayload {
-  return buildIngestPayload(slotsToFields(slots), {
+  const fields = slotsToFields(slots);
+  const payload = buildIngestPayload(fields, {
     idempotencyKey,
     source: CHAT_POD_SOURCE,
     truncateOverflow: true,
   });
+  // Legacy records retain their existing full-form mapping; the additive v2 envelope is used only
+  // after a visitor has explicitly chosen a published service or an undecided enquiry.
+  if (!Array.isArray(slots.serviceInterest) || slots.serviceInterest.length === 0) return payload;
+  const interests = validateServiceInterests(slots.serviceInterest);
+  if (!interests) throw new Error("The brief contains an invalid service interest.");
+  const serviceInterests = interests.map((id) => ({
+    id,
+    label: serviceInterestLabel(id),
+    routing: "Full-Suite Advisory" as const,
+    rationale: id === UNDECIDED_SERVICE
+      ? "An undecided enquiry needs scope discovery before a delivery team is assigned."
+      : SERVICE_INTEREST_ROUTING[id as keyof typeof SERVICE_INTEREST_ROUTING],
+  }));
+  const fullNotes = [
+    `Service interest:\n${serviceInterests.map((interest) => `• ${interest.label}`).join("\n")}`,
+    assembleCombinedNotes(fields, Array.isArray(slots.services) ? slots.services : []),
+  ].filter(Boolean).join("\n\n");
+  const overflow = truncateNotes(fullNotes);
+  // The new path retains exact option values, including canonical labels containing commas.
+  const briefPayload: Record<string, unknown> = { ...payload.brief_payload, services: Array.isArray(slots.services) ? [...slots.services] : [] };
+  if (overflow.truncated) briefPayload[NOTES_OVERFLOW_KEY] = fullNotes;
+  else delete briefPayload[NOTES_OVERFLOW_KEY];
+
+  return {
+    ...payload,
+    company: displayValue(slots.company) || undefined,
+    // Timing stays explicitly labelled in the envelope. A duration is not a financial budget.
+    budget_bracket: undefined,
+    service_category: "Full-Suite Advisory",
+    source_detail: "Service enquiry and optional deliverables (chat pod v2)",
+    notes: overflow.notes,
+    brief_payload: {
+      ...briefPayload,
+      chatPod: {
+        version: 2,
+        serviceInterests,
+        routingPolicy: "Public service enquiries require advisory discovery; legacy deliverables are preserved separately.",
+        company: displayValue(slots.company),
+        projectName: displayValue(slots.projectName),
+        timing: displayValue(slots.timeline),
+      },
+    },
+  };
 }
 
 /** The channel the studio will reply on, for the success line. */

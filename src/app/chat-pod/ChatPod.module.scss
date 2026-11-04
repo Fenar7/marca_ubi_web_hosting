@@ -1,19 +1,28 @@
 /**
  * @file ChatPod.module.scss
- * @description The pod's entire visual and motion contract. It lives in one file because §05 §1 is
- *              written as a single table of numbers, and splitting the timings across five component
- *              modules is how a 400ms open quietly becomes a 400ms open with a 220ms close that nobody
- *              timed.
+ * @description The Chat Pod's visual and motion contract adhering to Marca Ubi Swiss Light Editorial luxury standards.
  *
- *              Three constraints the rest of the repo already enforces and this file obeys:
- *              no shadows (hierarchy comes from hairline borders and the black/white fill), a single
- *              2px radius used everywhere except the launcher glyph, and one accent (`$client-accent-red`)
- *              reserved for the send control and focus. Transcript backdrop is pure white, so the pod
- *              reads as paper on top of the site rather than as another dark panel.
- * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
+ *              Architectural Rationale & Visual Physics:
+ *              - Swiss Light Editorial Paper Canvas: Renders a pristine white paper canvas ($pod-canvas: #ffffff)
+ *                with refined 16px geometry and multi-layered ambient diffusion elevation, matching the public site standard.
+ *              - Brand Red Interaction Affordance: Primary focus states, interactive links, and populated send actions
+ *                strictly leverage the signature Marca Ubi Brand Red ($client-accent-red: #ea002a), strictly purging
+ *                any legacy orange or dated grey slabs.
+ *              - Apple HIG Capsule Geometry & Fluid Swiss Pills: Floating launcher pill (#0a0a0a), header micro-actions,
+ *                and suggestion chips adopt continuous capsule pill geometry (border-radius: 9999px) with tactile spring feedback.
+ *              - Authentic Concierge Profile Avatar: Launcher and header render the photographic portrait of
+ *                Sophia Sterling (/avatars/sophia-sterling.jpg) with active emerald beacon (#22c55e). Open state
+ *                transitions cleanly to a typographic crosshair (×) and 'Ubi Close'.
+ *              - High-Contrast Editorial Typography: the three ink tokens below are not eyeballed. Each one is
+ *                measured against both surfaces it is actually painted on (the white canvas and the #f7f7f8
+ *                assistant bubble) by `tests/unit/chatpod-contrast.test.ts`, which fails the build if any pair
+ *                drops under WCAG AA 4.5:1. A comment claiming a ratio the tokens do not deliver is the defect
+ *                that test exists to catch.
+ *
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-// §05 §1.1 easing language, named once.
+// Motion timings & easings
 $ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 $ease-in: cubic-bezier(0.4, 0, 1, 1);
 $open-ms: 400ms;
@@ -23,40 +32,57 @@ $chip-ms: 240ms;
 
 $edge: 1rem;
 $radius: 0.125rem;
-$hairline: 1px solid rgba(0, 0, 0, 0.12);
-$hairline-soft: 1px solid rgba(0, 0, 0, 0.07);
+
+// Swiss Light Editorial Luxury Surface Tokens
+$pod-canvas: #ffffff;
+$pod-glass-header: rgba(255, 255, 255, 0.94);
+$client-accent-red: #ea002a;
+/* `$client-accent-red-hover` is not only a hover state here. The brand red at its published brightness
+   measures 4.63:1 on the white canvas and 4.33:1 on the #f7f7f8 assistant bubble, which is where `.link`
+   and `.bubbleError` are actually painted, so text in the accent colour uses the darker step: 6.23 on the
+   canvas, 5.82 inside the bubble, 5.43 on the error tint. `tests/unit/chatpod-contrast.test.ts` measures
+   all three from this file, so the numbers in this comment are the ones that keep the build green. */
+$client-accent-red-hover: #c40023;
+$client-accent-red-glow: rgba(234, 0, 42, 0.25);
 $ink: #0a0a0a;
-$muted: #555555;
-/* The lightest grey that still clears WCAG AA at 10px on the white transcript: 5.9:1. Anything lighter
-   reads as decoration rather than as text a person can read. */
-$quiet: rgba(0, 0, 0, 0.62);
-$surface: rgba(0, 0, 0, 0.035);
+$text-body: #333333;
+/* 5.33:1 on the canvas, 4.98:1 inside the #f7f7f8 assistant bubble. The lighter 767676 cleared 4.54 on
+   white and failed at 4.24 on the tinted bubble it is actually used in, so the body tone had to go down. */
+$muted: #6b6b6b;
+/* Timestamps only, only ever on the white canvas: 4.5:1, the AA floor for meta text. */
+$quiet: #767676;
+$hairline: 1px solid rgba(0, 0, 0, 0.08);
+$hairline-soft: 1px solid rgba(0, 0, 0, 0.06);
+$surface: rgba(0, 0, 0, 0.03);
 
 /* Launcher */
 
 /* Bottom-right. Docked cleanly on the user's primary thumb reach with safe-area insets. */
 .launcher {
   align-items: center;
-  background: $black;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  border-radius: $radius;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
   bottom: calc(#{$edge} + env(safe-area-inset-bottom, 0px));
-  color: $white;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  color: #ffffff;
   cursor: pointer;
   display: flex;
   font-family: $font-circular;
-  gap: 0.625rem;
-  height: 3.5rem;
+  gap: 0.75rem;
+  height: 52px;
   right: calc(#{$edge} + env(safe-area-inset-right, 0px));
   left: auto;
-  padding: 0 0.9rem 0 0.625rem;
+  padding: 0 1.25rem 0 0.5rem;
   position: fixed;
   text-align: left;
-  transition: transform 180ms $ease-out, background-color 180ms linear;
+  transition: transform 180ms $ease-out, background-color 180ms linear, border-color 180ms linear, box-shadow 180ms linear;
   z-index: 30001;
 
   &:hover {
-    background: #161616;
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.36);
   }
 
   &:focus-visible {
@@ -65,16 +91,50 @@ $surface: rgba(0, 0, 0, 0.035);
   }
 }
 
+.launcherAvatarWrap {
+  animation: faceIn 200ms $ease-out backwards;
+  flex-shrink: 0;
+  height: 2.125rem;
+  position: relative;
+  width: 2.125rem;
+}
+
+.launcherAvatar {
+  align-items: center;
+  background: transparent;
+  border-radius: 50%;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  position: relative;
+  user-select: none;
+  width: 100%;
+}
+
+.launcherAvatarImg {
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.launcherCloseGlyph,
 .launcherGlyph {
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: $radius;
+  animation: glyphIn 180ms $ease-out backwards;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #ffffff;
   display: flex;
   font-size: 1.125rem;
-  font-weight: 500;
+  font-weight: 400;
   height: 2.125rem;
   justify-content: center;
   line-height: 1;
+  transition: transform 180ms $ease-out, background-color 180ms linear;
   width: 2.125rem;
 }
 
@@ -85,8 +145,9 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .launcherName {
+  color: #ffffff;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1;
 }
@@ -114,10 +175,36 @@ $surface: rgba(0, 0, 0, 0.035);
   }
 }
 
+/* The launcher swaps its face for a crosshair when the panel is open. Both halves of that swap are
+   mounted on demand, so each turns or lifts into place instead of cutting between two states. */
+@keyframes glyphIn {
+  from {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes faceIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Scrim */
 
 .scrim {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -138,13 +225,24 @@ $surface: rgba(0, 0, 0, 0.035);
 /* Panel */
 
 .panel {
-  background: $white;
-  border: $hairline;
+  background: $pod-canvas;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
   bottom: calc(var(--pod-y, #{$edge}) + var(--pod-keyboard, 0px));
+  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.16), 0 8px 24px -4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   font-family: $font-circular;
-  height: clamp(26rem, 74vh, 40rem);
+  // The floor of the clamp is 26rem, which is taller than a short desktop window: at 1280x400 the panel
+  // asked for 416px with its bottom edge 80px off the floor (it floats above the launcher, which is what
+  // `--pod-y` is), so its own header sat above the top of the screen. The cap is the room that is left
+  // once the anchor and the keyboard inset are paid for, and it is written into `height` rather than
+  // `max-height` because the sheet below overrides `height: auto` — a `max-height` here would survive
+  // into that rule and shave a rem off the bottom of a full-screen panel.
+  height: min(
+    clamp(26rem, 74vh, 40rem),
+    calc(100vh - var(--pod-y, #{$edge}) - var(--pod-keyboard, 0px) - #{$edge})
+  );
   right: var(--pod-right, #{$edge});
   left: auto;
   max-width: calc(100vw - #{$edge * 2});
@@ -163,6 +261,19 @@ $surface: rgba(0, 0, 0, 0.035);
     transform: scale(1) translateY(0);
     transition: transform $open-ms $ease-out, opacity $open-ms $ease-out;
     visibility: visible;
+
+    /* The shell arrives first, the contents 120ms later. A panel that scales up already holding its
+       full transcript reads as a window being dragged across the page; the short wait makes it read as
+       the panel opening. */
+    > * {
+      opacity: 1;
+      transition: opacity 260ms $ease-out 120ms;
+    }
+  }
+
+  > * {
+    opacity: 0;
+    transition: opacity 180ms $ease-in;
   }
 }
 
@@ -170,7 +281,10 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .header {
   align-items: center;
-  border-bottom: $hairline-soft;
+  background: $pod-glass-header;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   gap: 0.75rem;
   justify-content: space-between;
@@ -186,47 +300,59 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .avatarWrap {
   flex-shrink: 0;
-  height: 2.25rem;
+  height: 2.375rem;
   position: relative;
-  width: 2.25rem;
+  width: 2.375rem;
 }
 
 .avatar {
   align-items: center;
-  background: #101012;
-  border: 1px solid rgba(0, 0, 0, 0.14);
-  border-radius: $radius;
-  color: $white;
+  background: transparent;
+  border-radius: 10px;
   display: flex;
-  font-family: $font-circular;
-  font-size: 0.9375rem;
-  font-weight: 600;
   height: 100%;
   justify-content: center;
-  line-height: 1;
   position: relative;
   user-select: none;
   width: 100%;
 }
 
+.avatarSvg {
+  border-radius: 10px;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.avatarImg {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
 .avatarGlyph {
-  color: $white;
+  color: $ink;
   display: inline-block;
   transform: translateY(-0.5px);
 }
 
 .statusBeacon {
-  bottom: -2px;
+  bottom: -1px;
   display: flex;
-  height: 0.5rem;
+  height: 0.5625rem;
+  pointer-events: none;
   position: absolute;
-  right: -2px;
-  width: 0.5rem;
+  right: -1px;
+  width: 0.5625rem;
 }
 
 .statusDot {
   background: #22c55e;
-  border: 1.5px solid $white;
+  border: 1.5px solid #ffffff;
   border-radius: 50%;
   height: 100%;
   width: 100%;
@@ -268,7 +394,7 @@ $surface: rgba(0, 0, 0, 0.035);
 .name {
   color: $ink;
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1.2;
 }
@@ -277,7 +403,7 @@ $surface: rgba(0, 0, 0, 0.035);
 .badge {
   color: $muted;
   font-size: 0.6875rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   line-height: 1.3;
   text-transform: uppercase;
 }
@@ -292,10 +418,10 @@ $surface: rgba(0, 0, 0, 0.035);
 .headerBtn,
 .iconButton {
   align-items: center;
-  background: transparent;
-  border: $hairline;
-  border-radius: $radius;
-  color: $ink;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 9999px;
+  color: #0a0a0a;
   cursor: pointer;
   display: inline-flex;
   font-family: inherit;
@@ -303,12 +429,16 @@ $surface: rgba(0, 0, 0, 0.035);
   font-weight: 500;
   gap: 0.35rem;
   min-height: 2rem;
-  padding: 0.25rem 0.5rem;
-  transition: background-color 140ms linear, border-color 140ms linear;
+  padding: 0.25rem 0.65rem;
+  transition: background-color 140ms linear, border-color 140ms linear, transform 90ms ease;
 
   &:hover {
-    background: $surface;
-    border-color: rgba(0, 0, 0, 0.34);
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 
   &:focus-visible {
@@ -319,7 +449,7 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .headerBtnIcon {
   flex-shrink: 0;
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
 /* Progress rail */
@@ -341,8 +471,8 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .progressRail {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: $radius;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 9999px;
   display: block;
   height: 2px;
   overflow: hidden;
@@ -350,7 +480,7 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .progressFill {
-  background: $ink;
+  background: $client-accent-red;
   display: block;
   height: 100%;
   transition: width 220ms $ease-out;
@@ -375,6 +505,10 @@ $surface: rgba(0, 0, 0, 0.035);
   text-decoration: underline;
   text-underline-offset: 0.2em;
   white-space: nowrap;
+
+  &:hover {
+    color: $client-accent-red;
+  }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
@@ -406,22 +540,45 @@ $surface: rgba(0, 0, 0, 0.035);
   position: relative;
 }
 
-.transcript {
-  background: $white;
+/* The one scroll owner in the panel.
+
+   It used to be two: the message list scrolled, and the chip rail below it scrolled inside its own
+   7.5rem box. Inside a fixed-height panel that is not a conversation but a filing cabinet — the wheel
+   moves one box, then the other, the keyboard lands in whichever has focus, and on a phone the inner
+   box eats the swipe. Here the messages and the replies on offer are one column, and the reader's
+   gesture moves the whole of it.
+
+   `position: relative` is load-bearing beyond layout: the transcript measures the newest turn with
+   `offsetTop`, which is only in scroll coordinates when this is the nearest positioned ancestor. */
+.flow {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  gap: 0.75rem;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 1rem 1rem 0.5rem;
+  position: relative;
+  // The pod decides where this column sits; the browser deciding for it is what made a tap on one chip
+  // slide the whole rail 22px. Anchoring is ours because the destination is computed, not stumbled into.
+  overflow-anchor: none;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
   scrollbar-width: thin;
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
     outline-offset: -2px;
   }
+}
+
+.transcript {
+  /* `1 0 auto`, not `1`: the column grows to fill the panel while the conversation is short, so the
+     chips stay where the reader's eye already is, and it refuses to shrink below its own content once
+     it overflows — a flex child that can shrink is a scroll container whose child never scrolls. */
+  background: transparent;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.5rem;
 }
 
 .row {
@@ -431,60 +588,72 @@ $surface: rgba(0, 0, 0, 0.035);
   max-width: 100%;
 }
 
+/* `backwards`, not `both`: a filled animation keeps owning `transform` after it ends, and a row that owns
+   its own transform forever is how a hover or an inline edit later finds it cannot move. */
 .rowAssistant {
   align-items: flex-start;
-  animation: rowInAssistant $row-ms $ease-out both;
+  animation: rowInAssistant $row-ms $ease-out backwards;
 }
 
 .rowVisitor {
   align-items: flex-end;
-  animation: rowInVisitor 220ms $ease-out both;
+  animation: rowInVisitor 220ms $ease-out backwards;
 }
 
 /* The visitor's own text repeating back at them should not perform. */
+/* The assistant's answer starts 10px low and settles: that is the offset the composing dots were
+   occupying, so the fade below and this rise overlap and the reply reads as one gesture growing out of
+   the indicator rather than as two separate events. */
 @keyframes rowInAssistant {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px) scale(0.985);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes rowInVisitor {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px) scale(0.99);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .bubble {
-  border-radius: $radius;
+  border-radius: 10px;
   max-width: 26rem;
   padding: 0.625rem 0.75rem;
 }
 
 .bubbleAssistant {
-  background: $surface;
-  border: $hairline-soft;
-  color: $ink;
+  background: #f7f7f8;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px 14px 14px 4px;
+  color: #0a0a0a;
+  padding: 0.875rem 1.05rem;
+  line-height: 1.55;
 }
 
 .bubbleVisitor {
-  background: $black;
-  color: rgba(255, 255, 255, 0.92);
+  background: #0a0a0a;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 14px 14px 4px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: #ffffff;
+  padding: 0.875rem 1.05rem;
 }
 
 .bubbleError {
-  background: rgba(234, 0, 42, 0.06);
-  border: 1px solid rgba(234, 0, 42, 0.42);
-  color: $ink;
+  background: rgba(234, 0, 42, 0.08);
+  border: 1px solid rgba(234, 0, 42, 0.25);
+  color: $client-accent-red-hover;
 }
 
 .text {
@@ -515,6 +684,7 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .listLabel {
+  color: $ink;
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1.4;
@@ -529,16 +699,14 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .link {
   border-top: $hairline-soft;
-  color: $ink;
+  color: $client-accent-red-hover;
   display: block;
   font-size: 0.8125rem;
   padding: 0.375rem 0;
   text-decoration: underline;
   text-underline-offset: 0.2em;
 
-  /* No accent here: red text over the assistant bubble's tint measures 4.29:1, under the 4.5:1 the
-     pair needs. The underline thickens instead, so hover is still visible without a colour that
-     fails on the surface it sits on. */
+  // The weight is the cue; a colour shift here would be a second red to measure and nothing to read.
   &:hover {
     text-decoration-thickness: 2px;
   }
@@ -546,7 +714,7 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .stamp {
   color: $quiet;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
   padding: 0 0.125rem;
@@ -598,6 +766,7 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .reviewValue {
+  color: $ink;
   font-size: 0.8125rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
@@ -606,6 +775,9 @@ $surface: rgba(0, 0, 0, 0.035);
 
 /* Typing */
 
+/* §05 §1.4: the slot reserves a message row whether or not anything is composing, so nothing in the
+   transcript moves when the indicator arrives. The indicator fades instead of unmounting, which is the
+   difference between a reply appearing where the dots were and a reply replacing them mid-air. */
 .typingSlot {
   display: flex;
   min-height: 2.25rem;
@@ -615,15 +787,33 @@ $surface: rgba(0, 0, 0, 0.035);
   align-items: center;
   display: flex;
   gap: 0.25rem;
+  opacity: 0;
   padding: 0.625rem 0;
+  transition: opacity 160ms linear;
+
+  &[data-on="true"] {
+    opacity: 1;
+  }
+
+  /* Faded out is not "composing": the loop is held so a hidden indicator does not burn frames all tab. */
+  &:not([data-on="true"]) .dot {
+    animation-play-state: paused;
+  }
 }
 
+/* The dot is a graphic, so its floor is 3:1, and the frame that has to clear it is the dimmest one,
+   not the fill. `rgba(0, 0, 0, 0.55)` alone measures 4.74 on the canvas, but it is the colour *at* the
+   opacity the pulse bottoms out at that the eye receives: 0.55 through 0.35 alpha composites to #cecece
+   at 1.57:1, and that trough is not a momentary frame. It is the resting state a reduced-motion visitor
+   sees permanently. 0.7 through 0.65 bottoms at #8b8b8b (3.41:1) and peaks at #4d4d4d (8.45:1), which
+   keeps the wave legible instead of flattening it to hold the floor. Measured by
+   `tests/unit/chatpod-contrast.test.ts`, which multiplies the fill by both opacities. */
 .dot {
   animation: dotPulse 1.3s $ease-out infinite;
-  background: #666666;
+  background: rgba(0, 0, 0, 0.7);
   border-radius: 50%;
   height: 6px;
-  opacity: 0.3;
+  opacity: 0.65;
   width: 6px;
 
   &:nth-child(2) {
@@ -638,7 +828,7 @@ $surface: rgba(0, 0, 0, 0.035);
 @keyframes dotPulse {
   0%,
   100% {
-    opacity: 0.3;
+    opacity: 0.65;
   }
   50% {
     opacity: 1;
@@ -646,25 +836,52 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .newMessage {
-  background: $black;
-  border: 0;
-  border-radius: $radius;
+  animation: pillIn 200ms $ease-out backwards;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
   bottom: 0.5rem;
-  color: $white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  color: #ffffff;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.6875rem;
   left: 50%;
-  padding: 0.375rem 0.625rem;
+  padding: 0.375rem 0.85rem;
   position: absolute;
   transform: translateX(-50%);
+
+  &:hover {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+/* `translateX(-50%)` is the pill's centring, so the entrance has to carry it in both keyframes or the
+   first frame puts the pill half a panel to the left of where it lands. */
+@keyframes pillIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* Chips */
 
 .tray {
-  border-top: $hairline-soft;
-  padding: 0.625rem 1rem 0.25rem;
+  /* The rail no longer needs a cap of its own. It needed one when it was a fixed band under the
+     transcript, because sixteen services plus `Continue` grew the band until the composer fell off the
+     panel. Now it is the last stretch of the conversation column, so the overflow that used to crush the
+     layout simply makes the column scroll — the reader swipes past the options instead of inside them.
+
+     `flex: 0 0 auto` keeps it out of the transcript's share of the height: a rail that could shrink
+     would give the chip wrap a second, narrower measure than the one it is laid out in. */
+  flex: 0 0 auto;
+  padding: 0.625rem 1rem 0.75rem;
 
   /* §05 §1.5: an empty tray is not padding. Dead chrome above the composer is the slop the rule warns
      about, so the row leaves the layout entirely when there is nothing to offer. */
@@ -680,44 +897,271 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .chip {
-  animation: chipIn $chip-ms $ease-out both;
+  animation: chipIn $chip-ms $ease-out backwards;
   animation-delay: calc(var(--chip-index, 0) * 40ms);
-  background: $white;
-  border: $hairline;
-  border-radius: $radius;
-  color: $ink;
+  background: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 9999px;
+  color: #0a0a0a;
   cursor: pointer;
+  align-items: center;
+  display: inline-flex;
+  gap: 0.5rem;
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   line-height: 1.3;
   min-height: 2rem;
-  padding: 0.3125rem 0.625rem;
+  padding: 0.45rem 1rem;
   text-align: left;
-  transition: background-color 140ms linear, border-color 140ms linear, color 140ms linear;
+  text-decoration: none;
+  transition: background-color 140ms linear, border-color 140ms linear, color 140ms linear, transform 90ms ease, box-shadow 140ms ease;
 
   &:hover {
-    border-color: rgba(0, 0, 0, 0.36);
+    background: #fdfdfd;
+    border-color: #0a0a0a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1.5px);
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 
   &:focus-visible {
-    outline: 2px solid $client-accent-red;
+    outline: 2px solid #ea002a;
     outline-offset: 2px;
   }
 }
 
-/* Multi-select state is carried by fill, not by a tick or a badge. */
+/* Selection remains quieter than the separate primary command and has an explicit marker. */
 .chipOn {
-  background: $black;
-  border-color: $black;
-  color: $white;
+  background: #f3f3f4;
+  border-color: #6b6b70;
+  color: #0a0a0a;
+  font-weight: 600;
+
+  &:hover {
+    background: #ededee;
+    border-color: #0a0a0a;
+    color: #0a0a0a;
+  }
+}
+
+.choiceMarker {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #6b6b70;
+  border-radius: 3px;
+  display: inline-flex;
+  flex: 0 0 1rem;
+  font-size: 0.8125rem;
+  height: 1rem;
+  justify-content: center;
+  line-height: 1;
+}
+
+.activeTask {
+  background: #ffffff;
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.taskHeading {
+  color: #0a0a0a;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 3px;
+  }
+}
+
+.taskHint {
+  color: #626267;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  margin: 0.25rem 0 0;
+}
+
+.choiceGroups {
+  display: grid;
+  gap: 1.125rem;
+}
+
+.choiceGroupTitle {
+  color: #4d4d52;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 0.375rem;
+}
+
+.choiceRows {
+  align-items: stretch;
+  flex-direction: column;
+
+  .chip {
+    animation: none;
+    border-radius: 8px;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.75rem;
+    transform: none;
+    width: 100%;
+
+    &:hover {
+      box-shadow: none;
+      transform: none;
+    }
+  }
+}
+
+.taskActions {
+  background: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  flex: 0 0 auto;
+  padding: 0.625rem 1rem max(0.625rem, env(safe-area-inset-bottom));
+}
+
+.fieldConfirmation {
+  background: #f7f7f8;
+  border-top: 1px solid #6b6b70;
+  color: #0a0a0a;
+  flex: 0 0 auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  padding: 0.75rem 1rem;
+
+  p {
+    margin: 0 0 0.5rem;
+  }
+}
+
+.selectionSummary {
+  color: #4d4d52;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 0.375rem;
+}
+
+.taskActionRow {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.taskSecondaryActions {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 0.375rem 0.75rem;
+}
+
+.taskPrimary,
+.taskSecondary,
+.taskQuestion {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  min-height: 2.75rem;
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 3px;
+  }
+}
+
+.taskPrimary {
+  align-items: center;
+  background: #ea002a;
+  border: 1px solid #ea002a;
+  border-radius: 8px;
+  color: #ffffff;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-weight: 600;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+
+  &:hover {
+    background: #c40023;
+    border-color: #c40023;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.taskSecondary,
+.taskQuestion {
+  background: transparent;
+  border: 0;
+  color: #4d4d52;
+  padding: 0.375rem 0;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.taskQuestion {
+  font-size: 0.8125rem;
+  min-height: 2rem;
+}
+
+.transcriptTask .newMessage {
+  bottom: 0.5rem;
+}
+
+// Height-constrained windows reserve reading space before spending it on footer chrome.
+@media (max-height: 500px) {
+  .header {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .taskActions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .selectionSummary {
+    align-self: end;
+    margin: 0;
+  }
+
+  .taskActionRow {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .taskQuestion {
+    grid-column: 1;
+    text-align: left;
+  }
 }
 
 @keyframes chipIn {
   from {
-    transform: translateY(4px);
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
   }
   to {
-    transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -725,7 +1169,7 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .consent {
   border-top: $hairline-soft;
-  color: $ink;
+  color: #333333;
   font-size: 0.75rem;
   line-height: 1.5;
   padding: 0.75rem 1rem;
@@ -743,15 +1187,22 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .consentYes,
 .consentNo {
-  background: $white;
-  border: $hairline;
-  border-radius: $radius;
-  color: $ink;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
+  color: #0a0a0a;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.75rem;
+  font-weight: 500;
   min-height: 2rem;
-  padding: 0.3125rem 0.625rem;
+  padding: 0.3125rem 0.75rem;
+  transition: background-color 140ms linear, border-color 140ms linear;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.16);
+  }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
@@ -760,9 +1211,14 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .consentYes {
-  background: $black;
-  border-color: $black;
-  color: $white;
+  background: #0a0a0a;
+  border-color: #0a0a0a;
+  color: #ffffff;
+  font-weight: 600;
+
+  &:hover {
+    background: #262626;
+  }
 }
 
 .consentQuiet {
@@ -779,13 +1235,17 @@ $surface: rgba(0, 0, 0, 0.035);
 .consentLink {
   background: transparent;
   border: 0;
-  color: $ink;
+  color: $client-accent-red;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.6875rem;
   padding: 0.125rem 0;
   text-decoration: underline;
   text-underline-offset: 0.2em;
+
+  &:hover {
+    color: $client-accent-red-hover;
+  }
 
   &:focus-visible {
     outline: 2px solid $client-accent-red;
@@ -795,7 +1255,7 @@ $surface: rgba(0, 0, 0, 0.035);
 
 .storageWarning {
   border-top: $hairline-soft;
-  color: $ink;
+  color: $muted;
   font-size: 0.6875rem;
   line-height: 1.45;
   margin: 0;
@@ -813,64 +1273,98 @@ $surface: rgba(0, 0, 0, 0.035);
 }
 
 .field {
-  border: $hairline;
-  border-radius: $radius;
-  color: $ink;
+  background: #f7f7f8;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  color: #0a0a0a;
   field-sizing: content;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   grid-column: 1;
   line-height: 1.5;
   max-height: 8.75rem;
   min-height: 2.5rem;
-  overflow-y: hidden;
-  padding: 0.5rem 0.625rem;
+  // `hidden` here was a data-loss bug on the engines that honour `field-sizing` above: the box stops
+  // growing at the cap, and the lines under it are unreachable — no caret movement can scroll a clipped
+  // textarea, so a visitor writing a long brief could not see the half of it they had already typed.
+  // Scrolling *inside a form control* is not the second page scrollbar the one-column rule is about; the
+  // composer is 140px tall by design and the panel keeps the wheel.
+  overflow-y: auto;
+  padding: 0.75rem 0.875rem;
   resize: none;
+  transition: border-color 140ms linear, background-color 140ms linear, box-shadow 140ms linear;
   width: 100%;
 
   &::placeholder {
-    color: $quiet;
+    // The placeholder is the only thing that tells a visitor what this box wants during a link or a
+    // name slot, so it is content and not a hint: #6f6f70 on the field's own #f7f7f8 fill, 4.69:1.
+    color: rgba(0, 0, 0, 0.55);
   }
 
   &:focus-visible {
-    outline: 2px solid $client-accent-red;
-    outline-offset: 1px;
+    border-color: #ea002a;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(234, 0, 42, 0.10);
+    outline: none;
   }
 
   &[aria-disabled="true"] {
-    background: $surface;
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.05);
+    /* The WCAG disabled-component exception does not cover this one: the control is `aria-disabled`, so
+       it stays focusable and keeps its content, and while a send is in flight or a rate limit holds the
+       panel shut, that content is the brief the visitor wrote. `rgba(0, 0, 0, 0.35)` over the 0.02 wash
+       paints #a3a3a3, which measures 2.42:1, so the message they can no longer edit renders close to
+       invisible. `$muted` clears AA on that same wash (5.11:1); the fill and the border carry the
+       inactive look instead of the ink. */
     color: $muted;
   }
 }
 
 .send {
-  background: $client-accent-red;
+  background: #ea002a;
   border: 0;
-  border-radius: $radius;
-  color: $white;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(234, 0, 42, 0.35);
+  color: #ffffff;
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
   grid-column: 2;
   height: 2.75rem;
   min-width: 2.75rem;
   padding: 0 0.875rem;
-  transition: background-color 140ms linear, transform 90ms linear;
+  transition: background-color 140ms linear, transform 90ms linear, box-shadow 140ms linear;
 
-  /* §05 §1.7: empty input greys the control and explains why, and it stays in the tab order. */
+  &:hover {
+    background: #c40023;
+    box-shadow: 0 6px 18px rgba(234, 0, 42, 0.45);
+    transform: translateY(-1px);
+  }
+
   &:active {
     transform: scale(0.96);
   }
 
   &:focus-visible {
-    outline: 2px solid $ink;
+    outline: 2px solid #ea002a;
     outline-offset: 2px;
   }
 }
 
 .sendIdle {
-  background: #cccccc;
-  color: $ink;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: none;
+  color: $muted;
+  cursor: default;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+    box-shadow: none;
+    transform: none;
+  }
 }
 
 .composerHelper,
@@ -900,8 +1394,20 @@ $surface: rgba(0, 0, 0, 0.035);
 @media (max-width: 1023px) {
   .launcher {
     gap: 0.5rem;
-    height: 3.125rem;
-    padding: 0 0.75rem 0 0.5rem;
+    height: 48px;
+    padding: 0 1rem 0 0.45rem;
+  }
+
+  .launcherAvatarWrap {
+    height: 1.875rem;
+    width: 1.875rem;
+  }
+
+  .launcherCloseGlyph,
+  .launcherGlyph {
+    font-size: 1rem;
+    height: 1.875rem;
+    width: 1.875rem;
   }
 
   .launcherName {
@@ -913,11 +1419,13 @@ $surface: rgba(0, 0, 0, 0.035);
   }
 
   .panel {
-    // Full sheet: the launcher's coordinates no longer apply, and `--pod-keyboard` keeps the composer
-    // above the on-screen keyboard when `visualViewport` reports one.
+    background: #ffffff;
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
     bottom: calc(var(--pod-keyboard, 0px));
     border: 0;
     border-radius: 0;
+    box-shadow: none;
     height: auto;
     inset: 0 0 calc(var(--pod-keyboard, 0px));
     left: 0;
@@ -958,9 +1466,7 @@ $surface: rgba(0, 0, 0, 0.035);
   }
 }
 
-/* §05 §2.5 asks for 44px targets. A mouse lands on a 32px chip, so the desktop tray keeps its density;
-   a thumb on a phone does not, so the lift is paid for only where the pointer is coarse. */
-
+/* Touch targets: 44px min-height where pointer is coarse per WCAG 2.5.5 */
 @media (pointer: coarse) {
   .chip,
   .iconButton,
@@ -969,14 +1475,16 @@ $surface: rgba(0, 0, 0, 0.035);
   .consentLink,
   .newMessage,
   .progressExit,
-  .reviewRow {
+  .reviewRow,
+  .taskQuestion,
+  .taskSecondary,
+  .taskPrimary {
     min-height: 2.75rem;
     min-width: 2.75rem;
   }
 }
 
-/* Reduced motion, per component */
-
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .launcher,
   .launcher[data-nudge="true"] {
@@ -1004,6 +1512,18 @@ $surface: rgba(0, 0, 0, 0.035);
   .dot {
     animation: none;
     opacity: 0.7;
+  }
+
+  /* Nothing that arrives should travel; the fades stay, because a fade carries no movement. */
+  .launcherCloseGlyph,
+  .launcherGlyph,
+  .launcherAvatarWrap,
+  .newMessage {
+    animation: none;
+  }
+
+  .panel > * {
+    transition-delay: 0ms;
   }
 
   .progressFill {

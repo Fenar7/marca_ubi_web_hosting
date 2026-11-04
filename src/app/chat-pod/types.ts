@@ -95,7 +95,7 @@ export interface KnowledgeBase {
 export type ChipAction =
   | { kind: "intent"; id: string }
   | { kind: "route"; href: string }
-  | { kind: "intake" }
+  | { kind: "intake"; serviceSlug?: string }
   | { kind: "external"; href: string }
   | { kind: "close" }
   /** Single-select closed set: stores the exact canonical value and advances. */
@@ -108,7 +108,7 @@ export type ChipAction =
   | { kind: "slot-skip"; slot: SlotId }
   /** Jump from a review row back to that one question, keeping everything else. */
   | { kind: "slot-edit"; slot: SlotId }
-  | { kind: "intake-action"; action: "submit" | "later" | "retry" | "exit" };
+  | { kind: "intake-action"; action: "submit" | "later" | "retry" | "exit" | "review" | "details" };
 
 export interface Chip {
   label: string;
@@ -130,6 +130,20 @@ export interface Reply {
   chips: Chip[];
 }
 
+/**
+ * What the pod knows about the conversation, beyond the message it just received.
+ *
+ * Only one field exists today, and it exists because the depth of an answer is a property of the
+ * turn, not of the intent: "tell me more" must render the same service with its sub-service list
+ * attached, which means `respond` has to be able to see that it is being asked a second time.
+ * Optional at the call site so every intent authored before this concept stays valid. An intent
+ * that ignores `ctx` is not wrong, it just has no deeper version to give.
+ */
+export interface AnswerContext {
+  /** The visitor already had the summary and asked again. Give the expanded form. */
+  expanded?: boolean;
+}
+
 export interface Intent {
   id: string;
   /** Human phrase used when this intent appears as a disambiguation chip. */
@@ -144,7 +158,7 @@ export interface Intent {
   utterances: string[];
   /** Whole-word tokens scored at Tier 2. First token carries weight 1.0, the rest 0.6. */
   keywords: string[];
-  respond: (kb: KnowledgeBase) => Reply;
+  respond: (kb: KnowledgeBase, ctx?: AnswerContext) => Reply;
 }
 
 export type Speaker = "assistant" | "visitor";
@@ -156,6 +170,8 @@ export type Speaker = "assistant" | "visitor";
  * ", "-joined strings the wizard stores and `mapCategory` consumes.
  */
 export type SlotId =
+  | "serviceInterest"
+  | "company"
   | "categories"
   | "services"
   | "timeline"

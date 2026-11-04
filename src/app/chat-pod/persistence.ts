@@ -16,8 +16,8 @@ import type { SlotId, SlotValue, TranscriptMessage } from "./types";
 import { DRAFT_RETENTION_DAYS } from "./knowledge/corpus";
 
 /**
- * Bumped whenever the stored shape changes in a way an old draft cannot be read safely. The version
- * lives here rather than beside the data because the reader needs it before it needs anything else.
+ * Bumped for incompatible shapes. Public service interests and company are additive string/list
+ * slots, so v1 remains readable; the intake reducer revalidates their values and fills missing keys.
  */
 export const DRAFT_KEY = "mubi.pod.draft.v1";
 

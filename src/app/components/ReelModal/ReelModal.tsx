@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useOverlayScrollLock } from "@/app/lib/overlayScrollLock";
 import styles from "./ReelModal.module.scss";
 
 interface ReelModalProps {
@@ -31,20 +32,20 @@ export function ReelModal({ isOpen, onClose, videoSrc = "/video/video-web.mp4" }
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
 
+  // The page behind stops moving while the reel plays. This used to be a direct
+  // `document.body.style.overflow` write, which is the one thing five overlays must not each own: the
+  // pod or the navigation closing under an open reel used to hand the viewport back mid-film.
+  useOverlayScrollLock(isOpen, "reel-modal");
+
   useEffect(() => {
     if (isOpen) {
       previousActiveElementRef.current = document.activeElement as HTMLElement;
       closeButtonRef.current?.focus();
-      document.body.style.overflow = "hidden";
       window.dispatchEvent(new CustomEvent("reel:open"));
     } else {
-      document.body.style.overflow = "";
       previousActiveElementRef.current?.focus();
       window.dispatchEvent(new CustomEvent("reel:close"));
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, [isOpen]);
 
   const handleKeyDown = useCallback(
@@ -98,6 +99,10 @@ export function ReelModal({ isOpen, onClose, videoSrc = "/video/video-web.mp4" }
       role="dialog"
       aria-modal="true"
       aria-labelledby="reel-dialog-title"
+      // Nothing inside this dialog scrolls, and a running Lenis would happily move the page behind it
+      // in response to a wheel. The exemption hands the gesture to a surface with no overflow, so it
+      // does nothing — which is what a full-screen player asks a wheel to do.
+      data-lenis-prevent
       onKeyDown={handleKeyDown}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();

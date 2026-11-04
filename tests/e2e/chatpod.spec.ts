@@ -3,7 +3,13 @@
  * @description The Chat Pod gates that cannot be settled by reading the code: that the launcher shares the
  *              bottom band without colliding, that the panel holds its geometry at every width we ship,
  *              that the whole intake is walkable from the keyboard, that the pod contributes no layout
- *              shift, and that axe finds nothing critical or serious in the dialog or the launcher.
+ *              shift, that axe finds nothing critical or serious in the dialog or the launcher, and that a
+ *              second message means something against the first one.
+ *
+ *              That last group is the reason this file is longer than a smoke test. The engine keeps its
+ *              turn and its fallback counter in refs, so anaphora and the two-strike rule only exist across
+ *              two renders of the live panel; a unit test can call `followUp` but cannot show that the
+ *              panel fed it the chips a visitor was actually looking at.
  *
  *              Run against the dev server already on the port (`npm run dev` binds 3003), never a
  *              second one: the pod mounts behind the intro-loader event, and a fresh server would be a
@@ -25,6 +31,12 @@ const WIDTHS = [360, 390, 768, 1024, 1440] as const;
 const POD_PAGE = '/blog';
 
 /**
+ * Longer than the transcript's 600ms glide, so a gate that measures a scroll position does it against a
+ * column that has finished moving. Anything shorter measures the pod's own animation as a defect.
+ */
+const GLIDE_SETTLE_MS = 800;
+
+/**
  * The launcher is named from its own content: `Ubi` + `Ask`/`Close` + the sr-only disclosure, so the measured
  * accessible name is "Ubi Ask the digital assistant for Marca Ubi" and the action word moves with the state.
  * Matching the whole shape keeps this selector honest: a label that drifts away from the visible words is the
@@ -35,6 +47,7 @@ const launcher = (page: Page): Locator =>
 const panel = (page: Page): Locator => page.locator('#mubi-pod-panel');
 const log = (page: Page): Locator => page.getByRole('log');
 const tray = (page: Page): Locator => page.getByRole('group', { name: 'Choose a reply' });
+const actions = (page: Page): Locator => page.getByRole('group', { name: 'Brief actions', exact: true });
 const composer = (page: Page): Locator => page.getByRole('textbox', { name: 'Message' });
 
 /** The launcher is deferred behind the loader and an idle slice; the ceiling is the 12s backstop plus slack. */
@@ -65,6 +78,20 @@ async function press(target: Locator, page: Page): Promise<void> {
 }
 
 /**
+ * The same press, with the scroll-into-view that `focus()` performs taken away.
+ *
+ * A chip rail taller than the panel cannot be fully in view, so asking Playwright to reach the options at
+ * its foot moves the column before it measures it — and the gate then reports the harness's own scroll as
+ * a defect in the pod. `preventScroll` keeps the reader's position the one the pod gave them, which is the
+ * thing under test.
+ */
+async function tapInPlace(target: Locator, page: Page): Promise<void> {
+  await target.evaluate((node) => node.focus({ preventScroll: true }));
+  await page.keyboard.press('Enter');
+  await settle(page);
+}
+
+/**
  * The panel answers after a 320-900ms typing beat, so a fixed sleep would either flake or crawl. The
  * indicator carries the accessible name the visitor hears, so waiting for it to leave is the same
  * signal the transcript gives a screen reader.
@@ -74,16 +101,27 @@ async function settle(page: Page): Promise<void> {
   await expect(page.getByText('Ubi is answering')).toBeHidden({ timeout: 15_000 });
 }
 
+/**
+ * The chip that commits a multi-select (`Continue`) or a link list (`That is every link`). Either can
+ * carry the running tally — `Continue (3)` — because a seventeen-option wall wraps and the picks made at
+ * the top of it are not necessarily on screen when the visitor reaches the bottom. Matched by shape, so a
+ * test that asserts the row is stable under a tap cannot be satisfied by a label that moved.
+ */
+const COMMIT_CHIPS = /^(?:Continue|That is every link)(?: \(\d+\))?$/;
+const CONTINUE_CHIPS = /^Continue(?: \(\d+\))?$/;
+const LINKS_DONE_CHIPS = /^That is every link(?: \(\d+\))?$/;
+
 /** Start the questions from the persistent menu. */
 async function startIntake(page: Page): Promise<void> {
   await press(tray(page).getByRole('button', { name: 'Start a project', exact: true }), page);
-  await expect(tray(page).getByRole('button', { name: 'Continue', exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(actions(page).getByRole('button', { name: COMMIT_CHIPS })).toBeVisible({ timeout: 10_000 });
 }
 
 /** Keyed by the placeholder the slot itself sets, so a re-worded question fails this test loudly. */
 const FREE_TEXT: Record<string, string> = {
   'Your name': 'Asha Menon',
   'you@company.com': 'asha@studio.example',
+  'Deliverables, audience, anything already decided': 'A campaign to reach buyers for our tea brand.',
 };
 
 /**
@@ -92,13 +130,13 @@ const FREE_TEXT: Record<string, string> = {
  */
 async function answerTurn(page: Page): Promise<void> {
   const chips = tray(page).getByRole('button');
-  const cont = chips.filter({ hasText: /^Continue$/ });
-  const linksDone = chips.filter({ hasText: /^That is every link$/ });
-  const skip = chips.filter({ hasText: /^Skip$/ });
+  const cont = actions(page).getByRole('button', { name: CONTINUE_CHIPS });
+  const linksDone = actions(page).getByRole('button', { name: LINKS_DONE_CHIPS });
+  const skip = actions(page).getByRole('button', { name: 'Skip', exact: true });
 
   // Free text first: an optional text slot offers a Skip chip, and skipping the email would promote
   // the phone to required, which is a different branch of the machine than this walk is testing.
-  const placeholder = (await composer(page).getAttribute('placeholder')) ?? '';
+  const placeholder = await composer(page).isVisible() ? (await composer(page).getAttribute('placeholder')) ?? '' : '';
   const scripted = FREE_TEXT[placeholder];
   if (scripted !== undefined) {
     await composer(page).focus();
@@ -132,7 +170,7 @@ async function answerTurn(page: Page): Promise<void> {
 
 /** Drive the machine to the review card and stop. */
 async function walkToReview(page: Page, maxTurns = 30): Promise<Locator> {
-  const send = page.getByRole('button', { name: 'Send it', exact: true });
+  const send = page.getByRole('button', { name: 'Send brief', exact: true });
   for (let turn = 0; turn < maxTurns; turn += 1) {
     if (await send.isVisible().catch(() => false)) return send;
     await answerTurn(page);
@@ -251,6 +289,71 @@ test.describe('Chat Pod: mount, collision and geometry', () => {
     }
   });
 
+  /**
+   * Every assertion here is "the control is inside the screen the visitor is holding", which is the
+   * thing that breaks when someone raises the panel's floor. Shared by the two geometries that constrain
+   * the panel by height rather than width.
+   */
+  async function holdsItsControls(page: Page, size: { width: number; height: number }, columnFloor = 80): Promise<void> {
+    await page.setViewportSize(size);
+    await openPanel(page);
+    await startIntake(page);
+
+    const box = await panel(page).evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+    });
+    expect(box.top, `the panel runs off the top of a ${size.height}px-tall screen`).toBeGreaterThanOrEqual(-0.5);
+    expect(box.bottom, 'the panel runs off the bottom of the screen').toBeLessThanOrEqual(size.height + 0.5);
+    expect(box.left).toBeGreaterThanOrEqual(-0.5);
+    expect(box.right).toBeLessThanOrEqual(size.width + 0.5);
+
+    // The three controls a reader at this size actually needs: who is talking, what they just said, and
+    // the way back out. A panel that keeps its floor height loses the first and the last.
+    await expect(panel(page).getByRole('button', { name: 'Close the assistant panel', exact: true })).toBeVisible();
+    await expect(actions(page).getByRole('button', { name: 'Continue', exact: true })).toBeInViewport();
+    const persona = panel(page).getByText('Ubi', { exact: true }).first();
+    await expect(persona, 'the header is off-screen, so the visitor cannot tell who they are talking to').toBeInViewport();
+
+    const metrics = await page.evaluate(() => {
+      const node = document.querySelector<HTMLElement>('#mubi-pod-panel [aria-label="Conversation"]');
+      const chips = Array.from(document.querySelectorAll<HTMLElement>('#mubi-pod-panel [role="group"] button'));
+      return {
+        flowHeight: node?.clientHeight ?? 0,
+        shortestChip: Math.min(...chips.map((chip) => chip.getBoundingClientRect().height)),
+      };
+    });
+    expect(metrics.flowHeight, 'the column has been squeezed to nothing').toBeGreaterThanOrEqual(columnFloor);
+    expect(metrics.shortestChip, 'a chip has become too short to hit with a thumb').toBeGreaterThanOrEqual(28);
+  }
+
+  /**
+   * A phone turned sideways is the first height-constrained shipped geometry. At 844x390 the panel is the
+   * full sheet — the `max-width: 1023px` rule wins on *width*, so a landscape phone is a sheet, not a
+   * float — and the sheet is shorter than its own content, which is what the column and the thumb test
+   * above are for.
+   */
+  test('the panel fits a phone turned sideways, where height is the scarce axis', async ({ page }) => {
+    await holdsItsControls(page, { width: 844, height: 390 });
+  });
+
+  /**
+   * The other half, and the one the sheet above cannot see: a wide window shorter than the floating
+   * panel's own `26rem` floor. At 1280x400 the clamp resolves to the floor (74vh would be 296px), the
+   * floor is 416px and the panel floats 80px off the bottom of the screen — above the launcher, which is
+   * what `--pod-y` is for — so the header leaves the top. The width sweep above can never catch this,
+   * because every width it visits has a tall viewport.
+   *
+   * The column floor here is lower than the phone's, and that is the truth rather than a concession: the
+   * panel is capped by the screen itself, the header, the progress rail and the composer are paid for
+   * first, and what is left measures 71px at this size — about three lines of a reply, with the rest of
+   * the thread one wheel away. Anything that reads as a fourth line is a change to the chrome, not to
+   * the cap, and this assertion is what stops the cap from being quietly lowered again.
+   */
+  test('the panel fits a desktop window shorter than its own floor', async ({ page }) => {
+    await holdsItsControls(page, { width: 1280, height: 400 }, 64);
+  });
+
   test('the sheet lifts by the keyboard inset it is given', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 780 });
     await openPanel(page);
@@ -264,7 +367,7 @@ test.describe('Chat Pod: mount, collision and geometry', () => {
     expect(before - after).toBeCloseTo(280, 1);
   });
 
-  test('the pod shifts no layout when it mounts, opens or answers', async ({ page }) => {
+  test('the pod shifts no layout on its own account when it mounts, opens or answers', async ({ page }) => {
     await page.addInitScript(() => {
       type ShiftEntry = PerformanceEntry & {
         hadRecentInput?: boolean;
@@ -300,6 +403,76 @@ test.describe('Chat Pod: mount, collision and geometry', () => {
     // The typing indicator reserves its own height and the panel is fixed, so the pod should contribute
     // nothing. Any entry attributed to it here is a real jump a reader would have to re-find their place in.
     expect(total, `pod layout shift ${total} from ${JSON.stringify(ours)}`).toBeLessThanOrEqual(0.0001);
+  });
+
+  /**
+   * The other half of the promise, which the CLS gate above structurally cannot see.
+   *
+   * `hadRecentInput` is what keeps a click's own reaction out of the score — the browser forgives a shift
+   * within 500ms of an input, because a button that responds is not a layout defect. That is correct for
+   * Core Web Vitals and wrong for this pod: the row that answers "Start a project" is a reaction a visitor
+   * asked for, and it is also 46px of chrome inserted above the transcript, which moves the words. So the
+   * metric that excludes it is not the thing that proves the reader kept their place, and the name of the
+   * gate used to claim that it was.
+   *
+   * What is measured instead is the two facts that together say the reader survived the push: the rail took
+   * its height out of the scrollable column (not out of the panel, whose bottom edge is fixed), and the
+   * reader is still standing at the end of the column afterwards. An uncompensated push leaves the newest
+   * line 46px below the visible edge, which is the number this gate fails on.
+   */
+  test('starting a brief keeps its question and primary action available', async ({ page }) => {
+    await page.addInitScript(() => {
+      type ShiftEntry = PerformanceEntry & { hadRecentInput?: boolean; value?: number; sources?: { node: Node | null }[] };
+      const sink = window as unknown as { __allShifts: { value: number; input: boolean; inPod: boolean }[] };
+      sink.__allShifts = [];
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as ShiftEntry[]) {
+          const inPod = (entry.sources ?? []).some((source) => {
+            const node = source.node as HTMLElement | null;
+            return !!node && typeof node.closest === 'function' && !!node.closest('#mubi-pod-panel');
+          });
+          sink.__allShifts.push({ value: entry.value ?? 0, input: !!entry.hadRecentInput, inPod });
+        }
+      }).observe({ buffered: true, type: 'layout-shift' });
+    });
+
+    const measure = () =>
+      page.evaluate(() => {
+        const node = document.querySelector<HTMLElement>('#mubi-pod-panel [aria-label="Conversation"]');
+        if (!node) throw new Error('the panel has no transcript to measure against');
+        const rail = document.querySelector<HTMLElement>('#mubi-pod-panel [class*="progress"]');
+        const box = document.getElementById('mubi-pod-panel')?.getBoundingClientRect();
+        return {
+          railHeight: rail ? rail.getBoundingClientRect().height : 0,
+          flowHeight: node.clientHeight,
+          belowTheEdge: node.scrollHeight - node.scrollTop - node.clientHeight,
+          panelBottom: box?.bottom ?? -1,
+        };
+      });
+
+    await openPanel(page);
+    const before = await measure();
+    expect(before.railHeight, 'the brief rail is not part of the chat-mode panel').toBe(0);
+
+    await startIntake(page);
+
+    const after = await measure();
+    expect(after.railHeight, 'the brief rail arrived — this is the push the CLS gate forgives').toBeGreaterThan(20);
+    // The panel is `position: fixed` with its bottom edge owned by the composer, so nothing about the panel
+    // box itself moves: the rail's height comes out of the column.
+    expect(after.panelBottom, 'the panel box moved when the rail appeared').toBe(before.panelBottom);
+    expect(after.flowHeight, 'task chrome must leave readable content').toBeGreaterThan(120);
+    await expect(panel(page).getByRole('heading', { name: /Which services interest you/ })).toBeInViewport();
+    await expect(actions(page).getByRole('button', { name: 'Continue', exact: true })).toBeInViewport();
+
+    const shifts = await page.evaluate(() => (window as unknown as { __allShifts: { value: number; input: boolean; inPod: boolean }[] }).__allShifts);
+    const fromInput = shifts.filter((shift) => shift.inPod && shift.input);
+    // Disclosed rather than hidden: an input-attributed shift is invisible to the CLS score, so the number
+    // is recorded on the run to keep the gate above honest about what it does not cover.
+    test.info().annotations.push({
+      type: 'input-attributed-shift',
+      description: `${fromInput.length} pod shift(s) forgave(d) by hadRecentInput: ${JSON.stringify(fromInput)}`,
+    });
   });
 
   test("the pod never becomes the page's largest contentful paint", async ({ page }) => {
@@ -346,6 +519,11 @@ test.describe('Chat Pod: touch targets', () => {
     // Firefox cannot emulate a coarse pointer, so the engine that cannot reach the rule is not the
     // engine that gets to fail it. Chromium and the mobile projects both report coarse.
     test.skip(!coarse, 'this engine reports no coarse pointer, so the touch lift cannot be measured');
+
+    // A thumb target is the resting geometry, and `getBoundingClientRect` reports the animated one: the
+    // chip entrance lifts through a scale, so measured mid-flight a 44px row reads as 43.1. Wait for rest
+    // for the same reason the axe scan does.
+    await chipsAtRest(page);
 
     const boxes = await panel(page).evaluate((node) =>
       Array.from(node.querySelectorAll<HTMLElement>('button')).map((button) => {
@@ -421,18 +599,19 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     await openPanel(page);
     await startIntake(page);
 
-    const cont = tray(page).getByRole('button', { name: 'Continue', exact: true });
+    const cont = actions(page).getByRole('button', { name: CONTINUE_CHIPS });
     await press(cont.first(), page);
-    await expect(log(page).getByText(/Choose at least one kind of work/)).toBeVisible({ timeout: 10_000 });
+    await expect(log(page).getByText(/Choose published services/)).toBeVisible({ timeout: 10_000 });
 
     // Same slot, still standing there, and the chips are back for another attempt.
-    await expect(tray(page).getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
+    await expect(actions(page).getByRole('button', { name: CONTINUE_CHIPS })).toBeVisible();
   });
 
   test('typing an abort word like "stop" leaves the intake questions and preserves draft answers', async ({ page }) => {
     await openPanel(page);
     await startIntake(page);
 
+    await panel(page).getByRole('button', { name: 'Ask a question or type an answer', exact: true }).click();
     await composer(page).focus();
     await page.keyboard.type('stop', { delay: 12 });
     await page.keyboard.press('Enter');
@@ -442,19 +621,17 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     await expect(tray(page).getByRole('button', { name: 'Start a project', exact: true })).toBeVisible({ timeout: 10_000 });
   });
 
-  test('a restored draft resumes mid-brief where the visitor left off', async ({ page }) => {
+  test('a brief paused mid-way resumes at the next question, not the first', async ({ page }) => {
     await openPanel(page);
     await startIntake(page);
 
-    // Answer the first slot (categories)
-    const categoryChip = tray(page).getByRole('button').filter({ hasText: /Strategy|Design|Development/ }).first();
-    if (await categoryChip.count()) {
-      await categoryChip.click();
-    }
-    const cont = tray(page).getByRole('button', { name: 'Continue', exact: true });
-    await press(cont.first(), page);
+    // One slot answered, keyboard only and keyed off the tray's own shape rather than a category label,
+    // so a taxonomy edit cannot silently leave this test with zero answers filed.
+    await answerTurn(page);
+    const servicesQuestion = log(page).getByText(/In a sentence or two, what do you need/);
+    await expect(servicesQuestion).toBeVisible({ timeout: 10_000 });
 
-    // Exit to chat via Escape
+    // Escape pauses the questions; it does not discard them.
     await page.keyboard.press('Escape');
 
     // Menu offers to start a project
@@ -462,8 +639,10 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     await expect(startProj).toBeVisible({ timeout: 10_000 });
     await press(startProj, page);
 
-    // Resumes at the services slot (slot 1) rather than resetting to slot 0
-    await expect(log(page).getByText(/Which specific services/)).toBeVisible({ timeout: 10_000 });
+    // Resumes at the services slot (slot 1) rather than resetting to slot 0. Read as the newest line so a
+    // re-ask of the first question further up the transcript cannot satisfy it by accident.
+    await expect(log(page).locator('p').last()).toContainText('In a sentence or two, what do you need');
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Deliverables, audience, anything already decided');
   });
 });
 
@@ -516,7 +695,7 @@ test.describe('Chat Pod: submission outcomes', () => {
 
     await expect(log(page).getByText(/7012 052 472/)).toBeVisible({ timeout: 15_000 });
     await expect(log(page).getByRole('paragraph').filter({ hasText: 'Asha Menon' }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Send it again' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Retry sending' })).toBeVisible();
   });
 
   test('a transport failure retries three times with one key', async ({ page }) => {
@@ -594,9 +773,11 @@ test.describe('Chat Pod: the D5 idle nudge', () => {
 });
 
 /**
- * Chips arrive on a 40ms stagger and `animation-fill-mode: both` holds each one at opacity 0 until its
- * turn, so a scan taken during the entrance measures a frame of an animation, not the design. Contrast is
- * a property of the resting state: wait for it, and fail loudly if a chip is still invisible a second later.
+ * Chips arrive on a 40ms stagger and `animation-fill-mode: backwards` holds each one at opacity 0 through
+ * its delay, so a scan taken during the entrance measures a frame of an animation, not the design. Contrast
+ * is a property of the resting state: wait for it, and fail loudly if a chip is still invisible a second
+ * later. (`backwards`, not `both`: a filled animation keeps owning `transform` after it ends, which would
+ * deaden the hover lift the chips also publish.)
  */
 async function chipsAtRest(page: Page): Promise<void> {
   await expect
@@ -677,3 +858,645 @@ test.describe('Chat Pod: accessibility', () => {
     await expect(launcher(page)).not.toHaveAttribute('data-nudge', 'true');
   });
 });
+
+/**
+ * The comprehension gates. Everything above proves the pod can be driven; these prove it is worth
+ * driving, and they are the surface a unit test cannot reach: `useChatEngine` keeps its turn and its
+ * fallback counter in refs, so a follow-up only means something across two renders of the real panel.
+ *
+ * The assertions quote published copy on purpose. A re-worded answer fails these tests loudly, which is
+ * the intended contract: the copy is sourced from `knowledge/intents.ts` and is not free text.
+ */
+test.describe('Chat Pod: comprehension and conversation state', () => {
+  /** Say something the way a visitor types it, then wait for the answer to land. */
+  async function ask(page: Page, text: string): Promise<void> {
+    await composer(page).focus();
+    await page.keyboard.type(text, { delay: 12 });
+    await page.keyboard.press('Enter');
+    await settle(page);
+  }
+
+  /**
+   * Drive the questions until the machine is standing at a given blank, keyed by the placeholder that
+   * slot sets rather than by a count of turns — the order of the questions is the machine's business and
+   * these tests are about what happens at one of them.
+   */
+  async function atTheBlank(page: Page, placeholder: string, maxTurns = 30): Promise<void> {
+    await startIntake(page);
+    for (let turn = 0; turn < maxTurns; turn += 1) {
+      if (await composer(page).isVisible() && (await composer(page).getAttribute('placeholder')) === placeholder) return;
+      const details = panel(page).getByRole('button', { name: 'Add more details', exact: true });
+      if (await details.isVisible()) {
+        await press(details, page);
+        continue;
+      }
+      await answerTurn(page);
+    }
+    throw new Error(`the intake never reached the blank keyed "${placeholder}"`);
+  }
+
+  async function atTheNameBlank(page: Page): Promise<void> {
+    await atTheBlank(page, 'Your name');
+  }
+
+  test('the services question explains the offering before optional narrowing', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'what are the services available');
+
+    // Broad information must be useful before a visitor elects to narrow the catalogue.
+    await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Business services', exact: true })).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Consumer-brand services', exact: true })).toBeVisible();
+
+    await expect(log(page).getByText(/^Who do you sell to/)).toHaveCount(0);
+    // Optional narrowing still answers with the selected audience's list.
+    await press(tray(page).getByRole('button', { name: 'Business services', exact: true }), page);
+    await expect(log(page).getByText(/^8 lines aimed at businesses\./)).toBeVisible();
+  });
+
+  test('the same question typed in the chat register gets the same answer', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'can yu pls tell me about services');
+
+    // "yu" is the way this owner writes "you", and it was the one abbreviation the fold table missed.
+    // Two characters sits under every typo floor in the resolver, so it could not be forgiven as a
+    // misspelling either — it survived as a topic word no alias owns, and the services answer fell below
+    // the acceptance margin into three chips. That is what read as a dumb chatbot.
+    await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Business services', exact: true })).toBeVisible();
+  });
+
+  test('a question the corpus cannot answer is refused at the name blank, not filed', async ({ page }) => {
+    await openPanel(page);
+    await atTheNameBlank(page);
+
+    await ask(page, 'can you repair my printer');
+
+    // Nothing published answers that, so the detour pass had nothing to say, and the message reached the
+    // last branch: the validator, which accepts any 100 characters as a name. The studio's first email
+    // would have opened on the visitor's salutation reading like a question about printers.
+    await expect(panel(page).getByRole('button', { name: 'Use as name', exact: true })).toBeVisible();
+
+    // Refusing is only honest if the blank is still standing where it was, with its own buttons.
+    expect(await composer(page).getAttribute('placeholder')).toBe('Your name');
+
+    // The same blank, the same failure, with no question shape at all: `u offer web design` opens on a
+    // chat abbreviation, the corpus has nothing to say about it, and the only evidence that it is a
+    // question is the way it is spelled. Filing it put the visitor's enquiry in the salutation.
+    await ask(page, 'u repair old printers');
+    await expect(panel(page).getByRole('button', { name: 'Use as name', exact: true })).toBeVisible();
+    expect(await composer(page).getAttribute('placeholder')).toBe('Your name');
+
+    // And the visitor can answer it normally on the next line.
+    await ask(page, 'Asha Menon');
+    expect(await composer(page).getAttribute('placeholder')).not.toBe('Your name');
+  });
+
+  test('an answer that opens on an auxiliary is filed, not refused', async ({ page }) => {
+    await openPanel(page);
+    await atTheNameBlank(page);
+
+    // The other half of the same rule. A sentence legitimately opens on an auxiliary — "will need
+    // packaging next month" is somebody describing the job — and a shape test that read every auxiliary
+    // as a question would refuse the visitor's own words back at them. Only an inverted auxiliary is a
+    // question, so this one is filed and the machine moves on.
+    await ask(page, 'will need packaging next month');
+    await expect(log(page).getByText(/^That reads like a question/)).toHaveCount(0);
+    expect(await composer(page).getAttribute('placeholder')).not.toBe('Your name');
+  });
+
+  /**
+   * The other direction of the same rule, and the one that was broken. An earlier pass routed anything
+   * of more than one word at a verbatim blank through the corpus and, if the corpus had a confident
+   * answer, spoke it as a detour instead of storing the visitor's words. Measured on the published
+   * table, `social media` resolves to the studio's own social channel at 1.000 — and it is also the
+   * name half of this site's clients would give a project. So a plausible project title was answered
+   * with the studio's Instagram handle and never filed, which is a worse failure than the one that
+   * clause was written to avoid: the visitor's brief silently loses a fact.
+   */
+  test('a project name the corpus also sells is filed, not answered', async ({ page }) => {
+    await openPanel(page);
+    await atTheBlank(page, 'Packaging for an organic beverage brand');
+
+    await ask(page, 'social media');
+
+    // Filed, which means the machine moved on and the value reached the card the studio reads.
+    expect(await composer(page).getAttribute('placeholder')).not.toBe('Packaging for an organic beverage brand');
+    await expect(panel(page).getByRole('button', { name: 'Use as project', exact: true })).toHaveCount(0);
+
+    const send = await walkToReview(page, 26);
+    await expect(
+      log(page)
+        .getByRole('listitem')
+        .filter({ hasText: /^Project/ })
+        .filter({ hasText: 'social media' }),
+    ).toBeVisible();
+    expect(await send.isVisible()).toBe(true);
+  });
+
+  /**
+   * What the clause above was reaching for, kept: a message written in the chat register is asking for
+   * something even when it has no question shape, because nobody spells a proper noun like a text
+   * message. `abt pricing` typed at the project blank has to be answered, not stored as the name of the
+   * job.
+   */
+  test('a blank written in the chat register is answered, not filed', async ({ page }) => {
+    await openPanel(page);
+    await atTheBlank(page, 'Packaging for an organic beverage brand');
+
+    await ask(page, 'abt pricing');
+
+    await expect(log(page).getByText(/^We do not publish a rate card/)).toBeVisible();
+    expect(await composer(page).getAttribute('placeholder')).toBe('Packaging for an organic beverage brand');
+  });
+
+  test('a tapped chip becomes the visitor’s own line', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'what are the services available');
+    await press(tray(page).getByRole('button', { name: 'Business services', exact: true }), page);
+
+    // §05 §1.5. Without the echo, a chip-driven transcript is an assistant answering itself, and someone
+    // scrolling back cannot tell which branch they took. Scoped to the log: the chips live in the tray,
+    // so a match here can only be a transcript row.
+    await expect(log(page).getByText('Business services', { exact: true })).toBeVisible();
+  });
+
+  test('an answer has a deeper pass, and the second ask says so', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'demand generation');
+    await expect(log(page).getByText('What it covers:', { exact: true })).toBeVisible();
+
+    await ask(page, 'tell me more');
+    await expect(log(page).getByText('Everything this line publishes:', { exact: true })).toBeVisible();
+
+    // A third ask would re-print the same page. Repeating an answer looks like the pod stopped listening,
+    // so it says what has run out instead, and a visitor reading the transcript can see which of the
+    // three turns was a real answer.
+    await ask(page, 'tell me more');
+    await expect(log(page).getByText(/^That is the whole of what this site publishes on it\./)).toBeVisible();
+    expect(await log(page).getByText('Everything this line publishes:', { exact: true }).count()).toBe(1);
+  });
+
+  test('a contested name asks which one, and an ordinal picks it', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'public relations');
+
+    await expect(log(page).getByText(/^Which service do you mean/)).toBeVisible();
+    // Two published lines really do carry that name, on opposite sides of the catalogue. One of them
+    // silently winning is how a pod gets remembered as wrong.
+    expect(await tray(page).getByRole('button', { name: /Public Relations \(PR\)/ }).count()).toBe(2);
+
+    await ask(page, 'the first one');
+    await expect(log(page).getByText(/^Earned attention carries a credibility paid reach cannot buy/)).toBeVisible();
+
+    // Ordinals are also typed as digits. "the 9th one" used to be read as two numbers and refused as an
+    // unrecognised question; the honest answer is the size of the list the visitor is looking at.
+    await ask(page, 'the 9th one');
+    await expect(log(page).getByText(/I offered \d+ options, counted from the first\./)).toBeVisible();
+  });
+
+  test('naming a chip on screen answers it instead of re-ranking the corpus', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'demand generation');
+    await ask(page, 'integrated marketing');
+
+    // The second message is authored copy for a different line, so authoring outranks the idiom layer,
+    // but it is also on screen as a chip, and either route lands on the same answer. What must not happen
+    // is the pod treating a visible option as a miss.
+    await expect(log(page).getByText(/^One idea, many channels, no dilution\./)).toBeVisible();
+    expect(await log(page).getByText(/^I do not have a supported answer/).count()).toBe(0);
+  });
+
+  test('two misses, and the pod stops guessing without spending a guess on a follow-up', async ({ page }) => {
+    await openPanel(page);
+    await ask(page, 'qwertyuiop');
+    await ask(page, 'zxcvbnm');
+
+    const hardMisses = log(page).getByText(/^I do not have a supported answer/);
+    expect(await hardMisses.count()).toBe(2);
+
+    // "tell me more" after a refusal is legible as a reference to nothing, and is answered as such.
+    // Spending a guess here would cap the pod after two misses plus one idiom, i.e. three questions.
+    await ask(page, 'tell me more');
+    await expect(log(page).getByText(/^Nothing I have answered yet can be taken further\./)).toBeVisible();
+    expect(await hardMisses.count()).toBe(2);
+
+    await ask(page, 'asdfghjkl');
+    await expect(
+      log(page).getByText(/^I am having trouble matching that question/),
+    ).toBeVisible();
+  });
+
+  test('the refusal routes instead of stalling: a capped pod still hands over the phone', async ({ page }) => {
+    await openPanel(page);
+    for (const miss of ['qwertyuiop', 'zxcvbnm', 'asdfghjkl']) await ask(page, miss);
+
+    // "From here I will only route you, not interpret you" is a promise, so the chips have to be the
+    // studio's own contact routes rather than the guess menu that just failed three times.
+    await expect(tray(page).getByRole('link', { name: /^Call \+91/ })).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Talk to a person', exact: true })).toBeVisible();
+  });
+});
+
+/**
+ * The scroll contract, measured in a browser with a real wheel rather than read out of the stylesheet.
+ *
+ * Two defects are fixed here and neither is visible in source: a conversation and its replies were two
+ * scroll boxes bolted one above the other inside a fixed panel, so a wheel moved one and then the other,
+ * and the surface under the cursor decided whether the gesture did anything at all; separately, the hold
+ * on the page behind an overlay was owned by each surface in turn — a class, a dispatched event, a write
+ * to `body.style.overflow` — and whichever released last handed the viewport back from under whichever
+ * was still open. That is the "on the other pages the scroll just does not work" report.
+ *
+ * A stopped Lenis cancels every wheel and touchmove it sees outside a `data-lenis-prevent` subtree, so
+ * the tests below ask the browser the only question that matters for that: was the event cancelled?
+ */
+test.describe('Scroll: one column in the panel, one lock on the page', () => {
+  const flow = (page: Page): Locator => page.getByLabel('Conversation', { exact: true });
+
+  async function type(page: Page, text: string): Promise<void> {
+    await composer(page).focus();
+    await page.keyboard.type(text, { delay: 12 });
+    await page.keyboard.press('Enter');
+    await settle(page);
+  }
+
+  /**
+   * Dispatch a wheel (or touch) at the element matched by `selector` and report whether anything up the
+   * tree called `preventDefault` on it. Cancelled means the smooth-scroll hijack swallowed the gesture;
+   * not cancelled means the browser is free to move whatever the element is inside.
+   */
+  async function gestureCancelled(page: Page, selector: string, kind: 'wheel' | 'touchmove' = 'wheel'): Promise<boolean> {
+    return page.evaluate(
+      async ({ selector, kind }) => {
+        const node = document.querySelector(selector);
+        if (!node) throw new Error(`Nothing on the page matches ${selector}`);
+        const box = node.getBoundingClientRect();
+        const point = { clientX: box.left + box.width / 2, clientY: box.top + Math.min(box.height / 2, 40) };
+        const init: WheelEventInit & TouchEventInit = {
+          bubbles: true,
+          cancelable: true,
+          ...point,
+          ...(kind === 'wheel' ? { deltaY: -120 } : {}),
+        };
+        const event =
+          kind === 'wheel'
+            ? new WheelEvent('wheel', init as WheelEventInit)
+            : new TouchEvent('touchmove', {
+                ...init,
+                touches: [new Touch({ identifier: 1, target: node, ...point })],
+                targetTouches: [new Touch({ identifier: 1, target: node, ...point })],
+                changedTouches: [new Touch({ identifier: 1, target: node, ...point })],
+              } as TouchEventInit);
+        node.dispatchEvent(event);
+        // One frame: the hijack listens without a capture-phase shortcut, so the answer is only settled
+        // once the event has been all the way up to the window.
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        return event.defaultPrevented;
+      },
+      { selector, kind },
+    );
+  }
+
+  /**
+   * The contract is one surface that scrolls *the conversation* — a nested transcript and a nested chip
+   * rail was the defect the owner reported. The composer is the one other box allowed to scroll, and
+   * only because the alternative is worse: `overflow: hidden` at a `max-height` clips the visitor's own
+   * text on the engines that size the field to its content, and a brief they cannot read is a brief they
+   * cannot finish. This asserts both halves with a real long message in the field, because with one short
+   * line typed the box has nothing to scroll and the clause hides nothing.
+   */
+  test('the panel owns one conversation surface, and the field never eats a long brief', async ({ page }) => {
+    await openPanel(page);
+
+    // Long enough to pass the field's 8.75rem cap and short enough to stay inside the composer's own
+    // character limit, so the assertion below can hold the box to its word about every character.
+    const brief = 'A rebuild of the whole identity for a tea grower in Wayanad: packaging for three grades, '
+      + 'a bilingual wordmark, the site, the launch film, a dealer catalogue and the pitch deck for the '
+      + 'co-op board, all of it before the next season opens in April, and the archive of the old labels '
+      + 'needs digitising first because half of them are hand-painted.';
+    await composer(page).focus();
+    await page.keyboard.type(brief, { delay: 4 });
+
+    const field = await composer(page).evaluate((element) => {
+      const node = element as HTMLTextAreaElement;
+      return {
+        overflowY: getComputedStyle(node).overflowY,
+        reachable: node.scrollTop,
+        scrolls: node.scrollHeight > node.clientHeight,
+        text: node.value,
+      };
+    });
+    expect(field.text, 'the field threw away part of what was typed').toBe(brief);
+    expect(field.scrolls, 'a long brief has to have somewhere to go').toBe(true);
+    expect(field.overflowY, 'the composer scrolls rather than swallowing its own content').not.toBe('hidden');
+    expect(field.reachable, 'the caret line of a typed brief is out of view — the text is clipped').toBeGreaterThan(0);
+
+    const scrollers = await panel(page).evaluate((node) =>
+      Array.from(node.querySelectorAll<HTMLElement>('*'))
+        .filter((element) => {
+          const overflow = getComputedStyle(element).overflowY;
+          return overflow === 'auto' || overflow === 'scroll';
+        })
+        .map((element) => element.getAttribute('aria-label') ?? element.className),
+    );
+
+    // Sorted, because the pair is the whole assertion and the order the DOM walks them is not a contract.
+    expect([...scrollers].sort(), 'a third box is the defect back: nested scroll areas over a fixed panel').toEqual(['Conversation', 'Message']);
+  });
+
+  test('a real wheel over the chips moves the conversation', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+
+    const top = flow(page);
+    await expect(top).toBeVisible();
+    const before = await top.evaluate((node) => node.scrollTop);
+    expect(await top.evaluate((node) => node.scrollHeight - node.clientHeight)).toBeGreaterThan(40);
+
+    // The pointer is on a chip, not on the messages. This is the gesture that used to do nothing.
+    await tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true }).hover();
+    await page.mouse.wheel(0, 420);
+    await expect
+      .poll(async () => top.evaluate((node) => node.scrollTop), { message: 'the wheel over the chips moved the column' })
+      .toBeGreaterThan(before);
+  });
+
+  test('the keyboard moves the column, and the wheel is never swallowed inside the panel', async ({ page }) => {
+    await openPanel(page);
+    await type(page, 'what are the services available');
+
+    const top = flow(page);
+    await top.focus();
+    const before = await top.evaluate((node) => node.scrollTop);
+    for (let key = 0; key < 12; key += 1) await page.keyboard.press('ArrowUp');
+    expect(await top.evaluate((node) => node.scrollTop)).toBeLessThan(before);
+
+    // The chip rail and the transcript are one subtree, so both answer to the same gesture.
+    expect(await gestureCancelled(page, '#mubi-pod-panel [role="log"]')).toBe(false);
+    expect(await gestureCancelled(page, '[role="dialog"][aria-modal="true"]')).toBe(false);
+  });
+
+  /**
+   * Whether the viewport is currently held: Lenis stopped (which is what makes the wheel inert, since a
+   * stopped instance still cancels the gesture) and the document element marked accordingly.
+   *
+   * `defaultPrevented` cannot answer this question. A *healthy* Lenis also prevents every wheel outside
+   * its exemption — that is how it scrolls the page — so prevented is true both while the page is hijacked
+   * and while it is held. What differs is whether the hijack moves the window, and the class is the
+   * hijack's own statement of which it is doing.
+   */
+  const viewportHeld = (page: Page): Promise<boolean> =>
+    page.evaluate(() => document.documentElement.classList.contains('lenis-stopped'));
+
+  test('the page is held while the panel is open and free the moment it closes', async ({ page }) => {
+    await openPanel(page);
+
+    // Inside the panel the gesture belongs to the conversation, so nothing may swallow it…
+    expect(await gestureCancelled(page, '#mubi-pod-panel [role="log"]')).toBe(false);
+    // …and outside it, the page behind a modal dialog must not move.
+    expect(await viewportHeld(page)).toBe(true);
+    await page.mouse.move(640, 360);
+    await page.mouse.wheel(0, 600);
+    await expect.poll(() => page.evaluate(() => window.scrollY), { message: 'the page is held behind the panel' }).toBe(0);
+
+    await press(panel(page).getByRole('button', { name: 'Close the assistant panel', exact: true }), page);
+    await expect(panel(page)).not.toHaveAttribute('data-open', 'true', { timeout: 10_000 });
+
+    // The leak this gate exists for: a hold released by a callback that did not run left the whole site
+    // deaf to the wheel. Releasing the panel has to give the page back.
+    await expect.poll(() => viewportHeld(page), { message: 'the hijack restarts with the panel closed' }).toBe(false);
+    await page.mouse.move(640, 360);
+    await page.mouse.wheel(0, 600);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { message: 'the page scrolls again once the panel is closed' })
+      .toBeGreaterThan(0);
+  });
+
+  test('closing the navigation overlay with the keyboard hands the page back', async ({ page }) => {
+    await gotoPod(page);
+    await press(page.getByRole('button', { name: 'Open navigation menu', exact: true }), page);
+    const overlay = page.locator('#client-navigation-overlay');
+    await expect(overlay).toBeVisible();
+
+    // Held while open, and the overlay's own list answers the wheel instead of being cancelled by the
+    // hijack the overlay itself started.
+    expect(await viewportHeld(page)).toBe(true);
+    expect(await gestureCancelled(page, '#client-navigation-overlay [class*="leftPanel"]')).toBe(false);
+
+    await page.keyboard.press('Escape');
+    await expect(overlay).toBeHidden({ timeout: 10_000 });
+
+    // The release used to hang off a GSAP `onReverseComplete`. Escape does not interrupt it, but a
+    // visitor who taps the toggle twice fast enough does — and the hold was still leaked, because the
+    // only honest owner of it is the overlay's own lifecycle.
+    await expect.poll(() => viewportHeld(page), { message: 'the hijack restarts with the menu closed' }).toBe(false);
+    await page.mouse.move(640, 360);
+    await page.mouse.wheel(0, 600);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { message: 'the page scrolls again once the menu is closed' })
+      .toBeGreaterThan(0);
+  });
+
+  /**
+   * A reader who takes the wheel mid-reply keeps their place, and the pod says so instead of arguing.
+   *
+   * The auto-follow is the only movement the panel makes on its own account, so it is also the only one
+   * that can shove a reader around. The rule is that it fires for a reader who was already at the end and
+   * not for one who has walked away — and the takeover is a *gesture*, which no unit test can produce and
+   * no amount of reading the source proves.
+   *
+   * The wheel therefore comes first and the question second, so the whole reply — the typing reserve, the
+   * visitor's own line, the answer and the fresh chips — arrives under a column the pod no longer owns.
+   * Sending first would race the takeover against a glide the harness itself started, and a gate that
+   * measures its own animation proves nothing either way.
+   */
+  test('a wheel away keeps the reader’s line when the reply lands and offers the pill', async ({ page }) => {
+    await openPanel(page);
+    await type(page, 'what are the services available');
+    // The thread has to be taller than the panel or there is nowhere to walk up to.
+    await type(page, 'what is your process');
+    const top = flow(page);
+    expect(await top.evaluate((node) => node.scrollHeight - node.clientHeight), 'this conversation does not overflow the column').toBeGreaterThan(320);
+    // The arrival above glides for 600ms. Measuring against a column that is still moving measures the
+    // animation, not the pod.
+    await page.waitForTimeout(GLIDE_SETTLE_MS);
+
+    await top.hover();
+    const resting = await top.evaluate((node) => node.scrollTop);
+    await page.mouse.wheel(0, -260);
+    await expect
+      .poll(async () => top.evaluate((node) => node.scrollTop), { message: 'the wheel never moved the column' })
+      .toBeLessThan(resting);
+    const walked = await top.evaluate((node) => node.scrollTop);
+    expect(resting - walked, 'the wheel barely moved the column, so this measures nothing').toBeGreaterThan(120);
+
+    const pill = page.getByRole('button', { name: 'Jump to the latest', exact: true });
+    await expect(pill, 'a reader who is not at the newest line has to be told, and given a way back').toBeVisible();
+
+    // The answer now arrives *below* them, with a 2.25rem typing reserve in front of it.
+    await type(page, 'do you work with b2b companies');
+    await page.waitForTimeout(GLIDE_SETTLE_MS);
+    expect(await top.evaluate((node) => node.scrollTop), 'the arrival pulled the reader back down').toBe(walked);
+    await expect(pill).toBeVisible();
+
+    await pill.click();
+    await expect
+      .poll(async () => top.evaluate((node) => node.scrollHeight - node.scrollTop - node.clientHeight), {
+        message: 'the pill promises the newest line and has to deliver it',
+      })
+      .toBeLessThanOrEqual(1);
+    await expect(pill).toBeHidden();
+  });
+
+  test('a swipe is not swallowed inside the panel', async ({ page }) => {
+    await openPanel(page);
+    expect(await gestureCancelled(page, '#mubi-pod-panel [role="log"]', 'touchmove')).toBe(false);
+  });
+});
+
+/**
+ * Multi-select discipline. Selecting options used to append a line to the transcript per tap, which made
+ * the conversation grow under the visitor's finger and pushed the options they were reading off the top of
+ * the rail. The tally belongs on the control that commits it.
+ */
+test.describe('Multi-select: taps pick, they do not reprint', () => {
+  test('three taps, one question, and the options do not move', async ({ page }) => {
+    await openPanel(page);
+    await tapInPlace(tray(page).getByRole('button', { name: 'Start a project', exact: true }), page);
+
+    // Services: the widest set the machine offers, so it is the one that used to break the layout.
+    const options = tray(page).getByRole('button');
+    const rows = await log(page).locator('[data-transcript-row]').count();
+    // The turn that just landed is still running its own entrance, and a bubble measured mid-glide sits
+    // a fraction of a pixel off where it settles — which drags the rail under it with it. Let the frame
+    // finish before taking the baseline, or this gate reports animation as movement.
+    await page.waitForTimeout(800);
+    const firstBox = await options.first().boundingBox();
+    expect(firstBox).not.toBeNull();
+
+    for (const name of ['Demand Generation (B2B)', 'Integrated Marketing (B2B)', 'Corporate Communications (B2B)']) {
+      await tapInPlace(tray(page).getByRole('button', { name, exact: true }), page);
+    }
+
+    expect(await log(page).locator('[data-transcript-row]').count()).toBe(rows);
+
+    // The rail is at the end of the column, so a tap may re-print the commit label but must not shove the
+    // options themselves around: a pick made at the top of the wall stays where the finger left it.
+    const afterBox = await options.first().boundingBox();
+    expect(afterBox?.y).toBeCloseTo(firstBox!.y, 0);
+
+    await expect(actions(page).getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
+    await expect(actions(page).getByRole('status')).toHaveText('3 items selected');
+  });
+});
+
+test.describe('Local assistant: reported failures and complete tasks', () => {
+  for (const phrase of ['let me know about your services', 'what are the services you do', 'let me knw abt ur services']) {
+    test(`answers the services request directly: ${phrase}`, async ({ page }) => {
+      const processingRequests: string[] = [];
+      await openPanel(page);
+      page.on('request', (request) => {
+        if (request.method() === 'POST') processingRequests.push(request.url());
+      });
+      await composer(page).fill(phrase);
+      await composer(page).press('Enter');
+      await settle(page);
+      await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
+      await expect(log(page).getByText(/^Who do you sell to/)).toHaveCount(0);
+      await expect(panel(page).getByText('Your brief', { exact: true })).toHaveCount(0);
+      expect(processingRequests, 'answering a question must not send a message or brief').toEqual([]);
+    });
+  }
+
+  test('a capability enquiry answers before inviting a project brief', async ({ page }) => {
+    await openPanel(page);
+    await composer(page).fill('can you build a website');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(panel(page).getByText('Your brief', { exact: true })).toHaveCount(0);
+    await expect(tray(page).getByRole('button', { name: 'Start a project', exact: true })).toBeVisible();
+    expect(await log(page).innerText()).toMatch(/web|digital|design/i);
+  });
+
+  test('commands have ordinary button semantics and stay separate from selected values', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+    const option = tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true });
+    await expect(option).toHaveAttribute('aria-pressed', 'false');
+    await tapInPlace(option, page);
+    await expect(option).toHaveAttribute('aria-pressed', 'true');
+    const next = actions(page).getByRole('button', { name: 'Continue', exact: true });
+    await expect(next).not.toHaveAttribute('aria-pressed');
+    await expect(next).toBeInViewport();
+    await expect(tray(page).getByRole('button', { name: 'Continue', exact: true })).toHaveCount(0);
+    await expect(actions(page).getByRole('status')).toHaveText('1 item selected');
+  });
+
+  test('selected service reaches a short brief and its intercepted payload unchanged', async ({ page }) => {
+    let body: Record<string, unknown> | null = null;
+    await page.route('**/api/sales-funnel/ingest', async (route) => {
+      body = route.request().postDataJSON() as Record<string, unknown>;
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ success: true }) });
+    });
+    await openPanel(page);
+    await composer(page).fill('demand generation');
+    await composer(page).press('Enter');
+    await settle(page);
+    await press(tray(page).getByRole('button', { name: 'Discuss this service', exact: true }), page);
+    await expect(tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await answerTurn(page);
+    await answerTurn(page);
+    await answerTurn(page);
+    await press(actions(page).getByRole('button', { name: 'Review brief', exact: true }), page);
+    await expect(log(page).getByRole('listitem').filter({ hasText: 'Demand Generation (B2B)' })).toBeVisible();
+    await expect(log(page).getByText(/What is your company called/)).toHaveCount(0);
+    await press(actions(page).getByRole('button', { name: 'Send brief', exact: true }), page);
+    await expect.poll(() => body).not.toBeNull();
+    expect(body).toMatchObject({ name: 'Asha Menon', email: 'asha@studio.example', service_category: 'Full-Suite Advisory' });
+    expect(body).not.toHaveProperty('company');
+    expect(body).not.toHaveProperty('budget_bracket');
+    expect(JSON.stringify(body)).toContain('demand-generation');
+  });
+
+  test('whole-message back, contact and review commands do not become field answers', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+    await tapInPlace(tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true }), page);
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await composer(page).fill('back');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(panel(page).getByRole('heading', { name: /Which services interest you/ })).toBeVisible();
+
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await composer(page).fill('Back to the Future campaign');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Your name');
+
+    await composer(page).fill('contact');
+    await composer(page).press('Enter');
+    await settle(page);
+    const returnToBrief = page.getByRole('group', { name: 'Return to your brief', exact: true }).getByRole('button', { name: 'Return to brief', exact: true });
+    await expect(returnToBrief).toBeVisible();
+    await press(returnToBrief, page);
+
+    await composer(page).fill('review');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Your name');
+  });
+
+  test('two earlier misses do not disable an exact services answer', async ({ page }) => {
+    await openPanel(page);
+    for (const phrase of ['qwertyuiop', 'zxcvbnm', 'services']) {
+      await composer(page).fill(phrase);
+      await composer(page).press('Enter');
+      await settle(page);
+    }
+    await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
+  });
+});
+

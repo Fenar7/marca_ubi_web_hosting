@@ -25,22 +25,32 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { prefersReducedMotion } from "@/app/lib/motion";
-import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, slotChips, slotOptions } from "./intake/slots";
+import { useOverlayScrollLock } from "@/app/lib/overlayScrollLock";
+import { SERVICES_BY_CATEGORY } from "@/app/lib/intake/intakeOptions";
+import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, SHORT_BRIEF_SLOTS, polarityMatch, slotChips, slotOptions } from "./intake/slots";
 import type { SlotOption } from "./intake/slots";
-import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
+import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, canSubmit, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
+import { UNDECIDED_SERVICE } from "./intake/serviceInterest";
+import { parseIntakeCommand } from "./intake/commands";
 import type { IntakeMode } from "./intake/useIntakeFlow";
 import { buildPodPayload, reviewRows } from "./intake/review";
 import { createIdempotencyKey, submitBrief } from "./intake/submit";
 import { useChatEngine } from "./engine/useChatEngine";
+import { looksLikeQuestion, opensWithChatShorthand } from "./engine/normalise";
 import { PERSISTENT_MENU, PERSONA } from "./knowledge/corpus";
 import { clearDraft, hasBeenNudged, hasGrantedConsent, markNudged, readDraft, recordConsent, writeDraft } from "./persistence";
 import ChipRow from "./ui/ChipRow";
 import Composer from "./ui/Composer";
 import PersonaHeader from "./ui/PersonaHeader";
 import Transcript from "./ui/Transcript";
+import TaskActions from "./ui/TaskActions";
+import ChoiceGroups from "./ui/ChoiceGroups";
+import { taskReplies } from "./ui/replyActions";
+import FieldConfirmation from "./ui/FieldConfirmation";
 import type { AnswerBlock, Chip, KnowledgeBase, Reply, SlotId, SlotValue, TranscriptMessage } from "./types";
 import styles from "./ChatPod.module.scss";
 
@@ -62,18 +72,19 @@ const PANEL_GAP = 12;
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 /**
- * Words that mean "stop asking me". Checked before every other reading of a typed message, so `stop`
- * can never be filed as the answer to a question. This is the typed half of the `intake.exit` intent,
- * which the matcher cannot reach while the panel is in intake.
- */
-const ABORT_WORDS = /^(stop|cancel|exit|quit|never mind|not now)$/i;
-
-/**
  * Words that mean "I am not answering this". A slot's closed set is matched before this list, because
  * `No` is a stored answer to the showcase question and treating it as a decline loses a decision the
  * visitor actually made.
  */
 const SKIP_WORDS = /^(skip|no|none|pass|nothing)$/i;
+
+/**
+ * The same decline carrying politeness. A closed list rather than a length limit, because "no
+ * particular deadline" and "nothing fixed yet" are genuine answers to an open question, and a pattern
+ * loose enough to catch "no thanks" catches those too — and an optional slot answered by a skip loses
+ * the one sentence the visitor wrote for it.
+ */
+const SKIP_PHRASES = /^(no thanks|no thank you|none thanks|nothing thanks|not really|not this one|pass on that|pass for now|skip that|skip it|skip for now)$/i;
 
 function replyWeight(reply: Reply): number {
   const length = reply.blocks.reduce(
@@ -160,6 +171,9 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const [nudge, setNudge] = useState(false);
   const [consented, setConsented] = useState<boolean | null>(null);
   const [storageFailed, setStorageFailed] = useState(false);
+  const [questionOpen, setQuestionOpen] = useState(false);
+  const [detourOpen, setDetourOpen] = useState(false);
+  const [pendingField, setPendingField] = useState<{ slot: SlotId; value: string } | null>(null);
   /** Height in px currently covered by an on-screen keyboard. */
   const [keyboardInset, setKeyboardInset] = useState(0);
   /** Panel position and scale origin, measured from the right-docked launcher when opened. */
@@ -203,14 +217,35 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     setChips(attached);
   }, []);
 
+  /**
+   * The moment the next line is allowed to land. Two replies scheduled in the same tick must arrive in
+   * the order they were spoken: `startIntake` says the rules while the machine's emitter prints the
+   * first question, and before this existed the shorter of the two won — the panel asked "What kind of
+   * work is this?" before it had introduced the questions, which is the half-second that reads as broken.
+   */
+  const speakAt = useRef(0);
+  /** Lines still in flight. The typing beat ends when the last of them lands, not the first. */
+  const pendingLines = useRef(0);
+
   /** Say something as the assistant, with the typing beat that makes a lookup look like a reply. */
   const say = useCallback(
     (reply: Reply, extra?: { kind?: TranscriptMessage["kind"]; rows?: TranscriptMessage["reviewRows"] }) => {
       setTyping(true);
+      // The buttons on screen belong to the question that printed them. While the next line is still
+      // being spoken they describe a turn that has already passed, and a row of buttons that no longer
+      // answers anything is worse than none: the visitor taps, nothing happens, and the panel reads as
+      // stalled. The reply brings its own buttons the moment it lands.
+      setChips([]);
+      const weight = replyWeight(reply);
+      const now = Date.now();
+      const landsAt = Math.max(now, speakAt.current) + weight;
+      speakAt.current = landsAt;
+      pendingLines.current += 1;
       later(() => {
-        setTyping(false);
+        pendingLines.current -= 1;
+        if (pendingLines.current === 0) setTyping(false);
         append({ speaker: "assistant", blocks: reply.blocks, kind: extra?.kind, reviewRows: extra?.rows }, reply.chips);
-      }, replyWeight(reply));
+      }, Math.max(0, landsAt - now));
     },
     [append, later],
   );
@@ -224,7 +259,6 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const closePanel = useCallback(() => {
     setOpen(false);
     setMenuOpen(false);
-    window.dispatchEvent(new Event("menu:close"));
     launcherRef.current?.focus();
   }, []);
 
@@ -241,10 +275,21 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     }
     setNudge(false);
     setOpen(true);
-    // The same event pair the header and the modals use: the smooth-scroll controller stops Lenis so
-    // the page behind the panel cannot move while the transcript owns the wheel.
-    window.dispatchEvent(new Event("menu:open"));
+    // Holding the page is not done from here any more: `useOverlayScrollLock(open, …)` below takes the
+    // lock when the panel mounts into view and gives it back on close, unmount or route change, so the
+    // hold cannot outlive the panel the way a dispatched event pair could.
+    // Overlay mutual exclusion: dismiss the site navigation overlay if open
+    window.dispatchEvent(new Event("navigation:close"));
   }, []);
+
+  // Overlay mutual exclusion: dismiss chat pod when chatpod:close event is received
+  useEffect(() => {
+    const handleClosePod = () => closePanel();
+    window.addEventListener("chatpod:close", handleClosePod);
+    return () => {
+      window.removeEventListener("chatpod:close", handleClosePod);
+    };
+  }, [closePanel]);
 
   // Greeting or restored history, exactly once per page load. A ref rather than a length check
   // because React 19 double-invokes effects in dev, and two greetings would be a bug a visitor sees.
@@ -284,7 +329,11 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           timeFull,
         },
       ]);
+      // The resume line is put on screen by hand, so the resolver has to be told what the visitor is
+      // looking at. Without `seedTurn` a returning visitor who answers this row with "the second one" is
+      // counted against the opening menu the engine remembered, not the menu actually rendered.
       setChips([...PERSISTENT_MENU]);
+      engine.seedTurn(PERSISTENT_MENU);
       return;
     }
 
@@ -305,6 +354,13 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         }
         // §05 §2.4: during intake the first `Esc` stops the questions and keeps the answers. Only a
         // second press closes the panel, so nobody loses a brief by reaching for the wrong key.
+        // `SUBMITTING` is the exception the machine enforces: leaving it tears down the request that is
+        // in flight, so the key is refused there — and a refused key that says nothing is felt as a
+        // freeze. Say what is happening instead, in the transcript the visitor is already watching.
+        if (state.mode === "SUBMITTING") {
+          say({ blocks: [{ t: "p", text: "It is mid-send, so I will not cut it off. One moment." }], chips: [] });
+          return;
+        }
         if (state.mode !== "CHAT" && state.mode !== "DONE") {
           send({ t: "EXIT_TO_CHAT" });
           return;
@@ -346,24 +402,30 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     return () => {
       document.removeEventListener("keydown", onKeyDown, true);
     };
-  }, [closePanel, menuOpen, open, send, state.mode]);
+  }, [closePanel, menuOpen, open, say, send, state.mode]);
 
   useEffect(() => {
     if (!open) return;
-    const focusId = window.setTimeout(() => inputRef.current?.focus(), 150);
+    const focusId = window.setTimeout(() => {
+      if (window.matchMedia("(pointer: coarse)").matches) panelRef.current?.focus({ preventScroll: true });
+      else if (inputRef.current?.offsetParent) inputRef.current.focus({ preventScroll: true });
+      else panelRef.current?.focus({ preventScroll: true });
+    }, 150);
     return () => window.clearTimeout(focusId);
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
+  // The page belongs to the panel while the panel is up. This used to be a direct
+  // `document.body.style.overflow` write plus a `menu:open`/`menu:close` pair dispatched into the same
+  // channel the site navigation uses, which meant the pod and the overlay were two owners of one lock
+  // that neither could see: whichever released last decided whether the page behind an open dialog
+  // scrolled. The lock counts its holders and the scroll controller subscribes to it, so releasing here
+  // is safe even when the panel goes away by unmount or route change rather than by the close button.
+  useOverlayScrollLock(open, "chat-pod");
 
-  useEffect(() => setConsented(hasGrantedConsent()), []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setConsented(hasGrantedConsent()), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Focus discipline: which device the visitor is working with decides whether focus is handed back.
   useEffect(() => {
@@ -394,7 +456,11 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     if (previous === 0 || !usedKeyboard.current) return;
     const node = panelRef.current;
     const active = document.activeElement;
-    if (node && (active === null || active === document.body)) inputRef.current?.focus();
+    if (node && (active === null || active === document.body)) {
+      const input = inputRef.current;
+      const target = (input?.offsetParent ? input : null) ?? node.querySelector<HTMLElement>("[data-task-heading]") ?? node;
+      target.focus({ preventScroll: true });
+    }
   }, [chips]);
 
   const grantConsent = useCallback((allowed: boolean) => {
@@ -423,22 +489,86 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   }, [consented, engine, messages, open, state.mode, state.slots]);
 
   // Intake turns
+  /**
+   * The chip row for one question, built against the answers currently in the buffer.
+   *
+   * `picked` is a parameter rather than a read of `selection` because the buffer and the row are set in
+   * the same tick everywhere a tap or a typed link changes it. Reading the state would print the count
+   * from before the tap that caused the render, which is the same class of bug as the transcript line
+   * this replaces: the row promising a number the visitor has not reached yet.
+   */
   const chipsForSlot = useCallback(
-    (target: SlotId): Chip[] => {
+    (target: SlotId, picked: readonly string[] = selection): Chip[] => {
       const definition = SLOTS[target];
       const optionChips = slotChips(definition, state.slots);
 
-      if (definition.kind === "multi") return [...optionChips, { label: "Continue", action: { kind: "slot-continue", slot: target } }];
-      if (definition.kind === "links") return [...optionChips, { label: "That is every link", action: { kind: "slot-continue", slot: target } }];
-      if (isRequired(target, state)) return optionChips;
-      return [...optionChips, { label: "Skip", action: { kind: "slot-skip", slot: target } }];
+      // The way back to an earlier answer, offered on every question after the first. Without it a
+      // mistake two questions ago was uncorrectable except by stopping, and stopping reads as giving up
+      // on a brief the visitor had already spent time on.
+      const previous = SLOT_ORDER.slice(0, state.slotIndex).reverse().find((id) =>
+        !(id === "phone" && isFilled(state.slots.email)) &&
+        !(id === "services" && !isFilled(state.slots.categories)),
+      ) ?? null;
+      const goBack: Chip[] = previous
+        ? [{ label: `Back to ${SLOTS[previous].label}`, action: { kind: "slot-edit", slot: previous } }]
+        : [];
+
+      // The tally travels on the chip that commits it. A seventeen-option wall wraps, so the picks a
+      // visitor made at the top of it are not necessarily on screen when they reach the bottom, and the
+      // one number that tells them what they are about to send belongs next to the button that sends it.
+      const tally = picked.length > 0 ? ` (${picked.length})` : "";
+      const review: Chip[] = canSubmit(state)
+        ? [{ label: "Review brief", action: { kind: "intake-action", action: "review" } }]
+        : [];
+
+      if (definition.kind === "multi")
+        return [...optionChips, { label: "Continue", action: { kind: "slot-continue", slot: target } }, ...goBack, ...review];
+      if (definition.kind === "links")
+        return [...optionChips, { label: `That is every link${tally}`, action: { kind: "slot-continue", slot: target } }, ...goBack, ...review];
+      if (isRequired(target, state)) return [...optionChips, ...goBack, ...review];
+      return [...optionChips, { label: "Skip", action: { kind: "slot-skip", slot: target } }, ...goBack, ...review];
     },
-    [state],
+    [selection, state],
   );
 
+  // The mode the last emitted turn belonged to. Only a *change* into chat may speak: the machine's state
+  // is `CHAT` before the first message and after a send, and a reply printed there would be the panel
+  // announcing that nothing is happening.
+  const emittedMode = useRef<typeof state.mode | null>(null);
+
   useEffect(() => {
+    // Transcript turns run after the machine transition commits; cancellation prevents an obsolete
+    // question from being emitted when another transition wins before the scheduled turn.
+    const timer = window.setTimeout(() => {
+    const previous = emittedMode.current;
+    emittedMode.current = state.mode;
+
     if (state.mode === "CHAT") {
       emittedTurn.current = "";
+      // Every way out of the questions (`stop`, `Esc`, the menu's own "Stop the questions", the exit link
+      // in the progress row) dispatches this one event, so the acknowledgement lives on the transition
+      // rather than at four call sites. Without it the panel goes silent the moment it is asked to be
+      // quiet, and the chip row goes with it: the visitor has said "stop" to a machine that answers by
+      // removing everything, which reads as a crash. The menu comes back because the answers are kept,
+      // and "Start a project" is the control that proves it.
+      if (previous !== null && previous !== "CHAT" && previous !== "DONE" && previous !== "SUBMITTING") {
+        // The promise has to match the ledger. Most exits happen after at least one answer, but a visitor
+        // who stops on the first question is told the truth about the resume: there is nothing to pick up.
+        const kept = state.touched.length > 0;
+        const reply = {
+          blocks: [
+            {
+              t: "p" as const,
+              text: kept
+                ? `Stopped. Your ${state.touched.length === 1 ? "answer" : `${state.touched.length} answers`} stay in this draft, so Start a project picks up at the next question rather than the first.`
+                : "Stopped. Nothing was recorded yet, so Start a project begins again at the first question.",
+            },
+          ],
+          chips: menuForMode("CHAT"),
+        };
+        say(reply);
+        engine.seedTurn(reply.chips);
+      }
       return;
     }
 
@@ -476,9 +606,12 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
             : definition.question,
       });
 
+      // Re-opened from the review card, the buffer starts as the answer already stored, so the chips the
+      // visitor pressed before show as pressed and the count on `Continue` matches the brief.
       const stored = state.slots[active];
-      setSelection(Array.isArray(stored) ? [...stored] : []);
-      say({ blocks, chips: chipsForSlot(active) });
+      const storedSelection = Array.isArray(stored) ? [...stored] : [];
+      setSelection(storedSelection);
+      say({ blocks, chips: chipsForSlot(active, storedSelection) });
       return;
     }
 
@@ -491,7 +624,8 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
             { t: "p", text: "Here is what I have. Tap any line to change it." },
           ],
           chips: [
-            { label: "Send it", action: { kind: "intake-action", action: "submit" } },
+            { label: "Send brief", action: { kind: "intake-action", action: "submit" } },
+            { label: "Add more details", action: { kind: "intake-action", action: "details" } },
             { label: "Not yet", action: { kind: "intake-action", action: "later" } },
             { label: "Stop and ask questions instead", action: { kind: "intake-action", action: "exit" } },
           ],
@@ -542,6 +676,8 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         chips: options,
       });
     }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [chipsForSlot, engine, say, state]);
 
   // Submission
@@ -598,33 +734,41 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   }, [knowledge.studio.email, knowledge.studio.phone, send, state.idempotencyKey, state.mode, state.slots]);
 
   // Starting intake
-  const startIntake = useCallback(() => {
+  const startIntake = useCallback((serviceSlug?: string) => {
     emittedTurn.current = "";
     const reply = engine.byId("intake.trigger");
-    send({ t: "START_INTAKE" });
+    setQuestionOpen(false);
+    setDetourOpen(false);
+    setPendingField(null);
+    send({ t: "START_INTAKE", serviceSlug });
     // The trigger line explains the rules; the machine's own emitter prints the first question under
     // it, so the chip row here would only be in the way for half a second.
     if (reply) say({ blocks: reply.blocks, chips: [] });
   }, [engine, say, send]);
 
   // Chip handling
-  /** Multi-select taps answer nothing on their own: they join a buffer the `Continue` chip commits. */
+  /**
+   * Multi-select taps answer nothing on their own: they join a buffer the `Continue` chip commits.
+   *
+   * The row is re-printed against the new buffer and nothing else changes. Every tap used to append a
+   * transcript line ("Brand Strategy added. 1 picked."), which grew the conversation one paragraph per
+   * tap and pushed the options the visitor was still using upward — the panel visibly crawled while
+   * somebody filled in one answer. The pressed chip is the feedback, the count on the commit chip is the
+   * summary, and the transcript stays where it was.
+   */
   const toggleIntoSelection = useCallback(
     (value: string, target: SlotId) => {
-      const definition = SLOTS[target];
-      // Read through `slotOptions`, not `definition.options`: the services question has no static set,
-      // so a label looked up here would fall back to the raw value for every service chip.
-      const label = slotOptions(definition, state.slots).find((option) => option.value === value)?.chip ?? value;
-      const next = selection.includes(value) ? selection.filter((item) => item !== value) : [...selection, value];
+      const next = selection.includes(value)
+        ? selection.filter((item) => item !== value)
+        : target === "serviceInterest"
+          ? value === UNDECIDED_SERVICE ? [value] : [...selection.filter((item) => item !== UNDECIDED_SERVICE), value]
+          : [...selection, value];
       setSelection(next);
-      // Outside the state updater: React may run an updater twice, and an `append` in here would print
-      // the count line twice under the same tap.
-      append(
-        { speaker: "assistant", blocks: [{ t: "p", text: `${label}${next.includes(value) ? " added" : " removed"}. ${next.length} picked.` }] },
-        chipsForSlot(target),
-      );
+      // Outside the state updater: React may run an updater twice, and a second `setChips` for the same
+      // tap would be a second render of the row for no reason.
+      setChips(chipsForSlot(target, next));
     },
-    [append, chipsForSlot, selection, state.slots],
+    [chipsForSlot, selection],
   );
 
   const editSlot = useCallback(
@@ -637,15 +781,91 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     [rememberVisitor, send, state.slots],
   );
 
+  /**
+   * Say why a control did nothing.
+   *
+   * Every chip stays on screen as long as the row that printed it is readable, so a tap aimed at a
+   * question the machine has already moved past is legal to make and illegal to honour. The reducer
+   * refuses it — correctly, because filing a categories answer against the phone number would corrupt
+   * the brief — and a refusal with no line under it is what a visitor reads as a dead button. So the
+   * refusal names the question it turned down, says which one is live, and puts that one's own buttons
+   * back where the tap landed.
+   */
+  const answerMovedOn = useCallback(
+    (asked: SlotId | null) => {
+      const active = state.mode === "INTAKE_FORM" ? currentSlot(state) : null;
+      if (active) {
+        say({
+          blocks: [
+            {
+              t: "p",
+              text: asked
+                ? `That was an answer to "${SLOTS[asked].label}". I am on "${SLOTS[active].label}" now, and those buttons are below.`
+                : `Nothing is answered from that button any more. I am on "${SLOTS[active].label}" now, and those buttons are below.`,
+            },
+          ],
+          chips: chipsForSlot(active),
+        });
+        return;
+      }
+      if (state.mode === "REVIEW") {
+        say({
+          blocks: [{ t: "p", text: "The questions are done, so there is nothing left to answer. Tap a line on the card to change it." }],
+          chips: reviewRows(state.slots).map((row) => ({ label: row.label, action: { kind: "slot-edit", slot: row.slot } as const })),
+        });
+        return;
+      }
+      say({
+        blocks: [{ t: "p", text: "That button belongs to a turn that has passed. Ask me something, or start a brief." }],
+        chips: menuForMode(state.mode),
+      });
+    },
+    [chipsForSlot, say, state],
+  );
+
+  /**
+   * Answer the one question that has no answer in the machine: where the brief is. "Start a project"
+   * stays visible in the menu while a brief is open, and so does every intent chip that resolves to it,
+   * so both routes have to say which question is live instead of restarting the run or saying nothing.
+   */
+  const whereIsTheBrief = useCallback(() => {
+    if (state.mode === "SUBMITTING") {
+      say({ blocks: [{ t: "p", text: "It is on its way. I will tell you the moment it lands." }], chips: [] });
+      return;
+    }
+    if (state.mode === "INTAKE_FORM") {
+      const active = currentSlot(state);
+      say({
+        blocks: [{ t: "p", text: `Your brief is already running — I am on "${SLOTS[active].label}". Answer this one, or press Stop the questions.` }],
+        chips: chipsForSlot(active),
+      });
+      return;
+    }
+    say({
+      blocks: [{ t: "p", text: "Your brief is open on the card above. Press send it when it reads right, or tap a line to change it." }],
+      chips: menuForMode(state.mode),
+    });
+  }, [chipsForSlot, say, state]);
+
   const onChip = useCallback(
     (chip: Chip) => {
       const action = chip.action;
       setMenuOpen(false);
+      if (action.kind !== "slot-toggle") {
+        setQuestionOpen(false);
+        setPendingField(null);
+      }
 
       switch (action.kind) {
         case "intent": {
           const reply = engine.byId(action.id);
-          if (reply) say(reply);
+          if (!reply) return;
+          // §05 §1.5: the tapped label becomes the visitor's own line. A chip that produces only an
+          // answer looks like the panel decided to talk about something unprompted, and an option row
+          // that answers a question already echoes the choice, so this was the one asymmetry left.
+          rememberVisitor(chip.label);
+          if (state.mode === "INTAKE_FORM") setDetourOpen(true);
+          say(reply);
           return;
         }
         case "route": {
@@ -664,37 +884,62 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
         case "intake": {
-          if (state.mode === "CHAT") startIntake();
+          // Pressing "Start a project" while a brief is open must not restart it, and must not be
+          // silence either: a pressed button that says nothing is the dead control this module exists to
+          // avoid, and the menu entry is exactly what a visitor reaches for when they lose their place.
+          if (state.mode === "CHAT") {
+            startIntake(action.serviceSlug);
+            return;
+          }
+          whereIsTheBrief();
           return;
         }
         case "slot-toggle": {
-          if (currentSlot(state) !== action.slot) return;
+          setDetourOpen(false);
+          if (currentSlot(state) !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
           toggleIntoSelection(action.value, action.slot);
           return;
         }
         case "slot-pick": {
+          setDetourOpen(false);
           const active = currentSlot(state);
-          if (active !== action.slot) return;
+          if (active !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
           rememberVisitor(chip.label);
           send({ t: "ANSWER", slot: active, value: action.value });
           return;
         }
         case "slot-continue": {
+          setDetourOpen(false);
           const active = currentSlot(state);
-          if (active !== action.slot) return;
-          rememberVisitor(selection.length > 0 ? selection.join(", ") : "Nothing more");
+          if (active !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
+          const options = slotOptions(SLOTS[active], state.slots);
+          rememberVisitor(selection.length > 0 ? selection.map((value) => options.find((option) => option.value === value)?.chip ?? value).join(", ") : "Nothing more");
           send({ t: "ANSWER", slot: active, value: [...selection] });
           setSelection([]);
           return;
         }
         case "slot-skip": {
+          setDetourOpen(false);
           const active = currentSlot(state);
-          if (active !== action.slot) return;
+          if (active !== action.slot) {
+            answerMovedOn(action.slot);
+            return;
+          }
           rememberVisitor("Skip");
           send({ t: "SKIP", slot: active });
           return;
         }
         case "slot-edit": {
+          setDetourOpen(false);
           editSlot(action.slot);
           return;
         }
@@ -703,11 +948,13 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           if (action.action === "retry") send({ t: "RETRY", idempotencyKey: createIdempotencyKey() });
           if (action.action === "later") closePanel();
           if (action.action === "exit") send({ t: "EXIT_TO_CHAT" });
+          if (action.action === "review") send({ t: "REVIEW_NOW" });
+          if (action.action === "details") send({ t: "ADD_DETAILS" });
           return;
         }
       }
     },
-    [closePanel, editSlot, engine, rememberVisitor, router, selection, send, startIntake, state, toggleIntoSelection],
+    [answerMovedOn, closePanel, editSlot, engine, rememberVisitor, router, selection, say, send, startIntake, state, toggleIntoSelection, whereIsTheBrief],
   );
 
   // Free text
@@ -715,15 +962,42 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     (text: string) => {
       const trimmed = text.trim();
       if (trimmed.length === 0) return;
+      setPendingField(null);
       rememberVisitor(trimmed);
 
       if (state.mode === "SUBMITTING") return;
 
       if (state.mode === "INTAKE_FORM" && slot) {
-        // Before every other reading of the word: "stop" typed at a question has to leave the questions,
-        // not become the answer to them.
-        if (ABORT_WORDS.test(trimmed)) {
+        // Whole-message commands belong to the task controls, even in a text slot; longer titles remain literal.
+        const command = parseIntakeCommand(trimmed);
+        if (command === "exit") {
           send({ t: "EXIT_TO_CHAT" });
+          return;
+        }
+        if (command === "review") {
+          send({ t: "REVIEW_NOW" });
+          return;
+        }
+        if (command === "back") {
+          const previous = SLOT_ORDER.slice(0, state.slotIndex).reverse().find((id) =>
+            !(id === "phone" && isFilled(state.slots.email)) &&
+            !(id === "services" && !isFilled(state.slots.categories)),
+          );
+          if (previous) {
+            send({ t: "EDIT_SLOT", slot: previous });
+          } else {
+            say({ blocks: [{ t: "p", text: "This is the first question. Choose an answer or stop the questions." }], chips: chipsForSlot(slot) });
+          }
+          return;
+        }
+        if (command === "contact") {
+          const contact = engine.lookup("contact");
+          if (contact) {
+            setDetourOpen(true);
+            say(contact.reply);
+          } else {
+            say({ blocks: [{ t: "p", text: "I cannot load the studio's contact details right now." }], chips: chipsForSlot(slot) });
+          }
           return;
         }
 
@@ -754,7 +1028,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
                     : `Got it, ${next.length} so far. Another one, or is that everything?`,
               },
             ],
-            chips: chipsForSlot(slot),
+            chips: chipsForSlot(slot, next),
           });
           return;
         }
@@ -762,9 +1036,65 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         const options = slotOptions(definition, state.slots);
         const matched = matchOption(trimmed, options);
 
-        // A closed set is tried first. `No` is the stored answer to the showcase question, and a skip
-        // test that runs ahead of it loses a decision the visitor actually made.
-        if (matched === null && SKIP_WORDS.test(trimmed)) {
+        // An option named exactly is an answer whatever else the sentence could mean: `Brand Strategy`
+        // is both a discipline on this card and the residue of a services question, and the reading that
+        // files a real answer has to win. Everything below is reached only when nothing was named.
+        if (matched === null) {
+          const polarity = polarityMatch(trimmed, options);
+          if (polarity?.kind === "match") {
+            send({ t: "ANSWER", slot, value: polarity.value });
+            return;
+          }
+          if (polarity?.kind === "ambiguous") {
+            // Two options begin with the word they typed. Picking one would put a preference in the CRM
+            // that the visitor never stated, so the pod asks which and leaves the buttons up.
+            const named = polarity.values
+              .map((value) => options.find((option) => option.value === value)?.chip ?? value)
+              .join(" or ");
+            say({
+              blocks: [{ t: "p", text: `That is a yes, and this question has two of them: ${named}. Which one is it?` }],
+              chips: chipsForSlot(slot),
+            });
+            return;
+          }
+        }
+
+        // A question asked in the middle of a brief is a question, not an answer to it. Where the slot is
+        // a blank the visitor writes into, the message also has to be shaped like a question, because
+        // "Kerala, for the temple project" is somebody answering; on a question with buttons no shape is
+        // needed, since nothing typed there can be filed as an answer anyway. The live question comes
+        // back with its own buttons, so a detour that turns out to be wrong costs a re-read and not the
+        // answer — which is the right side of the trade against a name field holding "who are you".
+        const writesAnAnswer = options.length === 0 && (definition.kind === "text" || definition.kind === "multiline");
+        // Two routes into a detour at a blank the visitor writes into, and both read the message rather
+        // than the corpus: the shape of the sentence, and a chat abbreviation at its head. The route that
+        // used to be here was the resolver's opinion — any phrase of more than one word that the engine
+        // confidently answered was treated as a change of subject — and measurement showed that this
+        // bought nothing and cost real answers. `any discount available`, the case it was written for,
+        // disambiguates rather than answers, so `engine.lookup` returned null and the clause never
+        // fired; meanwhile `social media`, `brand identity` and `demand generation` are each answered at
+        // 1.000 and each is a thing a visitor calls their project, so the clause spoke for them and the
+        // brief stored a service page in their stead. Having an answer is not evidence of a question.
+        const asksSomething =
+          !writesAnAnswer || looksLikeQuestion(trimmed) || opensWithChatShorthand(trimmed);
+        if (matched === null && asksSomething) {
+          const detour = engine.lookup(trimmed);
+          if (detour) {
+            if (detour.intentId === "intake.exit") {
+              send({ t: "EXIT_TO_CHAT" });
+              return;
+            }
+            if (detour.intentId === "intake.trigger") {
+              whereIsTheBrief();
+              return;
+            }
+            setDetourOpen(true);
+            say(detour.reply);
+            return;
+          }
+        }
+
+        if (matched === null && (SKIP_WORDS.test(trimmed) || SKIP_PHRASES.test(trimmed))) {
           send({ t: "SKIP", slot });
           return;
         }
@@ -787,13 +1117,26 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
 
+        // A title and a request can have the same folded words. Keep the raw value and ask which
+        // meaning was intended instead of rejecting a legitimate title or silently storing a question.
+        const ambiguousFact = (slot === "name" || slot === "projectName" || slot === "company") && (
+          looksLikeQuestion(trimmed) || opensWithChatShorthand(trimmed) || /^any\b.*\b(discount|price|pricing|services?|cost|available)\b/i.test(trimmed)
+        );
+        if (ambiguousFact) {
+          setPendingField({ slot, value: trimmed });
+          return;
+        }
+
+        setPendingField(null);
+        setQuestionOpen(false);
+        setDetourOpen(false);
         send({ t: "ANSWER", slot, value: trimmed });
         return;
       }
 
       if (state.mode === "REVIEW") {
         say({
-          blocks: [{ t: "p", text: "Tap the line that needs changing, or press send it. I will not send anything on a typed word." }],
+          blocks: [{ t: "p", text: "Choose a line to change, or use Send brief when you are ready." }],
           chips: reviewRows(state.slots).map((row) => ({ label: row.label, action: { kind: "slot-edit", slot: row.slot } as const })),
         });
         return;
@@ -808,7 +1151,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       }
       say(turn.reply);
     },
-    [chipsForSlot, engine, rememberVisitor, say, selection, send, slot, startIntake, state],
+    [chipsForSlot, engine, rememberVisitor, say, selection, send, slot, startIntake, state, toggleIntoSelection, whereIsTheBrief],
   );
 
   // Idle nudge (D5)
@@ -869,13 +1212,43 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     };
   }, []);
 
+  /**
+   * The brief's position, in whichever currency the visitor is in. While a question is on screen that is
+   * the number of the question being asked: "4 of 17" answers "how far have I got", whereas counting
+   * filled slots makes the row go backwards whenever an answer is corrected, and stays where it was when
+   * an optional question is skipped — so the bar claimed to be broken for a brief that was simply being
+   * answered honestly. Outside the questions there is nothing being asked, so the filled count is the
+   * truth about what will be sent.
+   */
   const progress = useMemo(() => {
-    const answered = SLOT_ORDER.filter((entry) => isFilled(state.slots[entry])).length;
-    return { answered, total: SLOT_ORDER.length };
-  }, [state.slots]);
+    const order = (state.enriching ? SLOT_ORDER : SHORT_BRIEF_SLOTS).filter((entry) => (
+      !(entry === "phone" && isFilled(state.slots.email)) && !(entry === "services" && !isFilled(state.slots.categories))
+    ));
+    const answered = order.filter((entry) => isFilled(state.slots[entry])).length;
+    return {
+      answered,
+      total: order.length,
+      asking: state.mode === "INTAKE_FORM" && slot ? order.indexOf(slot) + 1 : 0,
+    };
+  }, [slot, state.enriching, state.mode, state.slots]);
 
   const activeDefinition = slot ? SLOTS[slot] : null;
   const composerBlocked = state.mode === "SUBMITTING";
+  const taskView = state.mode !== "CHAT" && state.mode !== "DONE";
+  const separatedReplies = taskReplies(chips);
+  const choiceTask = state.mode === "INTAKE_FORM" && !!activeDefinition && (
+    activeDefinition.kind === "multi" || activeDefinition.kind === "single"
+  );
+  const visibleChoices = taskView ? separatedReplies.choices : chips;
+  const showComposer = !choiceTask || questionOpen || detourOpen;
+  const choiceGroups = useMemo(() => {
+    const groups = new Map<string, string>();
+    for (const [category, services] of Object.entries(SERVICES_BY_CATEGORY)) {
+      for (const service of services) groups.set(service, category);
+    }
+    for (const service of knowledge.services) groups.set(service.slug, service.split === "B2B" ? "Business services" : "Consumer-brand services");
+    return groups;
+  }, [knowledge.services]);
   const isSelected = useCallback(
     (chip: Chip): boolean => chip.action.kind === "slot-toggle" && selection.includes(chip.action.value),
     [selection],
@@ -906,9 +1279,28 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         aria-haspopup="dialog"
         aria-controls="mubi-pod-panel"
       >
-        <span className={styles.launcherGlyph} aria-hidden="true">
-          {open ? "×" : "U"}
-        </span>
+        {open ? (
+          <span className={styles.launcherGlyph} aria-hidden="true">
+            ×
+          </span>
+        ) : (
+          <div className={styles.launcherAvatarWrap} aria-hidden="true">
+            <div className={styles.launcherAvatar}>
+              <Image
+                src="/avatars/sophia-sterling.jpg"
+                alt="Sophia Sterling"
+                width={34}
+                height={34}
+                className={styles.launcherAvatarImg}
+                priority
+              />
+              <span className={styles.statusBeacon} aria-hidden="true">
+                <span className={styles.statusPulse} />
+                <span className={styles.statusDot} />
+              </span>
+            </div>
+          </div>
+        )}
         <span className={styles.launcherText}>
           <span className={styles.launcherName}>{PERSONA.name}</span>
           <span className={styles.launcherHint}>{open ? "Close" : "Ask"}</span>
@@ -930,6 +1322,13 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="mubi-pod-title"
+        tabIndex={-1}
+        // Opening the panel stops Lenis, and a stopped Lenis still cancels every wheel and touchmove it
+        // sees outside a `data-lenis-prevent` subtree. The exemption is on the panel rather than on the
+        // message list because the panel has one scroll surface: a wheel that lands on the conversation
+        // or on the replies under it has to move it. The header and the composer are fixed chrome and
+        // deliberately do not scroll — they are the parts that stay reachable while it does.
+        data-lenis-prevent
       >
         <PersonaHeader titleId="mubi-pod-title" menuOpen={menuOpen} onMenu={() => setMenuOpen((prev) => !prev)} onClose={closePanel} />
 
@@ -939,10 +1338,16 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
             <span className={styles.progressRail} aria-hidden="true">
               <span
                 className={styles.progressFill}
-                style={{ "--fill": `${Math.round((progress.answered / progress.total) * 100)}%` } as CSSProperties}
+                style={
+                  {
+                    "--fill": `${Math.round(((progress.asking > 0 ? progress.asking : progress.answered) / progress.total) * 100)}%`,
+                  } as CSSProperties
+                }
               />
             </span>
-            <span className={styles.progressValue}>{`${progress.answered} of ${progress.total}`}</span>
+            <span className={styles.progressValue}>
+              {progress.asking > 0 ? `Question ${progress.asking} of ${progress.total}` : `${progress.answered} of ${progress.total} answered`}
+            </span>
             {/* Hidden rather than inert mid-flight: the machine refuses to leave intake while a request
                 is outstanding, and a control that cannot do its job is a defect, not an affordance. */}
             {state.mode !== "SUBMITTING" ? (
@@ -960,11 +1365,63 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           </div>
         ) : null}
 
-        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} onNavigate={closePanel} />
+        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} onNavigate={closePanel} taskMode={choiceTask && !detourOpen}>
+          {/* The replies on offer are the last thing in the conversation, not a second pane bolted under
+              it. Inside the flow they scroll with the message that produced them, which is what the
+              transcript's own height can no longer guarantee once a seventeen-option wall is open. */}
+          <div className={styles.tray} data-count={visibleChoices.length} data-task-start={choiceTask && !detourOpen ? "" : undefined}>
+            {choiceTask && !detourOpen && visibleChoices.length > 0 ? (
+              <>
+                <div className={styles.activeTask}>
+                  <h2 className={styles.taskHeading} tabIndex={-1} data-task-heading>{activeDefinition.question}</h2>
+                  {activeDefinition.kind === "multi" ? null : <p className={styles.taskHint}>Choose one answer.</p>}
+                </div>
+                <ChoiceGroups chips={visibleChoices} groups={choiceGroups} onChip={onChip} isSelected={isSelected} />
+              </>
+            ) : <ChipRow chips={visibleChoices} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />}
+          </div>
+        </Transcript>
 
-        <div className={styles.tray} data-count={chips.length}>
-          <ChipRow chips={chips} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />
-        </div>
+        {pendingField && slot === pendingField.slot && state.mode === "INTAKE_FORM" ? (
+          <FieldConfirmation
+            label={SLOTS[pendingField.slot].label}
+            value={pendingField.value}
+            onUseValue={() => {
+              send({ t: "ANSWER", slot: pendingField.slot, value: pendingField.value });
+              setPendingField(null);
+              setQuestionOpen(false);
+            }}
+            onAsk={() => {
+              const answer = engine.ask(pendingField.value);
+              setDetourOpen(true);
+              say(answer.reply);
+              setPendingField(null);
+            }}
+          />
+        ) : null}
+
+        {state.mode === "INTAKE_FORM" && detourOpen && !typing ? (
+          <div className={styles.taskActions} role="group" aria-label="Return to your brief">
+            <button type="button" className={styles.taskPrimary} onClick={() => {
+              setDetourOpen(false);
+              setQuestionOpen(false);
+              if (slot) setChips(chipsForSlot(slot));
+              later(() => panelRef.current?.querySelector<HTMLElement>("[data-task-heading]")?.focus({ preventScroll: true }), 0);
+            }}>Return to brief</button>
+          </div>
+        ) : taskView && !typing && (separatedReplies.primary || separatedReplies.secondary.length > 0 || choiceTask) ? (
+          <TaskActions
+            primary={separatedReplies.primary}
+            secondary={separatedReplies.secondary}
+            selectedCount={choiceTask && activeDefinition.kind === "multi" ? selection.length : undefined}
+            onChip={onChip}
+            onQuestion={choiceTask ? () => {
+              setQuestionOpen((wasOpen) => !wasOpen);
+              if (!questionOpen) later(() => inputRef.current?.focus({ preventScroll: true }), 0);
+            } : undefined}
+            questionOpen={questionOpen}
+          />
+        ) : null}
 
         {consented === null ? (
           <div className={styles.consent}>
@@ -996,17 +1453,19 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           </p>
         ) : null}
 
+        <div hidden={!showComposer || state.mode === "REVIEW"}>
         <Composer
           inputRef={inputRef}
           onSubmit={onFreeText}
           blocked={composerBlocked}
           blockReason="Sending your brief. One moment."
-          placeholder={activeDefinition?.placeholder}
+          placeholder={choiceTask ? "Ask a question, or type an option exactly" : activeDefinition?.placeholder}
           maxLength={activeDefinition?.maxLength}
           helper={
             activeDefinition && isFilled(state.slots[activeDefinition.id]) ? `${activeDefinition.label} is already answered. Typing replaces it.` : undefined
           }
         />
+        </div>
       </section>
     </>
   );
