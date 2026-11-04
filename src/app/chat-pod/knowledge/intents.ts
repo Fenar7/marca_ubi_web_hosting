@@ -44,7 +44,7 @@ const asChip = {
   intent: (label: string, id: string): Chip => ({ label, action: { kind: "intent", id } }),
   route: (label: string, href: string): Chip => ({ label, action: { kind: "route", href } }),
   external: (label: string, href: string): Chip => ({ label, action: { kind: "external", href } }),
-  intake: (label = "Start a project"): Chip => ({ label, action: { kind: "intake" } }),
+  intake: (label = "Start a project", serviceSlug?: string): Chip => ({ label, action: { kind: "intake", ...(serviceSlug ? { serviceSlug } : {}) } }),
   close: (label = "Close"): Chip => ({ label, action: { kind: "close" } }),
 };
 
@@ -203,14 +203,8 @@ const STATIC_INTENTS: Intent[] = [
     id: "identity.studio",
     label: "Who we are",
     source: "src/sanity/lib/faq-queries.ts:22-24; src/app/components/Sections/ServicesAccordion/types.ts:28,130",
-    // The company question, which had no owner anywhere in this table until now. "what do you do" was
-    // authored under `services.overview`, whose answer opens by asking the visitor who they sell to, so
-    // a first-time visitor asking what the studio is got a sales qualification question back and read
-    // the pod as not listening. This is the other half of that: a question about us, answered about us.
-    //
-    // "who are you" and "about you" moved here from `process.team`, which answered them with two street
-    // addresses. "what are you" stays with `smalltalk.areyouhuman` on purpose: that one asks what is
-    // talking, this one asks what is behind the door.
+    // Studio identity and the catalogue are different questions. "what are you" belongs to the bot
+    // disclosure; "what do you do" belongs here and its opening control must use this same intent.
     utterances: [
       "what do you do",
       "what do you actually do",
@@ -238,19 +232,15 @@ const STATIC_INTENTS: Intent[] = [
       blocks: [
         {
           t: "p",
-          text: "Brand work and software from one studio. Plenty of firms split those across an agency and a build shop; Marca Ubi keeps how a brand reads and the systems it runs on in the same team, which is the position the FAQ sets out at greater length.",
+          text: "Marca Ubi is a creative technology studio working across brand, marketing, and software. Our services cover business audiences and consumer brands.",
         },
         {
           t: "p",
-          text: `${kb.counts.servicePages} of that has a page of its own: ${kb.counts.servicesB2B} lines aimed at businesses and ${kb.counts.servicesB2C} at consumer brands.`,
-        },
-        {
-          t: "p",
-          text: `The ${kb.studio.locations.length} studios are in Kerala, and the people in them are on the careers page.`,
+          text: `You can explore ${kb.counts.servicePages} published service lines, or look at our work and how a project starts.`,
         },
       ],
       chips: [
-        asChip.intent("What we sell", "services.overview"),
+        asChip.intent("Explore services", "services.overview"),
         asChip.intent("See the work", "work.overview"),
         asChip.route("Open roles", "/careers"),
         asChip.route("Read the FAQ", FAQ_HREF),
@@ -288,6 +278,7 @@ const STATIC_INTENTS: Intent[] = [
       "what do you sell",
       "what can you do for me",
       "help me with marketing",
+      "show me everything you do",
     ],
     // "services" must stay first: the leading keyword carries the topic weight, "available" is the
     // word that was missing from the denominator, and appending it cannot demote the subject noun.
@@ -296,18 +287,38 @@ const STATIC_INTENTS: Intent[] = [
       blocks: [
         {
           t: "p",
-          text: "Who do you sell to, other businesses or consumers? That is the question worth answering first, because the work is organised by it.",
+          text: "We work across marketing campaigns, brand and creative work, content, public relations, digital performance, customer loyalty, and live experiences.",
         },
         {
           t: "p",
-          text: `Business-facing lines run ${kb.counts.servicesB2B}, consumer-facing lines run ${kb.counts.servicesB2C}, and each one has a page setting out its deliverables.`,
+          text: `There are ${kb.counts.servicePages} published service lines for business audiences and consumer brands. You can explore the full range or choose a service to see what it covers.`,
         },
       ],
       chips: [
-        asChip.intent("Business-to-business", "services.b2b"),
-        asChip.intent("Consumer brands", "services.b2c"),
-        asChip.intent("Not sure which", "services.whichone"),
-        asChip.route("All service pages", ALL_SERVICES_HREF),
+        asChip.intent("Explore all services", "services.catalogue"),
+        asChip.intent("Business services", "services.b2b"),
+        asChip.intent("Consumer-brand services", "services.b2c"),
+        asChip.intent("Help me choose", "services.whichone"),
+      ],
+    }),
+  },
+  {
+    id: "services.catalogue",
+    label: "All services",
+    source: "src/app/services/content.ts SERVICE_DETAILS",
+    utterances: ["service catalogue", "service catalog", "explore all services", "all service lines", "b2b and b2c", "b2b and b2c services", "both business and consumer services"],
+    keywords: ["catalogue", "catalog", "range"],
+    respond: (kb) => ({
+      blocks: [
+        { t: "p", text: "Our services, grouped by audience. Choose a line for its purpose and deliverables." },
+        { t: "p", text: "For business audiences:" },
+        { t: "list", items: kb.services.filter((service) => service.split === "B2B").map((service) => ({ label: service.title, sub: service.covers.slice(0, 2).join(", ") })) },
+        { t: "p", text: "For consumer brands:" },
+        { t: "list", items: kb.services.filter((service) => service.split === "B2C").map((service) => ({ label: service.title, sub: service.covers.slice(0, 2).join(", ") })) },
+      ],
+      chips: [
+        ...kb.services.map((service) => asChip.intent(`${service.title} (${service.split})`, `services.detail.${service.slug}`)),
+        asChip.route("Service pages", ALL_SERVICES_HREF),
       ],
     }),
   },
@@ -362,14 +373,15 @@ const STATIC_INTENTS: Intent[] = [
       blocks: [
         {
           t: "p",
-          text: "Tell me the outcome you are after and I will point at the right line. Are you trying to reach new buyers, build how the brand reads, or get more out of the customers you already have?",
+          text: "What would you like to achieve? These are starting points: reach new buyers, develop the brand, or retain customers. You can also browse the full range if none fits.",
         },
       ],
       chips: [
         asChip.intent("Reach new buyers", "services.detail.demand-generation"),
         asChip.intent("Build how the brand reads", "services.detail.integrated-creativity"),
-        asChip.intent("Get more from existing customers", "services.detail.crm-and-loyalty"),
-        asChip.route("Show me everything", ALL_SERVICES_HREF),
+        asChip.intent("Retain business customers", "services.detail.customer-marketing"),
+        asChip.intent("Retain consumer customers", "services.detail.crm-and-loyalty"),
+        asChip.intent("See all services", "services.catalogue"),
       ],
     }),
   },
@@ -767,6 +779,25 @@ const STATIC_INTENTS: Intent[] = [
   },
 
   {
+    id: "capabilities.digital",
+    label: "Web and app enquiries",
+    source: "src/app/lib/intake/intakeOptions.ts SERVICES_BY_CATEGORY; src/sanity/lib/faq-queries.ts",
+    utterances: [
+      "can you build a website", "can you build an app", "do you build apps", "do you build websites",
+      "do you do web design", "do you do ui ux", "ui ux", "ui ux design", "web design", "website design",
+      "app design", "website", "websites", "app", "apps", "i want a website", "i need a website",
+      "we need a website", "build me a website", "i want an app built", "can you design a website",
+    ],
+    keywords: ["website", "websites", "app", "apps", "ui", "ux"],
+    respond: () => ({
+      blocks: [
+        { t: "p", text: "Our project brief accepts web and app design enquiries, including web pages, landing pages, and app design. The published service catalogue also covers digital experiences and design systems." },
+        { t: "p", text: "There is no standalone website or app-build service page to confirm your exact scope here. You can describe what you need in a brief, or ask the studio directly." },
+      ],
+      chips: [asChip.intake("Discuss a digital project"), asChip.intent("Digital service catalogue", "services.catalogue"), asChip.intent("Contact the studio", "contact")],
+    }),
+  },
+  {
     id: "intake.trigger",
     label: "Start a project",
     source: "authored:03-conversation-script.md §7; docs/chat_pod/01-architecture.md §8",
@@ -790,20 +821,6 @@ const STATIC_INTENTS: Intent[] = [
       "proposal",
       "i would like a proposal",
       "work with you",
-      // The highest-value sentence a visitor can type and the corpus has no page for. Neither half of
-      // the published catalogue is titled "website" or "app", so there is no service page to answer
-      // with, and arithmetic on "i want a website" produced a fallback for a lead. Authoring it here is
-      // the honest route: the brief is what actually takes a build request. The keywords are unchanged
-      // on purpose, or every message that mentions a website would start competing with the service
-      // pages that do not exist.
-      "i want a website",
-      "i need a website",
-      "we need a website",
-      "build me a website",
-      "can you build a website",
-      "can you build an app",
-      "do you build apps",
-      "i want an app built",
     ],
     keywords: ["project", "brief", "enquiry", "hire", "proposal", "start"],
     respond: () => ({
@@ -868,7 +885,7 @@ function serviceDetailIntents(kb: KnowledgeBase): Intent[] {
 
     return {
       id: `services.detail.${service.slug}`,
-      label: service.title,
+      label: `${service.title} (${service.split})`,
       source: `src/app/services/content.ts:95 SERVICE_DETAILS (slug "${service.slug}"); src/app/services/content/${service.split === "B2B" ? "b2b" : "b2c"}.ts`,
       utterances,
       keywords: [
@@ -899,7 +916,7 @@ function serviceDetailIntents(kb: KnowledgeBase): Intent[] {
             ...(related ? [asChip.intent(related.title, `services.detail.${related.slug}`)] : []),
             asChip.intent("All business lines", "services.b2b"),
             asChip.intent("All consumer lines", "services.b2c"),
-            asChip.intake(),
+            asChip.intake("Discuss this service", service.slug),
           ],
         };
       },
@@ -1025,7 +1042,7 @@ export function openingReply(): Reply {
       },
     ],
     chips: [
-      asChip.intent("What do you do?", "services.overview"),
+      asChip.intent("Explore services", "services.overview"),
       asChip.intent("Show me the work", "work.overview"),
       asChip.intake(),
     ],
@@ -1042,18 +1059,18 @@ export function openingReply(): Reply {
  *   copy does not apologise; it puts the question and the chips next to each other.
  * - `hard` is the first miss. Matching is still live, so the way forward is to say the same thing in
  *   words this site actually publishes, with a person and a brief behind it.
- * - `capped` is the state after `FALLBACK_LIMIT` misses, where the engine has switched ordinary
- *   matching off. Repeating "I do not know" twice in a row is what makes a pod read as evasive, so this
- *   one states the change instead of the failure: only the escape-hatch intents still answer, which is
- *   why its chips are the two reliable routes and nothing else. None of the three promises to learn,
- *   because nothing here learns.
+ * - `capped` is the state after `FALLBACK_LIMIT` misses. Fuzzy matching narrows to the escape hatch,
+ *   while safe authored information remains available. Recovery copy must not claim that a familiar
+ *   service name has stopped working merely because an earlier question could not be understood.
  */
 export const FALLBACK_REPLIES = {
   soft: (candidates: Intent[]): Reply => ({
     blocks: [
       {
         t: "p",
-        text: "A few published things match that. Which one is closest, or none of them?",
+        text: candidates.every((candidate) => candidate.id.startsWith("services.detail."))
+          ? "Which service do you mean? The labels show the available choices."
+          : "Which would you like to cover first? Choose a topic below, or ask another question.",
       },
     ],
     chips: candidates.map((candidate) => asChip.intent(candidate.label, candidate.id)),
@@ -1062,9 +1079,8 @@ export const FALLBACK_REPLIES = {
     blocks: [
       {
         t: "p",
-        text: "Nothing published on this site matches that, so I am not going to guess at it. Try the name of a service, or the outcome you want from one.",
+        text: "I do not have a supported answer to that question. You can browse our services or contact the studio for help.",
       },
-      { t: "p", text: "A person can answer what I cannot, and a brief starts the same conversation properly." },
     ],
     chips: [...PERSISTENT_MENU],
   }),
@@ -1072,7 +1088,7 @@ export const FALLBACK_REPLIES = {
     blocks: [
       {
         t: "p",
-        text: `That is twice I have missed, so I am stopping the guessing for this conversation. From here I will only route you, not interpret you.`,
+        text: "I am having trouble matching that question. Services, contact details, and the buttons below are still available.",
       },
       {
         t: "p",

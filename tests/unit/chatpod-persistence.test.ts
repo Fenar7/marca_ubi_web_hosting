@@ -178,6 +178,17 @@ describe('Chat Pod persistence', () => {
   });
 
   describe('a working browser', () => {
+    it('round-trips additive service interest and company slots without rewriting legacy values', () => {
+      installWindow();
+      try {
+        const slots = { serviceInterest: ['account-based-marketing'], company: 'Acme Ltd', projectName: 'Launch', services: ['Postcard, flyer or print'] };
+        assert.equal(writeDraft(draft({ slots })), true);
+        assert.deepEqual(readDraft()?.slots, slots);
+      } finally {
+        uninstallWindow();
+      }
+    });
+
     it('brings back the answers exactly as they were given', () => {
       installWindow();
       try {

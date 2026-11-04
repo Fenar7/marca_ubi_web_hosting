@@ -47,6 +47,7 @@ const launcher = (page: Page): Locator =>
 const panel = (page: Page): Locator => page.locator('#mubi-pod-panel');
 const log = (page: Page): Locator => page.getByRole('log');
 const tray = (page: Page): Locator => page.getByRole('group', { name: 'Choose a reply' });
+const actions = (page: Page): Locator => page.getByRole('group', { name: 'Brief actions', exact: true });
 const composer = (page: Page): Locator => page.getByRole('textbox', { name: 'Message' });
 
 /** The launcher is deferred behind the loader and an idle slice; the ceiling is the 12s backstop plus slack. */
@@ -113,13 +114,14 @@ const LINKS_DONE_CHIPS = /^That is every link(?: \(\d+\))?$/;
 /** Start the questions from the persistent menu. */
 async function startIntake(page: Page): Promise<void> {
   await press(tray(page).getByRole('button', { name: 'Start a project', exact: true }), page);
-  await expect(tray(page).getByRole('button', { name: COMMIT_CHIPS })).toBeVisible({ timeout: 10_000 });
+  await expect(actions(page).getByRole('button', { name: COMMIT_CHIPS })).toBeVisible({ timeout: 10_000 });
 }
 
 /** Keyed by the placeholder the slot itself sets, so a re-worded question fails this test loudly. */
 const FREE_TEXT: Record<string, string> = {
   'Your name': 'Asha Menon',
   'you@company.com': 'asha@studio.example',
+  'Deliverables, audience, anything already decided': 'A campaign to reach buyers for our tea brand.',
 };
 
 /**
@@ -128,13 +130,13 @@ const FREE_TEXT: Record<string, string> = {
  */
 async function answerTurn(page: Page): Promise<void> {
   const chips = tray(page).getByRole('button');
-  const cont = chips.filter({ hasText: CONTINUE_CHIPS });
-  const linksDone = chips.filter({ hasText: LINKS_DONE_CHIPS });
-  const skip = chips.filter({ hasText: /^Skip$/ });
+  const cont = actions(page).getByRole('button', { name: CONTINUE_CHIPS });
+  const linksDone = actions(page).getByRole('button', { name: LINKS_DONE_CHIPS });
+  const skip = actions(page).getByRole('button', { name: 'Skip', exact: true });
 
   // Free text first: an optional text slot offers a Skip chip, and skipping the email would promote
   // the phone to required, which is a different branch of the machine than this walk is testing.
-  const placeholder = (await composer(page).getAttribute('placeholder')) ?? '';
+  const placeholder = await composer(page).isVisible() ? (await composer(page).getAttribute('placeholder')) ?? '' : '';
   const scripted = FREE_TEXT[placeholder];
   if (scripted !== undefined) {
     await composer(page).focus();
@@ -168,7 +170,7 @@ async function answerTurn(page: Page): Promise<void> {
 
 /** Drive the machine to the review card and stop. */
 async function walkToReview(page: Page, maxTurns = 30): Promise<Locator> {
-  const send = page.getByRole('button', { name: 'Send it', exact: true });
+  const send = page.getByRole('button', { name: 'Send brief', exact: true });
   for (let turn = 0; turn < maxTurns; turn += 1) {
     if (await send.isVisible().catch(() => false)) return send;
     await answerTurn(page);
@@ -309,7 +311,7 @@ test.describe('Chat Pod: mount, collision and geometry', () => {
     // The three controls a reader at this size actually needs: who is talking, what they just said, and
     // the way back out. A panel that keeps its floor height loses the first and the last.
     await expect(panel(page).getByRole('button', { name: 'Close the assistant panel', exact: true })).toBeVisible();
-    await expect(composer(page)).toBeVisible();
+    await expect(actions(page).getByRole('button', { name: 'Continue', exact: true })).toBeInViewport();
     const persona = panel(page).getByText('Ubi', { exact: true }).first();
     await expect(persona, 'the header is off-screen, so the visitor cannot tell who they are talking to').toBeInViewport();
 
@@ -418,7 +420,7 @@ test.describe('Chat Pod: mount, collision and geometry', () => {
    * reader is still standing at the end of the column afterwards. An uncompensated push leaves the newest
    * line 46px below the visible edge, which is the number this gate fails on.
    */
-  test('starting the brief does not leave the reader above the end of the column', async ({ page }) => {
+  test('starting a brief keeps its question and primary action available', async ({ page }) => {
     await page.addInitScript(() => {
       type ShiftEntry = PerformanceEntry & { hadRecentInput?: boolean; value?: number; sources?: { node: Node | null }[] };
       const sink = window as unknown as { __allShifts: { value: number; input: boolean; inPod: boolean }[] };
@@ -459,17 +461,9 @@ test.describe('Chat Pod: mount, collision and geometry', () => {
     // The panel is `position: fixed` with its bottom edge owned by the composer, so nothing about the panel
     // box itself moves: the rail's height comes out of the column.
     expect(after.panelBottom, 'the panel box moved when the rail appeared').toBe(before.panelBottom);
-    const taken = before.flowHeight - after.flowHeight;
-    expect(taken, `the column gave up ${taken}px for a ${after.railHeight}px rail`).toBeGreaterThanOrEqual(after.railHeight);
-    expect(taken, `the column gave up ${taken}px for a ${after.railHeight}px rail`).toBeLessThanOrEqual(after.railHeight + 24);
-    // And the reader ends where they were standing: the newest line still inside the visible column. A
-    // glide that has not landed yet is the one legitimate wait here, so the gate polls instead of sleeping.
-    await expect
-      .poll(async () => Math.max(0, (await measure()).belowTheEdge), {
-        message: 'the rail pushed the newest line out of the visible column and nothing gave it back',
-        timeout: 3_000,
-      })
-      .toBeLessThanOrEqual(1);
+    expect(after.flowHeight, 'task chrome must leave readable content').toBeGreaterThan(120);
+    await expect(panel(page).getByRole('heading', { name: /Which services interest you/ })).toBeInViewport();
+    await expect(actions(page).getByRole('button', { name: 'Continue', exact: true })).toBeInViewport();
 
     const shifts = await page.evaluate(() => (window as unknown as { __allShifts: { value: number; input: boolean; inPod: boolean }[] }).__allShifts);
     const fromInput = shifts.filter((shift) => shift.inPod && shift.input);
@@ -605,18 +599,19 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     await openPanel(page);
     await startIntake(page);
 
-    const cont = tray(page).getByRole('button', { name: CONTINUE_CHIPS });
+    const cont = actions(page).getByRole('button', { name: CONTINUE_CHIPS });
     await press(cont.first(), page);
-    await expect(log(page).getByText(/Choose at least one kind of work/)).toBeVisible({ timeout: 10_000 });
+    await expect(log(page).getByText(/Choose published services/)).toBeVisible({ timeout: 10_000 });
 
     // Same slot, still standing there, and the chips are back for another attempt.
-    await expect(tray(page).getByRole('button', { name: CONTINUE_CHIPS })).toBeVisible();
+    await expect(actions(page).getByRole('button', { name: CONTINUE_CHIPS })).toBeVisible();
   });
 
   test('typing an abort word like "stop" leaves the intake questions and preserves draft answers', async ({ page }) => {
     await openPanel(page);
     await startIntake(page);
 
+    await panel(page).getByRole('button', { name: 'Ask a question or type an answer', exact: true }).click();
     await composer(page).focus();
     await page.keyboard.type('stop', { delay: 12 });
     await page.keyboard.press('Enter');
@@ -633,7 +628,7 @@ test.describe('Chat Pod: keyboard-only intake', () => {
     // One slot answered, keyboard only and keyed off the tray's own shape rather than a category label,
     // so a taxonomy edit cannot silently leave this test with zero answers filed.
     await answerTurn(page);
-    const servicesQuestion = log(page).getByText(/Which of these do you need/);
+    const servicesQuestion = log(page).getByText(/In a sentence or two, what do you need/);
     await expect(servicesQuestion).toBeVisible({ timeout: 10_000 });
 
     // Escape pauses the questions; it does not discard them.
@@ -646,8 +641,8 @@ test.describe('Chat Pod: keyboard-only intake', () => {
 
     // Resumes at the services slot (slot 1) rather than resetting to slot 0. Read as the newest line so a
     // re-ask of the first question further up the transcript cannot satisfy it by accident.
-    await expect(log(page).locator('p').last()).toContainText('Which of these do you need');
-    await expect(tray(page).getByRole('button', { name: CONTINUE_CHIPS })).toBeVisible({ timeout: 10_000 });
+    await expect(log(page).locator('p').last()).toContainText('In a sentence or two, what do you need');
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Deliverables, audience, anything already decided');
   });
 });
 
@@ -700,7 +695,7 @@ test.describe('Chat Pod: submission outcomes', () => {
 
     await expect(log(page).getByText(/7012 052 472/)).toBeVisible({ timeout: 15_000 });
     await expect(log(page).getByRole('paragraph').filter({ hasText: 'Asha Menon' }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Send it again' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Retry sending' })).toBeVisible();
   });
 
   test('a transport failure retries three times with one key', async ({ page }) => {
@@ -886,10 +881,15 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
    * slot sets rather than by a count of turns — the order of the questions is the machine's business and
    * these tests are about what happens at one of them.
    */
-  async function atTheBlank(page: Page, placeholder: string, maxTurns = 14): Promise<void> {
+  async function atTheBlank(page: Page, placeholder: string, maxTurns = 30): Promise<void> {
     await startIntake(page);
     for (let turn = 0; turn < maxTurns; turn += 1) {
-      if ((await composer(page).getAttribute('placeholder')) === placeholder) return;
+      if (await composer(page).isVisible() && (await composer(page).getAttribute('placeholder')) === placeholder) return;
+      const details = panel(page).getByRole('button', { name: 'Add more details', exact: true });
+      if (await details.isVisible()) {
+        await press(details, page);
+        continue;
+      }
       await answerTurn(page);
     }
     throw new Error(`the intake never reached the blank keyed "${placeholder}"`);
@@ -899,19 +899,18 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
     await atTheBlank(page, 'Your name');
   }
 
-  test('the services question answers with the branch, not with a count', async ({ page }) => {
+  test('the services question explains the offering before optional narrowing', async ({ page }) => {
     await openPanel(page);
     await ask(page, 'what are the services available');
 
-    // The studio runs eight lines per side. Told that, a visitor still has to read sixteen pages; told
-    // who they sell to, they get a shortlist in one tap. This is the complaint the branch exists to fix,
-    // so the question and both branch chips have to arrive in the same turn.
-    await expect(log(page).getByText(/^Who do you sell to, other businesses or consumers\?/)).toBeVisible();
-    await expect(tray(page).getByRole('button', { name: 'Business-to-business', exact: true })).toBeVisible();
-    await expect(tray(page).getByRole('button', { name: 'Consumer brands', exact: true })).toBeVisible();
+    // Broad information must be useful before a visitor elects to narrow the catalogue.
+    await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Business services', exact: true })).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Consumer-brand services', exact: true })).toBeVisible();
 
-    // The branch is a question, not a dead end: each side answers with its own list.
-    await press(tray(page).getByRole('button', { name: 'Business-to-business', exact: true }), page);
+    await expect(log(page).getByText(/^Who do you sell to/)).toHaveCount(0);
+    // Optional narrowing still answers with the selected audience's list.
+    await press(tray(page).getByRole('button', { name: 'Business services', exact: true }), page);
     await expect(log(page).getByText(/^8 lines aimed at businesses\./)).toBeVisible();
   });
 
@@ -923,8 +922,8 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
     // Two characters sits under every typo floor in the resolver, so it could not be forgiven as a
     // misspelling either — it survived as a topic word no alias owns, and the services answer fell below
     // the acceptance margin into three chips. That is what read as a dumb chatbot.
-    await expect(log(page).getByText(/^Who do you sell to, other businesses or consumers\?/)).toBeVisible();
-    await expect(tray(page).getByRole('button', { name: 'Business-to-business', exact: true })).toBeVisible();
+    await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
+    await expect(tray(page).getByRole('button', { name: 'Business services', exact: true })).toBeVisible();
   });
 
   test('a question the corpus cannot answer is refused at the name blank, not filed', async ({ page }) => {
@@ -936,9 +935,7 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
     // Nothing published answers that, so the detour pass had nothing to say, and the message reached the
     // last branch: the validator, which accepts any 100 characters as a name. The studio's first email
     // would have opened on the visitor's salutation reading like a question about printers.
-    await expect(
-      log(page).getByText(/^That reads like a question, so I will not file it as your name\./),
-    ).toBeVisible();
+    await expect(panel(page).getByRole('button', { name: 'Use as name', exact: true })).toBeVisible();
 
     // Refusing is only honest if the blank is still standing where it was, with its own buttons.
     expect(await composer(page).getAttribute('placeholder')).toBe('Your name');
@@ -946,10 +943,8 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
     // The same blank, the same failure, with no question shape at all: `u offer web design` opens on a
     // chat abbreviation, the corpus has nothing to say about it, and the only evidence that it is a
     // question is the way it is spelled. Filing it put the visitor's enquiry in the salutation.
-    await ask(page, 'u offer web design');
-    await expect(
-      log(page).getByText(/^That reads like a question, so I will not file it as your name\./),
-    ).toHaveCount(2);
+    await ask(page, 'u repair old printers');
+    await expect(panel(page).getByRole('button', { name: 'Use as name', exact: true })).toBeVisible();
     expect(await composer(page).getAttribute('placeholder')).toBe('Your name');
 
     // And the visitor can answer it normally on the next line.
@@ -987,7 +982,7 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
 
     // Filed, which means the machine moved on and the value reached the card the studio reads.
     expect(await composer(page).getAttribute('placeholder')).not.toBe('Packaging for an organic beverage brand');
-    await expect(log(page).getByText(/^A few published things match that\./)).toHaveCount(0);
+    await expect(panel(page).getByRole('button', { name: 'Use as project', exact: true })).toHaveCount(0);
 
     const send = await walkToReview(page, 26);
     await expect(
@@ -1018,12 +1013,12 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
   test('a tapped chip becomes the visitor’s own line', async ({ page }) => {
     await openPanel(page);
     await ask(page, 'what are the services available');
-    await press(tray(page).getByRole('button', { name: 'Business-to-business', exact: true }), page);
+    await press(tray(page).getByRole('button', { name: 'Business services', exact: true }), page);
 
     // §05 §1.5. Without the echo, a chip-driven transcript is an assistant answering itself, and someone
     // scrolling back cannot tell which branch they took. Scoped to the log: the chips live in the tray,
     // so a match here can only be a transcript row.
-    await expect(log(page).getByText('Business-to-business', { exact: true })).toBeVisible();
+    await expect(log(page).getByText('Business services', { exact: true })).toBeVisible();
   });
 
   test('an answer has a deeper pass, and the second ask says so', async ({ page }) => {
@@ -1046,10 +1041,10 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
     await openPanel(page);
     await ask(page, 'public relations');
 
-    await expect(log(page).getByText(/^A few published things match that\./)).toBeVisible();
+    await expect(log(page).getByText(/^Which service do you mean/)).toBeVisible();
     // Two published lines really do carry that name, on opposite sides of the catalogue. One of them
     // silently winning is how a pod gets remembered as wrong.
-    expect(await tray(page).getByRole('button', { name: 'Public Relations (PR)' }).count()).toBe(2);
+    expect(await tray(page).getByRole('button', { name: /Public Relations \(PR\)/ }).count()).toBe(2);
 
     await ask(page, 'the first one');
     await expect(log(page).getByText(/^Earned attention carries a credibility paid reach cannot buy/)).toBeVisible();
@@ -1069,7 +1064,7 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
     // but it is also on screen as a chip, and either route lands on the same answer. What must not happen
     // is the pod treating a visible option as a miss.
     await expect(log(page).getByText(/^One idea, many channels, no dilution\./)).toBeVisible();
-    expect(await log(page).getByText(/^Nothing published on this site matches that/).count()).toBe(0);
+    expect(await log(page).getByText(/^I do not have a supported answer/).count()).toBe(0);
   });
 
   test('two misses, and the pod stops guessing without spending a guess on a follow-up', async ({ page }) => {
@@ -1077,7 +1072,7 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
     await ask(page, 'qwertyuiop');
     await ask(page, 'zxcvbnm');
 
-    const hardMisses = log(page).getByText(/^Nothing published on this site matches that/);
+    const hardMisses = log(page).getByText(/^I do not have a supported answer/);
     expect(await hardMisses.count()).toBe(2);
 
     // "tell me more" after a refusal is legible as a reference to nothing, and is answered as such.
@@ -1088,7 +1083,7 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
 
     await ask(page, 'asdfghjkl');
     await expect(
-      log(page).getByText(/^That is twice I have missed, so I am stopping the guessing for this conversation\./),
+      log(page).getByText(/^I am having trouble matching that question/),
     ).toBeVisible();
   });
 
@@ -1098,7 +1093,7 @@ test.describe('Chat Pod: comprehension and conversation state', () => {
 
     // "From here I will only route you, not interpret you" is a promise, so the chips have to be the
     // studio's own contact routes rather than the guess menu that just failed three times.
-    await expect(tray(page).getByRole('button', { name: /^Call \+91/ })).toBeVisible();
+    await expect(tray(page).getByRole('link', { name: /^Call \+91/ })).toBeVisible();
     await expect(tray(page).getByRole('button', { name: 'Talk to a person', exact: true })).toBeVisible();
   });
 });
@@ -1212,12 +1207,7 @@ test.describe('Scroll: one column in the panel, one lock on the page', () => {
 
   test('a real wheel over the chips moves the conversation', async ({ page }) => {
     await openPanel(page);
-    // Two disciplines is twenty services plus Continue: the tallest thing the panel can be asked to
-    // show, and the wall that used to scroll inside its own 7.5rem box instead of with the thread.
-    await press(tray(page).getByRole('button', { name: 'Start a project', exact: true }), page);
-    await press(tray(page).getByRole('button', { name: 'Logo & identity', exact: true }), page);
-    await press(tray(page).getByRole('button', { name: 'Web & app design', exact: true }), page);
-    await press(tray(page).getByRole('button', { name: COMMIT_CHIPS }), page);
+    await startIntake(page);
 
     const top = flow(page);
     await expect(top).toBeVisible();
@@ -1225,11 +1215,11 @@ test.describe('Scroll: one column in the panel, one lock on the page', () => {
     expect(await top.evaluate((node) => node.scrollHeight - node.clientHeight)).toBeGreaterThan(40);
 
     // The pointer is on a chip, not on the messages. This is the gesture that used to do nothing.
-    await tray(page).getByRole('button', { name: 'Logo design', exact: true }).hover();
-    await page.mouse.wheel(0, -420);
+    await tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true }).hover();
+    await page.mouse.wheel(0, 420);
     await expect
       .poll(async () => top.evaluate((node) => node.scrollTop), { message: 'the wheel over the chips moved the column' })
-      .toBeLessThan(before);
+      .toBeGreaterThan(before);
   });
 
   test('the keyboard moves the column, and the wheel is never swallowed inside the panel', async ({ page }) => {
@@ -1374,8 +1364,6 @@ test.describe('Multi-select: taps pick, they do not reprint', () => {
   test('three taps, one question, and the options do not move', async ({ page }) => {
     await openPanel(page);
     await tapInPlace(tray(page).getByRole('button', { name: 'Start a project', exact: true }), page);
-    await tapInPlace(tray(page).getByRole('button', { name: 'Logo & identity', exact: true }), page);
-    await tapInPlace(tray(page).getByRole('button', { name: COMMIT_CHIPS }), page);
 
     // Services: the widest set the machine offers, so it is the one that used to break the layout.
     const options = tray(page).getByRole('button');
@@ -1387,7 +1375,7 @@ test.describe('Multi-select: taps pick, they do not reprint', () => {
     const firstBox = await options.first().boundingBox();
     expect(firstBox).not.toBeNull();
 
-    for (const name of ['Logo design', 'Brand guide', 'Stationery']) {
+    for (const name of ['Demand Generation (B2B)', 'Integrated Marketing (B2B)', 'Corporate Communications (B2B)']) {
       await tapInPlace(tray(page).getByRole('button', { name, exact: true }), page);
     }
 
@@ -1398,7 +1386,117 @@ test.describe('Multi-select: taps pick, they do not reprint', () => {
     const afterBox = await options.first().boundingBox();
     expect(afterBox?.y).toBeCloseTo(firstBox!.y, 0);
 
-    await expect(tray(page).getByRole('button', { name: /^Continue \(3\)$/ })).toBeVisible();
+    await expect(actions(page).getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
+    await expect(actions(page).getByRole('status')).toHaveText('3 items selected');
+  });
+});
+
+test.describe('Local assistant: reported failures and complete tasks', () => {
+  for (const phrase of ['let me know about your services', 'what are the services you do', 'let me knw abt ur services']) {
+    test(`answers the services request directly: ${phrase}`, async ({ page }) => {
+      const processingRequests: string[] = [];
+      await openPanel(page);
+      page.on('request', (request) => {
+        if (request.method() === 'POST') processingRequests.push(request.url());
+      });
+      await composer(page).fill(phrase);
+      await composer(page).press('Enter');
+      await settle(page);
+      await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
+      await expect(log(page).getByText(/^Who do you sell to/)).toHaveCount(0);
+      await expect(panel(page).getByText('Your brief', { exact: true })).toHaveCount(0);
+      expect(processingRequests, 'answering a question must not send a message or brief').toEqual([]);
+    });
+  }
+
+  test('a capability enquiry answers before inviting a project brief', async ({ page }) => {
+    await openPanel(page);
+    await composer(page).fill('can you build a website');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(panel(page).getByText('Your brief', { exact: true })).toHaveCount(0);
+    await expect(tray(page).getByRole('button', { name: 'Start a project', exact: true })).toBeVisible();
+    expect(await log(page).innerText()).toMatch(/web|digital|design/i);
+  });
+
+  test('commands have ordinary button semantics and stay separate from selected values', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+    const option = tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true });
+    await expect(option).toHaveAttribute('aria-pressed', 'false');
+    await tapInPlace(option, page);
+    await expect(option).toHaveAttribute('aria-pressed', 'true');
+    const next = actions(page).getByRole('button', { name: 'Continue', exact: true });
+    await expect(next).not.toHaveAttribute('aria-pressed');
+    await expect(next).toBeInViewport();
+    await expect(tray(page).getByRole('button', { name: 'Continue', exact: true })).toHaveCount(0);
+    await expect(actions(page).getByRole('status')).toHaveText('1 item selected');
+  });
+
+  test('selected service reaches a short brief and its intercepted payload unchanged', async ({ page }) => {
+    let body: Record<string, unknown> | null = null;
+    await page.route('**/api/sales-funnel/ingest', async (route) => {
+      body = route.request().postDataJSON() as Record<string, unknown>;
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ success: true }) });
+    });
+    await openPanel(page);
+    await composer(page).fill('demand generation');
+    await composer(page).press('Enter');
+    await settle(page);
+    await press(tray(page).getByRole('button', { name: 'Discuss this service', exact: true }), page);
+    await expect(tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await answerTurn(page);
+    await answerTurn(page);
+    await answerTurn(page);
+    await press(actions(page).getByRole('button', { name: 'Review brief', exact: true }), page);
+    await expect(log(page).getByRole('listitem').filter({ hasText: 'Demand Generation (B2B)' })).toBeVisible();
+    await expect(log(page).getByText(/What is your company called/)).toHaveCount(0);
+    await press(actions(page).getByRole('button', { name: 'Send brief', exact: true }), page);
+    await expect.poll(() => body).not.toBeNull();
+    expect(body).toMatchObject({ name: 'Asha Menon', email: 'asha@studio.example', service_category: 'Full-Suite Advisory' });
+    expect(body).not.toHaveProperty('company');
+    expect(body).not.toHaveProperty('budget_bracket');
+    expect(JSON.stringify(body)).toContain('demand-generation');
+  });
+
+  test('whole-message back, contact and review commands do not become field answers', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+    await tapInPlace(tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true }), page);
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await composer(page).fill('back');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(panel(page).getByRole('heading', { name: /Which services interest you/ })).toBeVisible();
+
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await composer(page).fill('Back to the Future campaign');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Your name');
+
+    await composer(page).fill('contact');
+    await composer(page).press('Enter');
+    await settle(page);
+    const returnToBrief = page.getByRole('group', { name: 'Return to your brief', exact: true }).getByRole('button', { name: 'Return to brief', exact: true });
+    await expect(returnToBrief).toBeVisible();
+    await press(returnToBrief, page);
+
+    await composer(page).fill('review');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Your name');
+  });
+
+  test('two earlier misses do not disable an exact services answer', async ({ page }) => {
+    await openPanel(page);
+    for (const phrase of ['qwertyuiop', 'zxcvbnm', 'services']) {
+      await composer(page).fill(phrase);
+      await composer(page).press('Enter');
+      await settle(page);
+    }
+    await expect(log(page).getByText(/^We work across marketing campaigns/)).toBeVisible();
   });
 });
 

@@ -48,6 +48,8 @@ const SERVICE = SERVICES_BY_CATEGORY[CATEGORY][0];
 
 /** One valid answer per slot, using the shared closed sets so a re-label cannot pass silently. */
 const VALID: Record<SlotId, SlotValue> = {
+  serviceInterest: ['integrated-creativity'],
+  company: 'Desert Bloom Ltd',
   categories: [CATEGORY],
   services: [SERVICE],
   timeline: INTAKE_TIMELINE_OPTIONS[1].value,
@@ -79,6 +81,8 @@ const EMPTY: Record<SlotId, SlotValue> = Object.fromEntries(
 function fill(overrides: Partial<Record<SlotId, SlotValue>> = {}): IntakeState {
   let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
   for (const slot of SLOT_ORDER) {
+    if (state.mode === 'REVIEW') state = transition(state, { t: 'ADD_DETAILS' });
+    if (currentSlot(state) !== slot) continue;
     const value = overrides[slot] !== undefined ? overrides[slot] : VALID[slot];
     state = transition(state, { t: 'ANSWER', slot, value });
   }
@@ -88,10 +92,14 @@ function fill(overrides: Partial<Record<SlotId, SlotValue>> = {}): IntakeState {
 /** Stop on the given slot with every earlier question answered. */
 function toSlot(slot: SlotId, overrides: Partial<Record<SlotId, SlotValue>> = {}): IntakeState {
   let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
+  const values = slot === 'phone' && overrides.email === undefined ? { ...overrides, email: '' } : overrides;
   for (const entry of SLOT_ORDER.slice(0, SLOT_ORDER.indexOf(slot)) as SlotId[]) {
-    const value = overrides[entry] !== undefined ? overrides[entry] : VALID[entry];
+    if (state.mode === 'REVIEW') state = transition(state, { t: 'ADD_DETAILS' });
+    if (currentSlot(state) !== entry) continue;
+    const value = values[entry] !== undefined ? values[entry] : VALID[entry];
     state = transition(state, { t: 'ANSWER', slot: entry, value });
   }
+  if (state.mode === 'REVIEW') state = transition(state, { t: 'ADD_DETAILS' });
   assert.equal(currentSlot(state), slot, 'the walk must stop on the slot under test');
   return state;
 }
@@ -124,10 +132,10 @@ describe('Chat Pod intake machine', () => {
 
     it('resumes where the visitor stopped after an exit', () => {
       let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-      state = transition(state, { t: 'ANSWER', slot: 'categories', value: [CATEGORY] });
+      state = transition(state, { t: 'ANSWER', slot: 'serviceInterest', value: VALID.serviceInterest });
       state = transition(state, { t: 'EXIT_TO_CHAT' });
       assert.equal(state.mode, 'CHAT');
-      assert.deepEqual(state.slots.categories, [CATEGORY], 'answers are kept when the questions stop');
+      assert.deepEqual(state.slots.serviceInterest, VALID.serviceInterest, 'answers are kept when the questions stop');
 
       state = transition(state, { t: 'START_INTAKE' });
       assert.equal(state.slotIndex, 1, 'resumes on the next unanswered slot');
@@ -212,7 +220,7 @@ describe('Chat Pod intake machine', () => {
   describe('the email-or-phone rule', () => {
     it('promotes the phone to required when the email is skipped without a number', () => {
       let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-      for (const slot of ['categories', 'services', 'timeline', 'name'] as SlotId[]) {
+      for (const slot of ['serviceInterest', 'projectDescription', 'name'] as SlotId[]) {
         state = transition(state, { t: 'ANSWER', slot, value: VALID[slot] });
       }
       assert.equal(isRequired('phone', state), false, 'the number is optional while an email exists');
@@ -232,7 +240,7 @@ describe('Chat Pod intake machine', () => {
 
     it('refuses to skip the phone when there is no email either way', () => {
       let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-      for (const slot of ['categories', 'services', 'timeline', 'name'] as SlotId[]) {
+      for (const slot of ['serviceInterest', 'projectDescription', 'name'] as SlotId[]) {
         state = transition(state, { t: 'ANSWER', slot, value: VALID[slot] });
       }
       state = transition(state, { t: 'SKIP', slot: 'email' });
@@ -242,7 +250,8 @@ describe('Chat Pod intake machine', () => {
     });
 
     it('sends a brief with no contact channel back to the question that can fix it', () => {
-      const state = fill({ email: '', phone: '' });
+      const base = fill();
+      const state = { ...base, phoneRequired: true, slots: { ...base.slots, email: '', phone: '' } };
       assert.equal(canSubmit(state), false);
       assert.equal(blockingSlot(state), 'phone', 'skipping the email promoted the number, so that is the hole');
 
@@ -259,7 +268,7 @@ describe('Chat Pod intake machine', () => {
 
     it('names the first unanswered required slot as the blocker', () => {
       const state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-      assert.equal(blockingSlot(state), 'categories');
+      assert.equal(blockingSlot(state), 'serviceInterest');
       assert.equal(blockingSlot(fill()), null);
     });
 
@@ -272,9 +281,9 @@ describe('Chat Pod intake machine', () => {
   describe('skipping', () => {
     it('refuses to skip a required slot and stays on the question', () => {
       const state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-      const refused = transition(state, { t: 'SKIP', slot: 'categories' });
+      const refused = transition(state, { t: 'SKIP', slot: 'serviceInterest' });
       assert.equal(refused.mode, 'INTAKE_FORM');
-      assert.equal(currentSlot(refused), 'categories');
+      assert.equal(currentSlot(refused), 'serviceInterest');
       assert.ok(refused.error);
     });
 
@@ -395,10 +404,12 @@ describe('Chat Pod intake machine', () => {
   });
 
   describe('the optional tail', () => {
-    it('reaches the tail only after every required answer', () => {
+    it('offers review before optional details and enters them only on request', () => {
       let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
       const required = SLOT_ORDER.slice(0, OPTIONAL_TAIL_START) as SlotId[];
       for (const slot of required) state = transition(state, { t: 'ANSWER', slot, value: VALID[slot] });
+      assert.equal(state.mode, 'REVIEW');
+      state = transition(state, { t: 'ADD_DETAILS' });
       assert.equal(state.slotIndex, OPTIONAL_TAIL_START);
       assert.equal(SLOTS[currentSlot(state)].required, false);
     });
@@ -515,7 +526,7 @@ describe('Chat Pod intake machine', () => {
     it('starts asking at the gap and opens the card when there is none', () => {
       const resumed = transition(transition(initialIntakeState(), { t: 'RESTORE_DRAFT', slots: partial }), { t: 'START_INTAKE' });
       assert.equal(resumed.mode, 'INTAKE_FORM');
-      assert.equal(currentSlot(resumed), 'categories');
+      assert.equal(currentSlot(resumed), 'serviceInterest');
 
       const complete = transition(transition(initialIntakeState(), { t: 'RESTORE_DRAFT', slots: VALID }), { t: 'START_INTAKE' });
       assert.equal(complete.mode, 'REVIEW', 'a brief with every answer is not re-asked from the last gap');
