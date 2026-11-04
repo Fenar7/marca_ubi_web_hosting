@@ -1,3 +1,15 @@
+/**
+ * @file src/sanity/schemas/blockContent.ts
+ * @description Master PortableText schema for Marca Ubi editorial dispatches.
+ *              Extends the core typographic ladder with four specialized Generative
+ *              Engine Optimization (GEO) structured blocks:
+ *              1. comparisonTable: Tabular structured data for LLM vector indexing.
+ *              2. executiveSummary: High-signal opening thesis & direct answer box.
+ *              3. statCallout: High-contrast verifiable empirical metrics.
+ *              4. faqSection: Semantic Q&A accordion emitting FAQPage schema.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 import { defineArrayMember, defineType } from "sanity";
 
 export const blockContentSchema = defineType({
@@ -106,8 +118,8 @@ export const blockContentSchema = defineType({
         },
         {
           name: "caption",
-          type: "string",
           title: "Caption",
+          type: "string",
         },
       ],
     }),
@@ -146,6 +158,224 @@ export const blockContentSchema = defineType({
           validation: (rule) => rule.required(),
         },
       ],
+    }),
+
+    // ── GEO Block 1: Structured Comparison Table
+    defineArrayMember({
+      name: "comparisonTable",
+      title: "Comparison Table (GEO Structured Data)",
+      type: "object",
+      fields: [
+        {
+          name: "title",
+          title: "Table Title",
+          type: "string",
+        },
+        {
+          name: "caption",
+          title: "Caption / Footnote",
+          type: "string",
+        },
+        {
+          name: "headers",
+          title: "Column Headers",
+          type: "array",
+          of: [{ type: "string" }],
+          validation: (rule) => rule.required().min(2),
+        },
+        {
+          name: "rows",
+          title: "Table Rows",
+          type: "array",
+          of: [
+            defineArrayMember({
+              name: "tableRow",
+              title: "Table Row",
+              type: "object",
+              fields: [
+                {
+                  name: "cells",
+                  title: "Cells (in column order)",
+                  type: "array",
+                  of: [{ type: "string" }],
+                  validation: (rule) => rule.required(),
+                },
+              ],
+              preview: {
+                select: {
+                  cells: "cells",
+                },
+                prepare({ cells }) {
+                  return {
+                    title: Array.isArray(cells) ? cells.join(" | ") : "Empty Row",
+                  };
+                },
+              },
+            }),
+          ],
+          validation: (rule) => rule.required(),
+        },
+      ],
+      preview: {
+        select: {
+          title: "title",
+          headers: "headers",
+        },
+        prepare({ title, headers }) {
+          return {
+            title: title || "Comparison Table",
+            subtitle: Array.isArray(headers) ? `Columns: ${headers.join(", ")}` : "Table",
+          };
+        },
+      },
+    }),
+
+    // ── GEO Block 2: Executive Summary / Direct Answer Box
+    defineArrayMember({
+      name: "executiveSummary",
+      title: "Executive Summary / GEO First 150 Words",
+      type: "object",
+      fields: [
+        {
+          name: "title",
+          title: "Headline (optional)",
+          type: "string",
+          initialValue: "Executive Thesis & Strategic Summary",
+        },
+        {
+          name: "content",
+          title: "Core Thesis / Direct Answer",
+          type: "text",
+          rows: 4,
+          validation: (rule) => rule.required(),
+        },
+        {
+          name: "keyTakeaways",
+          title: "Key Takeaways (Bullet Points)",
+          type: "array",
+          of: [{ type: "string" }],
+        },
+      ],
+      preview: {
+        select: {
+          title: "title",
+          subtitle: "content",
+        },
+        prepare({ title, subtitle }) {
+          return {
+            title: title || "Executive Summary",
+            subtitle,
+          };
+        },
+      },
+    }),
+
+    // ── GEO Block 3: Verifiable Stat Callout
+    defineArrayMember({
+      name: "statCallout",
+      title: "Verifiable Stat Callout",
+      type: "object",
+      fields: [
+        {
+          name: "value",
+          title: "Metric Value",
+          type: "string",
+          description: "e.g. 208%, 3.4x, 6.8 to 11 stakeholders",
+          validation: (rule) => rule.required(),
+        },
+        {
+          name: "label",
+          title: "Metric Label",
+          type: "string",
+          description: "e.g. Pipeline Velocity Expansion",
+          validation: (rule) => rule.required(),
+        },
+        {
+          name: "description",
+          title: "Contextual Details",
+          type: "text",
+          rows: 2,
+        },
+        {
+          name: "sourceCitation",
+          title: "Verifiable Source / Citation",
+          type: "string",
+          description: "e.g. Marca Ubi Enterprise Benchmark Q3 2026",
+        },
+      ],
+      preview: {
+        select: {
+          value: "value",
+          label: "label",
+        },
+        prepare({ value, label }) {
+          return {
+            title: `${value || ""} — ${label || ""}`,
+            subtitle: "Stat Callout",
+          };
+        },
+      },
+    }),
+
+    // ── GEO Block 4: In-Body FAQ Section
+    defineArrayMember({
+      name: "faqSection",
+      title: "FAQ Section (In-Body Structured Q&A)",
+      type: "object",
+      fields: [
+        {
+          name: "title",
+          title: "Section Heading",
+          type: "string",
+          initialValue: "Frequently Asked Questions",
+        },
+        {
+          name: "items",
+          title: "Questions & Answers",
+          type: "array",
+          of: [
+            defineArrayMember({
+              name: "faqItem",
+              title: "FAQ Item",
+              type: "object",
+              fields: [
+                {
+                  name: "question",
+                  title: "Question",
+                  type: "string",
+                  validation: (rule) => rule.required(),
+                },
+                {
+                  name: "answer",
+                  title: "Answer",
+                  type: "text",
+                  rows: 3,
+                  validation: (rule) => rule.required(),
+                },
+              ],
+              preview: {
+                select: {
+                  title: "question",
+                  subtitle: "answer",
+                },
+              },
+            }),
+          ],
+          validation: (rule) => rule.required().min(1),
+        },
+      ],
+      preview: {
+        select: {
+          title: "title",
+          items: "items",
+        },
+        prepare({ title, items }) {
+          return {
+            title: title || "FAQ Section",
+            subtitle: Array.isArray(items) ? `${items.length} question(s)` : "FAQ Section",
+          };
+        },
+      },
     }),
   ],
 });
