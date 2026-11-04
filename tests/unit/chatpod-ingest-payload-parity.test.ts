@@ -78,6 +78,8 @@ const FORM: ProjectFormData = {
  * also hold.
  */
 const POD: Record<SlotId, SlotValue> = {
+  serviceInterest: [],
+  company: '',
   categories: ['Logo & identity', 'Web & app design'],
   services: ['Logo design', 'Web page design'],
   timeline: INTAKE_TIMELINE_OPTIONS[3].value,
@@ -118,7 +120,11 @@ function readSource(...segments: string[]): string {
  */
 function podSlotsFromMachine(): Record<SlotId, SlotValue> {
   let state = transition(initialIntakeState(), { t: 'START_INTAKE' });
-  for (const slot of SLOT_ORDER) state = transition(state, { t: 'ANSWER', slot, value: POD[slot] });
+  for (const slot of SLOT_ORDER) {
+    if (state.mode === 'REVIEW') state = transition(state, { t: 'ADD_DETAILS' });
+    if (SLOT_ORDER[state.slotIndex] !== slot) continue;
+    state = transition(state, { t: 'ANSWER', slot, value: slot === 'serviceInterest' ? ['undecided'] : POD[slot] });
+  }
   assert.equal(state.mode, 'REVIEW', 'the walk has to reach the card, or it collected nothing');
   return state.slots;
 }
@@ -129,10 +135,14 @@ describe('Chat Pod and wizard payload parity', () => {
       assert.deepStrictEqual(withoutSource(formPayload(FORM)), withoutSource(buildPodPayload(POD, IDEMPOTENCY_KEY)));
     });
 
-    it('files the same lead from the machine as from the mirrored answers', () => {
+    it('preserves legacy deliverables when the new brief collects optional details', () => {
       const walked = podSlotsFromMachine();
-      assert.deepEqual(walked, POD, 'the intake machine does not produce the brief the tests claim');
-      assert.deepStrictEqual(withoutSource(formPayload(FORM)), withoutSource(buildPodPayload(walked, IDEMPOTENCY_KEY)));
+      assert.deepEqual(walked.services, POD.services);
+      assert.equal(walked.name, POD.name);
+      const payload = buildPodPayload(walked, IDEMPOTENCY_KEY);
+      assert.equal(payload.service_category, 'Full-Suite Advisory');
+      assert.deepEqual(payload.brief_payload.services, POD.services);
+      assert.equal((payload.brief_payload.chatPod as { version: number }).version, 2);
     });
 
     it('routes by the services picked, not by the disciplines tapped through', () => {
@@ -404,7 +414,7 @@ describe('Chat Pod and wizard payload parity', () => {
   describe('the slot to field rename', () => {
     it('emits one field per slot under the names the wizard uses', () => {
       const fields = slotsToFields(POD);
-      assert.equal(Object.keys(fields).length, SLOT_ORDER.length);
+      assert.equal(Object.keys(fields).length, SLOT_ORDER.length - 2, 'the v2-only interest and company fields do not alter the legacy form contract');
       assert.equal('categories' in fields, false);
       assert.equal('services' in fields, false);
       assert.equal(fields.category, FORM.category);

@@ -30,9 +30,11 @@ import { useRouter } from "next/navigation";
 
 import { prefersReducedMotion } from "@/app/lib/motion";
 import { useOverlayScrollLock } from "@/app/lib/overlayScrollLock";
-import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, polarityMatch, slotChips, slotOptions } from "./intake/slots";
+import { SERVICES_BY_CATEGORY } from "@/app/lib/intake/intakeOptions";
+import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, SHORT_BRIEF_SLOTS, polarityMatch, slotChips, slotOptions } from "./intake/slots";
 import type { SlotOption } from "./intake/slots";
-import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
+import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, canSubmit, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
+import { UNDECIDED_SERVICE } from "./intake/serviceInterest";
 import type { IntakeMode } from "./intake/useIntakeFlow";
 import { buildPodPayload, reviewRows } from "./intake/review";
 import { createIdempotencyKey, submitBrief } from "./intake/submit";
@@ -44,6 +46,10 @@ import ChipRow from "./ui/ChipRow";
 import Composer from "./ui/Composer";
 import PersonaHeader from "./ui/PersonaHeader";
 import Transcript from "./ui/Transcript";
+import TaskActions from "./ui/TaskActions";
+import ChoiceGroups from "./ui/ChoiceGroups";
+import { taskReplies } from "./ui/replyActions";
+import FieldConfirmation from "./ui/FieldConfirmation";
 import type { AnswerBlock, Chip, KnowledgeBase, Reply, SlotId, SlotValue, TranscriptMessage } from "./types";
 import styles from "./ChatPod.module.scss";
 
@@ -85,25 +91,6 @@ const SKIP_WORDS = /^(skip|no|none|pass|nothing)$/i;
  * the one sentence the visitor wrote for it.
  */
 const SKIP_PHRASES = /^(no thanks|no thank you|none thanks|nothing thanks|not really|not this one|pass on that|pass for now|skip that|skip it|skip for now)$/i;
-
-/**
- * The blanks that hold something the studio reads back verbatim: who the visitor is, how to answer
- * them, and what the job is called.
- *
- * These are the slots where a misfiled message is expensive in a way a note is not. A project
- * description that begins "how long does this usually take" is still a description the visitor wrote,
- * and losing it would be its own defect; a name field holding that same sentence becomes the salutation
- * in the studio's first email. So the question-shape test is allowed to refuse a send on these six and
- * only these six.
- */
-const VERBATIM_FACT_SLOTS: ReadonlySet<SlotId> = new Set([
-  "name",
-  "email",
-  "phone",
-  "projectName",
-  "website",
-  "instagram",
-]);
 
 function replyWeight(reply: Reply): number {
   const length = reply.blocks.reduce(
@@ -190,6 +177,9 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const [nudge, setNudge] = useState(false);
   const [consented, setConsented] = useState<boolean | null>(null);
   const [storageFailed, setStorageFailed] = useState(false);
+  const [questionOpen, setQuestionOpen] = useState(false);
+  const [detourOpen, setDetourOpen] = useState(false);
+  const [pendingField, setPendingField] = useState<{ slot: SlotId; value: string } | null>(null);
   /** Height in px currently covered by an on-screen keyboard. */
   const [keyboardInset, setKeyboardInset] = useState(0);
   /** Panel position and scale origin, measured from the right-docked launcher when opened. */
@@ -422,7 +412,11 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
 
   useEffect(() => {
     if (!open) return;
-    const focusId = window.setTimeout(() => inputRef.current?.focus(), 150);
+    const focusId = window.setTimeout(() => {
+      if (window.matchMedia("(pointer: coarse)").matches) panelRef.current?.focus({ preventScroll: true });
+      else if (inputRef.current?.offsetParent) inputRef.current.focus({ preventScroll: true });
+      else panelRef.current?.focus({ preventScroll: true });
+    }, 150);
     return () => window.clearTimeout(focusId);
   }, [open]);
 
@@ -434,7 +428,10 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   // is safe even when the panel goes away by unmount or route change rather than by the close button.
   useOverlayScrollLock(open, "chat-pod");
 
-  useEffect(() => setConsented(hasGrantedConsent()), []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setConsented(hasGrantedConsent()), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Focus discipline: which device the visitor is working with decides whether focus is handed back.
   useEffect(() => {
@@ -465,7 +462,11 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     if (previous === 0 || !usedKeyboard.current) return;
     const node = panelRef.current;
     const active = document.activeElement;
-    if (node && (active === null || active === document.body)) inputRef.current?.focus();
+    if (node && (active === null || active === document.body)) {
+      const input = inputRef.current;
+      const target = (input?.offsetParent ? input : null) ?? node.querySelector<HTMLElement>("[data-task-heading]") ?? node;
+      target.focus({ preventScroll: true });
+    }
   }, [chips]);
 
   const grantConsent = useCallback((allowed: boolean) => {
@@ -510,7 +511,10 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       // The way back to an earlier answer, offered on every question after the first. Without it a
       // mistake two questions ago was uncorrectable except by stopping, and stopping reads as giving up
       // on a brief the visitor had already spent time on.
-      const previous = state.slotIndex > 0 ? SLOT_ORDER[state.slotIndex - 1] : null;
+      const previous = SLOT_ORDER.slice(0, state.slotIndex).reverse().find((id) =>
+        !(id === "phone" && isFilled(state.slots.email)) &&
+        !(id === "services" && !isFilled(state.slots.categories)),
+      ) ?? null;
       const goBack: Chip[] = previous
         ? [{ label: `Back to ${SLOTS[previous].label}`, action: { kind: "slot-edit", slot: previous } }]
         : [];
@@ -519,13 +523,16 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       // visitor made at the top of it are not necessarily on screen when they reach the bottom, and the
       // one number that tells them what they are about to send belongs next to the button that sends it.
       const tally = picked.length > 0 ? ` (${picked.length})` : "";
+      const review: Chip[] = canSubmit(state)
+        ? [{ label: "Review brief", action: { kind: "intake-action", action: "review" } }]
+        : [];
 
       if (definition.kind === "multi")
-        return [...optionChips, { label: `Continue${tally}`, action: { kind: "slot-continue", slot: target } }, ...goBack];
+        return [...optionChips, { label: "Continue", action: { kind: "slot-continue", slot: target } }, ...goBack, ...review];
       if (definition.kind === "links")
-        return [...optionChips, { label: `That is every link${tally}`, action: { kind: "slot-continue", slot: target } }, ...goBack];
-      if (isRequired(target, state)) return [...optionChips, ...goBack];
-      return [...optionChips, { label: "Skip", action: { kind: "slot-skip", slot: target } }, ...goBack];
+        return [...optionChips, { label: `That is every link${tally}`, action: { kind: "slot-continue", slot: target } }, ...goBack, ...review];
+      if (isRequired(target, state)) return [...optionChips, ...goBack, ...review];
+      return [...optionChips, { label: "Skip", action: { kind: "slot-skip", slot: target } }, ...goBack, ...review];
     },
     [selection, state],
   );
@@ -536,6 +543,9 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const emittedMode = useRef<typeof state.mode | null>(null);
 
   useEffect(() => {
+    // Transcript turns run after the machine transition commits; cancellation prevents an obsolete
+    // question from being emitted when another transition wins before the scheduled turn.
+    const timer = window.setTimeout(() => {
     const previous = emittedMode.current;
     emittedMode.current = state.mode;
 
@@ -620,7 +630,8 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
             { t: "p", text: "Here is what I have. Tap any line to change it." },
           ],
           chips: [
-            { label: "Send it", action: { kind: "intake-action", action: "submit" } },
+            { label: "Send brief", action: { kind: "intake-action", action: "submit" } },
+            { label: "Add more details", action: { kind: "intake-action", action: "details" } },
             { label: "Not yet", action: { kind: "intake-action", action: "later" } },
             { label: "Stop and ask questions instead", action: { kind: "intake-action", action: "exit" } },
           ],
@@ -671,6 +682,8 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         chips: options,
       });
     }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [chipsForSlot, engine, say, state]);
 
   // Submission
@@ -727,10 +740,13 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   }, [knowledge.studio.email, knowledge.studio.phone, send, state.idempotencyKey, state.mode, state.slots]);
 
   // Starting intake
-  const startIntake = useCallback(() => {
+  const startIntake = useCallback((serviceSlug?: string) => {
     emittedTurn.current = "";
     const reply = engine.byId("intake.trigger");
-    send({ t: "START_INTAKE" });
+    setQuestionOpen(false);
+    setDetourOpen(false);
+    setPendingField(null);
+    send({ t: "START_INTAKE", serviceSlug });
     // The trigger line explains the rules; the machine's own emitter prints the first question under
     // it, so the chip row here would only be in the way for half a second.
     if (reply) say({ blocks: reply.blocks, chips: [] });
@@ -748,7 +764,11 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
    */
   const toggleIntoSelection = useCallback(
     (value: string, target: SlotId) => {
-      const next = selection.includes(value) ? selection.filter((item) => item !== value) : [...selection, value];
+      const next = selection.includes(value)
+        ? selection.filter((item) => item !== value)
+        : target === "serviceInterest"
+          ? value === UNDECIDED_SERVICE ? [value] : [...selection.filter((item) => item !== UNDECIDED_SERVICE), value]
+          : [...selection, value];
       setSelection(next);
       // Outside the state updater: React may run an updater twice, and a second `setChips` for the same
       // tap would be a second render of the row for no reason.
@@ -806,7 +826,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         chips: menuForMode(state.mode),
       });
     },
-    [chipsForSlot, say, state.mode, state.slots],
+    [chipsForSlot, say, state],
   );
 
   /**
@@ -837,6 +857,10 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     (chip: Chip) => {
       const action = chip.action;
       setMenuOpen(false);
+      if (action.kind !== "slot-toggle") {
+        setQuestionOpen(false);
+        setPendingField(null);
+      }
 
       switch (action.kind) {
         case "intent": {
@@ -846,6 +870,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           // answer looks like the panel decided to talk about something unprompted, and an option row
           // that answers a question already echoes the choice, so this was the one asymmetry left.
           rememberVisitor(chip.label);
+          if (state.mode === "INTAKE_FORM") setDetourOpen(true);
           say(reply);
           return;
         }
@@ -869,13 +894,14 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           // silence either: a pressed button that says nothing is the dead control this module exists to
           // avoid, and the menu entry is exactly what a visitor reaches for when they lose their place.
           if (state.mode === "CHAT") {
-            startIntake();
+            startIntake(action.serviceSlug);
             return;
           }
           whereIsTheBrief();
           return;
         }
         case "slot-toggle": {
+          setDetourOpen(false);
           if (currentSlot(state) !== action.slot) {
             answerMovedOn(action.slot);
             return;
@@ -884,6 +910,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
         case "slot-pick": {
+          setDetourOpen(false);
           const active = currentSlot(state);
           if (active !== action.slot) {
             answerMovedOn(action.slot);
@@ -894,17 +921,20 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
         case "slot-continue": {
+          setDetourOpen(false);
           const active = currentSlot(state);
           if (active !== action.slot) {
             answerMovedOn(action.slot);
             return;
           }
-          rememberVisitor(selection.length > 0 ? selection.join(", ") : "Nothing more");
+          const options = slotOptions(SLOTS[active], state.slots);
+          rememberVisitor(selection.length > 0 ? selection.map((value) => options.find((option) => option.value === value)?.chip ?? value).join(", ") : "Nothing more");
           send({ t: "ANSWER", slot: active, value: [...selection] });
           setSelection([]);
           return;
         }
         case "slot-skip": {
+          setDetourOpen(false);
           const active = currentSlot(state);
           if (active !== action.slot) {
             answerMovedOn(action.slot);
@@ -915,6 +945,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
         case "slot-edit": {
+          setDetourOpen(false);
           editSlot(action.slot);
           return;
         }
@@ -923,6 +954,8 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           if (action.action === "retry") send({ t: "RETRY", idempotencyKey: createIdempotencyKey() });
           if (action.action === "later") closePanel();
           if (action.action === "exit") send({ t: "EXIT_TO_CHAT" });
+          if (action.action === "review") send({ t: "REVIEW_NOW" });
+          if (action.action === "details") send({ t: "ADD_DETAILS" });
           return;
         }
       }
@@ -935,6 +968,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     (text: string) => {
       const trimmed = text.trim();
       if (trimmed.length === 0) return;
+      setPendingField(null);
       rememberVisitor(trimmed);
 
       if (state.mode === "SUBMITTING") return;
@@ -1034,7 +1068,8 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
               whereIsTheBrief();
               return;
             }
-            say({ blocks: detour.reply.blocks, chips: chipsForSlot(slot) });
+            setDetourOpen(true);
+            say(detour.reply);
             return;
           }
         }
@@ -1062,34 +1097,26 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           return;
         }
 
-        // The detour above looked for an answer and found none, so this is the one remaining way a
-        // question can reach the brief: filed as the visitor's own words. `whta is marka ubi` typed at
-        // the name blank is a question the corpus could not answer, not a name, and the validator cannot
-        // tell — it accepts anything for these slots. Only the verbatim facts refuse, because on a prose
-        // slot the same shape is most likely a sentence the visitor means to send. The two signals are
-        // the two the detour branch reads, so a message that got here was asking something the corpus
-        // has no answer for — filing `u offer web design` as a project name is the failure this branch
-        // exists to stop, and it was the hole the detour above could not close on its own.
-        if (VERBATIM_FACT_SLOTS.has(slot) && (looksLikeQuestion(trimmed) || opensWithChatShorthand(trimmed))) {
-          say({
-            blocks: [
-              {
-                t: "p",
-                text: `That reads like a question, so I will not file it as your ${SLOTS[slot].label.toLowerCase()}. I have no answer for it either — ask me in other words, or type the ${SLOTS[slot].label.toLowerCase()} you want stored.`,
-              },
-            ],
-            chips: chipsForSlot(slot),
-          });
+        // A title and a request can have the same folded words. Keep the raw value and ask which
+        // meaning was intended instead of rejecting a legitimate title or silently storing a question.
+        const ambiguousFact = (slot === "name" || slot === "projectName" || slot === "company") && (
+          looksLikeQuestion(trimmed) || opensWithChatShorthand(trimmed) || /^any\b.*\b(discount|price|pricing|services?|cost|available)\b/i.test(trimmed)
+        );
+        if (ambiguousFact) {
+          setPendingField({ slot, value: trimmed });
           return;
         }
 
+        setPendingField(null);
+        setQuestionOpen(false);
+        setDetourOpen(false);
         send({ t: "ANSWER", slot, value: trimmed });
         return;
       }
 
       if (state.mode === "REVIEW") {
         say({
-          blocks: [{ t: "p", text: "Tap the line that needs changing, or press send it. I will not send anything on a typed word." }],
+          blocks: [{ t: "p", text: "Choose a line to change, or use Send brief when you are ready." }],
           chips: reviewRows(state.slots).map((row) => ({ label: row.label, action: { kind: "slot-edit", slot: row.slot } as const })),
         });
         return;
@@ -1104,7 +1131,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       }
       say(turn.reply);
     },
-    [chipsForSlot, engine, rememberVisitor, say, selection, send, slot, startIntake, state, whereIsTheBrief],
+    [chipsForSlot, engine, rememberVisitor, say, selection, send, slot, startIntake, state, toggleIntoSelection, whereIsTheBrief],
   );
 
   // Idle nudge (D5)
@@ -1174,16 +1201,34 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
    * truth about what will be sent.
    */
   const progress = useMemo(() => {
-    const answered = SLOT_ORDER.filter((entry) => isFilled(state.slots[entry])).length;
+    const order = (state.enriching ? SLOT_ORDER : SHORT_BRIEF_SLOTS).filter((entry) => (
+      !(entry === "phone" && isFilled(state.slots.email)) && !(entry === "services" && !isFilled(state.slots.categories))
+    ));
+    const answered = order.filter((entry) => isFilled(state.slots[entry])).length;
     return {
       answered,
-      total: SLOT_ORDER.length,
-      asking: state.mode === "INTAKE_FORM" ? Math.min(state.slotIndex + 1, SLOT_ORDER.length) : 0,
+      total: order.length,
+      asking: state.mode === "INTAKE_FORM" && slot ? order.indexOf(slot) + 1 : 0,
     };
-  }, [state.mode, state.slotIndex, state.slots]);
+  }, [slot, state.enriching, state.mode, state.slots]);
 
   const activeDefinition = slot ? SLOTS[slot] : null;
   const composerBlocked = state.mode === "SUBMITTING";
+  const taskView = state.mode !== "CHAT" && state.mode !== "DONE";
+  const separatedReplies = taskReplies(chips);
+  const choiceTask = state.mode === "INTAKE_FORM" && !!activeDefinition && (
+    activeDefinition.kind === "multi" || activeDefinition.kind === "single"
+  );
+  const visibleChoices = taskView ? separatedReplies.choices : chips;
+  const showComposer = !choiceTask || questionOpen || detourOpen;
+  const choiceGroups = useMemo(() => {
+    const groups = new Map<string, string>();
+    for (const [category, services] of Object.entries(SERVICES_BY_CATEGORY)) {
+      for (const service of services) groups.set(service, category);
+    }
+    for (const service of knowledge.services) groups.set(service.slug, service.split === "B2B" ? "Business services" : "Consumer-brand services");
+    return groups;
+  }, [knowledge.services]);
   const isSelected = useCallback(
     (chip: Chip): boolean => chip.action.kind === "slot-toggle" && selection.includes(chip.action.value),
     [selection],
@@ -1257,6 +1302,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="mubi-pod-title"
+        tabIndex={-1}
         // Opening the panel stops Lenis, and a stopped Lenis still cancels every wheel and touchmove it
         // sees outside a `data-lenis-prevent` subtree. The exemption is on the panel rather than on the
         // message list because the panel has one scroll surface: a wheel that lands on the conversation
@@ -1299,14 +1345,63 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           </div>
         ) : null}
 
-        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} onNavigate={closePanel}>
+        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} onNavigate={closePanel} taskMode={choiceTask && !detourOpen}>
           {/* The replies on offer are the last thing in the conversation, not a second pane bolted under
               it. Inside the flow they scroll with the message that produced them, which is what the
               transcript's own height can no longer guarantee once a seventeen-option wall is open. */}
-          <div className={styles.tray} data-count={chips.length}>
-            <ChipRow chips={chips} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />
+          <div className={styles.tray} data-count={visibleChoices.length} data-task-start={choiceTask && !detourOpen ? "" : undefined}>
+            {choiceTask && !detourOpen && visibleChoices.length > 0 ? (
+              <>
+                <div className={styles.activeTask}>
+                  <h2 className={styles.taskHeading} tabIndex={-1} data-task-heading>{activeDefinition.question}</h2>
+                  <p className={styles.taskHint}>{activeDefinition.kind === "multi" ? "Choose any that apply, then Continue." : "Choose one answer."}</p>
+                </div>
+                <ChoiceGroups chips={visibleChoices} groups={choiceGroups} onChip={onChip} isSelected={isSelected} />
+              </>
+            ) : <ChipRow chips={visibleChoices} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />}
           </div>
         </Transcript>
+
+        {pendingField && slot === pendingField.slot && state.mode === "INTAKE_FORM" ? (
+          <FieldConfirmation
+            label={SLOTS[pendingField.slot].label}
+            value={pendingField.value}
+            onUseValue={() => {
+              send({ t: "ANSWER", slot: pendingField.slot, value: pendingField.value });
+              setPendingField(null);
+              setQuestionOpen(false);
+            }}
+            onAsk={() => {
+              const answer = engine.ask(pendingField.value);
+              setDetourOpen(true);
+              say(answer.reply);
+              setPendingField(null);
+            }}
+          />
+        ) : null}
+
+        {state.mode === "INTAKE_FORM" && detourOpen && !typing ? (
+          <div className={styles.taskActions} role="group" aria-label="Return to your brief">
+            <button type="button" className={styles.taskPrimary} onClick={() => {
+              setDetourOpen(false);
+              setQuestionOpen(false);
+              if (slot) setChips(chipsForSlot(slot));
+              later(() => panelRef.current?.querySelector<HTMLElement>("[data-task-heading]")?.focus({ preventScroll: true }), 0);
+            }}>Return to brief</button>
+          </div>
+        ) : taskView && !typing && (separatedReplies.primary || separatedReplies.secondary.length > 0 || choiceTask) ? (
+          <TaskActions
+            primary={separatedReplies.primary}
+            secondary={separatedReplies.secondary}
+            selectedCount={choiceTask && activeDefinition.kind === "multi" ? selection.length : undefined}
+            onChip={onChip}
+            onQuestion={choiceTask ? () => {
+              setQuestionOpen((wasOpen) => !wasOpen);
+              if (!questionOpen) later(() => inputRef.current?.focus({ preventScroll: true }), 0);
+            } : undefined}
+            questionOpen={questionOpen}
+          />
+        ) : null}
 
         {consented === null ? (
           <div className={styles.consent}>
@@ -1338,17 +1433,19 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           </p>
         ) : null}
 
+        <div hidden={!showComposer || state.mode === "REVIEW"}>
         <Composer
           inputRef={inputRef}
           onSubmit={onFreeText}
           blocked={composerBlocked}
           blockReason="Sending your brief. One moment."
-          placeholder={activeDefinition?.placeholder}
+          placeholder={choiceTask ? "Ask a question, or type an option exactly" : activeDefinition?.placeholder}
           maxLength={activeDefinition?.maxLength}
           helper={
             activeDefinition && isFilled(state.slots[activeDefinition.id]) ? `${activeDefinition.label} is already answered. Typing replaces it.` : undefined
           }
         />
+        </div>
       </section>
     </>
   );

@@ -45,6 +45,35 @@ export function tokens(normalised: string): string[] {
   return normalised.length === 0 ? [] : normalised.split(" ");
 }
 
+export interface RequestInterpretation {
+  query: string;
+  wrapper: string | null;
+}
+
+/**
+ * Removes a complete request prefix, never arbitrary words inside its subject. The original text is
+ * untouched for field storage. Unknown subject words and negation survive so that a request about an
+ * unsupported service cannot become a confident services answer merely by being phrased politely.
+ */
+export function interpretRequest(raw: string): RequestInterpretation {
+  const original = normalise(raw);
+  const folded = tokens(original).map((word) => Object.hasOwn(CHAT_ABBREVIATIONS, word) ? CHAT_ABBREVIATIONS[word] : word).join(" ");
+  const pattern = /^(?:(?:ok|okay|please)\s+)*(let me (?:know|knw)|(?:i|we) (?:need|want|would like) (?:some )?(?:information|info)|(?:can|could|would) you (?:please )?(?:tell me|explain|describe|show me)|tell me|explain|describe|show me)(?:\s+(more|all|each))?(?:\s+(?:about|on))?\s+(.+)$/;
+  const match = pattern.exec(folded);
+  if (!match) return { query: catalogueRequest(original), wrapper: null };
+  const subject = `${match[2] ? `${match[2]} ` : ""}${match[3]}`.replace(/\s+please$/, "").trim();
+  if (/^what (?:do you|you) do$/.test(subject)) return { query: "what do you do", wrapper: match[1] };
+  if (!subject || tokens(subject).every((word) => QUERY_STOPWORDS.has(word))) {
+    return { query: original, wrapper: null };
+  }
+  return { query: catalogueRequest(subject), wrapper: match[1] };
+}
+
+/** "All" changes an overview request into a catalogue request only in this complete topic phrase. */
+function catalogueRequest(query: string): string {
+  return /^(?:all|each|the full list of) (?:your |the )?services?$/.test(query) ? "service catalogue" : query;
+}
+
 /**
  * Question scaffolding: the words a visitor wraps a topic in, not the topic itself.
  *
@@ -386,6 +415,7 @@ export function looksLikeQuestion(raw: string): boolean {
   const text = raw.trim();
   if (text.length === 0) return false;
   if (text.endsWith("?")) return true;
+  if (interpretRequest(text).wrapper !== null) return true;
 
   const parts = tokens(normalise(text)).map(folded);
   if (parts.length === 0) return false;

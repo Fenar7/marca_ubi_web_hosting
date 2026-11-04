@@ -42,7 +42,7 @@ const FIELD_TO_SLOT: Record<string, SlotId> = {
   name: "name",
   email: "email",
   phone: "phone",
-  company: "projectName",
+  company: "company",
   company_website: "website",
   industry: "industry",
   notes: "extraNotes",

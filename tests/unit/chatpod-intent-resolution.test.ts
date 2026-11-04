@@ -164,13 +164,11 @@ const TYPED: [string, string][] = [
   ['send a brief', 'intake.trigger'],
   ['submit a brief', 'intake.trigger'],
   ['can we work together', 'intake.trigger'],
-  // A build request the catalogue has no page for still has to reach the brief. These four lines are
-  // the whole reason they are authored rather than scored: nothing in the corpus contains "website"
-  // next to "want", so the arithmetic had no route and a lead arrived as a fallback.
-  ['i want a website', 'intake.trigger'],
-  ['build me a website', 'intake.trigger'],
-  ['can you build an app', 'intake.trigger'],
-  ['do you build apps', 'intake.trigger'],
+  // Capability enquiries answer before offering an explicit project action.
+  ['i want a website', 'capabilities.digital'],
+  ['build me a website', 'capabilities.digital'],
+  ['can you build an app', 'capabilities.digital'],
+  ['do you build apps', 'capabilities.digital'],
   ['i would like a proposal', 'intake.trigger'],
   ['cancel that', 'intake.exit'],
   ['stop asking questions', 'intake.exit'],
@@ -309,12 +307,9 @@ describe('Chat Pod resolution over the published table', () => {
   });
 
   it('carries the subject of the previous turn into a message it could not resolve alone', () => {
-    // The resolver is a pure function of one message, which is right for a first question and wrong for
-    // a second one. "explain each service" reaches 0.775 cold and comes back as three chips; after a
-    // turn that was already about services the same message is a continuation, and `CONTINUITY_PRIOR`
-    // is what says so. The three assertions below are the three ways this could be a lie: it must fire
-    // on the right family, stay silent on the wrong one, and never outvote an answer already reached.
-    const cold = resolve(index, 'explain each service', { locked: false });
+    // This held-out phrase remains below acceptance alone, but a services turn provides enough
+    // continuity. "explain each service" now has a deliberate catalogue interpretation instead.
+    const cold = resolve(index, 'service information', { locked: false });
     assert.equal(cold.kind, 'disambiguate', 'the cold pass must not answer this on its own');
 
     // The boundary itself, worked out on a real phrase instead of quoted from a comment. The prior only
@@ -323,14 +318,14 @@ describe('Chat Pod resolution over the published table', () => {
     // the prior can reach, which is the whole of what the constant is for — a prior that crept upward
     // would start answering messages the visitor never connected to the conversation, and this is the
     // assertion that notices.
-    const leader = rank(index, 'explain each service')[0];
+    const leader = rank(index, 'service information')[0];
     assert.ok(leader.score < ACCEPT_THRESHOLD, 'the cold pass has to be the one that fails here');
     assert.ok(
       leader.score * CONTINUITY_PRIOR >= ACCEPT_THRESHOLD,
       `the boost no longer reaches the accept line it was measured against`,
     );
 
-    const continued = resolve(index, 'explain each service', { locked: false, prior: 'services.b2b' });
+    const continued = resolve(index, 'service information', { locked: false, prior: 'services.b2b' });
     assert.equal(continued.kind, 'answer', 'the same message after a services turn must be answered');
     assert.equal(
       continued.kind === 'answer' ? continued.intent.id : '',
@@ -338,7 +333,7 @@ describe('Chat Pod resolution over the published table', () => {
       'continuity lifts the leader, it does not choose a different subject',
     );
 
-    const offTopic = resolve(index, 'explain each service', { locked: false, prior: 'contact' });
+    const offTopic = resolve(index, 'service information', { locked: false, prior: 'contact' });
     assert.equal(offTopic.kind, 'disambiguate', 'a turn about a different family must not drag this one');
 
     const alreadyAnswered = resolve(index, 'what do you do', { locked: false, prior: 'process.team' });

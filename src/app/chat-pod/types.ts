@@ -95,7 +95,7 @@ export interface KnowledgeBase {
 export type ChipAction =
   | { kind: "intent"; id: string }
   | { kind: "route"; href: string }
-  | { kind: "intake" }
+  | { kind: "intake"; serviceSlug?: string }
   | { kind: "external"; href: string }
   | { kind: "close" }
   /** Single-select closed set: stores the exact canonical value and advances. */
@@ -108,7 +108,7 @@ export type ChipAction =
   | { kind: "slot-skip"; slot: SlotId }
   /** Jump from a review row back to that one question, keeping everything else. */
   | { kind: "slot-edit"; slot: SlotId }
-  | { kind: "intake-action"; action: "submit" | "later" | "retry" | "exit" };
+  | { kind: "intake-action"; action: "submit" | "later" | "retry" | "exit" | "review" | "details" };
 
 export interface Chip {
   label: string;
@@ -170,6 +170,8 @@ export type Speaker = "assistant" | "visitor";
  * ", "-joined strings the wizard stores and `mapCategory` consumes.
  */
 export type SlotId =
+  | "serviceInterest"
+  | "company"
   | "categories"
   | "services"
   | "timeline"

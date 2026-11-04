@@ -23,6 +23,7 @@ import {
   contentTokens,
   editSimilarity,
   isScaffold,
+  interpretRequest,
   normalise,
   QUERY_STOPWORDS,
   residue,
@@ -520,7 +521,7 @@ function namedOwners(index: IntentIndex, query: string, queryRaw: string[]): Int
  * two from disagreeing about what "authored" means.
  */
 export function isAuthoredName(index: IntentIndex, rawInput: string): boolean {
-  const query = normalise(rawInput);
+  const query = interpretRequest(rawInput).query;
   if (query.length === 0) return false;
   if (namedOwners(index, query, tokens(query)).length > 0) return true;
   const residueKey = residue(query, index.vocabulary).slice().sort().join(" ");
@@ -538,7 +539,9 @@ export function isAuthoredName(index: IntentIndex, rawInput: string): boolean {
  * answer the pod could reach on its own, it only breaks a tie the pod could not reach at all.
  */
 export function rank(index: IntentIndex, rawInput: string, prior?: string | null): Candidate[] {
-  const query = normalise(rawInput);
+  // A complete authored phrase remains authoritative, including names that resemble requests.
+  const original = normalise(rawInput);
+  const query = index.exact.has(original) ? original : interpretRequest(rawInput).query;
   if (query.length === 0) return [];
 
   const queryStems = residue(query, index.vocabulary);
@@ -642,9 +645,8 @@ export function decide(candidates: Candidate[]): MatchOutcome {
 }
 
 /**
- * Resolves one visitor message. `locked` is the post-cap state: ordinary candidates are ignored and
- * only the escape-hatch intents still resolve, because a visitor who has already failed to be
- * understood twice must not also find the way out locked.
+ * Resolves one visitor message. After the fallback cap, safe authored information stays available;
+ * fuzzy candidates narrow to the escape hatch. A misunderstanding must not lock the catalogue.
  *
  * `prior` is the intent the previous turn answered. It is applied as a second pass, only when the
  * message did not resolve on its own, so the conversation can only ever break a tie the resolver could
@@ -656,19 +658,64 @@ export function resolve(
   rawInput: string,
   options: { locked: boolean; prior?: string | null },
 ): MatchOutcome {
+  const original = normalise(rawInput);
+  const candidates = rank(index, rawInput);
+  // Negation changes the requested action. Until a whole phrase is authored, asking the visitor to
+  // choose is safer than dropping "not" as grammar and accidentally starting a project or answering
+  // about the excluded service. Exact phrases such as "not sure" retain their authored meaning.
+  if (!index.exact.has(original) && /\b(?:not|never|no|don't|dont|cannot|can't|cant|without|except)\b/.test(original)) {
+    const choices = candidates.filter((candidate) => candidate.score >= FLOOR_THRESHOLD).slice(0, DISAMBIGUATION_WIDTH);
+    return choices.length ? { kind: "disambiguate", candidates: choices } : { kind: "fallback", candidates: [] };
+  }
+  // A conjunction between two independently understood requests must not silently discard one.
+  // Published names containing "and" are handled above by exact authoring, not split into topics.
+  if (!index.exact.has(original)) {
+    const clauses = original.split(/\s+and\s+/);
+    if (clauses.length === 2) {
+      const left = decide(rank(index, clauses[0]));
+      const right = decide(rank(index, clauses[1]));
+      if (left.kind === "answer" && right.kind === "answer" && left.intent.id !== right.intent.id) {
+        return { kind: "disambiguate", candidates: [
+          { intent: left.intent, score: left.score, tier: 1 },
+          { intent: right.intent, score: right.score, tier: 1 },
+        ] };
+      }
+    }
+  }
   if (options.locked) {
+    // Safe authored information remains available after misses. The complete candidate set is
+    // decided first so a shared service title cannot become unique merely by filtering its peers.
+    const authored = decide(candidates);
+    if (authored.kind === "answer" && candidates[0]?.tier === 1) return authored;
     // The same published policy, applied to the survivors: filtering the candidates is not the same
     // as lowering the bar, and a locked pod that answers a 0.6 match it would otherwise question is a
     // pod that guesses after it promised to stop guessing. A contested name that clears the escape
     // hatch twice has no uncontested leader, so it falls back rather than picking.
-    const permitted = rank(index, rawInput).filter((candidate) =>
+    const permitted = candidates.filter((candidate) =>
       ALWAYS_RESOLVABLE.has(candidate.intent.id),
     );
     const outcome = decide(permitted);
     return outcome.kind === "answer" ? outcome : { kind: "fallback", candidates: [] };
   }
 
-  const cold = decide(rank(index, rawInput));
+  const cold = decide(candidates);
   if (cold.kind === "answer" || !options.prior) return cold;
   return decide(rank(index, rawInput, options.prior));
+}
+
+/**
+ * Local-only evidence for a probe or test. Scores describe this supplied corpus, not a remote model
+ * confidence. No raw message, diagnostic, or transcript is transmitted or persisted by this helper.
+ */
+export function explainResolution(index: IntentIndex, rawInput: string, options: { locked: boolean; prior?: string | null }) {
+  const interpretation = interpretRequest(rawInput);
+  const candidates = rank(index, rawInput).slice(0, DISAMBIGUATION_WIDTH);
+  const outcome = resolve(index, rawInput, options);
+  return {
+    interpretation,
+    candidates: candidates.map((candidate) => ({ intentId: candidate.intent.id, score: candidate.score, tier: candidate.tier })),
+    outcome: outcome.kind,
+    intentId: outcome.kind === "answer" ? outcome.intent.id : null,
+    locked: options.locked,
+  };
 }

@@ -31,16 +31,37 @@ export default function ChipRow({ chips, onChip, ariaLabel, isSelected, classNam
   return (
     <div className={`${styles.chips} ${className ?? ""}`} role="group" aria-label={ariaLabel}>
       {chips.map((chip, index) => {
-        const selected = isSelected?.(chip);
+        const toggle = chip.action.kind === "slot-toggle";
+        const selected = toggle ? (isSelected?.(chip) ?? false) : undefined;
+        const key = `${chip.label}-${chip.action.kind}-${"value" in chip.action ? chip.action.value : index}`;
+        const href = chip.action.kind === "route" || chip.action.kind === "external" ? chip.action.href : null;
+        if (href) {
+          return (
+            <a
+              key={key}
+              className={styles.chip}
+              href={href}
+              style={{ "--chip-index": index } as CSSProperties}
+              onClick={(event) => {
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                onChip(chip);
+              }}
+            >
+              {chip.label}
+            </a>
+          );
+        }
         return (
           <button
-            key={`${chip.label}-${chip.action.kind}-${"value" in chip.action ? chip.action.value : index}`}
+            key={key}
             type="button"
             className={`${styles.chip} ${selected ? styles.chipOn : ""}`}
             style={{ "--chip-index": index } as CSSProperties}
             aria-pressed={selected}
             onClick={() => onChip(chip)}
           >
+            {toggle ? <span className={styles.choiceMarker} aria-hidden="true">{selected ? "✓" : ""}</span> : null}
             {chip.label}
           </button>
         );

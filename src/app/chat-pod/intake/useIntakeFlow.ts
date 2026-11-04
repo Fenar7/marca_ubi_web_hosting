@@ -2,7 +2,7 @@
  * @file useIntakeFlow.ts
  * @description The intake state machine: a pure `transition` plus the one React wrapper that calls it.
  *
- *              Purity is the point. Seventeen slots, a conditional required-contact rule, an
+ *              Purity keeps the short brief, optional enrichment, required-contact rule, an
  *              idempotency key that has to survive retries, and an edit path that has to land back on
  *              the review card are exactly the logic that becomes untestable once it is spread across
  *              event handlers. As a pure function over `(state, event)`, every legal and every illegal
@@ -29,7 +29,8 @@
 import { useCallback, useMemo, useReducer } from "react";
 
 import { replyChannel } from "./review";
-import { SLOTS, SLOT_ORDER } from "./slots";
+import { SLOTS, SLOT_ORDER, SHORT_BRIEF_SLOTS } from "./slots";
+import { isServiceInterest } from "./serviceInterest";
 import type { SlotId, SlotValue } from "../types";
 
 export type IntakeMode = "CHAT" | "INTAKE_FORM" | "REVIEW" | "SUBMITTING" | "DONE" | "ERROR";
@@ -61,10 +62,14 @@ export interface IntakeState {
    * answers so a second brief starts blank, and the success line has to survive that.
    */
   sentTo: string;
+  /** Optional enrichment is a deliberate branch rather than compulsory traversal. */
+  enriching: boolean;
 }
 
 export type IntakeEvent =
-  | { t: "START_INTAKE" }
+  | { t: "START_INTAKE"; serviceSlug?: string }
+  | { t: "REVIEW_NOW" }
+  | { t: "ADD_DETAILS" }
   | { t: "ANSWER"; slot: SlotId; value: SlotValue }
   | { t: "SKIP"; slot: SlotId }
   | { t: "EDIT_SLOT"; slot: SlotId }
@@ -85,9 +90,11 @@ export type IntakeEvent =
 export const MAX_SUBMIT_ATTEMPTS = 3;
 
 /** First slot of the optional tail. The panel prints its one bridge line when it enters this index. */
-export const OPTIONAL_TAIL_START = SLOT_ORDER.indexOf("projectName");
+export const OPTIONAL_TAIL_START = SHORT_BRIEF_SLOTS.length;
 
 const EMPTY_SLOTS: Record<SlotId, SlotValue> = {
+  serviceInterest: [],
+  company: "",
   categories: [],
   services: [],
   timeline: "",
@@ -120,6 +127,7 @@ export function initialIntakeState(): IntakeState {
     editing: false,
     editReturn: null,
     sentTo: "",
+    enriching: false,
   };
 }
 
@@ -132,17 +140,16 @@ function isFilled(value: SlotValue): boolean {
 }
 
 /** Every question has an answer, which is the only condition under which a restored brief opens the card. */
-function isComplete(slots: Record<SlotId, SlotValue>): boolean {
-  return SLOT_ORDER.every((slot) => isFilled(slots[slot]));
-}
-
 /**
  * Where a resumed or restored brief starts asking: the first question with nothing in it. A brief with
  * no gap left returns the last index, and `START_INTAKE` sends that case straight to the card.
  */
 function firstUnansweredIndex(slots: Record<SlotId, SlotValue>): number {
-  const index = SLOT_ORDER.findIndex((slot) => !isFilled(slots[slot]));
-  return index === -1 ? SLOT_ORDER.length - 1 : index;
+  const index = SHORT_BRIEF_SLOTS.findIndex((slot) => {
+    if (slot === "phone" && isFilled(slots.email)) return false;
+    return !isFilled(slots[slot]) || !SLOTS[slot].validate(slots[slot], slots).ok;
+  });
+  return index === -1 ? SHORT_BRIEF_SLOTS.length - 1 : index;
 }
 
 /**
@@ -150,15 +157,13 @@ function firstUnansweredIndex(slots: Record<SlotId, SlotValue>): number {
  * once `email` has been declined: the ingest schema needs one contact channel, not two.
  */
 export function isRequired(slot: SlotId, state: IntakeState): boolean {
-  if (slot === "phone") return state.phoneRequired;
+  if (slot === "phone") return !isFilled(state.slots.email) && (state.phoneRequired || state.slotIndex > SLOT_ORDER.indexOf("email"));
   return SLOTS[slot].required;
 }
 
 /** Every required answer present, and at least one contact channel. `SUBMIT` refuses a brief without it. */
 export function canSubmit(state: IntakeState): boolean {
-  const required = SLOT_ORDER.filter((slot) => isRequired(slot, state));
-  if (!required.every((slot) => isFilled(state.slots[slot]))) return false;
-  return isFilled(state.slots.email) || isFilled(state.slots.phone);
+  return blockingSlot(state) === null;
 }
 
 /**
@@ -169,8 +174,11 @@ export function canSubmit(state: IntakeState): boolean {
  * review card has no row left to edit. So the reason and the remedy come from one function.
  */
 export function blockingSlot(state: IntakeState): SlotId | null {
-  const missing = SLOT_ORDER.find((slot) => isRequired(slot, state) && !isFilled(state.slots[slot]));
-  if (missing) return missing;
+  const invalid = SLOT_ORDER.find((slot) => {
+    if (!isFilled(state.slots[slot])) return isRequired(slot, state);
+    return !SLOTS[slot].validate(state.slots[slot], state.slots).ok;
+  });
+  if (invalid) return invalid;
   return isFilled(state.slots.email) || isFilled(state.slots.phone) ? null : "email";
 }
 
@@ -204,6 +212,9 @@ function advance(state: IntakeState, slot: SlotId, value: SlotValue): IntakeStat
         error: null,
       };
     }
+    if (slot === "email" && !isFilled(value) && !isFilled(filled.slots.phone)) {
+      return { ...filled, slotIndex: SLOT_ORDER.indexOf("phone"), phoneRequired: true, error: null };
+    }
     if (state.editReturn !== null) {
       return {
         ...filled,
@@ -216,7 +227,10 @@ function advance(state: IntakeState, slot: SlotId, value: SlotValue): IntakeStat
     return { ...filled, mode: "REVIEW", editing: false, editReturn: null, error: null };
   }
 
-  const nextIndex = state.slotIndex + 1;
+  let nextIndex = state.slotIndex + 1;
+  if (SLOT_ORDER[nextIndex] === "phone" && isFilled(filled.slots.email)) nextIndex += 1;
+  if (SLOT_ORDER[nextIndex] === "services" && !isFilled(filled.slots.categories)) nextIndex += 1;
+  if (!state.enriching && nextIndex >= SHORT_BRIEF_SLOTS.length) return { ...filled, mode: "REVIEW", error: null };
   if (nextIndex >= SLOT_ORDER.length) return { ...filled, mode: "REVIEW", error: null };
 
   return { ...filled, slotIndex: nextIndex, error: null };
@@ -232,11 +246,30 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
       if (state.mode === "INTAKE_FORM" || state.mode === "REVIEW" || state.mode === "SUBMITTING") return state;
       // A brief that came back from storage with every answer in it opens the card rather than
       // re-asking the last question the visitor already answered.
-      if (isComplete(state.slots))
+      if (canSubmit(state))
         return { ...state, mode: "REVIEW", error: null, editing: false, editReturn: null, slotIndex: SLOT_ORDER.length - 1 };
       // Returning after `EXIT_TO_CHAT` resumes where the visitor stopped; the slots were kept on purpose.
-      return { ...state, mode: "INTAKE_FORM", error: null, editing: false, editReturn: null };
+      const mayCarry = !isFilled(state.slots.serviceInterest) && event.serviceSlug && isServiceInterest(event.serviceSlug);
+      return {
+        ...state,
+        slots: mayCarry ? { ...state.slots, serviceInterest: [event.serviceSlug!] } : state.slots,
+        mode: "INTAKE_FORM", error: null, editing: false, editReturn: null,
+      };
     }
+
+    case "REVIEW_NOW": {
+      if (state.mode !== "INTAKE_FORM") return state;
+      const blocking = blockingSlot(state);
+      if (blocking) return {
+        ...state, slotIndex: SLOT_ORDER.indexOf(blocking),
+        error: { slot: blocking, message: `I still need ${SLOTS[blocking].label.toLowerCase()} before review.` },
+      };
+      return { ...state, mode: "REVIEW", editing: false, editReturn: null, error: null };
+    }
+
+    case "ADD_DETAILS":
+      if (state.mode !== "REVIEW") return state;
+      return { ...state, mode: "INTAKE_FORM", enriching: true, slotIndex: OPTIONAL_TAIL_START, editing: false, editReturn: null, error: null };
 
     case "RESTORE_DRAFT": {
       if (state.mode !== "CHAT") return state;
@@ -256,6 +289,7 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
         // An empty email means the number carries the reply, exactly as it would have during the ask.
         phoneRequired: !isFilled(merged.email),
         slotIndex: firstUnansweredIndex(merged),
+        enriching: false,
       };
     }
 
@@ -267,6 +301,9 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
 
       const outcome = SLOTS[slot].validate(event.value, state.slots);
       if (!outcome.ok) return { ...state, error: { slot, message: outcome.message } };
+      if (isRequired(slot, state) && !isFilled(outcome.value)) {
+        return { ...state, error: { slot, message: "I need this answer before we can continue." } };
+      }
 
       const email = slot === "email" ? String(outcome.value ?? "") : null;
       if (email !== null && email.length === 0 && !isFilled(state.slots.phone)) {
@@ -274,7 +311,7 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
         // reason is stated in the phone question itself rather than in a separate line.
         return advance({ ...state, phoneRequired: true }, slot, "");
       }
-      return advance(state, slot, outcome.value);
+      return advance(slot === "email" ? { ...state, phoneRequired: false } : state, slot, outcome.value);
     }
 
     case "SKIP": {
@@ -353,9 +390,10 @@ export function transition(state: IntakeState, event: IntakeEvent): IntakeState 
     }
 
     case "SUBMIT_OK":
-      return { ...initialIntakeState(), mode: "DONE", sentTo: replyChannel(state.slots) };
+      return state.mode === "SUBMITTING" ? { ...initialIntakeState(), mode: "DONE", sentTo: replyChannel(state.slots) } : state;
 
     case "SUBMIT_FAIL": {
+      if (state.mode !== "SUBMITTING") return state;
       const attempt = state.attempt + 1;
 
       // A 422 names the field, so the visitor goes back to the one question that failed instead of

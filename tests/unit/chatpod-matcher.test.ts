@@ -332,16 +332,17 @@ describe('Chat Pod fallback lock', () => {
     assert.equal(outcome.kind === 'answer' ? outcome.intent.id : '', 'greeting');
   });
 
-  it('suppresses ordinary intents once locked rather than guessing', () => {
+  it('keeps exact authored information available after the fallback cap', () => {
     const outcome = resolve(index, 'what do you do', { locked: true });
-    assert.equal(outcome.kind, 'fallback');
+    assert.equal(outcome.kind, 'answer');
+    assert.equal(outcome.kind === 'answer' ? outcome.intent.id : '', 'services.overview');
   });
 
-  it('never lets the lock answer with a non-permitted intent', () => {
+  it('allows safe authored information but keeps fuzzy guesses suppressed', () => {
     for (const phrase of ['jobs', 'careers', 'hiring', 'pricing', 'portfolio']) {
       const outcome = resolve(index, phrase, { locked: true });
       const id = outcome.kind === 'answer' ? outcome.intent.id : null;
-      assert.ok(id === null || ALWAYS_RESOLVABLE.has(id), `locked mode answered "${phrase}" with ${id}`);
+      assert.ok(id === null || ALWAYS_RESOLVABLE.has(id) || rank(index, phrase)[0]?.tier === 1, `locked mode guessed "${phrase}" with ${id}`);
     }
   });
 
