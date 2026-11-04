@@ -3,22 +3,60 @@
 > **Start here.** This is the live pointer file; the detail lives in the linked register.
 > Any agent (human or AI) opening this project should read this file first, then the register.
 
-**Recorded At:** `2026-11-03T14:55:00+05:30`
+**Recorded At:** `2026-11-03T21:55:00+05:30`
 **Current Branch:** `remediation/turbopack-compaction-dev-server` (sub-branch under `redesign/chat-pod-luxury-interaction`)
 **Base Branch:** `redesign/chat-pod-luxury-interaction` (which targets `feature/chat-pod` in PR #106)
-**Latest State:** `Chat Pod Part C — typed-message comprehension, continuity, identity ownership and the ten intake defects — commit eff95ed pushed; PR #107 updated and OPEN`
+**Latest State:** `Chat Pod Part D, pass 3 — the independent CTO re-audit ran, five findings were real, one was not, and the hijack it caught (legitimate intake answers being answered about the studio) is fixed, gated and green — working tree on top of 230377b; PR #107 OPEN (commit and push pending the owner's go-ahead)`
 **Open Pull Requests (ALL STRICTLY OPEN):**
 - [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
 - [PR #106 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (`redesign/chat-pod-luxury-interaction` → `feature/chat-pod`)
 - [PR #105 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/105): `Phase 15: Chat Pod Deterministic Assistant and Conversational Intake Architecture` (`feature/chat-pod` → `master`)
 **Author Identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`
-**TypeScript Status:** `0 errors`. Whole-project `tsc` (`node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit`) was green at the last full run and then died twice on host memory (`young object promotion failed`, ~1 GB free) — not a type failure. The final pass was re-checked with the same strict options over every file this PR touches (`src/app/chat-pod/**`, `src/app/lib/intake/**`, `tests/unit/chatpod-*.test.ts`, `tests/e2e/chatpod.spec.ts`): **0 errors, exit 0**.
-**Unit Tests:** `1308 pass / 0 fail` across `348 suites` (full suite, re-run on the final tree); the Chat Pod engine/intake suites are `40` matcher, `36` normalise, `53` intake-fsm, `21` intent-resolution. Scoped typecheck for this surface: `node --max-old-space-size=3072 node_modules/typescript/bin/tsc -p tsconfig.podcheck.json` → 0 errors.
-**E2E:** `28 passed in 4.2m` (`tests/playwright.chatpod.config.ts`, against a server already on `127.0.0.1:3003`)
+**TypeScript Status:** `0 errors`. Whole-project `tsc` (`node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit`) was green at the last full run and then died twice on host memory (`young object promotion failed`, ~1 GB free) — not a type failure. The gate for this surface is `npx tsc -p tsconfig.podcheck.json --noEmit` → **0 errors, exit 0**; its scope now includes `tests/e2e/chatpod.spec.ts`, because Playwright transpiles specs without type-checking them.
+**Unit Tests:** `1333 pass / 0 fail` across `351 suites` (full suite, re-run on the pass-3 tree). Scoped typecheck for this surface: `npx tsc -p tsconfig.podcheck.json --noEmit` → 0 errors.
+**E2E:** `44 passed in 5.4m` (`tests/playwright.chatpod.config.ts`, one worker, against a server already on `127.0.0.1:3003`). `npm run build` exit 0 and the server still answers 200 afterwards; `npm run test:boundaries` clean.
 
 ---
 
-## 1. Active Work: Chat Pod Parts A–C (comprehension, motion & contrast, typed-message intake)
+## 1. Active Work: Chat Pod Parts A–D (comprehension, motion & contrast, typed-message intake, scroll ownership)
+
+**Part D — 3 November, the browser pass.** The owner opened the pod, took a screenshot and asked what the
+view was: *two scrolls*, and *in many other pages the scrolls are not working*, and `can yu pls tell me
+about services` still wrong — *now i feel like a dumb chatbot*. Three layers, and the middle one was the
+expensive find. The panel had been **two** `overflow-y: auto` boxes stacked in a fixed-height shell (the
+messages, and the chip rail in its own 7.5 rem box), so the surface under the cursor decided whether a
+gesture did anything; the viewport behind an overlay had been held five different ways by five surfaces —
+a body class, a dispatched event, a direct `body.style.overflow` write — and whichever released last
+decided whether every one of them was still holding, which is exactly the "does not work on the other
+pages" report; and question recognition still had three holes (a four-character mistype, an interrogative
+at the *end* of a sentence, and a request wrapped in `pls`). Now: `.flow` is the panel's only scroll owner
+and follows the floor with pre-paint compensation plus a `ResizeObserver` for the reflows React never sees;
+`src/app/lib/overlayScrollLock.ts` is a refcounted lock that four tokens share and that Lenis subscribes to
+instead of guessing; `isScaffold`, `looksLikeQuestion` and the verbatim-slot detour route close the shape
+holes without eating a subject. The gates that prove it are new: a landscape-phone sheet, the ~46 px
+progress-rail push that `hadRecentInput` forgives (the CLS gate was renamed for what it actually measures),
+and a real wheel-takeover gate. One harness bug surfaced first: Playwright's `focus()` scrolls its target
+into view, and the multi-select stability gate had been reporting that scroll as a pod defect.
+👉 [`docs/context/2026-11-03_21-07-00.md`](./2026-11-03_21-07-00.md) for that pass.
+
+**Pass 3 was the independent CTO re-audit of that same tree**, and it caught a regression the Part D fix
+introduced: the detour route at the six verbatim blanks offered *any multi-word message* to the corpus, so
+`social media`, `brand identity` and `demand generation` — each answered at 1.000, each a perfectly ordinary
+thing to name your project as — were answered about the studio and the brief stored nothing. The clause had
+never once fired for the case it was written for, because `engine.lookup` returns null on a disambiguation.
+It is deleted; the routes are now sentence shape and a chat abbreviation at the head (`opensWithChatShorthand`),
+and the same two signals feed the refusal branch. Also from that audit: the off-topic negative controls were
+rewritten to pin measured states instead of a `notEqual('answer')` that a disambiguation satisfied, the
+content path got two real browser gates, a reflow no longer teleports an in-flight glide, the floating panel
+is capped by the viewport (it sat 48 px off a 400 px-tall screen), and a visitor's own long brief can no
+longer be clipped by the composer's 140 px cap with `overflow-y: hidden`.
+👉 [`docs/context/2026-11-03_21-55-00.md`](./2026-11-03_21-55-00.md), with the findings table and the
+verification numbers actually re-run on that tree, in §9 of
+[`docs/chat_pod/23-one-column-one-lock-and-the-typed-message.md`](../chat_pod/23-one-column-one-lock-and-the-typed-message.md).
+Still open there: `any discount available` gets filed at a verbatim blank (no shape, no abbreviation, and a
+name heuristic would refuse real answers like `The Marketing Club`), `Header.tsx` — which has no importers —
+carries an inert lock edit the auditor wants deleted, and a 400 px-tall desktop window leaves a 71 px
+conversation column.
 
 **Part C — 3 November, commit `eff95ed`.** The owner used the pod again, on a phone, and reported two more
 things: asking *what do you do* got the services qualification question back, and the brief "feels broken".
@@ -34,8 +72,8 @@ finding: **the machine's refusals were right and its lines were missing.**
 👉 [`docs/context/2026-11-03_14-55-00.md`](./2026-11-03_14-55-00.md), with mechanism and the measured
 resolver table in
 [`docs/chat_pod/22-comprehension-continuity-and-intake-remediation.md`](../chat_pod/22-comprehension-continuity-and-intake-remediation.md).
-No threshold moved, no dependency added, no network call, no model. **Still unrun: a real browser pass over
-the intake fixes** — the host had no memory for a dev server, and there is no e2e gate for them.
+No threshold moved, no dependency added, no network call, no model. The real browser pass over the intake
+fixes that this record said was unrun has since been run — see Part D above.
 
 Parts A and B are below.
 
