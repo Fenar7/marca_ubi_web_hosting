@@ -1,9 +1,12 @@
 ## What is in this branch
 
-Two passes, one branch. The first (already recorded below) rebuilt the pod's Swiss light editorial surface,
-the brand red alignment and the launcher. The second, `15b2183`, is the one the owner asked for after using
-the pod live: make it understand the questions people actually ask, and make it feel alive when a message
-is sent. Both are now gated by tests that compute their own numbers.
+Four passes over the same surface, one branch. The first rebuilt the pod's Swiss light editorial look, the
+brand red and the launcher. The second, `15b2183`, is the one the owner asked for after using the pod live:
+make it understand the questions people actually ask, and make it feel alive when a message is sent. The
+third (`eff95ed`) made a typed message count as typed rather than authored, carried the subject across
+turns, and closed ten intake defects. The fourth is this branch's working set: one scroll column instead of
+two stacked boxes, one refcounted viewport lock across five overlays, and the intake regression the
+independent re-audit caught and fixed. Each pass carries the gates that measure it.
 
 Design Read for this surface: **ENERGY 2 / RHYTHM 2 / MOTION 2** (set with the owner before the pass; the
 `MOTION 1` recorded further down is superseded, see the re-certification block).
