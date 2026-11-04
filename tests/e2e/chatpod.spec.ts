@@ -1443,7 +1443,7 @@ test.describe('Local assistant: reported failures and complete tasks', () => {
     await composer(page).fill('demand generation');
     await composer(page).press('Enter');
     await settle(page);
-    await startIntake(page);
+    await press(tray(page).getByRole('button', { name: 'Discuss this service', exact: true }), page);
     await expect(tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
     await answerTurn(page);
@@ -1458,6 +1458,35 @@ test.describe('Local assistant: reported failures and complete tasks', () => {
     expect(body).not.toHaveProperty('company');
     expect(body).not.toHaveProperty('budget_bracket');
     expect(JSON.stringify(body)).toContain('demand-generation');
+  });
+
+  test('whole-message back, contact and review commands do not become field answers', async ({ page }) => {
+    await openPanel(page);
+    await startIntake(page);
+    await tapInPlace(tray(page).getByRole('button', { name: 'Demand Generation (B2B)', exact: true }), page);
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await composer(page).fill('back');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(panel(page).getByRole('heading', { name: /Which services interest you/ })).toBeVisible();
+
+    await press(actions(page).getByRole('button', { name: 'Continue', exact: true }), page);
+    await composer(page).fill('Back to the Future campaign');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Your name');
+
+    await composer(page).fill('contact');
+    await composer(page).press('Enter');
+    await settle(page);
+    const returnToBrief = page.getByRole('group', { name: 'Return to your brief', exact: true }).getByRole('button', { name: 'Return to brief', exact: true });
+    await expect(returnToBrief).toBeVisible();
+    await press(returnToBrief, page);
+
+    await composer(page).fill('review');
+    await composer(page).press('Enter');
+    await settle(page);
+    await expect(composer(page)).toHaveAttribute('placeholder', 'Your name');
   });
 
   test('two earlier misses do not disable an exact services answer', async ({ page }) => {

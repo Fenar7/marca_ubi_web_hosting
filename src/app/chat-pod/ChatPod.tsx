@@ -35,6 +35,7 @@ import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, SHORT_BRIEF_SLOTS, polarityMatc
 import type { SlotOption } from "./intake/slots";
 import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, canSubmit, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
 import { UNDECIDED_SERVICE } from "./intake/serviceInterest";
+import { parseIntakeCommand } from "./intake/commands";
 import type { IntakeMode } from "./intake/useIntakeFlow";
 import { buildPodPayload, reviewRows } from "./intake/review";
 import { createIdempotencyKey, submitBrief } from "./intake/submit";
@@ -69,13 +70,6 @@ const DRAFT_WRITE_MS = 400;
 const PANEL_GAP = 12;
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
-/**
- * Words that mean "stop asking me". Checked before every other reading of a typed message, so `stop`
- * can never be filed as the answer to a question. This is the typed half of the `intake.exit` intent,
- * which the matcher cannot reach while the panel is in intake.
- */
-const ABORT_WORDS = /^(stop|cancel|exit|quit|never mind|not now)$/i;
 
 /**
  * Words that mean "I am not answering this". A slot's closed set is matched before this list, because
@@ -974,10 +968,36 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
       if (state.mode === "SUBMITTING") return;
 
       if (state.mode === "INTAKE_FORM" && slot) {
-        // Before every other reading of the word: "stop" typed at a question has to leave the questions,
-        // not become the answer to them.
-        if (ABORT_WORDS.test(trimmed)) {
+        // Whole-message commands belong to the task controls, even in a text slot; longer titles remain literal.
+        const command = parseIntakeCommand(trimmed);
+        if (command === "exit") {
           send({ t: "EXIT_TO_CHAT" });
+          return;
+        }
+        if (command === "review") {
+          send({ t: "REVIEW_NOW" });
+          return;
+        }
+        if (command === "back") {
+          const previous = SLOT_ORDER.slice(0, state.slotIndex).reverse().find((id) =>
+            !(id === "phone" && isFilled(state.slots.email)) &&
+            !(id === "services" && !isFilled(state.slots.categories)),
+          );
+          if (previous) {
+            send({ t: "EDIT_SLOT", slot: previous });
+          } else {
+            say({ blocks: [{ t: "p", text: "This is the first question. Choose an answer or stop the questions." }], chips: chipsForSlot(slot) });
+          }
+          return;
+        }
+        if (command === "contact") {
+          const contact = engine.lookup("contact");
+          if (contact) {
+            setDetourOpen(true);
+            say(contact.reply);
+          } else {
+            say({ blocks: [{ t: "p", text: "I cannot load the studio's contact details right now." }], chips: chipsForSlot(slot) });
+          }
           return;
         }
 
@@ -1354,7 +1374,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
               <>
                 <div className={styles.activeTask}>
                   <h2 className={styles.taskHeading} tabIndex={-1} data-task-heading>{activeDefinition.question}</h2>
-                  <p className={styles.taskHint}>{activeDefinition.kind === "multi" ? "Choose any that apply, then Continue." : "Choose one answer."}</p>
+                  {activeDefinition.kind === "multi" ? null : <p className={styles.taskHint}>Choose one answer.</p>}
                 </div>
                 <ChoiceGroups chips={visibleChoices} groups={choiceGroups} onChip={onChip} isSelected={isSelected} />
               </>

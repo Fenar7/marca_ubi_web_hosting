@@ -20,13 +20,15 @@ The short brief collects interest, scope, name and a reply channel. Timing is op
 - Scoped pod TypeScript passed. Final whole-project check pending.
 - UI ESLint passed with zero errors after correcting four controller hook findings.
 - Live browser checks confirmed the reported services wording and principal width/touch behaviours. The first integrated run found a short-height layout issue (fixed) and an outdated accessible-name selector (fixed). A host memory failure interrupted that run; it is not recorded as a product pass.
-- Final browser, build, boundary, independent audit and delivery gates remain pending at this checkpoint. The PR must remain draft until these are recorded below.
+- Independent CTO review found exact `back`, `contact`, and `review` commands could be filed as text answers. Whole-message intake routing now handles them before field matching, preserves the raw command in the transcript, and leaves longer titles verbatim. The service-carryover browser journey now uses the contextual `Discuss this service` action that supplies the stable ID.
+- Full unit suite after these fixes: 1,364 passed. Focused command/short-brief browser journey: passed against the main-folder preview on port 3003. Contrast suite: 14 passed. Updated whole-project TypeScript, lint, boundary, complete browser, build and independent re-review remain pending.
+- The latest browser suite was interrupted when its isolated port 3004 server was stopped at the owner's request. Seven initial geometry tests passed; the remaining suite was not completed. This is not recorded as a full browser pass.
 
 The installed Next 16.1.6 package does not contain `next/dist/docs`; relevant official Next guidance was consulted as fallback. Browser checks use isolated port 3004 because the user's existing port 3003 must remain untouched. Submitted test briefs are intercepted locally.
 
 ## Independent review cycles
 
-Pending. Auditors must assess this as code written by another AI, reproduce findings, and report concrete defects without trusting implementation claims. Each verified finding requires a fix and recheck.
+First independent logic review findings were corrected and re-tested; independent re-review is pending. A separate UI reviewer found no blocking UI defects; physical-device and screen-reader evidence remains unavailable. Continue audit/fix loops before considering release evidence complete.
 
 ## Four-block delivery gate
 

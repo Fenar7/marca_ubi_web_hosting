@@ -142,11 +142,22 @@ describe("Chat Pod contrast contract (measured, not asserted in a comment)", () 
   });
 
   it("measures the new task controls and selection treatment from their shipped declarations", () => {
-    const primary = /\.taskPrimary \{[^}]*background: (#[0-9a-f]{6});[^}]*color: (#[0-9a-f]{6});/i.exec(scss);
-    const selected = /\.chipOn \{[^}]*background: (#[0-9a-f]{6});[^}]*color: (#[0-9a-f]{6});/i.exec(scss);
+    const declaration = (name: string) => {
+      const start = scss.indexOf(`.${name} {`);
+      const end = start < 0 ? -1 : scss.indexOf("}", start);
+      return start < 0 || end < 0 ? "" : scss.slice(start, end);
+    };
+    const pair = (name: string) => {
+      const block = declaration(name);
+      const background = /\bbackground:\s*(#[0-9a-f]{6})/i.exec(block)?.[1];
+      const foreground = /\bcolor:\s*(#[0-9a-f]{6})/i.exec(block)?.[1];
+      return background && foreground ? [foreground, background] as const : null;
+    };
+    const primary = pair("taskPrimary");
+    const selected = pair("chipOn");
     assert.ok(primary && selected, "task action and selected choice colours must be measurable");
-    assert.ok(ratio(primary[2], primary[1]) >= 4.5, "Continue and Send brief text must clear AA");
-    assert.ok(ratio(selected[2], selected[1]) >= 4.5, "selected choices must remain readable");
+    assert.ok(ratio(primary[0], primary[1]) >= 4.5, "Continue and Send brief text must clear AA");
+    assert.ok(ratio(selected[0], selected[1]) >= 4.5, "selected choices must remain readable");
     for (const name of ["taskHint", "choiceGroupTitle", "selectionSummary"]) {
       const ink = inkOf(new RegExp(`\\.${name} \\{[^}]*color: (#[0-9a-f]{6}|\\$[a-z-]+)`, "i"), name);
       assert.ok(ratio(ink, CANVAS) >= 4.5, `${name} text must clear AA`);
