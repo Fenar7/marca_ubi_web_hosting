@@ -12,7 +12,7 @@ const menuItems = [
   { label: "Insights", href: "/blog", hint: "Dispatches on brand architecture and craft" },
   { label: "About", href: "/#about", hint: "How Marca Ubi thinks and operates" },
   { label: "Values", href: "/#values", hint: "Principles shaping every engagement" },
-  { label: "Contact", href: "/#contact", hint: "Start a project conversation" },
+  { label: "Contact", href: "/contact", hint: "Start a project conversation" },
 ] as const;
 
 export default function Header() {

@@ -13,6 +13,7 @@ import type { MetadataRoute } from "next";
 import { client } from "@/sanity/lib/client";
 import { sitemapPostsQuery } from "@/sanity/lib/blog-queries";
 import { getAllServiceSlugs } from "./services/content";
+import { activeCareersQuery, type CareerPosting } from "@/sanity/lib/career-queries";
 
 export const revalidate = 3600; // 1-hour Edge ISR cache revalidation
 
@@ -102,7 +103,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    return [...staticRoutes, ...postRoutes];
+    // Dynamic Careers Postings from Sanity CMS
+    let careerRoutes: MetadataRoute.Sitemap = [];
+    try {
+      const careers = await client.fetch<CareerPosting[]>(activeCareersQuery);
+      careerRoutes = (careers || []).map((career) => {
+        const slug = typeof career.slug === "string" ? career.slug : (career.slug as { current: string })?.current;
+        const rawDate = career._createdAt;
+        const lastModified = rawDate ? new Date(rawDate) : STATIC_RELEASE_DATE;
+        return {
+          url: `${siteUrl}/careers/${slug}`,
+          lastModified: isNaN(lastModified.getTime()) ? STATIC_RELEASE_DATE : lastModified,
+          changeFrequency: "weekly" as const,
+          priority: 0.6,
+        };
+      });
+    } catch (careerError) {
+      console.error("[Sitemap Error] Career fetch failed, omitting dynamic careers:", careerError);
+    }
+
+    return [...staticRoutes, ...postRoutes, ...careerRoutes];
   } catch (error) {
     console.error("[Sitemap Error] Sanity fetch failed, falling back to static routes:", error);
     return staticRoutes;

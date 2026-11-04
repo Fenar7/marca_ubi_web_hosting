@@ -1,0 +1,568 @@
+/**
+ * @file src/app/contact/Contact.module.scss
+ * @description Swiss Editorial Contact Stylesheet benchmarked to 160over90 and Whoa Mama.
+ *              Includes solid obsidian hero masthead, minimal input fields,
+ *              delicate blush talent diversion card, and clean studio cards.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+// Local Color Tokens
+$contact-canvas: #ffffff;
+$contact-hero-bg: #000000;
+$contact-ink: #0a0a0a;
+$contact-ink-secondary: #3f3f46;
+$contact-ink-muted: #71717a;
+$contact-border-subtle: rgba(0, 0, 0, 0.1);
+$contact-border-field: rgba(0, 0, 0, 0.18);
+$contact-pink-card: #ffd6e7;
+
+.pageShell {
+  background-color: $contact-canvas;
+  color: $contact-ink;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* -------------------------------------------------------------
+ * 1. 160/90 SOLID BLACK HERO MASTHEAD (Screenshot 155701)
+ * ------------------------------------------------------------- */
+.heroMasthead {
+  background-color: $contact-hero-bg;
+  color: #ffffff;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(280px, 42vh, 440px);
+  padding: clamp(140px, 18vh, 190px) clamp(1.5rem, 5vw, 4.5rem) clamp(3rem, 7vh, 5rem);
+  width: 100%;
+}
+
+.heroContent {
+  margin: 0 auto;
+  max-width: 1440px;
+  width: 100%;
+}
+
+.heroHeadline {
+  color: #ffffff;
+  font-family: $font-circular;
+  font-size: clamp(3.25rem, 7.5vw, 6.25rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.0;
+  margin: 0;
+}
+
+/* -------------------------------------------------------------
+ * 2. MAIN EDITORIAL BODY & FULL-WIDTH FLOW
+ * ------------------------------------------------------------- */
+.pageMain {
+  background-color: $contact-canvas;
+  color: $contact-ink;
+  padding: clamp(3.5rem, 6vw, 5.5rem) clamp(1.5rem, 5vw, 4.5rem) 7rem;
+  width: 100%;
+}
+
+.flowContainer {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3.5rem, 6vw, 5rem);
+  margin: 0 auto;
+  max-width: 1440px;
+  width: 100%;
+}
+
+/* -------------------------------------------------------------
+ * 3. INQUIRY COMPOSER (Screenshot 155708 & 155743)
+ * ------------------------------------------------------------- */
+.inquiryComposerShell {
+  width: 100%;
+}
+
+.composerHeader {
+  margin-bottom: 2.5rem;
+}
+
+.leadParagraph {
+  color: $contact-ink-secondary;
+  font-family: $font-circular;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.65;
+  margin: 0 0 2rem 0;
+}
+
+.intentPrompt {
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.25rem 0;
+}
+
+.trackPillsCluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.trackPill {
+  align-items: center;
+  background-color: #ffffff;
+  border: 1.5px solid #000000;
+  border-radius: 9999px;
+  color: #000000;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: $font-circular;
+  font-size: 15px;
+  font-weight: 500;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.65rem 1.75rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+
+  &:hover {
+    background-color: #f4f4f5;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.trackPillActive {
+  background-color: #000000;
+  color: #ffffff;
+
+  &:hover {
+    background-color: #18181b;
+  }
+}
+
+/* Minimal Form Card Container (Whoa Mama Standard) */
+.formContainerCard {
+  background-color: #ffffff;
+  border: 1px solid $contact-border-subtle;
+  border-radius: 16px;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  width: 100%;
+}
+
+.formCardHeader {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+}
+
+.formTitle {
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem 0;
+}
+
+.careersRedirectText {
+  color: $contact-ink-muted;
+  font-family: $font-circular;
+  font-size: 14.5px;
+  margin: 0;
+}
+
+.careersLink {
+  color: #000000;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+.editorialForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.fieldLabel {
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.requiredMark {
+  color: #ea002a;
+}
+
+.textInput {
+  background-color: #ffffff;
+  border: 1px solid $contact-border-field;
+  border-radius: 6px;
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: 15px;
+  height: 50px;
+  padding: 0 1rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+
+  &::placeholder {
+    color: #a1a1aa;
+  }
+
+  &:focus {
+    border-color: #000000;
+    box-shadow: 0 0 0 1px #000000;
+    outline: none;
+  }
+}
+
+.textAreaInput {
+  background-color: #ffffff;
+  border: 1px solid $contact-border-field;
+  border-radius: 6px;
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 120px;
+  padding: 0.875rem 1rem;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+
+  &::placeholder {
+    color: #a1a1aa;
+  }
+
+  &:focus {
+    border-color: #000000;
+    box-shadow: 0 0 0 1px #000000;
+    outline: none;
+  }
+}
+
+.honeypotField {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.submitRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.submitButton {
+  align-items: center;
+  background-color: #000000;
+  border: none;
+  border-radius: 9999px;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: $font-circular;
+  font-size: 15px;
+  font-weight: 500;
+  height: 52px;
+  justify-content: center;
+  padding: 0 2.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #27272a;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.slaReassurance {
+  color: $contact-ink-muted;
+  font-family: $font-circular;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.errorBanner {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #b91c1c;
+  font-family: $font-circular;
+  font-size: 14px;
+  padding: 0.875rem 1.25rem;
+}
+
+.successCard {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: left;
+}
+
+.successHeadline {
+  color: #15803d;
+  font-family: $font-circular;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.successBody {
+  color: #166534;
+  font-family: $font-circular;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.receiptToken {
+  color: #14532d;
+  font-size: 13px;
+  margin: 0 0 1.5rem 0;
+
+  code {
+    background: #dcfce7;
+    border-radius: 4px;
+    font-family: monospace;
+    padding: 2px 6px;
+  }
+}
+
+.resetButton {
+  background-color: #15803d;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+
+  &:hover {
+    background-color: #166534;
+  }
+}
+
+/* -------------------------------------------------------------
+ * 4. FULL-WIDTH SOFT BLUSH PINK TALENT CARD (Screenshot 155749)
+ * ------------------------------------------------------------- */
+.wantToWorkSection {
+  width: 100%;
+}
+
+.wantToWorkCard {
+  background-color: $contact-pink-card;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(2rem, 5vw, 3.5rem);
+  width: 100%;
+}
+
+.wantToWorkTitle {
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: clamp(2.25rem, 4vw, 3.125rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0 0 0.875rem 0;
+}
+
+.wantToWorkSubtitle {
+  color: #27272a;
+  font-family: $font-circular;
+  font-size: clamp(1.0625rem, 1.3vw, 1.25rem);
+  font-weight: 400;
+  margin: 0 0 1.5rem 0;
+}
+
+.wantToWorkLink {
+  color: $contact-ink;
+  display: inline-block;
+  font-family: $font-circular;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+/* -------------------------------------------------------------
+ * 5. STUDIO HUBS & DIRECT DESKS (Screenshot 155756)
+ * ------------------------------------------------------------- */
+.studioSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  width: 100%;
+}
+
+.studioGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studioCard {
+  background-color: #ffffff;
+  border: 1px solid $contact-border-subtle;
+  border-radius: 16px;
+  padding: 2.25rem 2.5rem;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.studioCity {
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: 1.375rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.25rem 0;
+}
+
+.studioSubhead {
+  color: $contact-ink-muted;
+  font-family: $font-circular;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+}
+
+.studioAddress {
+  color: $contact-ink-secondary;
+  display: flex;
+  flex-direction: column;
+  font-family: $font-circular;
+  font-size: 14.5px;
+  font-style: normal;
+  gap: 0.15rem;
+  line-height: 1.6;
+  margin: 0 0 1.25rem 0;
+}
+
+.addressLine {
+  display: block;
+}
+
+.directionsLink {
+  color: $contact-ink;
+  display: inline-block;
+  font-family: $font-circular;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+/* Direct Desks Full-Width Horizontal Bar */
+.directDeskCard {
+  align-items: center;
+  background-color: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  padding: 1.5rem 2.25rem;
+  width: 100%;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.directDeskTitle {
+  color: $contact-ink-muted;
+  font-family: $font-circular;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.directDeskLinks {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+.directLink {
+  color: $contact-ink;
+  font-family: $font-circular;
+  font-size: 14.5px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #ea002a;
+    text-decoration: underline;
+  }
+}
