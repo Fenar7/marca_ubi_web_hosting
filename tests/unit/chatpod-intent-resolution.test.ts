@@ -11,7 +11,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ALWAYS_RESOLVABLE, buildIndex, resolve } from '@/app/chat-pod/engine/match';
+import { ALWAYS_RESOLVABLE, ACCEPT_THRESHOLD, CONTINUITY_PRIOR, buildIndex, rank, resolve } from '@/app/chat-pod/engine/match';
 import { compileKnowledgeBase } from '@/app/chat-pod/knowledge/compile';
 import { buildIntentTable } from '@/app/chat-pod/knowledge/intents';
 import { FALLBACK_FAQS } from '@/sanity/lib/faq-queries';
@@ -73,6 +73,7 @@ const TYPED: [string, string][] = [
   ['what do you guys do', 'identity.studio'],
   ['what does marka ubi do', 'identity.studio'],
   ['who are you', 'identity.studio'],
+  ['what do yu do', 'identity.studio'],
   ['who are you guys', 'identity.studio'],
   ['who is behind this', 'identity.studio'],
   ['about you', 'identity.studio'],
@@ -98,6 +99,9 @@ const TYPED: [string, string][] = [
   ['list of services', 'services.overview'],
   ['full list of services', 'services.overview'],
   ['tell me about your services', 'services.overview'],
+  ['can yu pls tell me about services', 'services.overview'],
+  ['can yu tell me about ur services', 'services.overview'],
+  ['pls tell me abt th services', 'services.overview'],
   ['service list', 'services.overview'],
   ['your services', 'services.overview'],
   ['services', 'services.overview'],
@@ -253,15 +257,23 @@ describe('Chat Pod resolution over the published table', () => {
   });
 
   it('refuses to answer what the studio does not publish', () => {
-    for (const phrase of [
-      'do you write academic dissertations',
-      'can you repair my printer',
-      'what is the weather in calicut',
-      'i need a visa reference letter',
-    ]) {
-      const result = outcome(phrase);
-      assert.notEqual(result.kind, 'answer', `"${phrase}" must not be answered`);
-    }
+    // Pinned to the measured state of each phrase rather than to "not an answer", which an earlier
+    // version of this test accepted as enough. Two of these fall below the floor outright; two sit in
+    // the ambiguous band and come back as a disambiguation — `location`, `services.overview`,
+    // `work.clients` are the real published things that share a word with the sentence, which is what
+    // the soft state tells the visitor. Moving either pair into `fallback` would need a threshold, and
+    // the thresholds are frozen, so this records where the line actually is: an off-topic phrase never
+    // receives a confident answer, and the pod names the closest published candidates instead. Which
+    // phrase lands in which state is measured behaviour, so a drift either way is a resolver change.
+    assert.deepEqual(
+      [
+        'do you write academic dissertations',
+        'can you repair my printer',
+        'what is the weather in calicut',
+        'i need a visa reference letter',
+      ].map((phrase) => outcome(phrase).kind),
+      ['fallback', 'fallback', 'disambiguate', 'disambiguate'],
+    );
   });
 
   it('gives every intent a label and at least one authored phrase', () => {
@@ -304,6 +316,19 @@ describe('Chat Pod resolution over the published table', () => {
     // on the right family, stay silent on the wrong one, and never outvote an answer already reached.
     const cold = resolve(index, 'explain each service', { locked: false });
     assert.equal(cold.kind, 'disambiguate', 'the cold pass must not answer this on its own');
+
+    // The boundary itself, worked out on a real phrase instead of quoted from a comment. The prior only
+    // ever lifts a message that was already mostly about the last subject, and that line is arithmetic:
+    // `ACCEPT_THRESHOLD / CONTINUITY_PRIOR`. This phrase sits under the accept line and above the line
+    // the prior can reach, which is the whole of what the constant is for — a prior that crept upward
+    // would start answering messages the visitor never connected to the conversation, and this is the
+    // assertion that notices.
+    const leader = rank(index, 'explain each service')[0];
+    assert.ok(leader.score < ACCEPT_THRESHOLD, 'the cold pass has to be the one that fails here');
+    assert.ok(
+      leader.score * CONTINUITY_PRIOR >= ACCEPT_THRESHOLD,
+      `the boost no longer reaches the accept line it was measured against`,
+    );
 
     const continued = resolve(index, 'explain each service', { locked: false, prior: 'services.b2b' });
     assert.equal(continued.kind, 'answer', 'the same message after a services turn must be answered');

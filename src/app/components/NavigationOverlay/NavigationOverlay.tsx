@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useOverlayScrollLock } from "@/app/lib/overlayScrollLock";
 import MarcaUbiLogo from "../ui/MarcaUbiLogo/MarcaUbiLogo";
 import KineticStage from "./KineticStage";
 import styles from "./NavigationOverlay.module.scss";
@@ -75,18 +76,18 @@ export function NavigationOverlay({
     [isOpen, onClose]
   );
 
-  // Body scroll lock with scrollbar width compensation
+  // The page holds still while the overlay is up. The lock itself is refcounted and lives in
+  // `lib/overlayScrollLock` — this surface used to write `document.body.style.overflow` directly, which
+  // the chat pod and the profile modal also did, so whichever of them closed last unlocked the page
+  // under whichever was still open. The scrollbar compensation is the lock's business now, not ours.
+  useOverlayScrollLock(isOpen, "site-navigation");
+
+  // Focus discipline: into the overlay on the open edge, back to the trigger on the close edge.
   useEffect(() => {
     if (isOpen) {
       const isInitialOpen = !prevOpenRef.current;
       if (isInitialOpen) {
         previousActiveElementRef.current = document.activeElement as HTMLElement | null;
-      }
-
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.overflow = "hidden";
-      if (scrollbarWidth > 0) {
-        document.body.style.paddingRight = `${scrollbarWidth}px`;
       }
 
       // Shift focus into overlay strictly on false -> true edge transition
@@ -100,9 +101,6 @@ export function NavigationOverlay({
 
       window.addEventListener("keydown", handleKeyDown);
     } else {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-
       // Restore focus to trigger strictly on open -> closed transition
       if (prevOpenRef.current) {
         if (triggerRef?.current) {
@@ -116,8 +114,6 @@ export function NavigationOverlay({
     prevOpenRef.current = isOpen;
 
     return () => {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, handleKeyDown, triggerRef]);
@@ -131,6 +127,10 @@ export function NavigationOverlay({
       aria-modal="true"
       aria-label="Site Navigation"
       data-client-overlay="true"
+      // A stopped Lenis still cancels every wheel and touchmove it sees outside a `data-lenis-prevent`
+      // subtree, and opening this overlay stops Lenis. Without the exemption, a menu taller than the
+      // viewport on a short laptop or a landscape phone is a list whose bottom half cannot be reached.
+      data-lenis-prevent
     >
       {/* Left Panel: Pure Canvas White (#ffffff) */}
       <div className={styles.leftPanel}>

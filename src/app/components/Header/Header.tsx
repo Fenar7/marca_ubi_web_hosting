@@ -49,10 +49,6 @@ export default function Header() {
     const reduceMotion = prefersReducedMotion();
 
     const context = gsap.context(() => {
-      const dispatchMenuEvent = (eventName: string) => {
-        window.dispatchEvent(new Event(eventName));
-      };
-
       gsap.set(overlay, { autoAlpha: 0, pointerEvents: "none" });
       gsap.set(panel, { autoAlpha: 0 });
       gsap.set([intro, meta, footer], { autoAlpha: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 10, force3D: true });
@@ -71,9 +67,12 @@ export default function Header() {
         onStart: () => {
           overlay.classList.add(styles.menuOverlayAnimating);
           panel.classList.add(styles.menuPanelAnimating);
+          // A style hook, and nothing more: the explore button stands down while the menu is up. The
+          // hold on the page is the overlay's own React lifecycle (`useOverlayScrollLock`), not a class
+          // or an event the scroll controller has to read back — this pair used to be both, and a
+          // reverse interrupted mid-flight never reached `onReverseComplete`, so the page stayed locked.
           document.body.classList.add("menu-open");
           document.documentElement.classList.add("menu-open");
-          dispatchMenuEvent("menu:open");
           window.dispatchEvent(new Event("chatpod:close"));
           overlay.style.pointerEvents = "auto";
         },
@@ -86,7 +85,6 @@ export default function Header() {
           panel.classList.remove(styles.menuPanelAnimating);
           document.body.classList.remove("menu-open");
           document.documentElement.classList.remove("menu-open");
-          dispatchMenuEvent("menu:close");
           gsap.set(overlay, { pointerEvents: "none" });
         },
       });
@@ -225,7 +223,9 @@ export default function Header() {
       menuTimelineRef.current = null;
       document.body.classList.remove("menu-open");
       document.documentElement.classList.remove("menu-open");
-      window.dispatchEvent(new Event("menu:close"));
+      // No `menu:close` dispatched from here. This cleanup ran on every unmount whether or not the menu
+      // was open, and the controller used to read it as a release — so a route change under an open chat
+      // pod handed the viewport back from under it.
       context.revert();
     };
   }, []);

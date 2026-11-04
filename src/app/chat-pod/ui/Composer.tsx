@@ -90,7 +90,6 @@ function Composer({
     if (Math.abs(prevHeight - targetHeight) > 2) {
       textarea.style.height = `${targetHeight}px`;
     }
-    textarea.style.overflowY = textarea.scrollHeight > 140 ? "auto" : "hidden";
   }, [value, inputRef]);
 
   const describedBy = [

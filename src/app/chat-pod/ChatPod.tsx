@@ -29,6 +29,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { prefersReducedMotion } from "@/app/lib/motion";
+import { useOverlayScrollLock } from "@/app/lib/overlayScrollLock";
 import { OPTIONAL_TAIL_INTRO, SLOTS, SLOT_ORDER, polarityMatch, slotChips, slotOptions } from "./intake/slots";
 import type { SlotOption } from "./intake/slots";
 import { MAX_SUBMIT_ATTEMPTS, OPTIONAL_TAIL_START, currentSlot, isRequired, useIntakeFlow } from "./intake/useIntakeFlow";
@@ -36,7 +37,7 @@ import type { IntakeMode } from "./intake/useIntakeFlow";
 import { buildPodPayload, reviewRows } from "./intake/review";
 import { createIdempotencyKey, submitBrief } from "./intake/submit";
 import { useChatEngine } from "./engine/useChatEngine";
-import { looksLikeQuestion } from "./engine/normalise";
+import { looksLikeQuestion, opensWithChatShorthand } from "./engine/normalise";
 import { PERSISTENT_MENU, PERSONA } from "./knowledge/corpus";
 import { clearDraft, hasBeenNudged, hasGrantedConsent, markNudged, readDraft, recordConsent, writeDraft } from "./persistence";
 import ChipRow from "./ui/ChipRow";
@@ -84,6 +85,25 @@ const SKIP_WORDS = /^(skip|no|none|pass|nothing)$/i;
  * the one sentence the visitor wrote for it.
  */
 const SKIP_PHRASES = /^(no thanks|no thank you|none thanks|nothing thanks|not really|not this one|pass on that|pass for now|skip that|skip it|skip for now)$/i;
+
+/**
+ * The blanks that hold something the studio reads back verbatim: who the visitor is, how to answer
+ * them, and what the job is called.
+ *
+ * These are the slots where a misfiled message is expensive in a way a note is not. A project
+ * description that begins "how long does this usually take" is still a description the visitor wrote,
+ * and losing it would be its own defect; a name field holding that same sentence becomes the salutation
+ * in the studio's first email. So the question-shape test is allowed to refuse a send on these six and
+ * only these six.
+ */
+const VERBATIM_FACT_SLOTS: ReadonlySet<SlotId> = new Set([
+  "name",
+  "email",
+  "phone",
+  "projectName",
+  "website",
+  "instagram",
+]);
 
 function replyWeight(reply: Reply): number {
   const length = reply.blocks.reduce(
@@ -255,7 +275,6 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   const closePanel = useCallback(() => {
     setOpen(false);
     setMenuOpen(false);
-    window.dispatchEvent(new Event("menu:close"));
     launcherRef.current?.focus();
   }, []);
 
@@ -272,9 +291,9 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     }
     setNudge(false);
     setOpen(true);
-    // The same event pair the header and the modals use: the smooth-scroll controller stops Lenis so
-    // the page behind the panel cannot move while the transcript owns the wheel.
-    window.dispatchEvent(new Event("menu:open"));
+    // Holding the page is not done from here any more: `useOverlayScrollLock(open, …)` below takes the
+    // lock when the panel mounts into view and gives it back on close, unmount or route change, so the
+    // hold cannot outlive the panel the way a dispatched event pair could.
     // Overlay mutual exclusion: dismiss the site navigation overlay if open
     window.dispatchEvent(new Event("navigation:close"));
   }, []);
@@ -407,14 +426,13 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
     return () => window.clearTimeout(focusId);
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
+  // The page belongs to the panel while the panel is up. This used to be a direct
+  // `document.body.style.overflow` write plus a `menu:open`/`menu:close` pair dispatched into the same
+  // channel the site navigation uses, which meant the pod and the overlay were two owners of one lock
+  // that neither could see: whichever released last decided whether the page behind an open dialog
+  // scrolled. The lock counts its holders and the scroll controller subscribes to it, so releasing here
+  // is safe even when the panel goes away by unmount or route change rather than by the close button.
+  useOverlayScrollLock(open, "chat-pod");
 
   useEffect(() => setConsented(hasGrantedConsent()), []);
 
@@ -476,8 +494,16 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   }, [consented, engine, messages, open, state.mode, state.slots]);
 
   // Intake turns
+  /**
+   * The chip row for one question, built against the answers currently in the buffer.
+   *
+   * `picked` is a parameter rather than a read of `selection` because the buffer and the row are set in
+   * the same tick everywhere a tap or a typed link changes it. Reading the state would print the count
+   * from before the tap that caused the render, which is the same class of bug as the transcript line
+   * this replaces: the row promising a number the visitor has not reached yet.
+   */
   const chipsForSlot = useCallback(
-    (target: SlotId): Chip[] => {
+    (target: SlotId, picked: readonly string[] = selection): Chip[] => {
       const definition = SLOTS[target];
       const optionChips = slotChips(definition, state.slots);
 
@@ -489,14 +515,19 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         ? [{ label: `Back to ${SLOTS[previous].label}`, action: { kind: "slot-edit", slot: previous } }]
         : [];
 
+      // The tally travels on the chip that commits it. A seventeen-option wall wraps, so the picks a
+      // visitor made at the top of it are not necessarily on screen when they reach the bottom, and the
+      // one number that tells them what they are about to send belongs next to the button that sends it.
+      const tally = picked.length > 0 ? ` (${picked.length})` : "";
+
       if (definition.kind === "multi")
-        return [...optionChips, { label: "Continue", action: { kind: "slot-continue", slot: target } }, ...goBack];
+        return [...optionChips, { label: `Continue${tally}`, action: { kind: "slot-continue", slot: target } }, ...goBack];
       if (definition.kind === "links")
-        return [...optionChips, { label: "That is every link", action: { kind: "slot-continue", slot: target } }, ...goBack];
+        return [...optionChips, { label: `That is every link${tally}`, action: { kind: "slot-continue", slot: target } }, ...goBack];
       if (isRequired(target, state)) return [...optionChips, ...goBack];
       return [...optionChips, { label: "Skip", action: { kind: "slot-skip", slot: target } }, ...goBack];
     },
-    [state],
+    [selection, state],
   );
 
   // The mode the last emitted turn belonged to. Only a *change* into chat may speak: the machine's state
@@ -571,9 +602,12 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
             : definition.question,
       });
 
+      // Re-opened from the review card, the buffer starts as the answer already stored, so the chips the
+      // visitor pressed before show as pressed and the count on `Continue` matches the brief.
       const stored = state.slots[active];
-      setSelection(Array.isArray(stored) ? [...stored] : []);
-      say({ blocks, chips: chipsForSlot(active) });
+      const storedSelection = Array.isArray(stored) ? [...stored] : [];
+      setSelection(storedSelection);
+      say({ blocks, chips: chipsForSlot(active, storedSelection) });
       return;
     }
 
@@ -703,23 +737,24 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
   }, [engine, say, send]);
 
   // Chip handling
-  /** Multi-select taps answer nothing on their own: they join a buffer the `Continue` chip commits. */
+  /**
+   * Multi-select taps answer nothing on their own: they join a buffer the `Continue` chip commits.
+   *
+   * The row is re-printed against the new buffer and nothing else changes. Every tap used to append a
+   * transcript line ("Brand Strategy added. 1 picked."), which grew the conversation one paragraph per
+   * tap and pushed the options the visitor was still using upward — the panel visibly crawled while
+   * somebody filled in one answer. The pressed chip is the feedback, the count on the commit chip is the
+   * summary, and the transcript stays where it was.
+   */
   const toggleIntoSelection = useCallback(
     (value: string, target: SlotId) => {
-      const definition = SLOTS[target];
-      // Read through `slotOptions`, not `definition.options`: the services question has no static set,
-      // so a label looked up here would fall back to the raw value for every service chip.
-      const label = slotOptions(definition, state.slots).find((option) => option.value === value)?.chip ?? value;
       const next = selection.includes(value) ? selection.filter((item) => item !== value) : [...selection, value];
       setSelection(next);
-      // Outside the state updater: React may run an updater twice, and an `append` in here would print
-      // the count line twice under the same tap.
-      append(
-        { speaker: "assistant", blocks: [{ t: "p", text: `${label}${next.includes(value) ? " added" : " removed"}. ${next.length} picked.` }] },
-        chipsForSlot(target),
-      );
+      // Outside the state updater: React may run an updater twice, and a second `setChips` for the same
+      // tap would be a second render of the row for no reason.
+      setChips(chipsForSlot(target, next));
     },
-    [append, chipsForSlot, selection, state.slots],
+    [chipsForSlot, selection],
   );
 
   const editSlot = useCallback(
@@ -939,7 +974,7 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
                     : `Got it, ${next.length} so far. Another one, or is that everything?`,
               },
             ],
-            chips: chipsForSlot(slot),
+            chips: chipsForSlot(slot, next),
           });
           return;
         }
@@ -977,7 +1012,18 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         // back with its own buttons, so a detour that turns out to be wrong costs a re-read and not the
         // answer — which is the right side of the trade against a name field holding "who are you".
         const writesAnAnswer = options.length === 0 && (definition.kind === "text" || definition.kind === "multiline");
-        if (matched === null && (!writesAnAnswer || looksLikeQuestion(trimmed))) {
+        // Two routes into a detour at a blank the visitor writes into, and both read the message rather
+        // than the corpus: the shape of the sentence, and a chat abbreviation at its head. The route that
+        // used to be here was the resolver's opinion — any phrase of more than one word that the engine
+        // confidently answered was treated as a change of subject — and measurement showed that this
+        // bought nothing and cost real answers. `any discount available`, the case it was written for,
+        // disambiguates rather than answers, so `engine.lookup` returned null and the clause never
+        // fired; meanwhile `social media`, `brand identity` and `demand generation` are each answered at
+        // 1.000 and each is a thing a visitor calls their project, so the clause spoke for them and the
+        // brief stored a service page in their stead. Having an answer is not evidence of a question.
+        const asksSomething =
+          !writesAnAnswer || looksLikeQuestion(trimmed) || opensWithChatShorthand(trimmed);
+        if (matched === null && asksSomething) {
           const detour = engine.lookup(trimmed);
           if (detour) {
             if (detour.intentId === "intake.exit") {
@@ -1013,6 +1059,27 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         // misspelt industry has to be re-asked, not filed.
         if (options.length > 0) {
           say({ blocks: [{ t: "p", text: "I can only choose from the options I showed you, or skip." }], chips: chipsForSlot(slot) });
+          return;
+        }
+
+        // The detour above looked for an answer and found none, so this is the one remaining way a
+        // question can reach the brief: filed as the visitor's own words. `whta is marka ubi` typed at
+        // the name blank is a question the corpus could not answer, not a name, and the validator cannot
+        // tell — it accepts anything for these slots. Only the verbatim facts refuse, because on a prose
+        // slot the same shape is most likely a sentence the visitor means to send. The two signals are
+        // the two the detour branch reads, so a message that got here was asking something the corpus
+        // has no answer for — filing `u offer web design` as a project name is the failure this branch
+        // exists to stop, and it was the hole the detour above could not close on its own.
+        if (VERBATIM_FACT_SLOTS.has(slot) && (looksLikeQuestion(trimmed) || opensWithChatShorthand(trimmed))) {
+          say({
+            blocks: [
+              {
+                t: "p",
+                text: `That reads like a question, so I will not file it as your ${SLOTS[slot].label.toLowerCase()}. I have no answer for it either — ask me in other words, or type the ${SLOTS[slot].label.toLowerCase()} you want stored.`,
+              },
+            ],
+            chips: chipsForSlot(slot),
+          });
           return;
         }
 
@@ -1190,6 +1257,12 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="mubi-pod-title"
+        // Opening the panel stops Lenis, and a stopped Lenis still cancels every wheel and touchmove it
+        // sees outside a `data-lenis-prevent` subtree. The exemption is on the panel rather than on the
+        // message list because the panel has one scroll surface: a wheel that lands on the conversation
+        // or on the replies under it has to move it. The header and the composer are fixed chrome and
+        // deliberately do not scroll — they are the parts that stay reachable while it does.
+        data-lenis-prevent
       >
         <PersonaHeader titleId="mubi-pod-title" menuOpen={menuOpen} onMenu={() => setMenuOpen((prev) => !prev)} onClose={closePanel} />
 
@@ -1226,11 +1299,14 @@ export default function ChatPod({ knowledge }: { knowledge: KnowledgeBase }) {
           </div>
         ) : null}
 
-        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} onNavigate={closePanel} />
-
-        <div className={styles.tray} data-count={chips.length}>
-          <ChipRow chips={chips} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />
-        </div>
+        <Transcript messages={messages} typing={typing} onEditSlot={editSlot} rowsActive={state.mode === "REVIEW"} onNavigate={closePanel}>
+          {/* The replies on offer are the last thing in the conversation, not a second pane bolted under
+              it. Inside the flow they scroll with the message that produced them, which is what the
+              transcript's own height can no longer guarantee once a seventeen-option wall is open. */}
+          <div className={styles.tray} data-count={chips.length}>
+            <ChipRow chips={chips} onChip={onChip} isSelected={isSelected} ariaLabel="Choose a reply" />
+          </div>
+        </Transcript>
 
         {consented === null ? (
           <div className={styles.consent}>

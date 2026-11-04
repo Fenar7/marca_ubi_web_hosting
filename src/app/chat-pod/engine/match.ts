@@ -426,9 +426,11 @@ function keywordScore(
  * in the denominator and the phrasings the pod must understand get authored instead of assumed.
  *
  * Two exceptions, both about typing rather than subject, and both bounded to one keystroke: a word that
- * is one edit from a piece of scaffolding ("plese", "wtih") is grammar the visitor mis-hit, and a word
+ * is one edit from a piece of scaffolding ("plese", "woudl") is grammar the visitor mis-hit, and a word
  * with exactly one neighbour in the whole corpus ("servces") can only be read one way. A word with
- * several neighbours is charged half a word, because the reading is genuinely open.
+ * several neighbours is charged half a word, because the reading is genuinely open. Both forgiveness
+ * rules sit behind the same five-character floor, which is why "wtih" costs the visitor a topic word:
+ * below that floor a one-edit guess is indistinguishable from another real word.
  *
  * A query that shares no topic word with anything cannot win on spelling alone, because the term
  * character similarity is allowed to add is multiplied by what containment failed to reach. The

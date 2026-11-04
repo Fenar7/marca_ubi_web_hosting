@@ -17,6 +17,7 @@ import {
   isScaffold,
   looksLikeQuestion,
   normalise,
+  opensWithChatShorthand,
   residue,
   tokenOverlap,
   tokens,
@@ -144,6 +145,17 @@ describe('Chat Pod text primitives', () => {
       assert.equal(isScaffold('th', known), true);
     });
 
+    it('reads the chat spelling of "you" as grammar', () => {
+      // "can yu pls tell me about services" is how the owner types. Unfolded, "yu" is two characters —
+      // under the typo floor, so no forgiveness rule reached it — and it survived as a phantom topic
+      // word that no alias owns, which pulled every services answer below the acceptance margin.
+      assert.equal(isScaffold('yu', known), true);
+      assert.deepEqual(residue('can yu pls tell me about services', known), ['servic']);
+      // Every word of it is grammar, so the residue falls back to the whole message rather than an empty
+      // vector — the same fold as the spelled-out sentence, which is the point of the abbreviation map.
+      assert.deepEqual(residue('what do yu do', known), residue('what do you do', known));
+    });
+
     it('forgives one keystroke in a piece of grammar', () => {
       assert.equal(isScaffold('plese', known), true);
       assert.equal(isScaffold('woudl', known), true);
@@ -157,6 +169,18 @@ describe('Chat Pod text primitives', () => {
       // ("art", "work", "team") competing with the grammar it is one edit from.
       assert.equal(isScaffold('wtih', known), false);
       assert.equal(isScaffold('thsi', known), false);
+      // The swap of a preposition is a noun: "from" one keystroke from "form", which is a thing a
+      // visitor asks for. Only the interrogative openers are forgiven at this length.
+      assert.equal(isScaffold('form', known), false);
+    });
+
+    it('forgives a four-character swap of a question opener', () => {
+      // `looksLikeQuestion` has read "whta" as a mistyped "what" for as long as it has existed, while
+      // the scorer charged the same token as an unknown topic. The two subsystems disagreeing is how
+      // "whta do you do" fell below the floor that "what do you do" clears.
+      assert.equal(isScaffold('whta', known), true);
+      // With the opener read as grammar, what is left is the subject the visitor is asking about.
+      assert.deepEqual(residue('whta is the pricing', known), ['pricing']);
     });
 
     it('never reads a word the corpus uses as a typo of grammar', () => {
@@ -228,6 +252,69 @@ describe('Chat Pod text primitives', () => {
       assert.equal(looksLikeQuestion('  rates?  '), true);
     });
 
+    it('reads an auxiliary as a question only when the sentence is inverted', () => {
+      // The auxiliary families need a subject after them, because a blank answer legitimately opens on
+      // one: a scope answer is "will need packaging next month" and a timeline answer is "would like a
+      // website", while "can you build an app" and "is there a minimum budget" are questions.
+      assert.equal(looksLikeQuestion('could you show me case studies'), true);
+      assert.equal(looksLikeQuestion('is there a minimum budget'), true);
+      assert.equal(looksLikeQuestion("who's your team"), true);
+      assert.equal(looksLikeQuestion('will need packaging next month'), false);
+      assert.equal(looksLikeQuestion('would like a website'), false);
+      assert.equal(looksLikeQuestion('deadline is next month'), false);
+      assert.equal(looksLikeQuestion('there is no deadline yet'), false);
+    });
+
+    it('catches a mistyped opening when the rest of the sentence proves it', () => {
+      // "whta is marka ubi" used to be filed into a name field. A four-character miss is too short to
+      // delete from the resolver's denominator (it could be any real noun), but as the *leading* word of
+      // an inverted sentence it has nowhere else to be read from.
+      assert.equal(looksLikeQuestion('whta is marka ubi'), true);
+      assert.equal(looksLikeQuestion('waht do you offer'), true);
+      assert.equal(looksLikeQuestion('escribe the service you mean'), true);
+
+      // The same shape test must not eat an answer whose first word merely resembles an opener.
+      assert.equal(looksLikeQuestion('here is the link https://dribbble.com/shots/123'), false);
+      assert.equal(looksLikeQuestion('understand packaging'), false);
+    });
+
+    it('reads a deleted letter in a short *wh*-word as the same opener', () => {
+      // "wat is your price" is "what" with the finger still finding the keyboard. The deletion floor is
+      // four for every other family of opener, because deleting a letter from "does" gives "des" and
+      // from "tell" gives "tel" — both names somebody legitimately answers with — and a name is not a
+      // mistyped question.
+      assert.equal(looksLikeQuestion('wat is your price'), true);
+      assert.equal(looksLikeQuestion('wha is included'), true);
+      assert.equal(looksLikeQuestion('des is my manager\'s name'), false);
+      assert.equal(looksLikeQuestion('tel me the number'), false);
+    });
+
+    it('reads an interrogative that closes the sentence', () => {
+      // Asking for the value of something on screen puts the question word at the end, where nothing
+      // written as an answer ever puts it: "the services are which", "your price is what".
+      assert.equal(looksLikeQuestion('the services are which'), true);
+      assert.equal(looksLikeQuestion('your price is what'), true);
+      // A sentence that merely ends on an ordinary noun is still somebody filling in a blank.
+      assert.equal(looksLikeQuestion('the studio in calicut'), false);
+    });
+
+    it('folds the chat register before it reads the opening', () => {
+      // "can yu tell me about services" is the same sentence as "can you tell me about services", typed
+      // in the register these messages actually arrive in.
+      assert.equal(looksLikeQuestion('can yu pls tell me about services'), true);
+      assert.equal(looksLikeQuestion('can u tell me about ur services'), true);
+    });
+
+    it('reads a request wrapped in politeness as a question, not as a name', () => {
+      // "pls send info" at the name blank is the message the shape test used to miss entirely: no *wh*-
+      // word, no auxiliary, therefore nothing inverted to prove. It is the verb family — the visitor is
+      // asking the pod to do something — and the chat abbreviation folds to "please" before the opening
+      // is ever classified, which is what makes it visible.
+      assert.equal(looksLikeQuestion('pls send info'), true);
+      assert.equal(looksLikeQuestion('plz share the portfolio'), true);
+      assert.equal(looksLikeQuestion('please send info'), true);
+    });
+
     it('leaves an answer that is plainly an answer alone', () => {
       for (const text of [
         'Arjun Patel',
@@ -236,6 +323,9 @@ describe('Chat Pod text primitives', () => {
         'need a logo and a website',
         'no particular deadline',
         'anything you can suggest',
+        // The polite opener must not become a prefix test: "please" leading an answer is the visitor
+        // asking for the blank to be filled for them, which is still the content of that blank.
+        'press kit please',
       ]) {
         assert.equal(looksLikeQuestion(text), false, `"${text}" is somebody filling in a blank`);
       }
@@ -244,6 +334,43 @@ describe('Chat Pod text primitives', () => {
     it('is empty-safe', () => {
       assert.equal(looksLikeQuestion(''), false);
       assert.equal(looksLikeQuestion('   '), false);
+    });
+  });
+
+  describe('opensWithChatShorthand', () => {
+    it('reads a message that opens the way a text message opens', () => {
+      // These have no question shape at all — no *wh*-word, no auxiliary, no mark — and the corpus
+      // answers both at full confidence. The abbreviation at the head is the only evidence that the
+      // visitor is asking rather than naming, and at a blank the visitor writes into it is the evidence
+      // the pod needs before it takes the words out of their brief.
+      assert.equal(opensWithChatShorthand('abt pricing'), true);
+      assert.equal(opensWithChatShorthand('u offer web design'), true);
+      assert.equal(opensWithChatShorthand('th services'), true);
+    });
+
+    it('leaves a phrase alone because the corpus has an answer for it', () => {
+      // The negative half, and the reason this test exists. Every one of these is a published alias the
+      // resolver answers at 1.000 and every one is a plausible name for the visitor's own project, so
+      // "the engine knows something about this" cannot be the test for a question.
+      for (const text of ['social media', 'brand identity', 'demand generation', 'the marketing club', 'temple project']) {
+        assert.equal(opensWithChatShorthand(text), false, `"${text}" is a thing a project gets called`);
+      }
+    });
+
+    it('needs a word after the abbreviation to be a question', () => {
+      // A single token is the whole of what the visitor typed, so at a blank it is the answer: "abt"
+      // on its own is an abbreviation for a company, not a request.
+      assert.equal(opensWithChatShorthand('abt'), false);
+      assert.equal(opensWithChatShorthand(''), false);
+    });
+
+    it('does not read a prototype key as an abbreviation', () => {
+      // `CHAT_ABBREVIATIONS` is a plain object literal, so an inherited name is reachable through the
+      // same bracket syntax the fold uses. A project called "constructor" is a real string a real
+      // visitor can type, and folding it to `Object`'s constructor would put a function where every
+      // downstream test expects a word.
+      assert.equal(opensWithChatShorthand('constructor injection'), false);
+      assert.equal(opensWithChatShorthand('toString of duties'), false);
     });
   });
 });

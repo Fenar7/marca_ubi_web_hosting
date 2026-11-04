@@ -34,6 +34,8 @@ const DEFAULT_CASES = [
   'do you do seo',
   'servces',
   'whta is marka ubi',
+  'can yu pls tell me about services',
+  'can yu tell me what u do',
   'who are you',
   'can i see the work',
   'are you an agency',
@@ -52,8 +54,12 @@ for (const [key, owners] of collisions) {
   console.log(`  [${key}] -> ${owners.map((o) => o.id).join(" | ")}`);
 }
 
-for (const input of cases.filter((entry) => !entry.includes(' >> '))) {
-  const outcome = resolve(index, input, { locked: false });
+for (const entry of cases) {
+  // `phrase >> intentId` asks the second question the console is used for: what this message resolves
+  // to *after* a turn about something else. The sequences below only cover the pairs somebody thought
+  // of writing down; this covers the one under investigation.
+  const [input, prior] = entry.split(' >> ');
+  const outcome = resolve(index, input, { locked: false, prior: prior ?? null });
   const top = rank(index, input)
     .slice(0, 3)
     .map((c) => `${c.intent.id}@${c.score.toFixed(3)}`)
@@ -71,6 +77,7 @@ for (const input of cases.filter((entry) => !entry.includes(' >> '))) {
 // turn the cold pass could not answer is re-ranked against what the previous turn answered.
 const SEQUENCES = [
   ['what do you do', 'tell me about the services', 'explain each service'],
+  ['can yu pls tell me about services', 'explain each service'],
   ['services', 'b2b', 'explain each service'],
   ['what do you do', 'how much does a rebrand cost', 'what is the process', 'and the timeline'],
   ['hello', 'can you build an app', 'tell me about that'],

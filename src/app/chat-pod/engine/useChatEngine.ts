@@ -18,7 +18,7 @@ import { useMemo, useRef } from "react";
 import { FALLBACK_REPLIES, buildIntentTable, openingReply } from "../knowledge/intents";
 import type { Chip, KnowledgeBase, Reply } from "../types";
 import { exhausted, followUp, handOver, record, type TurnState } from "./context";
-import { buildIndex, isAuthoredName, resolve } from "./match";
+import { FALLBACK_LIMIT, buildIndex, isAuthoredName, resolve } from "./match";
 
 /**
  * One resolved message. `offer` is the shape a reference to the screen produces: the visitor named or
@@ -68,9 +68,6 @@ export interface ChatEngine {
    */
   seedTurn: (chips: Chip[]) => void;
 }
-
-/** Ordinary matching is switched off after this many misses. See `FALLBACK_LIMIT` in `match.ts`. */
-const LOCK_AFTER = 2;
 
 /**
  * The state a conversation starts from, and the state it returns to after a send. The menu the pod
@@ -151,7 +148,7 @@ export function useChatEngine(knowledge: KnowledgeBase): ChatEngine {
         }
 
         const outcome = resolve(index, trimmed, {
-          locked: fallbacks.current >= LOCK_AFTER,
+          locked: fallbacks.current >= FALLBACK_LIMIT,
           prior: last.current.intentId,
         });
 
@@ -171,7 +168,7 @@ export function useChatEngine(knowledge: KnowledgeBase): ChatEngine {
         }
 
         const reply =
-          fallbacks.current >= LOCK_AFTER ? FALLBACK_REPLIES.capped(knowledge) : FALLBACK_REPLIES.hard();
+          fallbacks.current >= FALLBACK_LIMIT ? FALLBACK_REPLIES.capped(knowledge) : FALLBACK_REPLIES.hard();
         fallbacks.current += 1;
         // The refusal clears the subject, so a following "tell me more" has nothing to attach to. The
         // chips the pod just offered are still on screen and still pickable.
@@ -206,7 +203,7 @@ export function useChatEngine(knowledge: KnowledgeBase): ChatEngine {
       seedFallbacks(count: number) {
         // Clamped, because the number came off disk. Anything at the ceiling is the same state to the
         // matcher, and a negative or NaN copy must not unlock it again.
-        fallbacks.current = Number.isFinite(count) ? Math.max(0, Math.min(LOCK_AFTER, Math.trunc(count))) : LOCK_AFTER;
+        fallbacks.current = Number.isFinite(count) ? Math.max(0, Math.min(FALLBACK_LIMIT, Math.trunc(count))) : FALLBACK_LIMIT;
       },
       seedTurn(chips: Chip[]) {
         if (chips.length === 0) return;

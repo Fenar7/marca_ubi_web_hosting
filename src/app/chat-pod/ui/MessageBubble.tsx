@@ -99,7 +99,7 @@ export default function MessageBubble({ message, onEditSlot, rowsActive = true, 
   const rows = message.reviewRows ?? [];
 
   return (
-    <div className={`${styles.row} ${visitor ? styles.rowVisitor : styles.rowAssistant}`}>
+    <div className={`${styles.row} ${visitor ? styles.rowVisitor : styles.rowAssistant}`} data-transcript-row="">
       <div className={`${styles.bubble} ${visitor ? styles.bubbleVisitor : styles.bubbleAssistant} ${message.kind === "error" ? styles.bubbleError : ""}`}>
         {message.blocks.map((block, index) => (
           <Block key={index} block={block} onNavigate={onNavigate} />

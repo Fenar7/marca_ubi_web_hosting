@@ -84,11 +84,12 @@ export const QUERY_STOPWORDS: ReadonlySet<string> = new Set([
  */
 export const CHAT_ABBREVIATIONS: Readonly<Record<string, string>> = {
   abt: "about",
+  plz: "please",
+  pls: "please",
   th: "the",
   u: "you",
   ur: "your",
-  pls: "please",
-  plz: "please",
+  yu: "you",
 };
 
 /**
@@ -116,21 +117,35 @@ const SCAFFOLD_NEIGHBOURS: Set<string> = (() => {
 
 /** The scaffolding word a token stands for, or the token itself. */
 function folded(token: string): string {
-  return CHAT_ABBREVIATIONS[token] ?? token;
+  return Object.hasOwn(CHAT_ABBREVIATIONS, token) ? CHAT_ABBREVIATIONS[token] : token;
 }
 
 /**
  * True when a token is grammar rather than subject: an authored stop word, a chat abbreviation of one,
- * or a one-keystroke misspelling of one ("plese", "teell", "wtih").
+ * or a one-keystroke misspelling of one ("plese", "woudl", "thier").
  *
  * The `known` guard is what keeps this honest. A word the corpus actually uses is never treated as a
  * typo of a stop word, so "town" stays a subject even though it is one edit from "down", and the
  * forgiveness can only ever reach for words that carry no meaning here anyway.
+ *
+ * The length floor is the other half of that honesty: a four-character miss is one deletion away from
+ * a real noun, so "wtih" is charged to the visitor as a topic rather than eaten as grammar. The cost
+ * is one lower score for a typo in a short word — except for the one class where the cost was a wrong
+ * answer instead. A transposition cannot shorten a word, and the four-character misses that matter are
+ * the ones made on the first word of a question ("whta", "tihs", "ytou"), so that length is forgiven
+ * against `INTERROGATIVE_SWAPS` and against nothing else. The two subsystems used to disagree here:
+ * `looksLikeQuestion` already read "whta" as a mistyped opener while the scorer charged it as an
+ * unknown topic, which is how "whta do you do" fell below the floor that "what do you do" clears.
+ *
+ * `looksLikeQuestion` spends the same forgiveness narrowly — only on the leading word, and only where
+ * the rest of the sentence proves it inverted — because there the failure is a question read as an
+ * answer, not a subject erased from the index.
  */
 export function isScaffold(token: string, known: ReadonlySet<string>): boolean {
   const word = folded(token);
   if (QUERY_STOPWORDS.has(word)) return true;
-  if (token.length < 5 || known.has(token) || known.has(word)) return false;
+  if (token.length < 4 || known.has(token) || known.has(word)) return false;
+  if (token.length === 4) return INTERROGATIVE_SWAPS.has(token);
   return SCAFFOLD_NEIGHBOURS.has(token);
 }
 
@@ -266,24 +281,151 @@ export function tokenOverlap(queryTokens: string[], utteranceTokens: string[]): 
 }
 
 /**
- * Openings that make English a question. Deliberately short: every word here is one a blank answer
- * rarely begins with, which is why "any", "have" and "is it" style declaratives are absent — a scope
- * answer legitimately starts "need a logo and a website", and a name legitimately starts "Arjun".
+ * The three families that open an English question, kept apart because they carry different evidence.
+ *
+ * A *wh*-word announces a question by itself, and so does a verb of asking ("tell me", "show me
+ * examples") or the politeness marker a request is wrapped in ("pls send info", which folds to
+ * "please send info" before it is ever read). An auxiliary announces one only when the sentence is
+ * inverted — "is there a deadline" is a question and "is" in "will need packaging next month" is
+ * somebody filling in a blank. Splitting the families is what lets the shape test read the inversion
+ * without a parser, and it is why the auxiliary list is not simply trusted the way the *wh* list is.
  */
-const QUESTION_LEAD =
-  /^(what|whats|when|where|which|who|whom|whose|why|how|is|are|do|does|did|can|could|will|would|should|tell|explain)\b/;
+const WH_WORDS: ReadonlySet<string> = new Set([
+  "what", "whats", "when", "where", "which", "who", "whom", "whose", "why", "how",
+]);
+
+const AUXILIARY_WORDS: ReadonlySet<string> = new Set([
+  "is", "are", "was", "were", "do", "does", "did", "can", "could", "will", "would", "should", "may",
+  "might",
+]);
+
+const REQUEST_WORDS: ReadonlySet<string> = new Set(["tell", "explain", "describe", "show", "please"]);
+
+/**
+ * What an inverted question puts after its auxiliary: the subject, or the article that introduces it.
+ *
+ * This is the inversion evidence, and it is deliberately narrower than "any word". A blank answer that
+ * happens to open on an auxiliary usually continues with the thing being described ("will need
+ * packaging", "would like a website", "can start immediately"), and a noun is not a subject pronoun —
+ * so the answer stays an answer.
+ */
+const SUBJECT_WORDS: ReadonlySet<string> = new Set([
+  "i", "me", "my", "you", "your", "yours", "we", "our", "us", "he", "she", "it", "its", "they",
+  "their", "this", "that", "these", "those", "there", "here", "one", "someone", "anyone", "nobody",
+  "everybody", "a", "an", "the",
+]);
+
+/** Every word that can open a question, for the neighbourhood index below. */
+const QUESTION_LEAD_WORDS: ReadonlySet<string> = new Set([
+  ...WH_WORDS,
+  ...AUXILIARY_WORDS,
+  ...REQUEST_WORDS,
+]);
+
+/**
+ * Adjacent transpositions of the interrogative openers, four characters and up.
+ *
+ * This is the short list `isScaffold` is allowed to consult at four characters. It is built from the
+ * openers and not from the whole stop-word set because the swap of a preposition lands on a word that
+ * means something here: "from" swaps to "form", and a visitor talking about a form would have their
+ * subject eaten as a typo. "what" swaps to "whta", which is a subject nobody is asking about.
+ */
+const INTERROGATIVE_SWAPS: Set<string> = (() => {
+  const out = new Set<string>();
+  for (const word of QUESTION_LEAD_WORDS) {
+    if (word.length < 4) continue;
+    for (let i = 0; i < word.length - 1; i++) {
+      out.add(word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2));
+    }
+  }
+  return out;
+})();
+
+/**
+ * One keystroke from a question-opener: deletion and adjacent-transposition variants.
+ *
+ * Visitors mistype the first word more than any other because it is where the fingers are still
+ * finding the keyboard, and "whta is marka ubi" is exactly the message that used to be filed into a
+ * name field. A transposition preserves length, so every swap is indexed. A deletion shortens the
+ * word, and the floor is where the two families of opener part company: four characters for
+ * auxiliaries and verbs of asking, three for the *wh*-words.
+ *
+ * The difference is what a shortened opener collides with. Deleting a letter from "does" gives "des",
+ * from "tell" gives "tel", from "will" gives "wil" — tokens that are names and real words an answer
+ * legitimately opens with. Deleting one from "what" gives "wat", "wha", "wht" and "hat", and nothing
+ * that a visitor means as an answer begins with those and then proves the sentence inverted.
+ */
+const QUESTION_LEAD_NEIGHBOURS: Set<string> = (() => {
+  const out = new Set<string>();
+  for (const word of QUESTION_LEAD_WORDS) {
+    const floor = WH_WORDS.has(word) ? 3 : 4;
+    for (let i = 0; i < word.length; i++) {
+      const deleted = word.slice(0, i) + word.slice(i + 1);
+      if (deleted.length >= floor) out.add(deleted);
+    }
+    for (let i = 0; i < word.length - 1; i++) {
+      out.add(word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2));
+    }
+  }
+  return out;
+})();
 
 /**
  * Whether a message is built in the shape of a question.
  *
  * The brief needs this because nothing in the corpus does: at a blank the visitor types into, "who are
  * you" is a detour and "Kerala, for the temple project" is the answer, and both are words the pod has
- * seen. So the test reads the shape the message arrives in — an interrogative opening, or a mark the
- * visitor put there themselves — and never a score, which is what keeps it out of the resolver's way.
+ * seen. So the test reads the shape the message arrives in — an interrogative opening, an auxiliary
+ * followed by its subject, a mistyped version of either, or a mark the visitor put there themselves —
+ * and never a score, which is what keeps it out of the resolver's way.
+ *
+ * Abbreviations are folded before the opening is classified, because "can yu build an app" is the same
+ * shape as "can you build an app" and the chat register is how these messages arrive.
  */
 export function looksLikeQuestion(raw: string): boolean {
   const text = raw.trim();
   if (text.length === 0) return false;
   if (text.endsWith("?")) return true;
-  return QUESTION_LEAD.test(normalise(text));
+
+  const parts = tokens(normalise(text)).map(folded);
+  if (parts.length === 0) return false;
+
+  // "what's", "who's", "can't" — the contraction is part of the opener, not a second word.
+  const lead = parts[0].replace(/'.*$/, "");
+  const after = parts[1] ?? "";
+  const inverted = SUBJECT_WORDS.has(after) || AUXILIARY_WORDS.has(after);
+
+  if (WH_WORDS.has(lead) || REQUEST_WORDS.has(lead)) return true;
+  if (AUXILIARY_WORDS.has(lead)) return inverted;
+
+  // A *wh*-word can also arrive at the end, which is how somebody asks for the value of a thing they
+  // can already see on screen: "the services are which", "your price is what". Nothing written as an
+  // answer closes on an interrogative, so this needs no inversion evidence — only a sentence long
+  // enough to have been built around the word.
+  const tail = parts[parts.length - 1].replace(/'.*$/, "");
+  if (parts.length >= 3 && WH_WORDS.has(tail)) return true;
+
+  // A mistyped opener only counts on evidence: a second word that proves the sentence is inverted,
+  // and an opening that is not itself a subject ("here is the link" is somebody pasting a URL).
+  if (parts.length < 2) return false;
+  if (SUBJECT_WORDS.has(lead) || QUERY_STOPWORDS.has(lead)) return false;
+  return inverted && QUESTION_LEAD_NEIGHBOURS.has(lead);
+}
+
+/**
+ * True when a message opens on a chat abbreviation instead of on its own subject: `abt pricing`,
+ * `u offer web design`.
+ *
+ * A blank the visitor writes into has no sentence shape to read, and the resolver's opinion is not
+ * evidence that a phrase is a question. Measured against this corpus, `social media`, `brand identity`
+ * and `demand generation` are each answered at full confidence — and each is the kind of thing a
+ * visitor names their project — so "the engine has an answer for it" cannot be the test for whether
+ * something typed at a blank was meant as a question. An abbreviation can be: nobody spells their own
+ * proper noun the way they text a friend. A leading `abt`, `th`, `u`, `ur`, `pls` or `plz` followed by
+ * more words is the one multi-word signal at a verbatim blank that means "I am asking you something"
+ * rather than "store this".
+ */
+export function opensWithChatShorthand(raw: string): boolean {
+  const parts = tokens(normalise(raw.trim()));
+  return parts.length > 1 && Object.hasOwn(CHAT_ABBREVIATIONS, parts[0]);
 }

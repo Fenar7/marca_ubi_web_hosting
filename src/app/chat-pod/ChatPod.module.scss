@@ -233,7 +233,16 @@ $surface: rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
   font-family: $font-circular;
-  height: clamp(26rem, 74vh, 40rem);
+  // The floor of the clamp is 26rem, which is taller than a short desktop window: at 1280x400 the panel
+  // asked for 416px with its bottom edge 80px off the floor (it floats above the launcher, which is what
+  // `--pod-y` is), so its own header sat above the top of the screen. The cap is the room that is left
+  // once the anchor and the keyboard inset are paid for, and it is written into `height` rather than
+  // `max-height` because the sheet below overrides `height: auto` — a `max-height` here would survive
+  // into that rule and shave a rem off the bottom of a full-screen panel.
+  height: min(
+    clamp(26rem, 74vh, 40rem),
+    calc(100vh - var(--pod-y, #{$edge}) - var(--pod-keyboard, 0px) - #{$edge})
+  );
   right: var(--pod-right, #{$edge});
   left: auto;
   max-width: calc(100vw - #{$edge * 2});
@@ -531,16 +540,26 @@ $surface: rgba(0, 0, 0, 0.03);
   position: relative;
 }
 
-.transcript {
-  background: transparent;
+/* The one scroll owner in the panel.
+
+   It used to be two: the message list scrolled, and the chip rail below it scrolled inside its own
+   7.5rem box. Inside a fixed-height panel that is not a conversation but a filing cabinet — the wheel
+   moves one box, then the other, the keyboard lands in whichever has focus, and on a phone the inner
+   box eats the swipe. Here the messages and the replies on offer are one column, and the reader's
+   gesture moves the whole of it.
+
+   `position: relative` is load-bearing beyond layout: the transcript measures the newest turn with
+   `offsetTop`, which is only in scroll coordinates when this is the nearest positioned ancestor. */
+.flow {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  gap: 0.75rem;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 1rem 1rem 0.5rem;
+  position: relative;
+  // The pod decides where this column sits; the browser deciding for it is what made a tap on one chip
+  // slide the whole rail 22px. Anchoring is ours because the destination is computed, not stumbled into.
+  overflow-anchor: none;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
   scrollbar-width: thin;
 
@@ -548,6 +567,18 @@ $surface: rgba(0, 0, 0, 0.03);
     outline: 2px solid $client-accent-red;
     outline-offset: -2px;
   }
+}
+
+.transcript {
+  /* `1 0 auto`, not `1`: the column grows to fill the panel while the conversation is short, so the
+     chips stay where the reader's eye already is, and it refuses to shrink below its own content once
+     it overflows — a flex child that can shrink is a scroll container whose child never scrolls. */
+  background: transparent;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.5rem;
 }
 
 .row {
@@ -842,18 +873,15 @@ $surface: rgba(0, 0, 0, 0.03);
 /* Chips */
 
 .tray {
-  border-top: $hairline-soft;
-  padding: 0.625rem 1rem 0.25rem;
+  /* The rail no longer needs a cap of its own. It needed one when it was a fixed band under the
+     transcript, because sixteen services plus `Continue` grew the band until the composer fell off the
+     panel. Now it is the last stretch of the conversation column, so the overflow that used to crush the
+     layout simply makes the column scroll — the reader swipes past the options instead of inside them.
 
-  /* Sixteen services plus Continue is not one row. Uncapped, the rail grew until it pushed the composer
-     off the panel and the transcript above it out of reading distance — so the row takes three lines and
-     scrolls the rest, on the same terms the transcript does: contain the overscroll so the wheel that
-     reaches the end of the chips does not carry the page behind the panel away with it. */
-  max-height: 7.5rem;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-  scrollbar-width: thin;
+     `flex: 0 0 auto` keeps it out of the transcript's share of the height: a rail that could shrink
+     would give the chip wrap a second, narrower measure than the one it is laid out in. */
+  flex: 0 0 auto;
+  padding: 0.625rem 1rem 0.75rem;
 
   /* §05 §1.5: an empty tray is not padding. Dead chrome above the composer is the slop the rule warns
      about, so the row leaves the layout entirely when there is nothing to offer. */
@@ -1046,7 +1074,12 @@ $surface: rgba(0, 0, 0, 0.03);
   line-height: 1.5;
   max-height: 8.75rem;
   min-height: 2.5rem;
-  overflow-y: hidden;
+  // `hidden` here was a data-loss bug on the engines that honour `field-sizing` above: the box stops
+  // growing at the cap, and the lines under it are unreachable — no caret movement can scroll a clipped
+  // textarea, so a visitor writing a long brief could not see the half of it they had already typed.
+  // Scrolling *inside a form control* is not the second page scrollbar the one-column rule is about; the
+  // composer is 140px tall by design and the panel keeps the wheel.
+  overflow-y: auto;
   padding: 0.75rem 0.875rem;
   resize: none;
   transition: border-color 140ms linear, background-color 140ms linear, box-shadow 140ms linear;

@@ -234,15 +234,52 @@ describe("Chat Pod motion contract (fluid, and switched off when motion is refus
     assert.ok(transcript.includes('behavior: prefersReducedMotion() ? "auto" : "smooth"'), "a glide is only ever offered when motion is allowed");
     assert.ok(transcript.includes("ANCHOR_PX"), "the follow is conditional on the reader already being at the end");
     assert.ok(transcript.includes('node.addEventListener("scroll", onScroll'), "the pill reads the reader position from the browser, not from a paint effect");
-    assert.ok(transcript.includes("node.scrollTop = node.scrollHeight"), "a restored conversation lands at its end instead of at a question already answered");
+    // The first fill is a snap, not a glide: the panel is still animating in and a smooth move under a
+    // surface that is not on screen yet reads as a page that cannot decide where it is.
+    assert.ok(/if \(firstFill\) \{[\s\S]*?node\.scrollTop = end;/.test(transcript), "a restored conversation lands at its destination instantly");
+    // "The end" is the floor of the column, not the top of the newest turn. Parking at the top of a turn
+    // too tall to fit leaves the replies the visitor was told to press below the fold — and, worse, makes
+    // the follow glide *backward* from the position the arrival compensation already put the reader in,
+    // which the browser counts as a layout shift. The floor is where the answer and its offers both sit.
+    assert.ok(/function floor\(node: HTMLDivElement\): number \{/.test(transcript), "one definition of the end of the column");
+    assert.ok(transcript.includes("node.scrollTo({ top: end"), "the follow aims at the floor, where the newest offer is visible");
+    // The arrival is compensated in the frame that inserted it, so the reader's own lines do not move.
+    assert.ok(/useLayoutEffect\(\(\) => \{[\s\S]*?node\.scrollTop \+= growth;/.test(transcript), "a row arriving does not shove the reader down");
+  });
+
+  it("keeps the conversation and the replies on offer in one scroll surface", () => {
+    // Two nested scroll areas inside a fixed-height panel was the defect the owner reported: a wheel
+    // that moved one box and then a second. The rail is now the tail of the column, so the transcript
+    // takes it as children and the panel has exactly one element with `overflow-y: auto`.
+    assert.ok(pod.includes("<Transcript") && /<Transcript[\s\S]*?styles\.tray[\s\S]*?<\/Transcript>/.test(pod), "the chip rail has to live inside the scroll column");
+    const scrollers = scss
+      .split(/\n(?=[.@:])/)
+      .filter((block) => /overflow-y: auto/.test(block))
+      .map((block) => block.match(/^[.@][\w-]+/)?.[0] ?? "?")
+      .sort();
+    // `.flow` is the conversation and the only thing in the panel that scrolls it. `.field` is the
+    // composer, exempt for one reason: it holds text nobody published, and a `max-height` box with
+    // `overflow: hidden` makes the visitor's own brief unreachable — a form control scrolling its own
+    // value is not the nested-page scrollbar the defect was.
+    assert.deepEqual(scrollers, [".field", ".flow"], "one conversation surface in the panel, and the composer exempt");
+    assert.ok(scss.includes(".flow"), "the scroll owner is the flow, not the message list");
+    assert.ok(transcript.includes("className={styles.flow}"), "the transcript renders the flow it scrolls");
   });
 
   it("hands the wheel to the reader while the page behind is locked", () => {
     // Opening the panel calls `lenis.stop()`, and a stopped Lenis cancels every wheel and touchmove
-    // outside a `data-lenis-prevent` subtree. Without the opt-out the transcript renders a scrollbar
-    // that no mouse can move, which is a bug no unit test could see until the owner reported it.
-    assert.ok(transcript.includes("data-lenis-prevent"), "the scroll region must opt out of the smooth-scroll hijack");
-    assert.ok(pod.includes('window.dispatchEvent(new Event("menu:open"))'), "the panel does stop the page scroller, so the opt-out is load-bearing");
+    // outside a `data-lenis-prevent` subtree. The exemption is on the panel, not on the message list,
+    // because the panel has one scroll surface and a wheel over the header, a chip or the composer is
+    // aimed at the conversation.
+    assert.ok(pod.includes("data-lenis-prevent"), "the panel must opt out of the smooth-scroll hijack");
+    const optOut = pod.indexOf("data-lenis-prevent");
+    assert.ok(optOut > pod.indexOf("className={styles.panel}") && optOut < pod.indexOf("<PersonaHeader"), "the opt-out is on the panel element, not on a box inside it");
+    // The hold on the page is the refcounted lock, not a dispatched event. The event pair is what let
+    // the pod and the navigation overlay fight over one viewport: whichever released last decided
+    // whether the page behind an open dialog could scroll.
+    assert.ok(pod.includes('useOverlayScrollLock(open, "chat-pod")'), "the panel holds the page through the shared lock, so close, unmount and route change all release it");
+    assert.ok(!pod.includes('new Event("menu:open")') && !pod.includes('new Event("menu:close")'), "the panel must not dispatch the navigation overlay's lock events");
+    assert.ok(pod.includes('new Event("navigation:close")'), "the panel still dismisses the navigation overlay it opened over");
   });
 
   it("echoes a tapped reply chip as the visitor's own line", () => {
