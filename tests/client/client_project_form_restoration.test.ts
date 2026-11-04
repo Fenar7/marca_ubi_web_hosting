@@ -10,11 +10,13 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { INTAKE_CATEGORIES } from "@/app/lib/intake/intakeOptions";
+
 describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxury Invariants", () => {
   const rootDir = process.cwd();
 
   describe("1. Step 1 Services Taxonomy & Multi-Service Selection Engine", () => {
-    test("verifies Step1Services.tsx contains all 8 authentic categories", () => {
+    test("verifies Step1Services.tsx renders all 8 authentic categories", () => {
       const step1Path = path.join(
         rootDir,
         "src",
@@ -38,10 +40,20 @@ describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxu
         "Other",
       ];
 
+      // The eight values moved to `lib/intake/intakeOptions` when the Chat Pod started asking the same
+      // questions, so this asserts both halves: the shared set is complete, and the step renders that
+      // set instead of a copy of its own.
+      assert.deepEqual([...INTAKE_CATEGORIES], expectedCategories, "shared intake categories must stay complete");
+      assert.ok(
+        /import\s*\{[^}]*INTAKE_CATEGORIES[^}]*\}\s*from\s*"@\/app\/lib\/intake\/intakeOptions"/.test(content),
+        "Step1Services must render the shared category set, not a local list"
+      );
+      assert.ok(content.includes("CATEGORIES.map("), "Step1Services must render the tabs from the aliased category list");
+
       for (const cat of expectedCategories) {
         assert.ok(
-          content.includes(`"${cat}"`),
-          `Step1Services must declare category '${cat}'`
+          INTAKE_CATEGORIES.includes(cat),
+          `the intake taxonomy must declare category '${cat}'`
         );
       }
     });
@@ -173,8 +185,21 @@ describe("Marca Ubi — Project Brief Questionnaire Flow Restoration & Dark Luxu
       assert.ok(content.includes("/api/sales-funnel/ingest"), "ProjectForm must post to /api/sales-funnel/ingest");
       assert.ok(content.includes("idempotencyKey"), "ProjectForm must transmit X-Idempotency-Key");
       assert.ok(content.includes("prevStep={prevStep}"), "ProjectForm must pass prevStep to sub-steps");
-      assert.ok(content.includes("services: serviceList"), "ProjectForm must include services array in brief_payload");
-      assert.ok(content.includes("categories: categoryList"), "ProjectForm must include categories array in brief_payload");
+
+      // The body itself is assembled in `lib/intake/ingestPayload`, which the Chat Pod also submits
+      // through: the wizard must call that builder, and the multi-service arrays must still reach
+      // `brief_payload`. Split across two files, and a lead from one surface would be missing what the
+      // other one sends.
+      assert.ok(
+        /import\s*\{[^}]*buildIngestPayload[^}]*WEBSITE_FORM_SOURCE[^}]*\}\s*from\s*"@\/app\/lib\/intake\/ingestPayload"/.test(content),
+        "ProjectForm must build its body with the shared intake payload builder"
+      );
+      assert.ok(content.includes("source: WEBSITE_FORM_SOURCE"), "ProjectForm must attribute the lead to the website form");
+
+      const builderPath = path.join(rootDir, "src", "app", "lib", "intake", "ingestPayload.ts");
+      const builder = fs.readFileSync(builderPath, "utf8");
+      assert.ok(builder.includes("services: serviceList"), "the shared builder must include the services array in brief_payload");
+      assert.ok(builder.includes("categories: categoryList"), "the shared builder must include the categories array in brief_payload");
     });
   });
 

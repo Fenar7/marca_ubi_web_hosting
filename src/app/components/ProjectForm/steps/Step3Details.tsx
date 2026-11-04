@@ -4,6 +4,11 @@ import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
 import {
+  INTAKE_SHOWCASE_CHOICES,
+  INTAKE_TIMELINE_OPTIONS,
+  LINK_VALUE_SEPARATOR,
+} from "@/app/lib/intake/intakeOptions";
+import {
   ClockIcon,
   CalendarIcon,
   CommentIcon,
@@ -27,40 +32,34 @@ interface TimelineOption {
   icon: React.ReactNode;
 }
 
-const TIMELINE_OPTIONS: TimelineOption[] = [
-  {
-    value: "48 hours (Quick turnaround fees typically apply)",
+/**
+ * Card presentation for each choice, keyed by the canonical value the CRM stores. Only the labels
+ * and glyphs live here: the value set itself comes from `INTAKE_TIMELINE_OPTIONS`, which the Chat
+ * Pod reads too, so the two surfaces can never offer different durations. The wizard's primary
+ * label differs from the pod's compact chip label for two choices, which is exactly why the
+ * canonical string stays the single stored form.
+ */
+const TIMELINE_PRESENTATION: Record<string, { primaryLabel: string; subtitle?: string; icon: React.ReactNode }> = {
+  "48 hours (Quick turnaround fees typically apply)": {
     primaryLabel: "48 hours",
     subtitle: "Quick turnaround fees typically apply",
     icon: <RocketIcon />,
   },
-  {
-    value: "1 week",
-    primaryLabel: "1 week",
-    icon: <ClockIcon />,
-  },
-  {
-    value: "2 weeks",
-    primaryLabel: "2 weeks",
-    icon: <CalendarIcon />,
-  },
-  {
-    value: "1 month",
-    primaryLabel: "1 month",
-    icon: <CalendarIcon />,
-  },
-  {
-    value: "Choose a start & end date",
-    primaryLabel: "Choose a start & end date",
-    icon: <OlistIcon />,
-  },
-  {
-    value: "Not sure. I'd like to chat with my Brand experience consultant",
+  "1 week": { primaryLabel: "1 week", icon: <ClockIcon /> },
+  "2 weeks": { primaryLabel: "2 weeks", icon: <CalendarIcon /> },
+  "1 month": { primaryLabel: "1 month", icon: <CalendarIcon /> },
+  "Choose a start & end date": { primaryLabel: "Choose a start & end date", icon: <OlistIcon /> },
+  "Not sure. I'd like to chat with my Brand experience consultant": {
     primaryLabel: "Not sure.",
     subtitle: "I'd like to chat with my Brand experience consultant",
     icon: <CommentIcon />,
   },
-];
+};
+
+const TIMELINE_OPTIONS: TimelineOption[] = INTAKE_TIMELINE_OPTIONS.map((option) => ({
+  value: option.value,
+  ...TIMELINE_PRESENTATION[option.value],
+}));
 
 /**
  * Step 3: Project Timeline, Reference Inspiration Benchmarks & Confidentiality.
@@ -76,7 +75,7 @@ export default function Step3Details({
   prevStep,
 }: Step3Props) {
   const initialLinks = formData.inspirationLinks
-    ? formData.inspirationLinks.split("\n").filter((l) => l.trim() !== "")
+    ? formData.inspirationLinks.split(LINK_VALUE_SEPARATOR).filter((l) => l.trim() !== "")
     : [""];
 
   const [links, setLinks] = useState<string[]>(
@@ -89,7 +88,7 @@ export default function Step3Details({
     setLinks(updated);
     updateFormData(
       "inspirationLinks",
-      updated.filter((l) => l.trim() !== "").join("\n")
+      updated.filter((l) => l.trim() !== "").join(LINK_VALUE_SEPARATOR)
     );
   };
 
@@ -104,7 +103,7 @@ export default function Step3Details({
     setLinks(finalLinks);
     updateFormData(
       "inspirationLinks",
-      finalLinks.filter((l) => l.trim() !== "").join("\n")
+      finalLinks.filter((l) => l.trim() !== "").join(LINK_VALUE_SEPARATOR)
     );
   };
 
@@ -212,7 +211,7 @@ export default function Step3Details({
           <span>Can your Brand experience consultant showcase the finished designs in their portfolio?</span>
         </label>
         <div className={styles.radioGroupHorizontal} role="radiogroup" aria-label="Portfolio Showcase">
-          {["Yes", "No"].map((choice) => {
+          {INTAKE_SHOWCASE_CHOICES.map((choice) => {
             const isChecked = formData.showcasePermission === choice;
             return (
               <label

@@ -10,6 +10,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // The Chat Pod gates own a runner (`tests/playwright.chatpod.config.ts`): they attach to the dev
+  // server already on 3003, sit through a 20s idle timer, and assert a coarse-pointer media rule that
+  // this five-project matrix cannot express.
+  testIgnore: /chatpod/,
   timeout: 30 * 1000,
   expect: {
     timeout: 5000,

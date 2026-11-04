@@ -3,6 +3,23 @@
 import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
+import {
+  INTAKE_AGENCY_STATUS_OPTIONS,
+  INTAKE_INDUSTRIES,
+  INTAKE_LANGUAGES,
+  INTAKE_REFERRAL_SOURCES,
+} from "@/app/lib/intake/intakeOptions";
+
+/**
+ * The four closed value sets this step renders. Aliased from the shared intake module rather than
+ * restated: the Chat Pod asks the same questions and stores the same strings, and a lead filed
+ * under a second spelling of an industry is invisible to the CRM filters built on the first.
+ * `ingest-payload-parity.test.ts` asserts both surfaces hold the identical imported reference.
+ */
+const LANGUAGES = INTAKE_LANGUAGES;
+const INDUSTRIES = INTAKE_INDUSTRIES;
+const REFERRAL_SOURCES = INTAKE_REFERRAL_SOURCES;
+const AGENCY_STATUS_OPTIONS = INTAKE_AGENCY_STATUS_OPTIONS;
 
 interface Step2Props {
   formData: ProjectFormData;
@@ -10,44 +27,6 @@ interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
 }
-
-const LANGUAGES = [
-  "English",
-  "Spanish",
-  "French",
-  "German",
-  "Arabic",
-  "Malayalam",
-  "Hindi",
-  "Other",
-];
-
-const INDUSTRIES = [
-  "Technology",
-  "Retail",
-  "Healthcare",
-  "Finance",
-  "Real Estate",
-  "Education",
-  "Food & Beverage",
-  "Luxury & Hospitality",
-  "Other",
-];
-
-const REFERRAL_SOURCES = [
-  "Google Search",
-  "Social Media",
-  "Friend or Colleague",
-  "Direct Referral / Industry Partner",
-  "Advertisement",
-  "Other",
-];
-
-const AGENCY_STATUS_OPTIONS = [
-  "Yes and I'm interested in agency services",
-  "Yes and I'm NOT interested in agency services",
-  "No, I'm not an agency",
-];
 
 /**
  * Step 2: Commercial Brand, Stakeholder & Contact Coordinates.
