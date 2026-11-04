@@ -304,6 +304,53 @@ so continuity can be asked from the command line instead of by editing the file.
 | `npx eslint --format json` over the files this pass touched | 4 errors / 2 warnings, all `react-hooks/*` in `ChatPod.tsx`. `git show HEAD:src/app/chat-pod/ChatPod.tsx` lints to the same four errors and two warnings on the same rules at earlier line numbers, so this pass adds no finding — checked because the audit reported the lint count as new. |
 | Comprehension probe, live index | `social media` / `brand identity` / `demand generation` / `abt pricing` = ANSWER 1.000 · `u offer web design` = FALLBACK (top 0.418) · `any discount available` = DISAMBIGUATE 0.647 · `explain each service` cold DISAMBIGUATE (leader 0.775) vs ANSWER `services.overview` 0.837 with prior `services.b2b` |
 
+## Pass 4: a third auditor, on the pushed commits, and what survived contact
+
+The same brief, handed to a fresh agent against the range `230377b..49c3a64` — the commits, not a working
+tree — with two extra constraints: modify nothing, and leave the owner's server on 3003 alone.
+
+**Its MAJOR was dead code.** Reported: a second viewport lock leaking through `html.menu-open`, which
+`Header.tsx` writes and `Header.module.scss` styles with `overflow: hidden`, cleared only in a GSAP
+`onReverseComplete` that does not run if the reverse is interrupted — the page stays locked with an empty
+refcount. Measured: every link in that chain is correct except the one that matters. `Header.tsx` has
+**zero importers**, so its stylesheet is never emitted and no live code ever writes that class; the only
+remaining `document.body.style.overflow` writers outside `overlayScrollLock.ts` are five admin-route
+components in a tree that mounts neither the pod nor the drawer. Real code that cannot run — and the second
+audit in a row to be misled by that file, which is the argument for deleting it.
+
+**Two MINORs were real, and both are fixed in `tests/unit` with no product file touched:**
+
+1. **The scroll-surface contract could not see a regression.** It matched the literal `overflow-y: auto`, so
+   `overflow: auto`, `overflow-y:scroll`, or a no-space variant kept it green while putting a second
+   scrollbar back in the panel. The gate now walks the stylesheet line by line, remembers the last selector
+   and asserts the *owners* of every scrolling declaration: `['.field', '.flow']`. Proved by mutation rather
+   than by argument — `overflow: auto` injected on `.tray` fails that assertion, and the file was reverted
+   from git before anything was claimed about it.
+2. **The question-shape test has a price, and it is now pinned instead of disclosed in prose.** With case
+   folded away before the sentence is read, a title and an imperative are the same tokens: `who wants a
+   proposal`, `what the heck studio`, `do it forward`, `tell me nothing` and `how to damp the roof` all read
+   as questions and are refused at a verbatim blank, while `will of the people`, `can on the water`,
+   `arjun mehta` and `the marketing club` still file. Refusal is the lesser error — a refusal is
+   re-answerable, a stored question is a corrupt CRM record — and the re-ask at the blank remains the honest
+   fix.
+
+**Left as disclosures, not fixed:** the `ResizeObserver` keys on `[children]` and re-creates on every parent
+render (that dependency is what lets it observe a row that did not exist last render — churn, not a wrong
+number); and one lock token means one owner, since `acquire` early-returns for a held token, so two surfaces
+sharing a token would release for each other.
+
+| Check, after pass 4/5 | Result |
+| :--- | :--- |
+| `npm run test:unit` | **1334 pass / 0 fail**, 351 suites |
+| `npx tsc -p tsconfig.podcheck.json --noEmit` | **0 errors, exit 0** |
+| `npx eslint` over the two changed test files | 0 problems |
+| Mutation check of the new scroll matcher | Injected `overflow: auto` on `.tray` → the gate fails on the real assertion; reverted, green again |
+| Playwright suite | **not re-run, deliberately.** These two commits change `tests/unit` only, so the 44 gates stand against `7768ba5`, which is still the product tree under test. |
+
+The auditor also falsified the standing claims itself rather than reading them here: no `any`, no swallowed
+exception, `package.json` and the lockfile unchanged across the range, nothing in `engine/` reaching `fetch`,
+no secret in the diff, type-check exit 0, unit suite 1333/0 on the pushed tree.
+
 ## Disclosed rather than hidden
 
 1. `src/app/components/Header/Header.tsx` has **zero importers** — the live header is `ClientHeader` plus
@@ -331,4 +378,13 @@ so continuity can be asked from the command line instead of by editing the file.
    64 px, so a future cap that clips the column instead of the panel fails there rather than here being
    argued about.
 8. `Header.tsx` is dead code with an inert lock edit. The audit recommends deleting it and its stylesheet;
-   deleting shared code is the owner’s call, so it is left in place and named.
+   deleting shared code is the owner’s call, so it is left in place and named. Pass 4’s one MAJOR was this
+   file’s `html.menu-open` viewport lock — a leak in code that cannot run.
+9. The question-shape test refuses proper nouns that open like questions (`tell me nothing`, `who wants a
+   proposal`, `do it forward`, `how to damp the roof`, `what the heck studio`), because case is folded away
+   before the sentence is read. Refused at a blank is the chosen lesser error; the re-ask is the open fix.
+10. One lock token means one owner: `acquireOverlayScrollLock` early-returns for a token already held, so two
+    surfaces sharing a token would release for each other. Four tokens, four components today — an assumption
+    written down rather than enforced.
+11. Five admin-route components still write `document.body.style.overflow` directly. Different tree, no pod,
+    no drawer, untouched by this branch — and therefore outside the refcount.

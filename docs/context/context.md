@@ -3,18 +3,18 @@
 > **Start here.** This is the live pointer file; the detail lives in the linked register.
 > Any agent (human or AI) opening this project should read this file first, then the register.
 
-**Recorded At:** `2026-11-03T21:55:00+05:30`
+**Recorded At:** `2026-11-04T10:20:00+05:30`
 **Current Branch:** `remediation/turbopack-compaction-dev-server` (sub-branch under `redesign/chat-pod-luxury-interaction`)
 **Base Branch:** `redesign/chat-pod-luxury-interaction` (which targets `feature/chat-pod` in PR #106)
-**Latest State:** `Chat Pod Part D, pass 3 — the independent CTO re-audit ran, five findings were real, one was not, and the hijack it caught (legitimate intake answers being answered about the studio) is fixed, gated and green — working tree on top of 230377b; PR #107 OPEN (commit and push pending the owner's go-ahead)`
+**Latest State:** `Chat Pod Part D pushed and PR #107 rewritten — code 7768ba5, docs 415ef65/49c3a64, then a third independent audit of that pushed range whose one MAJOR turned out to be dead code and whose two real findings are now fixed in tests only. PR #107 OPEN, unmerged, 23 commits, MERGEABLE (agent never merges)`
 **Open Pull Requests (ALL STRICTLY OPEN):**
 - [PR #107 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar` (`remediation/turbopack-compaction-dev-server` → `redesign/chat-pod-luxury-interaction`)
 - [PR #106 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (`redesign/chat-pod-luxury-interaction` → `feature/chat-pod`)
 - [PR #105 (OPEN)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/105): `Phase 15: Chat Pod Deterministic Assistant and Conversational Intake Architecture` (`feature/chat-pod` → `master`)
 **Author Identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`
 **TypeScript Status:** `0 errors`. Whole-project `tsc` (`node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit`) was green at the last full run and then died twice on host memory (`young object promotion failed`, ~1 GB free) — not a type failure. The gate for this surface is `npx tsc -p tsconfig.podcheck.json --noEmit` → **0 errors, exit 0**; its scope now includes `tests/e2e/chatpod.spec.ts`, because Playwright transpiles specs without type-checking them.
-**Unit Tests:** `1333 pass / 0 fail` across `351 suites` (full suite, re-run on the pass-3 tree). Scoped typecheck for this surface: `npx tsc -p tsconfig.podcheck.json --noEmit` → 0 errors.
-**E2E:** `44 passed in 5.4m` (`tests/playwright.chatpod.config.ts`, one worker, against a server already on `127.0.0.1:3003`). `npm run build` exit 0 and the server still answers 200 afterwards; `npm run test:boundaries` clean.
+**Unit Tests:** `1334 pass / 0 fail` across `351 suites` (full suite, re-run after the pass-4/5 test hardening). Scoped typecheck for this surface: `npx tsc -p tsconfig.podcheck.json --noEmit` → 0 errors.
+**E2E:** `44 passed in 5.4m` (`tests/playwright.chatpod.config.ts`, one worker, against a server already on `127.0.0.1:3003`). `npm run build` exit 0 and the server still answers 200 afterwards; `npm run test:boundaries` clean. **Not re-run** after pass 4/5: those two commits change `tests/unit` only, so the 44 gates still describe the product tree at `7768ba5`.
 
 ---
 
@@ -57,6 +57,22 @@ Still open there: `any discount available` gets filed at a verbatim blank (no sh
 name heuristic would refuse real answers like `The Marketing Club`), `Header.tsx` — which has no importers —
 carries an inert lock edit the auditor wants deleted, and a 400 px-tall desktop window leaves a 71 px
 conversation column.
+
+**Pass 4/5 — 4 November, the third auditor, aimed at the pushed commits.** Part D and pass 3 were committed
+(`7768ba5` code, `415ef65` + `49c3a64` docs), pushed, and PR #107's body rewritten with the findings and the
+numbers. A fresh agent with the same brief then audited the range `230377b..49c3a64` and reported a MAJOR:
+a second viewport lock leaking through `html.menu-open`, cleared only on a GSAP `onReverseComplete` that may
+never run. Every link in that trace is correct except the one that matters — `Header.tsx` has zero importers,
+so its stylesheet is never emitted and no live code ever writes that class. The leak is real code that cannot
+run, and it is the second audit in a row misled by that file. Two of its MINOR findings were real, and both
+are fixed in `tests/unit` with no product file touched: the scroll-surface contract now names the owner of
+every scrolling declaration instead of matching the literal `overflow-y: auto` (proved by injecting the
+shorthand regression, watching the gate fail, and reverting), and the price of the question-shape test — five
+proper nouns that read as questions and are therefore refused at a blank — is pinned by a test that says so
+out loud.
+👉 [`docs/context/2026-11-04_10-20-00.md`](./2026-11-04_10-20-00.md), and §10 of the same feature doc.
+The honest fix for both `any discount available` and the quirky names is the re-ask at the blank, not another
+heuristic; deleting `Header.tsx` still waits on the owner.
 
 **Part C — 3 November, commit `eff95ed`.** The owner used the pod again, on a phone, and reported two more
 things: asking *what do you do* got the services qualification question back, and the brief "feels broken".

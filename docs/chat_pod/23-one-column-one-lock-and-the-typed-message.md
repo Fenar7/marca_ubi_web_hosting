@@ -161,11 +161,28 @@ No model, no network call, no package added. Nothing in `engine/` or the typing 
    and the composer are paid for. The panel is now inside the screen instead of 48 px above it, which is the
    fix; three lines of a reply and a wheel for the rest is what a window that short can hold, and the gate
    pins 64 px so a future cap that clips the column instead of the panel fails here.
+9. **The shape test costs the proper nouns that open like questions.** Measured against `looksLikeQuestion`:
+   `who wants a proposal`, `what the heck studio`, `do it forward`, `tell me nothing` and `how to damp the
+   roof` all read as questions, because case is folded away before the sentence is read and a title and an
+   imperative are the same tokens. At a verbatim blank those get refused rather than filed — a refusal is
+   re-answerable, a stored question is a corrupt CRM record — and `will of the people`, `can on the water`,
+   `arjun mehta`, `the marketing club` still file correctly. Pinned by test, not left implicit.
+10. **A lock token is one owner.** `acquireOverlayScrollLock` returns early when the token is already held,
+    so two surfaces sharing a token would release for each other: the first release unlocks the page for
+    both. It holds because the four tokens are four components; it is an assumption, not a mechanism.
+11. **The `ResizeObserver` effect keys on `[children]`**, and `children` is the tray element the panel builds
+    inline, so a new reference each parent render tears the observer down and re-creates it. That is what
+    makes it correct — a row that did not exist has to start being observed — and the cost is churn on
+    every pod render, not a wrong number. Left alone rather than wrapped in an observed-set diff.
+12. **Admin routes still write `document.body.style.overflow` directly** (`CredentialRevealModal`,
+    `SuspendUserModal`, `ClientDossierDrawer`, `AdminMobileDrawer`, `AdminWorkspaceShell`). They are a
+    separate route tree that does not mount the pod or the nav overlay, so the refcount does not cover them;
+    this branch neither introduced nor touched it.
 
 ## 8. Open, in priority order
 
 1. **A `company`-shaped intake slot** (or an explicit "is this your company name?" re-ask) to close §7.2
-   without a heuristic.
+   without a heuristic — and to give the proper nouns in §7.9 somewhere to go instead of a refusal.
 2. **Author the contested residues apart** (`work`, `studio`, `human`, `project`) — carried from `22-` §9;
    the probe still prints eight collisions.
 3. **Real-device confirmation** of the landscape sheet and the soft-keyboard inset. `the sheet lifts by the
@@ -214,3 +231,29 @@ The pass-3 tree, re-verified after every change above:
 | Server-action boundaries | `npm run test:boundaries` | 12 modules, 48 actions, clean |
 | Comprehension probe | `npx tsx scripts/chat-pod/probe-comprehension.mts …` | the §9 table read off the live index, plus `explain each service >> services.b2b` → ANSWER `services.overview` 0.837 against a cold DISAMBIGUATE at 0.775 |
 | Lint, files this pass touched | `npx eslint --format json ChatPod.tsx engine/* ui/Transcript.tsx ui/Composer.tsx ui/MessageBubble.tsx` | 4 errors / 2 warnings, all in `ChatPod.tsx` and all `react-hooks/*`. `git show HEAD:…/ChatPod.tsx` lints to the same four errors and two warnings on the same rules (earlier line numbers), so this pass adds no finding. |
+
+## 10. Pass 4: a third auditor, on the commits rather than the working tree
+
+The same brief, handed to a fresh agent against the pushed range `230377b..49c3a64` with the additional
+instruction to run nothing that could disturb the owner's server and to modify nothing. Six findings; here is
+what each one turned out to be once measured.
+
+| # | Reported | Verdict, with the evidence |
+|---|---|---|
+| 1 | **MAJOR — a second CSS viewport lock still leaks**: `Header.tsx` drives `html/body.menu-open`, `Header.module.scss` declares `overflow: hidden` for that class, and the class is cleared only in the GSAP `onReverseComplete`, so an interrupted reverse leaves the page locked while the refcount reads empty. | **Not live.** `Header.tsx` has zero importers — `grep` for any import of the component returns nothing — so its stylesheet is never in the bundle, and the only writers of `menu-open` anywhere in the public tree are inside that dead file. Re-checked the other half of the claim too: after this branch the only `document.body.style.overflow` writer outside `overlayScrollLock.ts` in the whole public tree is on admin routes, which mount neither the pod nor the drawer. So the leak the auditor traced is real code that cannot run — which is exactly why §7.1 keeps saying the file should go. |
+| 2 | MINOR — `looksLikeQuestion` will refuse a proper noun that opens like a question. | **Real, and now measured and pinned.** See §7.9 and §8.1. Five strings that read as questions, four ordinary names that still file. Pinned by a new unit test that states the trade-off rather than hiding it. |
+| 3 | MINOR — the `ResizeObserver` effect keys on `[children]`, so every parent render tears it down and rebuilds it. | **Real, and left.** The dependency is what makes it observe a row that did not exist last render; the cost is churn, not a wrong number. §7.11. |
+| 4 | MINOR — the scroll-surface contract keys on the literal `overflow-y: auto`, so a regression to the `overflow` shorthand or to `scroll` passes. | **Real, and fixed.** The gate now walks the stylesheet line by line, remembers the last selector, and records every `overflow(-x\|-y)?: auto\|scroll`. Proved by mutation, not by argument: `overflow: auto` injected on `.tray` fails the gate with the same assertion the defect would produce, and the file was reverted from git immediately. |
+| 5 | MINOR — `overlay-scroll-lock.test.ts` proves the primitive's arithmetic but never exercises StrictMode double-invocation or unmount-while-open; the per-surface assertion is a source string match. | **Half right.** The double-invoke case is `acquire → release → acquire` against a `Set`, which is idempotent by construction, and unmount-while-open is a real browser lifecycle that the pod's e2e overlay gates already walk. What is genuinely an assumption is documented now in §7.10: one token, one owner. |
+| 6 | Standing claims to falsify — no `any`, no swallowed exception, no new dependency, nothing in `engine/` reaching `fetch`, no secret in the diff. | **Checked and they hold.** The auditor ran the type-check and the suite itself rather than quoting this document: `tsc -p tsconfig.podcheck.json` exit 0, `npm run test:unit` 1333/0 on the pushed tree, `package.json` and the lockfile unchanged across the range. |
+
+Pass 4 therefore produced **one code-adjacent change and one new test**, both in `tests/unit`, and touched no
+product file: the hardened scroll contract and the pinned proper-noun trade-off.
+
+| Check, pass 5 tree (4 November) | Result |
+|---|---|
+| `npm run test:unit` | **1334 pass / 0 fail**, 351 suites |
+| `npx tsc -p tsconfig.podcheck.json --noEmit` | **0 errors, exit 0** |
+| `npx eslint` over the two changed test files | 0 problems |
+| Mutation check of the new scroll matcher | `overflow: auto` injected on `.tray` → gate fails as intended; reverted from git and green again |
+| Browser suite | **not re-run**: no product file changed in this pass. The 44 gates stand against the tree at `7768ba5`, which is the code under test today. |
