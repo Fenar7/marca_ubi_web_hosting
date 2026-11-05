@@ -16,20 +16,24 @@ import { graphik, circularXX, helveticaNeue } from "./fonts";
 import "./globals.css";
 import "./globals.scss";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://marcaubi.com");
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
 
+/**
+ * Root Metadata Declaration for Next.js App Router.
+ * - Title calibrated to 52 characters (optimal SERP threshold without viewport truncation).
+ * - Description calibrated to 156 characters (full-fidelity indexing for search and LLM crawlers).
+ * - Absolute canonical URL anchored to prevent multi-domain indexing duplication.
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Marca Ubi | Brand Identity & Cultural Experience Architecture",
+    default: "Marca Ubi | Brand Identity & Experience Architecture",
     template: "%s | Marca Ubi",
   },
   description:
-    "Marca Ubi builds living brand systems, digital flagships, and cultural experiences that move modern enterprise audiences. Strategy, design, and computational execution.",
+    "Marca Ubi engineers living brand systems, digital flagships, and cultural experiences for global enterprises. Strategy, design, and computational execution.",
   alternates: {
-    canonical: "/",
+    canonical: siteUrl,
   },
   icons: {
     icon: [{ url: "/images/marca-ubi-red-png.svg", type: "image/svg+xml" }],
@@ -38,11 +42,11 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "/",
+    url: siteUrl,
     siteName: "Marca Ubi",
-    title: "Marca Ubi | Brand Identity & Cultural Experience Architecture",
+    title: "Marca Ubi | Brand Identity & Experience Architecture",
     description:
-      "Marca Ubi builds living brand systems, digital flagships, and cultural experiences that move modern enterprise audiences.",
+      "Marca Ubi engineers living brand systems, digital flagships, and cultural experiences for global enterprises. Strategy, design, and computational execution.",
     images: [
       {
         url: "/images/hero-image.png",
@@ -54,9 +58,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Marca Ubi | Brand Identity & Cultural Experience Architecture",
+    title: "Marca Ubi | Brand Identity & Experience Architecture",
     description:
-      "Marca Ubi builds living brand systems, digital flagships, and cultural experiences that move modern enterprise audiences.",
+      "Marca Ubi engineers living brand systems, digital flagships, and cultural experiences for global enterprises. Strategy, design, and computational execution.",
     images: ["/images/hero-image.png"],
   },
 };

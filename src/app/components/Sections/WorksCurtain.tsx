@@ -96,7 +96,7 @@ export function WorksCurtain({ works = [] }: WorksCurtainProps) {
                   <div className={styles.imageFrame}>
                     <Image
                       src={imageUrl}
-                      alt={work.title}
+                      alt={work.title || "Marca Ubi Selected Client Work"}
                       fill
                       sizes="(max-width: 1024px) 100vw, 70vw"
                       className={styles.projectImage}

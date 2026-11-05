@@ -11,7 +11,7 @@ import styles from "./Blog.module.scss";
 export const revalidate = 60; // ISR cache revalidation every 60s
 
 export const metadata: Metadata = {
-  title: "Insights & Dispatches | Marca Ubi",
+  title: "Insights & Dispatches",
   description:
     "Essays, architectural observations, brand strategy, design systems, and digital engineering from the Marca Ubi studio floor.",
   alternates: {
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Insights & Dispatches | Marca Ubi",
+    title: "Insights & Dispatches",
     description:
       "Essays, architectural observations, brand strategy, design systems, and digital engineering from the Marca Ubi studio floor.",
     url: "/blog",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Insights & Dispatches | Marca Ubi",
+    title: "Insights & Dispatches",
     description:
       "Essays, architectural observations, brand strategy, design systems, and digital engineering from the Marca Ubi studio floor.",
   },

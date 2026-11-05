@@ -4,8 +4,11 @@ import ClientHeader from "@/app/components/ClientHeader/ClientHeader";
 import MonumentalFooter from "@/app/components/Sections/MonumentalFooter";
 
 export const metadata: Metadata = {
-  title: "Privacy Architecture | Marca Ubi",
+  title: "Privacy Architecture",
   description: "Enterprise privacy protocol, telemetry boundaries, and global data governance standards.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

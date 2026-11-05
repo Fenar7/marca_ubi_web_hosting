@@ -4,8 +4,11 @@ import ClientHeader from "@/app/components/ClientHeader/ClientHeader";
 import MonumentalFooter from "@/app/components/Sections/MonumentalFooter";
 
 export const metadata: Metadata = {
-  title: "Terms of Engagement | Marca Ubi",
+  title: "Terms of Engagement",
   description: "Enterprise commercial governance, IP licensing, and contractual service terms.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

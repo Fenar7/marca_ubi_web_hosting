@@ -12,7 +12,7 @@ export const revalidate = 60; // ISR cache revalidation every 60s
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
 
 export const metadata: Metadata = {
-  title: "Selected Works & Brand Architecture | Marca Ubi",
+  title: "Selected Works & Brand Architecture",
   description:
     "Curated portfolio of institutional brand identities, enterprise platforms, and digital experiences engineered to endure.",
   alternates: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Selected Works & Brand Architecture | Marca Ubi",
+    title: "Selected Works & Brand Architecture",
     description:
       "Curated portfolio of institutional brand identities, enterprise platforms, and digital experiences engineered to endure.",
     url: "/works",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Selected Works & Brand Architecture | Marca Ubi",
+    title: "Selected Works & Brand Architecture",
     description:
       "Curated portfolio of institutional brand identities, enterprise platforms, and digital experiences engineered to endure.",
     images: ["/images/bg-cover-image-2.png"],

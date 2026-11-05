@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { client } from "@/sanity/lib/client";
 import { worksQuery } from "@/sanity/lib/queries";
 import { postsQuery } from "@/sanity/lib/blog-queries";
@@ -7,6 +8,20 @@ import type { PostSummary } from "@/sanity/types/blog";
 import ClientHomeExperience from "./components/ClientHomeExperience/ClientHomeExperience";
 
 export const revalidate = 60; // 60-second Incremental Static Regeneration
+
+/**
+ * Explicit Apex Canonical Metadata.
+ * Guarantees search engine web crawlers and conversational search indices
+ * resolve the apex root canonical URL unambiguously.
+ */
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://marcaubi.com",
+  },
+  openGraph: {
+    url: "https://marcaubi.com",
+  },
+};
 
 /**
  * Flagship Client-Facing Homepage Server Component.

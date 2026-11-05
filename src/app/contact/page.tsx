@@ -10,7 +10,7 @@ import styles from './Contact.module.scss';
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcaubi.com').replace(/\/+$/, '');
 
 export const metadata: Metadata = {
-  title: 'Contact & Global Studios | Marca Ubi Enterprise Agency',
+  title: 'Contact & Global Studios',
   description:
     'Connect with Marca Ubi. Direct intake channels for enterprise brand architecture, digital flagships, and studio consultations across our Calicut and Trivandrum hubs.',
   alternates: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     url: `${siteUrl}/contact`,
     siteName: 'Marca Ubi',
     locale: 'en_US',
-    title: 'Contact & Global Studios | Marca Ubi Enterprise Agency',
+    title: 'Contact & Global Studios',
     description:
       'Direct intake channels for enterprise brand architecture, digital flagships, and strategic collaboration. Connect directly with our studio desks.',
     images: [
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@marcaubi',
     creator: '@marcaubi',
-    title: 'Contact & Global Studios | Marca Ubi Enterprise Agency',
+    title: 'Contact & Global Studios',
     description:
       'Direct intake channels for enterprise brand architecture, digital flagships, and studio consultations across our Calicut and Trivandrum hubs.',
     images: [`${siteUrl}/images/hero-image.png`],
