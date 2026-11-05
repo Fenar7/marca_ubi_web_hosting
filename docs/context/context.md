@@ -3,10 +3,11 @@
 > **Start here.** This is the authoritative live pointer file; the comprehensive engineering detail lives in the linked registers.
 > Any agent (human or AI) opening this project must read this file first, then the latest dated register.
 >
-> **LATEST ACTIVE REGISTER (AIOSEO 100/100 Production Release — 5 Nov 2026):**  
-> 👉 [`docs/context/2026-11-05_10-23-00.md`](./2026-11-05_10-23-00.md) — Complete AIOSEO 100/100 Score Recovery Register: Title & Meta Description calibration, ServicesAccordion image alt binding, canonical URL hardening, subpage title deduplication, and bundle optimization (PR #111 merged).
+> **LATEST ACTIVE REGISTER (Graphify Knowledge Graph Architecture — 5 Nov 2026):**  
+> 👉 [`docs/context/2026-11-05_12-35-00.md`](./2026-11-05_12-35-00.md) — Comprehensive Graphify Knowledge Graph Architecture: AST Extraction (2,549 nodes, 6,448 edges, 140 communities), 105.2x token reduction benchmark, GraphRAG query/path navigation, interactive HTML visualizer, and automated git post-commit hooks.
 >
 > **Previous Foundation Registers:**  
+> 👉 [`docs/context/2026-11-05_10-23-00.md`](./2026-11-05_10-23-00.md) (AIOSEO 100/100 Score Recovery - PR #111 merged)  
 > 👉 [`docs/context/2026-11-04_18-59-00.md`](./2026-11-04_18-59-00.md) (Full Production Release: Workflow 1 & Workflow 2)  
 > 👉 [`docs/context/2026-11-04_10-20-00.md`](./2026-11-04_10-20-00.md) (Chat Pod Pass 4/5 Third CTO Audit & Test Hardening)  
 > 👉 [`docs/context/2026-11-03_21-07-00.md`](./2026-11-03_21-07-00.md) (Chat Pod Part D Scroll Ownership & Viewport Lock)  
