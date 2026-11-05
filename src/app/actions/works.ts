@@ -18,12 +18,8 @@ import {
   updateClientWorkHealthSchema,
   updateClientWorkMilestoneSchema,
   assignClientWorkLeadsSchema,
-  type UpdateClientWorkStageFormData,
-  type UpdateClientWorkHealthFormData,
-  type UpdateClientWorkMilestoneFormData,
-  type AssignClientWorkLeadsFormData,
 } from '@/app/lib/client-works-schemas';
-import type { ClientWorkItem, ClientWorkMilestone } from '@/types/crm';
+import type { ClientWorkMilestone } from '@/types/crm';
 
 export interface WorksActionResult<T = unknown> {
   success: boolean;
@@ -484,12 +480,12 @@ export async function assignClientWorkDirectorsAction(
   let creativeDirectorName: string | null = null;
   if (creativeLeadId) {
     const { data: creativeProfile } = await supabase
-      .from('profiles')
-      .select('id, full_name, status')
+      .from('crm_team_directory')
+      .select('id, full_name')
       .eq('id', creativeLeadId)
       .maybeSingle();
 
-    if (!creativeProfile || creativeProfile.status !== 'active') {
+    if (!creativeProfile) {
       return {
         success: false,
         error: 'Invalid Creative Director: User profile not found or inactive.',
@@ -502,12 +498,12 @@ export async function assignClientWorkDirectorsAction(
   let techDirectorName: string | null = null;
   if (techLeadId) {
     const { data: techProfile } = await supabase
-      .from('profiles')
-      .select('id, full_name, status')
+      .from('crm_team_directory')
+      .select('id, full_name')
       .eq('id', techLeadId)
       .maybeSingle();
 
-    if (!techProfile || techProfile.status !== 'active') {
+    if (!techProfile) {
       return {
         success: false,
         error: 'Invalid Technical Director: User profile not found or inactive.',

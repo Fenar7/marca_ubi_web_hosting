@@ -1,15 +1,11 @@
 /**
  * @file timeframeUtils.ts
- * @description Master mathematical and temporal resolution engine for the Executive Dashboard.
- *              Translates URL query parameters (`?timeframe=...`), calculates precise start/end bounds
- *              for analytical RPCs and relational aggregations, evaluates period-over-period performance
- *              deltas with zero-division protection, and synthesizes time-series milestone points.
+ * @description Resolves dashboard date windows and groups persisted conversion events.
  * @module admin/lib/timeframeUtils
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 export type TimeframeSlug = '7d' | '30d' | '90d' | 'quarter' | 'year';
-
 export type CadenceLabel = 'WoW' | 'MoM' | 'QoQ' | 'YoY';
 
 export interface TimeframeBounds {
@@ -26,11 +22,13 @@ export interface TimeframeBounds {
 export interface DynamicRevenueSplinePoint {
   month: string;
   fullPeriod: string;
-  quotaVal: number;
   cashVal: number;
-  quotaFormatted: string;
   cashFormatted: string;
-  attainmentPct: number;
+}
+
+export interface RevenueEvent {
+  convertedAt: string;
+  amount: number;
 }
 
 export const TIMEFRAME_SLUG_LABELS: Record<TimeframeSlug, { label: string; cadence: CadenceLabel }> = {
@@ -41,14 +39,10 @@ export const TIMEFRAME_SLUG_LABELS: Record<TimeframeSlug, { label: string; caden
   year: { label: 'This Year', cadence: 'YoY' },
 };
 
-/**
- * Normalizes any free-form string or query param into a canonical TimeframeSlug.
- * Defaults strictly to '30d' for predictable enterprise accounting baselines.
- */
+/** Normalizes supported user input to a canonical timeframe slug. */
 export function timeframeToSlug(input?: string | null): TimeframeSlug {
   if (!input) return '30d';
   const clean = input.trim().toLowerCase();
-
   if (clean === '7d' || clean.includes('7')) return '7d';
   if (clean === '90d' || clean.includes('90')) return '90d';
   if (clean === 'quarter' || clean.includes('quarter') || clean === 'qtr') return 'quarter';
@@ -56,189 +50,83 @@ export function timeframeToSlug(input?: string | null): TimeframeSlug {
   return '30d';
 }
 
-/**
- * Resolves the canonical user-facing label for a given timeframe slug.
- */
 export function slugToTimeframeLabel(input?: string | null): string {
-  const slug = timeframeToSlug(input);
-  return TIMEFRAME_SLUG_LABELS[slug].label;
+  return TIMEFRAME_SLUG_LABELS[timeframeToSlug(input)].label;
 }
 
-/**
- * Computes exact ISO temporal boundaries and prior comparison periods for analytics queries.
- * Handles leap years, month boundaries, and quarterly transitions deterministically.
- */
-export function resolveTimeframeBounds(
-  inputSlug?: string | null,
-  referenceDate: Date = new Date()
-): TimeframeBounds {
+/** Resolves rolling periods and UTC calendar periods for stable cross-region cohort boundaries. */
+export function resolveTimeframeBounds(inputSlug?: string | null, referenceDate: Date = new Date()): TimeframeBounds {
   const slug = timeframeToSlug(inputSlug);
   const currentEnd = new Date(referenceDate);
-
   let currentStart: Date;
   let priorStart: Date;
   let priorEnd: Date;
-  let intervalType: 'daily' | 'weekly' | 'monthly';
-
+  let intervalType: TimeframeBounds['intervalType'];
   switch (slug) {
-    case '7d': {
-      currentStart = new Date(currentEnd.getTime() - 7 * 86400000);
-      priorEnd = new Date(currentStart);
-      priorStart = new Date(priorEnd.getTime() - 7 * 86400000);
-      intervalType = 'daily';
-      break;
-    }
+    case '7d':
+    case '30d':
     case '90d': {
-      currentStart = new Date(currentEnd.getTime() - 90 * 86400000);
+      const days = slug === '7d' ? 7 : slug === '30d' ? 30 : 90;
+      currentStart = new Date(currentEnd.getTime() - days * 86400000);
       priorEnd = new Date(currentStart);
-      priorStart = new Date(priorEnd.getTime() - 90 * 86400000);
-      intervalType = 'monthly';
+      priorStart = new Date(priorEnd.getTime() - days * 86400000);
+      intervalType = slug === '7d' ? 'daily' : slug === '30d' ? 'weekly' : 'monthly';
       break;
     }
     case 'quarter': {
-      const currentMonth = currentEnd.getMonth();
-      const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
-      currentStart = new Date(currentEnd.getFullYear(), quarterStartMonth, 1, 0, 0, 0, 0);
-
-      const priorQuarterStartMonth = quarterStartMonth - 3;
-      priorStart = new Date(currentEnd.getFullYear(), priorQuarterStartMonth, 1, 0, 0, 0, 0);
+      const month = Math.floor(currentEnd.getUTCMonth() / 3) * 3;
+      currentStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), month, 1));
+      priorStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), month - 3, 1));
       priorEnd = new Date(currentStart.getTime() - 1);
       intervalType = 'monthly';
       break;
     }
     case 'year': {
-      currentStart = new Date(currentEnd.getFullYear(), 0, 1, 0, 0, 0, 0);
-      priorStart = new Date(currentEnd.getFullYear() - 1, 0, 1, 0, 0, 0, 0);
-      priorEnd = new Date(currentEnd.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+      currentStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), 0, 1));
+      priorStart = new Date(Date.UTC(currentEnd.getUTCFullYear() - 1, 0, 1));
+      priorEnd = new Date(currentStart.getTime() - 1);
       intervalType = 'monthly';
       break;
     }
-    case '30d':
-    default: {
-      currentStart = new Date(currentEnd.getTime() - 30 * 86400000);
-      priorEnd = new Date(currentStart);
-      priorStart = new Date(priorEnd.getTime() - 30 * 86400000);
-      intervalType = 'weekly';
-      break;
-    }
   }
-
-  return {
-    slug,
-    label: TIMEFRAME_SLUG_LABELS[slug].label,
-    cadenceLabel: TIMEFRAME_SLUG_LABELS[slug].cadence,
-    currentStart,
-    currentEnd,
-    priorStart,
-    priorEnd,
-    intervalType,
-  };
+  return { slug, label: TIMEFRAME_SLUG_LABELS[slug].label, cadenceLabel: TIMEFRAME_SLUG_LABELS[slug].cadence, currentStart, currentEnd, priorStart, priorEnd, intervalType };
 }
 
-/**
- * Calculates period-over-period percentage growth velocity.
- * Implements strict zero-division protection, preventing IEEE 754 NaN or Infinity.
- * 
- * @param current Current window realized performance
- * @param prior Prior baseline performance
- * @returns Signed percentage delta rounded to 1 decimal place (e.g. +14.2 or -5.1)
- */
-export function calculateMetricDelta(current: number, prior: number): number {
-  if (prior <= 0) {
-    if (current <= 0) return 0.0;
-    return 100.0;
-  }
-  const delta = ((current - prior) / prior) * 100;
-  return Math.round(delta * 10) / 10;
+/** A zero prior baseline has no meaningful percentage change and remains unavailable. */
+export function calculateMetricDelta(current: number, prior: number): number | null {
+  if (!Number.isFinite(current) || !Number.isFinite(prior) || prior <= 0) return null;
+  return Math.round((((current - prior) / prior) * 100) * 10) / 10;
 }
 
-/**
- * Synthesizes dynamic time-series milestone points for the Fritsch-Carlson monotone spline.
- * Adapts intervals based on the active timeframe window (daily for 7d, weekly for 30d, monthly for 90d/year).
- */
-export function generateTimeframeSplinePoints(
-  slug: TimeframeSlug,
-  totalCashRupees: number
-): DynamicRevenueSplinePoint[] {
-  const totalLakhs = Math.max(1, totalCashRupees / 100000);
-
-  switch (slug) {
-    case '7d': {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const dailyQuota = Math.round((totalLakhs / 6) * 10) / 10;
-      const ratios = [0.12, 0.15, 0.14, 0.18, 0.22, 0.10, 0.09];
-      return days.map((day, idx) => {
-        const cash = Math.round(totalLakhs * ratios[idx] * 10) / 10;
-        const attainment = dailyQuota > 0 ? Math.round((cash / dailyQuota) * 1000) / 10 : 100;
-        return {
-          month: day,
-          fullPeriod: `${day} Performance`,
-          quotaVal: dailyQuota,
-          cashVal: cash,
-          quotaFormatted: `₹${(dailyQuota * 100000).toLocaleString('en-IN')}`,
-          cashFormatted: `₹${(cash * 100000).toLocaleString('en-IN')}`,
-          attainmentPct: attainment,
-        };
-      });
-    }
-
-    case '90d':
-    case 'quarter': {
-      const months = ['Month 1', 'Month 2', 'Month 3'];
-      const monthlyQuota = Math.round((totalLakhs / 2.7) * 10) / 10;
-      const ratios = [0.28, 0.34, 0.38];
-      return months.map((m, idx) => {
-        const cash = Math.round(totalLakhs * ratios[idx] * 10) / 10;
-        const attainment = monthlyQuota > 0 ? Math.round((cash / monthlyQuota) * 1000) / 10 : 100;
-        return {
-          month: m,
-          fullPeriod: `${m} Financials`,
-          quotaVal: monthlyQuota,
-          cashVal: cash,
-          quotaFormatted: `₹${(monthlyQuota * 100000).toLocaleString('en-IN')}`,
-          cashFormatted: `₹${(cash * 100000).toLocaleString('en-IN')}`,
-          attainmentPct: attainment,
-        };
-      });
-    }
-
-    case 'year': {
-      const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
-      const quarterQuota = Math.round((totalLakhs / 3.6) * 10) / 10;
-      const ratios = [0.21, 0.24, 0.27, 0.28];
-      return quarters.map((q, idx) => {
-        const cash = Math.round(totalLakhs * ratios[idx] * 10) / 10;
-        const attainment = quarterQuota > 0 ? Math.round((cash / quarterQuota) * 1000) / 10 : 100;
-        return {
-          month: q,
-          fullPeriod: `${q} Fiscal Performance`,
-          quotaVal: quarterQuota,
-          cashVal: cash,
-          quotaFormatted: `₹${(quarterQuota * 100000).toLocaleString('en-IN')}`,
-          cashFormatted: `₹${(cash * 100000).toLocaleString('en-IN')}`,
-          attainmentPct: attainment,
-        };
-      });
-    }
-
-    case '30d':
-    default: {
-      const weeks = ['W1', 'W2', 'W3', 'W4', 'W5'];
-      const weeklyQuota = Math.round((totalLakhs / 4.5) * 10) / 10;
-      const ratios = [0.18, 0.22, 0.19, 0.25, 0.16];
-      return weeks.map((w, idx) => {
-        const cash = Math.round(totalLakhs * ratios[idx] * 10) / 10;
-        const attainment = weeklyQuota > 0 ? Math.round((cash / weeklyQuota) * 1000) / 10 : 100;
-        return {
-          month: w,
-          fullPeriod: `Week ${idx + 1} Pipeline`,
-          quotaVal: weeklyQuota,
-          cashVal: cash,
-          quotaFormatted: `₹${(weeklyQuota * 100000).toLocaleString('en-IN')}`,
-          cashFormatted: `₹${(cash * 100000).toLocaleString('en-IN')}`,
-          attainmentPct: attainment,
-        };
-      });
-    }
+/** Buckets converted contract values into display intervals; no payment or quota is inferred. */
+export function aggregateTimeframeRevenue(slug: TimeframeSlug, bounds: Pick<TimeframeBounds, 'currentStart' | 'currentEnd'>, events: RevenueEvent[]): DynamicRevenueSplinePoint[] {
+  const start = bounds.currentStart.getTime();
+  const end = bounds.currentEnd.getTime();
+  const span = end - start;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || span <= 0) return [];
+  const intervals = getRevenueIntervals(slug, bounds.currentStart, bounds.currentEnd);
+  const totals = intervals.map(() => 0);
+  for (const event of events) {
+    const timestamp = Date.parse(event.convertedAt);
+    if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end || !Number.isFinite(event.amount)) continue;
+    const index = Math.min(intervals.length - 1, Math.floor(((timestamp - start) / span) * intervals.length));
+    totals[index] += event.amount;
   }
+  const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
+  return intervals.map((interval, index) => {
+    const amount = Math.round(totals[index] * 100) / 100;
+    return { month: interval.label, fullPeriod: interval.fullLabel, cashVal: amount, cashFormatted: currency.format(amount) };
+  });
+}
+
+function getRevenueIntervals(slug: TimeframeSlug, start: Date, end: Date): { label: string; fullLabel: string }[] {
+  const count = slug === '7d' ? 7 : slug === '30d' ? 5 : slug === 'year' ? 12 : 3;
+  const startMs = start.getTime();
+  const span = end.getTime() - startMs;
+  const format = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  return Array.from({ length: count }, (_, index) => {
+    const intervalStart = new Date(startMs + (span * index) / count);
+    const intervalEnd = new Date(startMs + (span * (index + 1)) / count);
+    return { label: slug === '7d' ? format.format(intervalStart) : 'P' + (index + 1), fullLabel: format.format(intervalStart) + ' - ' + format.format(intervalEnd) };
+  });
 }

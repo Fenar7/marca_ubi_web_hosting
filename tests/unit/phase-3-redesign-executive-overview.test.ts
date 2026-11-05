@@ -153,18 +153,17 @@ describe('Phase 3 Redesign: Executive Overview & KPI Ribbon Architecture Suite',
   });
 
   describe('4. Pipeline Stage Allocation & Velocity Engine Architecture', () => {
-    it('verifies editorial period on title in PipelineAllocationCard.tsx', () => {
+    it('verifies the live pipeline stage title in PipelineAllocationCard.tsx', () => {
       const tsx = fs.readFileSync(pipelineAllocationTsxPath, 'utf8');
-      assert.ok(tsx.includes('Pipeline Stage Allocation'));
+      assert.ok(tsx.includes('Pipeline Stages'));
     });
 
-    it('verifies WCAG AA compliant stage colors in PipelineAllocationCard.tsx', () => {
+    it('uses persisted funnel colors instead of hardcoded stage palette in PipelineAllocationCard.tsx', () => {
       const tsx = fs.readFileSync(pipelineAllocationTsxPath, 'utf8');
-      assert.ok(tsx.includes('#0284c7')); // Deep Ocean Sky
-      assert.ok(tsx.includes('#4f46e5')); // Royal Slate Indigo
-      assert.ok(tsx.includes('#d97706')); // Executive Amber
-      assert.ok(tsx.includes('#059669')); // Mint Emerald
-      assert.ok(tsx.includes('#ff6100')); // Marca Orange
+      assert.ok(tsx.includes('color: stage.color'));
+      assert.ok(!tsx.includes('#0284c7'));
+      assert.ok(!tsx.includes('#4f46e5'));
+      assert.ok(!tsx.includes('#d97706'));
     });
 
     it('verifies tabular numerals are enforced in PipelineAllocationCard.module.scss', () => {

@@ -167,11 +167,43 @@ describe('Marca Ubi CRM — PostgreSQL Row Level Security (RLS) 24-Point Matrix'
     }
   });
 
-  it('allows all active authenticated roles to inspect directory profiles', async () => {
-    for (const u of [IDENTITIES.admin, IDENTITIES.sales_manager, IDENTITIES.sales_executive_1, IDENTITIES.viewer]) {
-      const res = await queryAs(u.id, `SELECT count(*)::int as count FROM public.profiles WHERE id = $1;`, [IDENTITIES.admin.id]);
-      assert.strictEqual(res.rows[0].count, 1);
+  it('limits direct profile reads and exposes only safe active-staff display fields', async () => {
+    const activeIdentities = [
+      IDENTITIES.admin,
+      IDENTITIES.sales_manager,
+      IDENTITIES.sales_executive_1,
+      IDENTITIES.viewer,
+    ];
+
+    for (const identity of activeIdentities) {
+      const selfProfile = await queryAs(
+        identity.id,
+        "SELECT id FROM public.profiles WHERE id = $1;",
+        [identity.id]
+      );
+      assert.strictEqual(selfProfile.rows.length, 1);
+
+      const crossProfile = await queryAs(
+        identity.id,
+        "SELECT id FROM public.profiles WHERE id = $1;",
+        [IDENTITIES.admin.id]
+      );
+      assert.strictEqual(
+        crossProfile.rows.length,
+        identity.role === 'admin' || identity.role === 'sales_manager' ? 1 : 0
+      );
+
+      const safeDirectoryEntry = await queryAs(
+        identity.id,
+        "SELECT id, full_name, role, avatar_url FROM public.crm_team_directory WHERE id = $1;",
+        [IDENTITIES.admin.id]
+      );
+      assert.strictEqual(safeDirectoryEntry.rows.length, 1);
     }
+
+    await assert.rejects(
+      queryAs(IDENTITIES.viewer.id, "SELECT email FROM public.crm_team_directory;")
+    );
   });
 
   it('allows leadership and viewers to select all leads while isolating sales executives strictly to assigned deals', async () => {
@@ -222,9 +254,44 @@ describe('Marca Ubi CRM — PostgreSQL Row Level Security (RLS) 24-Point Matrix'
     assert.strictEqual(deleteRes.rowCount, 0);
   });
 
+  it('binds authenticated activity actor attribution to the requesting identity', async () => {
+    await assert.rejects(
+      queryAs(IDENTITIES.sales_executive_1.id, "INSERT INTO public.lead_activities (lead_id, actor_id, activity_type, description) VALUES ($1, $2, 'note_added', 'Actor spoof attempt');", [lead1Id, IDENTITIES.sales_executive_2.id])
+    );
+
+    const validActivity = await queryAs(
+      IDENTITIES.sales_executive_1.id,
+      "INSERT INTO public.lead_activities (lead_id, actor_id, activity_type, description) VALUES ($1, $2, 'note_added', 'Authenticated actor');",
+      [lead1Id, IDENTITIES.sales_executive_1.id]
+    );
+    assert.strictEqual(validActivity.rowCount, 1);
+  });
+
+  it('cascades activity rows when an authorized administrator permanently deletes a lead', async () => {
+    const deleted = await queryAs(
+      IDENTITIES.admin.id,
+      'DELETE FROM public.leads WHERE id = $1 RETURNING id;',
+      [lead1Id]
+    );
+    assert.strictEqual(deleted.rowCount, 1);
+
+    const removedActivity = await queryAs(
+      IDENTITIES.admin.id,
+      'SELECT id FROM public.lead_activities WHERE id = $1;',
+      [act1Id]
+    );
+    assert.strictEqual(removedActivity.rows.length, 0);
+  });
   it('locks out suspended accounts completely (0 rows returned across all queries)', async () => {
     const roleRes = await queryAs(IDENTITIES.suspended_rep.id, `SELECT public.current_user_role() as role;`);
     assert.strictEqual(roleRes.rows[0].role, null);
+
+    const profileRes = await queryAs(
+      IDENTITIES.suspended_rep.id,
+      'SELECT id FROM public.profiles WHERE id = $1;',
+      [IDENTITIES.suspended_rep.id]
+    );
+    assert.strictEqual(profileRes.rows.length, 0);
 
     const leadsRes = await queryAs(IDENTITIES.suspended_rep.id, `SELECT count(*)::int as count FROM public.leads;`);
     assert.strictEqual(leadsRes.rows[0].count, 0);

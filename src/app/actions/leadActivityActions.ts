@@ -271,12 +271,11 @@ export async function getLeadActivitiesAction(
         description,
         metadata,
         created_at,
-        profiles (
+        profiles:crm_team_directory!lead_activities_actor_id_fkey (
           id,
           full_name,
           role,
-          avatar_url,
-          email
+          avatar_url
         )
       `)
       .eq('lead_id', leadId)
@@ -295,7 +294,6 @@ export async function getLeadActivitiesAction(
         full_name?: string;
         role?: CrmUserRole;
         avatar_url?: string | null;
-        email?: string | null;
       } | null;
 
       return {
@@ -314,7 +312,7 @@ export async function getLeadActivitiesAction(
               full_name: actProfile.full_name || 'System Staff',
               role: (actProfile.role as CrmUserRole) || 'viewer',
               avatar_url: actProfile.avatar_url || null,
-              email: actProfile.email || null,
+              email: null,
             }
           : null,
       };

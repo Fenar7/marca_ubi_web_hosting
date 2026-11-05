@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
 /**
  * @file CommercialDealsTable.tsx
  * @description High-Density Commercial Deals Ledger for Executive Overview.
  *              Benchmarked against Screenshot 131005, MedTrackr, and Linear Fluid Cards.
- *              Integrates 38px search input with ⌘K shortcut, category filter pills,
+ *              Integrates 38px search input with Ctrl+K shortcut, category filter pills,
  *              pastel service category badges, 6px radar status dots, and context actions.
  * @module admin/components/Dashboard/CommercialDealsTable
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import styles from './CommercialDealsTable.module.scss';
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import Link from "next/link";
+import styles from "./CommercialDealsTable.module.scss";
 
 export interface ActiveDealItem {
   id: string;
@@ -24,13 +24,15 @@ export interface ActiveDealItem {
   stageBucket: string;
   expectedValue: number;
   nextFollowUp?: string | null;
+  isOverdue?: boolean;
   priority: string;
-  owner?: string;
+  owner?: string | null;
 }
 
 export interface CommercialDealsTableProps {
   /** Deals array passed from server component or telemetry store */
   deals?: ActiveDealItem[];
+  dataStatus?: "ready" | "unavailable";
   /** Optional click handler for custom deal selection */
   onSelectDeal?: (dealId: string) => void;
 }
@@ -38,79 +40,16 @@ export interface CommercialDealsTableProps {
 /**
  * Calibrated realistic active deals reflecting boutique luxury agency engagements.
  */
-const DEFAULT_DEALS: ActiveDealItem[] = [
-  {
-    id: 'deal-101',
-    leadId: 'LD-10492',
-    name: 'Stark Creative Retainer',
-    company: 'Stark Industries',
-    serviceCategory: 'Branding',
-    stageName: 'Negotiation',
-    stageBucket: 'potential',
-    expectedValue: 650000,
-    nextFollowUp: new Date(Date.now() - 4 * 3600000).toISOString(),
-    priority: 'High',
-    owner: 'Tariq Al-Mansoor',
-  },
-  {
-    id: 'deal-102',
-    leadId: 'LD-10488',
-    name: 'Acme Global Infrastructure',
-    company: 'Acme Corp',
-    serviceCategory: 'Web & Digital',
-    stageName: 'Proposal Sent',
-    stageBucket: 'open',
-    expectedValue: 480000,
-    nextFollowUp: new Date(Date.now() + 24 * 3600000).toISOString(),
-    priority: 'Medium',
-    owner: 'Sarah Chen',
-  },
-  {
-    id: 'deal-103',
-    leadId: 'LD-10476',
-    name: 'Horizon AI Brand Identity',
-    company: 'Horizon Labs',
-    serviceCategory: 'Branding',
-    stageName: 'Contract Review',
-    stageBucket: 'potential',
-    expectedValue: 850000,
-    nextFollowUp: new Date(Date.now() + 48 * 3600000).toISOString(),
-    priority: 'High',
-    owner: 'Elena Rostova',
-  },
-  {
-    id: 'deal-104',
-    leadId: 'LD-10461',
-    name: 'Crestline Mobile Platform',
-    company: 'Crestline Ventures',
-    serviceCategory: 'Web & Digital',
-    stageName: 'Discovery',
-    stageBucket: 'open',
-    expectedValue: 520000,
-    nextFollowUp: new Date(Date.now() + 72 * 3600000).toISOString(),
-    priority: 'Low',
-    owner: 'Marcus Vance',
-  },
-  {
-    id: 'deal-105',
-    leadId: 'LD-10450',
-    name: 'Aether Advisory Partnership',
-    company: 'Aether Capital',
-    serviceCategory: 'Full-Suite Advisory',
-    stageName: 'Negotiation',
-    stageBucket: 'potential',
-    expectedValue: 1200000,
-    nextFollowUp: new Date(Date.now() + 18 * 3600000).toISOString(),
-    priority: 'High',
-    owner: 'Tariq Al-Mansoor',
-  },
+const CATEGORY_PILLS = [
+  "All Deals",
+  "Branding",
+  "Web & Digital",
+  "Full-Suite Advisory",
 ];
 
-const CATEGORY_PILLS = ['All Deals', 'Branding', 'Web & Digital', 'Full-Suite Advisory'];
-
 function formatRupees(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+  if (!amount || amount <= 0) return "₹0";
+  return `₹${Math.round(amount).toLocaleString("en-IN")}`;
 }
 
 function getInitials(name: string): string {
@@ -122,29 +61,29 @@ function getInitials(name: string): string {
 }
 
 export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
-  deals = DEFAULT_DEALS,
+  deals = [],
+  dataStatus = "ready",
   onSelectDeal,
 }) => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All Deals');
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Deals");
   const [activeMenuDealId, setActiveMenuDealId] = useState<string | null>(null);
   const [copiedDealId, setCopiedDealId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuContainerRef = useRef<HTMLDivElement>(null);
 
-  // Fallback to defaults if empty
-  const rawDeals = deals.length > 0 ? deals : DEFAULT_DEALS;
+  const rawDeals = deals;
 
-  // Global keyboard shortcut for ⌘K / Ctrl+K search focus
+  // Global keyboard shortcut for Ctrl+K / Ctrl+K search focus
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
     }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Dismiss context menu on click outside or Escape key press
@@ -159,19 +98,19 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
     }
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setActiveMenuDealId(null);
       }
     }
 
     if (activeMenuDealId) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [activeMenuDealId]);
 
@@ -179,7 +118,7 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
   const filteredDeals = useMemo(() => {
     return rawDeals.filter((deal) => {
       // Category match
-      if (selectedCategory !== 'All Deals') {
+      if (selectedCategory !== "All Deals") {
         const matchesCat = deal.serviceCategory
           .toLowerCase()
           .includes(selectedCategory.toLowerCase());
@@ -190,8 +129,12 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
       const nameMatch = deal.name.toLowerCase().includes(q);
-      const compMatch = deal.company ? deal.company.toLowerCase().includes(q) : false;
-      const ownerMatch = deal.owner ? deal.owner.toLowerCase().includes(q) : false;
+      const compMatch = deal.company
+        ? deal.company.toLowerCase().includes(q)
+        : false;
+      const ownerMatch = deal.owner
+        ? deal.owner.toLowerCase().includes(q)
+        : false;
       const idMatch = deal.leadId.toLowerCase().includes(q);
 
       return nameMatch || compMatch || ownerMatch || idMatch;
@@ -204,11 +147,15 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
     setActiveMenuDealId((prev) => (prev === dealId ? null : dealId));
   };
 
-  const handleCopyDealId = async (e: React.MouseEvent, leadId: string, dealId: string) => {
+  const handleCopyDealId = async (
+    e: React.MouseEvent,
+    leadId: string,
+    dealId: string,
+  ) => {
     e.preventDefault();
     e.stopPropagation();
     try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(leadId);
         setCopiedDealId(dealId);
         setTimeout(() => setCopiedDealId(null), 2000);
@@ -269,30 +216,18 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                 aria-label="Search deals, clients, or reps"
               />
               <span className={styles.shortcutBadge} aria-hidden="true">
-                ⌘K
+                Ctrl+K
               </span>
             </div>
-
-            {/* Filter Button [ ⚡ Filter ] */}
-            <button
-              type="button"
-              className={styles.filterPillBtn}
-              onClick={() => {
-                // Focus search or cycle filter
-                searchInputRef.current?.focus();
-              }}
-              aria-label="Toggle advanced filters"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-              <span>Filter</span>
-            </button>
           </div>
         </div>
 
         {/* Category Filter Pills */}
-        <div className={styles.categoryPillsRow} role="tablist" aria-label="Filter by service category">
+        <div
+          className={styles.categoryPillsRow}
+          role="tablist"
+          aria-label="Filter by service category"
+        >
           {CATEGORY_PILLS.map((category) => (
             <button
               key={category}
@@ -300,7 +235,7 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
               role="tab"
               aria-selected={selectedCategory === category}
               className={`${styles.categoryPill} ${
-                selectedCategory === category ? styles.active : ''
+                selectedCategory === category ? styles.active : ""
               }`}
               onClick={() => setSelectedCategory(category)}
             >
@@ -325,62 +260,90 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {filteredDeals.length > 0 ? (
+            {dataStatus === "unavailable" ? (
+              <tr>
+                <td colSpan={7} className={styles.emptyState} role="status">
+                  Deal data is unavailable because the source query did not
+                  complete.
+                </td>
+              </tr>
+            ) : filteredDeals.length > 0 ? (
               filteredDeals.map((deal, idx) => {
                 const initials = getInitials(deal.company || deal.name);
-                const squircleTheme = idx % 4 === 0 ? 'blue' : idx % 4 === 1 ? 'purple' : idx % 4 === 2 ? 'emerald' : 'amber';
-                
+                const squircleTheme =
+                  idx % 4 === 0
+                    ? "blue"
+                    : idx % 4 === 1
+                      ? "purple"
+                      : idx % 4 === 2
+                        ? "emerald"
+                        : "amber";
+
                 // Category badge style
                 const catLower = deal.serviceCategory.toLowerCase();
-                const categoryClass = catLower.includes('brand')
+                const categoryClass = catLower.includes("brand")
                   ? styles.branding
-                  : catLower.includes('web') || catLower.includes('digital')
-                  ? styles.webDigital
-                  : catLower.includes('advisor')
-                  ? styles.advisory
-                  : styles.other;
+                  : catLower.includes("web") || catLower.includes("digital")
+                    ? styles.webDigital
+                    : catLower.includes("advisor")
+                      ? styles.advisory
+                      : styles.other;
 
                 // Radar status dot
                 const stageLower = deal.stageName.toLowerCase();
-                const radarColor = stageLower.includes('negotiat')
+                const radarColor = stageLower.includes("negotiat")
                   ? styles.amber
-                  : stageLower.includes('proposal')
-                  ? styles.orange
-                  : stageLower.includes('review') || stageLower.includes('contract')
-                  ? styles.emerald
-                  : styles.slate;
+                  : stageLower.includes("proposal")
+                    ? styles.orange
+                    : stageLower.includes("review") ||
+                        stageLower.includes("contract")
+                      ? styles.emerald
+                      : styles.slate;
 
                 // SLA Overdue check
-                const isOverdue = Boolean(
-                  deal.nextFollowUp && new Date(deal.nextFollowUp).getTime() < Date.now()
-                );
+                const followUpTime = deal.nextFollowUp
+                  ? Date.parse(deal.nextFollowUp)
+                  : null;
+                const hasValidFollowUp =
+                  followUpTime !== null && Number.isFinite(followUpTime);
+                const isOverdue = hasValidFollowUp && Boolean(deal.isOverdue);
+                const followUpLabel = !deal.nextFollowUp
+                  ? "Not scheduled"
+                  : !hasValidFollowUp
+                    ? "Status unavailable"
+                    : isOverdue
+                      ? "Overdue"
+                      : "Scheduled";
 
-                const ownerDisplay = deal.owner || 'Tariq Al-Mansoor';
+                const ownerDisplay = deal.owner?.trim() || "Unassigned";
                 const ownerInitials = getInitials(ownerDisplay);
 
                 return (
-                  <tr
-                    key={deal.id}
-                    onClick={() => {
-                      if (onSelectDeal) {
-                        onSelectDeal(deal.id);
-                      } else {
-                        window.dispatchEvent(
-                          new CustomEvent('open-lead-drawer', { detail: { id: deal.id } })
-                        );
-                      }
-                    }}
-                  >
+                  <tr key={deal.id}>
                     {/* Client & Engagement */}
                     <td>
                       <div className={styles.clientCluster}>
-                        <div className={`${styles.initialsSquircle} ${styles[squircleTheme]}`}>
+                        <div
+                          className={`${styles.initialsSquircle} ${styles[squircleTheme]}`}
+                        >
                           {initials}
                         </div>
                         <div className={styles.clientMeta}>
-                          <span className={styles.dealName}>{deal.name}</span>
+                          <Link
+                            className={styles.dealName}
+                            href={
+                              "/admin/leads?id=" + encodeURIComponent(deal.id)
+                            }
+                            onClick={(event) => {
+                              if (!onSelectDeal) return;
+                              event.preventDefault();
+                              onSelectDeal(deal.id);
+                            }}
+                          >
+                            {deal.name}
+                          </Link>
                           <span className={styles.companyName}>
-                            {deal.company || 'Enterprise Prospect'}
+                            {deal.company || "Company not provided"}
                           </span>
                         </div>
                       </div>
@@ -388,7 +351,9 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
 
                     {/* Service Category */}
                     <td>
-                      <span className={`${styles.categoryBadge} ${categoryClass}`}>
+                      <span
+                        className={`${styles.categoryBadge} ${categoryClass}`}
+                      >
                         {deal.serviceCategory}
                       </span>
                     </td>
@@ -412,21 +377,31 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                     <td>
                       <div
                         className={`${styles.slaPill} ${
-                          isOverdue ? styles.overdue : styles.onTrack
+                          isOverdue
+                            ? styles.overdue
+                            : hasValidFollowUp
+                              ? styles.onTrack
+                              : styles.neutral
                         }`}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
                           <circle cx="12" cy="12" r="10" />
                           <polyline points="12 6 12 12 16 14" />
                         </svg>
-                        <span>{isOverdue ? 'Overdue 4h' : 'On Track'}</span>
+                        <span>{followUpLabel}</span>
                       </div>
                     </td>
 
                     {/* Owner */}
                     <td>
                       <div className={styles.ownerCluster}>
-                        <div className={styles.ownerAvatar}>{ownerInitials}</div>
+                        <div className={styles.ownerAvatar}>
+                          {ownerInitials}
+                        </div>
                         <span className={styles.ownerName}>{ownerDisplay}</span>
                       </div>
                     </td>
@@ -435,7 +410,9 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                     <td>
                       <div
                         className={styles.actionCellContainer}
-                        ref={activeMenuDealId === deal.id ? menuContainerRef : null}
+                        ref={
+                          activeMenuDealId === deal.id ? menuContainerRef : null
+                        }
                       >
                         <button
                           type="button"
@@ -489,14 +466,18 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                                 </svg>
                                 <span>View Client Dossier</span>
                               </div>
-                              <span className={styles.contextMenuBadge}>↵</span>
+                              <span className={styles.contextMenuBadge}>
+                                Enter
+                              </span>
                             </button>
 
                             <button
                               type="button"
                               className={styles.contextMenuItem}
                               role="menuitem"
-                              onClick={(e) => handleCopyDealId(e, deal.leadId, deal.id)}
+                              onClick={(e) =>
+                                handleCopyDealId(e, deal.leadId, deal.id)
+                              }
                             >
                               <div className={styles.contextMenuLeft}>
                                 <svg
@@ -508,15 +489,31 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                 >
-                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                  <rect
+                                    x="9"
+                                    y="9"
+                                    width="13"
+                                    height="13"
+                                    rx="2"
+                                    ry="2"
+                                  />
                                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                                 </svg>
-                                <span>{copiedDealId === deal.id ? 'Copied to Clipboard!' : 'Copy Deal ID'}</span>
+                                <span>
+                                  {copiedDealId === deal.id
+                                    ? "Copied to Clipboard!"
+                                    : "Copy Deal ID"}
+                                </span>
                               </div>
-                              <span className={styles.contextMenuBadge}>{deal.leadId}</span>
+                              <span className={styles.contextMenuBadge}>
+                                {deal.leadId}
+                              </span>
                             </button>
 
-                            <div className={styles.contextMenuDivider} role="separator" />
+                            <div
+                              className={styles.contextMenuDivider}
+                              role="separator"
+                            />
 
                             <button
                               type="button"
@@ -572,7 +569,10 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                               </div>
                             </button>
 
-                            <div className={styles.contextMenuDivider} role="separator" />
+                            <div
+                              className={styles.contextMenuDivider}
+                              role="separator"
+                            />
 
                             <button
                               type="button"
@@ -610,7 +610,9 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
             ) : (
               <tr>
                 <td colSpan={7} className={styles.emptyState}>
-                  No active commercial deals matching current filter parameters.
+                  {rawDeals.length === 0
+                    ? "No active commercial deals are available for this view."
+                    : "No active commercial deals match the selected filters."}
                 </td>
               </tr>
             )}

@@ -1,331 +1,211 @@
-'use client';
+"use client";
 
-/**
- * @file ExecutiveKpiGrid.tsx
- * @description 4-Card Responsive Executive KPI Grid for the Marca Ubi Agency CRM.
- *              Benchmarked against MedTrackr Analytics & Accordion Executive Advisory.
- *              Features 14px pure white surfaces, soft pastel icon chips (Sky Blue, Mint Green,
- *              Lavender, Warm Amber), circular action buttons `( > )`, and Plus Jakarta Sans tabular figures.
- *              Dynamically adjusts period-over-period delta indicators (WoW, MoM, QoQ, YoY)
- *              and dynamically renders SLA on-track health and sales cycle metrics.
- * @module admin/components/Dashboard/ExecutiveKpiGrid
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-import React from 'react';
-import type { PipelineRpcMetrics } from '@/types/crm';
-import type { ExecutiveDashboardKpis } from './types';
-import styles from './ExecutiveKpiGrid.module.scss';
+import React from "react";
+import Link from "next/link";
+import type { ExecutiveDashboardKpis } from "./types";
+import styles from "./ExecutiveKpiGrid.module.scss";
 
 export interface ExecutiveKpiGridProps {
-  /** Strongly typed executive dashboard KPIs */
-  kpis?: ExecutiveDashboardKpis;
-  /** Aggregated pipeline telemetry provided by Server Action or RPC */
-  metrics?: PipelineRpcMetrics | null;
-  /** Optional comparison cadence label (e.g. 'WoW', 'MoM', 'QoQ', 'YoY') */
+  kpis?: ExecutiveDashboardKpis | null;
   cadenceLabel?: string;
-  /** Optional interactive selection callback per metric card */
-  onCardClick?: (metricKey: string) => void;
+  dataStatus?: "ready" | "unavailable";
 }
 
-/**
- * Formats high-ticket valuations with full Indian Rupee representation
- * using 'en-IN' grouping (e.g. ₹68,40,000, ₹42,80,000) for executive accounting clarity.
- */
+/** Missing comparisons remain unavailable because a zero baseline cannot yield a truthful rate. */
+
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function formatDelta(
+  value: number | null | undefined,
+  cadence: string,
+): string {
+  if (value === null || value === undefined) return "Comparison unavailable";
+  const sign = value > 0 ? "+" : "";
+  return sign + value.toFixed(1) + "% " + cadence;
+}
+
+function deltaClass(value: number | null | undefined): string {
+  if (value === null || value === undefined) return styles.neutral;
+  return value >= 0 ? styles.positive : styles.negative;
 }
 
 export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({
   kpis,
-  metrics,
-  cadenceLabel: explicitCadence,
-  onCardClick,
+  cadenceLabel,
+  dataStatus,
 }) => {
-  // Extract and calculate calibrated agency financial invariants
-  const pipelineValuation = kpis?.totalPipelineValue ?? metrics?.potential_pipeline_value ?? 6840000;
-  const weightedPipeline = kpis?.weightedPipelineValue ?? Math.round(pipelineValuation * 0.536);
-  const cashCollected = kpis?.convertedRevenueValue ?? metrics?.converted_revenue_value ?? 4280000;
-  const closedCount = kpis?.convertedDealsCount ?? metrics?.converted_leads_count ?? 14;
-  const activeCount = kpis?.activeDealsCount ?? 24;
-  const winRate = kpis?.conversionWinRate ?? metrics?.conversion_rate_percentage ?? 28.6;
+  if (!kpis || dataStatus === "unavailable") {
+    return (
+      <section
+        className={styles.gridContainer}
+        aria-label="Executive key performance indicators"
+      >
+        <p className={styles.unavailableState} role="status">
+          Dashboard metrics are unavailable. Try again when the CRM data source
+          is reachable.
+        </p>
+      </section>
+    );
+  }
 
-  // Dynamic cadence and period-over-period velocity deltas
-  const cadence = explicitCadence || kpis?.cadenceLabel || 'MoM';
-  const pipelineDelta = kpis?.pipelineDeltaPercentage ?? 14.2;
-  const revenueDelta = kpis?.revenueDeltaPercentage ?? 8.4;
-  const dealsDelta = kpis?.dealsDeltaPercentage ?? 5.1;
-  const winRateDelta = kpis?.winRateDeltaPercentage ?? 2.3;
-
-  // Dynamic operational telemetry footers
-  const slaOnTrack = kpis?.slaOnTrackPercentage ?? 98.2;
-  const avgSalesCycle = kpis?.averageSalesCycleDays ?? 18.4;
+  const cadence = cadenceLabel || kpis.cadenceLabel || "comparison";
+  const cards = [
+    {
+      label: "Active Pipeline",
+      value: formatCurrency(kpis.totalPipelineValue),
+      delta: kpis.pipelineDeltaPercentage,
+      footer:
+        kpis.weightedPipelineValue === null
+          ? "Weighted value unavailable"
+          : "Weighted value: " + formatCurrency(kpis.weightedPipelineValue),
+      href: "/admin/deals",
+      iconClass: styles.skyBlue,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <polygon points="12 2 2 7 12 12 22 7 12 2" />
+          <polyline points="2 17 12 22 22 17" />
+          <polyline points="2 12 12 17 22 12" />
+        </svg>
+      ),
+    },
+    {
+      label: "Converted Contract Value",
+      value: formatCurrency(kpis.convertedRevenueValue),
+      delta: kpis.revenueDeltaPercentage,
+      footer:
+        kpis.convertedDealsCount.toLocaleString("en-IN") +
+        " conversions among leads created in this period",
+      href: "/admin/analytics",
+      iconClass: styles.mintGreen,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      ),
+    },
+    {
+      label: "Active Deals",
+      value: kpis.activeDealsCount.toLocaleString("en-IN"),
+      delta: kpis.dealsDeltaPercentage,
+      footer:
+        kpis.slaOnTrackPercentage === null ||
+        kpis.slaOnTrackPercentage === undefined
+          ? "Follow-up SLA unavailable"
+          : kpis.slaOnTrackPercentage.toFixed(1) + "% follow-ups on track",
+      href: "/admin/deals",
+      iconClass: styles.lavender,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
+    {
+      label: "Win Conversion Rate",
+      value:
+        kpis.conversionWinRate === null
+          ? "Unavailable"
+          : kpis.conversionWinRate.toFixed(1) + "%",
+      delta: kpis.winRateDeltaPercentage,
+      footer:
+        kpis.averageSalesCycleDays === null ||
+        kpis.averageSalesCycleDays === undefined
+          ? "Sales cycle unavailable"
+          : "Average sales cycle: " +
+            kpis.averageSalesCycleDays.toFixed(1) +
+            " days",
+      href: "/admin/analytics",
+      iconClass: styles.warmAmber,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+      ),
+    },
+  ];
 
   return (
-    <section className={styles.gridContainer} aria-label="Executive Key Performance Indicators">
-      {/* Card 1: Total Active Pipeline */}
-      <div
-        className={styles.kpiCard}
-        role="button"
-        tabIndex={0}
-        onClick={() => onCardClick?.('active_pipeline')}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') onCardClick?.('active_pipeline');
-        }}
-        aria-label={`Total Active Pipeline valuation: ${formatCurrency(pipelineValuation)}`}
-      >
-        <div className={styles.cardTopRow}>
-          <div className={`${styles.iconChip} ${styles.skyBlue}`}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polygon points="12 2 2 7 12 12 22 7 12 2" />
-              <polyline points="2 17 12 22 22 17" />
-              <polyline points="2 12 12 17 22 12" />
-            </svg>
-          </div>
-          <button
-            type="button"
-            className={styles.circleBtn}
-            aria-label="Inspect active pipeline ledger"
-            tabIndex={-1}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className={styles.cardBody}>
-          <span className={styles.kpiLabel}>Total Active Pipeline</span>
-          <div className={styles.metricRow}>
-            <span className={styles.kpiValue}>{formatCurrency(pipelineValuation)}</span>
-            <span
-              className={`${styles.deltaPill} ${
-                pipelineDelta >= 0 ? styles.positive : styles.negative
-              }`}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                {pipelineDelta >= 0 ? (
-                  <polyline points="18 15 12 9 6 15" />
-                ) : (
-                  <polyline points="6 9 12 15 18 9" />
-                )}
+    <section
+      className={styles.gridContainer}
+      aria-label="Executive key performance indicators"
+    >
+      {cards.map((card) => (
+        <Link
+          key={card.label}
+          href={card.href}
+          className={styles.kpiCard}
+          aria-label={card.label + ": " + card.value + ". " + card.footer}
+        >
+          <div className={styles.cardTopRow}>
+            <div className={styles.iconChip + " " + card.iconClass}>
+              {card.icon}
+            </div>
+            <span className={styles.circleBtn} aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
               </svg>
-              {pipelineDelta >= 0 ? '+' : ''}
-              {pipelineDelta.toFixed(1)}% {cadence}
             </span>
           </div>
-        </div>
-
-        <div className={styles.cardFooter}>
-          <span>Weighted: {formatCurrency(weightedPipeline)} (53.6% confidence)</span>
-        </div>
-      </div>
-
-      {/* Card 2: Cash Collected */}
-      <div
-        className={styles.kpiCard}
-        role="button"
-        tabIndex={0}
-        onClick={() => onCardClick?.('cash_collected')}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') onCardClick?.('cash_collected');
-        }}
-        aria-label={`Cash Collected valuation: ${formatCurrency(cashCollected)}`}
-      >
-        <div className={styles.cardTopRow}>
-          <div className={`${styles.iconChip} ${styles.mintGreen}`}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
+          <div className={styles.cardBody}>
+            <span className={styles.kpiLabel}>{card.label}</span>
+            <div className={styles.metricRow}>
+              <span className={styles.kpiValue}>{card.value}</span>
+              <span className={styles.deltaPill + " " + deltaClass(card.delta)}>
+                {formatDelta(card.delta, cadence)}
+              </span>
+            </div>
           </div>
-          <button
-            type="button"
-            className={styles.circleBtn}
-            aria-label="Inspect cash collection ledger"
-            tabIndex={-1}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className={styles.cardBody}>
-          <span className={styles.kpiLabel}>Cash Collected</span>
-          <div className={styles.metricRow}>
-            <span className={styles.kpiValue}>{formatCurrency(cashCollected)}</span>
-            <span
-              className={`${styles.deltaPill} ${
-                revenueDelta >= 0 ? styles.positive : styles.negative
-              }`}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                {revenueDelta >= 0 ? (
-                  <polyline points="18 15 12 9 6 15" />
-                ) : (
-                  <polyline points="6 9 12 15 18 9" />
-                )}
-              </svg>
-              {revenueDelta >= 0 ? '+' : ''}
-              {revenueDelta.toFixed(1)}% {cadence}
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.cardFooter}>
-          <span>{closedCount.toLocaleString('en-IN')} Closed Deals</span>
-        </div>
-      </div>
-
-      {/* Card 3: Active Client Accounts */}
-      <div
-        className={styles.kpiCard}
-        role="button"
-        tabIndex={0}
-        onClick={() => onCardClick?.('client_accounts')}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') onCardClick?.('client_accounts');
-        }}
-        aria-label={`Active Client Accounts count: ${activeCount}`}
-      >
-        <div className={styles.cardTopRow}>
-          <div className={`${styles.iconChip} ${styles.lavender}`}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          </div>
-          <button
-            type="button"
-            className={styles.circleBtn}
-            aria-label="Inspect active accounts list"
-            tabIndex={-1}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className={styles.cardBody}>
-          <span className={styles.kpiLabel}>Active Client Accounts</span>
-          <div className={styles.metricRow}>
-            <span className={styles.kpiValue}>{activeCount.toLocaleString('en-IN')}</span>
-            <span
-              className={`${styles.deltaPill} ${
-                dealsDelta >= 0 ? styles.positive : styles.negative
-              }`}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                {dealsDelta >= 0 ? (
-                  <polyline points="18 15 12 9 6 15" />
-                ) : (
-                  <polyline points="6 9 12 15 18 9" />
-                )}
-              </svg>
-              {dealsDelta >= 0 ? '+' : ''}
-              {dealsDelta.toFixed(1)}% {cadence}
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.cardFooter}>
-          <span className={styles.radarPulse} aria-hidden="true" />
-          <span>{slaOnTrack.toFixed(1)}% SLA On-Track</span>
-        </div>
-      </div>
-
-      {/* Card 4: Win Conversion Velocity */}
-      <div
-        className={styles.kpiCard}
-        role="button"
-        tabIndex={0}
-        onClick={() => onCardClick?.('conversion_velocity')}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') onCardClick?.('conversion_velocity');
-        }}
-        aria-label={`Win Conversion Velocity: ${winRate}%`}
-      >
-        <div className={styles.cardTopRow}>
-          <div className={`${styles.iconChip} ${styles.warmAmber}`}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-          </div>
-          <button
-            type="button"
-            className={styles.circleBtn}
-            aria-label="Inspect conversion analytics"
-            tabIndex={-1}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className={styles.cardBody}>
-          <span className={styles.kpiLabel}>Win Conversion Velocity</span>
-          <div className={styles.metricRow}>
-            <span className={styles.kpiValue}>{winRate.toFixed(1)}%</span>
-            <span
-              className={`${styles.deltaPill} ${
-                winRateDelta >= 0 ? styles.positive : styles.negative
-              }`}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                {winRateDelta >= 0 ? (
-                  <polyline points="18 15 12 9 6 15" />
-                ) : (
-                  <polyline points="6 9 12 15 18 9" />
-                )}
-              </svg>
-              {winRateDelta >= 0 ? '+' : ''}
-              {winRateDelta.toFixed(1)}% {cadence}
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.cardFooter}>
-          <span>Avg Sales Cycle: {avgSalesCycle.toFixed(1)} Days</span>
-        </div>
-      </div>
+          <div className={styles.cardFooter}>{card.footer}</div>
+        </Link>
+      ))}
     </section>
   );
 };

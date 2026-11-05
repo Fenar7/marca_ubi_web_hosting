@@ -57,35 +57,34 @@ describe('Phase 8.4: Revenue Dynamics Monotone Spline & Numeric Typography Archi
       const content = fs.readFileSync(chartTsxPath, 'utf8');
       assert.ok(content.includes('generateMonotoneBezierPath'), 'Must implement monotone Bézier function');
       assert.ok(content.includes('Math.hypot(alpha, beta)'), 'Must enforce monotonicity cone clamping');
-      assert.ok(content.includes('cashSplinePath'), 'Must generate cashSplinePath');
-      assert.ok(content.includes('quotaSplinePath'), 'Must generate quotaSplinePath');
+      assert.ok(content.includes('curvePath'), 'Must generate persisted converted value spline path');
+      assert.ok(!content.includes('quotaSplinePath'), 'Must not generate an unsourced quota spline');
     });
 
     it('verifies responsive SVG curves with defensive stroke and linecap attributes', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
       assert.ok(content.includes('strokeLinecap="round"'), 'Must specify rounded caps');
       assert.ok(content.includes('strokeWidth={2.5}'), 'Must specify 2.5px primary stroke');
-      assert.ok(content.includes('strokeWidth={2}'), 'Must specify 2px secondary stroke');
     });
 
     it('verifies horizontal gridlines and Indian currency valuation formatting', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
       assert.ok(content.includes('gridLines.map'), 'Must render dynamic horizontal gridlines');
-      assert.ok(content.includes('formatLakhsCurrency'), 'Must format currency labels in Indian Lakhs/Crores');
+      assert.ok(content.includes('formatAxis'), 'Must format currency labels for chart axes');
     });
   });
 
   describe('3. Dynamic Tooltip, Hover Interaction & Accessibility', () => {
     it('verifies boundary-clamped tooltip positioning', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
-      assert.ok(content.includes('clampedTooltipLeft'), 'Must calculate clamped tooltip left offset');
-      assert.ok(content.includes('role="tooltip"'), 'Must declare role=tooltip');
-      assert.ok(content.includes('tooltipHeader'), 'Must render tooltip header');
+      assert.ok(content.includes('tooltipLeft'), 'Must calculate clamped tooltip left offset');
+      assert.ok(content.includes('role="status"'), 'Must expose the selected data point accessibly');
+      assert.ok(content.includes('tooltipPeriod'), 'Must render selected period');
     });
 
     it('verifies interactive hover and touch scrub handlers', () => {
       const content = fs.readFileSync(chartTsxPath, 'utf8');
-      assert.ok(content.includes('handlePointerScrub'), 'Must bind pointer scrub handler');
+      assert.ok(content.includes('handlePointer'), 'Must bind pointer scrub handler');
       assert.ok(content.includes('onPointerMove'), 'Must bind onPointerMove handler');
     });
   });
@@ -97,9 +96,9 @@ describe('Phase 8.4: Revenue Dynamics Monotone Spline & Numeric Typography Archi
       assert.ok(scss.includes('tabular-nums'), 'Must enforce tabular lining numbers');
     });
 
-    it('verifies Apple HIG glassmorphism on tooltip surface', () => {
+    it('verifies a contrasted tooltip surface', () => {
       const scss = fs.readFileSync(chartScssPath, 'utf8');
-      assert.ok(scss.includes('backdrop-filter: blur'), 'Must use backdrop blur');
+      assert.ok(scss.includes('background: #111827'), 'Must use a high contrast tooltip surface');
       assert.ok(scss.includes('border-radius'), 'Must use rounded corners');
     });
 

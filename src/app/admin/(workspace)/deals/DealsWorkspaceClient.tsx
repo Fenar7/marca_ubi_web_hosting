@@ -54,7 +54,6 @@ export interface FunnelStatusItem {
 interface DealsWorkspaceClientProps {
   initialDeals: HydratedDealItem[];
   sources?: Array<{ id: string; name: string }>;
-  profiles?: Array<{ id: string; full_name: string; email: string; role: string }>;
   statuses?: FunnelStatusItem[];
   userRole?: string;
 }
