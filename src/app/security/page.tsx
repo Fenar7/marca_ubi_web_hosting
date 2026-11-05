@@ -4,8 +4,11 @@ import ClientHeader from "@/app/components/ClientHeader/ClientHeader";
 import MonumentalFooter from "@/app/components/Sections/MonumentalFooter";
 
 export const metadata: Metadata = {
-  title: "Security Protocol | Marca Ubi",
+  title: "Security Protocol",
   description: "Enterprise security architecture, rate limiting, and zero-trust ingestion standards.",
+  alternates: {
+    canonical: "/security",
+  },
 };
 
 export default function SecurityPage() {

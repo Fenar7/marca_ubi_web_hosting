@@ -6,7 +6,7 @@ import StartProjectHero from "./StartProjectHero";
 import styles from "./StartProject.module.scss";
 
 export const metadata: Metadata = {
-  title: "Start a Project | Marca Ubi",
+  title: "Start a Project Brief",
   description:
     "Brief the Marca Ubi studio across brand, digital, and design disciplines. Four steps: scope, business context, timeline, and a read-back before submission.",
   alternates: {

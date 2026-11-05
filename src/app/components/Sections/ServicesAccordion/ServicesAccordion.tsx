@@ -228,12 +228,13 @@ export function ServicesAccordion() {
                       }
                     }}
                   />
-                  <div className={styles.imageLayer} aria-hidden="true">
+                  <div className={styles.imageLayer}>
                     <Image
                       src={service.imageUrl}
-                      alt=""
+                      alt={service.alt}
                       fill
-                      sizes="(max-width: 768px) 82vw, (max-width: 1200px) 35vw, 20vw"
+                      sizes="(max-width: 768px) 84vw, (max-width: 1024px) 33vw, 25vw"
+                      quality={75}
                       loading="lazy"
                       decoding="async"
                     />

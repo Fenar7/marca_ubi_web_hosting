@@ -51,6 +51,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion", "gsap"],
+  },
   images: {
     qualities: [75, 82],
     formats: ["image/avif", "image/webp"],

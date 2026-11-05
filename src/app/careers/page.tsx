@@ -10,7 +10,7 @@ export const revalidate = 60; // 60s ISR revalidation
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://marcaubi.com").replace(/\/+$/, "");
 
 export const metadata: Metadata = {
-  title: "Careers & Opportunities | Marca Ubi",
+  title: "Careers & Opportunities",
   description:
     "We are always looking for ambitious strategists, designers, and engineers to join our creative studios in Calicut and Trivandrum.",
   alternates: {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Careers & Opportunities | Marca Ubi",
+    title: "Careers & Opportunities",
     description:
       "Join our multidisciplinary team crafting institutional brand architectures and digital experiences.",
     url: "/careers",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Careers & Opportunities | Marca Ubi",
+    title: "Careers & Opportunities",
     description:
       "Join our multidisciplinary team crafting institutional brand architectures and digital experiences.",
     images: ["/images/careers/team-studio.png"],

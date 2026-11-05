@@ -111,12 +111,12 @@ export function DispatchesCurtain({ posts = [] }: DispatchesCurtainProps) {
                     {cover !== null ? (
                       <Image
                         src={cover}
-                        alt={post.mainImage?.alt ?? post.title}
+                        alt={post.mainImage?.alt || post.title || "Marca Ubi Editorial Journal Dispatch"}
                         fill
                         sizes="(max-width: 1024px) 100vw, 62vw"
                         className={styles.postImage}
-                        priority={index === 0}
-                        loading={index === 0 ? undefined : "lazy"}
+                        loading="lazy"
+                        decoding="async"
                         placeholder={lqip ? "blur" : "empty"}
                         blurDataURL={lqip}
                       />
