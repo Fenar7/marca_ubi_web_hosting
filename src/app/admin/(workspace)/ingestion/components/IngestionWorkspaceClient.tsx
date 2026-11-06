@@ -11,6 +11,7 @@
 
 import React, { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { simulateInboundBriefAction } from '@/app/actions/settings';
+import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
 import styles from './IngestionWorkspaceClient.module.scss';
 
 export interface IngestionTelemetryData {
@@ -476,10 +477,10 @@ export function IngestionWorkspaceClient({
                     onChange={(e) => setFormData({ ...formData, budgetBracket: e.target.value })}
                     className={styles.fieldSelect}
                   >
-                    <option value="₹5L - ₹10L">₹5L - ₹10L</option>
-                    <option value="₹10L - ₹15L">₹10L - ₹15L</option>
-                    <option value="₹15L - ₹25L">₹15L - ₹25L</option>
-                    <option value="₹25L+">₹25L+</option>
+                    <option value="₹5L - ₹10L">{formatBudgetTierLabel('₹5L - ₹10L')}</option>
+                    <option value="₹10L - ₹15L">{formatBudgetTierLabel('₹10L - ₹15L')}</option>
+                    <option value="₹15L - ₹25L">{formatBudgetTierLabel('₹15L - ₹25L')}</option>
+                    <option value="₹25L+">{formatBudgetTierLabel('₹25L+')}</option>
                   </select>
                 </div>
 

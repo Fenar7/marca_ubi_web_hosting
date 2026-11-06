@@ -19,6 +19,7 @@ import { InlinePrioritySelect } from './InlinePrioritySelect';
 import { LeadMobileCard } from './LeadMobileCard';
 import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { LeadPriority } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from './LeadsDataGrid.module.scss';
 
 export interface LeadsDataGridProps {
@@ -47,14 +48,7 @@ type SortField =
   | 'next_follow_up';
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 export function LeadsDataGrid({

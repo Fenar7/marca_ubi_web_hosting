@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useRef, useTransition, useCallback } from 'react';
 import type { FunnelBucket } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { transitionToNegotiationAction } from '@/app/actions/stageTransitionActions';
 import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
 import { useModalAnimation } from './useModalAnimation';
@@ -39,14 +40,7 @@ export interface StageTransitionModalProps {
 }
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(2)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 export function StageTransitionModal({

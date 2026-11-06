@@ -13,39 +13,26 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { LOST_REASON_OPTIONS } from '@/app/lib/stage-transition-schemas';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 
 describe('Sprint 8.3: Guarded Stage Transition Modals & UI Contracts', () => {
   describe('Block 1: Currency Formatters (formatCurrency)', () => {
-    function formatCurrency(amount: number): string {
-      if (!amount || amount <= 0) return '₹0';
-      if (amount >= 10000000) {
-        return `₹${(amount / 10000000).toFixed(2)}Cr`;
-      }
-      if (amount >= 100000) {
-        return `₹${(amount / 100000).toFixed(2)}L`;
-      }
-      return `₹${amount.toLocaleString('en-IN')}`;
-    }
-
-    it('formats amounts in Crores for valuations >= 10,000,000', () => {
-      assert.equal(formatCurrency(10000000), '₹1.00Cr');
-      assert.equal(formatCurrency(25000000), '₹2.50Cr');
-    });
-
-    it('formats amounts in Lakhs for valuations >= 100,000 and < 10,000,000', () => {
-      assert.equal(formatCurrency(500000), '₹5.00L');
-      assert.equal(formatCurrency(1250000), '₹12.50L');
-      assert.equal(formatCurrency(100000), '₹1.00L');
+    it('formats all valuations with full Indian digit grouping', () => {
+      assert.equal(formatCrmCurrency(10000000), '₹ 1,00,00,000');
+      assert.equal(formatCrmCurrency(25000000), '₹ 2,50,00,000');
+      assert.equal(formatCrmCurrency(500000), '₹ 5,00,000');
+      assert.equal(formatCrmCurrency(1250000), '₹ 12,50,000');
+      assert.equal(formatCrmCurrency(100000), '₹ 1,00,000');
     });
 
     it('formats standard amounts in Indian Rupee locale below 100,000', () => {
-      assert.equal(formatCurrency(75000), '₹75,000');
-      assert.equal(formatCurrency(5000), '₹5,000');
+      assert.equal(formatCrmCurrency(75000), '₹ 75,000');
+      assert.equal(formatCrmCurrency(5000), '₹ 5,000');
     });
 
     it('handles zero and negative amounts gracefully with ₹0', () => {
-      assert.equal(formatCurrency(0), '₹0');
-      assert.equal(formatCurrency(-5000), '₹0');
+      assert.equal(formatCrmCurrency(0), '₹ 0');
+      assert.equal(formatCrmCurrency(-5000), '₹ -5,000');
     });
   });
 

@@ -123,14 +123,14 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
   });
 
   describe('Block 4: Pure Dossier Utilities Runtime Invariant Tests', () => {
-    it('accurately formats monetary values in Indian Lakhs and Crores via formatDossierCurrency', () => {
-      assert.strictEqual(formatDossierCurrency(0), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(-500), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(NaN), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(206000), '₹2.06 L');
-      assert.strictEqual(formatDossierCurrency(1500000), '₹15.00 L');
-      assert.strictEqual(formatDossierCurrency(15000000), '₹1.50 Cr');
-      assert.strictEqual(formatDossierCurrency(27500000), '₹2.75 Cr');
+    it('accurately formats monetary values with full Indian digit grouping', () => {
+      assert.strictEqual(formatDossierCurrency(0), '₹0');
+      assert.strictEqual(formatDossierCurrency(-500), '₹-500');
+      assert.strictEqual(formatDossierCurrency(NaN), '₹0');
+      assert.strictEqual(formatDossierCurrency(206000), '₹2,06,000');
+      assert.strictEqual(formatDossierCurrency(1500000), '₹15,00,000');
+      assert.strictEqual(formatDossierCurrency(15000000), '₹1,50,00,000');
+      assert.strictEqual(formatDossierCurrency(27500000), '₹2,75,00,000');
     });
 
     it('sanitizes telephone strings into RFC 3966 URIs via sanitizeTelUri', () => {

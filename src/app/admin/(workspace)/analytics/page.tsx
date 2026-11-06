@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { KpiRibbon } from '@/app/admin/components/kpi/KpiRibbon';
 import styles from './analytics.module.scss';
 
@@ -25,14 +26,7 @@ export const metadata: Metadata = {
 };
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 export default async function AdminAnalyticsPage(): Promise<React.ReactElement> {

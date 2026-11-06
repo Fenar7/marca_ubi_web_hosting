@@ -256,7 +256,7 @@ function KpiRibbonContent({
               onClick={() => setCurrency('INR')}
               aria-checked={currency === 'INR'}
               role="radio"
-              title="Display values in Indian Rupees (₹ Lakhs & Crores)"
+              title="Display values in Indian Rupees with full digits"
             >
               ₹ INR
             </button>

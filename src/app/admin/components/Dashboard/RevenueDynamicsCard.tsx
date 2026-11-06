@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useState, useId } from "react";
+import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { MonthlyRevenueMetric } from "./types";
 import styles from "./RevenueDynamicsCard.module.scss";
 
@@ -93,18 +94,10 @@ function generateMonotoneBezierPath(points: Point2D[]): string {
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCrmCurrency(amount);
 }
 
 function formatAxis(amount: number): string {
-  if (amount === 0) return formatCurrency(0);
-  if (amount >= 10000000)
-    return "INR " + (amount / 10000000).toFixed(1) + " Cr";
-  if (amount >= 100000) return "INR " + (amount / 100000).toFixed(1) + " L";
   return formatCurrency(amount);
 }
 

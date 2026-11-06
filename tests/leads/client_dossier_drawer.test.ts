@@ -21,22 +21,22 @@ import type { LeadDossierData } from '../../src/app/admin/components/DossierDraw
 
 describe('Sprint 8.1: Client 360° Dossier & Organization Dossier Engine', () => {
   describe('Block 1: Currency & Valuation Mathematical Formatting', () => {
-    it('formats zero and negative deal values safely as ₹0.00 without NaN exceptions', () => {
-      assert.strictEqual(formatDossierCurrency(0), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(-5000), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(NaN), '₹0.00');
+    it('formats zero, negative, and invalid amounts without compact notation', () => {
+      assert.strictEqual(formatDossierCurrency(0), '₹0');
+      assert.strictEqual(formatDossierCurrency(-5000), '₹-5,000');
+      assert.strictEqual(formatDossierCurrency(NaN), '₹0');
     });
 
-    it('formats figures between 1 Lakh and 1 Crore accurately into Lakhs (L)', () => {
-      assert.strictEqual(formatDossierCurrency(100000), '₹1.00 L');
-      assert.strictEqual(formatDossierCurrency(2550000), '₹25.50 L');
-      assert.strictEqual(formatDossierCurrency(9900000), '₹99.00 L');
+    it('formats values with full Indian digit grouping', () => {
+      assert.strictEqual(formatDossierCurrency(100000), '₹1,00,000');
+      assert.strictEqual(formatDossierCurrency(2550000), '₹25,50,000');
+      assert.strictEqual(formatDossierCurrency(9900000), '₹99,00,000');
     });
 
-    it('formats figures of 1 Crore and above accurately into Crores (Cr)', () => {
-      assert.strictEqual(formatDossierCurrency(10000000), '₹1.00 Cr');
-      assert.strictEqual(formatDossierCurrency(35000000), '₹3.50 Cr');
-      assert.strictEqual(formatDossierCurrency(125000000), '₹12.50 Cr');
+    it('preserves all digits in crore-scale valuations', () => {
+      assert.strictEqual(formatDossierCurrency(10000000), '₹1,00,00,000');
+      assert.strictEqual(formatDossierCurrency(35000000), '₹3,50,00,000');
+      assert.strictEqual(formatDossierCurrency(125000000), '₹12,50,00,000');
     });
 
     it('formats values under 1 Lakh using localized standard currency representation', () => {

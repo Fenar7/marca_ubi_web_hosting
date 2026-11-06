@@ -46,3 +46,9 @@
 The PostgreSQL RLS matrix was not run against `.env.local`: its setup deletes and recreates remote identity and lead fixtures. The SQL migration and test changes were reviewed, but the database behavior still requires application in a disposable/local database and execution of `npm run test:rls` there.
 
 The dashboard reports CRM contract value, not receipts or recognized accounting revenue. A payment ledger and an authoritative quota source are not present in the current schema; those metrics remain intentionally absent until those data sources exist.
+
+## Follow-up: full-digit currency display
+
+After the audit PR was opened, review of the Pipeline Deals screenshot identified that the older shared KPI ribbon still abbreviated INR amounts as Lakhs/Crores and USD amounts as thousands/millions. The earlier dashboard remediation had not changed that shared formatter.
+
+The shared CRM currency formatter now shows all digits with locale grouping across KPI cards, weighted values, charts, lead/deal grids, tasks, project values, dossiers, conversion dialogs, and alert summaries. Budget tier labels also show full-digit ranges while retaining their existing stored keys for compatibility. The KPI type scale was reduced responsively so full values fit the five-card ribbon. Regression tests now cover crore-scale values, USD conversion, negative/invalid input, and legacy budget tier labels.

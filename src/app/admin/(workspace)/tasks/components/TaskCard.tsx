@@ -13,6 +13,7 @@
 import React, { useState, useTransition } from 'react';
 import { clearLeadFollowUp } from '@/app/actions/leads';
 import type { LeadPriority } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from '../tasks.module.scss';
 
 export interface TaskLeadItem {
@@ -37,14 +38,7 @@ interface TaskCardProps {
 }
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 function formatDate(iso: string): string {

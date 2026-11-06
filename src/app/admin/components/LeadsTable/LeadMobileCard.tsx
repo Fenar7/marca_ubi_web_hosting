@@ -16,6 +16,7 @@ import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelec
 import { InlinePrioritySelect } from './InlinePrioritySelect';
 import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { LeadPriority } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from './LeadMobileCard.module.scss';
 
 export interface LeadMobileCardProps {
@@ -34,14 +35,7 @@ export interface LeadMobileCardProps {
 }
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 export function LeadMobileCard({
