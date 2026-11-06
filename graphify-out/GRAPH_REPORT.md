@@ -1,7 +1,7 @@
 # Graph Report - marca_ubi_web_hosting  (2026-11-06)
 
 ## Corpus Check
-- 782 files · ~851,844 words
+- 782 files · ~851,818 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 183 file(s) not represented in the graph (top: .scss 124, .ttf 42, .otf 10)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `14192fd4`
+- Built from commit: `de0ebac1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -2047,16 +2047,16 @@ Nodes (8): CRM Commercial Desk Redesign — Delivery Register, Outstanding verif
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `react` connect `AdminWorkspaceShell.tsx` to `DossierWorkspace/index.ts`, `Sales Intelligence & CRM Engine`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `BlogListingClient.tsx`, `crm.ts`, `blog/[slug]/page.tsx`, `shouldUseMobileMotion`, `scheduler-schemas.ts`, `ChatPod.tsx`, `CrmUserRole`, `chatpod-ingest-payload-parity.test.ts`, `AboutCurtain.tsx`, `DossierDrawer/index.ts`, `LeadsWorkspaceClient.tsx`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `Editorial & Blog Architecture`, `next`, `team.ts`, `chat-pod/types.ts`, `Subsystem 25: src_app_chat_pod_engine_context`, `LeadDossierWorkspaceClient`, `modals/index.ts`, `ProcessCurtain.tsx`, `tasks/page.tsx`, `collect.ts`, `formatCrmCurrency`, `slots.ts`, `ClientHeader.tsx`, `ingestion/page.tsx`, `Database Schema & Security Layer`, `FunnelBucket`, `useIntakeFlow.ts`, `Dashboard/types.ts`, `timeframeUtils.ts`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `Database Schema & Security Layer`, `admin/layout.tsx`, `AddTeamMemberModal.tsx`, `overlayScrollLock.ts`, `4. 5-Phase Implementation Strategy`, `blog.ts`, `RevenueDynamicsCard`, `Database Schema & Security Layer`, `collect.ts`, `Dashboard/index.ts`, `contact/page.tsx`, `app/page.tsx`, `Workspaces & Components Modernized`, `SlotId`, `phase-6-telemetry-settings-and-dossier.test.ts`, `components/PortableTextRenderer.tsx`, `WorksWorkspaceClient.tsx`, `DossierDrawer/index.ts`, `Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons`, `Subsystem 95: src_app_components_initialloader_initialloader`, `schedulerActions.ts`, `AboutSection.tsx`, `StatementCurtain`, `(workspace)/page.tsx`, `ActivityTimeline.tsx`, `services/[slug]/page.tsx`?**
-  _High betweenness centrality (0.168) - this node is a cross-community bridge._
+  _High betweenness centrality (0.167) - this node is a cross-community bridge._
 - **What connects `RFC-5545`, `RFC-5545`, `RFC-5545` to the rest of the system?**
   _19 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `DossierWorkspace/index.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.12 - nodes in this community are weakly interconnected._
 - **Why does `next` connect `next` to `DossierWorkspace/index.ts`, `Sales Intelligence & CRM Engine`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `BlogListingClient.tsx`, `crm.ts`, `blog/[slug]/page.tsx`, `shouldUseMobileMotion`, `AboutCurtain.tsx`, `ChatPod.tsx`, `CrmUserRole`, `reactivate-on-hold/route.ts`, `AdminWorkspaceShell.tsx`, `LeadsWorkspaceClient.tsx`, `chatpod-ingest-payload-parity.test.ts`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `Editorial & Blog Architecture`, `team.ts`, `chat-pod/types.ts`, `auth.ts`, `workloadActions.ts`, `LeadDossierWorkspaceClient`, `ProcessCurtain.tsx`, `indexnow/route.ts`, `ingest/route.ts`, `tasks/page.tsx`, `collect.ts`, `formatCrmCurrency`, `ClientHeader.tsx`, `ingestion/page.tsx`, `Database Schema & Security Layer`, `FunnelBucket`, `useIntakeFlow.ts`, `Dashboard/types.ts`, `timeframeUtils.ts`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `Database Schema & Security Layer`, `admin/layout.tsx`, `overlayScrollLock.ts`, `blog.ts`, `Database Schema & Security Layer`, `Dashboard/index.ts`, `contact/page.tsx`, `kpis/route.ts`, `app/page.tsx`, `leadActivityActions.ts`, `SlotId`, `phase-6-telemetry-settings-and-dossier.test.ts`, `components/PortableTextRenderer.tsx`, `WorksWorkspaceClient.tsx`, `schedulerActions.ts`, `AboutSection.tsx`, `(workspace)/page.tsx`, `services/[slug]/page.tsx`?**
-  _High betweenness centrality (0.149) - this node is a cross-community bridge._
+  _High betweenness centrality (0.144) - this node is a cross-community bridge._
 - **Should `Sales Intelligence & CRM Engine` be split into smaller, more focused modules?**
   _Cohesion score 0.05201266395296246 - nodes in this community are weakly interconnected._
 - **Why does `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform` connect `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform` to `2.4 Team Management Dashboard (`/admin/team`) Specification`, `1. Executive Overview, Commercial Objectives & Strategic Rationale`, `7. Security Architecture, Authentication & Row Level Security (RLS) Policies`, `1.4 Commit Message & Version Control Standards`, `4.1 Sprint 10.1: Test Harness & Automated Suites`, `13. Client 360° Dossier & Omnichannel Touchpoint Studio`, `14. Task Management, Follow-up Scheduler & Overdue Escalations`, `5. Granular Sprint Work Breakdown Structure (Phases 2, 3, 4, and 5)`, `2.5 End-to-End User Journeys (Playwright Suite)`, `17. Production Deployment, Disaster Recovery & Incident Runbooks`, `3.3 Referential Integrity Architecture: Cascades vs Restraints`, `10. Public Webhook Ingestion Engine & Deduplication Pipeline`, `12. Interactive Leads Workspace, Data Grid & Optimistic State Machine`, `2. Sprint Work Breakdown Structure for Phase 1 (Database Architecture & Stored Logic)`, `9. Offboarding Protocol & Automated Lead Reassignment Wizard`, `6. PostgreSQL Database Architecture, Relational Schema & Stored Logic`, `1.1 Mathematical Formulas and Dynamic Aggregation Logic`?**
-  _High betweenness centrality (0.088) - this node is a cross-community bridge._
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
 - **Should `Sales Intelligence & CRM Engine` be split into smaller, more focused modules?**
   _Cohesion score 0.10782241014799154 - nodes in this community are weakly interconnected._

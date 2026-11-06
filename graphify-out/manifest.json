@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1793952605.1065085,
-    "seen": 1793952921.8131883,
-    "ast_hash": "0e2a00f743dae636b67fe77b5a2fa58d",
+    "mtime": 1793954243.0664124,
+    "seen": 1793954296.1011152,
+    "ast_hash": "699357aab39a1222678eebf2a2b4b74d",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5400,15 +5400,15 @@
     "semantic_hash": ""
   },
   "docs/context/2026-11-06_12-00-00.md": {
-    "mtime": 1793953799.4967062,
-    "seen": 1793953844.1577332,
-    "ast_hash": "deebc005aca59b50f7bec5ec49f9a1a5",
+    "mtime": 1793954243.0670445,
+    "seen": 1793954296.1011152,
+    "ast_hash": "6f359966a295a0a3bcaabbde8cd15913",
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/IMPLEMENTATION_REVIEW.md": {
-    "mtime": 1793953799.4971955,
-    "seen": 1793953844.1577332,
-    "ast_hash": "7b9e1aaa939204523ebfcb2b833f47d3",
+    "mtime": 1793954243.0676086,
+    "seen": 1793954296.1016152,
+    "ast_hash": "510c1a58afd294fe2902049d1ead6db9",
     "semantic_hash": ""
   },
   "supabase/migrations/20261106000001_complete_follow_up_atomically.sql": {
