@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1793945210.458632,
-    "seen": 1793945220.2146862,
-    "ast_hash": "0af2fcf17d5cf37207585b96dea42ee5",
+    "mtime": 1793952605.1065085,
+    "seen": 1793952921.8131883,
+    "ast_hash": "0e2a00f743dae636b67fe77b5a2fa58d",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5400,15 +5400,15 @@
     "semantic_hash": ""
   },
   "docs/context/2026-11-06_12-00-00.md": {
-    "mtime": 1793945210.458632,
-    "seen": 1793945220.2146862,
-    "ast_hash": "95098214c1187e3424baf2890f263b04",
+    "mtime": 1793952854.729004,
+    "seen": 1793952921.8131883,
+    "ast_hash": "c039a138df2ce3645014d5f4b8d077f4",
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/IMPLEMENTATION_REVIEW.md": {
-    "mtime": 1793945104.6819053,
-    "seen": 1793945191.4946923,
-    "ast_hash": "cad91d386862bf1bdb408607e2feeb5a",
+    "mtime": 1793952644.494164,
+    "seen": 1793952921.8131883,
+    "ast_hash": "0b7c9852f46f18afc616620f42f1921c",
     "semantic_hash": ""
   },
   "supabase/migrations/20261106000001_complete_follow_up_atomically.sql": {
@@ -5430,9 +5430,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/auth/AdminAuthShell.tsx": {
-    "mtime": 1793952136.3613298,
-    "seen": 1793952511.2021596,
-    "ast_hash": "30f544e8d3d82160c0018e5fcbadf2a9",
+    "mtime": 1793952862.4534788,
+    "seen": 1793952921.8121903,
+    "ast_hash": "1972b0780003a7a803e23ce927cd0bda",
     "semantic_hash": ""
   },
   "src/app/admin/lib/followUpQueue.ts": {

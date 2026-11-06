@@ -27,4 +27,4 @@
   .copyright { margin-top: 26px; }
 }
 @media (max-width: 380px) { .brandPanel { min-height: 190px; padding-inline: 18px; } .formPanel { padding-inline: 18px; } }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: reduce) { .canvas, .canvas * { scroll-behavior: auto !important; } }

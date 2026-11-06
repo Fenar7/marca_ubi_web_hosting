@@ -14,10 +14,11 @@ The screenshot-specific Follow-ups data failure still needs a reproducible authe
 - `npm run test:boundaries`: passed (13 Server Action modules, 49 actions).
 - `git diff --check`: passed, with expected Windows line-ending normalization warnings.
 - Assigned Sass compilation and focused shell/auth, dashboard, pipeline, follow-up, reporting, and hydration suites passed.
+- The first Vercel build failed on a universal selector in the new auth CSS module. That selector is fixed and the module's Sass compilation passes; a fresh deployment must confirm the final production build.
 
 ## Remaining gates
 
-1. Run `next build` in an isolated worktree or after the active development servers release their shared `.next` directory.
+1. Confirm a passing production build for this exact commit. The active development servers share `.next`; an isolated Turbopack attempt rejected an external `node_modules` junction. The isolated webpack build exposed the auth CSS-module selector issue now fixed.
 2. Run the database transaction/concurrency test against an isolated local database only.
 3. Complete authenticated desktop/mobile click-through across all CRM routes and record the evidence.
 4. Reproduce and resolve the Follow-ups loading error using that isolated runtime.
