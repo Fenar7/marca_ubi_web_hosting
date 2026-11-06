@@ -9,12 +9,12 @@ export function formatCrmCurrency(amount: number, currency: 'INR' | 'USD' = 'INR
   const finiteAmount = Number.isFinite(amount) ? amount : 0;
   const displayAmount = currency === 'USD' ? finiteAmount / USD_TO_INR_RATE : finiteAmount;
   const formattedAmount = Math.round(displayAmount).toLocaleString(currency === 'USD' ? 'en-US' : 'en-IN');
-  return currency === 'USD' ? `$ ${formattedAmount}` : `₹ ${formattedAmount}`;
+  return currency === 'USD' ? `$ ${formattedAmount}` : `\u20b9 ${formattedAmount}`;
 }
 
 /** Converts legacy compact budget-tier text to full values while preserving its stored key. */
 export function formatBudgetTierLabel(tier: string): string {
-  return tier.replace(/₹\s*([\d,]+(?:\.\d+)?)\s*(Lakhs?|Crores?|L|Cr)/gi, (match, rawAmount: string, unit: string) => {
+  return tier.replace(/\u20b9\s*([\d,]+(?:\.\d+)?)\s*(Lakhs?|Crores?|L|Cr)/gi, (match, rawAmount: string, unit: string) => {
     const amount = Number(rawAmount.replaceAll(',', ''));
     if (!Number.isFinite(amount)) return match;
     const multiplier = /^(?:L|Lakhs?)$/i.test(unit) ? 100_000 : 10_000_000;

@@ -6,7 +6,7 @@
 .dealsWorkspace {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.5rem;
   width: 100%;
 }
 
@@ -61,4 +61,12 @@
 
 .kpiContainer {
   width: 100%;
+}
+
+.loadError {
+  border-left: 3px solid #c40023;
+  background: #fff;
+  color: #741321;
+  padding: 1rem;
+  line-height: 1.5;
 }

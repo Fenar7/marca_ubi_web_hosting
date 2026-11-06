@@ -299,7 +299,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
     // 3. Query existing lead within the configured window using parameterized / sanitized matching
     let query = supabase
       .from('leads')
-      .select('id, lead_id, name, created_at, inquiry_count')
+      .select('id, lead_id, name, created_at, inquiry_count, brief_payload')
       .gte('created_at', windowStart);
 
     // Sanitize string to prevent PostgREST AST injection (commas or parentheses in input)
@@ -314,7 +314,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
       query = query.eq('phone', safePhone);
     }
 
-    const { data: existingLeads, error: queryError } = await query.limit(1);
+    const { data: existingLeads, error: queryError } = await query;
 
     if (queryError) {
       return {
@@ -324,7 +324,17 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
     }
 
     if (existingLeads && existingLeads.length > 0) {
-      const existing = existingLeads[0];
+      const existing = existingLeads.find((lead) => {
+        const payload = lead.brief_payload as Record<string, unknown> | null;
+        return payload?.synthetic_benchmark === true;
+      });
+      if (existingLeads.some((lead) => {
+        const payload = lead.brief_payload as Record<string, unknown> | null;
+        return payload?.synthetic_benchmark !== true;
+      })) {
+        return { success: false, error: 'These contact details match a live lead. Use test-only contact details; no live lead was changed.' };
+      }
+      if (!existing) return { success: false, error: 'No isolated simulation record was available to merge.' };
 
       // Increment inquiry_count on leads table
       await supabase
@@ -341,6 +351,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
         actor_id: callerId,
         activity_type: 'duplicate_inquiry',
         description: `Simulated repeat inquiry from ${input.name} (${safeEmail || safePhone}). Smart merge applied within ${dedupHours}h window.`,
+        metadata: { synthetic_benchmark: true },
       });
 
       if (actError) {
@@ -403,6 +414,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
       timeline: 'Q4 2026',
       client_message: input.message,
       simulated: true,
+      synthetic_benchmark: true,
       simulated_at: new Date().toISOString(),
       simulated_by: callerId,
     };
@@ -418,7 +430,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
         budget_bracket: input.budgetBracket,
         lead_source_id: fallbackSourceId,
         status_id: fallbackStatusId,
-        expected_value: 1500000,
+        expected_value: 0,
         brief_payload: briefPayload,
       })
       .select('id, lead_id')
@@ -437,6 +449,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
       actor_id: callerId,
       activity_type: 'system_event',
       description: `Inbound inquiry registered via simulation console for ${input.name} (${input.company || 'Private Client'}).`,
+      metadata: { synthetic_benchmark: true },
     });
 
     revalidatePath('/admin/ingestion');

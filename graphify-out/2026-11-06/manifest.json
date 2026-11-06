@@ -5358,9 +5358,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/currency.ts": {
-    "mtime": 1793937572.603464,
-    "seen": 1793937826.8625493,
-    "ast_hash": "db4de8e0d60eae3edfd44a4f0d04eed6",
+    "mtime": 1793938191.679191,
+    "seen": 1793938208.538069,
+    "ast_hash": "137a2cf452fcd2f218dde4382cbfb7e7",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20261105000001_preserve_activity_attribution_and_history.sql": {
+    "mtime": 1793883658.3450031,
+    "seen": 1793938077.8633795,
+    "ast_hash": "9424763827fb0994c2f12ab466a500be",
     "semantic_hash": ""
   },
   "package-lock.json": {

@@ -831,9 +831,16 @@ export async function updateLeadDealParameters(
  */
 export async function clearLeadFollowUp(
   leadId: string,
+  expectedFollowUp: string,
   note?: string
 ): Promise<LeadActionResult> {
   try {
+    const isTimestamp = typeof expectedFollowUp === 'string' &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(expectedFollowUp) &&
+      Number.isFinite(Date.parse(expectedFollowUp));
+    if (typeof leadId !== 'string' || !isValidUuid(leadId) || !isTimestamp || (note !== undefined && (typeof note !== 'string' || note.length > 2000 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(note)))) {
+      return { success: false, error: 'Invalid follow-up details.' };
+    }
     const supabase = await createClient();
     const {
       data: { user },
@@ -846,36 +853,28 @@ export async function clearLeadFollowUp(
 
     const { data: callerProfile } = await supabase
       .from('profiles')
-      .select('full_name, role, status')
+      .select('role, status')
       .eq('id', user.id)
       .maybeSingle();
 
     if (!callerProfile || callerProfile.status !== 'active') {
       return { success: false, error: 'Account suspended or unverified.' };
     }
-
-    const { error: updateError } = await supabase
-      .from('leads')
-      .update({ next_follow_up: null })
-      .eq('id', leadId);
-
-    if (updateError) {
-      return { success: false, error: `Clearing follow-up failed: ${updateError.message}` };
+    if (!['admin', 'sales_manager', 'sales_executive'].includes(callerProfile.role)) {
+      return { success: false, error: 'Your role cannot complete follow-ups.' };
     }
-
-    const cleanNote = note ? sanitizeHtml(note) ?? note : undefined;
-    const desc = `Scheduled follow-up marked as completed by ${callerProfile.full_name}.${cleanNote ? ` Note: ${cleanNote}` : ''}`;
-
-    await supabase.from('lead_activities').insert({
-      lead_id: leadId,
-      actor_id: user.id,
-      activity_type: 'note_added',
-      description: desc,
-      metadata: {
-        cleared_follow_up: true,
-        note: cleanNote,
-      },
+    const cleanNote = note ? sanitizeHtml(note) : null;
+    if (cleanNote && cleanNote.length > 2000) return { success: false, error: 'Follow-up note is too long.' };
+    const { data: completed, error: updateError } = await supabase.rpc('complete_lead_follow_up', {
+      p_lead_id: leadId,
+      p_expected_follow_up: expectedFollowUp,
+      p_note: cleanNote,
     });
+    if (updateError) {
+      console.error('[clear-follow-up] Transaction failed:', updateError.message);
+      return { success: false, error: 'Could not complete this follow-up. Please try again.' };
+    }
+    if (!completed) return { success: false, error: 'Follow-up changed, was already completed, or is inaccessible. Refresh and try again.' };
 
     revalidatePath('/admin');
     revalidatePath('/admin/tasks');
@@ -883,8 +882,8 @@ export async function clearLeadFollowUp(
 
     return { success: true, id: leadId };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Clear follow-up fault.';
-    return { success: false, error: message };
+    console.error('[clear-follow-up] Unexpected failure:', err);
+    return { success: false, error: 'Could not complete this follow-up. Please try again.' };
   }
 }
 

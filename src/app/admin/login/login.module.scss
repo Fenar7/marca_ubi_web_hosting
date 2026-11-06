@@ -15,21 +15,21 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background-color: var(--admin-canvas-bg, #f8fafc);
-  color: #0f172a;
+  background-color: var(--admin-canvas-bg, #f7f7f6);
+  color: var(--admin-text-primary, #111111);
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(--font-admin-primary, sans-serif);
 }
 
 .cardContainer {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  box-shadow: 0 20px 48px -10px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--admin-border-default, #dedede);
+  border-top: 3px solid var(--admin-accent-brand, #ea002a);
+  border-radius: 8px;
   padding: 2.5rem 2.25rem;
   display: flex;
   flex-direction: column;
@@ -38,23 +38,23 @@
 
   @media (max-width: 480px) {
     padding: 2rem 1.5rem;
-    border-radius: 16px;
+    border-radius: 8px;
   }
 }
 
 .brandHeader {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   margin-bottom: 1.75rem;
 }
 
 .brandLogoWrap {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0.25rem 0 1rem 0;
+  justify-content: flex-start;
+  margin: 0.25rem 0 2rem 0;
 }
 
 .brandLogo {
@@ -66,11 +66,11 @@
 }
 
 .brandTitle {
-  font-family: var(--font-admin-sans, sans-serif);
-  font-size: 24px;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #0f172a;
+  color: var(--admin-text-primary, #111111);
   margin: 0 0 0.35rem 0;
   line-height: 1.3;
 }
@@ -80,7 +80,7 @@
   font-weight: 400;
   letter-spacing: normal;
   text-transform: none;
-  color: #64748b;
+  color: var(--admin-text-secondary, #444444);
   margin: 0;
   line-height: 1.5;
 }
@@ -118,7 +118,7 @@
   padding: 0 1rem;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 6px;
   color: #0f172a;
   font-size: 0.92rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -132,9 +132,9 @@
   }
 
   &:focus-visible {
-    outline: none;
-    border-color: #0f172a;
-    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    outline: 2px solid var(--admin-focus-ring, #a5001d);
+    outline-offset: 2px;
+    border-color: var(--admin-focus-ring, #a5001d);
   }
 
   &:disabled {
@@ -185,9 +185,9 @@
   justify-content: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  background-color: #0f172a;
-  border: 1px solid #0f172a;
-  border-radius: 10px;
+  background-color: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
+  border-radius: 6px;
   color: #ffffff;
   font-family: var(--font-admin-btn, inherit);
   font-size: 14px;
@@ -197,9 +197,8 @@
   transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 
   &:hover:not(:disabled) {
-    background-color: #1e293b;
-    border-color: #1e293b;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    background-color: var(--admin-btn-primary-hover, #c40023);
+    border-color: var(--admin-btn-primary-hover, #c40023);
   }
 
   &:active:not(:disabled) {
@@ -224,6 +223,15 @@
   border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+.cardContainer > [role='status'] .btnSpinner {
+  border-color: #dedede;
+  border-top-color: var(--admin-accent-brand, #ea002a);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btnSpinner { animation: none; }
 }
 
 @keyframes spin {

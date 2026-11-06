@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { clearLeadFollowUp } from '@/app/actions/leads';
 import type { LeadPriority } from '@/types/crm';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
@@ -27,6 +28,7 @@ export interface TaskLeadItem {
   priority: LeadPriority;
   expected_value: number;
   next_follow_up: string;
+  revisit_date?: string | null;
   assigned_to: string | null;
   assignee_name?: string;
   status_name?: string;
@@ -35,6 +37,7 @@ export interface TaskLeadItem {
 interface TaskCardProps {
   lead: TaskLeadItem;
   isUrgent?: boolean;
+  allowCompletion: boolean;
 }
 
 function formatCurrency(amount: number): string {
@@ -49,15 +52,19 @@ function formatDate(iso: string): string {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'UTC',
+      timeZoneName: 'short',
     });
   } catch {
     return iso;
   }
 }
 
-export function TaskCard({ lead, isUrgent = false }: TaskCardProps): React.ReactElement {
+export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardProps): React.ReactElement {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDone, setIsDone] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const priorityClass =
     lead.priority === 'High'
@@ -87,47 +94,40 @@ export function TaskCard({ lead, isUrgent = false }: TaskCardProps): React.React
 
   const handleMarkDone = (e: React.MouseEvent): void => {
     e.stopPropagation();
+    setError(null);
     startTransition(async () => {
-      const result = await clearLeadFollowUp(lead.id);
-      if (result.success) {
+      try {
+        const result = await clearLeadFollowUp(lead.id, lead.next_follow_up);
+        if (!result.success) {
+          setError(result.error || 'Could not complete this follow-up. Please try again.');
+          return;
+        }
         setIsDone(true);
+        router.refresh();
+      } catch (err) {
+        console.error('[tasks] Follow-up completion failed:', err);
+        setError('Could not complete this follow-up. Please try again.');
       }
     });
   };
 
   if (isDone) {
     return (
-      <div
-        className={styles.taskCard}
-        style={{
-          opacity: 0.6,
-          background: 'rgba(34, 197, 94, 0.05)',
-          borderColor: 'rgba(34, 197, 94, 0.25)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#22c55e', fontSize: '0.85rem', fontWeight: 600 }}>
-          <span>✓</span>
-          <span>Follow-up completed for {lead.name}</span>
-        </div>
-      </div>
+      <article className={styles.taskCard} role="status">
+        <p className={styles.completedMessage}>Follow-up completed for {lead.name}.</p>
+      </article>
     );
   }
 
   return (
-    <div
-      className={`${styles.taskCard} ${isUrgent ? styles.urgentCard : ''}`}
-      onClick={handleCardClick}
-      tabIndex={0}
-      role="button"
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') handleCardClick();
-      }}
-      aria-label={`Open client dossier for ${lead.name}`}
-      title="Click to inspect Client 360 dossier"
-    >
+    <article className={`${styles.taskCard} ${isUrgent ? styles.urgentCard : ''}`}>
       <div className={styles.cardTop}>
         <div className={styles.leadMeta}>
-          <h3 className={styles.leadName}>{lead.name}</h3>
+          <h3 className={styles.leadName}>
+            <button type="button" className={styles.leadOpenButton} onClick={handleCardClick}>
+              {lead.name}
+            </button>
+          </h3>
           <span className={styles.companyName}>
             {lead.company || 'Direct Client Engagement'}
           </span>
@@ -136,17 +136,18 @@ export function TaskCard({ lead, isUrgent = false }: TaskCardProps): React.React
           <span className={`${styles.priorityChip} ${priorityClass}`}>
             {lead.priority}
           </span>
-          <button
+          {allowCompletion && <button
             type="button"
             className={styles.markDoneButton}
             onClick={handleMarkDone}
             disabled={isPending}
             title="Mark touchpoint completed"
           >
-            {isPending ? '...' : '✓ Done'}
-          </button>
+            {isPending ? 'Saving…' : 'Mark done'}
+          </button>}
         </div>
       </div>
+      {error && <p className={styles.actionError} role="alert">{error}</p>}
 
       <div className={styles.contactRow}>
         {lead.phone && (
@@ -176,17 +177,11 @@ export function TaskCard({ lead, isUrgent = false }: TaskCardProps): React.React
                 href={`https://wa.me/${cleanPhone}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  color: '#22c55e',
-                  textDecoration: 'none',
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  marginLeft: '0.35rem',
-                }}
+                className={styles.whatsappLink}
                 onClick={(e) => e.stopPropagation()}
                 title="Open WhatsApp chat"
               >
-                (WA)
+                WhatsApp
               </a>
             )}
           </div>
@@ -236,6 +231,6 @@ export function TaskCard({ lead, isUrgent = false }: TaskCardProps): React.React
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

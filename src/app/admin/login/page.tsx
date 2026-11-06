@@ -30,7 +30,7 @@ export default function AdminLoginPage(): React.ReactElement {
             <header className={styles.brandHeader}>
               <div className={styles.brandLogoWrap}>
                 <img
-                  src="/hero/marca-ubi-logo.png"
+                  src="/images/marca-ubi-dark.svg"
                   alt="Marca Ubi."
                   className={styles.brandLogo}
                   width={180}

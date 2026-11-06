@@ -10,7 +10,7 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 1.5rem;
-  max-width: 1600px;
+  max-width: none;
   margin: 0 auto;
   width: 100%;
 }
@@ -33,7 +33,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--admin-text-secondary, #525965);
+  color: #a0001d;
 }
 
 .heading {
@@ -53,3 +53,16 @@
   max-width: 600px;
   line-height: 1.5;
 }
+
+.dataError, .scopeNote {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  background: #fff;
+  color: #4d4d4d;
+  font-size: .875rem;
+  line-height: 1.5;
+}
+.dataError { color: #991b1b; }
+@media (max-width: 640px) { .worksWorkspace { padding: 1rem; } }

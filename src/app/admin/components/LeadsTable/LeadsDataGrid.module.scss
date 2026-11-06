@@ -11,18 +11,18 @@
 
 // Dedicated 9-Column Collision-Free Grid Metrics
 // 1: Lead ID | 2: Client & Org | 3: Service Scope | 4: Funnel Stage | 5: Expected Value | 6: Representative | 7: Priority | 8: Next SLA | 9: Actions
-$grid-columns: 85px minmax(170px, 1.3fr) 115px 125px 105px 125px 100px 120px 190px;
-$grid-min-width: 1140px;
+$grid-columns: 85px minmax(170px, 1.3fr) 115px 125px 150px 125px 100px 120px 190px;
+$grid-min-width: 1200px;
 
 // Desktop & Tablet Virtualized View
 .virtualScrollContainer {
   width: 100%;
   background: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-card, 12px);
+  border-radius: 4px;
   overflow-x: auto;
   overflow-y: auto;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   max-height: calc(100vh - 280px);
   min-height: 400px;
   position: relative;
@@ -57,7 +57,7 @@ $grid-min-width: 1140px;
   position: sticky;
   top: 0;
   z-index: 20;
-  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   box-sizing: border-box;
 }
 

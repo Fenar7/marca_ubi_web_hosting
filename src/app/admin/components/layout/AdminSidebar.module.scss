@@ -37,6 +37,10 @@
     justify-content: center;
   }
 
+  .logoLink {
+    display: none;
+  }
+
   .quickActionBox {
     padding: 0.65rem 0.5rem;
   }
@@ -46,7 +50,7 @@
     height: 44px;
     min-height: 44px;
     padding: 0;
-    border-radius: 50%;
+    border-radius: 6px;
     margin: 0 auto;
     justify-content: center;
   }
@@ -97,7 +101,7 @@
 }
 
 .brandLogo {
-  width: 135px;
+  width: 138px;
   height: auto;
   display: block;
   object-fit: contain;
@@ -180,22 +184,20 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.55rem 1rem;
-  background-color: var(--admin-accent-lemon, #eefb87);
-  border: 1px solid var(--admin-border-strong, #1f242f);
-  border-radius: var(--admin-radius-pill, 9999px);
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  background-color: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
+  border-radius: 6px;
+  color: var(--admin-btn-primary-text, #ffffff);
   font-family: var(--font-admin-btn, sans-serif);
   font-size: 0.75rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    background-color: var(--admin-accent-lemon-hover, #e4f375);
-    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.12);
+    background-color: var(--admin-btn-primary-hover, #c40023);
+    border-color: var(--admin-btn-primary-hover, #c40023);
   }
 
   &:active {
@@ -288,21 +290,21 @@
 }
 
 .navItemActive {
-  background: var(--admin-surface-inverse, #1f242f);
-  color: var(--admin-text-inverse, #ffffff);
+  background: var(--admin-surface-active, #eaeae8);
+  color: var(--admin-text-primary, #111111);
   font-weight: 600;
 
   &:hover {
-    background: #151820;
-    color: #ffffff;
+    background: var(--admin-surface-active, #eaeae8);
+    color: var(--admin-text-primary, #111111);
   }
 
   .iconWrapper {
-    color: #ffffff;
+    color: inherit;
   }
 
   .itemLabel {
-    color: #ffffff;
+    color: inherit;
   }
 }
 
@@ -369,7 +371,7 @@
   top: 15%;
   bottom: 15%;
   width: 3px;
-  background-color: var(--admin-border-strong, #1f242f);
+  background-color: var(--admin-accent-brand, #ea002a);
   border-radius: 0 4px 4px 0;
 }
 

@@ -135,20 +135,20 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.65rem 1rem;
-  background-color: var(--admin-accent-lemon, #eefb87);
-  border: 1px solid var(--admin-border-strong, #1f242f);
-  border-radius: var(--admin-radius-pill, 9999px);
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  background-color: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
+  border-radius: 6px;
+  color: var(--admin-btn-primary-text, #ffffff);
   font-family: var(--font-admin-btn, sans-serif);
   font-size: 0.75rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: var(--admin-accent-lemon-hover, #e4f375);
+    background-color: var(--admin-btn-primary-hover, #c40023);
+    border-color: var(--admin-btn-primary-hover, #c40023);
   }
 
   &:active {
@@ -212,16 +212,16 @@
 }
 
 .navItemActive {
-  background: var(--admin-surface-inverse, #1f242f);
-  color: var(--admin-text-inverse, #ffffff);
+  background: var(--admin-surface-active, #eaeae8);
+  color: var(--admin-text-primary, #111111);
   font-weight: 600;
 
   .iconWrapper {
-    color: #ffffff;
+    color: inherit;
   }
 
   .itemLabel {
-    color: #ffffff;
+    color: inherit;
   }
 }
 
@@ -231,7 +231,7 @@
   top: 15%;
   bottom: 15%;
   width: 3px;
-  background-color: var(--admin-accent-lemon, #eefb87);
+  background-color: var(--admin-accent-brand, #ea002a);
   border-radius: 0 4px 4px 0;
 }
 

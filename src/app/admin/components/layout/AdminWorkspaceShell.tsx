@@ -75,6 +75,7 @@ export function AdminWorkspaceShell({
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
+  const closeMobileNav = useCallback(() => setIsMobileOpen(false), []);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState<boolean>(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState<boolean>(false);
   const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(null);
@@ -244,7 +245,7 @@ export function AdminWorkspaceShell({
       {/* Mobile Off-Canvas Drawer (Screens < 1024px) */}
       <AdminMobileDrawer
         isOpen={isMobileOpen}
-        onClose={() => setIsMobileOpen(false)}
+        onClose={closeMobileNav}
         currentUser={currentUser}
         dueTasksCount={dueTasksCount}
       />

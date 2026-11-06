@@ -225,9 +225,9 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
         <p className={styles.emptyState} role="status">
           Revenue data is unavailable. The source query did not complete.
         </p>
-      ) : dataPoints.length === 0 ? (
+      ) : dataPoints.length === 0 || dataPoints.every((point) => point.cashVal === 0) ? (
         <p className={styles.emptyState} role="status">
-          No conversions were recorded during {timeframe}.
+          No converted contract value was recorded during {timeframe}.
         </p>
       ) : (
         <>
@@ -266,8 +266,8 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="0%" stopColor="#ff6100" stopOpacity="0.12" />
-                  <stop offset="100%" stopColor="#ff6100" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#ea002a" stopOpacity="0.12" />
+                  <stop offset="100%" stopColor="#ea002a" stopOpacity="0" />
                 </linearGradient>
               </defs>
               {gridLines.map((line, index) => (
@@ -298,7 +298,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
               <path
                 d={curvePath}
                 fill="none"
-                stroke="#ff6100"
+                stroke="#ea002a"
                 strokeWidth={2.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -329,7 +329,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                     cy={activePoint.y}
                     r={5.5}
                     fill="#ffffff"
-                    stroke="#ff6100"
+                    stroke="#ea002a"
                     strokeWidth={2.5}
                   />
                 </g>

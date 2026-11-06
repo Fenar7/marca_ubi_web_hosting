@@ -293,8 +293,8 @@ function LeadsWorkspaceContent({
         url.searchParams.delete('stage');
       }
 
-      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-      window.dispatchEvent(new Event('popstate'));
+      url.searchParams.delete('page');
+      router.replace(url.pathname + (url.search ? url.search : ''), { scroll: false });
     },
     [
       selectedBucket,
@@ -303,6 +303,7 @@ function LeadsWorkspaceContent({
       selectedAssigneeId,
       selectedPriority,
       selectedStageId,
+      router,
     ]
   );
 
@@ -611,8 +612,6 @@ function LeadsWorkspaceContent({
 
   // In-memory filtered leads with multi-dimensional criteria evaluation
   const filteredLeads = useMemo<HydratedLeadItem[]>(() => {
-    const q = searchQuery.toLowerCase().trim();
-
     return leads.filter((lead) => {
       // 1. Bucket condition
       if (selectedBucket === 'overdue') {
@@ -641,23 +640,11 @@ function LeadsWorkspaceContent({
         return false;
       }
 
-      // 6. Search query condition (multi-attribute match)
-      if (!q) return true;
-
-      return (
-        lead.lead_id.toLowerCase().includes(q) ||
-        lead.name.toLowerCase().includes(q) ||
-        (lead.company && lead.company.toLowerCase().includes(q)) ||
-        (lead.email && lead.email.toLowerCase().includes(q)) ||
-        (lead.phone && lead.phone.toLowerCase().includes(q)) ||
-        lead.service_category.toLowerCase().includes(q) ||
-        lead.assigned_to_name.toLowerCase().includes(q)
-      );
+      return true;
     });
   }, [
     leads,
     selectedBucket,
-    searchQuery,
     selectedSourceId,
     selectedAssigneeId,
     selectedPriority,

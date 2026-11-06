@@ -1,170 +1,121 @@
-/**
- * @file page.tsx
- * @description Dedicated Commercial Analytics Workspace (/admin/analytics).
- *              Server Component querying deal conversion rates, pipeline velocity,
- *              and revenue distribution across commercial stages.
- * @module app/admin/(workspace)/analytics/page
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
+import { ROLE_DEFAULT_TABS, type CrmUserRole } from '@/types/crm';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
-import { KpiRibbon } from '@/app/admin/components/kpi/KpiRibbon';
 import styles from './analytics.module.scss';
 
 export const metadata: Metadata = {
-  title: 'Revenue & Pipeline Analytics | Marca Ubi Enterprise CRM',
-  robots: {
-    index: false,
-    follow: false,
-  },
+  title: 'Revenue & Pipeline Analytics | Marca Ubi CRM',
+  robots: { index: false, follow: false },
 };
 
-function formatCurrency(amount: number): string {
-  return formatCrmCurrency(amount);
+const PAGE_SIZE = 1000;
+const MAX_ROWS = 50000;
+const SYNTHETIC_EXCLUSION = 'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true';
+
+/** Reads all visible rows or returns an error so a partial response is never shown as a total. */
+async function readAnalyticsLeads(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const rows: Array<{ id: string; status_id: string; expected_value: number | string | null }> = [];
+  for (let from = 0; from <= MAX_ROWS; from += PAGE_SIZE) {
+    const { data, error } = await supabase.from('leads')
+      .select('id, status_id, expected_value')
+      .or(SYNTHETIC_EXCLUSION)
+      .order('id', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+    if (error || !data) return { rows: null, error: error?.message ?? 'No data returned.' };
+    if (rows.length + data.length > MAX_ROWS) return { rows: null, error: 'Data exceeds the reporting limit.' };
+    rows.push(...data);
+    if (data.length < PAGE_SIZE) return { rows, error: null };
+  }
+  return { rows: null, error: 'The complete data set could not be read.' };
 }
 
 export default async function AdminAnalyticsPage(): Promise<React.ReactElement> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/admin/login?next=%2Fadmin%2Fanalytics');
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from('profiles')
+    .select('role, status, allowed_tabs').eq('id', user.id).maybeSingle();
+  if (!profile || profile.status !== 'active') redirect('/admin/login?error=account_suspended');
+  const role = profile.role as CrmUserRole;
+  const allowedTabs = profile.allowed_tabs;
+  const allowed = role === 'admin' || (Array.isArray(allowedTabs) && allowedTabs.length > 0
+    ? allowedTabs.includes('analytics') : Boolean(ROLE_DEFAULT_TABS[role]?.analytics));
+  if (!allowed) redirect('/admin?error=unauthorized_role_access');
 
-  if (!user) {
-    redirect('/admin/login?next=%2Fadmin%2Fanalytics');
+  const [statusResult, leadResult] = await Promise.all([
+    supabase.from('funnel_statuses').select('id, name, bucket, color_code, sort_order').order('sort_order'),
+    readAnalyticsLeads(supabase),
+  ]);
+  const error = statusResult.error?.message ?? leadResult.error;
+  if (error) console.error('[admin-analytics] Reporting query failed:', error);
+  const statuses = statusResult.data ?? [];
+  const leads = leadResult.rows ?? [];
+  const totals = new Map<string, { count: number; value: number }>();
+  for (const lead of leads) {
+    const current = totals.get(lead.status_id) ?? { count: 0, value: 0 };
+    const amount = Number(lead.expected_value);
+    current.count += 1;
+    current.value += Number.isFinite(amount) ? amount : 0;
+    totals.set(lead.status_id, current);
   }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, status, allowed_tabs')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  const role = (profile?.role as CrmUserRole) || 'viewer';
-  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
-
-  const hasAnalyticsAccess = Array.isArray(allowedTabs)
-    ? allowedTabs.includes('analytics')
-    : role !== 'sales_executive';
-
-  if (!hasAnalyticsAccess) {
-    redirect('/admin?error=unauthorized_role_access');
-  }
-
-  let rpcMetrics: PipelineRpcMetrics | null = null;
-  const { data: rpcData, error: rpcError } = await supabase.rpc('get_pipeline_kpis');
-
-  if (!rpcError && rpcData) {
-    rpcMetrics = rpcData as unknown as PipelineRpcMetrics;
-  } else {
-    // Table query fallback
-    const { data: leads } = await supabase
-      .from('leads')
-      .select('expected_value, funnel_statuses!inner(bucket)');
-
-    let totalDeals = 0;
-    let conversionRate = 0;
-    let convertedRevenue = 0;
-    let potentialValue = 0;
-
-    if (leads && leads.length > 0) {
-      totalDeals = leads.length;
-      const converted = leads.filter(
-        (l) => (l.funnel_statuses as { bucket?: string } | null)?.bucket === 'converted'
-      );
-      const potential = leads.filter(
-        (l) => (l.funnel_statuses as { bucket?: string } | null)?.bucket === 'potential'
-      );
-      conversionRate = Number(((converted.length / totalDeals) * 100).toFixed(1));
-      convertedRevenue = converted.reduce((acc, l) => acc + (Number(l.expected_value) || 0), 0);
-      potentialValue = potential.reduce((acc, l) => acc + (Number(l.expected_value) || 0), 0);
-    }
-
-    rpcMetrics = {
-      total_leads_count: totalDeals,
-      open_leads_count: 0,
-      potential_leads_count: 0,
-      potential_pipeline_value: potentialValue,
-      converted_leads_count: 0,
-      converted_revenue_value: convertedRevenue,
-      lost_leads_count: 0,
-      overdue_follow_ups_count: 0,
-      conversion_rate_percentage: conversionRate,
-    };
-  }
-
-  // Fetch breakdown across all funnel statuses
-  const { data: statuses } = await supabase
-    .from('funnel_statuses')
-    .select('id, name, bucket, color_code, sort_order')
-    .order('sort_order', { ascending: true });
-
-  const { data: allLeads } = await supabase
-    .from('leads')
-    .select('status_id, expected_value');
-
-  const stageBreakdown = (statuses || []).map((status) => {
-    const matchingLeads = (allLeads || []).filter((l) => l.status_id === status.id);
-    const count = matchingLeads.length;
-    const value = matchingLeads.reduce((acc, l) => acc + (Number(l.expected_value) || 0), 0);
-    return {
-      id: status.id,
-      name: status.name,
-      color: status.color_code || '#ff6100',
-      count,
-      value,
-    };
-  });
+  const knownIds = new Set(statuses.map((status) => status.id));
+  const incomplete = leads.some((lead) => !knownIds.has(lead.status_id));
+  const unavailable = Boolean(error || incomplete);
+  const active = statuses.filter((status) => status.bucket === 'open' || status.bucket === 'potential');
+  const converted = statuses.filter((status) => status.bucket === 'converted');
+  const sum = (ids: string[]) => ids.reduce((total, id) => total + (totals.get(id)?.value ?? 0), 0);
+  const cards = [
+    { label: 'Total leads', value: leads.length.toLocaleString('en-IN'), detail: 'Records visible to you' },
+    { label: 'Active pipeline', value: formatCrmCurrency(sum(active.map((status) => status.id))), detail: 'Open and potential stages' },
+    { label: 'Converted contract value', value: formatCrmCurrency(sum(converted.map((status) => status.id))), detail: 'Current converted records' },
+  ];
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Forecasting & Commercial Intelligence</span>
-          <h1 className={styles.pageTitle}>Revenue & Pipeline Analytics</h1>
-          <p className={styles.pageSubtitle}>
-            Track win rates, deal progression, and closed revenue across all agency services.
-          </p>
-        </div>
+        <p className={styles.eyebrow}>Commercial intelligence</p>
+        <h1 className={styles.pageTitle}>Revenue &amp; pipeline analytics</h1>
+        <p className={styles.pageSubtitle}>A current view of the leads and contract values available to you.</p>
       </header>
-
-      {/* Dark Luxury Executive KPI Ribbon */}
-        <KpiRibbon initialData={rpcError ? null : rpcMetrics} syncWithUrlParams />
-
-      {/* Funnel Stage Breakdown */}
-      <section className={styles.breakdownSection} aria-label="Funnel Stage Distribution">
-        <h2 className={styles.sectionTitle}>Deals by Stage</h2>
-        <div className={styles.stageList}>
-          {stageBreakdown.map((stage) => (
-            <Link
-              key={stage.id}
-              href={`/admin/leads?stage=${stage.id}`}
-              className={styles.stageRow}
-              style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}
-              title={`Inspect deals in stage: ${stage.name}`}
-            >
-              <div className={styles.stageLeft}>
-                <span
-                  className={styles.stageDot}
-                  style={{ backgroundColor: stage.color }}
-                />
-                <span className={styles.stageName}>{stage.name}</span>
+      {unavailable ? (
+        <section className={styles.notice} role="status">
+          <h2>Analytics unavailable</h2>
+          <p>The complete pipeline data could not be loaded. Refresh the page to try again.</p>
+        </section>
+      ) : (
+        <>
+          <section className={styles.metrics} aria-label="Pipeline summary">
+            {cards.map((card) => <div className={styles.metric} key={card.label}>
+              <span className={styles.metricLabel}>{card.label}</span>
+              <strong className={styles.metricValue}>{card.value}</strong>
+              <span className={styles.metricDetail}>{card.detail}</span>
+            </div>)}
+          </section>
+          <section className={styles.breakdownSection} aria-labelledby="stage-heading">
+            <div className={styles.sectionHeader}>
+              <div><h2 id="stage-heading" className={styles.sectionTitle}>Deals by stage</h2>
+                <p>Current stage of visible leads. Synthetic benchmark records are excluded.</p></div>
+              <Link href="/admin/leads" className={styles.viewLink}>View leads <span aria-hidden="true">-&gt;</span></Link>
+            </div>
+            {statuses.length === 0 ? <p className={styles.notice}>No stages are configured.</p> : (
+              <div className={styles.stageList}>
+                {statuses.map((status) => {
+                  const stage = totals.get(status.id) ?? { count: 0, value: 0 };
+                  return <Link key={status.id} href={`/admin/leads?stage=${encodeURIComponent(status.id)}`} className={styles.stageRow}>
+                    <span className={styles.stageLeft}><span className={styles.stageDot} style={{ backgroundColor: status.color_code || '#666666' }} aria-hidden="true" />{status.name}</span>
+                    <span className={styles.stageRight}><span>{stage.count.toLocaleString('en-IN')} deals</span><strong>{formatCrmCurrency(stage.value)}</strong><span aria-hidden="true">-&gt;</span></span>
+                  </Link>;
+                })}
               </div>
-              <div className={styles.stageRight}>
-                <span className={styles.stageCount}>{stage.count} deals</span>
-                <span className={styles.stageVal}>{formatCurrency(stage.value)}</span>
-                <span style={{ color: '#ff6100', marginLeft: '0.35rem', fontSize: '0.85rem' }}>→</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }

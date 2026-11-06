@@ -190,7 +190,7 @@ export const PipelineAllocationCard: React.FC<PipelineAllocationCardProps> = ({
                 <div className={styles.stageNameBlock}>
                   <span className={styles.stageName}>{stage.name}</span>
                   <span className={styles.stageVolumeSubText}>
-                    {stage.dealCount} deals � {velocity}
+                    {stage.dealCount} deals · {velocity}
                   </span>
                 </div>
               </div>

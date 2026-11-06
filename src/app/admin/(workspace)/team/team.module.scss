@@ -9,6 +9,7 @@
 
 .workspace {
   width: 100%;
+  min-width: 0;
   color: var(--admin-text-primary, #1f242f);
   position: relative;
 }
@@ -38,7 +39,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--admin-text-secondary, #525965);
+  color: #a0001d;
   display: block;
   margin-bottom: 0.35rem;
 }
@@ -110,23 +111,22 @@
   gap: 0.5rem;
   padding: 0.65rem 1.35rem;
   min-height: 44px;
-  border-radius: 9999px;
-  background: var(--admin-accent-lemon, #eefb87);
-  border: 1px solid var(--admin-border-strong, #1f242f);
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  border-radius: 6px;
+  background: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
+  color: var(--admin-btn-primary-text, #fff);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.82rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: none;
+  letter-spacing: normal;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
+  box-shadow: none;
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: var(--admin-accent-lemon-hover, #e4f375);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
+    background: var(--admin-btn-primary-hover, #c40023);
+    box-shadow: none;
   }
 
   &:active:not(:disabled) {
@@ -154,8 +154,12 @@
 .kpiGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
+  gap: 0;
   margin-bottom: 2rem;
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
 
   @media (max-width: 1180px) {
     grid-template-columns: repeat(2, 1fr);
@@ -168,20 +172,16 @@
 
 .kpiCard {
   background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 12px;
+  border: 0;
+  border-right: 1px solid #dedede;
+  border-radius: 0;
   padding: 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(31, 36, 47, 0.04);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover {
-    border-color: var(--admin-border-strong, #1f242f);
-    box-shadow: 0 4px 14px rgba(31, 36, 47, 0.08);
-  }
+  box-shadow: none;
+  &:last-child { border-right: 0; }
 }
 
 .kpiLabelRow {
@@ -212,7 +212,7 @@
   letter-spacing: -0.025em;
   color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
-  margin-bottom: 0.35rem;
+  margin: .4rem 0 0;
 }
 
 .kpiDetail {
@@ -915,9 +915,9 @@
 .credentialPasscode {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: #111;
   letter-spacing: 0.05em;
-  background: var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.35));
+  background: #f4f4f2;
   padding: 0.3rem 0.65rem;
   border-radius: 4px;
   border: 1px solid var(--admin-border-strong, #1f242f);

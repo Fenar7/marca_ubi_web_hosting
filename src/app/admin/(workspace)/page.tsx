@@ -9,6 +9,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { ROLE_DEFAULT_TABS, type CrmUserRole, type FunnelBucket } from '@/types/crm';
 import {
   ExecutiveMasthead,
@@ -135,7 +136,7 @@ function cohortConversionRate(cohort: CohortTotals): number | null {
 }
 
 function currency(amount: number): string {
-  return '₹' + Math.round(amount).toLocaleString('en-IN');
+  return formatCrmCurrency(amount);
 }
 
 export default async function AdminDashboardPage(
@@ -327,7 +328,7 @@ export default async function AdminDashboardPage(
       id: status.id,
       code: undefined,
       name: status.name,
-      color: status.color_code || '#ff6100',
+      color: status.color_code || '#ea002a',
       dealCount: stage.count,
       amount: stage.value,
       formattedAmount: currency(stage.value),

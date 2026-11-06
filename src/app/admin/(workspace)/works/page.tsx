@@ -40,23 +40,23 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.status !== 'active') {
+  if (!profile || profile.status !== 'active') {
     redirect('/admin/login?error=account_suspended');
   }
 
-  const role = (profile?.role as CrmUserRole) || 'viewer';
-  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
+  const role = profile.role as CrmUserRole;
+  const allowedTabs = profile.allowed_tabs as string[] | undefined;
 
-  const hasWorksAccess = Array.isArray(allowedTabs)
+  const hasWorksAccess = role === 'admin' || (Array.isArray(allowedTabs) && allowedTabs.length > 0
     ? allowedTabs.includes('works')
-    : ROLE_DEFAULT_TABS[role]?.works ?? false;
+    : Boolean(ROLE_DEFAULT_TABS[role]?.works));
 
   if (!hasWorksAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 
   // Query active client works with relational joins to lead directors
-  const { data: rawWorks, error } = await supabase
+  const { data: rawWorks, error, count } = await supabase
     .from('client_works')
     .select(`
       id,
@@ -83,11 +83,20 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
         id,
         full_name
       )
-    `)
+    `, { count: 'exact' })
     .order('created_at', { ascending: false });
 
   if (error) {
     console.error('[AdminWorksPage] Failed to fetch client works:', error);
+    return (
+      <div className={styles.worksWorkspace}>
+        <header className={styles.header}><div className={styles.titleArea}>
+          <div className={styles.eyebrow}>Client delivery</div>
+          <h1 className={styles.heading}>Client works</h1>
+        </div></header>
+        <p className={styles.dataError} role="alert">Projects could not be loaded. Refresh the page to try again.</p>
+      </div>
+    );
   }
 
   const clientWorks: ClientWorkItem[] = ((rawWorks || []) as unknown[]).map((raw) => {
@@ -118,29 +127,34 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
   });
 
   // Query active team personnel for directorial assignment governance
-  const { data: teamProfiles } = await supabase
+  const { data: teamProfiles, error: teamError } = await supabase
     .from('crm_team_directory')
     .select('id, full_name, role')
     .order('full_name', { ascending: true });
+  if (teamError) console.error('[AdminWorksPage] Failed to fetch directors:', teamError.message);
 
   return (
     <div className={styles.worksWorkspace}>
       {/* Workspace Header Strip */}
       <header className={styles.header}>
         <div className={styles.titleArea}>
-          <div className={styles.eyebrow}>Client Deliverables</div>
-          <h1 className={styles.heading}>Client Deliverables.</h1>
+          <div className={styles.eyebrow}>Client delivery</div>
+          <h1 className={styles.heading}>Client works</h1>
           <p className={styles.subheading}>
-            Tracking active post-conversion deliverables, milestone progress, and engineering health.
+            Track projects, milestones, and the people responsible for delivery.
           </p>
         </div>
       </header>
+
+      {count !== null && count > clientWorks.length && <p className={styles.scopeNote}>Showing {clientWorks.length} of {count} projects. The remaining projects are not loaded.</p>}
+      {teamError && <p className={styles.dataError} role="alert">The team directory could not be loaded. Director assignment is unavailable; refresh to try again.</p>}
 
       {/* Main Works Workspace Client */}
       <WorksWorkspaceClient
         initialWorks={clientWorks}
         userRole={role}
         profiles={teamProfiles || []}
+        directoryAvailable={!teamError}
       />
     </div>
   );
