@@ -29,8 +29,6 @@ export interface ExecutiveMastheadProps {
   onDateRangeChange?: (range: string) => void;
   /** Snapshot assembled from successful dashboard queries; absent snapshots cannot be exported. */
   exportData?: ExecutiveReportExportData;
-  /** Custom lead creation delegate; default dispatches `open-new-lead-drawer` event */
-  onNewLead?: () => void;
 }
 
 const TIMEFRAME_OPTIONS = [
@@ -46,7 +44,6 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
   initialDateRange = "Last 30 Days",
   onDateRangeChange,
   exportData,
-  onNewLead,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -106,17 +103,6 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
     });
-  };
-
-  /**
-   * Dispatches the global lead creation drawer event across the admin workspace.
-   */
-  const handleNewLeadClick = () => {
-    if (onNewLead) {
-      onNewLead();
-    } else {
-      window.dispatchEvent(new CustomEvent("open-new-lead-drawer"));
-    }
   };
 
   /** Quotes every cell and neutralizes formula-leading values before spreadsheet import. */
@@ -189,12 +175,10 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
       aria-label="Executive Overview Header"
     >
       <div className={styles.titleCluster}>
-        <h1 className={styles.title}>
-          Executive Overview & Revenue Intelligence
-        </h1>
+        <p className={styles.eyebrow}>Commercial operations</p>
+        <h1 className={styles.title}>Commercial Desk</h1>
         <p className={styles.subtitle}>
-          Consolidated agency pipeline valuation, stage velocity, and converted
-          contract value.
+          Today’s priorities, active pipeline, and contract value from recorded wins.
         </p>
       </div>
 
@@ -312,29 +296,6 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
           <span>Export Report</span>
         </button>
 
-        {/* Primary New Lead Trigger Button */}
-        <button
-          type="button"
-          className={styles.newLeadBtn}
-          onClick={handleNewLeadClick}
-          aria-label="Create a new commercial lead dossier"
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          <span>New Lead</span>
-        </button>
       </div>
     </header>
   );

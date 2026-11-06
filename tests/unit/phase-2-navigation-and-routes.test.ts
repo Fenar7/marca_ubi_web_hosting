@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file phase-2-navigation-and-routes.test.ts
  * @description Unit test suite for Phase 2: Dynamic Tab Navigation Rail, Role Sandboxing & Route Restructure.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -21,8 +21,8 @@ describe('Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture', (
 
     const groupTitles = NAVIGATION_GROUPS.map((g) => g.groupTitle);
     assert.deepStrictEqual(groupTitles, [
-      'Commercial Pipeline',
-      'Agency Operations',
+      'Commercial',
+      'Operations',
       'System & Governance',
     ]);
 

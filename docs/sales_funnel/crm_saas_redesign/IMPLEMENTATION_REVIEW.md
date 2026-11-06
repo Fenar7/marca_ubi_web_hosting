@@ -1,11 +1,27 @@
-﻿## Implementation review — 2026-11-06
+# Implementation review — 2026-11-06
 
-The broad implementation has landed locally and passed TypeScript, production build, and server-action boundary checks. Detailed acceptance points are in `CRM_SAAS_REDESIGN_MASTER_PLAN.md`; visual tokens and references are in `DESIGN.md`.
+## Review outcome: draft, functional verification incomplete
 
-### Review outcome: draft only
+The Commercial Desk visual redesign now covers the login and password-reset pages, responsive workspace shell, Command Center, analytics, leads, deals, follow-ups, works, team, inbound inquiries, and settings. It replaces the previous token-only treatment with distinct page structures, queue-focused operations layouts, full-digit INR, responsive navigation, and explicit data states. Existing role checks and server-action boundaries were retained during the redesign.
 
-The implementation is not marked approval-ready. The unit suite has 29 legacy source-contract failures, lint exhausted the current Node heap before producing findings, and the new database transaction test plus authenticated cross-route browser checks have not run. These are explicit blockers recorded in `docs/context/2026-11-06_12-00-00.md`.
+The screenshot-specific Follow-ups data failure still needs a reproducible authenticated isolated runtime. The UI reports query failure with a retry path and correlation reference, but that does not establish the underlying database/query cause.
 
-The delivered implementation includes all-page visual refresh, INR full-digit formatting, responsive shell and pagination, data-backed overview/analytics, query error states, synthetic simulation isolation, live contact collision protection, and atomic follow-up completion with stale timestamp protection.
+## Verification
 
-Do not merge this branch or its stacked parent PR. Review migration deployment ordering and complete the outstanding verification before approval.
+- `npm run test:unit`: 1,306 passed, 0 failed.
+- `npx tsc --noEmit --incremental false --pretty false`: passed on the current implementation after query-builder, error type, priority, and E2E credential fixes.
+- Changed-file TypeScript/TSX ESLint: passed with `--max-warnings=0`.
+- `npm run test:boundaries`: passed (13 Server Action modules, 49 actions).
+- `git diff --check`: passed, with expected Windows line-ending normalization warnings.
+- Assigned Sass compilation and focused shell/auth, dashboard, pipeline, follow-up, reporting, and hydration suites passed.
+
+## Remaining gates
+
+1. Run `next build` in an isolated worktree or after the active development servers release their shared `.next` directory.
+2. Run the database transaction/concurrency test against an isolated local database only.
+3. Complete authenticated desktop/mobile click-through across all CRM routes and record the evidence.
+4. Reproduce and resolve the Follow-ups loading error using that isolated runtime.
+5. Complete repository-wide lint in a machine/environment with enough memory; the scoped changed-file lint is clean, but a prior full run exhausted Node heap.
+6. Confirm deployment order for `20261106000001_complete_follow_up_atomically.sql` with the stacked data-integrity PR.
+
+PR #114 remains DRAFT/OPEN until the remaining gates are reviewed. Do not merge PR #114 or PR #113 automatically.

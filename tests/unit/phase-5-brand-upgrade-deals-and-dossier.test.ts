@@ -62,16 +62,16 @@ describe('Phase 5 Brand Upgrade: Pipeline Deals & Client Dossier Suite', () => {
       );
     });
 
-    it('verifies page.tsx queries pipeline KPIs and selects revisit_date for deals', () => {
+    it('verifies page.tsx selects follow-up fields and paginates server-side deal records', () => {
       const pageTsx = fs.readFileSync(dealsPageTsxPath, 'utf8');
 
       assert.ok(
-        pageTsx.includes('get_pipeline_kpis'),
-        'Must execute get_pipeline_kpis RPC for executive ribbon'
+        pageTsx.includes('next_follow_up, revisit_date'),
+        'Must query next touchpoint and revisit date for SLA display'
       );
       assert.ok(
-        pageTsx.includes('revisit_date'),
-        'Must query revisit_date for accurate SLA on-hold calculation'
+        pageTsx.includes('.range((page - 1) * pageSize, page * pageSize - 1)'),
+        'Deal records must be bounded to the selected server page'
       );
     });
   });
@@ -202,7 +202,7 @@ describe('Phase 5 Brand Upgrade: Pipeline Deals & Client Dossier Suite', () => {
       const tsx = fs.readFileSync(dealsClientTsxPath, 'utf8');
 
       assert.ok(
-        tsx.includes("if (userRole === 'viewer') return;"),
+        tsx.includes("if (userRole === 'viewer' || movingLeadId) return;"),
         'handleMoveStage must enforce viewer authorization guard'
       );
       assert.ok(

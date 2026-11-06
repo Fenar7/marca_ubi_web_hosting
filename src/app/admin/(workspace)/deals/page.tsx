@@ -165,7 +165,7 @@ export default async function AdminDealsPage(
 
       {/* Main Deals Grid with Filter Controls */}
       <Suspense fallback={<LeadsTableSkeleton />}>
-        {invalidFilter || dealsRes.error || statusesRes.error || sourcesRes.error || dealsRes.count === null ? (
+        {invalidFilter || dealsRes.error || statusesRes.error || sourcesRes.error ? (
           <div className={styles.loadError} role="alert">{invalidFilter ? 'A filter in this link is invalid. Open the deals page without filters to try again.' : 'Deals could not be loaded. Refresh the page to try again.'}</div>
         ) : (
           <>

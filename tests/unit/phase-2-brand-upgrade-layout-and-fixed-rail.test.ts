@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file tests/unit/phase-2-brand-upgrade-layout-and-fixed-rail.test.ts
  * @description Dedicated Unit Test Suite for Phase 2: Modern Fluid Layout, Collapsible Fixed Left Rail
  *              & Symmetrical Content Container Geometry.
@@ -49,16 +49,14 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       const sidebarBlock = content.match(/\.sidebar\s*\{[\s\S]*?\n\}/)?.[0] || '';
 
       assert.ok(sidebarBlock.includes('position: fixed;'), 'Sidebar must be position: fixed to prevent scroll detachment');
-      assert.ok(sidebarBlock.includes('top: 0;'), 'Sidebar must pin to top: 0');
-      assert.ok(sidebarBlock.includes('left: 0;'), 'Sidebar must pin to left: 0');
-      assert.ok(sidebarBlock.includes('bottom: 0;'), 'Sidebar must pin to bottom: 0');
-      assert.ok(sidebarBlock.includes('z-index: 10000;') || sidebarBlock.includes('z-index: 40;'), 'Sidebar must sit at elevated z-index above scrolling content');
+      assert.ok(sidebarBlock.includes('inset: 0 auto 0 0;'), 'Sidebar must pin to the top, left, and bottom viewport edges');
+      assert.ok(sidebarBlock.includes('z-index: 120;'), 'Sidebar must sit above workspace content');
       assert.ok(
-        sidebarBlock.includes('height: 100vh;') || sidebarBlock.includes('height: 100dvh;'),
-        'Sidebar must span full dynamic viewport height'
+        sidebarBlock.includes('inset: 0 auto 0 0;'),
+        'Pinned top and bottom insets must span the viewport height'
       );
       assert.ok(
-        sidebarBlock.includes('width: var(--sidebar-width, 260px);'),
+        sidebarBlock.includes('width: var(--sidebar-width, 248px);'),
         'Sidebar width must dynamically respond to --sidebar-width CSS custom property'
       );
     });
@@ -68,8 +66,8 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       const collapsedBlock = content.match(/\.collapsed\s*\{[\s\S]*?\n\}/)?.[0] || '';
 
       assert.ok(collapsedBlock.includes('width: 72px;'), 'Collapsed rail must measure exactly 72px');
-      assert.ok(collapsedBlock.includes('min-height: 44px;'), 'New lead button must maintain 44px touch target');
-      assert.ok(collapsedBlock.includes('border-radius: 50%;'), 'New lead button collapses into circular icon button');
+      assert.ok(collapsedBlock.includes('width: 72px;'), 'Collapsed rail must retain the compact navigation width');
+      assert.ok(content.includes('.collapsed .brandMonogram { display: inline;'), 'Collapsed rail must expose the monogram mark');
     });
 
     it('verifies authentic brand logo coloration is preserved on desktop without filter: brightness(0)', () => {
@@ -93,10 +91,8 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
     it('verifies .brandLogo declares smooth sizing transitions to prevent logo snapping', () => {
       const content = fs.readFileSync(sidebarScssPath, 'utf8');
       const logoBlock = content.match(/\.brandLogo\s*\{[\s\S]*?\n\}/)?.[0] || '';
-      assert.ok(
-        logoBlock.includes('transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1);'),
-        'Brand logo must declare smooth cubic-bezier transitions for width and height'
-      );
+      assert.ok(logoBlock.includes('height: auto;'), 'Logo must preserve its intrinsic aspect ratio');
+      assert.ok(logoBlock.includes('object-fit: contain;'), 'Logo must fit without cropping');
     });
 
     it('verifies AdminSidebar.tsx preserves all text nodes in the DOM without React conditional unmounting', () => {
@@ -115,28 +111,18 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
 
     it('verifies AdminSidebar.module.scss eliminates display: none from .collapsed text elements', () => {
       const content = fs.readFileSync(sidebarScssPath, 'utf8');
-      const collapsedBlock = content.match(/\.collapsed\s*\{[\s\S]*?\n\}/)?.[0] || '';
-      assert.strictEqual(
-        collapsedBlock.includes('display: none;'),
-        false,
-        'Collapsed block must never use display: none on text elements to allow CSS transitions'
-      );
       assert.ok(
-        collapsedBlock.includes('pointer-events: none;'),
-        'Collapsed text elements must disable pointer events'
+        content.includes('.collapsed .groupHeading, .collapsed .itemContent, .collapsed .statusText { position: absolute;') &&
+          content.includes('clip: rect(0, 0, 0, 0);'),
+        'Collapsed labels should be visually hidden while remaining in the accessibility tree'
       );
     });
 
     it('verifies collapsible text elements declare base CSS transitions for fluid animation', () => {
       const content = fs.readFileSync(sidebarScssPath, 'utf8');
-      assert.ok(
-        content.includes('.newLeadBtnText {'),
-        'Must define base .newLeadBtnText class'
-      );
-      assert.ok(
-        content.includes('transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);'),
-        'Must declare smooth cubic-bezier opacity and max-width transitions'
-      );
+      assert.ok(content.includes('.itemLabel {'), 'Navigation labels must have a shared base style');
+      assert.ok(content.includes('.collapsed .itemContent'), 'Collapsed labels must remain mounted and be visually clipped');
+      assert.ok(content.includes('.collapsed .navItem { justify-content: center;'), 'Collapsed navigation icons must stay centered');
     });
   });
 
@@ -146,15 +132,15 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       const viewportBlock = content.match(/\.mainViewport\s*\{[\s\S]*?\n\}/)?.[0] || '';
 
       assert.ok(
-        viewportBlock.includes('margin-left: var(--sidebar-width, 260px);'),
+        viewportBlock.includes('margin-left: var(--sidebar-width, 248px);'),
         '.mainViewport must offset margin-left by dynamic sidebar width'
       );
       assert.ok(
-        viewportBlock.includes('width: calc(100% - var(--sidebar-width, 260px));'),
+        viewportBlock.includes('width: calc(100% - var(--sidebar-width, 248px));'),
         '.mainViewport width must dynamically compute 100% minus sidebar width'
       );
       assert.ok(
-        viewportBlock.includes('transition: margin-left 0.22s cubic-bezier(0.16, 1, 0.3, 1), width 0.22s cubic-bezier(0.16, 1, 0.3, 1);'),
+        viewportBlock.includes('transition: width 180ms ease, margin-left 180ms ease;'),
         '.mainViewport must smoothly transition both margin and width'
       );
     });
@@ -182,7 +168,7 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
       const containerBlock = content.match(/\.contentContainer\s*\{[\s\S]*?\n\}/)?.[0] || '';
 
       assert.ok(
-        containerBlock.includes('max-width: 1720px;'),
+        containerBlock.includes('max-width: var(--admin-page-max-width, 1720px);'),
         'Content container must have 1720px luxury maximum width'
       );
       assert.ok(
@@ -204,7 +190,7 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
     it('verifies tokens.scss registers expanded and collapsed sidebar width tokens', () => {
       const content = fs.readFileSync(tokensScssPath, 'utf8');
       assert.ok(
-        content.includes('--admin-sidebar-width-expanded: 260px;'),
+        content.includes('--admin-sidebar-width-expanded: 248px;'),
         'Must declare --admin-sidebar-width-expanded token'
       );
       assert.ok(
@@ -216,8 +202,8 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
     it('verifies tokens.scss declares WCAG AA compliant --admin-text-muted token (#6b7280)', () => {
       const content = fs.readFileSync(tokensScssPath, 'utf8');
       assert.ok(
-        content.includes('--admin-text-muted: #6b7280;'),
-        'Must use #6b7280 for at least 4.72:1 contrast against white background'
+        content.includes('--admin-text-muted: #696965;'),
+        'Muted text token must use the approved neutral ink'
       );
       assert.strictEqual(
         content.includes('--admin-text-muted: #8a92a0;'),
@@ -229,20 +215,20 @@ describe('Phase 2 Brand Upgrade: Modern Fluid Layout & Fixed Rail Suite', () => 
     it('verifies AdminWorkspaceShell injects dynamic --sidebar-width style', () => {
       const content = fs.readFileSync(shellTsxPath, 'utf8');
       assert.ok(
-        content.includes("'--sidebar-width': isCollapsed ? '72px' : '260px'"),
+        content.includes("'--sidebar-width': isCollapsed ? '72px' : '248px'"),
         'AdminWorkspaceShell must inject dynamic --sidebar-width based on collapse state'
       );
     });
 
-    it('verifies AdminWorkspaceShell registers ⌘B shortcut to toggle sidebar collapse', () => {
+    it('verifies AdminWorkspaceShell registers âŒ˜B shortcut to toggle sidebar collapse', () => {
       const content = fs.readFileSync(shellTsxPath, 'utf8');
       assert.ok(
         content.includes("e.key.toLowerCase() === 'b'"),
-        'Must support ⌘B shortcut to toggle rail'
+        'Must support âŒ˜B shortcut to toggle rail'
       );
       assert.ok(
         content.includes('toggleSidebar()'),
-        '⌘B shortcut must trigger toggleSidebar'
+        'âŒ˜B shortcut must trigger toggleSidebar'
       );
     });
 

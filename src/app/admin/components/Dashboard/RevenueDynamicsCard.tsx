@@ -10,6 +10,7 @@ export type { MonthlyRevenueMetric } from "./types";
 export interface RevenueDynamicsCardProps {
   dataPoints: MonthlyRevenueMetric[];
   timeframe: string;
+  conversionCount: number | null;
   dataStatus?: "ready" | "unavailable";
 }
 
@@ -104,6 +105,7 @@ function formatAxis(amount: number): string {
 export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   dataPoints,
   timeframe,
+  conversionCount,
   dataStatus = "ready",
 }) => {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
@@ -225,9 +227,15 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
         <p className={styles.emptyState} role="status">
           Revenue data is unavailable. The source query did not complete.
         </p>
+      ) : conversionCount === 0 ? (
+        <p className={styles.emptyState} role="status">
+          <strong>No conversions recorded</strong>
+          <span>Closed deals dated in {timeframe} appear here.</span>
+        </p>
       ) : dataPoints.length === 0 || dataPoints.every((point) => point.cashVal === 0) ? (
         <p className={styles.emptyState} role="status">
-          No converted contract value was recorded during {timeframe}.
+          <strong>Converted deals have no recorded value</strong>
+          <span>{conversionCount ?? 0} conversion(s) in {timeframe}; no value is available to chart.</span>
         </p>
       ) : (
         <>

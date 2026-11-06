@@ -232,7 +232,7 @@ export default async function AdminLeadsPage(
 
       {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
       <Suspense fallback={<LeadsTableSkeleton rowCount={8} />}>
-        {invalidFilter || leadsRes.error || statusesRes.error || sourcesRes.error || profilesRes.error || leadsRes.count === null ? (
+        {invalidFilter || leadsRes.error || statusesRes.error || sourcesRes.error || profilesRes.error ? (
           <div className={styles.loadError} role="alert">{invalidFilter ? 'A filter in this link is invalid. Open the leads page without filters to try again.' : 'Leads or filter options could not be loaded. Refresh the page to try again.'}</div>
         ) : (
           <>

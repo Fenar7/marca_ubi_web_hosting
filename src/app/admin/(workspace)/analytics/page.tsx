@@ -16,21 +16,37 @@ const PAGE_SIZE = 1000;
 const MAX_ROWS = 50000;
 const SYNTHETIC_EXCLUSION = 'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true';
 
-/** Reads all visible rows or returns an error so a partial response is never shown as a total. */
+/** Folds each bounded page into stage totals so reporting never retains the full lead set. */
 async function readAnalyticsLeads(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const rows: Array<{ id: string; status_id: string; expected_value: number | string | null }> = [];
-  for (let from = 0; from <= MAX_ROWS; from += PAGE_SIZE) {
+  const totals = new Map<string, { count: number; value: number }>();
+  let count = 0;
+  for (let from = 0; from < MAX_ROWS; from += PAGE_SIZE) {
     const { data, error } = await supabase.from('leads')
       .select('id, status_id, expected_value')
       .or(SYNTHETIC_EXCLUSION)
       .order('id', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
-    if (error || !data) return { rows: null, error: error?.message ?? 'No data returned.' };
-    if (rows.length + data.length > MAX_ROWS) return { rows: null, error: 'Data exceeds the reporting limit.' };
-    rows.push(...data);
-    if (data.length < PAGE_SIZE) return { rows, error: null };
+    if (error || !data) return { totals: null, count: null, error: error?.message ?? 'No data returned.' };
+    if (count + data.length > MAX_ROWS) return { totals: null, count: null, error: 'Data exceeds the reporting limit.' };
+    for (const lead of data) {
+      const current = totals.get(lead.status_id) ?? { count: 0, value: 0 };
+      const amount = Number(lead.expected_value);
+      current.count += 1;
+      current.value += Number.isFinite(amount) ? amount : 0;
+      totals.set(lead.status_id, current);
+    }
+    count += data.length;
+    if (data.length < PAGE_SIZE) return { totals, count, error: null };
   }
-  return { rows: null, error: 'The complete data set could not be read.' };
+  const { data, error } = await supabase.from('leads')
+    .select('id, status_id, expected_value')
+    .or(SYNTHETIC_EXCLUSION)
+    .order('id', { ascending: true })
+    .range(MAX_ROWS, MAX_ROWS);
+  if (error || !data) return { totals: null, count: null, error: error?.message ?? 'The reporting limit check returned no payload.' };
+  return data.length
+    ? { totals: null, count: null, error: 'Data exceeds the reporting limit.' }
+    : { totals, count, error: null };
 }
 
 export default async function AdminAnalyticsPage(): Promise<React.ReactElement> {
@@ -54,23 +70,15 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
   const error = statusResult.error?.message ?? leadResult.error;
   if (error) console.error('[admin-analytics] Reporting query failed:', error);
   const statuses = statusResult.data ?? [];
-  const leads = leadResult.rows ?? [];
-  const totals = new Map<string, { count: number; value: number }>();
-  for (const lead of leads) {
-    const current = totals.get(lead.status_id) ?? { count: 0, value: 0 };
-    const amount = Number(lead.expected_value);
-    current.count += 1;
-    current.value += Number.isFinite(amount) ? amount : 0;
-    totals.set(lead.status_id, current);
-  }
+  const totals = leadResult.totals ?? new Map<string, { count: number; value: number }>();
   const knownIds = new Set(statuses.map((status) => status.id));
-  const incomplete = leads.some((lead) => !knownIds.has(lead.status_id));
+  const incomplete = [...totals.keys()].some((statusId) => !knownIds.has(statusId));
   const unavailable = Boolean(error || incomplete);
   const active = statuses.filter((status) => status.bucket === 'open' || status.bucket === 'potential');
   const converted = statuses.filter((status) => status.bucket === 'converted');
   const sum = (ids: string[]) => ids.reduce((total, id) => total + (totals.get(id)?.value ?? 0), 0);
   const cards = [
-    { label: 'Total leads', value: leads.length.toLocaleString('en-IN'), detail: 'Records visible to you' },
+    { label: 'Total leads', value: (leadResult.count ?? 0).toLocaleString('en-IN'), detail: 'Records visible to you' },
     { label: 'Active pipeline', value: formatCrmCurrency(sum(active.map((status) => status.id))), detail: 'Open and potential stages' },
     { label: 'Converted contract value', value: formatCrmCurrency(sum(converted.map((status) => status.id))), detail: 'Current converted records' },
   ];

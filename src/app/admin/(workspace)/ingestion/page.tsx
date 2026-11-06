@@ -62,7 +62,8 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  // Calculate dynamic deduplication window baseline
+  // This server-rendered queue metric must use a fresh, request-time 24-hour window.
+  // eslint-disable-next-line react-hooks/purity -- A current timestamp is required for this server-side operational count.
   const window24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   // Aggregate verified inquiry volume within active rolling window
@@ -110,7 +111,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     company: lead.company,
     email: lead.email,
     phone: lead.phone,
-    service_category: lead.service_category || 'Web & Digital',
+    service_category: lead.service_category || 'Not recorded',
     expected_value: Number(lead.expected_value) || 0,
     created_at: lead.created_at,
     brief_payload: (lead.brief_payload as Record<string, unknown>) || null,

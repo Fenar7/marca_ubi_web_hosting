@@ -141,11 +141,11 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
     });
   });
 
-  describe('4. Input Autofill Shielding & Suspense Semantic Tag Synchronization', () => {
+  describe('4. Input Autofill Shielding & Suspense Loading Status Semantics', () => {
     it('verifies LoginForm.tsx inputs and form declare suppressHydrationWarning', () => {
       const content = fs.readFileSync(loginFormPath, 'utf8').replace(/\r\n/g, '\n');
       assert.ok(
-        content.includes('<form action={formAction} className={styles.form} suppressHydrationWarning>'),
+        content.includes("className={styles.form} aria-describedby={displayError ? 'login-error' : undefined} suppressHydrationWarning"),
         'Login form must declare suppressHydrationWarning'
       );
       assert.ok(
@@ -158,22 +158,16 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
       );
     });
 
-    it('verifies login/page.tsx Suspense fallback header tag identically matches LoginForm.tsx header', () => {
+    it('verifies login/page.tsx announces the Suspense fallback as a loading status', () => {
       const pageContent = fs.readFileSync(loginPagePath, 'utf8');
-      const formContent = fs.readFileSync(loginFormPath, 'utf8');
 
       assert.ok(
-        pageContent.includes('<header className={styles.brandHeader}>'),
-        'Suspense fallback in login/page.tsx must use <header> element'
+        pageContent.includes('fallback={<div className={styles.loadingPanel} role="status">'),
+        'Suspense fallback must expose a live status while the sign-in form loads'
       );
       assert.ok(
-        formContent.includes('<header className={styles.brandHeader}>'),
-        'LoginForm.tsx must use <header> element'
-      );
-      assert.strictEqual(
-        pageContent.includes('<div className={styles.brandHeader}>'),
-        false,
-        'Suspense fallback must not use <div> for brandHeader'
+        pageContent.includes('Loading sign-in form'),
+        'Suspense status must explain what is loading'
       );
     });
   });

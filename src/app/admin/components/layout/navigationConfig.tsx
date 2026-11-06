@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file navigationConfig.tsx
  * @description Canonical Navigation Architecture & RBAC Authorization Mapping for Marca Ubi CRM.
  * @architecture Defines the unified 9-tab navigation taxonomy organized into 3 logical enclaves:
@@ -63,7 +63,7 @@ export function isTabAuthorized(tabKey: CrmTabKey, user: CurrentUserSession | nu
  */
 export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
-    groupTitle: 'Commercial Pipeline',
+    groupTitle: 'Commercial',
     items: [
       {
         key: 'command_center',
@@ -183,7 +183,7 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     ],
   },
   {
-    groupTitle: 'Agency Operations',
+    groupTitle: 'Operations',
     items: [
       {
         key: 'users',

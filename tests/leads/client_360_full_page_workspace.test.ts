@@ -179,10 +179,13 @@ describe('Phase 8.2: Client 360° Full-Page Dedicated Workspace Architecture', (
       const content = fs.readFileSync(scssPath, 'utf-8');
 
       assert.ok(content.includes('.monoSegmentChip'), 'AdminBreadcrumbs.module.scss must define .monoSegmentChip');
-      assert.ok(
-        content.includes('adminMonoToken') || content.includes('font-family: var(--font-admin-code)'),
-        'must style monoSegmentChip with monospace token tokens'
+      const chipStyles = content.match(/\.monoSegmentChip\s*\{([^}]*)\}/)?.[1] || '';
+      assert.match(
+        chipStyles,
+        /font-family:\s*var\(--font-admin-code(?:,\s*monospace)?\)/,
+        'dynamic identifiers must use the shared code font token with a safe monospace fallback'
       );
+      assert.ok(chipStyles.includes('font-variant-numeric: tabular-nums;'));
     });
 
     it('verifies LeadDossierWorkspaceClient broadcasts dynamic lead_id upon mounting/change', () => {

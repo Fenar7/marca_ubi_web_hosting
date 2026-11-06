@@ -62,6 +62,7 @@ export function IngestionWorkspaceClient({
   const [isSimulateModalOpen, setIsSimulateModalOpen] = useState<boolean>(false);
   const [expandedPayloadId, setExpandedPayloadId] = useState<string | null>(null);
   const [copiedPayloadId, setCopiedPayloadId] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
 
   // Simulation form state
   const [formData, setFormData] = useState({
@@ -138,14 +139,22 @@ export function IngestionWorkspaceClient({
   };
 
   const handleCopyPayload = (id: string, payload: Record<string, unknown> | null) => {
-    if (!payload || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    if (!payload) return;
+    if (typeof navigator === 'undefined' || !navigator.clipboard) {
+      setCopyError('Clipboard access is unavailable in this browser. Select and copy the payload manually.');
+      return;
+    }
+    setCopyError(null);
     navigator.clipboard
       .writeText(JSON.stringify(payload, null, 2))
       .then(() => {
         setCopiedPayloadId(id);
         setTimeout(() => setCopiedPayloadId(null), 2000);
       })
-      .catch(() => {});
+      .catch((error: unknown) => {
+        console.error('[ingestion] Payload copy failed:', error);
+        setCopyError('Clipboard access was denied. Select and copy the payload manually.');
+      });
   };
 
   const handleSimulateSubmit = (e: React.FormEvent) => {
@@ -190,6 +199,7 @@ export function IngestionWorkspaceClient({
           </button>
         )}
       </div>
+      {copyError && <p className={styles.emptyState} role="alert">{copyError}</p>}
 
       {/* Live Database-Driven Telemetry Ribbon */}
       <section className={styles.telemetryGrid} aria-label="Ingestion Health Metrics">

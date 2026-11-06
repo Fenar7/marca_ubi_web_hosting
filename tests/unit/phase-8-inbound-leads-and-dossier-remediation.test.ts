@@ -416,17 +416,19 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
   });
 
   describe('Block 9: User Management Navigation, Scrim Stacking & RBAC Synchronization', () => {
-    it('verifies AdminSidebar.module.scss elevates .sidebar to z-index: 10000 above drawer scrims', () => {
+    it('verifies desktop navigation rail stays above workspace content', () => {
       const sidebarScssPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminSidebar.module.scss');
       const scss = fs.readFileSync(sidebarScssPath, 'utf8');
-      assert.ok(scss.includes('z-index: 10000;'), 'AdminSidebar must have z-index: 10000');
+      assert.ok(scss.includes('z-index: 120;'), 'Desktop navigation rail must sit above workspace content');
     });
 
     it('verifies AdminMobileDrawer elevates backdrop and drawer above overlay drawers', () => {
       const mobileScssPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminMobileDrawer.module.scss');
       const scss = fs.readFileSync(mobileScssPath, 'utf8');
-      assert.ok(scss.includes('z-index: 10001;'), 'Backdrop must have z-index: 10001');
-      assert.ok(scss.includes('z-index: 10002;'), 'Drawer must have z-index: 10002');
+      const backdropZ = Number(scss.match(/\.backdrop\s*\{[^}]*z-index:\s*(\d+)/)?.[1]);
+      const drawerZ = Number(scss.match(/\.drawer\s*\{[^}]*z-index:\s*(\d+)/)?.[1]);
+      assert.ok(Number.isFinite(backdropZ) && Number.isFinite(drawerZ), 'Backdrop and drawer must define stacking levels');
+      assert.ok(drawerZ > backdropZ, 'Drawer must render above its backdrop');
     });
 
     it('verifies AdminWorkspaceShell monitors pathname changes to reset drawers and clear scroll locks', () => {

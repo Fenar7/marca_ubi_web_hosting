@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /**
  * @file ResetPasswordForm.tsx
@@ -78,8 +78,8 @@ export function ResetPasswordForm(): React.ReactElement {
           window.location.href = '/admin';
         }, 1200);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
-        setErrorMessage(msg);
+        console.error('[admin-password-reset] Unexpected failure:', err);
+        setErrorMessage('Could not update the password. Please try again.');
       }
     });
   };
@@ -125,7 +125,6 @@ export function ResetPasswordForm(): React.ReactElement {
             onClick={() => setShowNewPassword((prev) => !prev)}
             aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
             disabled={isPending || Boolean(successMessage)}
-            tabIndex={0}
           >
             <svg
               width="18"
@@ -282,7 +281,6 @@ export function ResetPasswordForm(): React.ReactElement {
             onClick={() => setShowConfirmPassword((prev) => !prev)}
             aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
             disabled={isPending || Boolean(successMessage)}
-            tabIndex={0}
           >
             <svg
               width="18"
@@ -328,7 +326,7 @@ export function ResetPasswordForm(): React.ReactElement {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              style={{ animation: 'spin 1s linear infinite' }}
+              className={styles.spinnerIcon}
               aria-hidden="true"
             >
               <line x1="12" y1="2" x2="12" y2="6" />

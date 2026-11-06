@@ -532,3 +532,33 @@ $grid-min-width: 1200px;
     outline-offset: 2px;
   }
 }
+
+.virtualScrollContainer {
+  min-height: 280px;
+  max-height: calc(100vh - 330px);
+  border-color: var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  background: var(--admin-card-bg, #fff);
+}
+.tableHeader { background: var(--admin-surface-muted, #efefed); }
+.thCell {
+  color: var(--admin-text-muted, #696965);
+  letter-spacing: 0.08em;
+}
+.virtualRow { border-bottom-color: var(--admin-border-subtle, #e7e7e4); }
+.virtualRow:hover { background: var(--admin-surface-hover, #f7f7f5); }
+.leadIdToken {
+  border-radius: var(--admin-radius-micro, 4px);
+  background: var(--admin-surface-muted, #efefed);
+}
+.clientName,
+.dealValue { color: var(--admin-text-primary, #111); }
+.emptyState {
+  border-color: var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .mobileCardsContainer { gap: 0.6rem; }
+}

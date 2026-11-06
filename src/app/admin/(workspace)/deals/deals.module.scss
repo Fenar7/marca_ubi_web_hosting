@@ -59,6 +59,31 @@
   max-width: 720px;
 }
 
+.dealsWorkspace { gap: 1.25rem; }
+.header {
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom-color: var(--admin-border-subtle, #e7e7e4);
+}
+.eyebrow {
+  color: var(--admin-accent-brand, #ea002a);
+  letter-spacing: 0.11em;
+}
+.heading {
+  font-size: clamp(1.7rem, 2.2vw, 2.35rem);
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+.subheading { max-width: 58ch; font-size: 0.95rem; }
+.loadError {
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--admin-status-rose-border, #f5b7c0);
+  border-left: 3px solid var(--admin-accent-brand, #ea002a);
+  border-radius: var(--admin-radius-inner, 8px);
+  background: var(--admin-status-rose-bg, #fff0f2);
+  color: var(--admin-status-rose-text, #9c001e);
+}
+
 .kpiContainer {
   width: 100%;
 }

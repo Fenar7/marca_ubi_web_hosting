@@ -424,7 +424,7 @@
   transition: all 0.15s ease;
 
   .tabCardActive & {
-    background: var(--admin-accent-lemon, #eefb87);
+    background: var(--admin-accent-lemon, #ea002a);
     border-color: var(--admin-border-strong, #1f242f);
   }
 
@@ -437,7 +437,7 @@
 .checkIcon {
   width: 12px;
   height: 12px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: var(--admin-btn-primary-text, #ffffff);
 }
 
 .tabMeta {
@@ -616,10 +616,10 @@
   height: 44px;
   min-height: 44px;
   padding: 0 1.35rem;
-  background: var(--admin-accent-lemon, #eefb87);
+  background: var(--admin-accent-lemon, #ea002a);
   border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 8px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: var(--admin-btn-primary-text, #ffffff);
   font-size: 0.84rem;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -660,7 +660,7 @@
   width: 14px;
   height: 14px;
   border: 2px solid rgba(31, 36, 47, 0.2);
-  border-top-color: var(--admin-accent-lemon-ink, #1f242f);
+  border-top-color: var(--admin-btn-primary-text, #ffffff);
   border-radius: 50%;
   animation: spinnerRotate 0.7s linear infinite;
   flex-shrink: 0;

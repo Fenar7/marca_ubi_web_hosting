@@ -10,6 +10,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { CurrentUserSession } from './UserProfileDropdown';
 import { NAVIGATION_GROUPS, isTabAuthorized } from './navigationConfig';
@@ -104,9 +105,11 @@ export function AdminMobileDrawer({
       >
         <div className={styles.drawerHeader}>
           <Link href="/admin" onClick={onClose} className={styles.brandLink}>
-            <img
+            <Image
               src="/images/marca-ubi-dark.svg"
               alt="Marca Ubi."
+              width={150}
+              height={34}
               className={styles.brandLogo}
             />
             <span className={styles.systemTag}>CRM Portal</span>
@@ -134,39 +137,6 @@ export function AdminMobileDrawer({
             </svg>
           </button>
         </div>
-
-        {/* Quick Action Button for Mobile: Gated against viewers */}
-        {currentUser.role !== 'viewer' && (
-          <div className={styles.quickActionBox}>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (typeof window !== 'undefined') {
-                  window.dispatchEvent(new CustomEvent('open-new-lead-modal'));
-                }
-              }}
-              className={styles.newLeadBtn}
-              aria-label="New Lead"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>New Lead</span>
-            </button>
-          </div>
-        )}
 
         <nav className={styles.navScrollArea}>
           {NAVIGATION_GROUPS.map((group) => {

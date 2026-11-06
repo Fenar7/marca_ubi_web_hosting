@@ -124,13 +124,23 @@ export function DealsWorkspaceClient({
     setDeals(initialDeals);
   }, [initialDeals]);
 
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('table');
   const [searchTerm, setSearchTerm] = useState(searchParam);
   const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted' | 'lost'>(initialBucket);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assignedToParam);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sortField, setSortField] = useState<SortField>('expected_value');
   const [sortAscending, setSortAscending] = useState(false);
+
+  useEffect(() => {
+    const desktopBoard = window.matchMedia('(min-width: 1100px)');
+    if (desktopBoard.matches) setViewMode('kanban');
+    const handleViewportChange = (event: MediaQueryListEvent): void => {
+      if (!event.matches) setViewMode('table');
+    };
+    desktopBoard.addEventListener('change', handleViewportChange);
+    return () => desktopBoard.removeEventListener('change', handleViewportChange);
+  }, []);
 
   // Synchronize with URL search parameters on route navigation
   useEffect(() => {
@@ -249,10 +259,9 @@ export function DealsWorkspaceClient({
     }
   };
 
-  const handleInspectDeal = (dealId: string): void => {
+  const handleInspectDeal = useCallback((dealId: string): void => {
     router.push(`/admin/deals/${dealId}`);
-
-  };
+  }, [router]);
 
   const handleCloseDrawer = (): void => {
     setIsDrawerOpen(false);
@@ -273,7 +282,7 @@ export function DealsWorkspaceClient({
     };
     window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
     return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
-  }, []);
+  }, [handleInspectDeal]);
 
   /**
    * Evaluates if advancing to a target status triggers guarded requirements.

@@ -39,7 +39,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #a0001d;
+  color: #ea002a;
   display: block;
   margin-bottom: 0.35rem;
 }
@@ -793,10 +793,10 @@
 .submitDrawerButton {
   flex: 2;
   min-height: 44px;
-  background: var(--admin-accent-lemon, #eefb87);
+  background: var(--admin-accent-lemon, #ea002a);
   border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 9999px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: var(--admin-btn-primary-text, #ffffff);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.84rem;
   font-weight: 600;
@@ -966,10 +966,10 @@
 .doneButton {
   flex: 1;
   min-height: 44px;
-  background: var(--admin-accent-lemon, #eefb87);
+  background: var(--admin-accent-lemon, #ea002a);
   border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 9999px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: var(--admin-btn-primary-text, #ffffff);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.82rem;
   font-weight: 600;

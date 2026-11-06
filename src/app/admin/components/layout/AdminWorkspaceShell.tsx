@@ -67,7 +67,12 @@ function LeadUrlSync({
   return null;
 }
 
-export function AdminWorkspaceShell({
+export function AdminWorkspaceShell(props: AdminWorkspaceShellProps): React.ReactElement {
+  const pathname = usePathname();
+  return <AdminWorkspaceShellState key={pathname} {...props} />;
+}
+
+function AdminWorkspaceShellState({
   currentUser,
   children,
   dueTasksCount,
@@ -82,25 +87,22 @@ export function AdminWorkspaceShell({
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] = useState<ProvisionedCredentialsPayload | null>(null);
   const [isCredentialModalOpen, setIsCredentialModalOpen] = useState<boolean>(false);
-  const pathname = usePathname();
-
-  // Reset active drawers, modals, and body scroll lock upon inter-workspace navigation
+  // Route-keyed remounting clears route-scoped overlays; this cleanup releases scroll lock.
   useEffect(() => {
-    setIsDrawerOpen(false);
-    setActiveDrawerLeadId(null);
-    setIsNewLeadModalOpen(false);
-    setIsAddMemberModalOpen(false);
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
-    }
-  }, [pathname]);
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+      }
+    };
+  }, []);
 
   // Restore sidebar collapse preference from localStorage upon client hydration
   useEffect(() => {
     try {
       const stored = localStorage.getItem('marca_crm_sidebar_collapsed');
       if (stored !== null) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Browser storage is unavailable during SSR; hydrate the persisted preference after mount.
         setIsCollapsed(stored === 'true');
       }
     } catch {
@@ -230,7 +232,7 @@ export function AdminWorkspaceShell({
       className={styles.layoutRoot}
       style={
         {
-          '--sidebar-width': isCollapsed ? '72px' : '260px',
+          '--sidebar-width': isCollapsed ? '72px' : '248px',
         } as React.CSSProperties
       }
     >
