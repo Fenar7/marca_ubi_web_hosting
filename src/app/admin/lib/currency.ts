@@ -21,4 +21,3 @@ export function formatBudgetTierLabel(tier: string): string {
     return formatCrmCurrency(amount * multiplier);
   });
 }
-
