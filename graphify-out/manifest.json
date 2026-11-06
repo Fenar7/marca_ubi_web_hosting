@@ -5400,15 +5400,15 @@
     "semantic_hash": ""
   },
   "docs/context/2026-11-06_12-00-00.md": {
-    "mtime": 1793952854.729004,
-    "seen": 1793952921.8131883,
-    "ast_hash": "c039a138df2ce3645014d5f4b8d077f4",
+    "mtime": 1793953799.4967062,
+    "seen": 1793953844.1577332,
+    "ast_hash": "deebc005aca59b50f7bec5ec49f9a1a5",
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/IMPLEMENTATION_REVIEW.md": {
-    "mtime": 1793952644.494164,
-    "seen": 1793952921.8131883,
-    "ast_hash": "0b7c9852f46f18afc616620f42f1921c",
+    "mtime": 1793953799.4971955,
+    "seen": 1793953844.1577332,
+    "ast_hash": "7b9e1aaa939204523ebfcb2b833f47d3",
     "semantic_hash": ""
   },
   "supabase/migrations/20261106000001_complete_follow_up_atomically.sql": {
