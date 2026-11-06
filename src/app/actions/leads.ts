@@ -213,37 +213,35 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
  * @returns {Promise<AssigneeOption[]>} List of active commercial personnel.
  */
 export async function getActiveTeamAssignees(): Promise<AssigneeOption[]> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return [];
-    }
-
-    const { data: roster, error: rosterError } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, role')
-      .eq('status', 'active')
-      .in('role', ['admin', 'sales_manager', 'sales_executive'])
-      .order('full_name', { ascending: true });
-
-    if (rosterError || !roster) {
-      return [];
-    }
-
-    return roster.map((p) => ({
-      id: p.id,
-      fullName: p.full_name,
-      email: p.email,
-      role: p.role as CrmUserRole,
-    }));
-  } catch {
+  if (authError || !user) {
     return [];
   }
+
+  const { data: roster, error: rosterError } = await supabase
+    .from('crm_team_directory')
+    .select('id, full_name, role')
+    .in('role', ['admin', 'sales_manager', 'sales_executive'])
+    .order('full_name', { ascending: true });
+
+  if (rosterError) {
+    throw new Error(`Failed to load active CRM assignees: ${rosterError.message}`);
+  }
+  if (!roster) {
+    throw new Error('Active CRM assignee query returned no result payload.');
+  }
+
+  return roster.map((p) => ({
+    id: p.id,
+    fullName: p.full_name,
+    email: '',
+    role: p.role as CrmUserRole,
+  }));
 }
 
 /**
@@ -329,7 +327,7 @@ export async function getLeadDetails(
         updated_at,
         funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at),
         lead_sources(id, name, color_code, is_active, created_at),
-        profiles!leads_assigned_to_fkey(id, full_name, role, email, avatar_url)
+        profiles:crm_team_directory!leads_assigned_to_fkey(id, full_name, role, avatar_url)
       `)
       .eq('id', leadId)
       .maybeSingle();
@@ -358,7 +356,7 @@ export async function getLeadDetails(
         description,
         metadata,
         created_at,
-        profiles(id, full_name, role, avatar_url, email)
+        profiles:crm_team_directory!lead_activities_actor_id_fkey(id, full_name, role, avatar_url)
       `)
       .eq('lead_id', leadId)
       .order('created_at', { ascending: false });

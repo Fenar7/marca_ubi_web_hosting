@@ -39,17 +39,11 @@ export interface DispatchAlertResult {
 }
 
 /**
- * Formats monetary amounts into clean Indian Lakhs/Crores or USD for alert summaries.
+ * Formats monetary amounts with full Indian digit grouping for alert summaries.
  */
 function formatAlertValue(amount?: number): string {
   if (!amount || amount === 0) return 'Undisclosed';
-  if (amount >= 10000000) {
-    return `₹ ${(amount / 10000000).toFixed(2)} Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹ ${(amount / 100000).toFixed(2)} L`;
-  }
-  return `₹ ${amount.toLocaleString('en-IN')}`;
+  return `₹ ${Math.round(amount).toLocaleString('en-IN')}`;
 }
 
 /**

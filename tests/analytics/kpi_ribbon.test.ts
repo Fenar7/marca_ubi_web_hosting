@@ -2,7 +2,7 @@
  * @file kpi_ribbon.test.ts
  * @description Dedicated automated test suite for Sprint 6.2:
  *              Dark Luxury Executive KPI Ribbon & Real-time Recalculation Engine.
- *              Validates currency formatting (INR Lakhs/Crores & USD at ₹83.50 rate),
+ *              Validates full-digit currency formatting (INR & USD at ₹83.50 rate),
  *              metrics normalization, edge cases, rapid filter AbortController handling,
  *              and component contract compliance.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -20,36 +20,36 @@ import {
   type NormalizedKpiMetrics,
 } from '../../src/app/admin/components/kpi/kpiFormatters';
 import type { PipelineRpcMetrics } from '../../src/types/crm';
+import { formatBudgetTierLabel } from '../../src/app/admin/lib/currency';
 
 describe('Marca Ubi CRM — Sprint 6.2: Executive KPI Ribbon & Currency Recalculation Engine', () => {
-  describe('Section 1: Dual-Currency Mathematical Precision & Abbreviation Scaling', () => {
+  describe('Section 1: Dual-Currency Mathematical Precision & Full-Digit Formatting', () => {
+    it('shows budget tiers in full digits while preserving the stored compact tier value', () => {
+      assert.strictEqual(formatBudgetTierLabel('₹5L - ₹15L'), '₹ 5,00,000 - ₹ 15,00,000');
+      assert.strictEqual(formatBudgetTierLabel('> ₹1.5 Crore'), '> ₹ 1,50,00,000');
+    });
+
     it('enforces the official institutional peg of 1 USD = 83.50 INR', () => {
       assert.strictEqual(USD_TO_INR_RATE, 83.5);
     });
 
-    it('formats zero or negative amounts cleanly without layout-breaking symbols', () => {
+    it('formats zero and negative amounts with localized full digits', () => {
       assert.strictEqual(formatKpiCurrency(0, 'INR'), '₹ 0');
-      assert.strictEqual(formatKpiCurrency(-5000, 'INR'), '₹ 0');
+      assert.strictEqual(formatKpiCurrency(-5000, 'INR'), '₹ -5,000');
       assert.strictEqual(formatKpiCurrency(0, 'USD'), '$ 0');
-      assert.strictEqual(formatKpiCurrency(-100, 'USD'), '$ 0');
+      assert.strictEqual(formatKpiCurrency(-100, 'USD'), '$ -1');
     });
 
-    it('formats Indian Rupees into Lakhs when between 1 Lakh and 1 Crore', () => {
-      // 48.5 Lakhs (₹48,50,000)
-      assert.strictEqual(formatKpiCurrency(4850000, 'INR'), '₹ 48.5 L');
-      // Exact 1 Lakh (₹1,00,000)
-      assert.strictEqual(formatKpiCurrency(100000, 'INR'), '₹ 1 L');
-      // 15 Lakhs (₹15,00,000)
-      assert.strictEqual(formatKpiCurrency(1500000, 'INR'), '₹ 15 L');
+    it('formats Indian Rupees using full Indian digit grouping at every magnitude', () => {
+      assert.strictEqual(formatKpiCurrency(4850000, 'INR'), '₹ 48,50,000');
+      assert.strictEqual(formatKpiCurrency(100000, 'INR'), '₹ 1,00,000');
+      assert.strictEqual(formatKpiCurrency(1500000, 'INR'), '₹ 15,00,000');
     });
 
-    it('formats Indian Rupees into Crores when 1 Crore or greater', () => {
-      // 1.25 Crores (₹1,25,00,000)
-      assert.strictEqual(formatKpiCurrency(12500000, 'INR'), '₹ 1.25 Cr');
-      // Exact 1 Crore (₹1,00,00,000)
-      assert.strictEqual(formatKpiCurrency(10000000, 'INR'), '₹ 1 Cr');
-      // Extreme valuation: 100 Crores (₹100,00,00,000)
-      assert.strictEqual(formatKpiCurrency(1000000000, 'INR'), '₹ 100 Cr');
+    it('preserves every digit for crore-scale and extreme Indian Rupee amounts', () => {
+      assert.strictEqual(formatKpiCurrency(12500000, 'INR'), '₹ 1,25,00,000');
+      assert.strictEqual(formatKpiCurrency(10000000, 'INR'), '₹ 1,00,00,000');
+      assert.strictEqual(formatKpiCurrency(1000000000, 'INR'), '₹ 1,00,00,00,000');
     });
 
     it('formats standard sub-lakh INR amounts with Indian locale separators', () => {
@@ -57,14 +57,14 @@ describe('Marca Ubi CRM — Sprint 6.2: Executive KPI Ribbon & Currency Recalcul
       assert.strictEqual(formatKpiCurrency(500, 'INR'), '₹ 500');
     });
 
-    it('converts INR amounts into USD using the institutional multiplier and abbreviates in K and M', () => {
+    it('converts INR amounts into USD using the institutional multiplier and preserves full digits', () => {
       // 35,000 USD * 83.50 = ₹29,22,500
       const inrValue35k = 35000 * 83.5;
-      assert.strictEqual(formatKpiCurrency(inrValue35k, 'USD'), '$ 35K');
+      assert.strictEqual(formatKpiCurrency(inrValue35k, 'USD'), '$ 35,000');
 
       // 1.4 Million USD * 83.50 = ₹11,69,00,000
       const inrValue1Point4M = 1400000 * 83.5;
-      assert.strictEqual(formatKpiCurrency(inrValue1Point4M, 'USD'), '$ 1.4M');
+      assert.strictEqual(formatKpiCurrency(inrValue1Point4M, 'USD'), '$ 1,400,000');
 
       // Small USD amounts (< 1,000 USD)
       const inrValue500Usd = 500 * 83.5;
@@ -158,7 +158,7 @@ describe('Marca Ubi CRM — Sprint 6.2: Executive KPI Ribbon & Currency Recalcul
 
       const normalized = extractKpiMetrics(payload);
       assert.strictEqual(normalized.stageWeightedValue, 4800000);
-      assert.strictEqual(formatKpiCurrency(normalized.stageWeightedValue, 'INR'), '₹ 48 L');
+      assert.strictEqual(formatKpiCurrency(normalized.stageWeightedValue, 'INR'), '₹ 48,00,000');
     });
   });
 

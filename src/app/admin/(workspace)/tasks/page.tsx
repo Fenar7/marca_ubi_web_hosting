@@ -84,7 +84,7 @@ export default async function AdminTasksPage(): Promise<React.ReactElement> {
       expected_value,
       next_follow_up,
       assigned_to,
-      profiles!leads_assigned_to_fkey(full_name),
+      profiles:crm_team_directory!leads_assigned_to_fkey(full_name),
       funnel_statuses!inner(name, bucket)
     `)
     .not('next_follow_up', 'is', null)

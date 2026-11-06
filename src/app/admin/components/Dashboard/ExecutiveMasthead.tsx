@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * @file ExecutiveMasthead.tsx
@@ -11,13 +11,14 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useRef, useEffect, useTransition } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import React, { useState, useRef, useEffect, useTransition } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   timeframeToSlug,
   slugToTimeframeLabel,
-} from '@/app/admin/lib/timeframeUtils';
-import styles from './ExecutiveMasthead.module.scss';
+} from "@/app/admin/lib/timeframeUtils";
+import styles from "./ExecutiveMasthead.module.scss";
+import type { ExecutiveReportExportData } from "./types";
 
 export interface ExecutiveMastheadProps {
   /** Optional active timeframe passed from Server Component */
@@ -26,25 +27,25 @@ export interface ExecutiveMastheadProps {
   initialDateRange?: string;
   /** Notification hook triggered upon timeframe mutation */
   onDateRangeChange?: (range: string) => void;
-  /** Custom export delegate; defaults to client-side pipeline summary snapshot */
-  onExport?: () => void;
+  /** Snapshot assembled from successful dashboard queries; absent snapshots cannot be exported. */
+  exportData?: ExecutiveReportExportData;
   /** Custom lead creation delegate; default dispatches `open-new-lead-drawer` event */
   onNewLead?: () => void;
 }
 
 const TIMEFRAME_OPTIONS = [
-  'Last 7 Days',
-  'Last 30 Days',
-  'Last 90 Days',
-  'This Quarter',
-  'This Year',
+  "Last 7 Days",
+  "Last 30 Days",
+  "Last 90 Days",
+  "This Quarter",
+  "This Year",
 ];
 
 export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
   selectedTimeframe,
-  initialDateRange = 'Last 30 Days',
+  initialDateRange = "Last 30 Days",
   onDateRangeChange,
-  onExport,
+  exportData,
   onNewLead,
 }) => {
   const router = useRouter();
@@ -53,8 +54,10 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
   const [isPending, startTransition] = useTransition();
 
   // Resolve current active timeframe from URL search parameters, falling back to selectedTimeframe or initialDateRange
-  const urlTimeframeParam = searchParams.get('timeframe');
-  const activeSlug = timeframeToSlug(urlTimeframeParam || selectedTimeframe || initialDateRange);
+  const urlTimeframeParam = searchParams.get("timeframe");
+  const activeSlug = timeframeToSlug(
+    urlTimeframeParam || selectedTimeframe || initialDateRange,
+  );
   const activeLabel = slugToTimeframeLabel(activeSlug);
 
   const [selectedRange, setSelectedRange] = useState<string>(activeLabel);
@@ -73,15 +76,18 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
    */
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     }
     if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isDropdownOpen]);
 
@@ -95,7 +101,7 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
 
     const targetSlug = timeframeToSlug(range);
     const params = new URLSearchParams(searchParams.toString());
-    params.set('timeframe', targetSlug);
+    params.set("timeframe", targetSlug);
 
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
@@ -109,32 +115,86 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
     if (onNewLead) {
       onNewLead();
     } else {
-      window.dispatchEvent(new CustomEvent('open-new-lead-drawer'));
+      window.dispatchEvent(new CustomEvent("open-new-lead-drawer"));
     }
   };
 
+  /** Quotes every cell and neutralizes formula-leading values before spreadsheet import. */
   const handleExportClick = () => {
-    if (onExport) {
-      onExport();
-    } else {
-      // Synthesize quick pipeline report download notification
-      window.dispatchEvent(
-        new CustomEvent('executive-toast', {
-          detail: {
-            title: 'Report Compiled',
-            message: `Exporting executive pipeline ledger for ${selectedRange}...`,
-          },
-        })
-      );
-    }
+    if (!exportData) return;
+    const csvCell = (value: string | number | null): string => {
+      const raw = value === null ? "" : String(value);
+      const safe = /^[=+\-@\t\r]/.test(raw) ? "'" + raw : raw;
+      return '"' + safe.replace(/"/g, '""') + '"';
+    };
+    const rows: (string | number | null)[][] = [
+      ["Executive report", exportData.timeframe, exportData.cadence],
+      ["Window start", exportData.dateWindow.start],
+      ["Window end", exportData.dateWindow.end],
+      ["Generated at", exportData.generatedAt],
+      [],
+      ["Metrics"],
+      ["Metric", "Value"],
+      ...exportData.metrics.map((metric) => [metric.label, metric.value]),
+      [],
+      ["Pipeline stages"],
+      ["Stage", "Deal count", "Total value (INR)"],
+      ...exportData.stages.map((stage) => [
+        stage.stageName,
+        stage.dealCount,
+        stage.totalValue,
+      ]),
+      [],
+      ["Displayed active deals"],
+      [
+        "Lead ID",
+        "Name",
+        "Company",
+        "Category",
+        "Stage",
+        "Expected value (INR)",
+        "Priority",
+        "Next follow-up",
+        "Owner",
+      ],
+      ...exportData.deals.map((deal) => [
+        deal.leadId,
+        deal.name,
+        deal.company,
+        deal.serviceCategory,
+        deal.stageName,
+        deal.expectedValue,
+        deal.priority,
+        deal.nextFollowUp,
+        deal.owner,
+      ]),
+    ];
+    const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download =
+      "executive-report-" + timeframeToSlug(exportData.timeframe) + ".csv";
+    anchor.style.display = "none";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
   };
 
   return (
-    <header className={styles.mastheadContainer} aria-label="Executive Overview Header">
+    <header
+      className={styles.mastheadContainer}
+      aria-label="Executive Overview Header"
+    >
       <div className={styles.titleCluster}>
-        <h1 className={styles.title}>Executive Overview & Revenue Intelligence</h1>
+        <h1 className={styles.title}>
+          Executive Overview & Revenue Intelligence
+        </h1>
         <p className={styles.subtitle}>
-          Consolidated agency pipeline valuation, stage velocity, and cash collection ledger.
+          Consolidated agency pipeline valuation, stage velocity, and converted
+          contract value.
         </p>
       </div>
 
@@ -185,14 +245,18 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
           </button>
 
           {isDropdownOpen && (
-            <div className={styles.dropdownMenu} role="menu" aria-label="Date range options">
+            <div
+              className={styles.dropdownMenu}
+              role="menu"
+              aria-label="Date range options"
+            >
               {TIMEFRAME_OPTIONS.map((option) => (
                 <button
                   key={option}
                   type="button"
                   role="menuitem"
                   className={`${styles.dropdownItem} ${
-                    option === selectedRange ? styles.selected : ''
+                    option === selectedRange ? styles.selected : ""
                   }`}
                   onClick={() => handleSelectRange(option)}
                 >
@@ -223,6 +287,12 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
           className={styles.exportBtn}
           onClick={handleExportClick}
           aria-label="Export executive report"
+          disabled={!exportData}
+          title={
+            !exportData
+              ? "Report unavailable until all dashboard data sources load successfully."
+              : "Download the displayed dashboard data as CSV."
+          }
         >
           <svg
             width="15"

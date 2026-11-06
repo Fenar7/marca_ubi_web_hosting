@@ -9,49 +9,48 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import type { FunnelBucket, LeadPriority, ServiceCategory, PipelineRpcMetrics } from '@/types/crm';
+import type { FunnelBucket, LeadPriority, ServiceCategory } from "@/types/crm";
 
 /**
  * Aggregated 4-card metric payload powering ExecutiveKpiGrid.
- * 
+ *
  * Mathematical invariants:
  * - `totalPipelineValue`: Aggregate sum of `expected_value` for leads residing in active
  *   stages (`open` and `potential` buckets).
- * - `weightedPipelineValue`: Conservative risk-adjusted valuation calculated via stage probability weighting.
- * - `pipelineDeltaPercentage`: Month-over-Month (MoM) growth velocity against prior 30-day baseline.
- * - `convertedRevenueValue`: Sum of realized cash collected from leads marked `converted`.
- * - `conversionWinRate`: Realized conversion velocity: `(convertedDealsCount / totalClosedDealsCount) * 100`.
- *   Safely falls back to 0.0 when denominator is 0 to avoid IEEE 754 NaN/Infinity.
+ * - `weightedPipelineValue`: Null when the configured funnel has no verified probability weights.
+ * - `pipelineDeltaPercentage`: Null when the comparison cohort has no positive baseline.
+ * - `convertedRevenueValue`: Converted contract value from leads marked `converted`; it does not represent payments.
+ * - `conversionWinRate`: Realized conversion rate where the denominator is available.
+ *   Metrics with missing denominators are unavailable, not zero.
  */
 export interface ExecutiveDashboardKpis {
   totalPipelineValue: number;
-  weightedPipelineValue: number;
+  weightedPipelineValue: number | null;
   pipelineDealsCount: number;
-  pipelineDeltaPercentage: number;
+  pipelineDeltaPercentage: number | null;
 
   convertedRevenueValue: number;
   convertedDealsCount: number;
-  revenueDeltaPercentage: number;
+  revenueDeltaPercentage: number | null;
 
   activeDealsCount: number;
   overdueDealsCount: number;
-  dealsDeltaPercentage: number;
+  dealsDeltaPercentage: number | null;
 
-  conversionWinRate: number;
-  benchmarkWinRate: number;
-  winRateDeltaPercentage: number;
+  conversionWinRate: number | null;
+  winRateDeltaPercentage: number | null;
 
   /** Active comparison cadence (e.g. 'WoW', 'MoM', 'QoQ', 'YoY') */
   cadenceLabel?: string;
   /** SLA on-track health percentage across active deals (defaults to 98.2%) */
-  slaOnTrackPercentage?: number;
+  slaOnTrackPercentage?: number | null;
   /** Mean duration from discovery to conversion for won deals */
-  averageSalesCycleDays?: number;
+  averageSalesCycleDays?: number | null;
 }
 
 /**
  * Funnel stage allocation segment powering PipelineAllocationCard.
- * 
+ *
  * Business rules:
  * - Each stage represents a discrete milestone in the sales pipeline sorted by `sort_order`.
  * - `percentageOfPipeline`: Calculated as `(totalValue / totalActivePipeline) * 100`.
@@ -69,7 +68,7 @@ export interface PipelineStageAllocationItem {
 
 /**
  * Commercial deal dossier row powering the full-width CommercialDealsTable.
- * 
+ *
  * Security & Data Invariants:
  * - Joins `public.leads` with `public.funnel_statuses` ensuring row-level status styling.
  * - `isOverdue`: Evaluated dynamically by comparing `nextFollowUp` against the server timestamp.
@@ -94,9 +93,9 @@ export interface CommercialDealRow {
 
 /**
  * Historical time-series coordinate for the dual-state RevenueDynamicsCard.
- * 
+ *
  * Visualization rules:
- * - Groups target quota baseline against actual cash collections per calendar month.
+ * - Groups converted contract values by calendar period; no target is inferred.
  * - Consumed by the Fritsch-Carlson monotone cubic spline algorithm to produce C¹ continuous Bézier curves.
  */
 export interface RevenueDynamicsPoint {
@@ -129,10 +128,9 @@ export interface ExecutiveMastheadProps {
  * Renders the 4-card horizontal KPI grid with soft pastel tokens and tabular numerals.
  */
 export interface ExecutiveKpiGridProps {
-  kpis?: ExecutiveDashboardKpis;
-  metrics?: PipelineRpcMetrics | null;
+  kpis?: ExecutiveDashboardKpis | null;
   cadenceLabel?: string;
-  onCardClick?: (metricKey: string) => void;
+  dataStatus?: "ready" | "unavailable";
 }
 
 /**
@@ -141,11 +139,8 @@ export interface ExecutiveKpiGridProps {
 export interface MonthlyRevenueMetric {
   month: string;
   fullPeriod: string;
-  quotaVal: number;
   cashVal: number;
-  quotaFormatted: string;
   cashFormatted: string;
-  attainmentPct: number;
 }
 
 /**
@@ -153,10 +148,29 @@ export interface MonthlyRevenueMetric {
  * Renders the dual-state bar chart (target vs collected) with overlaid monotone Bézier curves.
  */
 export interface RevenueDynamicsCardProps {
-  dataPoints?: MonthlyRevenueMetric[];
-  selectedPeriod?: string;
-  timeframe?: string;
-  onPeriodChange?: (period: string) => void;
+  dataPoints: MonthlyRevenueMetric[];
+  timeframe: string;
+  dataStatus?: "ready" | "unavailable";
+}
+
+export interface ExecutiveReportExportData {
+  timeframe: string;
+  cadence: string;
+  dateWindow: { start: string; end: string };
+  generatedAt: string;
+  metrics: { label: string; value: string | number }[];
+  stages: { stageName: string; dealCount: number; totalValue: number }[];
+  deals: {
+    leadId: string;
+    name: string;
+    company: string | null;
+    serviceCategory: string;
+    stageName: string;
+    expectedValue: number;
+    priority: string;
+    nextFollowUp: string | null;
+    owner: string | null;
+  }[];
 }
 
 export interface StageAllocationItem {
@@ -180,15 +194,11 @@ export interface StageAllocationItem {
  * Renders the multi-segment horizontal bar and balanced stage breakdown with conversion metrics.
  */
 export interface PipelineAllocationCardProps {
-  stages?: (StageAllocationItem | PipelineStageAllocationItem)[];
-  totalPipelineValue?: number;
-  totalValuation?: number;
-  momDeltaPercentage?: number;
+  stages: StageAllocationItem[];
+  totalValuation: number;
   deltaPercentage?: number;
   cadenceLabel?: string;
-  conversionWinRate?: number;
-  averageSalesCycleDays?: number;
-  onStageActionClick?: (stageId: string) => void;
+  dataStatus?: "ready" | "unavailable";
 }
 
 /**

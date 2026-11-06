@@ -75,15 +75,13 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
       kickoff_date,
       created_at,
       updated_at,
-      creative_lead:profiles!client_works_creative_lead_id_fkey (
+      creative_lead:crm_team_directory!client_works_creative_lead_id_fkey (
         id,
-        full_name,
-        email
+        full_name
       ),
-      tech_lead:profiles!client_works_tech_lead_id_fkey (
+      tech_lead:crm_team_directory!client_works_tech_lead_id_fkey (
         id,
-        full_name,
-        email
+        full_name
       )
     `)
     .order('created_at', { ascending: false });
@@ -121,9 +119,8 @@ export default async function AdminWorksPage(): Promise<React.ReactElement> {
 
   // Query active team personnel for directorial assignment governance
   const { data: teamProfiles } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, role')
-    .eq('status', 'active')
+    .from('crm_team_directory')
+    .select('id, full_name, role')
     .order('full_name', { ascending: true });
 
   return (

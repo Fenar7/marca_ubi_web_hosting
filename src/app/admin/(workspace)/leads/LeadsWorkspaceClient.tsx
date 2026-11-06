@@ -65,17 +65,6 @@ export interface LeadsWorkspaceClientProps {
   userRole?: string;
 }
 
-function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
-
 /**
  * Evaluates whether a lead has an overdue follow-up timestamp.
  * A lead is overdue if next_follow_up is earlier than current clock time

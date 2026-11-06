@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
-import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
+import { KpiRibbon } from '@/app/admin/components/kpi/KpiRibbon';
 import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable';
 import { DealsWorkspaceClient, type HydratedDealItem } from './DealsWorkspaceClient';
 import styles from './deals.module.scss';
@@ -74,10 +74,9 @@ export default async function AdminDealsPage(
   }
 
   // Parallel server query execution for instant pipeline rendering
-  const [rpcRes, sourcesRes, profilesRes, statusesRes, dealsRes] = await Promise.all([
+  const [rpcRes, sourcesRes, statusesRes, dealsRes] = await Promise.all([
     supabase.rpc('get_pipeline_kpis'),
     supabase.from('lead_sources').select('id, name').order('name'),
-    supabase.from('profiles').select('id, full_name, email, role, status').order('full_name'),
     supabase.from('funnel_statuses').select('id, name, sort_order, bucket, color_code').order('sort_order'),
     supabase
       .from('leads')
@@ -98,10 +97,9 @@ export default async function AdminDealsPage(
         status_id,
         lead_source_id,
         brief_payload,
-        assigned_profile:profiles!leads_assigned_to_fkey (
+        assigned_profile:crm_team_directory!leads_assigned_to_fkey (
           id,
           full_name,
-          email,
           role
         ),
         funnel_status:funnel_statuses!leads_status_id_fkey (
@@ -120,29 +118,14 @@ export default async function AdminDealsPage(
       .limit(100),
   ]);
 
-  const rawKpi = rpcRes.data as PipelineRpcMetrics | null;
-  const initialKpis: PipelineRpcMetrics = rawKpi || {
-    total_leads_count: 0,
-    open_leads_count: 0,
-    potential_leads_count: 0,
-    potential_pipeline_value: 0,
-    stage_weighted_pipeline_value: 0,
-    converted_leads_count: 0,
-    converted_revenue_value: 0,
-    lost_leads_count: 0,
-    overdue_follow_ups_count: 0,
-    conversion_rate_percentage: 0,
-  };
-
   const sources = sourcesRes.data || [];
-  const profiles = (profilesRes.data || []).filter((p) => p.status === 'active');
   const statuses = statusesRes.data || [];
 
   // Transform relational leads to typed deal records
   const deals: HydratedDealItem[] = ((dealsRes.data || []) as unknown[]).map((raw) => {
     const item = raw as Record<string, unknown>;
     const statusObj = item.funnel_status as { id: string; name: string; sort_order: number; bucket: string; color_code: string } | null;
-    const profileObj = item.assigned_profile as { id: string; full_name: string; email: string } | null;
+    const profileObj = item.assigned_profile as { id: string; full_name: string } | null;
     const sourceObj = item.lead_source as { id: string; name: string } | null;
 
     return {
@@ -183,7 +166,12 @@ export default async function AdminDealsPage(
       </header>
 
       <section className={styles.kpiContainer} aria-label="Pipeline Metrics">
-        <MinimalistStatPods metrics={initialKpis} />
+          <KpiRibbon
+            initialData={rpcRes.error || resolvedSearchParams && Object.values(resolvedSearchParams).some(Boolean)
+              ? null
+              : (rpcRes.data as unknown as PipelineRpcMetrics | null)}
+            syncWithUrlParams
+          />
       </section>
 
       {/* Main Deals Grid with Filter Controls */}
@@ -191,7 +179,6 @@ export default async function AdminDealsPage(
         <DealsWorkspaceClient
           initialDeals={deals}
           sources={sources}
-          profiles={profiles}
           statuses={statuses}
           userRole={role}
         />

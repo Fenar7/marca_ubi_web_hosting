@@ -241,3 +241,4 @@
     outline-offset: 2px;
   }
 }
+.exportBtn:disabled { cursor: not-allowed; opacity: 0.55; }

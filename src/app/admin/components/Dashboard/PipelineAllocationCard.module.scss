@@ -106,7 +106,7 @@
   display: flex;
   gap: 2px;
   background-color: #f1f5f9;
-  cursor: pointer;
+  cursor: default;
 }
 
 .segmentedBarSlice {
@@ -135,7 +135,7 @@
   justify-content: space-between;
   padding: 0.85rem 0.65rem;
   border-bottom: 1px solid #f1f5f9;
-  cursor: pointer;
+  cursor: default;
   border-radius: 8px;
   transition: background-color 0.15s ease, opacity 0.2s ease;
 

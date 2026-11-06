@@ -52,12 +52,13 @@ describe('Phase 7: Logip & MedTrackr Executive Overview Dashboard Ground-Up Arch
   });
 
   describe('2. ExecutiveKpiGrid Component', () => {
-    it('verifies ExecutiveKpiGrid renders 4 calibrated metric scorecards', () => {
+    it('verifies ExecutiveKpiGrid renders record-backed metric scorecards', () => {
       const content = fs.readFileSync(path.resolve(process.cwd(), kpiGridTsxPath), 'utf8');
-      assert.ok(content.includes('Total Active Pipeline'), 'Must show Total Active Pipeline card');
-      assert.ok(content.includes('Cash Collected') || content.includes('Realized Revenue'), 'Must show Cash Collected card');
-      assert.ok(content.includes('Active Pipeline Deals') || content.includes('active_pipeline'), 'Must show Active Deals card');
-      assert.ok(content.includes('Conversion Velocity') || content.includes('winRate'), 'Must show Win Velocity card');
+      assert.ok(content.includes('Active Pipeline'), 'Must show active pipeline card');
+      assert.ok(content.includes('Converted Contract Value'), 'Must distinguish converted contract value from collected cash');
+      assert.ok(content.includes('Active Deals'), 'Must show active deals card');
+      assert.ok(content.includes('Win Conversion Rate'), 'Must show win conversion rate');
+      assert.ok(content.includes('Comparison unavailable'), 'Must not fabricate zero-baseline comparisons');
     });
 
     it('verifies ExecutiveKpiGrid renders separated cards with tabular numerals and 44px hit targets', () => {
@@ -70,17 +71,19 @@ describe('Phase 7: Logip & MedTrackr Executive Overview Dashboard Ground-Up Arch
   });
 
   describe('3. RevenueDynamicsCard Dual-Curve SVG Spline Chart', () => {
-    it('verifies RevenueDynamicsCard implements responsive SVG curves with Marca Orange and Slate', () => {
+    it('verifies RevenueDynamicsCard plots converted contract value without a quota series', () => {
       const content = fs.readFileSync(path.resolve(process.cwd(), rdcTsxPath), 'utf8');
-      assert.ok(content.includes('cashSpline'), 'Must render cashSpline path');
-      assert.ok(content.includes('quotaSpline'), 'Must render quotaSpline path');
-      assert.ok(content.includes('cashAreaPath') || content.includes('areaWashPath'), 'Must render area wash');
-      assert.ok(content.includes('role="tooltip"') || content.includes('tooltipHeader'), 'Must support interactive hover tooltip');
+      assert.ok(content.includes('cashSpline'), 'Must render persisted conversion value series');
+      assert.ok(!content.includes('quotaSpline'), 'Must not invent a quota series without a source');
+      assert.ok(content.includes('tabIndex={0}') && content.includes('handleChartKeyDown'), 'Chart must support keyboard inspection');
+      assert.ok(content.includes('areaWashPath'), 'Must render area wash');
+      assert.ok(content.includes('role="status"'), 'Must announce interactive period values');
+      assert.ok(content.includes('Converted contract value'), 'Must label the underlying contract-value metric accurately');
     });
 
-    it('verifies RevenueDynamicsCard SCSS enforces glassmorphism and crisp dark tooltip styling', () => {
+    it('verifies RevenueDynamicsCard SCSS defines a readable tooltip surface', () => {
       const scss = fs.readFileSync(path.resolve(process.cwd(), rdcScssPath), 'utf8');
-      assert.ok(scss.includes('.tooltipHeader') || scss.includes('.tooltipRow'), 'Must define tooltip classes');
+      assert.ok(scss.includes('.obsidianTooltip'), 'Must define tooltip class');
       assert.ok(scss.includes('border-radius'), 'Must define rounded corners');
     });
   });

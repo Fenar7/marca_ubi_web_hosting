@@ -13,7 +13,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole, FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
-import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
+import { KpiRibbon } from '@/app/admin/components/kpi/KpiRibbon';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
 import { NewLeadHeaderButton } from './NewLeadHeaderButton';
@@ -93,9 +93,8 @@ export default async function AdminLeadsPage(
       .eq('is_active', true)
       .order('name'),
     supabase
-      .from('profiles')
+      .from('crm_team_directory')
       .select('id, full_name, role')
-      .eq('status', 'active')
       .order('full_name'),
     supabase
       .from('funnel_statuses')
@@ -128,12 +127,10 @@ export default async function AdminLeadsPage(
         updated_at,
         funnel_statuses!inner(id, name, bucket, color_code, sort_order),
         lead_sources(id, name, color_code),
-        profiles!leads_assigned_to_fkey(id, full_name, role)
+        profiles:crm_team_directory!leads_assigned_to_fkey(id, full_name, role)
       `)
       .order('created_at', { ascending: false }),
   ]);
-
-  const rpcMetrics = rpcRes.data ? (rpcRes.data as unknown as PipelineRpcMetrics) : null;
 
   // Transform lookup catalog options for filter dropdown menus
   const availableSources: FilterDropdownOption[] = (sourcesRes.data || []).map((s) => ({
@@ -228,7 +225,12 @@ export default async function AdminLeadsPage(
       </header>
 
       {/* Dark Luxury Executive KPI Ribbon with Reactive URL Filter Recalculation */}
-      <MinimalistStatPods metrics={rpcMetrics} />
+        <KpiRibbon
+          initialData={rpcRes.error || resolvedSearchParams && Object.values(resolvedSearchParams).some(Boolean)
+            ? null
+            : (rpcRes.data as unknown as PipelineRpcMetrics | null)}
+          syncWithUrlParams
+        />
 
       {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
       <Suspense fallback={<LeadsTableSkeleton rowCount={8} />}>
