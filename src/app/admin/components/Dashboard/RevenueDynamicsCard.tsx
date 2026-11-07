@@ -228,10 +228,24 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
           Revenue data is unavailable. The source query did not complete.
         </p>
       ) : conversionCount === 0 ? (
-        <p className={styles.emptyState} role="status">
-          <strong>No conversions recorded</strong>
-          <span>Closed deals dated in {timeframe} appear here.</span>
-        </p>
+        <div className={styles.zeroState} role="status">
+          <div className={styles.zeroStateCopy}>
+            <strong className={styles.zeroCount}>0</strong>
+            <div className={styles.zeroStateMessage}>
+              <strong>No conversions recorded</strong>
+              <span>Closed deals dated in {timeframe} will appear here.</span>
+            </div>
+          </div>
+          <div className={styles.zeroTimeline} aria-label={`Converted contract value was zero across ${dataPoints.length} periods in ${timeframe}`}>
+            <span className={styles.zeroAxisLabel}>₹0</span>
+            <div className={styles.zeroAxis} aria-hidden="true">
+              {dataPoints.map((point) => <span key={point.fullPeriod} />)}
+            </div>
+            <div className={styles.zeroPeriodLabels}>
+              {dataPoints.map((point) => <span key={point.fullPeriod} title={point.fullPeriod}>{point.month}</span>)}
+            </div>
+          </div>
+        </div>
       ) : dataPoints.length === 0 || dataPoints.every((point) => point.cashVal === 0) ? (
         <p className={styles.emptyState} role="status">
           <strong>Converted deals have no recorded value</strong>

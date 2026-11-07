@@ -1,7 +1,7 @@
 # Graph Report - marca_ubi_web_hosting  (2026-11-07)
 
 ## Corpus Check
-- 786 files · ~855,936 words
+- 786 files · ~855,991 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 183 file(s) not represented in the graph (top: .scss 124, .ttf 42, .otf 10)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `dc841e32`
+- Built from commit: `9c3247b7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -461,16 +461,16 @@
 10. `dotenv` - 32 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Current Engineering Context` --references--> `AvatarUploadModal()`  [INFERRED]
-  docs/context/context.md → src/app/admin/(workspace)/team/components/AvatarUploadModal.tsx
-- `6. `src/app/admin/(workspace)/team/components/TeamWorkspaceClient.tsx`` --references--> `TeamMemberRosterItem`  [INFERRED]
-  docs/sales_funnel/audits/pr_50_design_and_anti_slop_audit_report.md → src/types/crm.ts
 - `Agent 5 — The real intake contract in this codebase (internal) ⚠️ **plan-changing**` --references--> `ProjectFormData`  [INFERRED]
   docs/chat_pod/02-research-findings.md → src/app/components/ProjectForm/types.ts
 - `8. Parity test (required before M5 sign-off)` --references--> `ProjectFormData`  [INFERRED]
   docs/chat_pod/04-intake-data-contract.md → src/app/components/ProjectForm/types.ts
 - `Complete Restored Field Matrix:` --references--> `ProjectFormData`  [INFERRED]
   docs/project_form_restoration/master_form_restoration_plan.md → src/app/components/ProjectForm/types.ts
+- `A. State Management & Data Schema` --references--> `ProjectFormData`  [INFERRED]
+  docs/project_form_restoration/multi_select_services_plan.md → src/app/components/ProjectForm/types.ts
+- `4.3 Family discounts` --references--> `Intent`  [INFERRED]
+  docs/chat_pod/20-comprehension-and-conversation-state.md → src/app/chat-pod/types.ts
 
 ## Import Cycles
 - 4-file cycle: `src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx -> src/app/admin/components/modals/index.ts -> src/app/admin/components/modals/LeadDetailModal.tsx -> src/app/admin/components/DossierDrawer/index.ts -> src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx`
@@ -2078,7 +2078,7 @@ Cohesion: 0.20
 Nodes (5): CRM Commercial Desk Redesign — Delivery Register, Outstanding verification and runtime evidence, Scope delivered, Verification on the current implementation, Current Engineering Context
 
 ## Knowledge Gaps
-- **19 isolated node(s):** `RFC-3966`, `RFC-5545`, `RFC-5545`, `RFC-5545`, `RFC-5545` (+14 more)
+- **19 isolated node(s):** `RFC-3966`, `RFC-3966`, `RFC-3966`, `RFC-3966`, `RFC-5545` (+14 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3637 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **31 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -2086,16 +2086,16 @@ Nodes (5): CRM Commercial Desk Redesign — Delivery Register, Outstanding verif
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `react` connect `schedulerActions.ts` to `LeadDossierWorkspaceClient.tsx`, `4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `crm.ts`, `collect.ts`, `shouldUseMobileMotion`, `Badges/index.ts`, `ChatPod.tsx`, `CrmUserRole`, `chatpod-ingest-payload-parity.test.ts`, `AdminWorkspaceShell.tsx`, `LeadsWorkspaceClient.tsx`, `Services & Interactive Accordions`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `Editorial & Blog Architecture`, `formatCrmCurrency`, `blog/[slug]/page.tsx`, `chat-pod/types.ts`, `context.ts`, `Dashboard/index.ts`, `components/PortableTextRenderer.tsx`, `career-queries.ts`, `ServicesAccordion.tsx`, `tasks/page.tsx`, `collect.ts`, `AboutSection.tsx`, `kpi/KpiRibbon.tsx`, `ClientHeader.tsx`, `createClient`, `Database Schema & Security Layer`, `useIntakeFlow.ts`, `ClientHomeExperience.tsx`, `CrmUserRole`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `WorksCutout`, `admin/layout.tsx`, `overlayScrollLock.ts`, `getAdminClient`, `ReelCutout`, `app/page.tsx`, `Key Architectural Implementations`, `contact/page.tsx`, `BlogListingClient.tsx`, `SlotId`, `team.ts`, `WorksWorkspaceClient.tsx`, `FilterActionBar.tsx`, `Minimalist Clean Aesthetic & Clutter Eradication PRD`, `Subsystem 95: src_app_components_initialloader_initialloader`, `StatementCurtain`, `Full Engineering Context Register — 2026-10-30 14:19:25 IST`, `(workspace)/page.tsx`, `ConnectCutout`, `kpi/index.ts`, `AdminBreadcrumbs.tsx`?**
-  _High betweenness centrality (0.188) - this node is a cross-community bridge._
-- **What connects `RFC-3966`, `RFC-5545`, `RFC-5545` to the rest of the system?**
+  _High betweenness centrality (0.178) - this node is a cross-community bridge._
+- **What connects `RFC-3966`, `RFC-3966`, `RFC-3966` to the rest of the system?**
   _19 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `LeadDossierWorkspaceClient.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.05979843225083987 - nodes in this community are weakly interconnected._
 - **Why does `next` connect `collect.ts` to `LeadDossierWorkspaceClient.tsx`, `4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `crm.ts`, `collect.ts`, `shouldUseMobileMotion`, `ChatPod.tsx`, `CrmUserRole`, `chatpod-ingest-payload-parity.test.ts`, `AdminWorkspaceShell.tsx`, `LeadsWorkspaceClient.tsx`, `Services & Interactive Accordions`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `Editorial & Blog Architecture`, `formatCrmCurrency`, `blog/[slug]/page.tsx`, `chat-pod/types.ts`, `auth.ts`, `Dashboard/index.ts`, `components/PortableTextRenderer.tsx`, `workloadActions.ts`, `career-queries.ts`, `services/[slug]/page.tsx`, `submit-application/route.ts`, `ServicesAccordion.tsx`, `tasks/page.tsx`, `AboutSection.tsx`, `kpi/KpiRibbon.tsx`, `ClientHeader.tsx`, `createClient`, `Database Schema & Security Layer`, `lib/client.ts`, `ClientHomeExperience.tsx`, `CrmUserRole`, `kpis/route.ts`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `Database Schema & Security Layer`, `admin/layout.tsx`, `WorksCutout`, `overlayScrollLock.ts`, `getAdminClient`, `ReelCutout`, `app/page.tsx`, `Key Architectural Implementations`, `contact/page.tsx`, `BlogListingClient.tsx`, `SlotId`, `team.ts`, `WorksWorkspaceClient.tsx`, `2.2 Purified Server Action Modules in `src/app/actions/``, `ConnectCutout`, `(workspace)/page.tsx`, `kpi/index.ts`, `AdminBreadcrumbs.tsx`?**
-  _High betweenness centrality (0.123) - this node is a cross-community bridge._
+  _High betweenness centrality (0.148) - this node is a cross-community bridge._
 - **Should `4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines` be split into smaller, more focused modules?**
   _Cohesion score 0.1038961038961039 - nodes in this community are weakly interconnected._
-- **Why does `CompanyProfileModal()` connect `CompanyProfileModal` to `overlayScrollLock.ts`, `AboutSection.tsx`, `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform`, `Editorial & Blog Architecture`, `11. Comprehensive 10-Phase Production Engineering Delivery Blueprint`?**
-  _High betweenness centrality (0.071) - this node is a cross-community bridge._
+- **Why does `ClientHeader()` connect `ClientHeader` to `1. Motion spec`, `00 — Chat Pod Master Plan`, `collect.ts`, `AdminWorkspaceShell.tsx`, `Register — 2026-11-04 10:20 IST — Chat Pod Part D, pass 4/5: a third auditor, on the commits`, `blog/[slug]/page.tsx`, `career-queries.ts`, `components/PortableTextRenderer.tsx`, `services/[slug]/page.tsx`, `ClientHeader.tsx`, `ClientHomeExperience.tsx`, `Master PRD & UI/UX Design Architecture: Contact Page (`/contact`)`, `2. Component Architecture & Blueprint Specifications`, `1. Deep Technical Audit by Criteria`, `overlayScrollLock.ts`, `4. 5-Phase Implementation Strategy`, `Master Remediation & Full-Content Integration Plan: 160over90 Architecture`, `contact/page.tsx`, `app/page.tsx`, `Dedicated Works Showcase: 3D Stacking Card Scroll Experience PRD`, `Master Implementation Plan: 3-Line Rounded Pill Hamburger Icon`, `Minimalist Clean Aesthetic & Clutter Eradication PRD`, `Full Engineering Context Register — 2026-10-30 14:19:25 IST`?**
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._
 - **Should `Sales Intelligence & CRM Engine` be split into smaller, more focused modules?**
   _Cohesion score 0.083710407239819 - nodes in this community are weakly interconnected._

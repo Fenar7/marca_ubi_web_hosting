@@ -25,6 +25,14 @@
 - Full authenticated browser verification and the transaction/concurrency test remain gated because this environment has no explicit CRM E2E credentials or isolated local database. Do not use the hosted CRM database for fixture-mutating verification.
 - GitHub reports PR #114 OPEN, DRAFT, MERGEABLE, targeting `remediation/admin-crm-data-integrity-audit-hardening`. Keep both stacked PRs open pending human review.
 
+## 2026-11-07 screenshot correction
+
+- Reworked the Overview revenue chart's zero-conversion state after review showed the heading and explanation rendered without visual separation. It now presents a sourced zero count, a distinct heading and explanation, and a single zero baseline with the actual timeframe labels; the timeline stacks below the message on narrow screens.
+- Added focused regression assertions for the separate message, baseline, and period labels.
+- Focused unit tests (11): passed. Changed-file ESLint (`--max-warnings=0`): passed. TypeScript (`npx tsc --noEmit --incremental false --pretty false`): passed. `git diff --check`: passed.
+- `npm run build`: passed, including TypeScript validation and static page generation, with existing Sass `@import` deprecation warnings. A duplicate build invocation could not acquire `.next/lock` while the successful build was active.
+- Authenticated route verification remains unavailable in this environment. This visual fix does not establish that the screenshot's Leads/Deals query errors are resolved.
+
 The Commercial Desk visual redesign now covers the login and password-reset pages, responsive workspace shell, Command Center, analytics, leads, deals, follow-ups, works, team, inbound inquiries, and settings. It replaces the previous token-only treatment with distinct page structures, queue-focused operations layouts, full-digit INR, responsive navigation, and explicit data states. Existing role checks and server-action boundaries were retained during the redesign.
 
 The screenshot-specific Follow-ups data failure still needs a reproducible authenticated isolated runtime. The UI reports query failure with a retry path and correlation reference, but that does not establish the underlying database/query cause.
