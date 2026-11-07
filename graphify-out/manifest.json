@@ -5406,9 +5406,9 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/IMPLEMENTATION_REVIEW.md": {
-    "mtime": 1794038971.4267719,
-    "seen": 1794039034.0239275,
-    "ast_hash": "2b51a182b0dd625bf3b7071e3e643d3e",
+    "mtime": 1794041564.2289233,
+    "seen": 1794041724.8824234,
+    "ast_hash": "784b716cf1e1daa6bfdeac543b198cf1",
     "semantic_hash": ""
   },
   "supabase/migrations/20261106000001_complete_follow_up_atomically.sql": {

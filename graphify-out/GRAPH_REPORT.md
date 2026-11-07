@@ -1,73 +1,73 @@
 # Graph Report - marca_ubi_web_hosting  (2026-11-07)
 
 ## Corpus Check
-- 786 files · ~855,991 words
+- 786 files · ~856,136 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 183 file(s) not represented in the graph (top: .scss 124, .ttf 42, .otf 10)
 
 ## Summary
-- 6706 nodes · 11237 edges · 431 communities (400 shown, 31 thin omitted)
+- 6707 nodes · 11238 edges · 418 communities (384 shown, 34 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 786 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9c3247b7`
+- Built from commit: `4b3e6e10`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- LeadDossierWorkspaceClient.tsx
-- 4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines
+- DossierDrawer/index.ts
+- ClientHomeExperience.tsx
 - Sales Intelligence & CRM Engine
 - Marca Ubi CRM: Full SaaS Redesign Plan
 - ref_node_assert
 - persistence.ts
 - crm.ts
 - collect.ts
-- shouldUseMobileMotion
-- Badges/index.ts
+- react
+- lead-schemas.ts
 - ChatPod.tsx
 - CrmUserRole
 - chatpod-ingest-payload-parity.test.ts
 - AdminWorkspaceShell.tsx
-- LeadsWorkspaceClient.tsx
+- LeadsDataGrid.tsx
 - Services & Interactive Accordions
 - leads.ts
 - PersonnelProfileWorkspaceClient.tsx
-- submit.ts
+- chatpod-ingest-payload-parity.test.ts
 - chatpod-knowledge-coverage.test.ts
 - Editorial & Blog Architecture
-- formatCrmCurrency
+- LeadDossierWorkspaceClient.tsx
 - suspendTeamUser
-- Sprint 9.2 Architecture Specification: Overdue Escalation Engine, Visual Alert Badges & Rep Workload Oversight
-- chat-pod/types.ts
+- LeadsWorkspaceClient.tsx
+- app/layout.tsx
 - context.ts
 - auth.ts
-- career-queries.ts
-- components/PortableTextRenderer.tsx
+- Dashboard/index.ts
+- Phase 14: Blog Redesign — Homepage Dispatches, Listing & Article Detail (Plan)
 - 4. Delivery sequence and gates
 - Sales Intelligence & CRM Engine
 - services/[slug]/page.tsx
 - match.ts
 - Subsystem 33: agents_skills_antislop_human_contrast_check
 - Editorial & Blog Architecture
-- AboutSection.tsx
-- collect.ts
+- timeframeUtils.ts
+- next
 - Subsystem 37: tests_e2e_chatpod_spec
 - kpi/KpiRibbon.tsx
 - slots.ts
-- ClientHeader.tsx
-- createClient
+- NavigationOverlay.tsx
+- looksLikeQuestion
 - Database Schema & Security Layer
 - Editorial & Blog Architecture
 - Findings
-- Phase 7 Milestone: Interactive Leads Workspace, Multi-Filter Engine & Virtualized Data Grid
+- dossierUtils.ts
 - useIntakeFlow.ts
 - 5. Granular Sprint Work Breakdown Structure (Phases 6–9)
-- ClientHomeExperience.tsx
+- Detailed Deliverable Breakdown
 - normalise.ts
-- CrmUserRole
-- client-works-schemas.ts
+- RevenueDynamicsCard
+- Session register — Chat Pod: build complete, audit closed, gate pending (`feature/chat-pod`)
 - Platform Core & Turbopack Optimization
 - 03 — Conversation Script & Intent Table
 - Editorial & Blog Architecture
@@ -85,13 +85,13 @@
 - overlayScrollLock.ts
 - Header Navigation & Liquid Glass Experience
 - Marca Ubi — Enterprise Agency CRM
-- Session Register — Chat Pod Comprehension (Part A) and Motion & Contrast (Part B)
+- admin.ts
 - verify-sprint-9-2.ts
 - Master Architectural Redesign & Technical Specification: Mid-Tier Analytics Engine
-- getAdminClient
+- avatarActions.ts
 - Marca Ubi Enterprise Agency — Comprehensive Technical SEO & AI Search Architecture Audit & Blueprint
 - Subsystem 74: package_scripts
-- chatpod-local-language.test.ts
+- Pass 2 (Part D) — One Column, One Lock, and the Typed Message
 - ReelCutout
 - Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform
 - verify-sprint-8-2.ts
@@ -99,13 +99,13 @@
 - Subsystem 80: tests_unit_chatpod_contrast_test
 - Subsystem 81: scripts_verify_contrast_wcag
 - Phase 14c: Homepage rail sticky pin + "Dispatch" wording (Plan)
-- BlogListingClient.tsx
-- lead_activity_actions.test.ts
+- blog.ts
+- 2. Forensic Root Cause Breakdown
 - Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform
 - SlotId
-- KpiRibbon
+- 6. Contact, careers, logistics
 - team.ts
-- Sprint 9.2: Senior CTO Architecture & PRD Compliance Audit Report
+- Sprint 2.1: Supabase Auth SSR Foundation, Cookie Infrastructure & Session Architecture
 - Part 1: Comprehensive Line-by-Line Copywriting Audit
 - WorksWorkspaceClient.tsx
 - Senior CTO PR Auditor Agent — Adversarial Technical & Architectural Audit
@@ -116,15 +116,15 @@
 - 3. Fluid Liquid Morphing Scroll Animation
 - antislop-layoutmobile
 - Platform Core & Turbopack Optimization
-- schedulerActions.ts
-- 2.2 Purified Server Action Modules in `src/app/actions/`
-- Detailed Deliverable Breakdown
-- Block 4: Automated Verification Evidence
-- StatementCurtain
+- FollowUpScheduler.tsx
+- scheduleFollowUpAction
+- createTeamUser
+- Sprint 4.2: Lead Reassignment Wizard, Stored Procedure & Activity Backfill
+- Architecture Plan: Apple Floating Liquid Glass Capsule HUD (visionOS / iOS Island Tier)
 - Master Release PR #49: Comprehensive Multi-Agent Forensic Audit Report
 - Subsystem 106: agents_mcp
-- StageTransitionModal
-- 3. `src/types/crm.ts`
+- DealsWorkspaceClient.tsx
+- Sprint 5.2: Client Form Bindings (`/start-project` & Modal), Deduplication & Alerts
 - (workspace)/page.tsx
 - Sales Intelligence & CRM Engine
 - Sales Intelligence & CRM Engine
@@ -171,7 +171,7 @@
 - 4. Full-Platform Module-by-Module Redesign Specifications
 - chat_pod/README.md
 - submit.ts
-- Dashboard/index.ts
+- PipelineAllocationCard
 - 4. File-by-File Implementation Plan
 - Master Architectural Plan: Marca Ubi Enterprise CRM Visual Redesign & Design System Overhaul
 - Master Architectural Plan: Ground-Up Brief Modal Overhaul & Scroll Isolation
@@ -191,7 +191,7 @@
 - 3. Comprehensive 10-Phase Architectural & PRD Compliance Audit
 - Architectural Remediation Plan: User Management 404 & Lead Dossier Route Desynchronization
 - Marca Ubi Enterprise Digital Platform — Master AI Search (GEO) & Classical SEO Dominance Architecture
-- lib/client.ts
+- seed-user-avatars.ts
 - Commercial Personnel Directory (/admin/team) Navigation & 404 Root Cause Analysis & Remediation Plan
 - Comments That Add Nothing
 - Master PRD & UI/UX Design Architecture: Contact Page (`/contact`)
@@ -217,23 +217,23 @@
 - ConvertLeadToDealModal
 - 4. Step-by-Step Production Release Procedure
 - verify-sprint-9-1.ts
-- 2. Full-Stack Profile Photo Storage Architecture
+- Master Architecture & Redesign Plan: PrimeStay People Directory & Avatar Management System
 - 3. Detailed Component Styling Rules (`ChatPod.module.scss`)
 - Chat Pod — Comprehension and conversation state (Part A architecture)
 - Master Remediation & Full-Content Integration Plan: 160over90 Architecture
 - Full Engineering Context Register — Phase 14 Blog Redesign (branch `feature/blog-redesign`)
 - app/page.tsx
 - Key Architectural Implementations
-- Dedicated Works Showcase: 3D Stacking Card Scroll Experience PRD
+- Master Architectural Plan: Scroll-Activated Frosted Glass Adaptive Header HUD
 - 3.3 Referential Integrity Architecture: Cascades vs Restraints
 - Workspaces & Components Modernized
 - Key Architectural & Design Deliverables
 - 3. Six-Phase Implementation Master Plan
-- 3. Step-by-Step Architectural Implementation Plan
+- 3. User Roles, RBAC & Multi-User Governance Engine
 - Sprint 10.1: Senior CTO Architecture & PRD Compliance Audit Report
 - 4. Step-by-Step Production Rollback & PITR Restoration Procedure
 - AdminBreadcrumbs.tsx
-- 2. Accessibility contract
+- 🛡️ Senior CTO Delivery Gate & Triple-Auditor Final Sign-Off
 - 2. Step-by-Step Remediation Plan
 - Video Performance & Header Architecture Engineering Report
 - Group 2: Purpose-Gate (technique allowed, purpose required)
@@ -244,7 +244,7 @@
 - Technical Architecture Specification: CRM Workspace Shell, Persistent Navigation & Admin Layout
 - 2.4 Team Management Dashboard (`/admin/team`) Specification
 - 2. Comprehensive Quality Assurance & Automated Testing Suite (Phase 10)
-- 5.2 Right Column: Seamless Friction-Free Inquiry Composer
+- Phase 13: Start a Project — Dedicated Light Intake Page
 - 4-Block Delivery Gate Report
 - 3. The 4-Pillar Permanent Remediation Blueprint
 - 3. Four-Phase Architectural Remediation Strategy
@@ -294,7 +294,7 @@
 - DESIGN.md
 - blog/[slug]/page.tsx
 - 2.5 End-to-End User Journeys (Playwright Suite)
-- Sprint 8.2 Architectural Specification: Omnichannel Activity Timeline & Quick Action Interaction Composer
+- logLeadActivityAction
 - Session Register — Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar (`remediation/turbopack-compaction-dev-server`)
 - 1. Core Technical Deliverables & Invariants Shipped
 - Master Architectural Plan: Navigation Overlay Left Panel Benchmark Parity
@@ -303,7 +303,7 @@
 - 1.1 Mathematical Formulas and Dynamic Aggregation Logic
 - Sprint 4.2: Lead Reassignment Wizard, Stored Procedure & Activity Backfill
 - Dev Server Performance Acceleration, Font Asset Hygiene & Clean Cache Architecture
-- 2. Delivered Work Packages
+- indexnow/route.ts
 - 3. Interactive Architecture & Implementation Blueprint
 - 3.3 Referential Integrity Architecture: Cascades vs Restraints
 - 5. Granular Sprint Work Breakdown Structure (Phases 2, 3, 4, and 5)
@@ -323,7 +323,7 @@
 - verify-server-action-boundaries.ts
 - turbopack_compaction_remediation/pr_body.md
 - Architectural Blueprint: Typography Weight & Editorial Cadence Restoration
-- kpis/route.ts
+- 2. Delivered Work Packages
 - 4-Block Delivery Gate Report
 - reset-password/page.tsx
 - 4-Block Delivery Gate Report
@@ -331,7 +331,7 @@
 - Architecture & Engineering Plan: Apple Liquid Glass Adaptive Header HUD
 - 2. Component Architecture & Blueprint Specifications
 - 4-Block Delivery Gate Report
-- WorksCutout
+- Master Architectural Plan: Cadence Calibration & Project Brief Modal
 - unlockConvertedLeadAction
 - Sprint 7.1: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons
 - Services Accordion Cinematic Video Replacement Plan
@@ -364,7 +364,7 @@
 - 2. Delivered Work Packages
 - Sprint 6.1 Architectural Specification: High-Performance Pipeline KPI Aggregation RPC, Indexing & Analytics API Gateway
 - Sprint 8.1 Architectural Specification: Client 360° Sliding Drawer Shell & Organization Dossier
-- 2. Detailed Technical Specifications
+- Session Register — Chat Pod Comprehension for Typed Messages, Continuity and the Intake Remediation (Part C)
 - 🛡️ Senior CTO Architecture & PRD Compliance Review Report
 - 02 — Research Findings
 - 2. Engineering Solutions
@@ -380,7 +380,7 @@
 - Architectural Specification & Master Plan: Full-Page Client 360° Lead/Deal Dossier Workspace
 - Marca Ubi CRM visual system
 - Phase 6 Milestone: Executive Analytics, Dynamic KPI Ribbon & Aggregation Engine
-- ConnectCutout
+- Architectural Specification: ConnectCutout Kinetic Left-to-Right Red Text Fill Wave
 - 5. Granular Sprint Work Breakdown Structure (Phases 2, 3, 4, and 5)
 - The Craftsmanship Standard
 - 5. Granular Sprint Work Breakdown Structure (Phases 6–9)
@@ -396,25 +396,22 @@
 - Sprint 1.4: High-Performance Indexing, KPI Aggregation RPCs & Production Seed Datasets
 - Sprint 2.2: Next.js 16 Edge Middleware Route Guard, Role Resolution & Luxury Admin Login Hardening
 - Sprint 3.2: Team Management Workspace (`/admin/team`), Temporary Credential Security & Audit Logging
-- kpi/index.ts
-- AdminBreadcrumbs.tsx
-- 3. Component Contract 1: `FilterActionBar`
+- RoutePlaceholder.tsx
+- ActivityRowItem.tsx
+- Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons
 - 1.4 Commit Message & Version Control Standards
 - 4.1 Sprint 10.1: Test Harness & Automated Suites
 - 4.2 Sprint 10.2: Performance, Load & Reliability Optimization
 - Part 2: AI Search Architecture (LLMO / GEO)
-- Phase 4: Dedicated Funnel Workspaces, Interactive Deals Kanban & Client Works Tracker
+- Kinetic Stage Capabilities Migration Plan
 - turbopack_runtime_remediation/pr_body.md
-- Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons
-- 4. Component Contract 2: `LeadsTableSkeleton`
+- phase-1-redesign-tokens-and-shell.test.ts
+- phase-4-redesign-funnel-workspaces.test.ts
 - Delivery Gate (Mandatory)
-- 3. Services
 - Hamburger Menu Icon: Border Removal & +10% Dimension Refinement Plan
 - sales_funnel_client_integration/pr_body.md
 - 2. Sprint Work Breakdown Structure for Phase 1 (Database Architecture & Stored Logic)
 - Sprint 5.1: Ingestion API Route, Rate Limiter, Honeypots & Contact Normalization Engine
-- 2. Greetings and small talk
-- Register — 2026-11-04 10:20 IST — Chat Pod Part D, pass 4/5: a third auditor, on the commits
 - clean-dev-cache.js
 - 1. Architectural Strategy
 - Part 3: Liveliness Toolkit
@@ -432,20 +429,10 @@
 - workloadActions.ts
 - 🏛️ Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer
 - 🏛️ Sprint 9.1: Precision Follow-up Date-Time Scheduler & On Hold Revisit Automation
-- eslint.config.mjs
-- submit-application/route.ts
-- ServicesAccordion.tsx
-- 4. Work
 - 14. Task Management, Follow-up Scheduler & Overdue Escalations
-- Key Deliverables & Systems Implemented
+- pr_sprint_9_2_body.md
 - phase-6-redesign-dossier-and-modals.test.ts
-- 1. Executive Overview & Strategic Business Objectives
-- client_redesign_160over90/pr_body.md
-- Architectural Overview & Summary
-- 5. React 19 `<Suspense>` Streaming Integration (`page.tsx`)
-- 6. Complete SCSS Design Blueprints
-- playwright.config.ts
-- phase-5-redesign-operations-governance.test.ts
+- Key Architectural Deliverables
 - 2026-11-06_12-00-00.md
 
 ## God Nodes (most connected - your core abstractions)
@@ -461,81 +448,81 @@
 10. `dotenv` - 32 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `Block 1: Architecture & Token Compliance` --references--> `generateMonotoneBezierPath()`  [INFERRED]
+  docs/sales_funnel/phase_8_4_pr_body.md → src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx
+- `A. CSS Module Divergence in `RevenueDynamicsCard`` --references--> `RevenueDynamicsCard()`  [INFERRED]
+  docs/sales_funnel/executive_chart_and_pipeline_allocation_redesign_plan.md → src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx
+- `Widget 1: `RevenueDynamicsCard` (Logip Performance Spline)` --references--> `RevenueDynamicsCard()`  [INFERRED]
+  docs/sales_funnel/logip_mid_tier_redesign_plan.md → src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx
 - `Agent 5 — The real intake contract in this codebase (internal) ⚠️ **plan-changing**` --references--> `ProjectFormData`  [INFERRED]
   docs/chat_pod/02-research-findings.md → src/app/components/ProjectForm/types.ts
 - `8. Parity test (required before M5 sign-off)` --references--> `ProjectFormData`  [INFERRED]
   docs/chat_pod/04-intake-data-contract.md → src/app/components/ProjectForm/types.ts
-- `Complete Restored Field Matrix:` --references--> `ProjectFormData`  [INFERRED]
-  docs/project_form_restoration/master_form_restoration_plan.md → src/app/components/ProjectForm/types.ts
-- `A. State Management & Data Schema` --references--> `ProjectFormData`  [INFERRED]
-  docs/project_form_restoration/multi_select_services_plan.md → src/app/components/ProjectForm/types.ts
-- `4.3 Family discounts` --references--> `Intent`  [INFERRED]
-  docs/chat_pod/20-comprehension-and-conversation-state.md → src/app/chat-pod/types.ts
 
 ## Import Cycles
 - 4-file cycle: `src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx -> src/app/admin/components/modals/index.ts -> src/app/admin/components/modals/LeadDetailModal.tsx -> src/app/admin/components/DossierDrawer/index.ts -> src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx`
 
-## Communities (431 total, 31 thin omitted)
+## Communities (418 total, 34 thin omitted)
 
-### Community 0 - "LeadDossierWorkspaceClient.tsx"
-Cohesion: 0.06
-Nodes (74): 3. Purge Dead Legacy Server Actions in `src/app/actions/leads.ts` (346 Lines), Phase 2: Inbound Leads Header & Action Controls, Phase 4: Brief Questionnaire Sanitization & Data Management, 3. Cross-Feature Integration Audit (Phases 1–7), Verification Findings:, Verification Findings:, 2. Delivered Engineering Modules, 5. Delivery Gate Assertions (+66 more)
+### Community 0 - "DossierDrawer/index.ts"
+Cohesion: 0.11
+Nodes (30): 1. Executive Summary & Root Cause Matrix, Verification Findings:, Architectural Overview & Summary, Automated Testing & Delivery Gate, Core Deliverables, 2. Delivered Engineering Modules, ActivityTimeline(), ActivityTimelineProps (+22 more)
 
-### Community 1 - "4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines"
-Cohesion: 0.10
-Nodes (16): 4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines, 1. What this branch changes, in one paragraph, 2. Purge Orphaned Client Redesign Sections (~500 Lines), 4. Purge Dead Legacy Drawer Stylesheet (~280 Lines), 5. Deduplicate `client-tokens.scss` (78 Lines), Pillar 2: Line Optimization & Dead Code Elimination (~4,500+ Lines), 2. Alternating Stream Cadence, DispatchesCurtain() (+8 more)
+### Community 1 - "ClientHomeExperience.tsx"
+Cohesion: 0.04
+Nodes (57): 3. Invariant & Test Verification, B. Core Architectural Goal, Summary, Verification, Phase 3: 8 Core Section Components, 4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines, Pull Request: Frequently Asked Questions Curtain & Sanity Studio Engine, Summary (+49 more)
 
 ### Community 2 - "Sales Intelligence & CRM Engine"
 Cohesion: 0.08
-Nodes (40): 2.1 Sprint 8.1: Client 360 Sliding Drawer Shell & Organization Dossier, 2.2 Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer, 2.3 Sprint 8.3: Guarded Stage Transition Modals & State Machine Record Locking, 2. Granular Sprint-by-Sprint Audit Findings, Verification Findings:, 3.1 State Machine Invariants & Illegal Jump Defenses (PRD §5), zod, authenticateAndAuthorizeCaller() (+32 more)
+Nodes (46): Verification Findings:, Sprint 8.3: Guarded Stage Transition Modals, Input Validation & State Machine Record Locking, 2.2 Purified Server Action Modules in `src/app/actions/`, 2. Line-by-Line Deliverable Inspection & Compliance Matrix, 3.1 State Machine Invariants & Illegal Jump Defenses (PRD §5), 6. Recorded R-35 Click-Through Smoke Test Evidence, zod, authenticateAndAuthorizeCaller() (+38 more)
 
 ### Community 3 - "Marca Ubi CRM: Full SaaS Redesign Plan"
 Cohesion: 0.14
 Nodes (14): 10. Reference research, 11. Execution decisions and remaining dependencies, 1. Product and design intent, 2. Current evidence and investigation gates, 3. Route and surface inventory, 4.1 Tokens, 4.2 Components, 4.3 Responsive and interaction rules (+6 more)
 
 ### Community 4 - "ref_node_assert"
-Cohesion: 0.06
-Nodes (29): dotenv, pg, fs, interval, path, AVATAR_ASSIGNMENTS, AvatarMapping, downloadFile() (+21 more)
+Cohesion: 0.07
+Nodes (25): dotenv, pg, fs, interval, path, executeAs(), runSprint13Verification(), TEST_USERS (+17 more)
 
 ### Community 5 - "persistence.ts"
 Cohesion: 0.10
-Nodes (35): 2.6 Storage and privacy (`persistence.ts`), 6. The last task: adversarial audit and the fix pass, clearDraft(), CONSENT_KEY, DRAFT_KEY, DRAFT_MESSAGE_LIMIT, hasBeenNudged(), hasGrantedConsent() (+27 more)
+Nodes (30): 6. The last task: adversarial audit and the fix pass, DRAFT_RETENTION_DAYS, CONSENT_KEY, DRAFT_KEY, DRAFT_MESSAGE_LIMIT, hasBeenNudged(), isBlocks(), isDraft() (+22 more)
 
 ### Community 6 - "crm.ts"
 Cohesion: 0.07
-Nodes (35): assertActiveAdmin(), assertActiveStaffManager(), executeLeadReassignment(), getRepDealInventory(), PersonnelAuditTimelineProps, LeadReassignmentFormData, leadReassignmentSchema, RepInventoryQueryInput (+27 more)
+Nodes (41): 3. `src/types/crm.ts`, 2.3 `src/types/crm.ts`, Gap 5: Deal Inventory Counting Discrepancy, Executive Summary & Architectural Deliverables, Package 6.1.3: Zod Validation Contracts & TypeScript Domain Models, runSprint42Verification(), assertActiveAdmin(), assertActiveStaffManager() (+33 more)
 
 ### Community 7 - "collect.ts"
-Cohesion: 0.10
-Nodes (28): next-sanity@^12.1.0, next-sanity, BlogListingClientProps, metadata, revalidate, gatherSources(), getKnowledgeBase(), withTimeout() (+20 more)
+Cohesion: 0.05
+Nodes (46): next-sanity@^12.1.0, next-sanity, collisions, DEFAULT_CASES, { index, duplicates }, SEQUENCES, sources, kb (+38 more)
 
-### Community 8 - "shouldUseMobileMotion"
-Cohesion: 0.10
-Nodes (23): gsap, Header(), menuItems, cards, HowWeWork(), titleLines, OurValuesSection(), titleLines (+15 more)
+### Community 8 - "react"
+Cohesion: 0.04
+Nodes (42): 5. Hard-Learned Invariants & Anti-Slop Rules, gsap, react, distanceFromEnd(), floor(), Transcript(), AboutSection(), getMetricCountStops() (+34 more)
 
-### Community 9 - "Badges/index.ts"
-Cohesion: 0.22
-Nodes (11): Architectural Summary, Phase 4: Inbound Discovery Leads Workspace & Collision-Free 9-Column DataGrid Architecture, Root Cause Analysis & Rectifications, Verification & Compliance Evidence, 2. Line-by-Line Deliverable Inspection & Compliance Matrix, calculateOverdueTier(), getOverdueBadgeTheme(), OverdueCalculationOptions (+3 more)
+### Community 9 - "lead-schemas.ts"
+Cohesion: 0.06
+Nodes (50): ActiveDealItem, ActivityFeedItem, CommercialDealRow, CommercialDealsTableProps, ExecutiveKpiGridProps, ExecutiveMastheadProps, PipelineAllocationCardProps, PipelineStageAllocationItem (+42 more)
 
 ### Community 10 - "ChatPod.tsx"
-Cohesion: 0.11
-Nodes (29): Step 3: Fix `Composer.tsx` (Typing Selection & Auto-Grow Engine), ChatPod(), isFilled(), lastTurnNumber(), matchOption(), menuForMode(), replyWeight(), scrollDepthPct() (+21 more)
+Cohesion: 0.09
+Nodes (37): Block 1 — Hard Gate (all answers must be no), Step 3: Fix `Composer.tsx` (Typing Selection & Auto-Grow Engine), 2.4 UI layer, ChatPod(), isFilled(), lastTurnNumber(), matchOption(), menuForMode() (+29 more)
 
 ### Community 11 - "CrmUserRole"
-Cohesion: 0.14
-Nodes (28): 1. Exhaustive Component & Action Audit Matrix, Gap 2: Sole-Admin Invariance & Self-Demotion Vulnerability, runSprint32Verification(), setTeamUserStatus(), updateTeamUserRole(), CategoryUnderlineTabs(), CategoryUnderlineTabsProps, TAB_DEFINITIONS (+20 more)
+Cohesion: 0.07
+Nodes (51): Verification completed, 2026-11-07 verification update, 1. Exhaustive Component & Action Audit Matrix, Gap 2: Sole-Admin Invariance & Self-Demotion Vulnerability, Core Pillars Implemented & Calibrated, 5. Step-by-Step Implementation Roadmap, runSprint32Verification(), getTeamRoster() (+43 more)
 
 ### Community 12 - "chatpod-ingest-payload-parity.test.ts"
-Cohesion: 0.08
-Nodes (46): 3. What "same as the form" means, mechanically, 1. Executive Summary & Problem Diagnosis, @sanity/icons, ProjectForm(), SERVICE_ICONS, Step1Props, Step1Services(), Step2Business() (+38 more)
+Cohesion: 0.11
+Nodes (30): 1. Executive Summary & Problem Diagnosis, @sanity/icons@^3.7.4, @sanity/icons, ProjectForm(), SERVICE_ICONS, Step1Props, Step1Services(), Step2Business() (+22 more)
 
 ### Community 13 - "AdminWorkspaceShell.tsx"
-Cohesion: 0.07
-Nodes (34): 7. Disclosed, not hidden, Phase 3: Harden `src/app/admin/(workspace)/team/[id]/page.tsx` & Elevate `not-found.tsx`, Gap 1: Orphaned Event Trigger & Global/Local Scope Disconnect, Step 1: Resolve Global/Local Event Bridge & Role Authorization, 1. Delivery Gate Scorecard (`scripts/verify-sprint-8-1.ts`), 2. Verified Remediation Invariants (Commit `63ed81e`), 3. Triple-Auditor Certification Verdicts, 🛡️ Senior CTO Delivery Gate & Triple-Auditor Final Sign-Off (+26 more)
+Cohesion: 0.05
+Nodes (50): 7. Disclosed, not hidden, 3. Comprehensive Remediation Plan, Phase 1: Refactor `getPersonnelProfile` to Standard Authenticated Client, Phase 3: Harden `src/app/admin/(workspace)/team/[id]/page.tsx` & Elevate `not-found.tsx`, Phase 4: Edge Proxy Dynamic Route Self-Inspection Pass-Through, Phase 5: Client-Side Event Harmonization, Phase 6: Automated Test Suite & Regression Verification, Surface 8: Slide-out Client 360° Dossier Drawer & Centered Modals (+42 more)
 
-### Community 14 - "LeadsWorkspaceClient.tsx"
-Cohesion: 0.06
-Nodes (39): Sprint 7.2: Virtualized Data Grid, Inline Dropdowns with React 19 `useOptimistic` & Responsive Breakpoints, Sprint 7.2: Virtualized Data Grid, Inline Dropdowns with React 19 `useOptimistic` & Responsive Breakpoints, 1. Executive Summary & Root Cause Matrix, 6. Recorded R-35 Click-Through Smoke Test Evidence, updateLeadInlineAction(), updateLeadPriorityInlineAction(), InlinePrioritySelect(), InlinePrioritySelectProps (+31 more)
+### Community 14 - "LeadsDataGrid.tsx"
+Cohesion: 0.11
+Nodes (24): Blueprint:, Module 4: Inbound Discovery Leads Workspace (`/admin/leads`), Architectural Summary, Phase 4: Inbound Discovery Leads Workspace & Collision-Free 9-Column DataGrid Architecture, Root Cause Analysis & Rectifications, Verification & Compliance Evidence, InlinePrioritySelect(), InlinePrioritySelectProps (+16 more)
 
 ### Community 15 - "Services & Interactive Accordions"
 Cohesion: 0.16
@@ -543,55 +530,55 @@ Nodes (14): ACCORDION_CARDS, ALL_DOCS, B2B_SERVICE_DETAILS, B2C_SERVICE_DETAILS,
 
 ### Community 16 - "leads.ts"
 Cohesion: 0.05
-Nodes (70): 4. Key Engineering Invariants & Data Flow, assert(), client, runSprint51Verification(), assert(), client, runSprint52Verification(), submitContactInquiry() (+62 more)
+Nodes (68): 1. Executive Summary, 2. Architecture & Design Blueprint, 3. Senior CTO 4-Block Delivery Gate Report, 4. Author Identity & Commit Verification, Components Delivered:, Contact: Swiss Light Editorial Contact Suite, Live Studio Clocks, CRM Ingestion & SEO Graph, Design Read & Token System (`dial ENERGY 2 / RHYTHM 2 / MOTION 1`), assert() (+60 more)
 
 ### Community 17 - "PersonnelProfileWorkspaceClient.tsx"
-Cohesion: 0.06
-Nodes (48): 1. Executive Summary, 2. Forensic Root Cause Breakdown, 3. Comprehensive Remediation Plan, 4. Verification Checkpoint & User Authorization, Personnel Profile Workspace (/admin/team/[id]) 404 Root Cause Analysis & Remediation Plan, Phase 1: Refactor `getPersonnelProfile` to Standard Authenticated Client, Phase 2: Refactor `getPersonnelDeals` to Standard Authenticated Client, Phase 4: Edge Proxy Dynamic Route Self-Inspection Pass-Through (+40 more)
+Cohesion: 0.07
+Nodes (36): Phase 2: Refactor `getPersonnelDeals` to Standard Authenticated Client, Root Cause 1: Fatal Unhandled Exception via `getAdminClient()` in `getPersonnelProfile` & `getPersonnelDeals`, 5. Phased Implementation Plan, adminResetPersonnelPassword(), adminRevokePersonnelSessions(), assertActiveAdmin(), generateSecureTemporaryPassword(), getPersonnelDeals() (+28 more)
 
-### Community 18 - "submit.ts"
-Cohesion: 0.18
-Nodes (11): Finding F-01 (BLOCKER): Concurrent / Strict Mode Submission Hang, FIELD_TO_SLOT, fromValidation(), MAX_NETWORK_ATTEMPTS, parseRetryAfter(), submitBrief(), SubmitOptions, SubmitOutcome (+3 more)
+### Community 18 - "chatpod-ingest-payload-parity.test.ts"
+Cohesion: 0.14
+Nodes (28): Finding F-05 (MAJOR): Category Edit Desynchronization in Review Mode, 2.5 Intake: 17 slots, one builder, one route, buildPodPayload(), displayValue(), replyChannel(), reviewRows(), slotsToFields(), serviceInterestLabel() (+20 more)
 
 ### Community 19 - "chatpod-knowledge-coverage.test.ts"
-Cohesion: 0.08
-Nodes (33): ALL_SERVICES_HREF, DRAFT_RETENTION_DAYS, FAQ_HREF, PERSISTENT_MENU, PERSONA, PROCESS_PRINCIPLES, SERVICE_ALIASES, STUDIO (+25 more)
+Cohesion: 0.06
+Nodes (45): 2.2 Knowledge layer (server → props → client), ChatPod, ChatPodShell(), EXCLUDED_ROUTES, useMountPermitted(), formatJournalDate(), JOURNAL_LIMIT, journalDateFormatter (+37 more)
 
 ### Community 20 - "Editorial & Blog Architecture"
-Cohesion: 0.10
-Nodes (27): browserslist, devDependencies, @axe-core/playwright@^4.14.0, dotenv@^18.0.8, @faker-js/faker@^10.6.0, @playwright/test@^1.64.1, tailwindcss@^4, @tailwindcss/postcss@^4 (+19 more)
+Cohesion: 0.08
+Nodes (32): eslintConfig, browserslist, devDependencies, @axe-core/playwright@^4.14.0, dotenv@^18.0.8, eslint@^9, eslint-config-next@16.1.6, @faker-js/faker@^10.6.0 (+24 more)
 
-### Community 21 - "formatCrmCurrency"
-Cohesion: 0.06
-Nodes (33): Blueprint:, Surface 8: Slide-out Client 360° Dossier Drawer & Centered Modals, 9.8 Slide-out Client 360° Dossier Drawer & Centered Modals, Independent CTO PR Auditor Multi-Agent Review & Remediation Record, clearLeadFollowUp(), calculateStageMomentum(), CommercialKpiRibbon(), CommercialKpiRibbonProps (+25 more)
+### Community 21 - "LeadDossierWorkspaceClient.tsx"
+Cohesion: 0.11
+Nodes (30): updateLeadAssignee(), LeadDossierData, OrganizationDossierProps, calculateStageMomentum(), CommercialKpiRibbon(), getPrioritySlaDetails(), MomentumMetrics, DossierHeaderBar() (+22 more)
 
 ### Community 22 - "suspendTeamUser"
 Cohesion: 0.21
 Nodes (13): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 4.1: Rep Offboarding Protocol, Session Revocation & Account Suspension Engine, 1. Objectives, 2. Detailed Technical Work Packages (+5 more)
 
-### Community 23 - "Sprint 9.2 Architecture Specification: Overdue Escalation Engine, Visual Alert Badges & Rep Workload Oversight"
-Cohesion: 0.22
-Nodes (8): 1. Executive Summary & Architectural Scope, 2. Directory Structure & Deliverable Matrix, 3. Tiered Overdue Escalation Logic & Mathematical Invariants, 4. RBAC & Security Invariants, 5. Verification & Delivery Gate Criteria, Boundary Rules:, Core Business Invariants:, Sprint 9.2 Architecture Specification: Overdue Escalation Engine, Visual Alert Badges & Rep Workload Oversight
+### Community 23 - "LeadsWorkspaceClient.tsx"
+Cohesion: 0.07
+Nodes (16): 3.2 Phase 6 Dynamic KPI Ribbon & URL History Synchronization, 3.3 Sprint 7.1 Multi-Filter Action Bar & Overdue Queue, 3.4 Sprint 7.2 Virtualized Data Grid & Mobile Cards, 3.5 Sprint 8.1 Client 360 Sliding Drawer Shell, 3.6 Sprint 8.2 Omnichannel Timeline & Quick Action Composer, 3.7 Sprint 8.3 Guarded Stage Transition Modals & Converted Record Locking, 3. Cross-Feature Architectural Integration Audit, 5. Inconsistencies, Edge Cases & Architectural Observations (+8 more)
 
-### Community 24 - "chat-pod/types.ts"
-Cohesion: 0.13
-Nodes (20): 2.1 Mount gate (`ChatPodShell.tsx`), 2.2 Knowledge layer (server → props → client), 2.7 Accessibility contract, 2. Architecture — the whole shape, ChatPodBoundary(), ChatPod, ChatPodShell(), EXCLUDED_ROUTES (+12 more)
+### Community 24 - "app/layout.tsx"
+Cohesion: 0.25
+Nodes (8): 2.1 Mount gate (`ChatPodShell.tsx`), ChatPodBoundary(), circularXX, graphik, helveticaNeue, metadata, RootLayout(), siteUrl
 
 ### Community 25 - "context.ts"
-Cohesion: 0.13
-Nodes (31): 5. The conversation layer (`engine/context.ts`), CARDINALS, collapse(), DEPTH_PHRASES, exhausted(), FollowUp, followUp(), handOver() (+23 more)
+Cohesion: 0.14
+Nodes (30): 5. The conversation layer (`engine/context.ts`), CARDINALS, collapse(), DEPTH_PHRASES, exhausted(), FollowUp, followUp(), handOver() (+22 more)
 
 ### Community 26 - "auth.ts"
-Cohesion: 0.14
-Nodes (30): nextConfig, securityHeaders, assert(), runSprint22Verification(), loginAction(), LoginSchema, LogoutActionResult, resolveClientIp() (+22 more)
+Cohesion: 0.15
+Nodes (25): nextConfig, securityHeaders, assert(), runSprint22Verification(), checkRateLimit(), clearAllRateLimits(), LOCKOUT_DURATION_MS, LOCKOUT_TRIGGER_ATTEMPTS (+17 more)
 
-### Community 27 - "career-queries.ts"
-Cohesion: 0.10
-Nodes (25): CareersListingClient(), CareersListingClientProps, CareersPage(), metadata, revalidate, SITE_URL, JobDetailClient(), JobDetailClientProps (+17 more)
+### Community 27 - "Dashboard/index.ts"
+Cohesion: 0.15
+Nodes (14): 1. Purge Superseded Admin Dashboard Components (~3,300 Lines), AttentionQueue(), AttentionQueueItem, AttentionQueueProps, formatFollowUp(), ActiveDealItem, CommercialDealsTable(), CommercialDealsTableProps (+6 more)
 
-### Community 28 - "components/PortableTextRenderer.tsx"
-Cohesion: 0.08
-Nodes (20): 1. Verdict from research, 2.1 Homepage "Thinking in Systems" rail (DispatchesCurtain), 2.2 Listing `/blog`, 2.3 Article `/blog/[slug]`, 2. Design direction, 3. Data & platform changes, 4. Non-negotiable gates (from tests + docs), 5. Execution team & order (+12 more)
+### Community 28 - "Phase 14: Blog Redesign — Homepage Dispatches, Listing & Article Detail (Plan)"
+Cohesion: 0.25
+Nodes (8): 1. Verdict from research, 2.1 Homepage "Thinking in Systems" rail (DispatchesCurtain), 2.2 Listing `/blog`, 2.3 Article `/blog/[slug]`, 2. Design direction, 5. Execution team & order, 6. Open questions (answer with the approval, or defaults apply), Phase 14: Blog Redesign — Homepage Dispatches, Listing & Article Detail (Plan)
 
 ### Community 29 - "4. Delivery sequence and gates"
 Cohesion: 0.09
@@ -606,8 +593,8 @@ Cohesion: 0.18
 Nodes (12): 2.1 Calibrated `sitemap.ts` Architecture, 2.2 Granular Crawler Governance (`src/app/robots.ts`), 2.3 Instant IndexNow Ingestion Protocol (`/api/indexnow`), 2. Technical SEO Infrastructure Overhaul, getAllServiceSlugs(), getServiceBySlug(), dynamicParams, generateMetadata() (+4 more)
 
 ### Community 32 - "match.ts"
-Cohesion: 0.09
-Nodes (41): Block 1 — Hard Gate (all answers must be no), 1. What the complaint was, in its own words, 3. Residue naming: the same question, wrapped in more courtesy, 4. Continuity: the previous turn is allowed to break a tie, 5. Measured, after this pass, 7. What was deliberately *not* changed, 9. Open, in priority order, Chat Pod — Comprehension, continuity and the intake remediation (Part C) (+33 more)
+Cohesion: 0.08
+Nodes (48): 1. What the complaint was, in its own words, 3. Residue naming: the same question, wrapped in more courtesy, 4. Continuity: the previous turn is allowed to break a tie, 5. Measured, after this pass, 7. What was deliberately *not* changed, 9. Open, in priority order, Chat Pod — Comprehension, continuity and the intake remediation (Part C), 2. Engine work (A: typo tolerance, B: continuity, C: ownership) (+40 more)
 
 ### Community 33 - "Subsystem 33: agents_skills_antislop_human_contrast_check"
 Cohesion: 0.08
@@ -617,93 +604,93 @@ Nodes (30): contrast_ratio(), linearize(), luminance(), main(), parse_hex(), par
 Cohesion: 0.09
 Nodes (24): AnyPortableBlock, BlockSpan, CalloutBlock, CodeBlock, ComparisonMatrix, ComparisonMatrixRow, EmpiricalBenchmark, FaqItem (+16 more)
 
-### Community 35 - "AboutSection.tsx"
+### Community 35 - "timeframeUtils.ts"
 Cohesion: 0.14
-Nodes (14): AboutSection(), getMetricCountStops(), metrics, renderMetricTitle(), renderServiceTitle(), services, ContactCtaSection(), Hero() (+6 more)
+Nodes (17): Phase 5: Verification & Unit Tests, ExecutiveMasthead(), ExecutiveMastheadProps, TIMEFRAME_OPTIONS, ExecutiveReportExportData, aggregateTimeframeRevenue(), CadenceLabel, calculateMetricDelta() (+9 more)
 
-### Community 36 - "collect.ts"
-Cohesion: 0.05
-Nodes (12): next, RoutePlaceholderProps, quickLinks, socialLinks, dynamic, circularXX, graphik, helveticaNeue (+4 more)
+### Community 36 - "next"
+Cohesion: 0.04
+Nodes (49): next, getLeadActivitiesAction(), convertInboundLeadToDealAction(), getLeadDetails(), isValidUuid(), updateLeadDealParameters(), getAgencySettingsAction(), getPersonnelProfile() (+41 more)
 
 ### Community 37 - "Subsystem 37: tests_e2e_chatpod_spec"
-Cohesion: 0.19
-Nodes (20): 5. The gates this pass adds, and the harness bug it found first, Three gates that did not exist, each answering an audit finding, actions(), answerTurn(), ask(), atTheBlank(), composer(), FREE_TEXT (+12 more)
+Cohesion: 0.16
+Nodes (25): 5. The gates this pass adds, and the harness bug it found first, Three gates that did not exist, each answering an audit finding, 10. Second post-ship defect, same day: the transcript would not scroll, actions(), answerTurn(), ask(), atTheBlank(), composer() (+17 more)
 
 ### Community 38 - "kpi/KpiRibbon.tsx"
-Cohesion: 0.36
-Nodes (11): assert(), runVerification(), extractKpiMetrics(), formatFullCurrency(), formatKpiCurrency(), formatSyncTimestamp(), NormalizedKpiMetrics, KpiRibbonContent() (+3 more)
+Cohesion: 0.13
+Nodes (26): 1. Deep Root Cause Analysis: Why Did You See "Zero Difference"?, 2. Comparison: Current Code vs. Logip Target Benchmark, 3. Platform-Wide Architectural Overhaul Plan, 4. Verification & Quality Gates, A. The Browser Was on `/admin/leads` (Inbound Leads), B. The 5-Card Ribbon Was Hard-Coded Across Multiple Pages, Logip Modern CRM Overhaul & 5-Card Ribbon Eradication Plan, Module 1: Complete Platform-Wide Eradication of `KpiRibbon` (+18 more)
 
 ### Community 39 - "slots.ts"
-Cohesion: 0.12
-Nodes (18): isServiceInterest(), SERVICE_INTEREST_OPTIONS, UNDECIDED_SERVICE, validateServiceInterests(), allowedServices(), chipsFrom(), LIMITS, NO_WORDS (+10 more)
+Cohesion: 0.11
+Nodes (23): isServiceInterest(), SERVICE_INTEREST_OPTIONS, SERVICE_INTEREST_ROUTING, UNDECIDED_SERVICE, validateServiceInterests(), allowedServices(), chipsFrom(), LIMITS (+15 more)
 
-### Community 40 - "ClientHeader.tsx"
-Cohesion: 0.10
-Nodes (22): 1. Architectural Strategy, 2. Universal Viewport Visibility & Instant-On Rendering, Header Disciplines Ticker & Logo Spacing Architecture, 1. Executive Summary, 2. Technical Enhancements, Kinetic Stage Capabilities Migration Plan, BRAND_STATEMENTS, ClientHeaderProps (+14 more)
+### Community 40 - "NavigationOverlay.tsx"
+Cohesion: 0.28
+Nodes (9): 1. Executive Summary, DEFAULT_STAGE_WORDS, KineticStage(), DEFAULT_NAV_ITEMS, NavigationOverlay(), KineticStageProps, NavigationOverlayProps, NavItem (+1 more)
 
-### Community 41 - "createClient"
-Cohesion: 0.10
-Nodes (26): assertAdminRole(), assertManagerOrAdminRole(), CallerIdentity, getAgencySettingsAction(), simulateInboundBriefAction(), updateAgencySettingsAction(), InboundSubmissionItem, IngestionActivityItem (+18 more)
+### Community 41 - "looksLikeQuestion"
+Cohesion: 0.20
+Nodes (20): 2. The vocabulary change: a typed message is not an authored one, 8. Evidence, 10. Pass 4: a third auditor, on the commits rather than the working tree, 1. What the owner reported, in their own words, 2. One column: the mechanics, 3. One lock: the lifecycle, 4. The typed message: what the shape test had left open, 6. Verification actually run (3 November) (+12 more)
 
 ### Community 42 - "Database Schema & Security Layer"
-Cohesion: 0.08
-Nodes (25): dependencies, googleapis@^171.4.0, gsap@^3.14.2, @gsap/react@^2.1.2, lenis@^1.3.17, next@16.1.6, pg@^8.23.1, react@19.2.3 (+17 more)
+Cohesion: 0.09
+Nodes (23): dependencies, googleapis@^171.4.0, gsap@^3.14.2, @gsap/react@^2.1.2, lenis@^1.3.17, next@16.1.6, pg@^8.23.1, react@19.2.3 (+15 more)
 
 ### Community 43 - "Editorial & Blog Architecture"
-Cohesion: 0.16
-Nodes (11): sanity, authorSchema, blockContentSchema, careerApplicationSchema, careerPostingSchema, categorySchema, companyProfileSubmissionSchema, faqItemSchema (+3 more)
+Cohesion: 0.11
+Nodes (16): sanity@^5.13.0, sanity, apiVersion, dataset, projectId, writeClient, authorSchema, blockContentSchema (+8 more)
 
 ### Community 44 - "Findings"
 Cohesion: 0.04
 Nodes (44): 10. Identical wording has different meanings when typed and tapped, 11. Error recovery and clarification need a product review, 12. Secondary chrome competes with the active task, 1. A services answer is deliberately replaced with qualification, 2. Polite wording still breaks recognition, 3. Continue is visually indistinguishable from an answer, 4. Ordinary actions are incorrectly exposed as toggles, 5. A long list separates the question from its answers (+36 more)
 
-### Community 45 - "Phase 7 Milestone: Interactive Leads Workspace, Multi-Filter Engine & Virtualized Data Grid"
-Cohesion: 0.29
-Nodes (6): 1. Executive Summary, 2. Comprehensive Phase 7 Scope Breakdown, 3. Automated Verification Matrix, Phase 7 Milestone: Interactive Leads Workspace, Multi-Filter Engine & Virtualized Data Grid, Sprint 7.1: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons, Sprint 7.2: Virtualized Data Grid, Inline Dropdowns with React 19 `useOptimistic` & Responsive Breakpoints
+### Community 45 - "dossierUtils.ts"
+Cohesion: 0.27
+Nodes (14): Verification Findings:, BRIEF_LABEL_MAP, createWhatsAppUri(), extractBriefEntries(), formatBriefLabel(), formatBriefValue(), formatDossierCurrency(), getDossierInitials() (+6 more)
 
 ### Community 46 - "useIntakeFlow.ts"
-Cohesion: 0.14
-Nodes (37): 6. The ten intake defects, Finding F-05 (MAJOR): Category Edit Desynchronization in Review Mode, 2.5 Intake: 17 slots, one builder, one route, buildPodPayload(), displayValue(), replyChannel(), reviewRows(), slotsToFields() (+29 more)
+Cohesion: 0.15
+Nodes (26): 6. The ten intake defects, 3. What "same as the form" means, mechanically, 3. The ten intake defects, polarityMatch(), SHORT_BRIEF_SLOTS, advance(), blockingSlot(), canSubmit() (+18 more)
 
 ### Community 47 - "5. Granular Sprint Work Breakdown Structure (Phases 6–9)"
-Cohesion: 0.04
-Nodes (44): 1.1.1 Total Leads ($N_{\text{total}}$), 1.1.2 Potential Pipeline Value ($\mathcal{V}_{\text{potential}}$), 1.1.3 Converted Revenue ($\mathcal{R}_{\text{converted}}$), 1.1.4 Studio Conversion Rate Percentage ($\mathcal{CR}$), 1.1.5 Overdue Follow-ups Alert Badge ($\mathcal{O}_{\text{overdue}}$), 1.1 Mathematical Formulas and Dynamic Aggregation Logic, 1.2.1 High-Performance PostgreSQL Aggregation RPC, 1.2 Dynamic Responsiveness & State Invalidation Architecture (+36 more)
+Cohesion: 0.05
+Nodes (43): 1.1.1 Total Leads ($N_{\text{total}}$), 1.1.2 Potential Pipeline Value ($\mathcal{V}_{\text{potential}}$), 1.1.3 Converted Revenue ($\mathcal{R}_{\text{converted}}$), 1.1.4 Studio Conversion Rate Percentage ($\mathcal{CR}$), 1.1.5 Overdue Follow-ups Alert Badge ($\mathcal{O}_{\text{overdue}}$), 1.1 Mathematical Formulas and Dynamic Aggregation Logic, 1.2.1 High-Performance PostgreSQL Aggregation RPC, 1.2 Dynamic Responsiveness & State Invalidation Architecture (+35 more)
 
-### Community 48 - "ClientHomeExperience.tsx"
-Cohesion: 0.19
-Nodes (11): Pull Request: Frequently Asked Questions Curtain & Sanity Studio Engine, Summary, ClientHomeExperience(), ClientHomeExperienceProps, FaqCurtain(), FaqCurtainProps, TestimonialsCutout(), metadata (+3 more)
+### Community 48 - "Detailed Deliverable Breakdown"
+Cohesion: 0.14
+Nodes (13): 2. Pure Configuration & Taxonomy Separation, 3. Interactive Provisioning Modal Matrix, 4-Block Delivery Gate Report, 4. Dedicated Permissions Governance Modal, 5. Directory Grid & Canonical Route, 6. Row Level Security Hardening, Block 1: Type Safety & Boundary Gate, Block 2: Automated Unit & RBAC Validation (+5 more)
 
 ### Community 49 - "normalise.ts"
-Cohesion: 0.10
-Nodes (40): 2. The vocabulary change: a typed message is not an authored one, 8. Evidence, 4. The typed message: what the shape test had left open, 9. The independent CTO re-audit (pass 3, same day), Pass 3: the independent CTO re-audit, and the regression it caught, 2.3 Conversation engine (client, deterministic), 1. What the owner reported, and what it turned out to be, 2. Engine work (A: typo tolerance, B: continuity, C: ownership) (+32 more)
+Cohesion: 0.15
+Nodes (18): 2.3 Conversation engine (client, deterministic), fuzzyScore(), AUXILIARY_WORDS, CHAT_ABBREVIATIONS, editDistance(), editSimilarity(), INTERROGATIVE_SWAPS, QUERY_STOPWORDS (+10 more)
 
-### Community 50 - "CrmUserRole"
-Cohesion: 0.19
-Nodes (13): 5. Step-by-Step Implementation Roadmap, CallerIdentity, CommercialDirectoryTableProps, PersonnelActionMenu(), PersonnelActionMenuProps, formatRoleName(), PersonnelCard(), PersonnelCardProps (+5 more)
+### Community 50 - "RevenueDynamicsCard"
+Cohesion: 0.22
+Nodes (9): 1. Fritsch-Carlson Monotone Cubic Spline Engine (`PerformanceChart.tsx`), 5. File Modifications Plan, formatAxis(), formatCurrency(), generateMonotoneBezierPath(), Point2D, RevenueDynamicsCard(), RevenueDynamicsCardProps (+1 more)
 
-### Community 51 - "client-works-schemas.ts"
-Cohesion: 0.14
-Nodes (16): AssignClientWorkLeadsFormData, assignClientWorkLeadsSchema, clientWorkDeliveryStages, clientWorkHealthEnum, clientWorkHealthStatuses, clientWorkMilestoneStatusEnum, clientWorkStageEnum, UpdateClientWorkHealthFormData (+8 more)
+### Community 51 - "Session register — Chat Pod: build complete, audit closed, gate pending (`feature/chat-pod`)"
+Cohesion: 0.20
+Nodes (9): 1. Where the mission stands, 2.6 Storage and privacy (`persistence.ts`), 2.7 Accessibility contract, 2. Architecture — the whole shape, 4. Decisions already taken (D1–D6) — closed, do not re-open, 7. Verification state — read this before claiming anything is done, 8. Files this session touched (uncommitted), 9. Environment notes worth keeping (+1 more)
 
 ### Community 52 - "Platform Core & Turbopack Optimization"
 Cohesion: 0.10
 Nodes (11): DETERMINISTIC_SEED_IDENTITIES, OrchestratorConfig, SeedIdentity, TestOrchestrator, codeFilesToAudit, packageJson, playwrightConfigContent, requiredFiles (+3 more)
 
 ### Community 53 - "03 — Conversation Script & Intent Table"
-Cohesion: 0.08
-Nodes (24): 03 — Conversation Script & Intent Table, 10. Intent count and coverage audit, 11. Strings that must never appear, 1. Opening, 5. Process, 6. Contact, careers, logistics, 7. Intake trigger and exit, 8. Fallbacks (+16 more)
+Cohesion: 0.06
+Nodes (35): 03 — Conversation Script & Intent Table, 10. Intent count and coverage audit, 11. Strings that must never appear, 1. Opening, 2. Greetings and small talk, 3. Services, 4. Work, 5. Process (+27 more)
 
 ### Community 54 - "Editorial & Blog Architecture"
-Cohesion: 0.20
-Nodes (14): runtime, CompanyProfileModalProps, triggerProfileDownload(), COMPANY_PROFILE_SUBMISSION_FIELD_ORDER, CompanyProfileSubmissionErrors, CompanyProfileSubmissionInput, EMPTY_COMPANY_PROFILE_SUBMISSION, isValidEmail() (+6 more)
+Cohesion: 0.24
+Nodes (13): POST(), runtime, CompanyProfileModalProps, COMPANY_PROFILE_SUBMISSION_FIELD_ORDER, CompanyProfileSubmissionErrors, CompanyProfileSubmissionInput, EMPTY_COMPANY_PROFILE_SUBMISSION, isValidEmail() (+5 more)
 
 ### Community 55 - "Tone & Voice"
 Cohesion: 0.05
 Nodes (38): Actorless Passive, All-Caps Emphasis, antislop-copywriting, Aphorism Formulas, Boldface Overuse, Chatbot Closers, Copywriting Skill Checklist, Draft, audit, final (+30 more)
 
 ### Community 56 - "ClientHeader"
-Cohesion: 0.12
-Nodes (23): 3.1 The `/blog` Listing Experience Redesign, 3.2 The `/blog/[slug]` Article Reader Experience Redesign, 3. Dedicated Redesign Blueprint for `/blog` & `/blog/[slug]`, 1. Vector Logo Contrast Engine (`MarcaUbiLogo.tsx` & `useHeaderTheme`), 2. 100% Eradication of AI-Slop Pills, Badges & Radar Dots, 3. Authentic Kerala Studio Corridors (Zero Synthetic International Hubs), 5. Complete Ground-Up Redesign of `/blog` & `/blog/[slug]`, Key Architectural Deliverables (+15 more)
+Cohesion: 0.05
+Nodes (51): 4. Non-negotiable gates (from tests + docs), 1.4 Scope Addition: Complete Ground-Up Redesign of `/blog` and `/blog/[slug]`, 3.1 The `/blog` Listing Experience Redesign, 3.2 The `/blog/[slug]` Article Reader Experience Redesign, 3. Dedicated Redesign Blueprint for `/blog` & `/blog/[slug]`, 5. Complete Ground-Up Redesign of `/blog` & `/blog/[slug]`, 4. Page Architecture & Structural Wireframe, 1. Architectural Strategy (+43 more)
 
 ### Community 57 - "Platform Core & Turbopack Optimization"
 Cohesion: 0.11
@@ -714,16 +701,16 @@ Cohesion: 0.05
 Nodes (38): §10: Public Webhook Ingestion Engine & Deduplication Pipeline, §11: Executive Analytics, Dynamic KPI Ribbon & Reporting Formulas, §12: Interactive Leads Workspace, Data Grid & Optimistic State Machine, §13: Client 360° Dossier & Omnichannel Touchpoint Studio, §14: Task Management, Follow-up Scheduler & Overdue Escalations, §15: 10-Phase Production Engineering Delivery Roadmap, §16: Quality Assurance, Automated Testing Matrix & Release Verification Suite, §17: Production Deployment, Disaster Recovery & Incident Runbooks (+30 more)
 
 ### Community 59 - "Database Schema & Security Layer"
-Cohesion: 0.26
-Nodes (11): RFC-3986, @supabase/ssr, runSprint21Verification(), GET(), EnvConfig, envSchema, getEnv(), validateEnv() (+3 more)
+Cohesion: 0.31
+Nodes (10): RFC-3986, @supabase/ssr, runSprint21Verification(), EnvConfig, envSchema, getEnv(), validateEnv(), createClient() (+2 more)
 
 ### Community 60 - "admin/layout.tsx"
 Cohesion: 0.08
 Nodes (24): 1. Executive Summary & Problem Anatomy, 2. Root Cause Analysis, 3. Four-Pillar Architectural Remediation Plan, 4. Verification & Testing Matrix, Architecture Specification: Zero-Error SSR Hydration & Session Logout Lifecycle, Pillar 1: Root Layout Extension Shield (`src/app/layout.tsx`), Pillar 2: Clean Session Invalidation & Hard Navigation (`auth.ts` & `UserProfileDropdown.tsx`), Pillar 3: Defensive DOM Guard in `AdminRootClientProvider.tsx` (+16 more)
 
 ### Community 61 - "Client Ingestion & Project Briefs"
-Cohesion: 0.25
-Nodes (5): @playwright/test, RFC-5545, calculateContrastRatio(), calculateRelativeLuminance(), ensureAuthenticatedSession()
+Cohesion: 0.19
+Nodes (7): parsedBaseURL, testPort, @playwright/test, RFC-5545, calculateContrastRatio(), calculateRelativeLuminance(), ensureAuthenticatedSession()
 
 ### Community 62 - "Subsystem 62: scripts_verify_sprint_7_2"
 Cohesion: 0.12
@@ -734,28 +721,28 @@ Cohesion: 0.10
 Nodes (16): dossierUtilsContent, drawerContent, filesToAudit, orgDossierContent, requiredFiles, ROOT_DIR, scssContent, testFiles (+8 more)
 
 ### Community 64 - "Executive Performance Chart & Numeric Typography Redesign Plan"
-Cohesion: 0.13
-Nodes (14): 1. Executive Summary & Forensic Defect Analysis, 2. In-Depth Typographic Benchmark: Font Selection for Numbers, 3. Mathematical & Algorithmic Blueprint, 4. UI/UX Visual Specification, 6. Strict Protocol Check, A. Candidate Evaluation Matrix, A. Fritsch-Carlson Monotone Spline Bézier Algorithm, A. Viewport & Coordinate Geometry (+6 more)
+Cohesion: 0.20
+Nodes (9): 1. Executive Summary & Forensic Defect Analysis, 2. In-Depth Typographic Benchmark: Font Selection for Numbers, 3. Mathematical & Algorithmic Blueprint, 6. Strict Protocol Check, A. Candidate Evaluation Matrix, A. Fritsch-Carlson Monotone Spline Bézier Algorithm, B. Font Recommendation Rationale, B. Tooltip Self-Compensating Boundary Translation (+1 more)
 
 ### Community 65 - "scheduler-schemas.ts"
-Cohesion: 0.19
-Nodes (12): FOLLOW_UP_ACTION_TYPES, FollowUpActionType, ON_HOLD_REASONS, ON_HOLD_STATUS_ID, OnHoldReason, ScheduleFollowUpInput, scheduleFollowUpSchema, TransitionToOnHoldInput (+4 more)
+Cohesion: 0.15
+Nodes (18): 2.1 Dedicated Schema Modules in `src/app/lib/`, CallerIdentity, generateIcsCalendarInviteAction(), RFC-5545, OnHoldModalProps, FOLLOW_UP_ACTION_TYPES, generateIcsCalendarInvite(), ON_HOLD_REASONS (+10 more)
 
 ### Community 66 - "overlayScrollLock.ts"
-Cohesion: 0.13
-Nodes (23): Behaviour, measured, Disclosed rather than hidden, Pass 2 (Part D) — One Column, One Lock, and the Typed Message, Pass 2 verification actually executed, Pass 3 verification actually executed, Pass 4: a third auditor, on the pushed commits, and what survived contact, Root causes, established by reading the code before changing it, The scroll contract, and the maths that replaced the guess (+15 more)
+Cohesion: 0.25
+Nodes (14): What shipped, SmoothScrollProvider(), SmoothScrollProviderProps, acquireOverlayScrollLock(), announce(), holders, isOverlayScrollLocked(), listeners (+6 more)
 
 ### Community 67 - "Header Navigation & Liquid Glass Experience"
-Cohesion: 0.26
+Cohesion: 0.29
 Nodes (11): appendCompanyProfileSubmissionToGoogleSheet(), createSheetsClient(), ensureHeaderRow(), ensureSheetExists(), getGoogleSheetsConfig(), GOOGLE_SHEETS_HEADERS, GOOGLE_SHEETS_SCOPE, GoogleSheetsAppendRowInput (+3 more)
 
 ### Community 68 - "Marca Ubi — Enterprise Agency CRM"
 Cohesion: 0.06
 Nodes (35): 10. Component-by-Component SCSS Module Refactoring Matrix, 11. Backend & Database Invariant Preservation, 12. Multi-Phase Implementation Roadmap, 13.1 Automated Verification Gates (All 5 Mandatory), 13.2 Rule R-35 Click-Through Smoke Test Matrix, 13. Quality Assurance, Delivery Gates & Acceptance Criteria, 14. Governance, Risk Management & Release Controls, 1.1 Context & Background (+27 more)
 
-### Community 69 - "Session Register — Chat Pod Comprehension (Part A) and Motion & Contrast (Part B)"
-Cohesion: 0.14
-Nodes (14): Follow-ups found in use (commits after `15b2183`), The transcript stopped following, The transcript would not scroll at all, 10. Second post-ship defect, same day: the transcript would not scroll, 1. What the owner reported, and what it actually was, 3. Part B — motion and contrast (B1–B7), 4. The four defects found by measurement, 5. Verification ledger (+6 more)
+### Community 69 - "admin.ts"
+Cohesion: 0.33
+Nodes (3): runSprint31Verification(), createAdminClient(), resetAdminClientCache()
 
 ### Community 70 - "verify-sprint-9-2.ts"
 Cohesion: 0.13
@@ -765,29 +752,29 @@ Nodes (13): badgeScss, badgeUtilsContent, dataGridContent, filesToAudit, mobileC
 Cohesion: 0.11
 Nodes (17): 2. Elite Design Benchmarks & Visual Archetypes, 3. High-Contrast WCAG AA Token Matrix (Zero Generic Blue `#2563eb`), 4.1 Executive Header HUD Ribbon, 4.2 Multi-Tier SVG Canvas Architecture, 4.3 Floating Obsidian Inspection HUD, 4. Component 1: Revenue Dynamics & Forecast Card (`RevenueDynamicsCard`), 5.1 Headline & Velocity Rail, 5.2 Stepped Funnel Flow Ribbon (+9 more)
 
-### Community 72 - "getAdminClient"
-Cohesion: 0.07
-Nodes (37): Core Pillars Implemented & Calibrated, 1.1 The Problem: Current AI-Slop Implementation, 1.2 The Solution: PrimeStay People-Inspired Luxury Architecture, 1. Executive Summary & Design Transformation, 3.1 Component Hierarchy, 3.2 Layout Top Bar & Self-Service Integration, 3. UI Component Architecture & Design System Integration, 4. Visual Tokens & Anti-AI-Slop Styling (+29 more)
+### Community 72 - "avatarActions.ts"
+Cohesion: 0.15
+Nodes (16): authenticateCallerAndAuthorize(), AvatarActionResult, extractStoragePathFromUrl(), removeUserAvatarAction(), updateUserAvatarAction(), AvatarUploadModalProps, TargetMemberAvatarContext, ALLOWED_AVATAR_MIME_TYPES (+8 more)
 
 ### Community 73 - "Marca Ubi Enterprise Agency — Comprehensive Technical SEO & AI Search Architecture Audit & Blueprint"
-Cohesion: 0.14
-Nodes (13): 1.1 `src/app/sitemap.ts` Audit, Current Implementation Analysis, Executive Summary & Architecture Scorecard, Identified Critical Gaps & Violations, Marca Ubi Enterprise Agency — Comprehensive Technical SEO & AI Search Architecture Audit & Blueprint, Part 3: Architectural Implementation Blueprint, Phase 1: Sitemap & Route Coverage Optimization, Phase 2: Modern AI & Classical Crawler Governance (+5 more)
+Cohesion: 0.20
+Nodes (10): 1.1 `src/app/sitemap.ts` Audit, Current Implementation Analysis, Identified Critical Gaps & Violations, Part 3: Architectural Implementation Blueprint, Phase 1: Sitemap & Route Coverage Optimization, Phase 2: Modern AI & Classical Crawler Governance, Phase 3: Metadata Uniformity & Schema Graph Modernization, Phase 4: `llms.txt` and `llms-full.txt` Route Handlers (+2 more)
 
 ### Community 74 - "Subsystem 74: package_scripts"
 Cohesion: 0.13
 Nodes (15): scripts, build, dev, dev:clean, dev:turbo, dev:webpack, lint, start (+7 more)
 
-### Community 75 - "chatpod-local-language.test.ts"
-Cohesion: 0.14
-Nodes (11): collisions, DEFAULT_CASES, { index, duplicates }, SEQUENCES, sources, kb, sources, FALLBACK_FAQS (+3 more)
+### Community 75 - "Pass 2 (Part D) — One Column, One Lock, and the Typed Message"
+Cohesion: 0.25
+Nodes (8): Behaviour, measured, Disclosed rather than hidden, Pass 2 (Part D) — One Column, One Lock, and the Typed Message, Pass 2 verification actually executed, Pass 3 verification actually executed, Pass 4: a third auditor, on the pushed commits, and what survived contact, Root causes, established by reading the code before changing it, The scroll contract, and the maths that replaced the guess
 
 ### Community 76 - "ReelCutout"
-Cohesion: 0.12
-Nodes (14): 1. Executive Summary & Visual Directives, 2. Technical Audit & Dimensional Specifications, 3. Invariant & Test Verification, A. Reel Cutout Calibration ([`ReelCutout.module.scss`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/Sections/ReelCutout.module.scss)), A. The Client's Observation, After (Balanced Editorial Band):, After (Cinematic Letterbox Window):, Architectural Plan: Cadence Calibration — Compact Statement Curtain & Letterbox Reel Cutout (+6 more)
+Cohesion: 0.18
+Nodes (10): 1. Executive Summary & Visual Directives, 2. Technical Audit & Dimensional Specifications, A. Reel Cutout Calibration ([`ReelCutout.module.scss`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/Sections/ReelCutout.module.scss)), A. The Client's Observation, After (Balanced Editorial Band):, After (Cinematic Letterbox Window):, Architectural Plan: Cadence Calibration — Compact Statement Curtain & Letterbox Reel Cutout, B. Statement Curtain Calibration ([`StatementCurtain.module.scss`](file:///F:/Fenar/Marca%20Ubi/Web_Works/marca_ubi_web_hosting/src/app/components/Sections/StatementCurtain.module.scss)) (+2 more)
 
 ### Community 77 - "Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform"
 Cohesion: 0.07
-Nodes (28): 2.1 Architectural Flow Diagram, 2.2 Technology Stack Breakdown, 2. High-Level System Architecture & Topology, 3.1 Persona Profiles & Hierarchy, 3.2 Granular Permissions Matrix, 3.3 Multi-User Provisioning & Lifecycle Workflow, 3.4 Team Member Offboarding & Lead Reassignment Protocol, 3. User Roles, RBAC & Multi-User Governance Engine (+20 more)
+Nodes (28): 1.1 The Agency Problem Statement: The Cost of Fragmented Pipelines, 1.2 The Core Value Proposition: A Dedicated In-House Agency CRM, 1.3 Key Architectural Pillars for the Enterprise MVP, 1.4 MVP vs Post-MVP Scope Boundaries, 1. Executive Overview & Strategic Business Objectives, 2.1 Architectural Flow Diagram, 2.2 Technology Stack Breakdown, 2. High-Level System Architecture & Topology (+20 more)
 
 ### Community 78 - "verify-sprint-8-2.ts"
 Cohesion: 0.18
@@ -809,41 +796,41 @@ Nodes (9): ColorTokenPair, getContrastRatio(), getRelativeLuminance(), runContra
 Cohesion: 0.18
 Nodes (7): 1. Sticky rail: measured root cause, 2. Wording: what is actually wrong (all strings verified in source), 3. Naming decision - **RESOLVED: "Journal"**, 4. Fix plan, 5. Gates, 6. Delivery decision - **RESOLVED: both surfaces, one push**, Phase 14c: Homepage rail sticky pin + "Dispatch" wording (Plan)
 
-### Community 83 - "BlogListingClient.tsx"
-Cohesion: 0.27
-Nodes (11): 9. What this plan does not yet specify, 2. Why the knowledge base is compiled, not fetched, authoredReadingMinutes(), BlogListingClient(), fallbackInitial(), formatDate(), latestPublishedAt(), lqipFor() (+3 more)
+### Community 83 - "blog.ts"
+Cohesion: 0.13
+Nodes (21): 3. Data & platform changes, authoredReadingMinutes(), BlogListingClient(), BlogListingClientProps, fallbackInitial(), formatDate(), latestPublishedAt(), lqipFor() (+13 more)
 
-### Community 84 - "lead_activity_actions.test.ts"
-Cohesion: 0.47
-Nodes (4): LeadActivityInput, leadActivityInputSchema, MockLead, MockUser
+### Community 84 - "2. Forensic Root Cause Breakdown"
+Cohesion: 0.25
+Nodes (7): 1. Executive Summary, 2. Forensic Root Cause Breakdown, 4. Verification Checkpoint & User Authorization, Personnel Profile Workspace (/admin/team/[id]) 404 Root Cause Analysis & Remediation Plan, Root Cause 2: Blind Error Masking in `page.tsx`, Root Cause 3: Edge Proxy Dynamic Route Tab Gating Gaps, Root Cause 4: Route Segment Boundary Bubbling (`not-found.tsx`)
 
 ### Community 85 - "Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform"
 Cohesion: 0.10
 Nodes (20): 15. Comprehensive 10-Phase Production Engineering Delivery Roadmap, 1.1 The Agency Problem Statement: The Cost of Fragmented Pipelines, 1.2 The Core Value Proposition: A Dedicated In-House Agency CRM, 1.3 Key Architectural Pillars for the Enterprise Foundation, 1. Executive Overview, Commercial Objectives & Strategic Rationale, 3.1 End-to-End Architectural Flow Diagram, 3.2 System Runtime & Execution Boundaries, 3. High-Level System Architecture, Topology & Security Boundary (+12 more)
 
 ### Community 86 - "SlotId"
-Cohesion: 0.18
-Nodes (18): 3. Recorded R-35 Click-Through Smoke Test Evidence, Finding F-02 (MAJOR): Navigation Trap on Internal Message Links & Route Chips, 2.4 UI layer, ReviewRow, SlotDefinition, IntakeFlow, PodDraft, SlotId (+10 more)
+Cohesion: 0.08
+Nodes (32): 3. DEEP-DIVE TECHNICAL ANALYSIS OF DEFECTS, Finding F-01 (BLOCKER): Concurrent / Strict Mode Submission Hang, Finding F-02 (MAJOR): Navigation Trap on Internal Message Links & Route Chips, Finding F-03 (MAJOR): False Copy Promise — Broken Restoration Link to Full Form, Finding F-04 (MAJOR): Hardcoded 500-Character Ceiling in Composer, Finding F-06 (MINOR): Focus Stealing Bug on Menu Toggle, Finding F-07 (MINOR): Restored Draft Link Protocol Validation Gap, Finding F-08 (MINOR): Premature Affirmation on Inspiration Link Cap (+24 more)
 
-### Community 87 - "KpiRibbon"
-Cohesion: 0.20
-Nodes (11): 1. Deep Root Cause Analysis: Why Did You See "Zero Difference"?, 2. Comparison: Current Code vs. Logip Target Benchmark, 3. Platform-Wide Architectural Overhaul Plan, 4. Verification & Quality Gates, A. The Browser Was on `/admin/leads` (Inbound Leads), B. The 5-Card Ribbon Was Hard-Coded Across Multiple Pages, Logip Modern CRM Overhaul & 5-Card Ribbon Eradication Plan, Module 1: Complete Platform-Wide Eradication of `KpiRibbon` (+3 more)
+### Community 87 - "6. Contact, careers, logistics"
+Cohesion: 0.29
+Nodes (7): 6. Contact, careers, logistics, `careers.list`, `contact` / `handoff`, `contact.press`, `contact.socials`, `faq.<n>` — one intent per compiled FAQ, `location` / `office`
 
 ### Community 88 - "team.ts"
-Cohesion: 0.07
-Nodes (39): NavigationItem, AddTeamMemberModalProps, AddTeamMemberDrawer, AddTeamMemberDrawerProps, CredentialRevealModalProps, ProvisionedCredentialsPayload, EditUserPermissionsModalProps, ENCLAVE_GROUPS (+31 more)
+Cohesion: 0.08
+Nodes (41): runPhase1Verification(), AssignClientWorkLeadsFormData, assignClientWorkLeadsSchema, clientWorkDeliveryStages, clientWorkHealthEnum, clientWorkHealthStatuses, clientWorkMilestoneStatusEnum, clientWorkStageEnum (+33 more)
 
-### Community 89 - "Sprint 9.2: Senior CTO Architecture & PRD Compliance Audit Report"
-Cohesion: 0.17
-Nodes (11): 1. Executive Summary & Audit Mandate, 3.1 Mathematical Rigor of the Tiered Overdue Escalation Engine (PRD §14.3), 3.2 Alert Suppression Invariant for `On Hold` Status (PRD §14.2 & §1.1.5), 3.3 Manager Workload Balancing Telemetry & Formulas (PRD §14.3 & §15.19), 3.4 Batch Reassignment Wizard Security & Data Integrity (PRD §14.3 & §15.19), 3. Deep Architectural, Mathematical & Security Invariant Analysis, 4. Cross-Feature Integration Verification, 5. Official 4-Block Delivery Gate Verification Evidence (+3 more)
+### Community 89 - "Sprint 2.1: Supabase Auth SSR Foundation, Cookie Infrastructure & Session Architecture"
+Cohesion: 0.33
+Nodes (6): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 2.1: Supabase Auth SSR Foundation, Cookie Infrastructure & Session Architecture
 
 ### Community 90 - "Part 1: Comprehensive Line-by-Line Copywriting Audit"
 Cohesion: 0.06
 Nodes (31): 1.1 Shell Navigation & Desktop/Mobile Layout, 1.2 `/admin/team` (Commercial Personnel Directory), 1.3 `/admin/analytics` (Executive Analytics & Performance), 1.4 `/admin/ingestion` (Webhook Ingestion Telemetry), 1.5 `/admin/leads` (Pipeline Deals & Ingested Leads), 1.6 `/admin/tasks` (Follow-up Tasks & Prospect Scheduler), 1.7 `/admin` (Executive Command Center), 2.1 Specification for `/admin/leads` (Deals Workspace) (+23 more)
 
 ### Community 91 - "WorksWorkspaceClient.tsx"
-Cohesion: 0.23
-Nodes (13): Core Deliverables Built & Verified:, assignClientWorkDirectorsAction(), authenticateAndAuthorizeCaller(), updateClientWorkHealthAction(), updateClientWorkMilestoneAction(), updateClientWorkStageAction(), WorksActionResult, AdminWorksPage() (+5 more)
+Cohesion: 0.15
+Nodes (18): 1. Architectural Summary & Strategic Intent, 2. CTO PR Auditor Unanimous Verdicts, 3. Delivery Gatekeeper Verification Report, 4. Anti-Slop & Design Standard Checklist, Core Deliverables Built & Verified:, Phase 4: Dedicated Funnel Workspaces, Interactive Deals Kanban & Client Works Tracker, assignClientWorkDirectorsAction(), authenticateAndAuthorizeCaller() (+10 more)
 
 ### Community 92 - "Senior CTO PR Auditor Agent — Adversarial Technical & Architectural Audit"
 Cohesion: 0.06
@@ -862,8 +849,8 @@ Cohesion: 0.33
 Nodes (5): conceptWords, InitialLoader(), decodeImageElement(), preloadCriticalAssets(), preloadImageSource()
 
 ### Community 96 - "Marca Ubi Enterprise CRM: Centered Client 360 Modal & Motion Choreography Architecture"
-Cohesion: 0.07
-Nodes (29): 1.1 User Problem Statement & Direct Feedback Analysis, 1. Executive Summary & User Problem Diagnosis, 2.1 Viewport Placement Specs, 2.2 Responsive Geometry Breakdown, 2. Spatial Geometry & Viewport Architecture, 3.1 Physics & Bezier Curves, 3.2 Keyframe Specifications, 3. Motion & Animation Choreography (Anti-Slop Luxury Standard) (+21 more)
+Cohesion: 0.06
+Nodes (30): 1.1 User Problem Statement & Direct Feedback Analysis, 1. Executive Summary & User Problem Diagnosis, 2.1 Viewport Placement Specs, 2.2 Responsive Geometry Breakdown, 2. Spatial Geometry & Viewport Architecture, 3.1 Physics & Bezier Curves, 3.2 Keyframe Specifications, 3. Motion & Animation Choreography (Anti-Slop Luxury Standard) (+22 more)
 
 ### Community 97 - "3. Fluid Liquid Morphing Scroll Animation"
 Cohesion: 0.20
@@ -877,25 +864,25 @@ Nodes (29): 100vh Sections, antislop-layoutmobile, Bottom Nav That Eats Content,
 Cohesion: 0.29
 Nodes (6): ./tsconfig.json, compilerOptions, noEmit, skipLibCheck, extends, include
 
-### Community 100 - "schedulerActions.ts"
-Cohesion: 0.10
-Nodes (15): Block 4: R-35 Click-Through Smoke Test Matrix, Block 4: R-35 Click-Through Smoke Test Matrix, 2. Line-by-Line Deliverable Inspection & Compliance Matrix, react, EditLeadModal(), formatCurrencyLive(), DateTimePicker(), DateTimePickerProps (+7 more)
+### Community 100 - "FollowUpScheduler.tsx"
+Cohesion: 0.23
+Nodes (9): 2. Line-by-Line Deliverable Inspection & Compliance Matrix, DateTimePicker(), DateTimePickerProps, FollowUpSchedulerProps, applyTimeStep(), calculatePresetDate(), formatTimezoneOffset(), QuickPreset (+1 more)
 
-### Community 101 - "2.2 Purified Server Action Modules in `src/app/actions/`"
-Cohesion: 0.22
-Nodes (19): 3.1 Phase 5 Webhook Ingestion & Brief Payload Preservation, 4.1 RBAC Authorization Matrix, Sprint 9.1: Precision Follow-up Date-Time Scheduler & `On Hold` Revisit Automation, 2. Delivered Engineering Modules, 2.2 Purified Server Action Modules in `src/app/actions/`, 3.1 Quick Presets & Mathematical Rigor (PRD §14.1 & §15.19), 3.2 Timezone Normalization & Persistence, 3.3 `On Hold` State Machine Protocol & Alert Suppression Engine (PRD §14.2 & §15.19) (+11 more)
+### Community 101 - "scheduleFollowUpAction"
+Cohesion: 0.21
+Nodes (17): 3.1 Phase 5 Webhook Ingestion & Brief Payload Preservation, 4.1 RBAC Authorization Matrix, 4.2 Anti-AI-Slop AST Gate Analysis, 4. Security, Governance & Anti-AI-Slop Code Hygiene Audit, Sprint 9.1: Precision Follow-up Date-Time Scheduler & `On Hold` Revisit Automation, 2. Delivered Engineering Modules, 4.1 `scheduleFollowUpAction`, 4.2 `transitionToOnHoldAction` (+9 more)
 
-### Community 102 - "Detailed Deliverable Breakdown"
+### Community 102 - "createTeamUser"
 Cohesion: 0.08
-Nodes (29): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 3.1: Admin SDK Provisioning Engine, Server Action `createTeamUser` & Multi-Role Governance, 1. Objectives, 2. Detailed Technical Work Packages (+21 more)
+Nodes (27): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 3.1: Admin SDK Provisioning Engine, Server Action `createTeamUser` & Multi-Role Governance, 2. In-Depth Root Cause Analysis of Gaps, 3. Step-by-Step Architectural Implementation Plan (+19 more)
 
-### Community 103 - "Block 4: Automated Verification Evidence"
-Cohesion: 0.20
-Nodes (10): 2. Four-Block Anti-Slop Delivery Gate Audit, Block 1: Hard Gates (R-01 to R-38 Absolute Compliance), Block 2: Purpose-Gate & Code Commenting Hygiene, Block 3: Luxury Design System & Taxonomy, Block 4: Automated Verification Evidence, Test 1: Server Action Boundaries, Test 2: TypeScript Compiler Cleanliness, Test 3: Unit & Invariant Test Suite (+2 more)
+### Community 103 - "Sprint 4.2: Lead Reassignment Wizard, Stored Procedure & Activity Backfill"
+Cohesion: 0.33
+Nodes (6): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 4.2: Lead Reassignment Wizard, Stored Procedure & Activity Backfill
 
-### Community 104 - "StatementCurtain"
-Cohesion: 0.11
-Nodes (17): 1. Why The Current Header Looked Like "Just an Opacity Blur Strip", 2. Visual Architecture: Morphing Floating Island HUD, 3. Engineering Blueprint, 4. Why This Eliminates the "Flat Opacity Strip" Look, 5. Execution Recommendation, A. The Floating Capsule Chassis (`ClientHeader.module.scss`), Architecture Plan: Apple Floating Liquid Glass Capsule HUD (visionOS / iOS Island Tier), 1. Problem Statement & Scope (+9 more)
+### Community 104 - "Architecture Plan: Apple Floating Liquid Glass Capsule HUD (visionOS / iOS Island Tier)"
+Cohesion: 0.25
+Nodes (7): 1. Why The Current Header Looked Like "Just an Opacity Blur Strip", 2. Visual Architecture: Morphing Floating Island HUD, 3. Engineering Blueprint, 4. Why This Eliminates the "Flat Opacity Strip" Look, 5. Execution Recommendation, A. The Floating Capsule Chassis (`ClientHeader.module.scss`), Architecture Plan: Apple Floating Liquid Glass Capsule HUD (visionOS / iOS Island Tier)
 
 ### Community 105 - "Master Release PR #49: Comprehensive Multi-Agent Forensic Audit Report"
 Cohesion: 0.15
@@ -905,21 +892,21 @@ Nodes (12): 1.1 Why Does PR #49 Contain ~1.4 Lakh Lines of Code?, 1. Executive S
 Cohesion: 0.40
 Nodes (4): figma, FIGMA_PERSONAL_ACCESS_TOKEN, npx, @smithery/figma-mcp
 
-### Community 107 - "StageTransitionModal"
-Cohesion: 0.09
-Nodes (27): 3.2 Phase 6 Dynamic KPI Ribbon & URL History Synchronization, 3.3 Sprint 7.1 Multi-Filter Action Bar & Overdue Queue, 3.4 Sprint 7.2 Virtualized Data Grid & Mobile Cards, 3.5 Sprint 8.1 Client 360 Sliding Drawer Shell, 3.6 Sprint 8.2 Omnichannel Timeline & Quick Action Composer, 3.7 Sprint 8.3 Guarded Stage Transition Modals & Converted Record Locking, 3. Cross-Feature Architectural Integration Audit, Observation 1: `verify-sprint-9-1.ts` Delivery Gate Check #34 Legacy Assertion (+19 more)
+### Community 107 - "DealsWorkspaceClient.tsx"
+Cohesion: 0.06
+Nodes (33): Sprint 7.2: Virtualized Data Grid, Inline Dropdowns with React 19 `useOptimistic` & Responsive Breakpoints, Sprint 7.2: Virtualized Data Grid, Inline Dropdowns with React 19 `useOptimistic` & Responsive Breakpoints, 1. Executive Summary, 2. Comprehensive Phase 7 Scope Breakdown, 3. Automated Verification Matrix, Phase 7 Milestone: Interactive Leads Workspace, Multi-Filter Engine & Virtualized Data Grid, Sprint 7.1: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons, Sprint 7.2: Virtualized Data Grid, Inline Dropdowns with React 19 `useOptimistic` & Responsive Breakpoints (+25 more)
 
-### Community 108 - "3. `src/types/crm.ts`"
+### Community 108 - "Sprint 5.2: Client Form Bindings (`/start-project` & Modal), Deduplication & Alerts"
 Cohesion: 0.33
-Nodes (11): 3. `src/types/crm.ts`, 2.3 `src/types/crm.ts`, Executive Summary & Architectural Deliverables, WorksWorkspaceClientProps, ClientWorkDeliveryStage, ClientWorkHealthStatus, ClientWorkItem, ClientWorkMilestone (+3 more)
+Nodes (6): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 5.2: Client Form Bindings (`/start-project` & Modal), Deduplication & Alerts
 
 ### Community 109 - "(workspace)/page.tsx"
-Cohesion: 0.05
-Nodes (34): Phase 5: Verification & Unit Tests, ExecutiveMasthead(), ExecutiveMastheadProps, TIMEFRAME_OPTIONS, ExecutiveReportExportData, aggregateTimeframeRevenue(), CadenceLabel, calculateMetricDelta() (+26 more)
+Cohesion: 0.08
+Nodes (17): ActivePipelineRecord, AdminDashboardPage(), AdminDashboardPageProps, amountOf(), AttentionRecord, cohortConversionRate(), CohortRecord, CohortTotals (+9 more)
 
 ### Community 120 - "CompanyProfileModal"
-Cohesion: 0.09
-Nodes (25): 18. Production Definition of Done (DoD), 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4.2.1 Serialization of `/start-project` 4-Step Brief Builder, 4.2.2 `CompanyProfileModal` Direct Capture Binding, 4.2 Form Ingestion Bindings: `/start-project` Brief Builder & `CompanyProfileModal`, 4. Edge Cases & Security Safeguards (+17 more)
+Cohesion: 0.11
+Nodes (21): 18. Production Definition of Done (DoD), 4.2.1 Serialization of `/start-project` 4-Step Brief Builder, 4.2.2 `CompanyProfileModal` Direct Capture Binding, 4.2 Form Ingestion Bindings: `/start-project` Brief Builder & `CompanyProfileModal`, 12.1 Testing Strategy Matrix, 12.2 Production Definition of Done (DoD), 12. Quality Assurance, Automated Testing & Verification Suite, Executive Document Summary (+13 more)
 
 ### Community 121 - "Deep Forensic Report: Turbopack Database Compaction Corruption & Dev Server Latency (194.9s)"
 Cohesion: 0.07
@@ -934,8 +921,8 @@ Cohesion: 0.07
 Nodes (27): 1.1 Scope of Audited Artifacts, 1. Executive Summary & Audit Mandate, 2. Deep-Dive Threat Model & Security Vector Analysis, 3.1 Invariant Defense & Administrator Lockout Protection, 3.2 Check Constraints & Tamper Resistance, 3.3 Stored Function Security & Search Path Hardening, 3.4 Multi-Role Row Level Security (RLS) Isolation Matrix, 3.5 Zod Boundary Invariants & Type Validation (+19 more)
 
 ### Community 142 - "FloatingExploreButton"
-Cohesion: 0.11
-Nodes (19): 7. Risk register, What the research changed, 1. Executive Summary & User Directive Review, 2.1. Positioning Bug (Bottom-Left vs Bottom-Right), 2.2. Typing Selection & IME Desynchronization Glitch, 2.3. Editorial Concierge Profile & Avatar Redesign, 2.4. Notion/Linear-Grade Fluid Motion Mechanics, 2. Root Cause Forensic Analysis (+11 more)
+Cohesion: 0.12
+Nodes (16): 1. Executive Summary & User Directive Review, 2.1. Positioning Bug (Bottom-Left vs Bottom-Right), 2.2. Typing Selection & IME Desynchronization Glitch, 2.3. Editorial Concierge Profile & Avatar Redesign, 2.4. Notion/Linear-Grade Fluid Motion Mechanics, 2. Root Cause Forensic Analysis, 3. Visual Archetype & Token Specification, 4. Step-by-Step Implementation Blueprint (+8 more)
 
 ### Community 143 - "4. Section-by-Section Component Blueprint (8 Views)"
 Cohesion: 0.07
@@ -946,12 +933,12 @@ Cohesion: 0.12
 Nodes (17): 16. Quality Assurance, Automated Testing Matrix & Release Verification Suite, 2.1 Testing Strategy Matrix & Architectural Pyramid, 2.2 Row Level Security (RLS) Policy Automated Tests, 2.3 Normalization & Deduplication Unit Tests, 2.4 State Machine Transition Unit Tests, 2.6 Performance & Load Benchmarking (k6 & PostgreSQL EXPLAIN ANALYZE), 2.7 Accessibility & Design QA (WCAG 2.1 AA Compliance), Automated Axe-Core Playwright Accessibility Audit (+9 more)
 
 ### Community 145 - "3. Cross-Feature Architectural Integration Audit"
-Cohesion: 0.11
-Nodes (18): 1. Executive Summary & Audit Verdict, 2. Line-by-Line PRD Section 14 & Section 15.19 Compliance Matrix, 4.2 Anti-AI-Slop AST Gate Analysis, 4. Security, Governance & Anti-AI-Slop Code Hygiene Audit, 5. Inconsistencies, Edge Cases & Architectural Observations, 6. Official 4-Block Delivery Gate Verification Report, 7. Final CTO Verdict & Release Recommendation, Block 1: Deliverable Files Verification (+10 more)
+Cohesion: 0.15
+Nodes (12): 1. Executive Summary & Audit Verdict, 2. Line-by-Line PRD Section 14 & Section 15.19 Compliance Matrix, 6. Official 4-Block Delivery Gate Verification Report, 7. Final CTO Verdict & Release Recommendation, Block 1: Deliverable Files Verification, Block 2: Anti-AI-Slop & Dark Luxury Token Auditing, Block 3: Automated Test Suites Execution, Block 4: Strict TypeScript Static Verification (+4 more)
 
 ### Community 146 - "06 — Implementation Milestones & Acceptance Gates"
-Cohesion: 0.08
-Nodes (25): 04 — Intake Mode: Data Contract, 1. The pipeline reconciliation (D1 — needs owner confirmation), 2. Slot map, 3. Turn choreography, 4. Payload mapping — byte-for-byte parity with the form, 5. FSM specification, 6. Error handling on submit, 7. Persistence shape (+17 more)
+Cohesion: 0.09
+Nodes (24): 04 — Intake Mode: Data Contract, 1. The pipeline reconciliation (D1 — needs owner confirmation), 2. Slot map, 3. Turn choreography, 4. Payload mapping — byte-for-byte parity with the form, 5. FSM specification, 6. Error handling on submit, 7. Persistence shape (+16 more)
 
 ### Community 147 - "2. Sprint Work Breakdown Structure for Phase 1 (Database Architecture & Stored Logic)"
 Cohesion: 0.08
@@ -962,8 +949,8 @@ Cohesion: 0.08
 Nodes (25): 1. Forensic 12-Page Rubric Analysis of the AIOSEO PDF, 2.1 Timeline Audit: Nov 2 (AIOSEO Scan) vs Nov 4 (Phase 16 Deployment), 2.2 Traceability Matrix: What Phase 16 Addressed vs What Remained Unresolved, 2.3 Deep Technical Verification: The Canonical Link Tag Mystery, 2.4 Deep Technical Verification: The 8 Missing Image Alt Attributes, 2. Cross-Verification with Codebase & Phase 16 Deliverables, 3. 100/100 Score Recovery Roadmap, 4.1 Remediation File 1: `src/app/layout.tsx` (+17 more)
 
 ### Community 149 - "11. Comprehensive 10-Phase Production Engineering Delivery Blueprint"
-Cohesion: 0.18
-Nodes (11): 11. Comprehensive 10-Phase Production Engineering Delivery Blueprint, Phase 10: System Hardening, E2E Testing Suite & Production Runbook, Phase 1: Database Architecture, Security Schema & Stored Logic, Phase 2: Authentication Engine, Session Security & Route Protection, Phase 3: Multi-User Identity, Team Provisioning & Governance Engine (`/admin/team`), Phase 4: Offboarding Protocol & Automated Lead Reassignment Wizard, Phase 5: Public Webhook Ingestion Engine & Deduplication Pipeline, Phase 6: Executive Analytics, Dynamic KPI Ribbon & Aggregation Engine (+3 more)
+Cohesion: 0.20
+Nodes (10): 11. Comprehensive 10-Phase Production Engineering Delivery Blueprint, Phase 10: System Hardening, E2E Testing Suite & Production Runbook, Phase 1: Database Architecture, Security Schema & Stored Logic, Phase 2: Authentication Engine, Session Security & Route Protection, Phase 3: Multi-User Identity, Team Provisioning & Governance Engine (`/admin/team`), Phase 4: Offboarding Protocol & Automated Lead Reassignment Wizard, Phase 6: Executive Analytics, Dynamic KPI Ribbon & Aggregation Engine, Phase 7: Interactive Leads Workspace & High-Performance Data Grid (+2 more)
 
 ### Community 150 - "09 — Forensic Investigation: Reverse Typing ("can you" $\to$ "uoynac"), Caret Collapse, and User Profile Representation"
 Cohesion: 0.08
@@ -974,20 +961,20 @@ Cohesion: 0.08
 Nodes (23): 11 — Senior CTO PR Auditor Agent: Delivery Gate & Architectural Audit, 1. Executive Summary & Auditor's Certification, 2.1 Mechanical Root Cause Breakdown, 2.2 Standard React 19 Controlled Input Invariants, 2.3 Keyboard, IME & Boundary Invariant Verification, 2. Deep Forensic Analysis: Defect 1 — Reverse-Typing in `Composer.tsx`, 3.1 Luxury Visual Identity & Brand Governance, 3.2 Accessibility Tree & Test Locator Invariants (+15 more)
 
 ### Community 152 - "4. Full-Platform Module-by-Module Redesign Specifications"
-Cohesion: 0.09
-Nodes (21): 1. Vision & Core Philosophy: The "Pious, Smooth & Fluid" Enterprise Standard, 2. Fluid Motion & Micro-Interaction Design System, 3. Universal Responsive Breakpoint Architecture, 4. Full-Platform Module-by-Module Redesign Specifications, 5. Phased Implementation Roadmap, 6. Strict Verification & Delivery Gate Invariants, Blueprint:, Blueprint: (+13 more)
+Cohesion: 0.10
+Nodes (20): 1. Vision & Core Philosophy: The "Pious, Smooth & Fluid" Enterprise Standard, 2. Fluid Motion & Micro-Interaction Design System, 3. Universal Responsive Breakpoint Architecture, 4. Full-Platform Module-by-Module Redesign Specifications, 5. Phased Implementation Roadmap, 6. Strict Verification & Delivery Gate Invariants, Blueprint:, Blueprint: (+12 more)
 
 ### Community 153 - "chat_pod/README.md"
 Cohesion: 0.11
 Nodes (12): 1. Executive Summary & Root Cause Acknowledgment, 2. Design Specification Comparison, 3. Strict Verification & Delivery Gates, Chat Pod: Light Editorial Theme Restoration & Brand Red Alignment Plan, 1. Executive Summary: The Comprehensive Visual Elevation, 2. Component Design Token Blueprint, 3. Strict Safety & Verification Locks, Chat Pod: Swiss Light Editorial Master Overhaul Plan (+4 more)
 
 ### Community 154 - "submit.ts"
-Cohesion: 0.09
-Nodes (21): 1.1 Static Type Safety (`tsc --noEmit`), 1.2 Specialized Unit & Parity Test Suite, 1.3 Client Regression Suite, 1. COMPILATION & VERIFICATION EVIDENCE, 2. ADVERSARIAL FINDINGS MATRIX, 3. DEEP-DIVE TECHNICAL ANALYSIS OF DEFECTS, 4. CODE QUALITY & ANTI-SLOP AUDIT, 5. PRODUCTION READINESS CERTIFICATION & ACTION PLAN (+13 more)
+Cohesion: 0.14
+Nodes (13): 1.1 Static Type Safety (`tsc --noEmit`), 1.2 Specialized Unit & Parity Test Suite, 1.3 Client Regression Suite, 1. COMPILATION & VERIFICATION EVIDENCE, 2. ADVERSARIAL FINDINGS MATRIX, 4. CODE QUALITY & ANTI-SLOP AUDIT, 5. PRODUCTION READINESS CERTIFICATION & ACTION PLAN, 6. POST-REMEDIATION AUDIT VERIFICATION & FINAL SIGN-OFF (2026-11-02) (+5 more)
 
-### Community 155 - "Dashboard/index.ts"
-Cohesion: 0.05
-Nodes (54): Detailed Breakdown of Dead Code to Purge:, 1. Purge Superseded Admin Dashboard Components (~3,300 Lines), Pillar 4: Unit Test Suite Synchronization, 1. Executive Summary & Screenshot Defect Matrix, 2. Line-by-Line Root Cause Diagnosis, 3. Master Redesign Blueprint & Visual Architecture, 4. Target Files & Code Change Scope, 5. Verification & Delivery Gate Criteria (+46 more)
+### Community 155 - "PipelineAllocationCard"
+Cohesion: 0.09
+Nodes (22): 1. Executive Summary & Screenshot Defect Matrix, 2. Line-by-Line Root Cause Diagnosis, 3. Master Redesign Blueprint & Visual Architecture, 4. Target Files & Code Change Scope, 5. Verification & Delivery Gate Criteria, A. CSS Module Divergence in `RevenueDynamicsCard`, A. `RevenueDynamicsCard`: Luxury Dark SVG Engineering, B. `PipelineAllocationCard`: Executive Balanced Layout (+14 more)
 
 ### Community 156 - "4. File-by-File Implementation Plan"
 Cohesion: 0.09
@@ -1026,8 +1013,8 @@ Cohesion: 0.10
 Nodes (20): 1.1.1 PKCE Flow and Token Refresh Lifecycle, 1.1.2 Cookie Chunking and Split Storage Engine, 1.1.3 Multi-Context Supabase Client Factory, 1.1 Supabase Auth & `@supabase/ssr` Cookie Architecture, 1.2.1 Route Protection Hierarchy & Path Matching Topology, 1.2.2 Session Validation Engine: `getUser()` vs `getSession()`, 1.2.3 Prevention of Circular Redirect Loops, 1.2.4 Role-Based Route Gating at the Edge Runtime (+12 more)
 
 ### Community 165 - "Home"
-Cohesion: 0.13
-Nodes (17): 1. Fritsch-Carlson Monotone Cubic Spline Engine (`PerformanceChart.tsx`), 2. Dedicated Numeric Typography Architecture (`adminNumeric`), 3. SVG ViewBox Geometry & Optical Clearance, 4. Apple HIG Glassmorphic Obsidian Tooltip & Dynamic Variance, 5. Specular Radar Pulse Halo & Multi-Modal Scrubbing, Automated Verification Gates, Block 1: Architecture & Token Compliance, Block 2: Visual Geometry & Accessibility (+9 more)
+Cohesion: 0.11
+Nodes (19): 2. Dedicated Numeric Typography Architecture (`adminNumeric`), 3. SVG ViewBox Geometry & Optical Clearance, 4. Apple HIG Glassmorphic Obsidian Tooltip & Dynamic Variance, 5. Specular Radar Pulse Halo & Multi-Modal Scrubbing, Automated Verification Gates, Block 1: Architecture & Token Compliance, Block 2: Visual Geometry & Accessibility, Block 3: Static Analysis & Multi-Tier Test Verification (+11 more)
 
 ### Community 166 - "4. Phase-by-Phase Implementation Roadmap"
 Cohesion: 0.10
@@ -1059,15 +1046,15 @@ Nodes (17): 1. Executive Summary & Audit Scope, 2. Definitive Verification Execu
 
 ### Community 173 - "Architectural Remediation Plan: User Management 404 & Lead Dossier Route Desynchronization"
 Cohesion: 0.11
-Nodes (18): 1. Executive Summary & Problem Formulation, 2.1 Issue 1: Lead Dossier Query Parameter Mismatch & Drawer Desynchronization, 2.2 Issue 2: User Management 404 / Not Found Error, 2. Root Cause Analysis (RCA), 3. Comprehensive Remediation Architecture, 4. Step-by-Step Implementation Plan, 5. Explicit STOP Notice for User Confirmation, Architectural Remediation Plan: User Management 404 & Lead Dossier Route Desynchronization (+10 more)
+Nodes (17): 1. Executive Summary & Problem Formulation, 2.1 Issue 1: Lead Dossier Query Parameter Mismatch & Drawer Desynchronization, 2.2 Issue 2: User Management 404 / Not Found Error, 2. Root Cause Analysis (RCA), 3. Comprehensive Remediation Architecture, 4. Step-by-Step Implementation Plan, 5. Explicit STOP Notice for User Confirmation, Architectural Remediation Plan: User Management 404 & Lead Dossier Route Desynchronization (+9 more)
 
 ### Community 174 - "Marca Ubi Enterprise Digital Platform — Master AI Search (GEO) & Classical SEO Dominance Architecture"
 Cohesion: 0.11
 Nodes (17): 1.1 The Challenge, 1. Executive Summary & Forensic Diagnosis, 3.1 `/llms.txt` (Concise LLM Index, < 2,000 Tokens), 3.2 `/llms-full.txt` (Comprehensive Ingestion Corpus), 3. The Machine-Readable Standard: `llms.txt` & `llms-full.txt`, 4.1 Root Organization Anchor (`src/app/layout.tsx`), 4.2 Cross-Page Graph References, 4. Entity Disambiguation & Unified Schema.org `@graph` (+9 more)
 
-### Community 175 - "lib/client.ts"
-Cohesion: 0.27
-Nodes (6): checkRateLimit(), POST(), rateLimitMap, apiVersion, dataset, projectId
+### Community 175 - "seed-user-avatars.ts"
+Cohesion: 0.40
+Nodes (4): AVATAR_ASSIGNMENTS, AvatarMapping, downloadFile(), main()
 
 ### Community 176 - "Commercial Personnel Directory (/admin/team) Navigation & 404 Root Cause Analysis & Remediation Plan"
 Cohesion: 0.11
@@ -1078,8 +1065,8 @@ Cohesion: 0.12
 Nodes (16): antislop-code, Code Comment Checklist, Comments That Add Nothing, Decorative Emoji, Decorative Separators, Empty Labels, End Markers, How It Should Read (+8 more)
 
 ### Community 178 - "Master PRD & UI/UX Design Architecture: Contact Page (`/contact`)"
-Cohesion: 0.08
-Nodes (23): 10. Next Steps & Implementation Roadmap, 1.1 The Strategic Purpose of `/contact`, 1.2 Official Design Read Declaration (Rule R-37), 1. Executive Summary & Design Read Declaration, 2. Design Reference Synthesis & Core Insights, 3.1 Color System (WCAG AA Certified), 3.2 Typography Stack & Hierarchical Scale, 3. Visual Tokens & Style Architecture (+15 more)
+Cohesion: 0.06
+Nodes (32): 10. Next Steps & Implementation Roadmap, 1.1 The Strategic Purpose of `/contact`, 1.2 Official Design Read Declaration (Rule R-37), 1. Executive Summary & Design Read Declaration, 2. Design Reference Synthesis & Core Insights, 3.1 Color System (WCAG AA Certified), 3.2 Typography Stack & Hierarchical Scale, 3. Visual Tokens & Style Architecture (+24 more)
 
 ### Community 179 - "10-Phase Architectural Milestone Summary"
 Cohesion: 0.12
@@ -1094,8 +1081,8 @@ Cohesion: 0.12
 Nodes (16): 1. Executive Summary & Gating Decision, 2. Pull Request Metadata & Git Lineage, 3. Work Package Compliance Breakdown (PRD §4.3), 4. Cross-Feature Integration & System Invariant Verification, 5. Audit Findings & Engineering Hardening Applied, 6. Official 4-Block Delivery Gate Verification Scorecard, 7. Empirical Test Execution Log Summary, 8. Anti-AI-Slop Hygiene Audit (+8 more)
 
 ### Community 182 - "pr_107_updated_body.md"
-Cohesion: 0.14
-Nodes (13): Automated verification (pass 2, on the final tree), Executive Summary, Four defects found by measurement, fixed in the app, Governance, Pass 1 Automated Verification & Test Metrics, Pass 1 Recorded R-35 Click-Through Smoke Test Evidence, Pass 1 (recorded verbatim from the earlier commits on this branch), Pass 2: comprehension (Part A) (+5 more)
+Cohesion: 0.08
+Nodes (25): Automated verification (pass 2, on the final tree), Executive Summary, Follow-ups found in use (commits after `15b2183`), Four defects found by measurement, fixed in the app, Governance, Pass 1 Automated Verification & Test Metrics, Pass 1 Recorded R-35 Click-Through Smoke Test Evidence, Pass 1 (recorded verbatim from the earlier commits on this branch) (+17 more)
 
 ### Community 183 - "Engineering Context Register — 4 November 2026 (18:59 IST)"
 Cohesion: 0.12
@@ -1142,24 +1129,24 @@ Cohesion: 0.13
 Nodes (14): 08 — Chat Pod Dark Luxury Redesign Specification & Visual Architecture, 1. Executive Summary & Design Transformation Matrix, 2.1 Coordinate Mathematics, 2. Spatial Architecture & Placement Blueprint, 3.1 The Editorial Digital Concierge Avatar, 3.2 Header Typography Hierarchy, 3. Persona Avatar & Header Hierarchy Architecture, 4.1 Fluid Motion Easing Curve (+6 more)
 
 ### Community 194 - "1. Deep Technical Audit by Criteria"
-Cohesion: 0.13
-Nodes (14): 1. Deep Technical Audit by Criteria, 2. Official 4-Block Delivery Gate Report, Block 1: Hard Gate (Absolute), Block 2: Purpose-Gate (Technique & Rationale), Block 3: Liveliness, Block 4: Craftsmanship & Quality Locks, Criterion 1: Zero AI-Slop Comments & Zero Placeholder Artifacts, Criterion 2: Photographic Lady Concierge Avatar Contract (+6 more)
+Cohesion: 0.12
+Nodes (15): 1. Deep Technical Audit by Criteria, 2. Official 4-Block Delivery Gate Report, 3. Recorded R-35 Click-Through Smoke Test Evidence, Block 1: Hard Gate (Absolute), Block 2: Purpose-Gate (Technique & Rationale), Block 3: Liveliness, Block 4: Craftsmanship & Quality Locks, Criterion 1: Zero AI-Slop Comments & Zero Placeholder Artifacts (+7 more)
 
 ### Community 195 - "4. 5-Phase Implementation Strategy"
-Cohesion: 0.15
-Nodes (12): 3.1 Homepage Works Cutout Component (`src/app/components/Sections/WorksCutout.tsx`), 3.2 Homepage Works Cutout Stylesheet (`src/app/components/Sections/WorksCutout.module.scss`), 3.3 Dedicated Portfolio Page (`src/app/works/page.tsx`), 3. Technical Specifications & File Blueprints, 4. 5-Phase Implementation Strategy, 5. Anti-AI-Slop & Quality Gate Audit, Master Architectural Specification & Execution Plan: Homepage Works Cutout & Dedicated `/works` Showcase, Phase 1: Component Creation (+4 more)
+Cohesion: 0.13
+Nodes (14): 1. Executive Summary & Architectural Shift, 2. Visual Deconstruction of the Reference Screenshot, 3.1 Homepage Works Cutout Component (`src/app/components/Sections/WorksCutout.tsx`), 3.2 Homepage Works Cutout Stylesheet (`src/app/components/Sections/WorksCutout.module.scss`), 3.3 Dedicated Portfolio Page (`src/app/works/page.tsx`), 3. Technical Specifications & File Blueprints, 4. 5-Phase Implementation Strategy, 5. Anti-AI-Slop & Quality Gate Audit (+6 more)
 
 ### Community 196 - "2. Detailed Technical Remediation Blueprint"
-Cohesion: 0.14
-Nodes (13): 1. Eradicate Isolated Generic Blue `#1d4ed8`, 1. Fix `SEC-API-01`: Public CDN Cache-Control on Confidential Financial Metrics, 1. Itemized Overview of All Discovered Defects & Inefficiencies, 2. Detailed Technical Remediation Blueprint, 2. Fix `SEC-DB-01`: Missing Caller Identity Assertion in Batch Reassignment Stored Procedure, 2. Upgrade Sub-44px Search & Filter Targets in Deals Table, 3. Fix `SEC-API-02`: Guard Public Company Profile Submissions, 3. Step-by-Step Execution Sequence (+5 more)
+Cohesion: 0.13
+Nodes (14): 1. Eradicate Isolated Generic Blue `#1d4ed8`, 1. Fix `SEC-API-01`: Public CDN Cache-Control on Confidential Financial Metrics, 1. Itemized Overview of All Discovered Defects & Inefficiencies, 2. Detailed Technical Remediation Blueprint, 2. Fix `SEC-DB-01`: Missing Caller Identity Assertion in Batch Reassignment Stored Procedure, 2. Upgrade Sub-44px Search & Filter Targets in Deals Table, 3. Fix `SEC-API-02`: Guard Public Company Profile Submissions, 3. Step-by-Step Execution Sequence (+6 more)
 
 ### Community 197 - "1.4 Commit Message & Version Control Standards"
 Cohesion: 0.13
 Nodes (15): 1.1 Branching Topology & Architectural Governance, 1.2 Git Tree Visualization: Hierarchical Flow, 1.3 Merge Hierarchy, Promotion Gates & Branch Protection Rules, 1.4 Commit Message & Version Control Standards, 2. Master Git Branching, Version Control & Merge Hierarchy, Allowed Types, Automated Commit Linting & Git Hooks, Commit Format Specification (+7 more)
 
 ### Community 198 - "ConvertLeadToDealModal"
-Cohesion: 0.17
-Nodes (11): 1. Pure Selector Sass Architecture (`mixins.scss`), 2. Accordion Light Luxury Design System Alignment, 3. Dynamic Breadcrumb Resolution & Header De-duplication, Automated Verification Gates, Block 1: Architecture & Token Compliance, Block 2: Navigation & Breadcrumb De-duplication, Block 3: Static Analysis & Multi-Tier Test Verification, Executive Summary (+3 more)
+Cohesion: 0.15
+Nodes (12): 1. Pure Selector Sass Architecture (`mixins.scss`), 2. Accordion Light Luxury Design System Alignment, 3. Dynamic Breadcrumb Resolution & Header De-duplication, Automated Verification Gates, Block 1: Architecture & Token Compliance, Block 2: Navigation & Breadcrumb De-duplication, Block 3: Static Analysis & Multi-Tier Test Verification, Block 4: R-35 Click-Through Smoke Test Matrix (+4 more)
 
 ### Community 199 - "4. Step-by-Step Production Release Procedure"
 Cohesion: 0.13
@@ -1169,9 +1156,9 @@ Nodes (14): 1. Executive Summary & Release Scope, 2. Branch Hierarchy & Promotio
 Cohesion: 0.13
 Nodes (13): actionsContent, cronRouteContent, filesToAudit, migrationContent, onHoldModalContent, requiredFiles, ROOT_DIR, schedulerContent (+5 more)
 
-### Community 201 - "2. Full-Stack Profile Photo Storage Architecture"
-Cohesion: 0.33
-Nodes (6): 2.1 Database & Storage Bucket Infrastructure, 2.2 Client-Side Image Processor (`src/app/lib/avatarImageProcessor.ts`), 2.3 Server Actions (`src/app/actions/avatarActions.ts`), 2.4 Next.js CSP & Image Remote Patterns, 2. Full-Stack Profile Photo Storage Architecture, Supabase Migration: `supabase/migrations/20261023000001_avatar_storage_and_governance.sql`
+### Community 201 - "Master Architecture & Redesign Plan: PrimeStay People Directory & Avatar Management System"
+Cohesion: 0.13
+Nodes (14): 1.1 The Problem: Current AI-Slop Implementation, 1.2 The Solution: PrimeStay People-Inspired Luxury Architecture, 1. Executive Summary & Design Transformation, 2.1 Database & Storage Bucket Infrastructure, 2.2 Client-Side Image Processor (`src/app/lib/avatarImageProcessor.ts`), 2.3 Server Actions (`src/app/actions/avatarActions.ts`), 2.4 Next.js CSP & Image Remote Patterns, 2. Full-Stack Profile Photo Storage Architecture (+6 more)
 
 ### Community 202 - "3. Detailed Component Styling Rules (`ChatPod.module.scss`)"
 Cohesion: 0.14
@@ -1182,24 +1169,24 @@ Cohesion: 0.15
 Nodes (14): 1. Why this stays deterministic, 2. What was broken, stated as arithmetic, 3. The three tiers, as shipped, 4.1 A word we do not publish is charged to the visitor's denominator, 4.2 A contested name is a fact about the catalogue, not a bug in the dictionary, 4.3 Family discounts, 4.4 Keyword hygiene, 4. Two decisions that are load-bearing, and the lesson behind each (+6 more)
 
 ### Community 204 - "Master Remediation & Full-Content Integration Plan: 160over90 Architecture"
-Cohesion: 0.13
-Nodes (14): 1.1 Root Cause 1: Missing Previous Production Content & Dynamic CMS Pipelines, 1.2 Root Cause 2: Common AI-Slop Pills, Badges, and Radar Dots, 1.3 Root Cause 3: Invisible Header Logo over Video & Color Corruption, 1.4 Scope Addition: Complete Ground-Up Redesign of `/blog` and `/blog/[slug]`, 1.5 Critical User Correction: Studio Locations Mismatch (Screenshot `231251`), 1. Executive Summary & Root Cause Analysis, 2. The Complete 11-View Alternating Flagship Homepage Architecture, 4.1 Server Page Orchestration (`src/app/page.tsx`) (+6 more)
+Cohesion: 0.14
+Nodes (13): 1.1 Root Cause 1: Missing Previous Production Content & Dynamic CMS Pipelines, 1.2 Root Cause 2: Common AI-Slop Pills, Badges, and Radar Dots, 1.3 Root Cause 3: Invisible Header Logo over Video & Color Corruption, 1.5 Critical User Correction: Studio Locations Mismatch (Screenshot `231251`), 1. Executive Summary & Root Cause Analysis, 2. The Complete 11-View Alternating Flagship Homepage Architecture, 4.1 Server Page Orchestration (`src/app/page.tsx`), 4.2 Studio Corridors Component (`GlobalLocationsCloud.tsx`) (+5 more)
 
 ### Community 205 - "Full Engineering Context Register — Phase 14 Blog Redesign (branch `feature/blog-redesign`)"
 Cohesion: 0.13
-Nodes (15): 10. Open items nobody has closed, 11. Non-overlapping file ownership (how the parallel rounds avoided drift), 12. Project rules that override anything above, 13. Feature docs for this work, 2. Commit chronology (oldest → newest), 3. The rule that took five rejections to learn, 4. Article geometry as it stands (`/blog/[slug]`), 5. Naming: `Journal`, not `Dispatch` (+7 more)
+Nodes (15): 10. Open items nobody has closed, 11. Non-overlapping file ownership (how the parallel rounds avoided drift), 12. Project rules that override anything above, 13. Feature docs for this work, 1. What this branch changes, in one paragraph, 2. Commit chronology (oldest → newest), 3. The rule that took five rejections to learn, 4. Article geometry as it stands (`/blog/[slug]`) (+7 more)
 
 ### Community 206 - "app/page.tsx"
-Cohesion: 0.12
-Nodes (23): 2. Architectural Comparison Matrix, @gsap/react, @sanity/image-url, ReelModal(), ClientDisplayWork, WorksCurtain(), WorksCurtainProps, WorksSection() (+15 more)
+Cohesion: 0.06
+Nodes (40): 2. Root Cause Analysis (Deep Dive), Issue A: Pentagram Header Empty Slots (`ClientHeader`), Issue B: Video Loading Latency (`BackgroundVideoEngine` & `ReelModal`), 10. Zero Top Gap & Natural Casing Addendum, 11. 160over90 Reference Parity: Left-Anchored Typographic Block & Bottom-Right Action Cluster, 13. 160over90 Reference Parity: Drop Shadow Eradication, Sheer Ambient Scrim & Action Button Stack, 14. Index Badge Elimination & Calibrated Ambient Glaze, 1. Executive Summary & Root Cause Analysis (RCA) (+32 more)
 
 ### Community 207 - "Key Architectural Implementations"
-Cohesion: 0.10
-Nodes (17): 1. Build & Type Verification, 1. Step 1: Multi-Service Taxonomy & Cross-Category Persistence Engine (`Step1Services.tsx`), 2. Automated Test Verification, 2. Step 2: Commercial Brand & Stakeholder Coordinates (`Step2Business.tsx`), 3. Code Hygiene & Anti-Slop Audit, 3. Step 3: Creative Brief Specifications, Asset Links & Timeline (`Step3Details.tsx`), 4-Block Delivery Gate Report, 4. Git Authorship & Branch Hierarchy (+9 more)
+Cohesion: 0.14
+Nodes (13): 1. Build & Type Verification, 1. Step 1: Multi-Service Taxonomy & Cross-Category Persistence Engine (`Step1Services.tsx`), 2. Automated Test Verification, 2. Step 2: Commercial Brand & Stakeholder Coordinates (`Step2Business.tsx`), 3. Code Hygiene & Anti-Slop Audit, 3. Step 3: Creative Brief Specifications, Asset Links & Timeline (`Step3Details.tsx`), 4-Block Delivery Gate Report, 4. Git Authorship & Branch Hierarchy (+5 more)
 
-### Community 208 - "Dedicated Works Showcase: 3D Stacking Card Scroll Experience PRD"
-Cohesion: 0.12
-Nodes (15): 10. Zero Top Gap & Natural Casing Addendum, 11. 160over90 Reference Parity: Left-Anchored Typographic Block & Bottom-Right Action Cluster, 13. 160over90 Reference Parity: Drop Shadow Eradication, Sheer Ambient Scrim & Action Button Stack, 14. Index Badge Elimination & Calibrated Ambient Glaze, 1. Executive Summary & Root Cause Analysis (RCA), 3.1 `src/app/works/WorksGalleryClient.tsx`, 3.2 `src/app/works/Works.module.scss`, 3. Detailed Component Architecture (+7 more)
+### Community 208 - "Master Architectural Plan: Scroll-Activated Frosted Glass Adaptive Header HUD"
+Cohesion: 0.40
+Nodes (4): 2. Architectural Design & Kinetic Physics, 3. Implementation Phasing, Kinetic Specifications:, Master Architectural Plan: Scroll-Activated Frosted Glass Adaptive Header HUD
 
 ### Community 209 - "3.3 Referential Integrity Architecture: Cascades vs Restraints"
 Cohesion: 0.14
@@ -1207,19 +1194,19 @@ Nodes (14): 1. Categorical Integrity: `ON DELETE RESTRICT` on Sources and Status
 
 ### Community 210 - "Workspaces & Components Modernized"
 Cohesion: 0.15
-Nodes (12): 1. Slide-out Client 360° Dossier Drawer (`ClientDossierDrawer.tsx`, `DossierDrawer.module.scss`, `OrganizationDossier.tsx`), 2. Prospective Commercial Lead Modal (`NewLeadModal.tsx`, `NewLeadModal.module.scss`), 3. Convert Lead to Deal Modal (`ConvertLeadToDealModal.tsx`, `ConvertLeadToDealModal.module.scss`), 4. Pipeline Lead Reassignment Modal (`BatchReassignModal.tsx`, `BatchReassignModal.module.scss`), 5. Pipeline Progression & Stage Modals (`StageTransitionModal.tsx`, `ConvertedCelebrationModal.tsx`, `LostReasonModal.tsx`, `StageModals.module.scss`), 6. Personnel Governance & Offboarding Modals (`AddTeamMemberModal.tsx`, `CredentialRevealModal.tsx`, `SuspendUserModal.tsx`), 7. Centered Lead Detail Modal Compatibility Adapter (`LeadDetailModal.tsx`, `LeadDetailModal.module.scss`), Executive Summary (+4 more)
+Nodes (12): 1. Slide-out Client 360° Dossier Drawer (`ClientDossierDrawer.tsx`, `DossierDrawer.module.scss`, `OrganizationDossier.tsx`), 2. Prospective Commercial Lead Modal (`NewLeadModal.tsx`, `NewLeadModal.module.scss`), 3. Convert Lead to Deal Modal (`ConvertLeadToDealModal.tsx`, `ConvertLeadToDealModal.module.scss`), 5. Pipeline Progression & Stage Modals (`StageTransitionModal.tsx`, `ConvertedCelebrationModal.tsx`, `LostReasonModal.tsx`, `StageModals.module.scss`), 6. Personnel Governance & Offboarding Modals (`AddTeamMemberModal.tsx`, `CredentialRevealModal.tsx`, `SuspendUserModal.tsx`), 7. Centered Lead Detail Modal Compatibility Adapter (`LeadDetailModal.tsx`, `LeadDetailModal.module.scss`), Executive Summary, Independent CTO PR Auditor Multi-Agent Review & Remediation Record (+4 more)
 
 ### Community 211 - "Key Architectural & Design Deliverables"
-Cohesion: 0.15
-Nodes (12): 1. CRM Light Luxury Design System Refactor (`tokens.scss`), 2. Dynamic Breadcrumb Resolution & Header De-duplication, 3. Dynamic Server Component Routes & Fallbacks, 4. Backward Compatibility & Table Navigation Updates, Automated Verification Gates, Block 1: Architecture & Token Compliance, Block 2: Navigation & Breadcrumb De-duplication, Block 3: Static Analysis & Multi-Tier Test Verification (+4 more)
+Cohesion: 0.14
+Nodes (13): 1. CRM Light Luxury Design System Refactor (`tokens.scss`), 2. Dynamic Breadcrumb Resolution & Header De-duplication, 3. Dynamic Server Component Routes & Fallbacks, 4. Backward Compatibility & Table Navigation Updates, Automated Verification Gates, Block 1: Architecture & Token Compliance, Block 2: Navigation & Breadcrumb De-duplication, Block 3: Static Analysis & Multi-Tier Test Verification (+5 more)
 
 ### Community 212 - "3. Six-Phase Implementation Master Plan"
 Cohesion: 0.14
 Nodes (13): 1. Executive Summary & Validation of User Critique, 2. Core Architectural Pillars to Introduce, 3. Six-Phase Implementation Master Plan, Marca Ubi Enterprise CRM: UI/UX Gap Audit & Master Elevation Plan, Phase 1: Database Architecture & Relational Schema, Phase 2: Navigation Rail & Route Restructure, Phase 3: Dedicated User Management & Tab Permission Center, Phase 4: Dedicated Funnel Workspaces (Leads, Deals Kanban, Client Works) (+5 more)
 
-### Community 213 - "3. Step-by-Step Architectural Implementation Plan"
-Cohesion: 0.14
-Nodes (15): 2. In-Depth Root Cause Analysis of Gaps, 3. Step-by-Step Architectural Implementation Plan, Executive Summary, Gap 3: Auth Metadata Hardening for Initial Credential Lifecycle, Gap 4: Next.js 16 Server Action Boundary Violation in `src/app/actions/auth.ts`, Gap 5: Deal Inventory Counting Discrepancy, Marca Ubi Enterprise Agency CRM & Sales Intelligence Platform, Step 2: Implement Self-Demotion Invariant Protection (+7 more)
+### Community 213 - "3. User Roles, RBAC & Multi-User Governance Engine"
+Cohesion: 0.40
+Nodes (5): 3.1 Persona Profiles & Hierarchy, 3.2 Granular Permissions Matrix, 3.3 Multi-User Provisioning & Lifecycle Workflow, 3.4 Team Member Offboarding & Lead Reassignment Protocol, 3. User Roles, RBAC & Multi-User Governance Engine
 
 ### Community 214 - "Sprint 10.1: Senior CTO Architecture & PRD Compliance Audit Report"
 Cohesion: 0.14
@@ -1230,12 +1217,12 @@ Cohesion: 0.14
 Nodes (13): 1. Executive Summary & Continuity Objectives, 2. Backup Topology & Service Level Objectives, 3. Incident Severity & Escalation Matrix, 4. Step-by-Step Production Rollback & PITR Restoration Procedure, Operational Runbook: Disaster Recovery & Point-in-Time Recovery (PITR), Scenario A: Non-Destructive Schema Change (Clean Down-Migration), Scenario B: Data Corruption, Data Loss, or Broken Foreign Keys (PITR Restore), Step 1: Engage Maintenance Mode at the Edge (< 2 minutes) (+5 more)
 
 ### Community 216 - "AdminBreadcrumbs.tsx"
-Cohesion: 0.11
-Nodes (17): 1. Visual Defect Analysis & Root Causes (Screenshots vs Reality), 2. Navigational Information Architecture & Route Matrix, 3. Dynamic Override Engine Bug Fix Specification, 4. Visual Tokens & Specifications (WCAG AA Compliance), 5. Detailed Component Blueprints, 6. Implementation Verification Plan, A. The "Isolated Bubble" Left Breadcrumb (`Screenshot 2026-10-21 144439.png`), Architecture & Implementation Plan: Notion-Caliber Top Navigation & Executive Breadcrumbs Redesign (+9 more)
+Cohesion: 0.07
+Nodes (26): RFC-4122, 1. Visual Defect Analysis & Root Causes (Screenshots vs Reality), 2. Navigational Information Architecture & Route Matrix, 3. Dynamic Override Engine Bug Fix Specification, 4. Visual Tokens & Specifications (WCAG AA Compliance), 5. Detailed Component Blueprints, 6. Implementation Verification Plan, A. The "Isolated Bubble" Left Breadcrumb (`Screenshot 2026-10-21 144439.png`) (+18 more)
 
-### Community 217 - "2. Accessibility contract"
-Cohesion: 0.20
-Nodes (9): 05 — Motion & Accessibility Specification, 2.1 ARIA structure, 2.2 Keyboard, 2.3 Focus management, 2.4 Contrast (measured, not assumed), 2.5 Target sizes and layout, 2.6 The launcher collision, 2. Accessibility contract (+1 more)
+### Community 217 - "🛡️ Senior CTO Delivery Gate & Triple-Auditor Final Sign-Off"
+Cohesion: 0.40
+Nodes (4): 1. Delivery Gate Scorecard (`scripts/verify-sprint-8-1.ts`), 2. Verified Remediation Invariants (Commit `63ed81e`), 3. Triple-Auditor Certification Verdicts, 🛡️ Senior CTO Delivery Gate & Triple-Auditor Final Sign-Off
 
 ### Community 218 - "2. Step-by-Step Remediation Plan"
 Cohesion: 0.14
@@ -1254,8 +1241,8 @@ Cohesion: 0.15
 Nodes (12): 1. Executive Summary & Defect Diagnosis, 2.1 Floating Launcher Button: Luxury Concierge Capsule, 2.2 Modal Dialog Container (`.panel`), 2.3 Message Bubbles & Transcript (`.transcript`), 2.4 Quick-Action Chips (`.chip`), 2.5 Conversational Composer & Send Affordance (`.composer`), 2. Detailed Architectural & Visual Blueprint, 3. Files Targeted for Implementation (+4 more)
 
 ### Community 222 - "Minimalist Clean Aesthetic & Clutter Eradication PRD"
-Cohesion: 0.09
-Nodes (19): 1. Executive Summary & Problem Diagnosis, 2. Architectural Design & Kinetic Physics, 3. Implementation Phasing, Kinetic Specifications:, Master Architectural Plan: Scroll-Activated Frosted Glass Adaptive Header HUD, 1. Executive Summary & Forensic Audit, 2. Root Cause Analysis & Visual Delta Matrix, 3.1 `HeroCutout.tsx` (+11 more)
+Cohesion: 0.17
+Nodes (11): 1. Executive Summary & Forensic Audit, 2. Root Cause Analysis & Visual Delta Matrix, 3.1 `HeroCutout.tsx`, 3.2 `HeroCutout.module.scss`, 3.3 `ClientHeader.tsx` & `ClientHeader.module.scss`, 3.4 `ClientHomeExperience.tsx`, 3. Detailed Component Architecture, 5. Execution Steps (Upon User Permission) (+3 more)
 
 ### Community 223 - "1. Executive Forensic Audit & Root Cause Analysis"
 Cohesion: 0.15
@@ -1277,9 +1264,9 @@ Nodes (13): 2.1.1 Service Role Key Isolation and Execution Boundary, 2.1.2 Trans
 Cohesion: 0.15
 Nodes (13): 2.1 Testing Strategy Matrix & Architectural Pyramid, 2.2 Row Level Security (RLS) Policy Automated Tests, 2.3 Normalization & Deduplication Unit Tests, 2.4 State Machine Transition Unit Tests, 2.7 Accessibility & Design QA (WCAG 2.1 AA Compliance), 2. Comprehensive Quality Assurance & Automated Testing Suite (Phase 10), Automated Axe-Core Playwright Accessibility Audit, Core Normalization Engine Specification (+5 more)
 
-### Community 228 - "5.2 Right Column: Seamless Friction-Free Inquiry Composer"
-Cohesion: 0.20
-Nodes (10): 5.1 Left Column: Direct Desks & Studio Corridors, 5.2 Right Column: Seamless Friction-Free Inquiry Composer, 5. Detailed Component Specifications, A. Direct Desks Ribbon, A. Tri-Track Intent Selector Tabs, B. Form Input Matrix & Progressive Adaptation, B. Studio Corridors (Physical Hubs with Live Timezone Engine), C. Input Field Craft & Micro-Interactions (+2 more)
+### Community 228 - "Phase 13: Start a Project — Dedicated Light Intake Page"
+Cohesion: 0.40
+Nodes (4): Evidence, Integrity, Phase 13: Start a Project — Dedicated Light Intake Page, Scope
 
 ### Community 229 - "4-Block Delivery Gate Report"
 Cohesion: 0.15
@@ -1290,8 +1277,8 @@ Cohesion: 0.15
 Nodes (12): 1. Executive Summary & Diagnostic Forensic Triage, 2. In-Depth Root Cause Breakdown, 3. The 4-Pillar Permanent Remediation Blueprint, 4. Execution Decision Gate, Architectural Root Cause Analysis & Permanent Remediation Plan: Windows Turbopack IPC Panic (`os error 10054`), Pillar 1: Convert Client Components to Native CSS Modules (`.module.css`), Pillar 2: Complete Cache Obliteration, Pillar 3: Hardened Developer Scripts in `package.json` (+4 more)
 
 ### Community 231 - "3. Four-Phase Architectural Remediation Strategy"
-Cohesion: 0.17
-Nodes (11): 1. Executive Summary & Defect Statement, 2. Forensic Root Cause Analysis, 3. Four-Phase Architectural Remediation Strategy, 4. Verification & Hard Delivery Gates, Architectural PRD & Remediation Plan: User Management Tab Redirection & Stacking Remediation, Phase 1: Scrim & Stacking Context Elevation, Phase 2: Auth Session & Edge Middleware RBAC Synchronization, Phase 3: Route Canonization & URL Consistency (+3 more)
+Cohesion: 0.15
+Nodes (14): 1. Executive Summary & Defect Statement, 2. Forensic Root Cause Analysis, 3. Four-Phase Architectural Remediation Strategy, 4. Verification & Hard Delivery Gates, Architectural PRD & Remediation Plan: User Management Tab Redirection & Stacking Remediation, Phase 1: Scrim & Stacking Context Elevation, Phase 2: Auth Session & Edge Middleware RBAC Synchronization, Phase 3: Route Canonization & URL Consistency (+6 more)
 
 ### Community 232 - "BLOCK 3: Regression & Automated Test Suite Evidence"
 Cohesion: 0.15
@@ -1306,12 +1293,12 @@ Cohesion: 0.17
 Nodes (10): Four-block delivery gate, Implemented behaviour, Independent review cycles, Local assistant delivery and independent review, Verification, Payload and compatibility, Public service interest and short-brief contract, Representation (+2 more)
 
 ### Community 235 - "5. Exact Code Diffs & File-by-File Changes"
-Cohesion: 0.08
-Nodes (23): 1. Executive Summary & Scorecard, 2. 12-Page Rubric Forensic Audit of the AIOSEO PDF, 4. Comprehensive 100/100 Remediation Implementation Plan, 5. Exact Code Diffs & File-by-File Changes, 6. Verification Protocol & Quality Gates, 7. Delivery Status & Next Step, AIOSEO Forensic Audit Report & 100/100 Score Recovery Remediation Plan, File 1: `src/app/layout.tsx` (+15 more)
+Cohesion: 0.07
+Nodes (27): 1. Executive Summary & Scorecard, 2. 12-Page Rubric Forensic Audit of the AIOSEO PDF, 3.1 Root Cause of Missing Alt Attributes (The 8 Flagged Images), 3.2 Root Cause of Canonical Tag Defect, 3.3 Root Cause of Subpage Title Doubling Defect, 3. Deep Codebase Cross-Audit & Root Cause Analysis, 4. Comprehensive 100/100 Remediation Implementation Plan, 5. Exact Code Diffs & File-by-File Changes (+19 more)
 
 ### Community 236 - "Full Engineering Context Register — 2026-10-30 14:19:25 IST"
-Cohesion: 0.12
-Nodes (14): 1. Executive Summary & Problem Statements, 1. Header Dual-Slot Ticker Fix, 2. 0ms Video Poster & Buffer Optimization, 2. Root Cause Analysis (Deep Dive), 3. Engineering Resolutions Implemented, 4. Modified & Tracked Files, 5. Git Status & PR State, 6. Verification & Invariants Preserved (+6 more)
+Cohesion: 0.22
+Nodes (8): 1. Executive Summary & Problem Statements, 1. Header Dual-Slot Ticker Fix, 2. 0ms Video Poster & Buffer Optimization, 3. Engineering Resolutions Implemented, 4. Modified & Tracked Files, 5. Git Status & PR State, 6. Verification & Invariants Preserved, Full Engineering Context Register — 2026-10-30 14:19:25 IST
 
 ### Community 237 - "2. Step-by-Step Execution Plan"
 Cohesion: 0.17
@@ -1350,8 +1337,8 @@ Cohesion: 0.17
 Nodes (11): 1. Client Deliverables Workspace (`/admin/works`), 2. Commercial Personnel Directory & Governance (`/admin/team`), 3. Operational Governance & Telemetry (`/admin/settings`), 4. Inbound Lead Ingestion Protocols (`/admin/ingestion`), Branch & Commit Verification, CTO PR Audit Remediation Record, Executive Summary, Official 4-Block Delivery Gate Report (+3 more)
 
 ### Community 246 - "Phase 8 Milestone: Senior CTO Architecture & PRD Compliance Audit Report"
-Cohesion: 0.25
-Nodes (7): 1. Executive Summary & Delivery Verdict, 4. Edge Cases & Resilience Verification, 5. Automated Test Matrix Summary, 6. Anti-AI-Slop Gatekeeper Audit, 7. Final Recommendation & Sign-Off, **Final Verdict: APPROVAL-READY**, Phase 8 Milestone: Senior CTO Architecture & PRD Compliance Audit Report
+Cohesion: 0.15
+Nodes (12): 1. Executive Summary & Delivery Verdict, 2.1 Sprint 8.1: Client 360 Sliding Drawer Shell & Organization Dossier, 2.2 Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer, 2.3 Sprint 8.3: Guarded Stage Transition Modals & State Machine Record Locking, 2. Granular Sprint-by-Sprint Audit Findings, 3. Cross-Feature Integration Audit (Phases 1–7), 4. Edge Cases & Resilience Verification, 5. Automated Test Matrix Summary (+4 more)
 
 ### Community 247 - "4-Block Delivery Gate Report"
 Cohesion: 0.18
@@ -1370,8 +1357,8 @@ Cohesion: 0.17
 Nodes (11): 1. Root Cause Analysis of Previous State (`Screenshot 152828`), 1. `src/app/components/Sections/AboutCurtain.tsx`, 2. Redesign Blueprint, 2. `src/app/components/Sections/ServicesAccordion/ServicesAccordion.module.scss`, 3. Technical Changes, 4. Verification & Governance, A. Full-Width Edge-to-Edge Structural Placement, B. Invariant Equal Column Division (`Screenshot 150824` Parity) (+3 more)
 
 ### Community 251 - "ref_node_assert"
-Cohesion: 0.10
-Nodes (16): calculateContrastRatio(), hexToLuminance(), ROOT_DIR, CHAT_POD_PATH, CHAT_POD_SCSS_PATH, CLIENT_HEADER_PATH, COMPOSER_PATH, NAVIGATION_OVERLAY_PATH (+8 more)
+Cohesion: 0.12
+Nodes (13): ResetPasswordSchema, calculateContrastRatio(), hexToLuminance(), ROOT_DIR, CHAT_POD_PATH, CHAT_POD_SCSS_PATH, CLIENT_HEADER_PATH, COMPOSER_PATH (+5 more)
 
 ### Community 252 - "Layout & Components"
 Cohesion: 0.18
@@ -1382,24 +1369,24 @@ Cohesion: 0.18
 Nodes (11): Background Grid, Dark Mode Default for No Reason, Excessive Accent Color, Excessive Border Radius, Excessive Glassmorphism, Generic Blue-Purple Gradient, Glow Everywhere, Overly Soft Shadows (+3 more)
 
 ### Community 254 - "2. Complete Architectural Remediation Blueprint"
-Cohesion: 0.17
-Nodes (11): 1.1 Root Cause Analysis, 1. Executive Incident Summary, 2.1 Dedicated Schema Modules in `src/app/lib/`, 2.3 Updated Client Components, 2.4 Automated Prevention Gatekeeper, 2. Complete Architectural Remediation Blueprint, 3. Verification Scorecard & Delivery Gate Proof, 4. Final Verdict (+3 more)
+Cohesion: 0.22
+Nodes (8): 1.1 Root Cause Analysis, 1. Executive Incident Summary, 2.3 Updated Client Components, 2.4 Automated Prevention Gatekeeper, 2. Complete Architectural Remediation Blueprint, 3. Verification Scorecard & Delivery Gate Proof, 4. Final Verdict, Architectural Audit & Remediation Report: Server Action RPC Boundaries
 
 ### Community 255 - "3. Detailed File-by-File Audit Findings"
-Cohesion: 0.13
-Nodes (14): 1. Executive Summary & Audit Scope, 1. `supabase/migrations/20261019000001_granular_user_tab_permissions.sql`, 2. `supabase/migrations/20261019000002_client_works_projects_schema.sql`, 3. Detailed File-by-File Audit Findings, 4. Final Verdict, 4. `src/app/lib/team-schemas.ts`, 5. `src/app/lib/client-works-schemas.ts`, 6. `src/app/admin/(workspace)/team/components/TeamWorkspaceClient.tsx` (+6 more)
+Cohesion: 0.08
+Nodes (24): 1. Executive Summary & Audit Scope, 1. `supabase/migrations/20261019000001_granular_user_tab_permissions.sql`, 2. Four-Block Anti-Slop Delivery Gate Audit, 2. `supabase/migrations/20261019000002_client_works_projects_schema.sql`, 3. Detailed File-by-File Audit Findings, 4. Final Verdict, 4. `src/app/lib/team-schemas.ts`, 5. `src/app/lib/client-works-schemas.ts` (+16 more)
 
 ### Community 256 - "1. Motion spec"
-Cohesion: 0.17
-Nodes (12): 1.10 Lenis interaction, 1.11 GSAP or CSS?, 1.1 Easing and duration language, 1.2 Launcher → panel, 1.3 Messages, 1.4 Typing indicator, 1.5 Chips, 1.6 Launcher idle nudge (+4 more)
+Cohesion: 0.09
+Nodes (21): 05 — Motion & Accessibility Specification, 1.10 Lenis interaction, 1.11 GSAP or CSS?, 1.1 Easing and duration language, 1.2 Launcher → panel, 1.3 Messages, 1.4 Typing indicator, 1.5 Chips (+13 more)
 
 ### Community 257 - "Chat Pod — one column, one lock, and one typed message (Part D)"
 Cohesion: 0.11
-Nodes (15): 10. Pass 4: a third auditor, on the commits rather than the working tree, 1. What the owner reported, in their own words, 2. One column: the mechanics, 3. One lock: the lifecycle, 6. Verification actually run (3 November), 8. Open, in priority order, Chat Pod — one column, one lock, and one typed message (Part D), Disclosed (+7 more)
+Nodes (14): Disclosed, Register — 2026-11-03 21:07 IST — Chat Pod Part D: one column, one lock, the typed message, Verification run for this record, What the owner said, Disclosed, Register — 2026-11-03 21:55 IST — Chat Pod Part D, pass 3: the independent CTO re-audit, The brief the auditors were given, verbatim, Verification run for this record (+6 more)
 
 ### Community 258 - "leads/page.tsx"
-Cohesion: 0.08
-Nodes (27): updateLeadStatusInlineAction(), getLeadDetails(), ResultPagination(), buildCommercialSearchFilter(), CommercialSearchFilter, DealsWorkspaceClient(), DealsWorkspaceClientProps, formatDealValue() (+19 more)
+Cohesion: 0.13
+Nodes (16): ResultPagination(), ResultPaginationProps, buildCommercialSearchFilter(), CommercialSearchFilter, getPageSummary(), PageSummary, HydratedDealItem, AdminDealsPage() (+8 more)
 
 ### Community 259 - "2. Proposed Changes"
 Cohesion: 0.18
@@ -1442,8 +1429,8 @@ Cohesion: 0.18
 Nodes (10): 1.1 Business & User Experience Objectives, 1. Executive Summary & Architectural Scope, 2. Component Hierarchy & Stacking Architecture, 3.1 Server Action: `updateLeadStatusAction`, 3.2 Server Action: `updateLeadPriorityAction`, 3. Server Actions & Security Architecture, 4.1 Color Tokens & Visual Archetypes, 4. UI/UX Design System Specifications (+2 more)
 
 ### Community 269 - "Services Detail Pages — Implementation Plan (Phase 12)"
-Cohesion: 0.09
-Nodes (21): 3.1 Root Cause of Missing Alt Attributes (The 8 Flagged Images), 3.2 Root Cause of Canonical Tag Defect, 3.3 Root Cause of Subpage Title Doubling Defect, 3.4 Root Cause of Performance Request Bloat (31 Requests), 3. Deep Codebase Cross-Audit & Root Cause Analysis, 1. Architectural Rationale, 2. Invariant & Contrast Compliance, Services Accordion — Swiss Luxury Typography Architecture (+13 more)
+Cohesion: 0.17
+Nodes (11): 10. Open Decisions (defaults applied if you don't override), 1. Objective, 2. Reference Structure (from attached screenshots), 3. URL & Routing Architecture, 4. Data Architecture, 5. Accordion Card Changes (homepage), 6. Visual Design Contract (Marca Ubi standard), 7. Content Production (subagent crew — the big lift) (+3 more)
 
 ### Community 270 - "4-Block Delivery Gate Report"
 Cohesion: 0.18
@@ -1470,20 +1457,20 @@ Cohesion: 0.25
 Nodes (7): Brand and interface intent, Core layout concept, Data rules, Interaction and accessibility, Responsive behavior, Shared page pattern, Visual system
 
 ### Community 276 - "blog/[slug]/page.tsx"
-Cohesion: 0.08
-Nodes (34): 1. Measured evidence (Playwright, 1440x900, live dev server), 2. Slop inventory (each item verified in source, not inferred), 3. Design intent, 4.1 Width utilisation, 4.2 Slop removal (one keeper per function), 4.3 Verification gates (all must pass before this is called done), 4. Fix plan, 5. Independent audit round (A1-A10, second fix pass) (+26 more)
+Cohesion: 0.05
+Nodes (51): 1. Measured evidence (Playwright, 1440x900, live dev server), 2. Slop inventory (each item verified in source, not inferred), 3. Design intent, 4.1 Width utilisation, 4.2 Slop removal (one keeper per function), 4.3 Verification gates (all must pass before this is called done), 4. Fix plan, 5. Independent audit round (A1-A10, second fix pass) (+43 more)
 
 ### Community 277 - "2.5 End-to-End User Journeys (Playwright Suite)"
 Cohesion: 0.20
 Nodes (10): 2.5 End-to-End User Journeys (Playwright Suite), Detailed Specification of Playwright Journeys, Journey 1: Admin Creates Executive & Sets Commercial Quota, Journey 2: Public Ingestion & Anti-Spam Honeypot Verification, Journey 3: Realtime Table Push to Executive's Viewport, Journey 4: Touchpoint Logging & SLA Countdown Reset, Journey 5: Deal Stage Progression via Drag-and-Drop Kanban, Journey 6: Closed-Won Conversion & Revenue Realization (+2 more)
 
-### Community 278 - "Sprint 8.2 Architectural Specification: Omnichannel Activity Timeline & Quick Action Interaction Composer"
-Cohesion: 0.22
-Nodes (8): 1. Architectural Overview & Objectives, 2. Technical Component Hierarchy & State Flow, 3. Data Schema & Payloads, 4. Edge Cases & Resilience Strategy, Activity Input Zod Schema, Call Logging Metadata, Meeting Logging Metadata, Sprint 8.2 Architectural Specification: Omnichannel Activity Timeline & Quick Action Interaction Composer
+### Community 278 - "logLeadActivityAction"
+Cohesion: 0.11
+Nodes (17): 3. Purge Dead Legacy Server Actions in `src/app/actions/leads.ts` (346 Lines), 4. Purge Dead Legacy Drawer Stylesheet (~280 Lines), 5. Deduplicate `client-tokens.scss` (78 Lines), Pillar 2: Line Optimization & Dead Code Elimination (~4,500+ Lines), Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer, Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer, 1. Architectural Overview & Objectives, 2. Technical Component Hierarchy & State Flow (+9 more)
 
 ### Community 279 - "Session Register — Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar (`remediation/turbopack-compaction-dev-server`)"
-Cohesion: 0.20
-Nodes (9): 1. Executive Summary & Root Incident Analysis, 2.1 Design Token Architecture (Swiss Light Editorial Luxury), 2.2 Component Visual Archetype Mapping, 2. Detailed Technical Architecture & Visual Design Specs, 3. Pull Request & Branch Lineage, 4. Modified & Staged File Manifest, 5. Hard-Learned Invariants & Anti-Slop Rules, 6. Verification & Audit Sign-Off (+1 more)
+Cohesion: 0.22
+Nodes (8): 1. Executive Summary & Root Incident Analysis, 2.1 Design Token Architecture (Swiss Light Editorial Luxury), 2.2 Component Visual Archetype Mapping, 2. Detailed Technical Architecture & Visual Design Specs, 3. Pull Request & Branch Lineage, 4. Modified & Staged File Manifest, 6. Verification & Audit Sign-Off, Session Register — Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar (`remediation/turbopack-compaction-dev-server`)
 
 ### Community 280 - "1. Core Technical Deliverables & Invariants Shipped"
 Cohesion: 0.20
@@ -1513,9 +1500,9 @@ Nodes (6): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliv
 Cohesion: 0.20
 Nodes (9): 1. Circular `@extend` Elimination (`AdminWorkspace.module.scss`, `AdminWorkspaceShell.tsx`), 2. Next.js 16 Image Quality Registration (`next.config.ts`), 3. Cross-Platform Cache Recovery Tooling (`package.json`), 4. Automated Performance & Cache Invariant Suite (`tests/unit/dev-performance-and-cache.test.ts`), Dev Server Performance Acceleration, Font Asset Hygiene & Clean Cache Architecture, Executive Summary, Independent CTO PR Auditor Multi-Agent Review Record, Official 4-Block Delivery Gate Report (+1 more)
 
-### Community 287 - "2. Delivered Work Packages"
-Cohesion: 0.20
-Nodes (9): 1. Objective & Motivation, 2. Delivered Work Packages, 3. Automated Verification Matrix, Architectural Overview: Sprint 5.3 CRM Workspace Shell, Centered Luxury Modals, Client 360 Dossier, Cross-Workspace Drilldowns & Copywriting Detox, Package 5.3.1: Centered Luxury Pop-Up Modal Architecture & Motion Choreography, Package 5.3.2: Client 360 Lead Detail Modal Features (`LeadDetailModal.tsx`), Package 5.3.3: Cross-Workspace Clickable Drilldown Navigation, Package 5.3.4: Professional Copywriting Detox Dictionary (+1 more)
+### Community 287 - "indexnow/route.ts"
+Cohesion: 0.40
+Nodes (3): IndexNowPayload, IndexNowRequestSchema, siteUrl
 
 ### Community 288 - "3. Interactive Architecture & Implementation Blueprint"
 Cohesion: 0.20
@@ -1530,8 +1517,8 @@ Cohesion: 0.20
 Nodes (9): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, 5. Granular Sprint Work Breakdown Structure (Phases 2, 3, 4, and 5), Marca Ubi Enterprise Agency CRM & Sales Intelligence Platform, Master Technical PRD: Security, Identity, Multi-User Governance & Ingestion Architecture (+1 more)
 
 ### Community 291 - "tasks/page.tsx"
-Cohesion: 0.13
-Nodes (20): ResultPaginationProps, FollowUpQueue, getUtcDayWindow(), isFollowUpInQueue(), parseFollowUpPage(), parseFollowUpQueue(), UtcDayWindow, getPageSummary() (+12 more)
+Cohesion: 0.08
+Nodes (33): 1. Objective & Motivation, 2. Delivered Work Packages, 3. Automated Verification Matrix, Architectural Overview: Sprint 5.3 CRM Workspace Shell, Centered Luxury Modals, Client 360 Dossier, Cross-Workspace Drilldowns & Copywriting Detox, Package 5.3.1: Centered Luxury Pop-Up Modal Architecture & Motion Choreography, Package 5.3.2: Client 360 Lead Detail Modal Features (`LeadDetailModal.tsx`), Package 5.3.3: Cross-Workspace Clickable Drilldown Navigation, Package 5.3.4: Professional Copywriting Detox Dictionary (+25 more)
 
 ### Community 292 - "Phase 10: QA Engineering, Performance Optimization & Release Runbooks"
 Cohesion: 0.20
@@ -1566,16 +1553,16 @@ Cohesion: 0.20
 Nodes (9): 1. Executive Summary & Sprint Objectives, 2. Work Package Architecture & Deliverables, 3. Mathematical Contrast Formulation & Design System Proofs, 4.1 Secret Rotation Protocol (`RUNBOOK-SEC-01`), 4.2 Disaster Recovery & PITR Protocol (`RUNBOOK-DR-02`), 4.3 Production Deployment & Release Gate (`RUNBOOK-REL-03`), 4. Runbook Implementation Highlights, Empirical Verification of Marca Ubi Design Tokens (+1 more)
 
 ### Community 300 - "Sprint 9.1 Architecture Specification: Precision Follow-up Date-Time Scheduler & `On Hold` Revisit Automation"
-Cohesion: 0.15
-Nodes (12): 1. Executive Summary & Architectural Scope, 2.1 File Structure, 2.2 Dark Luxury Design Tokens, 2. Component Architecture & Dark Luxury UI Layout, 3. Quick Preset Interval Calculations (Mathematical Specifications), 4.1 `scheduleFollowUpAction`, 4.2 `transitionToOnHoldAction`, 4. Server Actions & Security Invariants (+4 more)
+Cohesion: 0.20
+Nodes (9): 1. Executive Summary & Architectural Scope, 2.1 File Structure, 2.2 Dark Luxury Design Tokens, 2. Component Architecture & Dark Luxury UI Layout, 3. Quick Preset Interval Calculations (Mathematical Specifications), 5. Database Trigger & Automation (`20261015000013_on_hold_revisit_automation.sql`), 6. Verification & Delivery Gate Criteria (24 Checks), Core Business Objectives: (+1 more)
 
 ### Community 301 - "Operational Runbook: Enterprise Secret Management & Zero-Downtime Rotation"
 Cohesion: 0.20
 Nodes (9): 1. Executive Summary & Purpose, 2. Cryptographic Secret Classification Matrix, 3. Zero-Downtime Secret Rotation Flow, 4.1 Rotating `SUPABASE_SERVICE_ROLE_KEY`, 4.2 Rotating `SUPABASE_DB_PASSWORD` & Pooler Credentials, 4.3 Rotating `INGESTION_WEBHOOK_SECRET` & `CRON_SECRET`, 4. Step-by-Step Rotation Procedures, 5. Emergency Compromised Key Revocation Protocol (+1 more)
 
 ### Community 302 - "Chat Pod — Delivery Gate and verification record"
-Cohesion: 0.20
-Nodes (10): Analytics decision (D6), Block 2 — Purpose-Gate (technique allowed, reason written), Block 3 — Liveliness (all answers must be yes), Block 4 — Craftsmanship and quality locks, Budgets (measured, not estimated), Chat Pod — Delivery Gate and verification record, R-35 click-through evidence, Re-certification, 2 November 2026 (read before any line below) (+2 more)
+Cohesion: 0.22
+Nodes (9): Analytics decision (D6), Block 2 — Purpose-Gate (technique allowed, reason written), Block 3 — Liveliness (all answers must be yes), Block 4 — Craftsmanship and quality locks, Budgets (measured, not estimated), Chat Pod — Delivery Gate and verification record, R-35 click-through evidence, Re-certification, 2 November 2026 (read before any line below) (+1 more)
 
 ### Community 303 - "2. Technical Implementation Specifications"
 Cohesion: 0.20
@@ -1593,17 +1580,17 @@ Nodes (9): Automated Verification & Test Metrics, Block 1: Hard Gate (Absolute S
 Cohesion: 0.20
 Nodes (9): 1. Executive Summary & Forensic Comparison, 2. Root Cause Analysis, 3. Typographic Weight Architecture & Tokens, 4. File-by-File Refinement Inventory, 5. Automated Regression Test Invariants, 6. Execution Verification Gate, Architectural Blueprint: Typography Weight & Editorial Cadence Restoration, Typographic Invariants (+1 more)
 
-### Community 307 - "kpis/route.ts"
-Cohesion: 0.12
-Nodes (14): 1. Objective & Motivation, 2. Delivered Work Packages, 3. Automated Verification Matrix, Architectural Overview: Sprint 6.1 High-Performance Pipeline KPI Aggregation RPC, Indexing & Analytics API Gateway, Package 6.1.1: Relational Schema & Composite Indexing (`20261015000011_kpi_rpc_function.sql`), Package 6.1.2: Core Unified Parameterized Stored Function (`public.get_pipeline_kpis`), Package 6.1.3: Zod Validation Contracts & TypeScript Domain Models, Package 6.1.4: Next.js 16 API Route Gateway (`/api/sales-funnel/kpis`) (+6 more)
+### Community 307 - "2. Delivered Work Packages"
+Cohesion: 0.25
+Nodes (7): 1. Objective & Motivation, 2. Delivered Work Packages, 3. Automated Verification Matrix, Architectural Overview: Sprint 6.1 High-Performance Pipeline KPI Aggregation RPC, Indexing & Analytics API Gateway, Package 6.1.1: Relational Schema & Composite Indexing (`20261015000011_kpi_rpc_function.sql`), Package 6.1.2: Core Unified Parameterized Stored Function (`public.get_pipeline_kpis`), Package 6.1.4: Next.js 16 API Route Gateway (`/api/sales-funnel/kpis`)
 
 ### Community 308 - "4-Block Delivery Gate Report"
 Cohesion: 0.22
 Nodes (8): 1. Database Schema & Migration Engine, 2. TypeScript Contracts & Zod Schemas, 4-Block Delivery Gate Report, Block 1: Type Safety & Boundary Gate, Block 2: Automated Unit & Schema Validation, Block 3: PostgreSQL Row Level Security (RLS) & DB Verification, Block 4: Production Build Gate, Detailed Deliverable Breakdown
 
 ### Community 309 - "reset-password/page.tsx"
-Cohesion: 0.18
-Nodes (10): resetTemporaryPassword(), AdminAuthShell(), AdminAuthShellProps, LoginForm(), AdminLoginPage(), metadata, metadata, ResetPasswordPage() (+2 more)
+Cohesion: 0.13
+Nodes (17): Gap 4: Next.js 16 Server Action Boundary Violation in `src/app/actions/auth.ts`, Step 4: Refactor Auth Server Action Types Boundary, LoginSchema, LogoutActionResult, resetTemporaryPassword(), AdminAuthShell(), AdminAuthShellProps, LoginForm() (+9 more)
 
 ### Community 310 - "4-Block Delivery Gate Report"
 Cohesion: 0.22
@@ -1618,20 +1605,20 @@ Cohesion: 0.22
 Nodes (8): 1. Root Cause Analysis: Why Current Header Feels Like "Just Opacity Reduced", 2. Apple Liquid Glass Optical Architecture, 3. Detailed Technical Blueprint, 4. Verification & Testing Strategy, 5. Execution Recommendation, A. SCSS Tokens & Formula Specification (`ClientHeader.module.scss`), Architecture & Engineering Plan: Apple Liquid Glass Adaptive Header HUD, B. Accessibility & Performance Safeguards
 
 ### Community 313 - "2. Component Architecture & Blueprint Specifications"
-Cohesion: 0.20
-Nodes (9): 1. Executive Summary & Objective, 2.1 MonumentalFooter Anthem & Trailing Red Dot, 2.2 ClientHeader At-Rest Subtitle & Architecture, 2.3 Scrolled Floating Capsule Dynamic Kinetic Ticker, 2.4 MonumentalFooter Bottom Legal Rail Brand Red Colors, 2.5 ConnectCutout Kinetic Traveling Red Wave, 2. Component Architecture & Blueprint Specifications, 3. Verification & Delivery Gate Strategy (+1 more)
+Cohesion: 0.22
+Nodes (8): 1. Executive Summary & Objective, 2.1 MonumentalFooter Anthem & Trailing Red Dot, 2.2 ClientHeader At-Rest Subtitle & Architecture, 2.3 Scrolled Floating Capsule Dynamic Kinetic Ticker, 2.4 MonumentalFooter Bottom Legal Rail Brand Red Colors, 2.5 ConnectCutout Kinetic Traveling Red Wave, 2. Component Architecture & Blueprint Specifications, Marca Ubi Master Brand & Kinetic Motion Refinement Plan
 
 ### Community 314 - "4-Block Delivery Gate Report"
 Cohesion: 0.22
 Nodes (8): 4-Block Delivery Gate Report, Block 1: Type Safety & Compilation, Block 2: Test Suite Verification, Block 3: Accessibility & Design Compliance, Block 4: Anti-AI-Slop Standards, Brand Architecture Polish, Liquid Glass Dynamic Ticker & Kinetic Photon Wave, Summary of Changes, Verification Evidence
 
-### Community 315 - "WorksCutout"
-Cohesion: 0.10
-Nodes (16): 1. Executive Summary & Objective Alignment, 2. Section Cadence & Viewport Height Calibration, 3. Multi-Page Project Submission Brief Modal Architecture, 4. Verification & Quality Gates, A. New Component: `ProjectBriefModal`, B. Trigger Points:, C. State Orchestration in `ClientHomeExperience.tsx`:, Detailed Height & Padding Calibration Matrix: (+8 more)
+### Community 315 - "Master Architectural Plan: Cadence Calibration & Project Brief Modal"
+Cohesion: 0.22
+Nodes (8): 2. Section Cadence & Viewport Height Calibration, 3. Multi-Page Project Submission Brief Modal Architecture, 4. Verification & Quality Gates, A. New Component: `ProjectBriefModal`, B. Trigger Points:, C. State Orchestration in `ClientHomeExperience.tsx`:, Detailed Height & Padding Calibration Matrix:, Master Architectural Plan: Cadence Calibration & Project Brief Modal
 
 ### Community 316 - "unlockConvertedLeadAction"
-Cohesion: 0.25
-Nodes (7): 1. Executive Summary, 2. Comprehensive Phase 8 Scope Breakdown, 3. Automated Verification Matrix, Phase 8 Milestone: Client 360° Dossier, Omnichannel Touchpoint Studio & State Machine Record Locking, Sprint 8.1: Client 360 Sliding Drawer Shell & Organization Dossier, Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer, Sprint 8.3: Guarded Stage Transition Modals, Input Validation & State Machine Record Locking
+Cohesion: 0.29
+Nodes (6): 1. Executive Summary, 2. Comprehensive Phase 8 Scope Breakdown, 3. Automated Verification Matrix, Phase 8 Milestone: Client 360° Dossier, Omnichannel Touchpoint Studio & State Machine Record Locking, Sprint 8.1: Client 360 Sliding Drawer Shell & Organization Dossier, Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer
 
 ### Community 317 - "Sprint 7.1: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons"
 Cohesion: 0.25
@@ -1658,8 +1645,8 @@ Cohesion: 0.25
 Nodes (8): 2.1 The route links were the last failing text pair, 2.2 A graphic measured against its fill instead of its frame, 2.3 The disabled-component exception is not available to a field that keeps its words, 2. Every tone, as measured, 3. Motion: what was changed and what each beat is for, 4. What the guard test holds, 5. Evidence, Chat Pod — Motion and contrast remediation (Part B)
 
 ### Community 323 - "Sprint 9.1: Senior CTO Architecture & PRD Compliance Audit Report"
-Cohesion: 0.25
-Nodes (7): 1. Executive Summary & Audit Mandate, 5. Official 4-Block Delivery Gate Verification Evidence, 6. Anti-AI-Slop & Design System Audit, 7. Mandatory Policy Verification & Final Sign-Off, 🟢 APPROVAL-READY, Definitive Audit Verdict:, Sprint 9.1: Senior CTO Architecture & PRD Compliance Audit Report
+Cohesion: 0.15
+Nodes (12): 1. Executive Summary & Audit Mandate, 3.1 Quick Presets & Mathematical Rigor (PRD §14.1 & §15.19), 3.2 Timezone Normalization & Persistence, 3.3 `On Hold` State Machine Protocol & Alert Suppression Engine (PRD §14.2 & §15.19), 3.4 RFC 5545 iCalendar (`.ics`) Formatting & Injection Hardening, 3. Deep Architectural & Security Verification, 5. Official 4-Block Delivery Gate Verification Evidence, 6. Anti-AI-Slop & Design System Audit (+4 more)
 
 ### Community 324 - "Architectural Plan: Services Accordion Concise Description Refinement"
 Cohesion: 0.22
@@ -1690,8 +1677,8 @@ Cohesion: 0.22
 Nodes (8): __dirname, downloadFile(), __filename, processAll(), ROOT_DIR, TARGET_DIR, TEMP_DIR, VETTED_ASSETS
 
 ### Community 331 - "1. Executive Summary & Defect Remediation"
-Cohesion: 0.20
-Nodes (10): 1. Executive Summary & Defect Remediation, 2. Verification & Automated Test Evidence, Defect 1: Typing Caret Drop & Focus Loss, Defect 2: Competing Background Navigation Overlay, Defect 3: Authentic Lady Concierge Photographic Portrait, Focus Invariant Protection, Modal Mutual Exclusion & Concierge Photographic Portrait, gotoPod(), launcher() (+2 more)
+Cohesion: 0.29
+Nodes (6): 1. Executive Summary & Defect Remediation, 2. Verification & Automated Test Evidence, Defect 1: Typing Caret Drop & Focus Loss, Defect 2: Competing Background Navigation Overlay, Defect 3: Authentic Lady Concierge Photographic Portrait, Focus Invariant Protection, Modal Mutual Exclusion & Concierge Photographic Portrait
 
 ### Community 332 - "Services Accordion Header Contrast & 16-Asset High-Res Imagery Plan"
 Cohesion: 0.25
@@ -1702,8 +1689,8 @@ Cohesion: 0.20
 Nodes (9): 01 — Chat Pod Architecture, 1. Runtime shape, 3. Knowledge base schema, 4. Matching algorithm — deterministic, three tiers, 5. Intake FSM, 6. File map (proposed), 7. Bundle & performance budget, 8. State & persistence (+1 more)
 
 ### Community 334 - "contact/page.tsx"
-Cohesion: 0.09
-Nodes (23): 1. Executive Summary, 2. Architecture & Design Blueprint, 3. Senior CTO 4-Block Delivery Gate Report, 4. Author Identity & Commit Verification, Components Delivered:, Contact: Swiss Light Editorial Contact Suite, Live Studio Clocks, CRM Ingestion & SEO Graph, Design Read & Token System (`dial ENERGY 2 / RHYTHM 2 / MOTION 1`), ContactHero() (+15 more)
+Cohesion: 0.23
+Nodes (10): ContactHero(), InquiryComposer(), StudioCards(), StudioLocation, STUDIOS, WantToWorkWithUs(), ContactPage(), jsonLdGraph (+2 more)
 
 ### Community 335 - "Full Engineering Context Register — Graphify Knowledge Graph Architecture & GraphRAG Engine"
 Cohesion: 0.25
@@ -1718,8 +1705,8 @@ Cohesion: 0.25
 Nodes (7): 1.1 Visual Comparison: Current Code vs. Reference Screenshot (`010831.png`), 1. Forensic Visual Audit & Root Cause Analysis, 2.1 Markup Update (`src/app/components/ClientHeader/ClientHeader.tsx`), 2.2 Styling Update (`src/app/components/ClientHeader/ClientHeader.module.scss`), 2. Technical Blueprint, 3. Delivery Gate & Verification Checklist, Master Implementation Plan: 3-Line Rounded Pill Hamburger Icon
 
 ### Community 338 - "FloatingExploreButton"
-Cohesion: 0.12
-Nodes (15): 1. What this module is, 2. Decisions, already taken — do not re-open, 3. Rules this module learned the hard way, 4. Verification the owner permits (unchanged), 5. Open items, stated plainly, Session register — Chat Pod (`feature/chat-pod`), 1. Where the mission stands, 4. Decisions already taken (D1–D6) — closed, do not re-open (+7 more)
+Cohesion: 0.15
+Nodes (15): 7. Risk register, What the research changed, M2 — Launcher, panel shell & collision resolution, Where the build departs from the plan, 1. What this module is, 2. Decisions, already taken — do not re-open, 3. Rules this module learned the hard way, 4. Verification the owner permits (unchanged) (+7 more)
 
 ### Community 339 - "10. Public Webhook Ingestion Engine & Deduplication Pipeline"
 Cohesion: 0.25
@@ -1757,9 +1744,9 @@ Nodes (7): 1. Overview & Business Objectives, 2.1 High-Performance Composite Ind
 Cohesion: 0.25
 Nodes (7): 1. Architectural Overview & Objectives, 2. Component Topology & Data Flow, 3. Data Contract & Hydration Interface, 4. Deep-Link Protocol Invariants, 5. Delivery Gate Verification Suite, Primary Objectives, Sprint 8.1 Architectural Specification: Client 360° Sliding Drawer Shell & Organization Dossier
 
-### Community 348 - "2. Detailed Technical Specifications"
-Cohesion: 0.29
-Nodes (6): 2. Detailed Technical Specifications, 3. Verification & Quality Gate Matrix, Marca Ubi CRM — Inbound Leads, Dossier Data & Stacking Remediation Master Plan, Phase 1: Filter Dropdown & Table Header Stacking Hierarchy Fix, Phase 3: Status Dropdown Clipping & Invisible 'New' Status Fix, Phase 5: Drawer Layout & Typography Polish
+### Community 348 - "Session Register — Chat Pod Comprehension for Typed Messages, Continuity and the Intake Remediation (Part C)"
+Cohesion: 0.50
+Nodes (4): 1. What the owner reported, and what it turned out to be, 5. Rules learned the hard way (do not re-litigate), 6. State at the end of this session, Session Register — Chat Pod Comprehension for Typed Messages, Continuity and the Intake Remediation (Part C)
 
 ### Community 349 - "🛡️ Senior CTO Architecture & PRD Compliance Review Report"
 Cohesion: 0.25
@@ -1810,8 +1797,8 @@ Cohesion: 0.29
 Nodes (7): 13. Client 360° Dossier & Omnichannel Touchpoint Studio, 3.1 Two-Column Sliding Drawer Architecture, 3.2 Left Column: Organization & Brand Dossier, 3.3.1 Quick Action Composer, 3.3.2 Immutable Omnichannel Activity Timeline, 3.3 Right Column: Omnichannel Activity Timeline & Quick Action Composer, 3.4 Guarded Stage Transition Modals
 
 ### Community 361 - "Architectural Specification & Master Plan: Full-Page Client 360° Lead/Deal Dossier Workspace"
-Cohesion: 0.29
-Nodes (6): 1. Executive Summary & Problem Audit, 2. Proposed Architecture: Dedicated Full-Page Workspace, 3. Directory & Route Layout (Next.js 16 App Router), 5. Responsive Design & Touch Targets, Architectural Specification & Master Plan: Full-Page Client 360° Lead/Deal Dossier Workspace, Shortcomings of the 840px Slide-Over Drawer
+Cohesion: 0.25
+Nodes (7): 1. Executive Summary & Problem Audit, 2. Proposed Architecture: Dedicated Full-Page Workspace, 3. Directory & Route Layout (Next.js 16 App Router), 4. Key Engineering Invariants & Data Flow, 5. Responsive Design & Touch Targets, Architectural Specification & Master Plan: Full-Page Client 360° Lead/Deal Dossier Workspace, Shortcomings of the 840px Slide-Over Drawer
 
 ### Community 362 - "Marca Ubi CRM visual system"
 Cohesion: 0.33
@@ -1821,21 +1808,21 @@ Nodes (6): Brand and hierarchy, Marca Ubi CRM visual system, Page patterns, Refe
 Cohesion: 0.29
 Nodes (6): 1. Executive Summary, 2. Comprehensive Phase 6 Scope Breakdown, 3. Automated Verification Matrix, Phase 6 Milestone: Executive Analytics, Dynamic KPI Ribbon & Aggregation Engine, Sprint 6.1: High-Performance Pipeline KPI Aggregation RPC, Indexing & Analytics API Gateway, Sprint 6.2: Dark Luxury Executive KPI Ribbon & Real-time Recalculation Engine
 
-### Community 364 - "ConnectCutout"
-Cohesion: 0.11
-Nodes (12): Summary, Verification, Phase 3: 8 Core Section Components, 1. Executive Summary, 2. Mathematical Geometry & Bounded Color Zones, 3. Timeline Stagger Matrix (8.0s Cycle), 4. Interaction & Accessibility Invariants, Architectural Specification: ConnectCutout Kinetic Left-to-Right Red Text Fill Wave (+4 more)
+### Community 364 - "Architectural Specification: ConnectCutout Kinetic Left-to-Right Red Text Fill Wave"
+Cohesion: 0.33
+Nodes (5): 1. Executive Summary, 2. Mathematical Geometry & Bounded Color Zones, 3. Timeline Stagger Matrix (8.0s Cycle), 4. Interaction & Accessibility Invariants, Architectural Specification: ConnectCutout Kinetic Left-to-Right Red Text Fill Wave
 
 ### Community 365 - "5. Granular Sprint Work Breakdown Structure (Phases 2, 3, 4, and 5)"
-Cohesion: 0.06
-Nodes (32): 1. Objectives, 1. Objectives, 1. Objectives, 1. Objectives, 1. Objectives, 2. Detailed Technical Work Packages, 2. Detailed Technical Work Packages, 2. Detailed Technical Work Packages (+24 more)
+Cohesion: 0.10
+Nodes (20): 1. Objectives, 1. Objectives, 1. Objectives, 2. Detailed Technical Work Packages, 2. Detailed Technical Work Packages, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 3. Concrete Deliverables (+12 more)
 
 ### Community 366 - "The Craftsmanship Standard"
 Cohesion: 0.33
 Nodes (6): C-1 — Intentionality, C-2 — Functional Completeness, C-3 — Content-Driven Composition, C-4 — Resilience, C-5 — Evidence Over Claims, The Craftsmanship Standard
 
 ### Community 367 - "5. Granular Sprint Work Breakdown Structure (Phases 6–9)"
-Cohesion: 0.20
-Nodes (10): 5. Granular Sprint Work Breakdown Structure (Phases 6–9), Phase 10: QA Engineering, Performance & Runbook Sprints, Sprint 6.1: Database Aggregation Functions, RPC Procedures & Analytics Ingestion API, Sprint 6.2: Dark Luxury Executive KPI Ribbon & Real-time Recalculation Engine, Sprint 7.1: Data Grid Layout Hierarchy, Streaming Suspense & Multi-Filter Action Bar, Sprint 8.1: Client 360° Sliding Drawer Shell & Organization Dossier, Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer, Sprint 8.3: Guarded Stage Transition Modals, Input Validation & State Machine Locking (+2 more)
+Cohesion: 0.22
+Nodes (9): 5. Granular Sprint Work Breakdown Structure (Phases 6–9), Phase 10: QA Engineering, Performance & Runbook Sprints, Sprint 6.1: Database Aggregation Functions, RPC Procedures & Analytics Ingestion API, Sprint 6.2: Dark Luxury Executive KPI Ribbon & Real-time Recalculation Engine, Sprint 7.1: Data Grid Layout Hierarchy, Streaming Suspense & Multi-Filter Action Bar, Sprint 8.1: Client 360° Sliding Drawer Shell & Organization Dossier, Sprint 8.3: Guarded Stage Transition Modals, Input Validation & State Machine Locking, Sprint 9.1: Precision Follow-up Date-Time Scheduler & `On Hold` Revisit Automation (+1 more)
 
 ### Community 368 - "1. Branch & Pull Request Status Overview"
 Cohesion: 0.33
@@ -1885,17 +1872,9 @@ Nodes (6): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliv
 Cohesion: 0.33
 Nodes (6): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 3.2: Team Management Workspace (`/admin/team`), Temporary Credential Security & Audit Logging
 
-### Community 380 - "kpi/index.ts"
-Cohesion: 0.33
-Nodes (4): KpiCard(), KpiCardProps, KpiSkeleton(), KpiSkeletonProps
-
-### Community 381 - "AdminBreadcrumbs.tsx"
-Cohesion: 0.22
-Nodes (7): RFC-4122, AdminBreadcrumbLabelUpdateDetail, CrumbItem, LEAD_CODE_REGEX, ROUTE_NAME_MAP, SECTION_MAP, UUID_REGEX
-
-### Community 382 - "3. Component Contract 1: `FilterActionBar`"
-Cohesion: 0.22
-Nodes (9): 3.1 Pipeline Bucket Navigation Tabs, 3.2 Debounced Multi-Field Search Engine, 3.3 Dark Luxury Popover Filter Dropdowns, 3.4 Active Filter Chips & Global Reset, 3.5 URL State Synchronization Engine, 3.6 TypeScript Component Interface & Props Contract, 3. Component Contract 1: `FilterActionBar`, Numeric Badge Token Formula (+1 more)
+### Community 382 - "Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons"
+Cohesion: 0.05
+Nodes (37): 2. Detailed Technical Specifications, 3. Verification & Quality Gate Matrix, Marca Ubi CRM — Inbound Leads, Dossier Data & Stacking Remediation Master Plan, Phase 1: Filter Dropdown & Table Header Stacking Hierarchy Fix, Phase 2: Inbound Leads Header & Action Controls, Phase 3: Status Dropdown Clipping & Invisible 'New' Status Fix, Phase 4: Brief Questionnaire Sanitization & Data Management, Phase 5: Drawer Layout & Typography Polish (+29 more)
 
 ### Community 383 - "1.4 Commit Message & Version Control Standards"
 Cohesion: 0.33
@@ -1910,32 +1889,16 @@ Cohesion: 0.33
 Nodes (6): 4.2 Sprint 10.2: Performance, Load & Reliability Optimization, Acceptance Criteria, Deliverables, Detailed Technical Work Packages, Failure Safeguards, Objectives
 
 ### Community 386 - "Part 2: AI Search Architecture (LLMO / GEO)"
-Cohesion: 0.22
-Nodes (9): 2.1 The `llms.txt` and `llms-full.txt` Specification, 2.2 Route Handler vs. Static File Evaluation in Next.js 16, 2.3 Entity Disambiguation and Knowledge Graph Grounding, Background & Industry Standard, Evaluation Decision: Dynamic Route Handlers with Incremental Static Regeneration (ISR), Multi-Layered Grounding Architecture, Part 2: AI Search Architecture (LLMO / GEO), Standard Markdown Structure for Marca Ubi `/llms.txt` (+1 more)
-
-### Community 387 - "Phase 4: Dedicated Funnel Workspaces, Interactive Deals Kanban & Client Works Tracker"
-Cohesion: 0.33
-Nodes (5): 1. Architectural Summary & Strategic Intent, 2. CTO PR Auditor Unanimous Verdicts, 3. Delivery Gatekeeper Verification Report, 4. Anti-Slop & Design Standard Checklist, Phase 4: Dedicated Funnel Workspaces, Interactive Deals Kanban & Client Works Tracker
+Cohesion: 0.15
+Nodes (12): 2.1 The `llms.txt` and `llms-full.txt` Specification, 2.2 Route Handler vs. Static File Evaluation in Next.js 16, 2.3 Entity Disambiguation and Knowledge Graph Grounding, Background & Industry Standard, Evaluation Decision: Dynamic Route Handlers with Incremental Static Regeneration (ISR), Executive Summary & Architecture Scorecard, Marca Ubi Enterprise Agency — Comprehensive Technical SEO & AI Search Architecture Audit & Blueprint, Multi-Layered Grounding Architecture (+4 more)
 
 ### Community 388 - "turbopack_runtime_remediation/pr_body.md"
 Cohesion: 0.33
 Nodes (5): Architectural Deliverables, Authorship & Review Policy, Executive Summary & Root Cause Analysis, Quantitative Verification Ledger, Root Cause Diagnosis
 
-### Community 389 - "Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons"
-Cohesion: 0.29
-Nodes (7): 2.1 Stacking Index Matrix (`z-index`), 2. Spatial Hierarchy & Stacking Architecture, 7. Responsive Viewport Adaptations, 8. Anti-AI-Slop Governance & Verification Matrix, 9. Delivery Gate Acceptance Criteria, Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons, FilterActionBar()
-
-### Community 390 - "4. Component Contract 2: `LeadsTableSkeleton`"
-Cohesion: 0.25
-Nodes (8): 1.1 Business & User Experience Objectives, 1. Executive Summary & Architectural Scope, 4.1 Structural & Dimensional Precision, 4.2 Column-by-Column Alignment Matrix, 4.3 Dark Shimmer Keyframe Token, 4.4 TypeScript Component Interface, 4. Component Contract 2: `LeadsTableSkeleton`, LeadsTableSkeleton()
-
 ### Community 391 - "Delivery Gate (Mandatory)"
 Cohesion: 0.40
 Nodes (5): Block 1: Hard Gate (absolute), Block 2: Purpose-Gate (technique allowed, reason required), Block 3: Liveliness (required to be alive, not just clean), Block 4: Craftsmanship & Quality Locks, Delivery Gate (Mandatory)
-
-### Community 392 - "3. Services"
-Cohesion: 0.29
-Nodes (7): 3. Services, `pricing` / `cost` / `rates` / `how much`, `services.b2b`, `services.b2c`, `services.detail.<slug>` — 16 intents, one per slug, `services.overview`, `services.whichone`
 
 ### Community 393 - "Hamburger Menu Icon: Border Removal & +10% Dimension Refinement Plan"
 Cohesion: 0.40
@@ -1952,14 +1915,6 @@ Nodes (4): 2. Sprint Work Breakdown Structure for Phase 1 (Database Architecture
 ### Community 396 - "Sprint 5.1: Ingestion API Route, Rate Limiter, Honeypots & Contact Normalization Engine"
 Cohesion: 0.33
 Nodes (6): 1. Objectives, 2. Detailed Technical Work Packages, 3. Concrete Deliverables, 4. Edge Cases & Security Safeguards, 5. Acceptance Criteria, Sprint 5.1: Ingestion API Route, Rate Limiter, Honeypots & Contact Normalization Engine
-
-### Community 397 - "2. Greetings and small talk"
-Cohesion: 0.33
-Nodes (6): 2. Greetings and small talk, `goodbye`, `greeting`, `smalltalk.areyouhuman`, `smalltalk.howareyou`, `thanks`
-
-### Community 398 - "Register — 2026-11-04 10:20 IST — Chat Pod Part D, pass 4/5: a third auditor, on the commits"
-Cohesion: 0.33
-Nodes (6): Disclosed, Register — 2026-11-04 10:20 IST — Chat Pod Part D, pass 4/5: a third auditor, on the commits, The one MAJOR, and why it is not live, Verification run for this record, What happened between the two records, What the audit produced that was real
 
 ### Community 399 - "clean-dev-cache.js"
 Cohesion: 0.33
@@ -1990,8 +1945,8 @@ Cohesion: 0.50
 Nodes (4): 3.1 Race Conditions During Concurrent Status Edits (Optimistic Concurrency Control), Application Layer Conflict Resolution Workflow, The Lost Update Hazard, The Optimistic Concurrency Control (OCC) Architecture
 
 ### Community 406 - "CRM redesign verification register — 2026-11-07"
-Cohesion: 0.33
-Nodes (5): Branch and PR, CRM redesign verification register — 2026-11-07, Design direction, Remaining gates, Verification completed
+Cohesion: 0.40
+Nodes (4): Branch and PR, CRM redesign verification register — 2026-11-07, Design direction, Remaining gates
 
 ### Community 407 - "2.6 Performance & Load Benchmarking (k6 & PostgreSQL EXPLAIN ANALYZE)"
 Cohesion: 0.50
@@ -2003,7 +1958,7 @@ Nodes (6): 1.1 The Deterministic 0-Token AST Extraction, 1.2 Identified Architec
 
 ### Community 409 - "Implementation review — 2026-11-06"
 Cohesion: 0.33
-Nodes (6): 2026-11-07 recovery branch update, 2026-11-07 verification update, Implementation review — 2026-11-06, Remaining gates, Review outcome: draft, functional verification incomplete, Verification
+Nodes (6): 2026-11-07 recovery branch update, 2026-11-07 screenshot correction, Implementation review — 2026-11-06, Remaining gates, Review outcome: draft, functional verification incomplete, Verification
 
 ### Community 410 - "1.4 Branded Dark Luxury `/admin/login` Security Hardening & UX"
 Cohesion: 0.40
@@ -2018,8 +1973,8 @@ Cohesion: 0.50
 Nodes (3): Deploy on Vercel, Getting Started, Learn More
 
 ### Community 413 - "workloadActions.ts"
-Cohesion: 0.13
-Nodes (18): Observation 3: Workload Oversight Telemetry Scope for Unassigned Leads, 1. Executive Summary, 2. Comprehensive Phase 9 Scope Breakdown, 3. Automated Verification Matrix, Phase 9 Milestone: Task Management, Follow-up Scheduler & Overdue Escalations, Sprint 9.2: Overdue Escalation Engine, Visual Alert Badges & Rep Workload Oversight, authenticateManagerCaller(), batchReassignOverdueLeadsAction() (+10 more)
+Cohesion: 0.05
+Nodes (56): 4. Pipeline Lead Reassignment Modal (`BatchReassignModal.tsx`, `BatchReassignModal.module.scss`), Observation 3: Workload Oversight Telemetry Scope for Unassigned Leads, 1. Executive Summary, 2. Comprehensive Phase 9 Scope Breakdown, 3. Automated Verification Matrix, Phase 9 Milestone: Task Management, Follow-up Scheduler & Overdue Escalations, Sprint 9.2: Overdue Escalation Engine, Visual Alert Badges & Rep Workload Oversight, 1. Tiered Overdue Escalation Engine (`badgeUtils.ts` & `OverdueBadge.tsx`) (+48 more)
 
 ### Community 414 - "🏛️ Sprint 8.2: Omnichannel Activity Timeline & Quick Action Interaction Composer"
 Cohesion: 0.40
@@ -2029,49 +1984,17 @@ Nodes (4): 1. Executive Milestone Summary, 3. Automated 4-Block Delivery Gate Ve
 Cohesion: 0.40
 Nodes (4): 1. Executive Milestone Summary, 3. Automated 4-Block Delivery Gate Verification (`scripts/verify-sprint-9-1.ts`), 4. Zero AI-Slop & Anti-Pattern Compliance, 🏛️ Sprint 9.1: Precision Follow-up Date-Time Scheduler & On Hold Revisit Automation
 
-### Community 416 - "eslint.config.mjs"
-Cohesion: 0.33
-Nodes (5): eslintConfig, eslint@^9, eslint-config-next@16.1.6, eslint, eslint-config-next
-
-### Community 417 - "submit-application/route.ts"
-Cohesion: 0.47
-Nodes (5): ALLOWED_EXTENSIONS, checkRateLimit(), getClientIp(), POST(), rateLimitMap
-
-### Community 418 - "ServicesAccordion.tsx"
-Cohesion: 0.53
-Nodes (3): B2B_SERVICES, B2C_SERVICES, ServiceCategory
-
-### Community 419 - "4. Work"
-Cohesion: 0.40
-Nodes (5): 4. Work, `work.clients`, `work.journal`, `work.journal.topic.<category>`, `work.overview`
-
 ### Community 420 - "14. Task Management, Follow-up Scheduler & Overdue Escalations"
 Cohesion: 0.40
 Nodes (5): 14. Task Management, Follow-up Scheduler & Overdue Escalations, 4.1 Scheduled Follow-up Calendar & Date-Time Picker, 4.2 `On Hold` Status Protocol with Mandatory `revisit_date`, 4.3 Overdue Escalation Engine & Priority Routing, Sales Representative Workload Balancing View
 
-### Community 421 - "Key Deliverables & Systems Implemented"
-Cohesion: 0.20
-Nodes (9): 1. Tiered Overdue Escalation Engine (`badgeUtils.ts` & `OverdueBadge.tsx`), 2. Commercial Representative Workload Oversight (`ManagerWorkloadCard.tsx`), 3. Guarded Batch Lead Reassignment Dialog (`BatchReassignModal.tsx`), 4-Block Delivery Gate Report, 4. Next.js 16 Server Actions & Audit Ledger (`workloadActions.ts`), 5. Seamless Workspace Integration, Key Deliverables & Systems Implemented, Overview & Architectural Context (+1 more)
-
-### Community 423 - "1. Executive Overview & Strategic Business Objectives"
-Cohesion: 0.40
-Nodes (5): 1.1 The Agency Problem Statement: The Cost of Fragmented Pipelines, 1.2 The Core Value Proposition: A Dedicated In-House Agency CRM, 1.3 Key Architectural Pillars for the Enterprise MVP, 1.4 MVP vs Post-MVP Scope Boundaries, 1. Executive Overview & Strategic Business Objectives
-
-### Community 424 - "client_redesign_160over90/pr_body.md"
+### Community 421 - "pr_sprint_9_2_body.md"
 Cohesion: 0.50
-Nodes (3): Authorship & Review Policy, Executive Summary & Architectural Overview, Quantitative Verification Ledger
+Nodes (3): 4-Block Delivery Gate Report, Overview & Architectural Context, Test Verification Summary
 
-### Community 425 - "Architectural Overview & Summary"
-Cohesion: 0.50
-Nodes (3): Architectural Overview & Summary, Automated Testing & Delivery Gate, Core Deliverables
-
-### Community 426 - "5. React 19 `<Suspense>` Streaming Integration (`page.tsx`)"
-Cohesion: 0.67
-Nodes (3): 5.1 Component Topology, 5.2 Benefits of Partitioned Streaming, 5. React 19 `<Suspense>` Streaming Integration (`page.tsx`)
-
-### Community 427 - "6. Complete SCSS Design Blueprints"
-Cohesion: 0.67
-Nodes (3): 6.1 `FilterActionBar.module.scss`, 6.2 `LeadsTableSkeleton.module.scss`, 6. Complete SCSS Design Blueprints
+### Community 424 - "Key Architectural Deliverables"
+Cohesion: 0.25
+Nodes (7): 1. Vector Logo Contrast Engine (`MarcaUbiLogo.tsx` & `useHeaderTheme`), 2. 100% Eradication of AI-Slop Pills, Badges & Radar Dots, 3. Authentic Kerala Studio Corridors (Zero Synthetic International Hubs), Authorship & Review Policy, Executive Summary & Architectural Overview, Key Architectural Deliverables, Quantitative Verification Ledger
 
 ### Community 430 - "2026-11-06_12-00-00.md"
 Cohesion: 0.20
@@ -2079,23 +2002,23 @@ Nodes (5): CRM Commercial Desk Redesign — Delivery Register, Outstanding verif
 
 ## Knowledge Gaps
 - **19 isolated node(s):** `RFC-3966`, `RFC-3966`, `RFC-3966`, `RFC-3966`, `RFC-5545` (+14 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3637 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **31 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3638 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `react` connect `schedulerActions.ts` to `LeadDossierWorkspaceClient.tsx`, `4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `crm.ts`, `collect.ts`, `shouldUseMobileMotion`, `Badges/index.ts`, `ChatPod.tsx`, `CrmUserRole`, `chatpod-ingest-payload-parity.test.ts`, `AdminWorkspaceShell.tsx`, `LeadsWorkspaceClient.tsx`, `Services & Interactive Accordions`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `Editorial & Blog Architecture`, `formatCrmCurrency`, `blog/[slug]/page.tsx`, `chat-pod/types.ts`, `context.ts`, `Dashboard/index.ts`, `components/PortableTextRenderer.tsx`, `career-queries.ts`, `ServicesAccordion.tsx`, `tasks/page.tsx`, `collect.ts`, `AboutSection.tsx`, `kpi/KpiRibbon.tsx`, `ClientHeader.tsx`, `createClient`, `Database Schema & Security Layer`, `useIntakeFlow.ts`, `ClientHomeExperience.tsx`, `CrmUserRole`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `WorksCutout`, `admin/layout.tsx`, `overlayScrollLock.ts`, `getAdminClient`, `ReelCutout`, `app/page.tsx`, `Key Architectural Implementations`, `contact/page.tsx`, `BlogListingClient.tsx`, `SlotId`, `team.ts`, `WorksWorkspaceClient.tsx`, `FilterActionBar.tsx`, `Minimalist Clean Aesthetic & Clutter Eradication PRD`, `Subsystem 95: src_app_components_initialloader_initialloader`, `StatementCurtain`, `Full Engineering Context Register — 2026-10-30 14:19:25 IST`, `(workspace)/page.tsx`, `ConnectCutout`, `kpi/index.ts`, `AdminBreadcrumbs.tsx`?**
-  _High betweenness centrality (0.178) - this node is a cross-community bridge._
+- **Why does `react` connect `react` to `DossierDrawer/index.ts`, `ClientHomeExperience.tsx`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `collect.ts`, `lead-schemas.ts`, `ChatPod.tsx`, `CrmUserRole`, `chatpod-ingest-payload-parity.test.ts`, `AdminWorkspaceShell.tsx`, `LeadsDataGrid.tsx`, `Services & Interactive Accordions`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `Editorial & Blog Architecture`, `LeadDossierWorkspaceClient.tsx`, `blog/[slug]/page.tsx`, `LeadsWorkspaceClient.tsx`, `app/layout.tsx`, `context.ts`, `Dashboard/index.ts`, `workloadActions.ts`, `timeframeUtils.ts`, `next`, `tasks/page.tsx`, `kpi/KpiRibbon.tsx`, `slots.ts`, `NavigationOverlay.tsx`, `Database Schema & Security Layer`, `dossierUtils.ts`, `useIntakeFlow.ts`, `RevenueDynamicsCard`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `admin/layout.tsx`, `scheduler-schemas.ts`, `overlayScrollLock.ts`, `avatarActions.ts`, `app/page.tsx`, `contact/page.tsx`, `blog.ts`, `AdminBreadcrumbs.tsx`, `WorksWorkspaceClient.tsx`, `FilterActionBar.tsx`, `Subsystem 95: src_app_components_initialloader_initialloader`, `FollowUpScheduler.tsx`, `DealsWorkspaceClient.tsx`, `(workspace)/page.tsx`, `RoutePlaceholder.tsx`, `ActivityRowItem.tsx`?**
+  _High betweenness centrality (0.179) - this node is a cross-community bridge._
 - **What connects `RFC-3966`, `RFC-3966`, `RFC-3966` to the rest of the system?**
   _19 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `LeadDossierWorkspaceClient.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.05979843225083987 - nodes in this community are weakly interconnected._
-- **Why does `next` connect `collect.ts` to `LeadDossierWorkspaceClient.tsx`, `4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `crm.ts`, `collect.ts`, `shouldUseMobileMotion`, `ChatPod.tsx`, `CrmUserRole`, `chatpod-ingest-payload-parity.test.ts`, `AdminWorkspaceShell.tsx`, `LeadsWorkspaceClient.tsx`, `Services & Interactive Accordions`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `Editorial & Blog Architecture`, `formatCrmCurrency`, `blog/[slug]/page.tsx`, `chat-pod/types.ts`, `auth.ts`, `Dashboard/index.ts`, `components/PortableTextRenderer.tsx`, `workloadActions.ts`, `career-queries.ts`, `services/[slug]/page.tsx`, `submit-application/route.ts`, `ServicesAccordion.tsx`, `tasks/page.tsx`, `AboutSection.tsx`, `kpi/KpiRibbon.tsx`, `ClientHeader.tsx`, `createClient`, `Database Schema & Security Layer`, `lib/client.ts`, `ClientHomeExperience.tsx`, `CrmUserRole`, `kpis/route.ts`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `Database Schema & Security Layer`, `admin/layout.tsx`, `WorksCutout`, `overlayScrollLock.ts`, `getAdminClient`, `ReelCutout`, `app/page.tsx`, `Key Architectural Implementations`, `contact/page.tsx`, `BlogListingClient.tsx`, `SlotId`, `team.ts`, `WorksWorkspaceClient.tsx`, `2.2 Purified Server Action Modules in `src/app/actions/``, `ConnectCutout`, `(workspace)/page.tsx`, `kpi/index.ts`, `AdminBreadcrumbs.tsx`?**
-  _High betweenness centrality (0.148) - this node is a cross-community bridge._
-- **Should `4. Complete 11-View Alternating Homepage Stream with Dynamic Sanity Pipelines` be split into smaller, more focused modules?**
-  _Cohesion score 0.1038961038961039 - nodes in this community are weakly interconnected._
-- **Why does `ClientHeader()` connect `ClientHeader` to `1. Motion spec`, `00 — Chat Pod Master Plan`, `collect.ts`, `AdminWorkspaceShell.tsx`, `Register — 2026-11-04 10:20 IST — Chat Pod Part D, pass 4/5: a third auditor, on the commits`, `blog/[slug]/page.tsx`, `career-queries.ts`, `components/PortableTextRenderer.tsx`, `services/[slug]/page.tsx`, `ClientHeader.tsx`, `ClientHomeExperience.tsx`, `Master PRD & UI/UX Design Architecture: Contact Page (`/contact`)`, `2. Component Architecture & Blueprint Specifications`, `1. Deep Technical Audit by Criteria`, `overlayScrollLock.ts`, `4. 5-Phase Implementation Strategy`, `Master Remediation & Full-Content Integration Plan: 160over90 Architecture`, `contact/page.tsx`, `app/page.tsx`, `Dedicated Works Showcase: 3D Stacking Card Scroll Experience PRD`, `Master Implementation Plan: 3-Line Rounded Pill Hamburger Icon`, `Minimalist Clean Aesthetic & Clutter Eradication PRD`, `Full Engineering Context Register — 2026-10-30 14:19:25 IST`?**
-  _High betweenness centrality (0.052) - this node is a cross-community bridge._
+- **Should `DossierDrawer/index.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.11261261261261261 - nodes in this community are weakly interconnected._
+- **Why does `next` connect `next` to `ClientHomeExperience.tsx`, `Sales Intelligence & CRM Engine`, `leads/page.tsx`, `crm.ts`, `collect.ts`, `react`, `ChatPod.tsx`, `CrmUserRole`, `chatpod-ingest-payload-parity.test.ts`, `AdminWorkspaceShell.tsx`, `LeadsDataGrid.tsx`, `Services & Interactive Accordions`, `leads.ts`, `PersonnelProfileWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `Editorial & Blog Architecture`, `LeadDossierWorkspaceClient.tsx`, `blog/[slug]/page.tsx`, `LeadsWorkspaceClient.tsx`, `app/layout.tsx`, `auth.ts`, `Dashboard/index.ts`, `workloadActions.ts`, `indexnow/route.ts`, `services/[slug]/page.tsx`, `timeframeUtils.ts`, `tasks/page.tsx`, `kpi/KpiRibbon.tsx`, `slots.ts`, `NavigationOverlay.tsx`, `Database Schema & Security Layer`, `reset-password/page.tsx`, `Editorial & Blog Architecture`, `ClientHeader`, `Database Schema & Security Layer`, `admin/layout.tsx`, `scheduler-schemas.ts`, `overlayScrollLock.ts`, `avatarActions.ts`, `app/page.tsx`, `contact/page.tsx`, `blog.ts`, `SlotId`, `team.ts`, `AdminBreadcrumbs.tsx`, `WorksWorkspaceClient.tsx`, `DealsWorkspaceClient.tsx`, `(workspace)/page.tsx`, `RoutePlaceholder.tsx`?**
+  _High betweenness centrality (0.128) - this node is a cross-community bridge._
+- **Should `ClientHomeExperience.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.043029259896729774 - nodes in this community are weakly interconnected._
+- **Why does `CompanyProfileModal()` connect `CompanyProfileModal` to `overlayScrollLock.ts`, `react`, `Sprint 5.2: Client Form Bindings (`/start-project` & Modal), Deduplication & Alerts`, `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform`, `Editorial & Blog Architecture`?**
+  _High betweenness centrality (0.051) - this node is a cross-community bridge._
 - **Should `Sales Intelligence & CRM Engine` be split into smaller, more focused modules?**
-  _Cohesion score 0.083710407239819 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07720782654680064 - nodes in this community are weakly interconnected._
