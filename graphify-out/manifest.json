@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794024507.2792726,
-    "seen": 1794024624.7407427,
-    "ast_hash": "db2cb9bb8c275af74f75aeea52429076",
+    "mtime": 1794029377.1348774,
+    "seen": 1794029432.4505937,
+    "ast_hash": "b2d6d87e95549fcd1973d8478e3d404d",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5406,9 +5406,9 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/IMPLEMENTATION_REVIEW.md": {
-    "mtime": 1793954243.0676086,
-    "seen": 1793954296.1016152,
-    "ast_hash": "510c1a58afd294fe2902049d1ead6db9",
+    "mtime": 1794029408.8964503,
+    "seen": 1794029432.4505937,
+    "ast_hash": "ef235b865aab80c6b1275a13afe5d845",
     "semantic_hash": ""
   },
   "supabase/migrations/20261106000001_complete_follow_up_atomically.sql": {
@@ -5463,6 +5463,12 @@
     "mtime": 1794024530.6727397,
     "seen": 1794024624.7407427,
     "ast_hash": "3d186e95ffe816fbe5a55267397fba89",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-07_11-00-00.md": {
+    "mtime": 1794029366.9433012,
+    "seen": 1794029432.4505937,
+    "ast_hash": "20431f06f48cd6c4ba4e8d6a807cb2ad",
     "semantic_hash": ""
   },
   "package-lock.json": {

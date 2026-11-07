@@ -2,6 +2,16 @@
 
 ## Review outcome: draft, functional verification incomplete
 
+## 2026-11-07 verification update
+
+- `npm run dev` started with Next 16.1.6 webpack. `/admin/login` returned HTTP 200; `/admin`, leads, deals, tasks, team, analytics, ingestion, and settings redirected unauthenticated access to `/admin/login?next=...`. Chromium reported no page or console errors. The protected destinations were not authenticated, so this is not the required route-by-route interaction pass.
+- No Turbopack CSS Module purity error occurred during local webpack compilation or the production build.
+- `npx tsc --noEmit --incremental false --pretty false` passed with `NODE_OPTIONS=--max-old-space-size=3072`.
+- `npm run build` passed on Next.js 16.1.6. Turbopack emitted Sass deprecation warnings from existing public-site styles.
+- Repository lint failed with 40 errors and 99 warnings across the wider codebase. Linting `src/app/admin` reports 29 errors and 11 warnings. Linting the CRM changed TypeScript files reports zero errors and four warnings: missing `validBuckets` effect dependency and unused `_convertedId` in `LeadsWorkspaceClient.tsx`, plus unused `ProfileAccountStatus` and `Profile` imports in `CommercialDirectoryTable.tsx`.
+- Full authenticated browser verification and the transaction/concurrency test remain gated because this environment has no explicit CRM E2E credentials or isolated local database. Do not use the hosted CRM database for fixture-mutating verification.
+- GitHub reports PR #114 OPEN, DRAFT, MERGEABLE, targeting `remediation/admin-crm-data-integrity-audit-hardening`. Keep both stacked PRs open pending human review.
+
 The Commercial Desk visual redesign now covers the login and password-reset pages, responsive workspace shell, Command Center, analytics, leads, deals, follow-ups, works, team, inbound inquiries, and settings. It replaces the previous token-only treatment with distinct page structures, queue-focused operations layouts, full-digit INR, responsive navigation, and explicit data states. Existing role checks and server-action boundaries were retained during the redesign.
 
 The screenshot-specific Follow-ups data failure still needs a reproducible authenticated isolated runtime. The UI reports query failure with a retry path and correlation reference, but that does not establish the underlying database/query cause.
@@ -10,7 +20,7 @@ The screenshot-specific Follow-ups data failure still needs a reproducible authe
 
 - `npm run test:unit`: 1,306 passed, 0 failed.
 - `npx tsc --noEmit --incremental false --pretty false`: passed on the current implementation after query-builder, error type, priority, and E2E credential fixes.
-- Changed-file TypeScript/TSX ESLint: passed with `--max-warnings=0`.
+- Changed-file TypeScript/TSX ESLint: zero errors; the 2026-11-07 review identified four warnings detailed below.
 - `npm run test:boundaries`: passed (13 Server Action modules, 49 actions).
 - Vercel production preview for latest commit `14192fd`: passed. The preceding deployment exposed a CSS Modules selector issue that is now fixed.
 - `git diff --check`: passed, with expected Windows line-ending normalization warnings.
