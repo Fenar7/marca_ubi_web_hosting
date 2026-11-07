@@ -158,6 +158,24 @@
   color: var(--admin-status-rose-text, #9c001e);
 }
 
+.loadWarning {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--admin-border-default, #dedede);
+  border-left: 3px solid var(--admin-text-secondary, #444);
+  color: var(--admin-text-primary, #111);
+  background: var(--admin-surface-muted, #f3f3f1);
+  line-height: 1.5;
+}
+
+.retryLink {
+  width: fit-content;
+  color: var(--admin-accent-brand, #a5001d);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  &:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+}
+
 @media (max-width: 720px) {
   .header { align-items: stretch; }
   .headerRight { width: auto; }
@@ -595,4 +613,133 @@
   @media (max-width: 767px) {
     width: 100%;
   }
+}
+
+.inboxWorkspace {
+  display: grid;
+  gap: 1.1rem;
+  min-width: 0;
+}
+
+.inboxOverview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 1.5rem;
+  padding: 1.25rem 1.4rem;
+  border-top: 2px solid var(--admin-text-primary, #111);
+  border-bottom: 1px solid var(--admin-border-default, #dedede);
+  background: var(--admin-card-bg, #fff);
+}
+
+.inboxOverviewCopy { min-width: 0; }
+
+.inboxEyebrow {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--admin-accent-brand, #a5001d);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.inboxTitle,
+.inboxRecordsHeading h3 {
+  margin: 0;
+  color: var(--admin-text-primary, #111);
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.inboxDescription {
+  margin: 0.35rem 0 0;
+  color: var(--admin-text-secondary, #444);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.inboxCounts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(76px, auto));
+  margin: 0;
+  border-left: 1px solid var(--admin-border-default, #dedede);
+}
+
+.inboxCounts > div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 86px;
+  padding: 0.15rem 0.9rem;
+  border-right: 1px solid var(--admin-border-default, #dedede);
+}
+
+.inboxCounts dt {
+  color: var(--admin-text-secondary, #444);
+  font-size: 0.72rem;
+}
+
+.inboxCounts dd {
+  margin: 0;
+  color: var(--admin-text-primary, #111);
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.inboxControls {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.inboxControlsHeading,
+.inboxRecordsHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.inboxControlsHeading h3,
+.inboxRecordsHeading h3 {
+  margin: 0;
+  color: var(--admin-text-primary, #111);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.inboxControlsHeading span,
+.loadedRecordCount {
+  color: var(--admin-text-secondary, #444);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.inboxRecords {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+  padding-top: 0.25rem;
+}
+
+.inboxRecordsHeading {
+  align-items: center;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--admin-border-default, #dedede);
+}
+
+.inboxRecordsHeading .inboxEyebrow { margin-bottom: 0.2rem; }
+
+@media (max-width: 760px) {
+  .inboxOverview { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
+  .inboxCounts { grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--admin-border-default, #dedede); border-left: 0; padding-top: 0.7rem; }
+  .inboxCounts > div { min-width: 0; padding: 0.15rem 0.6rem; }
+  .inboxCounts > div:first-child { padding-left: 0; }
+}
+
+@media (max-width: 480px) {
+  .inboxControlsHeading,
+  .inboxRecordsHeading { align-items: flex-start; flex-direction: column; gap: 0.3rem; }
 }

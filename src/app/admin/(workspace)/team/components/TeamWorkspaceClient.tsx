@@ -242,44 +242,48 @@ export function TeamWorkspaceClient({
   };
 
   return (
-    <>
-      {/* PrimeStay Underlined Category Tabs & Action Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+    <section className={styles.directoryWorkspace} aria-label="Team directory">
+      <div className={styles.directoryControls}>
+        <div className={styles.directoryControlsTop}>
+          <div>
+            <span className={styles.directoryEyebrow}>People and access</span>
+            <h2 className={styles.directoryTitle}>Directory</h2>
+          </div>
+          {isAdmin && (
+            <button
+              type="button"
+              className={styles.primaryActionButton}
+              onClick={() => window.dispatchEvent(new CustomEvent('open-add-member-drawer'))}
+              aria-label="Open add team member drawer"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Add Member</span>
+            </button>
+          )}
+        </div>
+
+        <div className={styles.directoryTabs}>
         <CategoryUnderlineTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
           counts={tabCounts}
         />
-
-        {isAdmin && (
-          <button
-            type="button"
-            className={styles.primaryActionButton}
-            onClick={() => window.dispatchEvent(new CustomEvent('open-add-member-drawer'))}
-            aria-label="Open add team member drawer"
-            style={{ marginBottom: '1.5rem' }}
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span>Add Member</span>
-          </button>
-        )}
+        </div>
       </div>
 
       {/* Filter and View Mode Toolbar */}
-      <FilterControlToolbar
+      <div className={styles.directoryFilterRegion}>
+        <div className={styles.directoryResultsHeading}>
+          <div>
+            <h3>{activeTab === 'all' ? 'All team members' : activeTab === 'leadership' ? 'Leadership' : activeTab === 'sales' ? 'Sales team' : 'Suspended accounts'}</h3>
+            <p>Search the directory, narrow by access or status, then open a profile to review its permissions and activity.</p>
+          </div>
+          <span>{filteredRoster.length} of {roster.length} shown</span>
+        </div>
+        <FilterControlToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedRole={selectedRole}
@@ -288,7 +292,8 @@ export function TeamWorkspaceClient({
         onStatusChange={setSelectedStatus}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-      />
+        />
+      </div>
 
       {/* Toast Notification Banner */}
       {toastNotice && (
@@ -302,6 +307,7 @@ export function TeamWorkspaceClient({
       )}
 
       {/* Main Roster Enclave: 4-Column Card Grid vs. Compact Table */}
+      <div className={styles.directoryRecords}>
       {viewMode === 'grid' ? (
         <PersonnelCardGrid
           members={filteredRoster}
@@ -321,6 +327,7 @@ export function TeamWorkspaceClient({
           currentUserId={currentUserId}
         />
       )}
+      </div>
 
       {/* Modal 1: Profile Photo Upload, Crop & Delete Modal */}
       {avatarTarget && (
@@ -363,6 +370,6 @@ export function TeamWorkspaceClient({
           onSuccess={handleSuspendSuccess}
         />
       )}
-    </>
+    </section>
   );
 }

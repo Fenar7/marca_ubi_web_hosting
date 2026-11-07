@@ -152,27 +152,30 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
   });
 
   describe('4. Navigation Taxonomy & Anti-Slop Cleansing', () => {
-    it('confirms "Command Center" is purged and replaced with "Executive Overview"', () => {
-      const commercialGroup = NAVIGATION_GROUPS.find((g) => g.groupTitle === 'Commercial');
-      assert.ok(commercialGroup, 'Commercial Pipeline group must exist');
+    it('keeps the overview in the task-first Today group', () => {
+      const todayGroup = NAVIGATION_GROUPS.find((g) => g.groupTitle === 'Today');
+      assert.ok(todayGroup, 'Today group must exist');
 
-      const overviewItem = commercialGroup?.items.find((i) => i.key === 'command_center');
+      const overviewItem = todayGroup?.items.find((i) => i.key === 'command_center');
       assert.ok(overviewItem, 'command_center item must exist');
       assert.strictEqual(overviewItem?.label, 'Executive Overview');
       assert.strictEqual(overviewItem?.label.includes('Command Center'), false);
     });
 
-    it('verifies all 9 navigation tabs exist across the canonical groups', () => {
+    it('groups the nine existing navigation tabs by task without changing authorization keys', () => {
+      assert.deepStrictEqual(NAVIGATION_GROUPS.map((group) => group.groupTitle), [
+        'Today', 'Pipeline', 'Delivery', 'Insight', 'Workspace',
+      ]);
       const allKeys = NAVIGATION_GROUPS.flatMap((g) => g.items.map((i) => i.key));
       assert.deepStrictEqual(allKeys, [
         'command_center',
+        'tasks',
         'leads',
         'deals',
         'works',
-        'tasks',
-        'users',
         'analytics',
         'ingestion',
+        'users',
         'settings',
       ]);
     });

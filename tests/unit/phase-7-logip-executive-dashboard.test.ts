@@ -21,8 +21,9 @@ describe('Commercial Desk overview contracts', () => {
       assert.ok(page.includes(`<${component}`), `${component} should be mounted`);
     }
     assert.ok(pageStyles.includes('.fluidCanvas'));
-    assert.ok(pageStyles.includes('.bottomSection'));
-    assert.ok(pageStyles.includes('@media (max-width: 1100px)'));
+    assert.ok(pageStyles.includes('.analysisSection'));
+    assert.ok(pageStyles.includes('.operationsSection'));
+    assert.ok(pageStyles.includes('@media (max-width: 1250px)'));
   });
 
   it('keeps KPI labels tied to full digit currency and exact conversion cohort counts', () => {

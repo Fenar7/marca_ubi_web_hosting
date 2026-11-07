@@ -2,10 +2,9 @@
 
 /**
  * @file AdminSidebar.tsx
- * @description Persistent Desktop Navigation Rail for the Marca Ubi CRM Workspace Shell.
- * @architecture Implements the Linear Fluid Card navigation paradigm with collapsible geometry (260px / 72px),
- *               active route matching, dynamic tab-level RBAC gating, live dynamic task counters,
- *               and authentic authenticated session telemetry.
+ * @description Persistent grouped navigation for the Marca Ubi Commercial Desk.
+ * @architecture Keeps route discovery separate from the horizontal context rail while preserving
+ *               server-aligned tab visibility and a narrow icon mode for dense workspaces.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -48,26 +47,27 @@ export function AdminSidebar({
   return (
     <aside
       className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}
-      aria-label="Administrative Navigation Rail"
+      aria-label="Commercial Desk navigation"
     >
       {/* Brand Header */}
       <div className={styles.brandContainer}>
-        <Link href="/admin" className={styles.logoLink} title="Marca Ubi CRM Executive Overview">
+        <Link href="/admin" className={styles.logoLink} title="Marca Ubi Commercial Desk overview">
           <Image
             src="/images/marca-ubi-dark.svg"
             alt="Marca Ubi."
-            width={150}
+            width={158}
             height={34}
             className={styles.brandLogo}
           />
           <span className={styles.brandMonogram} aria-hidden="true">M<span>.</span></span>
+          <span className={styles.brandDescriptor}>COMMERCIAL DESK</span>
         </Link>
         <button
           type="button"
           onClick={onToggleCollapse}
           className={styles.collapseToggle}
-          title={isCollapsed ? 'Expand navigation rail (Ctrl+B)' : 'Collapse navigation rail (Ctrl+B)'}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={isCollapsed ? 'Expand navigation (Ctrl+B)' : 'Collapse navigation (Ctrl+B)'}
+          aria-label={isCollapsed ? 'Expand navigation' : 'Collapse navigation'}
           aria-expanded={!isCollapsed}
         >
           <svg
@@ -91,7 +91,7 @@ export function AdminSidebar({
       </div>
 
       {/* Navigation Groups with Dynamic Tab Authorization */}
-      <nav className={styles.navScrollArea}>
+      <nav className={styles.navScrollArea} aria-label="Workspace sections">
         {NAVIGATION_GROUPS.map((group) => {
           const authorizedItems = group.items.filter((item) =>
             isTabAuthorized(item.key, currentUser)
@@ -100,7 +100,7 @@ export function AdminSidebar({
           if (authorizedItems.length === 0) return null;
 
           return (
-            <div key={group.groupTitle} className={styles.navGroup}>
+            <section key={group.groupTitle} className={styles.navGroup} aria-label={group.groupTitle}>
               <div className={styles.groupHeading}>{group.groupTitle}</div>
               <ul className={styles.navList}>
                 {authorizedItems.map((item) => {
@@ -118,7 +118,8 @@ export function AdminSidebar({
                       <Link
                         href={item.href}
                         className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                        title={isCollapsed ? item.label : undefined}
+                        title={isCollapsed ? `${group.groupTitle}: ${item.label}` : undefined}
+                        aria-label={isCollapsed ? `${group.groupTitle}: ${item.label}` : undefined}
                         aria-current={active ? 'page' : undefined}
                       >
                         <div className={styles.iconWrapper}>
@@ -138,7 +139,7 @@ export function AdminSidebar({
                   );
                 })}
               </ul>
-            </div>
+            </section>
           );
         })}
       </nav>

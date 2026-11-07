@@ -507,37 +507,41 @@ export default async function AdminDashboardPage(
       <main className={styles.fluidCanvas}>
         <ExecutiveMasthead selectedTimeframe={bounds.label} exportData={exportData} />
         <ExecutiveKpiGrid kpis={executiveKpis} cadenceLabel={bounds.cadenceLabel} metricStatus={{ pipeline: pipelineAvailable ? 'ready' : 'unavailable', revenue: revenueAvailable ? 'ready' : 'unavailable', cohort: cohortAvailable ? 'ready' : 'unavailable' }} />
-        <AttentionQueue
-          items={(attentionRows ?? []).filter((lead) => {
-            const stage = statusById.get(lead.status_id);
-            return stage?.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
-          }).slice(0, 6).map((lead): AttentionQueueItem => ({
-            id: lead.id,
-            leadId: lead.lead_id,
-            name: lead.name,
-            company: lead.company,
-            stage: statusById.get(lead.status_id)?.name ?? 'Unknown stage',
-            priority: lead.priority as AttentionQueueItem['priority'],
-            expectedValue: amountOf(lead.expected_value ?? 0),
-            nextFollowUp: lead.next_follow_up,
-          }))}
-          overdueCount={pipelineAvailable ? overdueCount : null}
-          dueTodayCount={pipelineAvailable ? dueTodayCount : null}
-          dataStatus={attentionError ? 'unavailable' : 'ready'}
-        />
-        <PipelineAllocationCard
-          totalValuation={pipelineAvailable ? pipelineValue : null}
-          stages={dynamicStages}
-          dataStatus={stageStatus}
-        />
-        <section className={styles.bottomSection} aria-label="Recent work and conversion trend">
+        <section className={styles.analysisSection} aria-label="Performance and pipeline stage health">
           <RevenueDynamicsCard
             dataPoints={revenueSplinePoints}
             timeframe={bounds.label}
             dataStatus={revenueStatus}
             conversionCount={currentRevenueCount}
           />
-          <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
+          <PipelineAllocationCard
+            totalValuation={pipelineAvailable ? pipelineValue : null}
+            stages={dynamicStages}
+            dataStatus={stageStatus}
+          />
+        </section>
+        <section className={styles.operationsSection} aria-label="Priority work and active deals">
+          <AttentionQueue
+            items={(attentionRows ?? []).filter((lead) => {
+              const stage = statusById.get(lead.status_id);
+              return stage?.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
+            }).slice(0, 6).map((lead): AttentionQueueItem => ({
+              id: lead.id,
+              leadId: lead.lead_id,
+              name: lead.name,
+              company: lead.company,
+              stage: statusById.get(lead.status_id)?.name ?? 'Unknown stage',
+              priority: lead.priority as AttentionQueueItem['priority'],
+              expectedValue: amountOf(lead.expected_value ?? 0),
+              nextFollowUp: lead.next_follow_up,
+            }))}
+            overdueCount={pipelineAvailable ? overdueCount : null}
+            dueTodayCount={pipelineAvailable ? dueTodayCount : null}
+            dataStatus={attentionError ? 'unavailable' : 'ready'}
+          />
+          <section className={styles.dealsSection} aria-label="Recent active deals">
+            <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
+          </section>
         </section>
       </main>
     </div>

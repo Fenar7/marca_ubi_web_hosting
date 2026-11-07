@@ -8,6 +8,7 @@
  */
 
 import React, { Suspense } from 'react';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
@@ -91,9 +92,7 @@ export default async function AdminDealsPage(
         id, lead_id, name, company, phone, email, expected_value, priority,
         next_follow_up, revisit_date, created_at, updated_at, assigned_to,
         status_id, lead_source_id, brief_payload,
-        assigned_profile:crm_team_directory!leads_assigned_to_fkey(id, full_name, role),
-        funnel_status:funnel_statuses!leads_status_id_fkey!inner(id, name, sort_order, bucket, color_code),
-        lead_source:lead_sources!leads_lead_source_id_fkey(id, name)
+        funnel_status:funnel_statuses!leads_status_id_fkey!inner(id, name, sort_order, bucket, color_code)
       `, { count: 'exact' });
   if (!invalidFilter) {
     if (stage) dealsQuery = dealsQuery.eq('status_id', stage);
@@ -104,27 +103,30 @@ export default async function AdminDealsPage(
     if (search.filter) dealsQuery = dealsQuery.or(search.filter);
   }
 
-  const [sourcesRes, statusesRes, dealsRes] = await Promise.all([
+  const [sourcesRes, statusesRes, profilesRes, dealsRes] = await Promise.all([
     supabase.from('lead_sources').select('id, name').order('name'),
     supabase.from('funnel_statuses').select('id, name, sort_order, bucket, color_code').order('sort_order'),
+    supabase.from('crm_team_directory').select('id, full_name').order('full_name'),
     dealsQuery
       .order('created_at', { ascending: false })
       .order('id', { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1),
   ]);
 
-  if (dealsRes.error) console.error('[deals-workspace] Failed to load deals:', dealsRes.error.message);
-  if (statusesRes.error) console.error('[deals-workspace] Failed to load stages:', statusesRes.error.message);
+  if (dealsRes.error) console.error('[deals-workspace] Failed to load deals:', { code: dealsRes.error.code, message: dealsRes.error.message });
+  if (statusesRes.error) console.error('[deals-workspace] Failed to load stages:', { code: statusesRes.error.code, message: statusesRes.error.message });
+  if (sourcesRes.error) console.error('[deals-workspace] Lead source filters unavailable:', { code: sourcesRes.error.code, message: sourcesRes.error.message });
+  if (profilesRes.error) console.error('[deals-workspace] Owner directory unavailable:', { code: profilesRes.error.code, message: profilesRes.error.message });
 
   const sources = sourcesRes.data || [];
   const statuses = statusesRes.data || [];
+  const ownerNameById = new Map((profilesRes.data || []).map((member) => [member.id, member.full_name]));
+  const sourceNameById = new Map((sourcesRes.data || []).map((source) => [source.id, source.name]));
 
   // Transform relational leads to typed deal records
   const deals: HydratedDealItem[] = ((dealsRes.data || []) as unknown[]).map((raw) => {
     const item = raw as Record<string, unknown>;
     const statusObj = item.funnel_status as { id: string; name: string; sort_order: number; bucket: string; color_code: string } | null;
-    const profileObj = item.assigned_profile as { id: string; full_name: string } | null;
-    const sourceObj = item.lead_source as { id: string; name: string } | null;
 
     return {
       id: item.id as string,
@@ -142,11 +144,15 @@ export default async function AdminDealsPage(
       assigned_to: (item.assigned_to as string) || null,
       status_id: (item.status_id as string) || '',
       lead_source_id: (item.lead_source_id as string) || '',
-      assigned_to_name: profileObj?.full_name || 'Unassigned',
+      assigned_to_name: item.assigned_to
+        ? ownerNameById.get(item.assigned_to as string) || (profilesRes.error ? 'Owner unavailable' : 'Inactive or unavailable owner')
+        : 'Unassigned',
       status_name: statusObj?.name || 'Open',
       status_bucket: (statusObj?.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open',
       status_color: statusObj?.color_code || '#1f242f',
-      source_name: sourceObj?.name || 'Direct Ingestion',
+      source_name: sourcesRes.error
+        ? 'Source unavailable'
+        : sourceNameById.get(item.lead_source_id as string) || 'Unknown source',
     };
   });
 
@@ -165,10 +171,15 @@ export default async function AdminDealsPage(
 
       {/* Main Deals Grid with Filter Controls */}
       <Suspense fallback={<LeadsTableSkeleton />}>
-        {invalidFilter || dealsRes.error || statusesRes.error || sourcesRes.error ? (
-          <div className={styles.loadError} role="alert">{invalidFilter ? 'A filter in this link is invalid. Open the deals page without filters to try again.' : 'Deals could not be loaded. Refresh the page to try again.'}</div>
+        {invalidFilter || dealsRes.error || statusesRes.error ? (
+          <div className={styles.loadError} role="alert">
+            <span>{invalidFilter ? 'A filter in this link is invalid. Open the deals page without filters to try again.' : dealsRes.error ? `Deal records could not be loaded${dealsRes.error.code ? ` (${dealsRes.error.code})` : ''}.` : `Pipeline stages could not be loaded${statusesRes.error?.code ? ` (${statusesRes.error.code})` : ''}.`}</span>
+            <Link href="/admin/deals" className={styles.retryLink}>Reload deals</Link>
+            <span>If the problem continues, contact support and include the error code shown above.</span>
+          </div>
         ) : (
           <>
+            {(sourcesRes.error || profilesRes.error) && <div className={styles.loadWarning} role="status">Deal records are available, but {sourcesRes.error && profilesRes.error ? 'source filters and owner names' : sourcesRes.error ? 'source filters' : 'owner names'} could not be loaded. Refresh to retry those details.</div>}
             {search.error ? <div className={styles.loadError} role="alert">{search.error}</div> : <ResultPagination page={page} pageSize={pageSize} loadedCount={deals.length} totalCount={dealsRes.count} />}
             <DealsWorkspaceClient initialDeals={search.error ? [] : deals} sources={sources} statuses={statuses} userRole={role} />
           </>

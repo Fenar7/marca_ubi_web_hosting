@@ -1,9 +1,7 @@
 {
-  "1": "Sales Intelligence & CRM Engine",
   "2": "Sales Intelligence & CRM Engine",
   "15": "Services & Interactive Accordions",
   "20": "Editorial & Blog Architecture",
-  "25": "Subsystem 25: src_app_chat_pod_engine_context",
   "30": "Sales Intelligence & CRM Engine",
   "33": "Subsystem 33: agents_skills_antislop_human_contrast_check",
   "34": "Editorial & Blog Architecture",
@@ -17,7 +15,6 @@
   "61": "Client Ingestion & Project Briefs",
   "62": "Subsystem 62: scripts_verify_sprint_7_2",
   "67": "Header Navigation & Liquid Glass Experience",
-  "72": "Database Schema & Security Layer",
   "74": "Subsystem 74: package_scripts",
   "80": "Subsystem 80: tests_unit_chatpod_contrast_test",
   "81": "Subsystem 81: scripts_verify_contrast_wcag",

@@ -1,8 +1,8 @@
 ﻿/**
  * @file navigationConfig.tsx
- * @description Canonical Navigation Architecture & RBAC Authorization Mapping for Marca Ubi CRM.
- * @architecture Defines the unified 9-tab navigation taxonomy organized into 3 logical enclaves:
- *               Commercial Pipeline, Agency Operations, and System Governance.
+ * @description Canonical task-oriented navigation and RBAC mapping for Marca Ubi Commercial Desk.
+ * @architecture Groups unchanged routes by the work users perform: daily triage, pipeline, delivery,
+ *               insight, and workspace administration.
  *               Enforces granular tab-level authorization gating based on authenticated user allowed_tabs
  *               and provides calibrated SVG icons adhering to the Accordion & Sypher minimal design tokens.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -59,11 +59,11 @@ export function isTabAuthorized(tabKey: CrmTabKey, user: CurrentUserSession | nu
 }
 
 /**
- * Canonical Navigation Groups structured by operational workflow.
+ * Routes retain their original tab keys so navigation organization cannot broaden permissions.
  */
 export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
-    groupTitle: 'Commercial',
+    groupTitle: 'Today',
     items: [
       {
         key: 'command_center',
@@ -85,68 +85,6 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
             <rect x="14" y="3" width="7" height="7" />
             <rect x="14" y="14" width="7" height="7" />
             <rect x="3" y="14" width="7" height="7" />
-          </svg>
-        ),
-      },
-      {
-        key: 'leads',
-        label: 'Inbound Leads',
-        href: '/admin/leads',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-          </svg>
-        ),
-      },
-      {
-        key: 'deals',
-        label: 'Pipeline Deals',
-        href: '/admin/deals',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
-        ),
-      },
-      {
-        key: 'works',
-        label: 'Client Works',
-        href: '/admin/works',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="2" />
           </svg>
         ),
       },
@@ -183,31 +121,50 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     ],
   },
   {
-    groupTitle: 'Operations',
+    groupTitle: 'Pipeline',
     items: [
       {
-        key: 'users',
-        label: 'User Management',
-        href: '/admin/team',
+        key: 'leads',
+        label: 'Inbound Leads',
+        href: '/admin/leads',
         icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? '2.2' : '1.8'} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
           </svg>
         ),
       },
+      {
+        key: 'deals',
+        label: 'Pipeline Deals',
+        href: '/admin/deals',
+        icon: ({ active }) => (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? '2.2' : '1.8'} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    groupTitle: 'Delivery',
+    items: [
+      {
+        key: 'works',
+        label: 'Client Works',
+        href: '/admin/works',
+        icon: ({ active }) => (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? '2.2' : '1.8'} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="2" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    groupTitle: 'Insight',
+    items: [
       {
         key: 'analytics',
         label: 'Executive Analytics',
@@ -254,8 +211,31 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     ],
   },
   {
-    groupTitle: 'System & Governance',
+    groupTitle: 'Workspace',
     items: [
+      {
+        key: 'users',
+        label: 'User Management',
+        href: '/admin/team',
+        icon: ({ active }) => (
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={active ? '2.2' : '1.8'}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        ),
+      },
       {
         key: 'settings',
         label: 'Security & Settings',

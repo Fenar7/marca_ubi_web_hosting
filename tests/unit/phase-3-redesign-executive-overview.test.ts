@@ -33,14 +33,18 @@ describe('Executive overview reporting and responsive layout', () => {
     assert.ok(pipeline.includes('stage.amount'));
   });
 
-  it('places attention, stage progression, trend, and recent records in the fluid responsive canvas', () => {
-    assert.ok(page.includes('<AttentionQueue'));
+  it('places performance and stage health before priority work and the recent ledger', () => {
+    const analysisPosition = page.indexOf('className={styles.analysisSection}');
+    const attentionPosition = page.indexOf('<AttentionQueue');
+    const ledgerPosition = page.indexOf('<CommercialDealsTable');
+    assert.ok(analysisPosition >= 0 && analysisPosition < attentionPosition);
+    assert.ok(attentionPosition < ledgerPosition);
     assert.ok(page.includes('<PipelineAllocationCard'));
     assert.ok(page.includes('<RevenueDynamicsCard'));
-    assert.ok(page.includes('<CommercialDealsTable'));
     assert.ok(layout.includes('.fluidCanvas'));
-    assert.ok(layout.includes('.bottomSection'));
-    assert.ok(layout.includes('@media (max-width: 1100px)'));
+    assert.ok(layout.includes('.analysisSection'));
+    assert.ok(layout.includes('.operationsSection'));
+    assert.ok(layout.includes('@media (max-width: 1250px)'));
     assert.ok(attention.includes('role="status"'));
   });
 });

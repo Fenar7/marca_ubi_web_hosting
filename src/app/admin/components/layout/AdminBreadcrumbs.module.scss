@@ -1,5 +1,5 @@
-﻿.breadcrumbNav { display: flex; min-width: 0; align-items: center; overflow: hidden; }
-.breadcrumbList { display: flex; min-width: 0; align-items: center; gap: 5px; margin: 0; padding: 0; list-style: none; white-space: nowrap; }
+.breadcrumbNav { display: flex; min-width: 0; align-items: center; overflow: hidden; }
+.breadcrumbList { display: flex; min-width: 0; align-items: center; gap: 7px; margin: 0; padding: 0; list-style: none; white-space: nowrap; }
 .breadcrumbItem { display: inline-flex; min-width: 0; align-items: center; line-height: 1.2; }
 .rootLink, .breadcrumbLink { display: inline-flex; min-height: 36px; align-items: center; gap: 7px; padding: 0 5px; color: var(--admin-text-secondary, #454542); border-radius: 5px; text-decoration: none; font-size: 12px; font-weight: 500; }
 .rootLink:hover, .breadcrumbLink:hover { color: var(--admin-text-primary, #111); background: var(--admin-surface-hover, #f7f7f5); }
@@ -7,17 +7,17 @@
 .rootMonogram { display: inline-flex; width: 24px; height: 24px; flex: 0 0 24px; align-items: center; justify-content: center; color: #fff; background: #111; border-radius: 5px; font-size: 13px; font-weight: 700; letter-spacing: -0.06em; }
 .rootMonogram span { color: var(--admin-accent-brand, #ea002a); }
 .rootText { color: var(--admin-text-secondary, #454542); }
-.separator { color: #9b9b96; font-size: 12px; user-select: none; }
+.separator { color: #9b9b96; font-size: 11px; user-select: none; }
 .breadcrumbLink { color: var(--admin-text-muted, #696965); }
-.currentSegment { display: inline-flex; min-width: 0; align-items: center; gap: 7px; padding: 0 5px; color: var(--admin-text-primary, #111); font-size: 12px; font-weight: 650; }
+.currentSegment { display: inline-flex; min-width: 0; min-height: 36px; align-items: center; gap: 7px; padding: 0 5px; color: var(--admin-text-primary, #111); font-size: 12px; font-weight: 650; }
 .currentSegment > span:last-child { overflow: hidden; text-overflow: ellipsis; }
 .radarDot { width: 7px; height: 7px; flex: 0 0 7px; background: #18834a; border-radius: 50%; }
 .monoSegmentChip { padding: 3px 6px; color: var(--admin-text-primary, #111); background: var(--admin-surface-muted, #efefed); border: 1px solid var(--admin-border-subtle, #e7e7e4); border-radius: 4px; font-family: var(--font-admin-code, monospace); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 760px) {
-  .breadcrumbList { max-width: min(48vw, 240px); gap: 3px; }
+  .breadcrumbList { max-width: min(54vw, 300px); gap: 4px; }
   .rootText { display: none; }
-  .separator { font-size: 11px; }
-  .currentSegment { max-width: 32vw; padding-inline: 2px; }
+  .separator { font-size: 10px; }
+  .currentSegment { max-width: 37vw; padding-inline: 2px; }
   .breadcrumbLink { padding-inline: 2px; font-size: 11px; }
 }

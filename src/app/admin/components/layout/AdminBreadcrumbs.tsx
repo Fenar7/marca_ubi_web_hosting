@@ -2,11 +2,10 @@
 
 /**
  * @file AdminBreadcrumbs.tsx
- * @description Executive Notion-Caliber 3-tier hierarchical breadcrumb engine with real-time
- *              dynamic label overrides and live status telemetry.
+ * @description Route-aware context trail with dynamic CRM record labels.
  * @architecture Resolves Next.js App Router paths into a structured 3-tier hierarchy:
  *               [🔥] Marca Ubi / Section / Leaf Node.
- *               Replaces disconnected pill capsules with an integrated spatial navigation trail.
+ *               The trail provides page context while the sidebar remains the primary navigation.
  *               Supports dynamic client-side label overrides (e.g. 'LD-10492' or 'DEAL-1004') dispatched via
  *               `admin-breadcrumb-label-update` window events.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -134,12 +133,12 @@ export function AdminBreadcrumbs(): React.ReactElement {
       isLeaf: false,
     });
 
-    // Tier 3: Active Command Center Leaf Node with Live Radar Pulse
+    // The current route is the final breadcrumb; no live system state is implied.
     items.push({
       id: 'root-leaf',
       label: 'Overview',
       isLeaf: true,
-      hasRadarDot: true,
+      hasRadarDot: false,
     });
   } else if (segments.length === 2 && segments[0] === 'admin') {
     // 1-Level Sub-Route (e.g. /admin/leads)
@@ -219,9 +218,7 @@ export function AdminBreadcrumbs(): React.ReactElement {
               <li className={styles.breadcrumbItem}>
                 {item.isLeaf ? (
                   <span className={styles.currentSegment} aria-current="page">
-                    {item.hasRadarDot && (
-                      <span className={styles.radarDot} aria-hidden="true" title="Real-time live telemetry stream" />
-                    )}
+                    {item.hasRadarDot && <span className={styles.radarDot} aria-hidden="true" />}
                     <span>{item.label}</span>
                   </span>
                 ) : item.isRoot ? (

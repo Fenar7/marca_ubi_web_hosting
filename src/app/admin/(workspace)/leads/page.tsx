@@ -9,6 +9,7 @@
  */
 
 import React, { Suspense } from 'react';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
@@ -101,9 +102,7 @@ export default async function AdminLeadsPage(
         preferred_channel, service_category, expected_value, priority, status_id,
         assigned_to, lead_source_id, notes, brief_payload, next_follow_up,
         revisit_date, created_at, updated_at,
-        funnel_statuses!inner(id, name, bucket, color_code, sort_order),
-        lead_sources(id, name, color_code),
-        profiles:crm_team_directory!leads_assigned_to_fkey(id, full_name, role)
+        funnel_statuses!inner(id, name, bucket, color_code, sort_order)
       `, { count: 'exact' });
   if (!invalidFilter) {
     if (stage) leadsQuery = leadsQuery.eq('status_id', stage);
@@ -118,7 +117,6 @@ export default async function AdminLeadsPage(
     supabase
       .from('lead_sources')
       .select('id, name, color_code')
-      .eq('is_active', true)
       .order('name'),
     supabase
       .from('crm_team_directory')
@@ -135,8 +133,10 @@ export default async function AdminLeadsPage(
       .range((page - 1) * pageSize, page * pageSize - 1),
   ]);
 
-  if (leadsRes.error) console.error('[leads-workspace] Failed to load leads:', leadsRes.error.message);
-  if (statusesRes.error) console.error('[leads-workspace] Failed to load stages:', statusesRes.error.message);
+  if (leadsRes.error) console.error('[leads-workspace] Failed to load leads:', { code: leadsRes.error.code, message: leadsRes.error.message });
+  if (statusesRes.error) console.error('[leads-workspace] Failed to load stages:', { code: statusesRes.error.code, message: statusesRes.error.message });
+  if (sourcesRes.error) console.error('[leads-workspace] Lead source filters unavailable:', { code: sourcesRes.error.code, message: sourcesRes.error.message });
+  if (profilesRes.error) console.error('[leads-workspace] Owner directory unavailable:', { code: profilesRes.error.code, message: profilesRes.error.message });
 
   // Transform lookup catalog options for filter dropdown menus
   const availableSources: FilterDropdownOption[] = (sourcesRes.data || []).map((s) => ({
@@ -171,6 +171,9 @@ export default async function AdminLeadsPage(
     sort_order: s.sort_order,
   }));
 
+  const ownerNameById = new Map((profilesRes.data || []).map((member) => [member.id, member.full_name]));
+  const sourceById = new Map((sourcesRes.data || []).map((source) => [source.id, source]));
+
   // Hydrate client model with relational properties
   const leads: HydratedLeadItem[] = (leadsRes.data || []).map((l) => {
     const statusData = l.funnel_statuses as {
@@ -181,11 +184,7 @@ export default async function AdminLeadsPage(
       sort_order?: number;
     } | null;
 
-    const sourceData = l.lead_sources as {
-      id?: string;
-      name?: string;
-      color_code?: string;
-    } | null;
+    const sourceData = sourceById.get(l.lead_source_id);
 
     return {
       id: l.id,
@@ -203,8 +202,9 @@ export default async function AdminLeadsPage(
       status_color: statusData?.color_code || '#1f242f',
       bucket: statusData?.bucket || 'open',
       assigned_to: l.assigned_to,
-      assigned_to_name:
-        (l.profiles as { full_name?: string } | null)?.full_name || 'Unassigned',
+      assigned_to_name: l.assigned_to
+        ? ownerNameById.get(l.assigned_to) || (profilesRes.error ? 'Owner unavailable' : 'Inactive or unavailable owner')
+        : 'Unassigned',
       lead_source_id: l.lead_source_id,
       lead_source_name: sourceData?.name || null,
       lead_source_color: sourceData?.color_code || null,
@@ -232,10 +232,15 @@ export default async function AdminLeadsPage(
 
       {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
       <Suspense fallback={<LeadsTableSkeleton rowCount={8} />}>
-        {invalidFilter || leadsRes.error || statusesRes.error || sourcesRes.error || profilesRes.error ? (
-          <div className={styles.loadError} role="alert">{invalidFilter ? 'A filter in this link is invalid. Open the leads page without filters to try again.' : 'Leads or filter options could not be loaded. Refresh the page to try again.'}</div>
+        {invalidFilter || leadsRes.error || statusesRes.error ? (
+          <div className={styles.loadError} role="alert">
+            <span>{invalidFilter ? 'A filter in this link is invalid. Open the leads page without filters to try again.' : leadsRes.error ? `Lead records could not be loaded${leadsRes.error.code ? ` (${leadsRes.error.code})` : ''}.` : `Pipeline stages could not be loaded${statusesRes.error?.code ? ` (${statusesRes.error.code})` : ''}.`}</span>
+            <Link href="/admin/leads" className={styles.retryLink}>Reload leads</Link>
+            <span>If the problem continues, contact support and include the error code shown above.</span>
+          </div>
         ) : (
           <>
+            {(sourcesRes.error || profilesRes.error) && <div className={styles.loadWarning} role="status">Lead records are available, but {sourcesRes.error && profilesRes.error ? 'source filters and owner names' : sourcesRes.error ? 'source filters' : 'owner names'} could not be loaded. Refresh to retry those details.</div>}
             {search.error ? <div className={styles.loadError} role="alert">{search.error}</div> : <ResultPagination page={page} pageSize={pageSize} loadedCount={leads.length} totalCount={leadsRes.count} />}
             <LeadsWorkspaceClient initialLeads={search.error ? [] : leads} availableSources={availableSources} availableAssignees={availableAssignees} availableStatuses={availableStatuses} userRole={role} />
           </>

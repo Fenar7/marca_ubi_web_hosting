@@ -15,9 +15,15 @@ describe('Command Center trend and pipeline stage views', () => {
     assert.ok(chart.includes('cashSpline'));
     assert.ok(!chart.includes('quotaSpline'));
     assert.ok(chart.includes('conversionCount === 0'));
+    assert.ok(chart.includes('className={styles.zeroState}'));
+    assert.ok(chart.includes('className={styles.zeroTimeline}'));
+    assert.ok(chart.includes('point.fullPeriod'));
     assert.ok(chart.includes('dataStatus === "unavailable"'));
     assert.ok(chart.includes('handleChartKeyDown'));
     assert.ok(chartStyles.includes('.emptyState'));
+    assert.ok(chartStyles.includes('.zeroStateMessage {\n  display: grid;'));
+    assert.ok(chartStyles.includes('grid-template-columns: minmax(0, 1fr)'));
+    assert.ok(chartStyles.includes('border-bottom: 1px solid var(--admin-border-strong'));
     assert.ok(chartStyles.includes('tabular-nums'));
   });
 
