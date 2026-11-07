@@ -1,18 +1,18 @@
-﻿.backdrop { position: fixed; inset: 0; z-index: 200; visibility: hidden; background: rgba(17, 17, 17, 0.28); opacity: 0; transition: opacity 160ms ease, visibility 160ms ease; }
+.backdrop { position: fixed; inset: 0; z-index: 200; visibility: hidden; background: rgba(17, 17, 17, 0.34); opacity: 0; transition: opacity 160ms ease, visibility 160ms ease; }
 .backdropVisible { visibility: visible; opacity: 1; }
-.drawer { position: fixed; inset: 0 auto 0 0; z-index: 201; display: flex; width: min(340px, calc(100vw - 36px)); flex-direction: column; background: #fff; border-right: 1px solid var(--admin-border-default, #d8d8d4); transform: translateX(-101%); transition: transform 180ms ease; }
+.drawer { position: fixed; inset: 0 auto 0 0; z-index: 201; display: flex; width: min(360px, calc(100vw - 28px)); flex-direction: column; background: #fff; border-right: 1px solid var(--admin-border-default, #d8d8d4); transform: translateX(-101%); transition: transform 180ms ease; }
 .drawerOpen { transform: translateX(0); }
-.drawerHeader { display: flex; min-height: 64px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px 0 18px; border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4); }
-.brandLink { display: flex; min-width: 0; align-items: center; gap: 12px; text-decoration: none; &:focus-visible { outline: 2px solid var(--admin-focus-ring, #9c001e); outline-offset: 3px; } }
-.brandLogo { display: block; width: 128px; height: auto; }
-.systemTag { padding-left: 11px; color: var(--admin-text-muted, #696965); border-left: 1px solid var(--admin-border-default, #d8d8d4); font-size: 11px; white-space: nowrap; }
-.closeButton { display: grid; width: 40px; height: 40px; flex: 0 0 40px; place-items: center; color: var(--admin-text-primary, #111); background: #fff; border: 1px solid var(--admin-border-default, #d8d8d4); border-radius: 7px; cursor: pointer; &:hover { background: var(--admin-surface-hover, #f7f7f5); } &:focus-visible { outline: 2px solid var(--admin-focus-ring, #9c001e); outline-offset: 2px; } }
-.navScrollArea { flex: 1; overflow: auto; padding: 18px 12px; }
-.navGroup + .navGroup { margin-top: 22px; }
-.groupHeading { margin: 0 8px 8px; color: var(--admin-text-muted, #696965); font-size: 10px; font-weight: 650; letter-spacing: 0.11em; text-transform: uppercase; }
-.navList { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.navItem { position: relative; display: flex; min-height: 44px; align-items: center; gap: 11px; padding: 0 10px; color: var(--admin-text-secondary, #454542); border-radius: 6px; text-decoration: none; &:hover { color: var(--admin-text-primary, #111); background: var(--admin-surface-hover, #f7f7f5); } &:focus-visible { outline: 2px solid var(--admin-focus-ring, #9c001e); outline-offset: 1px; } }
-.navItemActive { color: var(--admin-text-primary, #111); background: var(--admin-surface-muted, #efefed); font-weight: 620; }
+.drawerHeader { display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px 0 18px; border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4); }
+.brandLink { display: grid; min-width: 0; justify-items: start; gap: 2px; text-decoration: none; &:focus-visible { outline: 2px solid var(--admin-focus-ring, #9c001e); outline-offset: 3px; } }
+.brandLogo { display: block; width: 150px; max-width: 100%; height: auto; aspect-ratio: 4.711 / 1; object-fit: contain; object-position: left center; }
+.systemTag { color: var(--admin-text-muted, #696965); font-size: 9px; font-weight: 650; letter-spacing: 0.12em; }
+.closeButton { display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; color: var(--admin-text-primary, #111); background: #fff; border: 1px solid var(--admin-border-default, #d8d8d4); border-radius: 7px; cursor: pointer; &:hover { background: var(--admin-surface-hover, #f7f7f5); } &:focus-visible { outline: 2px solid var(--admin-focus-ring, #9c001e); outline-offset: 2px; } }
+.navScrollArea { flex: 1; overflow: auto; padding: 16px 12px 20px; }
+.navGroup + .navGroup { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--admin-border-subtle, #e7e7e4); }
+.groupHeading { margin: 0 8px 7px; color: var(--admin-text-muted, #696965); font-size: 9px; font-weight: 680; letter-spacing: 0.13em; text-transform: uppercase; }
+.navList { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.navItem { position: relative; display: flex; min-height: 46px; align-items: center; gap: 11px; padding: 0 10px; color: var(--admin-text-secondary, #454542); border-radius: 6px; text-decoration: none; &:hover { color: var(--admin-text-primary, #111); background: var(--admin-surface-hover, #f7f7f5); } &:focus-visible { outline: 2px solid var(--admin-focus-ring, #9c001e); outline-offset: 1px; } }
+.navItemActive { color: var(--admin-text-primary, #111); background: var(--admin-surface-muted, #efefed); font-weight: 650; }
 .iconWrapper { display: grid; width: 20px; height: 20px; flex: 0 0 20px; place-items: center; }
 .itemContent { display: flex; min-width: 0; flex: 1; align-items: center; justify-content: space-between; gap: 8px; }
 .itemLabel { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }

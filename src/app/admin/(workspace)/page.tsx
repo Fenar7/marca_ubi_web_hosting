@@ -520,26 +520,28 @@ export default async function AdminDashboardPage(
             dataStatus={stageStatus}
           />
         </section>
-        <AttentionQueue
-          items={(attentionRows ?? []).filter((lead) => {
-            const stage = statusById.get(lead.status_id);
-            return stage?.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
-          }).slice(0, 6).map((lead): AttentionQueueItem => ({
-            id: lead.id,
-            leadId: lead.lead_id,
-            name: lead.name,
-            company: lead.company,
-            stage: statusById.get(lead.status_id)?.name ?? 'Unknown stage',
-            priority: lead.priority as AttentionQueueItem['priority'],
-            expectedValue: amountOf(lead.expected_value ?? 0),
-            nextFollowUp: lead.next_follow_up,
-          }))}
-          overdueCount={pipelineAvailable ? overdueCount : null}
-          dueTodayCount={pipelineAvailable ? dueTodayCount : null}
-          dataStatus={attentionError ? 'unavailable' : 'ready'}
-        />
-        <section className={styles.dealsSection} aria-label="Recent active deals">
-          <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
+        <section className={styles.operationsSection} aria-label="Priority work and active deals">
+          <AttentionQueue
+            items={(attentionRows ?? []).filter((lead) => {
+              const stage = statusById.get(lead.status_id);
+              return stage?.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
+            }).slice(0, 6).map((lead): AttentionQueueItem => ({
+              id: lead.id,
+              leadId: lead.lead_id,
+              name: lead.name,
+              company: lead.company,
+              stage: statusById.get(lead.status_id)?.name ?? 'Unknown stage',
+              priority: lead.priority as AttentionQueueItem['priority'],
+              expectedValue: amountOf(lead.expected_value ?? 0),
+              nextFollowUp: lead.next_follow_up,
+            }))}
+            overdueCount={pipelineAvailable ? overdueCount : null}
+            dueTodayCount={pipelineAvailable ? dueTodayCount : null}
+            dataStatus={attentionError ? 'unavailable' : 'ready'}
+          />
+          <section className={styles.dealsSection} aria-label="Recent active deals">
+            <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
+          </section>
         </section>
       </main>
     </div>

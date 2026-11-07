@@ -102,8 +102,7 @@ export default async function AdminLeadsPage(
         preferred_channel, service_category, expected_value, priority, status_id,
         assigned_to, lead_source_id, notes, brief_payload, next_follow_up,
         revisit_date, created_at, updated_at,
-        funnel_statuses!inner(id, name, bucket, color_code, sort_order),
-        lead_sources(id, name, color_code)
+        funnel_statuses!inner(id, name, bucket, color_code, sort_order)
       `, { count: 'exact' });
   if (!invalidFilter) {
     if (stage) leadsQuery = leadsQuery.eq('status_id', stage);
@@ -118,7 +117,6 @@ export default async function AdminLeadsPage(
     supabase
       .from('lead_sources')
       .select('id, name, color_code')
-      .eq('is_active', true)
       .order('name'),
     supabase
       .from('crm_team_directory')
@@ -174,6 +172,7 @@ export default async function AdminLeadsPage(
   }));
 
   const ownerNameById = new Map((profilesRes.data || []).map((member) => [member.id, member.full_name]));
+  const sourceById = new Map((sourcesRes.data || []).map((source) => [source.id, source]));
 
   // Hydrate client model with relational properties
   const leads: HydratedLeadItem[] = (leadsRes.data || []).map((l) => {
@@ -185,11 +184,7 @@ export default async function AdminLeadsPage(
       sort_order?: number;
     } | null;
 
-    const sourceData = l.lead_sources as {
-      id?: string;
-      name?: string;
-      color_code?: string;
-    } | null;
+    const sourceData = sourceById.get(l.lead_source_id);
 
     return {
       id: l.id,

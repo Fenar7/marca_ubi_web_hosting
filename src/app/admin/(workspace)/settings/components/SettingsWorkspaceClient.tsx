@@ -154,6 +154,9 @@ export function SettingsWorkspaceClient({
         )}
 
         <form id="agency-settings-form" onSubmit={handleSubmit} className={styles.formGrid}>
+          <fieldset className={styles.settingsGroup}>
+            <legend className={styles.settingsGroupLegend}>Sales response and pipeline</legend>
+            <p className={styles.settingsGroupDescription}>Set the response windows and inactivity rules used by follow-up operations.</p>
           {/* Card 1: Lead Response SLA */}
           <div className={styles.configCard}>
             <div className={styles.cardHeader}>
@@ -247,6 +250,11 @@ export function SettingsWorkspaceClient({
             </div>
           </div>
 
+          </fieldset>
+
+          <fieldset className={styles.settingsGroup}>
+            <legend className={styles.settingsGroupLegend}>Inquiry protection and alerts</legend>
+            <p className={styles.settingsGroupDescription}>Control duplicate merging, request limits, and the configured alert destination.</p>
           {/* Card 4: Deduplication Smart Merge Window */}
           <div className={styles.configCard}>
             <div className={styles.cardHeader}>
@@ -334,6 +342,7 @@ export function SettingsWorkspaceClient({
               />
             </div>
           </div>
+          </fieldset>
         </form>
       </section>
 

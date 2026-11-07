@@ -16,28 +16,23 @@ import {
 } from '../../src/types/crm';
 
 describe('Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture', () => {
-  it('verifies NAVIGATION_GROUPS organizes all 9 canonical tabs into 3 enclaves', () => {
-    assert.strictEqual(NAVIGATION_GROUPS.length, 3);
+  it('verifies NAVIGATION_GROUPS organizes all 9 canonical tabs by task', () => {
+    assert.strictEqual(NAVIGATION_GROUPS.length, 5);
 
     const groupTitles = NAVIGATION_GROUPS.map((g) => g.groupTitle);
     assert.deepStrictEqual(groupTitles, [
-      'Commercial',
-      'Operations',
-      'System & Governance',
+      'Today',
+      'Pipeline',
+      'Delivery',
+      'Insight',
+      'Workspace',
     ]);
 
     const allKeys = NAVIGATION_GROUPS.flatMap((g) => g.items.map((i) => i.key));
     assert.strictEqual(allKeys.length, 9);
     assert.deepStrictEqual(allKeys, [
-      'command_center',
-      'leads',
-      'deals',
-      'works',
-      'tasks',
-      'users',
-      'analytics',
-      'ingestion',
-      'settings',
+      'command_center', 'tasks', 'leads', 'deals', 'works',
+      'analytics', 'ingestion', 'users', 'settings',
     ]);
 
     // Check that every registered CRM tab is accounted for

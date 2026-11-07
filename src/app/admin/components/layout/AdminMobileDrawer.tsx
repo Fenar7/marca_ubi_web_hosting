@@ -2,7 +2,7 @@
 
 /**
  * @file AdminMobileDrawer.tsx
- * @description Responsive off-canvas slide-out sheet for viewport widths < 1024px.
+ * @description Focus-managed mobile navigation drawer for the Commercial Desk.
  * @architecture Provides full touch-optimized agency navigation, dynamic tab-level RBAC gating,
  *               focus containment, and live task badge synchronization matching AdminSidebar.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -97,7 +97,7 @@ export function AdminMobileDrawer({
       <aside
         ref={drawerRef}
         className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}
-        aria-label="Mobile Navigation Drawer"
+        aria-label="Commercial Desk navigation"
         aria-hidden={!isOpen}
         aria-modal={isOpen ? true : undefined}
         role="dialog"
@@ -108,11 +108,11 @@ export function AdminMobileDrawer({
             <Image
               src="/images/marca-ubi-dark.svg"
               alt="Marca Ubi."
-              width={150}
+              width={158}
               height={34}
               className={styles.brandLogo}
             />
-            <span className={styles.systemTag}>CRM Portal</span>
+            <span className={styles.systemTag}>COMMERCIAL DESK</span>
           </Link>
           <button
             ref={closeRef}
@@ -138,7 +138,7 @@ export function AdminMobileDrawer({
           </button>
         </div>
 
-        <nav className={styles.navScrollArea}>
+        <nav className={styles.navScrollArea} aria-label="Workspace sections">
           {NAVIGATION_GROUPS.map((group) => {
             const authorizedItems = group.items.filter((item) =>
               isTabAuthorized(item.key, currentUser)
@@ -147,7 +147,7 @@ export function AdminMobileDrawer({
             if (authorizedItems.length === 0) return null;
 
             return (
-              <div key={group.groupTitle} className={styles.navGroup}>
+              <section key={group.groupTitle} className={styles.navGroup} aria-label={group.groupTitle}>
                 <div className={styles.groupHeading}>{group.groupTitle}</div>
                 <ul className={styles.navList}>
                   {authorizedItems.map((item) => {
@@ -185,7 +185,7 @@ export function AdminMobileDrawer({
                     );
                   })}
                 </ul>
-              </div>
+              </section>
             );
           })}
         </nav>

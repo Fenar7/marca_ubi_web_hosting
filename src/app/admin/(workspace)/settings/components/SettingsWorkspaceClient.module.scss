@@ -165,19 +165,47 @@
 
 .formGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
   }
 }
 
+.settingsGroup {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 1.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--admin-border-default, #d8d8d4);
+}
+
+.settingsGroupLegend {
+  grid-column: 1 / -1;
+  padding: 0;
+  color: var(--admin-text-primary, #111);
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+.settingsGroupDescription {
+  grid-column: 1 / -1;
+  margin: .35rem 0 1rem;
+  color: var(--admin-text-secondary, #454542);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
 .configCard {
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 6px;
-  padding: 1.5rem;
+  border-radius: 8px;
+  padding: 1.1rem 1.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -187,6 +215,12 @@
     border-color: var(--admin-border-strong, #1f242f);
     box-shadow: none;
   }
+}
+
+@media (max-width: 760px) {
+  .settingsGroup { grid-template-columns: 1fr; }
+  .settingsGroupLegend, .settingsGroupDescription { grid-column: 1; }
+  .configCard { padding: 1rem; }
 }
 
 .cardHeader {

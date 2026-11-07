@@ -256,6 +256,7 @@ function AdminWorkspaceShellState({
       <div className={styles.mainViewport}>
         <AdminHeader
           currentUser={currentUser}
+          isMobileNavOpen={isMobileOpen}
           onOpenMobileNav={() => setIsMobileOpen(true)}
         />
         <main className={styles.contentContainer} id="main-content">

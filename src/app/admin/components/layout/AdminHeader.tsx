@@ -16,10 +16,11 @@ import styles from './AdminHeader.module.scss';
 
 interface AdminHeaderProps {
   currentUser: CurrentUserSession;
+  isMobileNavOpen: boolean;
   onOpenMobileNav: () => void;
 }
 
-export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps): React.ReactElement {
+export function AdminHeader({ currentUser, isMobileNavOpen, onOpenMobileNav }: AdminHeaderProps): React.ReactElement {
   const canManageTeam = currentUser.role === 'admin';
   const canCreateLead = currentUser.role !== 'viewer';
 
@@ -43,7 +44,9 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
           type="button"
           onClick={onOpenMobileNav}
           className={styles.mobileHamburger}
-          aria-label="Open mobile navigation menu"
+          aria-label={isMobileNavOpen ? 'Navigation menu is open' : 'Open navigation menu'}
+          aria-expanded={isMobileNavOpen}
+          aria-haspopup="dialog"
         >
           <svg
             width="18"
@@ -94,11 +97,22 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
         </button>
 
         {/* Quick Action Triggers */}
-        <div className={styles.headerActionBtns}>
+        <details className={styles.quickActions}>
+          <summary className={styles.quickActionsTrigger} aria-label="Open quick actions">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Actions</span>
+          </summary>
+          <div className={styles.quickActionsMenu} role="group" aria-label="Quick actions">
           {canCreateLead && (
             <button
               type="button"
-              onClick={handleOpenNewLead}
+              onClick={(event) => {
+                handleOpenNewLead();
+                event.currentTarget.closest('details')?.removeAttribute('open');
+              }}
               className={`${styles.quickActionBtn} ${styles.primaryAction}`}
               title="Log new prospective engagement"
             >
@@ -123,7 +137,10 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
           {canManageTeam && (
             <button
               type="button"
-              onClick={handleOpenAddMember}
+              onClick={(event) => {
+                handleOpenAddMember();
+                event.currentTarget.closest('details')?.removeAttribute('open');
+              }}
               className={`${styles.quickActionBtn} ${styles.secondaryAction}`}
               title="Provision new commercial personnel"
             >
@@ -146,7 +163,8 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
               <span>Add Member</span>
             </button>
           )}
-        </div>
+          </div>
+        </details>
 
         {/* User Identity Popover */}
         <UserProfileDropdown currentUser={currentUser} />

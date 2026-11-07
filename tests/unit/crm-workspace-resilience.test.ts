@@ -14,6 +14,8 @@ describe('CRM list query resilience and overview hierarchy', () => {
     assert.ok(leads.includes(".from('crm_team_directory')"));
     assert.ok(leads.includes('ownerNameById.get(l.assigned_to)'));
     assert.ok(!leads.includes('crm_team_directory!leads_assigned_to_fkey'));
+    assert.ok(!leads.includes('lead_sources(id, name, color_code)'));
+    assert.ok(leads.includes('sourceById.get(l.lead_source_id)'));
     assert.ok(leads.includes('invalidFilter || leadsRes.error || statusesRes.error'));
     assert.ok(leads.includes('Lead records are available'));
   });
@@ -22,6 +24,8 @@ describe('CRM list query resilience and overview hierarchy', () => {
     assert.ok(deals.includes(".from('crm_team_directory')"));
     assert.ok(deals.includes('ownerNameById.get(item.assigned_to as string)'));
     assert.ok(!deals.includes('crm_team_directory!leads_assigned_to_fkey'));
+    assert.ok(!deals.includes('lead_sources!leads_lead_source_id_fkey'));
+    assert.ok(deals.includes("sourceNameById.get(item.lead_source_id as string)"));
     assert.ok(deals.includes('invalidFilter || dealsRes.error || statusesRes.error'));
     assert.ok(deals.includes('Deal records are available'));
   });
@@ -33,6 +37,6 @@ describe('CRM list query resilience and overview hierarchy', () => {
     assert.ok(analysisPosition >= 0 && analysisPosition < attentionPosition);
     assert.ok(attentionPosition < ledgerPosition);
     assert.ok(overviewStyles.includes('grid-template-columns: minmax(0, 1.2fr) minmax(400px, 0.8fr)'));
-    assert.ok(overviewStyles.includes('@media (max-width: 1100px)'));
+    assert.ok(overviewStyles.includes('@media (max-width: 1250px)'));
   });
 });

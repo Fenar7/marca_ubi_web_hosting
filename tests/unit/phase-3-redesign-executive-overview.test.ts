@@ -43,7 +43,8 @@ describe('Executive overview reporting and responsive layout', () => {
     assert.ok(page.includes('<RevenueDynamicsCard'));
     assert.ok(layout.includes('.fluidCanvas'));
     assert.ok(layout.includes('.analysisSection'));
-    assert.ok(layout.includes('@media (max-width: 1100px)'));
+    assert.ok(layout.includes('.operationsSection'));
+    assert.ok(layout.includes('@media (max-width: 1250px)'));
     assert.ok(attention.includes('role="status"'));
   });
 });

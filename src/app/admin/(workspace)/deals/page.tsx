@@ -92,8 +92,7 @@ export default async function AdminDealsPage(
         id, lead_id, name, company, phone, email, expected_value, priority,
         next_follow_up, revisit_date, created_at, updated_at, assigned_to,
         status_id, lead_source_id, brief_payload,
-        funnel_status:funnel_statuses!leads_status_id_fkey!inner(id, name, sort_order, bucket, color_code),
-        lead_source:lead_sources!leads_lead_source_id_fkey(id, name)
+        funnel_status:funnel_statuses!leads_status_id_fkey!inner(id, name, sort_order, bucket, color_code)
       `, { count: 'exact' });
   if (!invalidFilter) {
     if (stage) dealsQuery = dealsQuery.eq('status_id', stage);
@@ -122,12 +121,12 @@ export default async function AdminDealsPage(
   const sources = sourcesRes.data || [];
   const statuses = statusesRes.data || [];
   const ownerNameById = new Map((profilesRes.data || []).map((member) => [member.id, member.full_name]));
+  const sourceNameById = new Map((sourcesRes.data || []).map((source) => [source.id, source.name]));
 
   // Transform relational leads to typed deal records
   const deals: HydratedDealItem[] = ((dealsRes.data || []) as unknown[]).map((raw) => {
     const item = raw as Record<string, unknown>;
     const statusObj = item.funnel_status as { id: string; name: string; sort_order: number; bucket: string; color_code: string } | null;
-    const sourceObj = item.lead_source as { id: string; name: string } | null;
 
     return {
       id: item.id as string,
@@ -151,7 +150,9 @@ export default async function AdminDealsPage(
       status_name: statusObj?.name || 'Open',
       status_bucket: (statusObj?.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open',
       status_color: statusObj?.color_code || '#1f242f',
-      source_name: sourceObj?.name || 'Direct Ingestion',
+      source_name: sourcesRes.error
+        ? 'Source unavailable'
+        : sourceNameById.get(item.lead_source_id as string) || 'Unknown source',
     };
   });
 

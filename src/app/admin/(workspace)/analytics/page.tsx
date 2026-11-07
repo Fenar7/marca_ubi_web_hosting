@@ -77,10 +77,14 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
   const active = statuses.filter((status) => status.bucket === 'open' || status.bucket === 'potential');
   const converted = statuses.filter((status) => status.bucket === 'converted');
   const sum = (ids: string[]) => ids.reduce((total, id) => total + (totals.get(id)?.value ?? 0), 0);
+  const stageCount = (statusId: string): number => totals.get(statusId)?.count ?? 0;
+  const totalStageCount = statuses.reduce((total, status) => total + stageCount(status.id), 0);
+  const activeCount = active.reduce((total, status) => total + stageCount(status.id), 0);
+  const convertedCount = converted.reduce((total, status) => total + stageCount(status.id), 0);
   const cards = [
-    { label: 'Total leads', value: (leadResult.count ?? 0).toLocaleString('en-IN'), detail: 'Records visible to you' },
-    { label: 'Active pipeline', value: formatCrmCurrency(sum(active.map((status) => status.id))), detail: 'Open and potential stages' },
-    { label: 'Converted contract value', value: formatCrmCurrency(sum(converted.map((status) => status.id))), detail: 'Current converted records' },
+    { label: 'Visible leads', value: (leadResult.count ?? 0).toLocaleString('en-IN'), detail: 'Synthetic benchmark records excluded' },
+    { label: 'Active pipeline', value: formatCrmCurrency(sum(active.map((status) => status.id))), detail: `${activeCount.toLocaleString('en-IN')} open and potential records` },
+    { label: 'Converted value', value: formatCrmCurrency(sum(converted.map((status) => status.id))), detail: `${convertedCount.toLocaleString('en-IN')} currently converted records` },
   ];
 
   return (
@@ -88,7 +92,7 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
       <header className={styles.header}>
         <p className={styles.eyebrow}>Commercial intelligence</p>
         <h1 className={styles.pageTitle}>Revenue &amp; pipeline analytics</h1>
-        <p className={styles.pageSubtitle}>A current view of the leads and contract values available to you.</p>
+        <p className={styles.pageSubtitle}>Compare the current value and record mix across configured funnel stages.</p>
       </header>
       {unavailable ? (
         <section className={styles.notice} role="status">
@@ -97,7 +101,7 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
         </section>
       ) : (
         <>
-          <section className={styles.metrics} aria-label="Pipeline summary">
+          <section className={styles.metrics} aria-label="Current CRM scope">
             {cards.map((card) => <div className={styles.metric} key={card.label}>
               <span className={styles.metricLabel}>{card.label}</span>
               <strong className={styles.metricValue}>{card.value}</strong>
@@ -107,16 +111,23 @@ export default async function AdminAnalyticsPage(): Promise<React.ReactElement> 
           <section className={styles.breakdownSection} aria-labelledby="stage-heading">
             <div className={styles.sectionHeader}>
               <div><h2 id="stage-heading" className={styles.sectionTitle}>Deals by stage</h2>
-                <p>Current stage of visible leads. Synthetic benchmark records are excluded.</p></div>
+                <p>Current records visible to your account. Bar length shows each stage&apos;s share of loaded records.</p></div>
               <Link href="/admin/leads" className={styles.viewLink}>View leads <span aria-hidden="true">-&gt;</span></Link>
+            </div>
+            <div className={styles.stageSummary} aria-label="Stage distribution summary">
+              <div><span>Visible records</span><strong>{(leadResult.count ?? 0).toLocaleString('en-IN')}</strong></div>
+              <div><span>Active pipeline</span><strong>{activeCount.toLocaleString('en-IN')}</strong></div>
+              <div><span>Converted</span><strong>{convertedCount.toLocaleString('en-IN')}</strong></div>
             </div>
             {statuses.length === 0 ? <p className={styles.notice}>No stages are configured.</p> : (
               <div className={styles.stageList}>
                 {statuses.map((status) => {
                   const stage = totals.get(status.id) ?? { count: 0, value: 0 };
+                  const share = totalStageCount > 0 ? (stage.count / totalStageCount) * 100 : 0;
                   return <Link key={status.id} href={`/admin/leads?stage=${encodeURIComponent(status.id)}`} className={styles.stageRow}>
                     <span className={styles.stageLeft}><span className={styles.stageDot} style={{ backgroundColor: status.color_code || '#666666' }} aria-hidden="true" />{status.name}</span>
-                    <span className={styles.stageRight}><span>{stage.count.toLocaleString('en-IN')} deals</span><strong>{formatCrmCurrency(stage.value)}</strong><span aria-hidden="true">-&gt;</span></span>
+                    <span className={styles.stageBar} aria-hidden="true"><span style={{ width: `${share}%`, backgroundColor: status.color_code || '#666666' }} /></span>
+                    <span className={styles.stageRight}><span>{stage.count.toLocaleString('en-IN')} records · {share.toFixed(1)}%</span><strong>{formatCrmCurrency(stage.value)}</strong><span aria-hidden="true">-&gt;</span></span>
                   </Link>;
                 })}
               </div>

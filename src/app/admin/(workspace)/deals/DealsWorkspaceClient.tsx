@@ -208,6 +208,15 @@ export function DealsWorkspaceClient({
     });
   }, [deals, selectedBucket, selectedAssigneeId]);
 
+  const loadedPipelineValue = useMemo(
+    () => filteredDeals.reduce((total, deal) => total + (Number.isFinite(deal.expected_value) ? deal.expected_value : 0), 0),
+    [filteredDeals]
+  );
+  const scheduledFollowUpCount = useMemo(
+    () => filteredDeals.filter((deal) => Boolean(deal.next_follow_up)).length,
+    [filteredDeals]
+  );
+
   // Sorted deals for Table view
   const sortedTableDeals = useMemo(() => {
     const list = [...filteredDeals];
@@ -384,6 +393,26 @@ export function DealsWorkspaceClient({
   return (
     <div className={styles.clientContainer}>
       {moveError && <p className={styles.moveError} role="alert">{moveError}</p>}
+      <section className={styles.pipelineSummary} aria-label="Loaded deal summary">
+        <div className={styles.pipelineSummaryIntro}>
+          <span className={styles.pipelineEyebrow}>Pipeline snapshot</span>
+          <p>Figures reflect the records currently loaded for this view.</p>
+        </div>
+        <dl className={styles.pipelineSummaryMetrics}>
+          <div>
+            <dt>Loaded deals</dt>
+            <dd>{filteredDeals.length}</dd>
+          </div>
+          <div>
+            <dt>Loaded value</dt>
+            <dd>{formatDealValue(loadedPipelineValue)}</dd>
+          </div>
+          <div>
+            <dt>With follow-up</dt>
+            <dd>{scheduledFollowUpCount}</dd>
+          </div>
+        </dl>
+      </section>
       {/* Search & Operational Controls Toolbar */}
       <div className={styles.topControlBar}>
         <div className={styles.searchWrapper}>

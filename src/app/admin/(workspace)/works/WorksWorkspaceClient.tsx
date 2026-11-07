@@ -121,6 +121,12 @@ export function WorksWorkspaceClient({
     });
   }, [works, searchTerm, selectedHealth, selectedStage]);
 
+  const deliverySummary = useMemo(() => ({
+    loaded: works.length,
+    attention: works.filter((work) => work.health_status === 'at_risk' || work.health_status === 'blocked').length,
+    delivered: works.filter((work) => work.health_status === 'completed').length,
+  }), [works]);
+
   /**
    * Toggles milestone status between pending and completed with single-item rollback.
    */
@@ -327,6 +333,17 @@ export function WorksWorkspaceClient({
   return (
     <div className={styles.clientContainer}>
       {workError && <p className={styles.actionError} role="alert">{workError}</p>}
+      <section className={styles.deliverySummary} aria-label="Loaded delivery portfolio">
+        <div className={styles.deliverySummaryIntro}>
+          <span>Delivery portfolio</span>
+          <p>Counts reflect the project records loaded for your access.</p>
+        </div>
+        <dl className={styles.deliverySummaryMetrics}>
+          <div><dt>Loaded projects</dt><dd>{deliverySummary.loaded.toLocaleString('en-IN')}</dd></div>
+          <div><dt>At risk or blocked</dt><dd>{deliverySummary.attention.toLocaleString('en-IN')}</dd></div>
+          <div><dt>Delivered</dt><dd>{deliverySummary.delivered.toLocaleString('en-IN')}</dd></div>
+        </dl>
+      </section>
       {/* Search & Filter Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.searchWrapper}>
@@ -422,7 +439,12 @@ export function WorksWorkspaceClient({
         </div>
       </div>
 
-      {/* Grid of Client Works Deliverable Cards */}
+      <div className={styles.resultsHeading}>
+        <h2>Projects</h2>
+        <span>{filteredWorks.length.toLocaleString('en-IN')} shown</span>
+      </div>
+
+      {/* Project rows keep stage, health, ownership, and milestone actions together. */}
       {filteredWorks.length === 0 ? (
         <div className={styles.emptyCard}>
           <p className={styles.emptyTitle}>No matching client engagements</p>

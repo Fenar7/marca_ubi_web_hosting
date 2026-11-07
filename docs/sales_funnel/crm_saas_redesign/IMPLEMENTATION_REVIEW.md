@@ -33,6 +33,16 @@
 - `npm run build`: passed, including TypeScript validation and static page generation, with existing Sass `@import` deprecation warnings. A duplicate build invocation could not acquire `.next/lock` while the successful build was active.
 - Authenticated route verification remains unavailable in this environment. This visual fix does not establish that the screenshot's Leads/Deals query errors are resolved.
 
+## 2026-11-07 full redesign continuation
+
+- The user identified that the earlier delivery changed a screenshot empty state but left the sidebar organization and principal page composition effectively unchanged. This increment addresses that scope directly.
+- Shared workspace navigation now groups the existing authorized links by daily work (Today, Pipeline, Delivery, Insight, Workspace). Route targets and permission keys are preserved. The desktop shell has a distinct compact context rail, role-aware quick actions, and the mobile drawer retains focus management.
+- Overview pairs performance/stage context with priority work and the loaded active-deal ledger. Leads has an inbox-oriented hierarchy and loaded/open/overdue counts. Deals has a pipeline summary whose totals are explicitly scoped to the currently loaded records and refreshed board/table styling.
+- Optional source lookups are separated from Leads and Deals primary record queries; primary record and stage failures still show an error. The deployed database root cause is not confirmed.
+- `git diff --check`: passed. Full TypeScript passed. Scoped ESLint passed with zero warnings. Focused shell/navigation/overview/data regression checks passed (43 tests); the full unit suite passed (1,309 tests, 0 failures). `npm run build` passed with a 4 GB Node heap, including TypeScript and 51 static pages. Existing Sass `@import` deprecation warnings and transient chat-pod query timeouts appeared during static generation.
+- Authenticated route behavior remains unverified. The existing dev lock prevented starting an independent local server; the browser only verified the sign-in route. No isolated CRM database or E2E credentials are available.
+- Review the full desktop, tablet, and mobile page set against the master plan before calling the entire CRM redesign complete. Keep PR #115 open and draft until authenticated data and workflow gates are met.
+
 The Commercial Desk visual redesign now covers the login and password-reset pages, responsive workspace shell, Command Center, analytics, leads, deals, follow-ups, works, team, inbound inquiries, and settings. It replaces the previous token-only treatment with distinct page structures, queue-focused operations layouts, full-digit INR, responsive navigation, and explicit data states. Existing role checks and server-action boundaries were retained during the redesign.
 
 The screenshot-specific Follow-ups data failure still needs a reproducible authenticated isolated runtime. The UI reports query failure with a retry path and correlation reference, but that does not establish the underlying database/query cause.
