@@ -8,3 +8,5 @@
 The redesign now covers authentication, the responsive workspace shell, Command Center and analytics, leads, deals, follow-ups, works, team, website inquiries, and settings. The complete unit suite, TypeScript, changed-file ESLint, server-action boundary checks, and Vercel production preview build pass. Isolated transaction testing and authenticated route-by-route browser checks remain outstanding. The reported Follow-ups loading failure has not been reproduced against an authenticated isolated runtime; do not claim its root cause is fixed.
 
 **Author identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`.
+
+**Dev server note (2026-11-07):** Next 16 Turbopack can fail CSS Module purity checks for `AvatarUploadModal` after Tailwind v4 global preflight is co-bundled into its generated CSS Module chunk. Local `npm run dev` and `npm run dev:clean` now use webpack; `npm run dev:turbo` remains available to opt into Turbopack. Restart any existing dev process to load the script change. Details: [2026-11-07 dev server register](./2026-11-07_10-30-00.md).
