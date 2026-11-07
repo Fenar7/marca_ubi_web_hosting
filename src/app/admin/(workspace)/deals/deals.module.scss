@@ -59,6 +59,24 @@
   max-width: 720px;
 }
 
+.loadWarning {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--admin-border-default, #dedede);
+  border-left: 3px solid var(--admin-text-secondary, #444);
+  color: var(--admin-text-primary, #111);
+  background: var(--admin-surface-muted, #f3f3f1);
+  line-height: 1.5;
+}
+
+.retryLink {
+  width: fit-content;
+  color: var(--admin-accent-brand, #a5001d);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  &:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+}
+
 .dealsWorkspace { gap: 1.25rem; }
 .header {
   align-items: center;

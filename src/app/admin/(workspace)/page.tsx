@@ -507,6 +507,19 @@ export default async function AdminDashboardPage(
       <main className={styles.fluidCanvas}>
         <ExecutiveMasthead selectedTimeframe={bounds.label} exportData={exportData} />
         <ExecutiveKpiGrid kpis={executiveKpis} cadenceLabel={bounds.cadenceLabel} metricStatus={{ pipeline: pipelineAvailable ? 'ready' : 'unavailable', revenue: revenueAvailable ? 'ready' : 'unavailable', cohort: cohortAvailable ? 'ready' : 'unavailable' }} />
+        <section className={styles.analysisSection} aria-label="Performance and pipeline stage health">
+          <RevenueDynamicsCard
+            dataPoints={revenueSplinePoints}
+            timeframe={bounds.label}
+            dataStatus={revenueStatus}
+            conversionCount={currentRevenueCount}
+          />
+          <PipelineAllocationCard
+            totalValuation={pipelineAvailable ? pipelineValue : null}
+            stages={dynamicStages}
+            dataStatus={stageStatus}
+          />
+        </section>
         <AttentionQueue
           items={(attentionRows ?? []).filter((lead) => {
             const stage = statusById.get(lead.status_id);
@@ -525,18 +538,7 @@ export default async function AdminDashboardPage(
           dueTodayCount={pipelineAvailable ? dueTodayCount : null}
           dataStatus={attentionError ? 'unavailable' : 'ready'}
         />
-        <PipelineAllocationCard
-          totalValuation={pipelineAvailable ? pipelineValue : null}
-          stages={dynamicStages}
-          dataStatus={stageStatus}
-        />
-        <section className={styles.bottomSection} aria-label="Recent work and conversion trend">
-          <RevenueDynamicsCard
-            dataPoints={revenueSplinePoints}
-            timeframe={bounds.label}
-            dataStatus={revenueStatus}
-            conversionCount={currentRevenueCount}
-          />
+        <section className={styles.dealsSection} aria-label="Recent active deals">
           <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
         </section>
       </main>

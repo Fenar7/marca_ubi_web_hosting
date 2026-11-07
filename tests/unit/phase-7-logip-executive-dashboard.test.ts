@@ -21,7 +21,7 @@ describe('Commercial Desk overview contracts', () => {
       assert.ok(page.includes(`<${component}`), `${component} should be mounted`);
     }
     assert.ok(pageStyles.includes('.fluidCanvas'));
-    assert.ok(pageStyles.includes('.bottomSection'));
+    assert.ok(pageStyles.includes('.analysisSection'));
     assert.ok(pageStyles.includes('@media (max-width: 1100px)'));
   });
 

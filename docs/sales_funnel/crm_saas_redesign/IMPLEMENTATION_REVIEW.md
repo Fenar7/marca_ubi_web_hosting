@@ -2,6 +2,19 @@
 
 ## Review outcome: draft, functional verification incomplete
 
+## 2026-11-07 recovery branch update
+
+- On branch `fix/crm-workspace-recovery`, removed the `crm_team_directory` view relationship embed from the Leads and Deals primary row queries. Owner labels are resolved from a separate authenticated safe-directory read. Directory/source failures now preserve valid lead/deal rows and announce which optional detail is unavailable. Primary record and stage failures remain visible with their PostgREST code and direct retry link. The screenshots' underlying database error is not confirmed because no isolated local Supabase project or authenticated CRM E2E credentials are available.
+- Reordered Overview to show persisted conversion trend and configured stage allocation together after KPI context, then priority follow-ups, then recent active deals. No chart or metric source was added.
+- Added CRM query resilience and hierarchy assertions; updated Overview layout assertions for the new hierarchy.
+- `npx tsc --noEmit --incremental false --pretty false`: passed.
+- Focused ESLint for changed TS/TSX and tests with `--max-warnings=0`: passed. Existing unrelated repository lint findings were not altered in this recovery slice.
+- `npm run test:unit`: 1,309 passed, 0 failed.
+- `npm run test:boundaries`: passed (13 Server Action modules, 49 actions).
+- `npm run build`: passed on Next.js 16.1.6. Turbopack reported existing Sass deprecations in public-site styles; no CSS Module purity error.
+- Local browser smoke: `/admin/login` returned 200; unauthenticated `/admin`, `/admin/leads`, and `/admin/deals` redirected to login. Chromium showed zero page or console errors. The authenticated route behavior in the screenshots was not exercised.
+- Remaining gate: reproduce the authenticated query against an isolated local database with applied stacked migrations; complete route-by-route authenticated desktop/mobile interaction, transaction tests, and correct the actual deployed migration/schema-cache issue if evidenced. Keep PR #114 as a draft until these gates pass.
+
 ## 2026-11-07 verification update
 
 - `npm run dev` started with Next 16.1.6 webpack. `/admin/login` returned HTTP 200; `/admin`, leads, deals, tasks, team, analytics, ingestion, and settings redirected unauthenticated access to `/admin/login?next=...`. Chromium reported no page or console errors. The protected destinations were not authenticated, so this is not the required route-by-route interaction pass.
