@@ -24,12 +24,14 @@ export interface AuditLogItem {
 interface SettingsWorkspaceClientProps {
   initialSettings: AgencySettings;
   auditLogs: AuditLogItem[];
+  auditUnavailable: boolean;
   userRole: string;
 }
 
 export function SettingsWorkspaceClient({
   initialSettings,
   auditLogs,
+  auditUnavailable,
   userRole,
 }: SettingsWorkspaceClientProps): React.ReactElement {
   const [settings, setSettings] = useState<AgencySettings>(initialSettings);
@@ -339,9 +341,9 @@ export function SettingsWorkspaceClient({
       <section className={styles.auditSection} aria-label="System Governance Audit Ledger">
         <div className={styles.auditHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Security & Governance Audit Trail.</h2>
+            <h2 className={styles.sectionTitle}>Recent administrative activity</h2>
             <p className={styles.sectionSubtitle}>
-              Immutable cryptographic ledger tracking administrative mutations and permission updates.
+              Showing up to the latest 20 administrative events. Search applies to these loaded events.
             </p>
           </div>
           <div className={styles.searchBox}>
@@ -360,7 +362,7 @@ export function SettingsWorkspaceClient({
           </div>
         </div>
 
-        {filteredLogs.length === 0 ? (
+        {auditUnavailable ? <div className={styles.emptyState} role="status">Audit history could not be loaded. Refresh to try again.</div> : filteredLogs.length === 0 ? (
           <div className={styles.emptyState}>
             <span>No administrative audit events found matching query.</span>
           </div>

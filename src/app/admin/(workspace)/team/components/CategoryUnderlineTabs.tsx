@@ -44,7 +44,7 @@ export function CategoryUnderlineTabs({
   counts,
 }: CategoryUnderlineTabsProps): React.ReactElement {
   return (
-    <nav className={styles.tabsContainer} role="tablist" aria-label="Personnel Directory Segmentation">
+    <nav className={styles.tabsContainer} aria-label="Filter team members">
       {TAB_DEFINITIONS.map(({ key, label }) => {
         const isActive = activeTab === key;
         const count = counts[key] ?? 0;
@@ -53,8 +53,7 @@ export function CategoryUnderlineTabs({
           <button
             key={key}
             type="button"
-            role="tab"
-            aria-selected={isActive}
+            aria-pressed={isActive}
             className={`${styles.tabButton} ${isActive ? styles.tabButtonActive : ''}`}
             onClick={() => onTabChange(key)}
           >

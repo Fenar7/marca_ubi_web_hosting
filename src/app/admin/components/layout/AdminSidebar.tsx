@@ -11,6 +11,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { CurrentUserSession } from './UserProfileDropdown';
 import { NAVIGATION_GROUPS, isTabAuthorized } from './navigationConfig';
@@ -38,10 +39,6 @@ export function AdminSidebar({
     return pathname.startsWith(href);
   };
 
-  const handleOpenNewLead = (): void => {
-    window.dispatchEvent(new CustomEvent('open-new-lead-drawer'));
-  };
-
   // Human-readable operational role formatter
   const formattedRole = currentUser.role
     .split('_')
@@ -56,17 +53,20 @@ export function AdminSidebar({
       {/* Brand Header */}
       <div className={styles.brandContainer}>
         <Link href="/admin" className={styles.logoLink} title="Marca Ubi CRM Executive Overview">
-          <img
-            src="/hero/marca-ubi-logo.png"
+          <Image
+            src="/images/marca-ubi-dark.svg"
             alt="Marca Ubi."
+            width={150}
+            height={34}
             className={styles.brandLogo}
           />
+          <span className={styles.brandMonogram} aria-hidden="true">M<span>.</span></span>
         </Link>
         <button
           type="button"
           onClick={onToggleCollapse}
           className={styles.collapseToggle}
-          title={isCollapsed ? 'Expand navigation rail (⌘B)' : 'Collapse navigation rail (⌘B)'}
+          title={isCollapsed ? 'Expand navigation rail (Ctrl+B)' : 'Collapse navigation rail (Ctrl+B)'}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-expanded={!isCollapsed}
         >
@@ -89,35 +89,6 @@ export function AdminSidebar({
           </svg>
         </button>
       </div>
-
-      {/* Quick Action Button: Gated against viewers */}
-      {currentUser.role !== 'viewer' && (
-        <div className={styles.quickActionBox}>
-          <button
-            type="button"
-            onClick={handleOpenNewLead}
-            className={styles.newLeadBtn}
-            title="Log new prospective engagement"
-            aria-label="New Lead"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span className={styles.newLeadBtnText}>New Lead</span>
-          </button>
-        </div>
-      )}
 
       {/* Navigation Groups with Dynamic Tab Authorization */}
       <nav className={styles.navScrollArea}>
@@ -172,7 +143,7 @@ export function AdminSidebar({
         })}
       </nav>
 
-      {/* Footer System Status: Real Authenticated Session Telemetry */}
+      {/* Identity remains available in the navigation when the global header is scrolled. */}
       <div className={styles.sidebarFooter}>
         <div
           className={styles.systemStatusBlock}

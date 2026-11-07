@@ -9,23 +9,25 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { ROLE_DEFAULT_TABS, type CrmUserRole, type FunnelBucket } from '@/types/crm';
 import {
   ExecutiveMasthead,
   ExecutiveKpiGrid,
+  AttentionQueue,
   RevenueDynamicsCard,
   PipelineAllocationCard,
   CommercialDealsTable,
   type ActiveDealItem,
   type ExecutiveDashboardKpis,
   type StageAllocationItem,
+  type AttentionQueueItem,
 } from '@/app/admin/components/Dashboard';
 import {
   aggregateTimeframeRevenue,
   calculateMetricDelta,
   resolveTimeframeBounds,
   timeframeToSlug,
-  type RevenueEvent,
 } from '@/app/admin/lib/timeframeUtils';
 import styles from './page.module.scss';
 
@@ -48,7 +50,7 @@ interface PageRead<T> {
 }
 
 interface PageReadAll<T> {
-  data: T[] | null;
+  summary: T | null;
   error: string | null;
 }
 
@@ -76,13 +78,27 @@ interface CohortRecord {
   lost_reason: string | null;
 }
 
-interface RevenueRecord extends RevenueEvent {
-  createdAt: string;
+interface RevenueRecord {
+  converted_at: string | null;
+  created_at: string;
+  expected_value: number | string | null;
 }
 
 interface TeamDirectoryRecord {
   id: string;
   full_name: string | null;
+}
+
+interface AttentionRecord {
+  id: string;
+  lead_id: string;
+  name: string;
+  company: string | null;
+  status_id: string;
+  priority: string;
+  expected_value: number | string | null;
+  next_follow_up: string;
+  revisit_date: string | null;
 }
 
 interface CohortTotals {
@@ -93,30 +109,37 @@ interface CohortTotals {
   potentialValue: number;
 }
 
-/**
- * Reads deterministic ordered pages to exhaustion. A failed page or an unusually large result
- * invalidates the whole aggregate so the dashboard never presents partial totals as complete.
- */
-async function readAllPages<T>(loadPage: (from: number, to: number) => Promise<PageRead<T>>): Promise<PageReadAll<T>> {
-  const rows: T[] = [];
-  for (let from = 0; from <= MAX_DASHBOARD_ROWS; from += PAGE_SIZE) {
+/** Folds each bounded page immediately, preserving exact totals without retaining CRM rows in memory. */
+async function reduceAllPages<T, Summary>(
+  loadPage: (from: number, to: number) => Promise<PageRead<T>>,
+  summary: Summary,
+  consume: (summary: Summary, rows: T[]) => void,
+): Promise<PageReadAll<Summary>> {
+  let processed = 0;
+  for (let from = 0; from < MAX_DASHBOARD_ROWS; from += PAGE_SIZE) {
     const { data, error } = await loadPage(from, from + PAGE_SIZE - 1);
-    if (error) return { data: null, error: error.message };
-    if (!data) return { data: null, error: 'The CRM query returned no result payload.' };
-    if (rows.length + data.length > MAX_DASHBOARD_ROWS) {
-      return { data: null, error: 'The dashboard data set exceeds the safe aggregation limit.' };
-    }
-    rows.push(...data);
-    if (data.length < PAGE_SIZE) return { data: rows, error: null };
+    if (error) return { summary: null, error: error.message };
+    if (!data) return { summary: null, error: 'The CRM query returned no result payload.' };
+    if (processed + data.length > MAX_DASHBOARD_ROWS) return { summary: null, error: 'The dashboard data set exceeds the safe aggregation limit.' };
+    consume(summary, data);
+    processed += data.length;
+    if (data.length < PAGE_SIZE) return { summary, error: null };
   }
-  return { data: null, error: 'The dashboard query did not reach a final page.' };
+  const boundary = await loadPage(MAX_DASHBOARD_ROWS, MAX_DASHBOARD_ROWS);
+  if (boundary.error) return { summary: null, error: boundary.error.message };
+  if (!boundary.data) return { summary: null, error: 'The CRM query returned no boundary-check payload.' };
+  return boundary.data?.length
+    ? { summary: null, error: 'The dashboard data set exceeds the safe aggregation limit.' }
+    : { summary, error: null };
 }
 
+/** Treats malformed stored numerics as zero only for accumulation; the source query remains the availability gate. */
 function amountOf(value: number | string): number {
   const amount = Number(value);
   return Number.isFinite(amount) ? amount : 0;
 }
 
+/** Applies only explicitly approved stage weights; unknown stages stay unavailable instead of inheriting a guess. */
 function weightForStage(stageName: string): number | null {
   const normalized = stageName.trim().toLowerCase();
   if (normalized === 'qualified') return 0.25;
@@ -125,17 +148,19 @@ function weightForStage(stageName: string): number | null {
   return null;
 }
 
+/** Creates independent counters for each creation-time cohort before current status is evaluated. */
 function createEmptyCohort(): CohortTotals {
   return { total: 0, disqualified: 0, converted: 0, active: 0, potentialValue: 0 };
 }
 
+/** Excludes only known invalid/out-of-scope leads and leaves an empty denominator unavailable. */
 function cohortConversionRate(cohort: CohortTotals): number | null {
   const eligible = cohort.total - cohort.disqualified;
   return eligible > 0 ? (cohort.converted / eligible) * 100 : null;
 }
 
 function currency(amount: number): string {
-  return '₹' + Math.round(amount).toLocaleString('en-IN');
+  return formatCrmCurrency(amount);
 }
 
 export default async function AdminDashboardPage(
@@ -178,22 +203,76 @@ export default async function AdminDashboardPage(
   const activeStatusIds = activeStatuses.map((status) => status.id);
   const convertedStatusIds = statusRows.filter((status) => status.bucket === 'converted').map((status) => status.id);
 
-  const activeRowsResult = statusesError || activeStatusIds.length === 0
-    ? { data: statusesError ? null : [], error: statusesError?.message ?? null }
-    : await readAllPages<ActivePipelineRecord>(async (from, to) => {
-        const result = await supabase
-          .from('leads')
-          .select('id, status_id, expected_value, next_follow_up, revisit_date')
-          .in('status_id', activeStatusIds)
-          .or(SYNTHETIC_EXCLUSION)
-          .order('id', { ascending: true })
-          .range(from, to);
-        return { data: result.data as ActivePipelineRecord[] | null, error: result.error };
-      });
+  const now = new Date();
+  const nowMs = now.getTime();
+  const nowIso = now.toISOString();
+  const todayUtc = nowIso.slice(0, 10);
+  const startOfTodayMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const endOfTodayMs = startOfTodayMs + 86_400_000 - 1;
+  const endOfTodayIso = new Date(endOfTodayMs).toISOString();
+
+  const pipelineSummary = {
+    stageTotals: new Map<string, { count: number; value: number; weightedValue: number }>(),
+    pipelineValue: 0,
+    weightedPipelineValue: 0,
+    weightedPipelineAvailable: true,
+    overdueCount: 0,
+    scheduledFollowUps: 0,
+    dueTodayCount: 0,
+    activeDealsCount: 0,
+  };
+  const cohortSummary = { current: createEmptyCohort(), prior: createEmptyCohort() };
+  const revenueSummary = {
+    currentRevenue: 0,
+    priorRevenue: 0,
+    currentCount: 0,
+    cycleTotalDays: 0,
+    cycleCount: 0,
+    intervalTotals: aggregateTimeframeRevenue(bounds.slug, bounds, []).map(() => 0),
+  };
+
+  const activeRowsResult = statusesError
+    ? { summary: null, error: statusesError.message }
+    : activeStatusIds.length === 0
+      ? { summary: pipelineSummary, error: null }
+      : await reduceAllPages<ActivePipelineRecord, typeof pipelineSummary>(async (from, to) => {
+          const result = await supabase
+            .from('leads')
+            .select('id, status_id, expected_value, next_follow_up, revisit_date')
+            .in('status_id', activeStatusIds)
+            .or(SYNTHETIC_EXCLUSION)
+            .order('id', { ascending: true })
+            .range(from, to);
+          return { data: result.data as ActivePipelineRecord[] | null, error: result.error };
+        }, pipelineSummary, (summary, rows) => {
+          for (const lead of rows) {
+            const amount = amountOf(lead.expected_value);
+            const status = statusById.get(lead.status_id);
+            if (!status) continue;
+            summary.activeDealsCount += 1;
+            summary.pipelineValue += amount;
+            const probability = status.bucket === 'potential' ? weightForStage(status.name) : null;
+            const weightedAmount = probability === null ? 0 : amount * probability;
+            if (status.bucket === 'potential' && probability === null) summary.weightedPipelineAvailable = false;
+            if (status.bucket === 'potential') summary.weightedPipelineValue += weightedAmount;
+            const stage = summary.stageTotals.get(status.id) ?? { count: 0, value: 0, weightedValue: 0 };
+            stage.count += 1;
+            stage.value += amount;
+            stage.weightedValue += weightedAmount;
+            summary.stageTotals.set(status.id, stage);
+            if (!lead.next_follow_up) continue;
+            summary.scheduledFollowUps += 1;
+            const revisitIsDue = status.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
+            const followUpTime = Date.parse(lead.next_follow_up);
+            if (!Number.isFinite(followUpTime) || !revisitIsDue) continue;
+            if (followUpTime < nowMs) summary.overdueCount += 1;
+            else if (followUpTime <= endOfTodayMs) summary.dueTodayCount += 1;
+          }
+        });
 
   const cohortRowsResult = statusesError
-    ? { data: null, error: statusesError.message }
-    : await readAllPages<CohortRecord>(async (from, to) => {
+    ? { summary: null, error: statusesError.message }
+    : await reduceAllPages<CohortRecord, typeof cohortSummary>(async (from, to) => {
         const result = await supabase
           .from('leads')
           .select('id, status_id, expected_value, created_at, lost_reason')
@@ -203,27 +282,60 @@ export default async function AdminDashboardPage(
           .order('id', { ascending: true })
           .range(from, to);
         return { data: result.data as CohortRecord[] | null, error: result.error };
+      }, cohortSummary, (summary, rows) => {
+        for (const lead of rows) {
+          const createdAt = Date.parse(lead.created_at);
+          const cohort = createdAt >= bounds.currentStart.getTime() ? summary.current : summary.prior;
+          const status = statusById.get(lead.status_id);
+          if (!status) continue;
+          cohort.total += 1;
+          if (lead.lost_reason === 'spam_invalid' || lead.lost_reason === 'out_of_scope') cohort.disqualified += 1;
+          if (status.bucket === 'converted') cohort.converted += 1;
+          if (status.bucket === 'open' || status.bucket === 'potential') cohort.active += 1;
+          if (status.bucket === 'potential') cohort.potentialValue += amountOf(lead.expected_value);
+        }
       });
 
-  const revenueRowsResult = statusesError || convertedStatusIds.length === 0
-    ? { data: statusesError ? null : [], error: statusesError?.message ?? null }
-    : await readAllPages<RevenueRecord>(async (from, to) => {
-        const result = await supabase
-          .from('leads')
-          .select('converted_at, created_at, expected_value')
-          .in('status_id', convertedStatusIds)
-          .gte('converted_at', priorStartIso)
-          .lte('converted_at', currentEndIso)
-          .or(SYNTHETIC_EXCLUSION)
-          .order('id', { ascending: true })
-          .range(from, to);
-        const rows = result.data?.map((row) => ({
-          convertedAt: row.converted_at ?? '',
-          createdAt: row.created_at,
-          amount: amountOf(row.expected_value),
-        })) ?? null;
-        return { data: rows as RevenueRecord[] | null, error: result.error };
-      });
+  const emptyRevenuePoints = aggregateTimeframeRevenue(bounds.slug, bounds, []);
+  const revenueRowsResult = statusesError
+    ? { summary: null, error: statusesError.message }
+    : convertedStatusIds.length === 0
+      ? { summary: revenueSummary, error: null }
+      : await reduceAllPages<RevenueRecord, typeof revenueSummary>(async (from, to) => {
+          const result = await supabase
+            .from('leads')
+            .select('converted_at, created_at, expected_value')
+            .in('status_id', convertedStatusIds)
+            .gte('converted_at', priorStartIso)
+            .lte('converted_at', currentEndIso)
+            .or(SYNTHETIC_EXCLUSION)
+            .order('id', { ascending: true })
+            .range(from, to);
+          return { data: result.data as RevenueRecord[] | null, error: result.error };
+        }, revenueSummary, (summary, rows) => {
+          const chartStart = bounds.currentStart.getTime();
+          const chartSpan = bounds.currentEnd.getTime() - chartStart;
+          for (const event of rows) {
+            const convertedAt = Date.parse(event.converted_at ?? '');
+            if (!Number.isFinite(convertedAt)) continue;
+            const amount = amountOf(event.expected_value ?? 0);
+            if (convertedAt >= chartStart) {
+              summary.currentRevenue += amount;
+              summary.currentCount += 1;
+              if (chartSpan > 0 && summary.intervalTotals.length > 0) {
+                const index = Math.min(summary.intervalTotals.length - 1, Math.floor(((convertedAt - chartStart) / chartSpan) * summary.intervalTotals.length));
+                summary.intervalTotals[index] += amount;
+              }
+              const cycleDays = (convertedAt - Date.parse(event.created_at)) / 86_400_000;
+              if (Number.isFinite(cycleDays) && cycleDays >= 0) {
+                summary.cycleTotalDays += cycleDays;
+                summary.cycleCount += 1;
+              }
+            } else {
+              summary.priorRevenue += amount;
+            }
+          }
+        });
 
   for (const [source, error] of [
     ['active pipeline', activeRowsResult.error],
@@ -233,112 +345,87 @@ export default async function AdminDashboardPage(
     if (error) console.error('[admin-dashboard] ' + source + ' query failed:', error);
   }
 
-  const activeRows = activeRowsResult.data ?? [];
-  const cohortRows = cohortRowsResult.data ?? [];
-  const revenueRows = revenueRowsResult.data ?? [];
-  const now = new Date();
-  const nowMs = now.getTime();
-  const nowIso = now.toISOString();
-  const todayUtc = nowIso.slice(0, 10);
-
-  const stageTotals = new Map<string, { count: number; value: number; weightedValue: number }>();
-  let pipelineValue = 0;
-  let weightedPipelineValue = 0;
-  let weightedPipelineAvailable = true;
-  let overdueCount = 0;
-  let scheduledFollowUps = 0;
-  for (const lead of activeRows) {
-    const amount = amountOf(lead.expected_value);
-    const status = statusById.get(lead.status_id);
-    if (!status) continue;
-    pipelineValue += amount;
-    const coefficient = status.bucket === 'potential' ? weightForStage(status.name) : null;
-    const weightedValue = coefficient === null ? 0 : amount * coefficient;
-    if (status.bucket === 'potential' && coefficient === null) weightedPipelineAvailable = false;
-    if (status.bucket === 'potential') weightedPipelineValue += weightedValue;
-    const stage = stageTotals.get(status.id) ?? { count: 0, value: 0, weightedValue: 0 };
-    stage.count += 1;
-    stage.value += amount;
-    stage.weightedValue += weightedValue;
-    stageTotals.set(status.id, stage);
-
-    if (lead.next_follow_up) {
-      scheduledFollowUps += 1;
-      const revisitIsDue = status.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
-      if (lead.next_follow_up < nowIso && revisitIsDue) overdueCount += 1;
-    }
-  }
-
-  const currentCohort = createEmptyCohort();
-  const priorCohort = createEmptyCohort();
-  for (const lead of cohortRows) {
-    const createdAt = Date.parse(lead.created_at);
-    const cohort = createdAt >= bounds.currentStart.getTime() ? currentCohort : priorCohort;
-    const status = statusById.get(lead.status_id);
-    if (!status) continue;
-    cohort.total += 1;
-    if (lead.lost_reason === 'spam_invalid' || lead.lost_reason === 'out_of_scope') cohort.disqualified += 1;
-    if (status.bucket === 'converted') cohort.converted += 1;
-    if (status.bucket === 'open' || status.bucket === 'potential') cohort.active += 1;
-    if (status.bucket === 'potential') cohort.potentialValue += amountOf(lead.expected_value);
-  }
-
-  const currentRevenueEvents = revenueRows.filter((event) => Date.parse(event.convertedAt) >= bounds.currentStart.getTime());
-  const priorRevenueEvents = revenueRows.filter((event) => Date.parse(event.convertedAt) < bounds.currentStart.getTime());
-  const currentRevenue = currentRevenueEvents.reduce((total, event) => total + event.amount, 0);
-  const priorRevenue = priorRevenueEvents.reduce((total, event) => total + event.amount, 0);
-  const salesCycleDays = currentRevenueEvents
-    .map((event) => (Date.parse(event.convertedAt) - Date.parse(event.createdAt)) / 86400000)
-    .filter((days) => Number.isFinite(days) && days >= 0);
-  const averageSalesCycle = salesCycleDays.length > 0
-    ? salesCycleDays.reduce((total, days) => total + days, 0) / salesCycleDays.length
+  const activeSummary = activeRowsResult.summary;
+  const cohortTotals = cohortRowsResult.summary;
+  const revenueTotals = revenueRowsResult.summary;
+  const stageTotals = activeSummary?.stageTotals ?? new Map<string, { count: number; value: number; weightedValue: number }>();
+  const pipelineValue = activeSummary?.pipelineValue ?? 0;
+  const weightedPipelineValue = activeSummary?.weightedPipelineValue ?? 0;
+  const weightedPipelineAvailable = activeSummary?.weightedPipelineAvailable ?? false;
+  const overdueCount = activeSummary?.overdueCount ?? 0;
+  const scheduledFollowUps = activeSummary?.scheduledFollowUps ?? 0;
+  const dueTodayCount = activeSummary?.dueTodayCount ?? 0;
+  const activeDealsCount = activeSummary?.activeDealsCount ?? 0;
+  const currentCohort = cohortTotals?.current ?? createEmptyCohort();
+  const currentRevenue = revenueTotals?.currentRevenue ?? 0;
+  const priorRevenue = revenueTotals?.priorRevenue ?? 0;
+  const currentRevenueCount = revenueTotals?.currentCount ?? 0;
+  const averageSalesCycle = revenueTotals && revenueTotals.cycleCount > 0
+    ? revenueTotals.cycleTotalDays / revenueTotals.cycleCount
     : null;
 
-  const executiveKpis: ExecutiveDashboardKpis | null =
-    statusesError || activeRowsResult.error || cohortRowsResult.error || revenueRowsResult.error
-      ? null
-      : {
-          totalPipelineValue: pipelineValue,
-          weightedPipelineValue: weightedPipelineAvailable ? weightedPipelineValue : null,
-          pipelineDealsCount: activeRows.length,
-          pipelineDeltaPercentage: null,
-          convertedRevenueValue: currentRevenue,
-          convertedDealsCount: currentRevenueEvents.length,
-          revenueDeltaPercentage: calculateMetricDelta(currentRevenue, priorRevenue),
-          activeDealsCount: activeRows.length,
-          overdueDealsCount: overdueCount,
-          dealsDeltaPercentage: calculateMetricDelta(currentCohort.active, priorCohort.active),
-          conversionWinRate: cohortConversionRate(currentCohort),
-          winRateDeltaPercentage: calculateMetricDelta(
-            cohortConversionRate(currentCohort) ?? Number.NaN,
-            cohortConversionRate(priorCohort) ?? Number.NaN
-          ),
-          cadenceLabel: bounds.cadenceLabel,
-          slaOnTrackPercentage: scheduledFollowUps > 0
-            ? ((scheduledFollowUps - overdueCount) / scheduledFollowUps) * 100
-            : null,
-          averageSalesCycleDays: averageSalesCycle,
-        };
+  const { data: attentionRows, error: attentionError } = activeStatusIds.length === 0
+    ? { data: [] as AttentionRecord[], error: null }
+    : await supabase
+        .from('leads')
+        .select('id, lead_id, name, company, status_id, priority, expected_value, next_follow_up, revisit_date')
+        .in('status_id', activeStatusIds)
+        .not('next_follow_up', 'is', null)
+        .lte('next_follow_up', endOfTodayIso)
+        .or(SYNTHETIC_EXCLUSION)
+        .order('next_follow_up', { ascending: true })
+        .order('id', { ascending: true })
+        .limit(24);
+  if (attentionError) console.error('[admin-dashboard] Attention queue query failed:', attentionError.message);
 
-  const dynamicStages: StageAllocationItem[] = activeStatuses.flatMap((status) => {
+  const pipelineAvailable = !statusesError && !activeRowsResult.error;
+  const cohortAvailable = !statusesError && !cohortRowsResult.error;
+  const revenueAvailable = !statusesError && !revenueRowsResult.error;
+  const executiveKpis: ExecutiveDashboardKpis = {
+    totalPipelineValue: pipelineAvailable ? pipelineValue : null,
+    weightedPipelineValue: pipelineAvailable && weightedPipelineAvailable ? weightedPipelineValue : null,
+    pipelineDealsCount: pipelineAvailable ? activeDealsCount : null,
+    pipelineDeltaPercentage: null,
+    convertedRevenueValue: revenueAvailable ? currentRevenue : null,
+    convertedDealsCount: revenueAvailable ? currentRevenueCount : null,
+    revenueDeltaPercentage: revenueAvailable ? calculateMetricDelta(currentRevenue, priorRevenue) : null,
+    activeDealsCount: pipelineAvailable ? activeDealsCount : null,
+    overdueDealsCount: pipelineAvailable ? overdueCount : null,
+    dealsDeltaPercentage: null,
+    conversionWinRate: cohortAvailable ? cohortConversionRate(currentCohort) : null,
+    winRateDeltaPercentage: null,
+    conversionWonCount: cohortAvailable ? currentCohort.converted : null,
+    conversionEligibleCount: cohortAvailable ? currentCohort.total - currentCohort.disqualified : null,
+    cadenceLabel: bounds.cadenceLabel,
+    slaOnTrackPercentage: pipelineAvailable && scheduledFollowUps > 0
+      ? ((scheduledFollowUps - overdueCount) / scheduledFollowUps) * 100
+      : null,
+    averageSalesCycleDays: revenueAvailable ? averageSalesCycle : null,
+  };
+
+  const dynamicStages: StageAllocationItem[] = activeStatuses.map((status) => {
     const stage = stageTotals.get(status.id);
-    if (!stage) return [];
-    return [{
+    const amount = stage?.value ?? 0;
+    const dealCount = stage?.count ?? 0;
+    return {
       id: status.id,
       code: undefined,
       name: status.name,
-      color: status.color_code || '#ff6100',
-      dealCount: stage.count,
-      amount: stage.value,
-      formattedAmount: currency(stage.value),
-      percentage: pipelineValue > 0 ? (stage.value / pipelineValue) * 100 : 0,
+      color: status.color_code || '#ea002a',
+      dealCount,
+      amount,
+      formattedAmount: currency(amount),
+      percentage: pipelineValue > 0 ? (amount / pipelineValue) * 100 : 0,
       statusLabel: status.bucket === 'potential' ? 'Qualified' : 'Open',
-    }];
+    };
   });
 
-  const revenueSplinePoints = revenueRowsResult.error
+  const revenueSplinePoints = revenueRowsResult.error || !revenueTotals
     ? []
-    : aggregateTimeframeRevenue(bounds.slug, bounds, currentRevenueEvents);
+    : emptyRevenuePoints.map((point, index) => {
+        const cashVal = revenueTotals.intervalTotals[index] ?? 0;
+        return { ...point, cashVal, cashFormatted: currency(cashVal) };
+      });
 
   const { data: topLeads, error: topLeadsError } = activeStatusIds.length === 0
     ? { data: [], error: null }
@@ -378,12 +465,11 @@ export default async function AdminDashboardPage(
     };
   });
 
-  const kpiStatus = executiveKpis ? 'ready' : 'unavailable';
   const stageStatus = activeRowsResult.error || statusesError ? 'unavailable' : 'ready';
   const revenueStatus = revenueRowsResult.error ? 'unavailable' : 'ready';
   const dealsStatus = statusesError || topLeadsError || directoryError ? 'unavailable' : 'ready';
-  const currentConversionRate = cohortConversionRate(currentCohort);
-  const exportData = kpiStatus === 'ready' && stageStatus === 'ready' && revenueStatus === 'ready' && dealsStatus === 'ready'
+  const currentConversionRate = cohortAvailable ? cohortConversionRate(currentCohort) : null;
+  const exportData = pipelineAvailable && cohortAvailable && revenueAvailable && stageStatus === 'ready' && revenueStatus === 'ready' && dealsStatus === 'ready'
     ? {
         timeframe: bounds.label,
         cadence: bounds.cadenceLabel,
@@ -393,9 +479,9 @@ export default async function AdminDashboardPage(
           { label: 'Active pipeline', value: currency(pipelineValue) },
           { label: 'Weighted potential pipeline', value: weightedPipelineAvailable ? currency(weightedPipelineValue) : 'Unavailable' },
           { label: 'Converted contract value', value: currency(currentRevenue) },
-          { label: 'Closed deals', value: currentRevenueEvents.length },
-          { label: 'Active deals', value: activeRows.length },
-          { label: 'Current status conversion rate for leads created in period', value: currentConversionRate === null ? 'Unavailable' : currentConversionRate.toFixed(1) + '%' },
+          { label: 'Closed deals', value: currentRevenueCount },
+          { label: 'Active deals', value: activeDealsCount },
+          { label: 'Current status conversion rate for eligible leads created in period', value: currentConversionRate === null ? 'Unavailable' : currentConversionRate.toFixed(1) + '%' },
         ],
         stages: dynamicStages.map((stage) => ({
           stageName: stage.name,
@@ -420,22 +506,37 @@ export default async function AdminDashboardPage(
     <div className={styles.dashboardContainer}>
       <main className={styles.fluidCanvas}>
         <ExecutiveMasthead selectedTimeframe={bounds.label} exportData={exportData} />
-        <ExecutiveKpiGrid kpis={executiveKpis} dataStatus={kpiStatus} cadenceLabel={bounds.cadenceLabel} />
-        <section className={styles.midTierGrid} aria-label="Executive Performance Analytics">
+        <ExecutiveKpiGrid kpis={executiveKpis} cadenceLabel={bounds.cadenceLabel} metricStatus={{ pipeline: pipelineAvailable ? 'ready' : 'unavailable', revenue: revenueAvailable ? 'ready' : 'unavailable', cohort: cohortAvailable ? 'ready' : 'unavailable' }} />
+        <AttentionQueue
+          items={(attentionRows ?? []).filter((lead) => {
+            const stage = statusById.get(lead.status_id);
+            return stage?.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
+          }).slice(0, 6).map((lead): AttentionQueueItem => ({
+            id: lead.id,
+            leadId: lead.lead_id,
+            name: lead.name,
+            company: lead.company,
+            stage: statusById.get(lead.status_id)?.name ?? 'Unknown stage',
+            priority: lead.priority as AttentionQueueItem['priority'],
+            expectedValue: amountOf(lead.expected_value ?? 0),
+            nextFollowUp: lead.next_follow_up,
+          }))}
+          overdueCount={pipelineAvailable ? overdueCount : null}
+          dueTodayCount={pipelineAvailable ? dueTodayCount : null}
+          dataStatus={attentionError ? 'unavailable' : 'ready'}
+        />
+        <PipelineAllocationCard
+          totalValuation={pipelineAvailable ? pipelineValue : null}
+          stages={dynamicStages}
+          dataStatus={stageStatus}
+        />
+        <section className={styles.bottomSection} aria-label="Recent work and conversion trend">
           <RevenueDynamicsCard
             dataPoints={revenueSplinePoints}
             timeframe={bounds.label}
             dataStatus={revenueStatus}
+            conversionCount={currentRevenueCount}
           />
-          <PipelineAllocationCard
-            totalValuation={pipelineValue}
-            stages={dynamicStages}
-            deltaPercentage={null}
-            cadenceLabel={bounds.cadenceLabel}
-            dataStatus={stageStatus}
-          />
-        </section>
-        <section className={styles.bottomSection} aria-label="Commercial Deals Table">
           <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
         </section>
       </main>

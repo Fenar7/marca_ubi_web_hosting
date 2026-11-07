@@ -8,6 +8,20 @@
 
 import { defineConfig, devices } from '@playwright/test';
 
+const testPort = Number(process.env.PLAYWRIGHT_TEST_PORT || 3011);
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || `http://127.0.0.1:${testPort}`;
+const parsedBaseURL = new URL(baseURL);
+if (!Number.isInteger(testPort) || testPort < 1024 || testPort > 65535) {
+  throw new Error('PLAYWRIGHT_TEST_PORT must be a valid non-privileged TCP port.');
+}
+if (
+  parsedBaseURL.protocol !== 'http:' ||
+  !['localhost', '127.0.0.1', '::1'].includes(parsedBaseURL.hostname) ||
+  Number(parsedBaseURL.port || 80) !== testPort
+) {
+  throw new Error('CRM Playwright runs must target a loopback server; external hosts are not permitted.');
+}
+
 export default defineConfig({
   testDir: './tests/e2e',
   // The Chat Pod gates own a runner (`tests/playwright.chatpod.config.ts`): they attach to the dev
@@ -27,7 +41,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
   ],
   use: {
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://127.0.0.1:3000',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -55,9 +69,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:3000',
-    reuseExistingServer: true,
+    command: `npm run dev -- --hostname 127.0.0.1 --port ${testPort}`,
+    url: baseURL,
+    reuseExistingServer: false,
     timeout: 120 * 1000,
   },
 });

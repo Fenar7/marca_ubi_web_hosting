@@ -72,6 +72,7 @@ export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps):
           type="button"
           onClick={handleOpenSearch}
           className={styles.omniSearchTrigger}
+          aria-label="Search clients, leads, deals, and team members"
           title="Search deals, clients, or reps (⌘K)"
         >
           <svg

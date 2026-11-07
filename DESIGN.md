@@ -1,74 +1,54 @@
-# Marca Ubi — Design Direction & Brand Soul (`DESIGN.md`)
+﻿# Marca Ubi CRM — Commercial Desk Design Direction
 
-> **Design Direction Authority**: This document provides the product identity, aesthetic soul, color tokens, and liveliness dials for **Marca Ubi**. It serves as the primary direction provider required by `anti-slop` (Rule R-37) and pairs with `.agents/skills/master-ui-ux-design-system/`.
+**Status:** Approved product direction for the CRM workspace redesign.
 
----
+**Design read:** ENERGY 2 / RHYTHM 3 / MOTION 1.
+**Product:** Internal agency CRM for lead triage, pipeline decisions, client delivery, follow-ups, and operational governance.
 
-## 1. Brand Identity & Product Character
+## Brand and interface intent
 
-- **Brand**: Marca Ubi (Creative Technology, Luxury Digital Infrastructure, Enterprise Agency CRM & Sales Pipeline Platform)
-- **Domain**: High-ticket creative client acquisition, luxury branding proposals, commercial negotiations, and deal velocity tracking.
-- **Personality**: Monolithic, dark-mode native, ultra-sharp, architectural, tactile, high-contrast luxury with Stripe-grade operational precision.
-- **Design Philosophy**: High density with absolute typographical restraint. Hairline borders, deep obsidian surfaces, tabular numerals, zero generic blue (`#2563eb`), zero toy emojis, and zero decorative AI fluff.
+Extend the public Marca Ubi identity into a focused commercial workspace. Use the public site's Circular XX type, paper-white and warm-neutral surfaces, near-black ink, and Marca Ubi red `#ea002a`. Red is reserved for primary actions, active markers, and urgent states. The interface should feel editorial, deliberate, and operational: generous page headings, compact navigation, crisp rows, calm surfaces, readable numbers, and an unmistakable hierarchy.
 
----
+This is a light interface. Do not use the legacy dark-orange direction, Crore/Lakh abbreviation, generic blue-purple gradients, glowing status effects, decorative radar motifs, or a dashboard made from repeated equal cards. Do not copy reference products. References inform hierarchy and density only.
 
-## 2. Liveliness Dials (Default)
+## Core layout concept
 
-```yaml
-Dial: ENERGY 2 / RHYTHM 2 / MOTION 1
-```
+The product is **Marca Ubi Commercial Desk**. Its home page helps the team act on today's commercial work before reviewing longer-range performance.
 
-- **ENERGY 2 (Balanced — Luxury Precision)**: Bold Marca Orange (`#ff6100`) accents on an obsidian canvas with specular top highlights (`1px solid rgba(255, 255, 255, 0.08)`). No neon blowout, no sterile grey defaults.
-- **RHYTHM 2 (Structured Fluidity)**: Consistent vertical grid rhythm with deliberate architectural breaks for KPI ribbons, virtualized data grids, and slide-out client dossiers.
-- **MOTION 1 (Subtle & Tactile)**: Tactile spring button feedback (`active: scale(0.98)`), 1px elevation lift on card hover, zero looping animations or disorienting full-page fades.
+The authenticated shell uses a persistent grouped sidebar on wide screens and a focus-managed drawer on small screens. A single compact context rail contains the Marca Ubi mark, breadcrumbs, search, role-allowed quick actions, and account menu. Each page then owns its title, scope controls, and one primary action. Avoid duplicated prominent actions.
 
----
+The Command Center begins with a compact metric strip, then places attention work beside pipeline health. A full-width stage journey and recent-deal ledger follow. Conversion charts appear only when source events make them useful; zero-event periods get a compact explanation rather than a large blank plot. Operational pages prioritize the queue, records, and next action over metric cards.
 
-## 3. Master Color Palette & Surface Physics
+## Visual system
 
-### A. Core Palette (Max 3 Cores + 1 Accent per Rule R-29)
-- **Canvas Base**: `#000000` / `#0b0b0b` (Deep obsidian black canvas)
-- **Primary Card Container**: `#111111` / `#141418` (Surface base with top specular gradient `rgba(255, 255, 255, 0.08)`)
-- **Hairline Border**: `1px solid rgba(255, 255, 255, 0.08)` / `#2b2b2b`
-- **Brand Accent**: **Marca Orange** (`#ff6100` / gradient `linear-gradient(135deg, #ff6100 0%, #e05500 100%)`)
+- **Canvas:** `#f5f5f3`; primary surface `#ffffff`; quiet surface `#efefed`.
+- **Ink:** `#111111`; secondary `#454542`; muted text must still meet WCAG AA for its actual size.
+- **Accent:** `#ea002a`; hover `#c40023`; accessible focus ring `#9c001e` on light surfaces.
+- **Borders:** hairline neutral boundaries only where they clarify grouping; use row separators and whitespace before adding another container.
+- **Type:** Circular XX for headings and interface text. Use the loaded local font variable. Metrics use tabular numerals; currency remains full-digit `en-IN` formatting with normal tracking.
+- **Geometry:** 8px controls, 12px surfaces, 16px major panels. Avoid nesting outlined cards.
+- **Motion:** brief transitions for open/close and focus only. Respect `prefers-reduced-motion`; no looping decorative animation.
+- **Icons:** consistent 16–18px line icons paired with labels where meaning is not obvious. No emoji status markers.
 
-### B. Semantic Status Tokens (Strictly Paired with Semantic Vector Icons)
-- **Converted / Active**: `#22c55e` (Emerald green)
-- **Potential / On Hold**: `#f59e0b` (Amber gold)
-- **Negotiation / In Review**: `#ff6100` (Marca Orange)
-- **Lost / Overdue**: `#ef4444` (High-contrast red)
-- **Muted Metadata**: `#888888` / `#7c7c7c` (Secondary labels & timestamps)
+## Responsive behavior
 
----
+At 1440px, use a 248px sidebar and fluid content up to a comfortable reading width. At 1024px, collapse navigation and let filters wrap. At 768px and below, use a drawer, stacked metric strip, queue-first order, and purpose-built mobile record rows. Do not scale a desktop table or horizontal board down until it clips. Verify at 320, 375, 768, 1024, 1440, and 1920 CSS pixels and at 200% zoom.
 
-## 4. Typography & Numeric Precision
+## Interaction and accessibility
 
-- **Headings**: `$font-movatif`, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif.
-- **Body**: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif.
-- **Technical Monospace**: `SF Mono`, `Fira Code`, Menlo, Consolas, monospace.
-- **Micro-Labels**: 10.5px / 11px uppercase with `letter-spacing: 0.06em` (tracking), font weight 600.
-- **Financial & Pipeline Numerals**: Mandatory `font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;` for zero-jitter layout stability during number transitions.
-- **Currency Formatting**: Dual-currency support: INR (Lakhs/Crores: `₹ 48.5L`, `₹ 1.2Cr`) and USD (`$ 35,000`).
+Every page provides useful loading, empty, unavailable, error, and permission states. Errors retain a recovery action and a redacted request reference when available. Controls are keyboard-operable, have visible focus and accessible names, and meet 44px target sizing where practical. Dialogs and drawers restore focus, close with Escape, and prevent background interaction. Pair status color with text. Verify text contrast at 4.5:1 and component boundaries/focus indicators at 3:1.
 
----
+## Data rules
 
-## 5. Context-Adaptive Visual Archetypes
+Never show invented values, fallback owners, fabricated comparisons, or successful-empty states after query failure. Every metric states its unit, scope, and period. A zero is distinct from unavailable data. All INR values use full digits. Simulated inquiries remain visibly marked and excluded from production reporting. Role and tab permissions are enforced on the server and at each mutation boundary; presentation hiding is not authorization.
 
-| Domain / Context | Visual Archetype | Aesthetic Formula |
-|---|---|---|
-| **Executive Analytics** | **Stripe Scorecards** | Deep container (`#111111`), 1px top specular highlight, 26–30px tabular values, delta pills |
-| **Pipeline Table** | **Linear Fluid Cards** | Hairline borders (`rgba(255, 255, 255, 0.08)`), virtualized 72px row rhythm, zero nested cards |
-| **Workspace Navigation** | **Apple HIG Vibrancy** | Frosted glass capsules (`rgba(17, 17, 17, 0.75)`), `backdrop-blur(16px)`, specular top-rim highlight |
-| **Lead Identifiers & Codes** | **Raycast Monospace Tokens** | Compact 6px rounded chips, 11px monospace, semantic radar dot |
-| **Touchpoints & Audit Logs**| **Notion Callouts** | Warm neutral background (`rgba(255, 255, 255, 0.03)`), 2px solid quote left accent, relaxed leading |
+## Shared page pattern
 
----
+1. Breadcrumb and route context in the shell.
+2. Page title, one sentence of useful context, and one primary action.
+3. Scope and filter controls directly above the data they affect.
+4. Source-backed summary only when it helps a decision.
+5. Main work surface with explicit row/card hierarchy.
+6. Loading, empty, error, and permission variants designed alongside the success state.
 
-## 6. Anti-AI-Slop Governance
-
-In accordance with `anti-slop`:
-1. **Zero AI Buzzwords**: Never use *unlock*, *elevate*, *seamless*, *revolutionary*, or *next-generation*. State concrete product features directly.
-2. **Zero Em-Dashes (`—`) in UI copy**: Use commas, periods, colons, or parentheses in user-facing UI copy.
-3. **Zero Fake Realism**: Every metric, revenue figure, and status derives from real PostgreSQL/Supabase queries; never fabricate mock curves or placeholder numbers.
-4. **Resilient Functional Completeness**: Every button, pill, modal, and drawer must have a working click/navigation handler.
+The detailed screen specifications and delivery gates live in `docs/sales_funnel/crm_saas_redesign/CRM_SAAS_REDESIGN_MASTER_PLAN.md`.

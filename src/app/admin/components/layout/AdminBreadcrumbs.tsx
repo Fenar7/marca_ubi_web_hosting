@@ -31,24 +31,24 @@ export const LEAD_CODE_REGEX = /^(LD|DEAL)-\d+$/i;
  * Domain dictionary mapping primary route slugs to their high-level organizational sections.
  */
 const SECTION_MAP: Record<string, string> = {
-  admin: 'Executive OS',
-  leads: 'Commercial CRM',
-  deals: 'Commercial CRM',
-  works: 'Commercial CRM',
-  ingestion: 'Commercial CRM',
+  admin: 'Commercial Desk',
+  leads: 'Commercial',
+  deals: 'Commercial',
+  works: 'Delivery',
+  ingestion: 'Intelligence',
   team: 'Administration',
   users: 'Administration',
   'user-management': 'Administration',
   analytics: 'Intelligence',
   tasks: 'Operations',
-  settings: 'Configuration',
+  settings: 'Settings',
 };
 
 /**
  * High-value domain dictionary mapping URL path slugs to professional CRM titles.
  */
 const ROUTE_NAME_MAP: Record<string, string> = {
-  admin: 'Command Center',
+  admin: 'Overview',
   leads: 'Inbound Leads',
   deals: 'Pipeline Deals',
   works: 'Client Works',
@@ -129,7 +129,7 @@ export function AdminBreadcrumbs(): React.ReactElement {
     // Tier 2: Executive OS Section
     items.push({
       id: 'root-section',
-      label: 'Executive OS',
+      label: 'Commercial Desk',
       href: '/admin',
       isLeaf: false,
     });
@@ -137,7 +137,7 @@ export function AdminBreadcrumbs(): React.ReactElement {
     // Tier 3: Active Command Center Leaf Node with Live Radar Pulse
     items.push({
       id: 'root-leaf',
-      label: 'Command Center',
+      label: 'Overview',
       isLeaf: true,
       hasRadarDot: true,
     });
@@ -226,17 +226,7 @@ export function AdminBreadcrumbs(): React.ReactElement {
                   </span>
                 ) : item.isRoot ? (
                   <Link href={item.href || '/admin'} className={styles.rootLink} title="Marca Ubi CRM Executive Overview">
-                    <span className={styles.rootMonogram} aria-hidden="true">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        stroke="none"
-                        className={styles.flameIcon}
-                        aria-hidden="true"
-                      >
-                        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-                      </svg>
-                    </span>
+                    <span className={styles.rootMonogram} aria-hidden="true">M<span>.</span></span>
                     <span className={styles.rootText}>{item.label}</span>
                   </Link>
                 ) : (

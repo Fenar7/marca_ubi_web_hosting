@@ -15,10 +15,10 @@ import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
 import styles from './IngestionWorkspaceClient.module.scss';
 
 export interface IngestionTelemetryData {
-  inboundCount24h: number;
-  dedupMerges24h: number;
-  dedupWindowHours: number;
-  botRateLimit: number;
+  inboundCount24h: number | null;
+  dedupMerges24h: number | null;
+  dedupWindowHours: number | null;
+  botRateLimit: number | null;
   endpointHealth: string;
 }
 
@@ -46,6 +46,8 @@ interface IngestionWorkspaceClientProps {
   telemetry: IngestionTelemetryData;
   recentSubmissions: InboundSubmissionItem[];
   recentActivities: IngestionActivityItem[];
+  submissionsUnavailable: boolean;
+  activitiesUnavailable: boolean;
   canSimulate: boolean;
 }
 
@@ -53,21 +55,24 @@ export function IngestionWorkspaceClient({
   telemetry,
   recentSubmissions,
   recentActivities,
+  submissionsUnavailable,
+  activitiesUnavailable,
   canSimulate,
 }: IngestionWorkspaceClientProps): React.ReactElement {
   const [isSimulateModalOpen, setIsSimulateModalOpen] = useState<boolean>(false);
   const [expandedPayloadId, setExpandedPayloadId] = useState<string | null>(null);
   const [copiedPayloadId, setCopiedPayloadId] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
 
   // Simulation form state
   const [formData, setFormData] = useState({
-    name: 'Aarav Mehta',
-    email: 'aarav@apexhorizon.com',
-    phone: '+919876543210',
-    company: 'Apex Horizon Tech',
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
     serviceCategory: 'Web & Digital',
-    budgetBracket: '₹15L - ₹25L',
-    message: 'Seeking full design system & headless digital platform development.',
+    budgetBracket: '',
+    message: '',
   });
 
   const [isPending, startTransition] = useTransition();
@@ -134,14 +139,22 @@ export function IngestionWorkspaceClient({
   };
 
   const handleCopyPayload = (id: string, payload: Record<string, unknown> | null) => {
-    if (!payload || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    if (!payload) return;
+    if (typeof navigator === 'undefined' || !navigator.clipboard) {
+      setCopyError('Clipboard access is unavailable in this browser. Select and copy the payload manually.');
+      return;
+    }
+    setCopyError(null);
     navigator.clipboard
       .writeText(JSON.stringify(payload, null, 2))
       .then(() => {
         setCopiedPayloadId(id);
         setTimeout(() => setCopiedPayloadId(null), 2000);
       })
-      .catch(() => {});
+      .catch((error: unknown) => {
+        console.error('[ingestion] Payload copy failed:', error);
+        setCopyError('Clipboard access was denied. Select and copy the payload manually.');
+      });
   };
 
   const handleSimulateSubmit = (e: React.FormEvent) => {
@@ -186,41 +199,41 @@ export function IngestionWorkspaceClient({
           </button>
         )}
       </div>
+      {copyError && <p className={styles.emptyState} role="alert">{copyError}</p>}
 
       {/* Live Database-Driven Telemetry Ribbon */}
       <section className={styles.telemetryGrid} aria-label="Ingestion Health Metrics">
         <div className={styles.telemetryCard}>
           <span className={styles.telemetryKey}>Endpoint Health</span>
           <div className={styles.telemetryVal}>
-            <span className={styles.dotGreen} />
             <span>{telemetry.endpointHealth}</span>
           </div>
           <span className={styles.telemetrySub}>
-            Zero-downtime edge gateway with schema verification
+            Endpoint health is not measured here.
           </span>
         </div>
 
         <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>24H Inbound Volume</span>
-          <div className={styles.telemetryVal}>{telemetry.inboundCount24h}</div>
+          <span className={styles.telemetryKey}>New leads (24 hours)</span>
+          <div className={styles.telemetryVal}>{telemetry.inboundCount24h ?? 'Unavailable'}</div>
           <span className={styles.telemetrySub}>
-            Inquiries registered from website brief capture
+            All sources; synthetic benchmark records excluded.
           </span>
         </div>
 
         <div className={styles.telemetryCard}>
           <span className={styles.telemetryKey}>Smart Merges (24H)</span>
-          <div className={styles.telemetryVal}>{telemetry.dedupMerges24h}</div>
+          <div className={styles.telemetryVal}>{telemetry.dedupMerges24h ?? 'Unavailable'}</div>
           <span className={styles.telemetrySub}>
-            {telemetry.dedupWindowHours}h duplicate collision window active
+            {telemetry.dedupWindowHours === null ? 'Configuration unavailable' : `Configured window: ${telemetry.dedupWindowHours} hours`}
           </span>
         </div>
 
         <div className={styles.telemetryCard}>
           <span className={styles.telemetryKey}>Bot Shield Guard</span>
-          <div className={styles.telemetryVal}>{telemetry.botRateLimit} req/m</div>
+          <div className={styles.telemetryVal}>{telemetry.botRateLimit === null ? 'Unavailable' : `${telemetry.botRateLimit} req/m`}</div>
           <span className={styles.telemetrySub}>
-            Per-IP token bucket rate limiting perimeter
+            Configured request limit
           </span>
         </div>
       </section>
@@ -228,13 +241,13 @@ export function IngestionWorkspaceClient({
       {/* Recent Inbound Submissions & Raw Payload Inspector */}
       <section className={styles.sectionCard} aria-label="Recent Inbound Submissions">
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Recent Inbound Brief Submissions.</h2>
-          <span className={styles.countTag}>{recentSubmissions.length} Registered</span>
+          <h2 className={styles.sectionTitle}>Recent leads</h2>
+          <span className={styles.countTag}>Latest {recentSubmissions.length}</span>
         </div>
 
-        {recentSubmissions.length === 0 ? (
+        {submissionsUnavailable ? <div className={styles.emptyState} role="status">Recent leads could not be loaded. Refresh to try again.</div> : recentSubmissions.length === 0 ? (
           <div className={styles.emptyState}>
-            <span>No inquiries recorded in database yet. Use the simulation console to test intake.</span>
+            <span>No recent leads found.</span>
           </div>
         ) : (
           <div className={styles.submissionsList}>
@@ -320,13 +333,13 @@ export function IngestionWorkspaceClient({
       {/* Ingestion & Smart Merge Activity Feed */}
       <section className={styles.sectionCard} aria-label="Ingestion Event Activity Feed">
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Intake & Deduplication Activity Feed.</h2>
+          <h2 className={styles.sectionTitle}>Recent lead activity</h2>
           <span className={styles.countTag}>{recentActivities.length} Events</span>
         </div>
 
-        {recentActivities.length === 0 ? (
+        {activitiesUnavailable ? <div className={styles.emptyState} role="status">Activity could not be loaded. Refresh to try again.</div> : recentActivities.length === 0 ? (
           <div className={styles.emptyState}>
-            <span>No incoming ingestion events recorded in the activity ledger.</span>
+            <span>No recent activity found.</span>
           </div>
         ) : (
           <div className={styles.activityList}>
@@ -389,6 +402,7 @@ export function IngestionWorkspaceClient({
 
             <form onSubmit={handleSimulateSubmit}>
               <div className={styles.modalBody}>
+                <p className={styles.emptyState}>Simulation records are clearly marked and excluded from reporting. A contact match against a live lead is blocked.</p>
                 {simulationResult && (
                   <div
                     className={
@@ -460,10 +474,10 @@ export function IngestionWorkspaceClient({
                     onChange={(e) => setFormData({ ...formData, serviceCategory: e.target.value })}
                     className={styles.fieldSelect}
                   >
-                    <option value="Web & Digital">Web & Digital</option>
-                    <option value="Branding">Branding</option>
-                    <option value="Mobile Apps">Mobile Apps</option>
-                    <option value="UI/UX Design">UI/UX Design</option>
+                    <option value={'\u20b95L - \u20b910L'}>{formatBudgetTierLabel('\u20b95L - \u20b910L')}</option>
+                    <option value={'\u20b910L - \u20b915L'}>{formatBudgetTierLabel('\u20b910L - \u20b915L')}</option>
+                    <option value={'\u20b915L - \u20b925L'}>{formatBudgetTierLabel('\u20b915L - \u20b925L')}</option>
+                    <option value={'\u20b925L+'}>{formatBudgetTierLabel('\u20b925L+')}</option>
                     <option value="Full-Suite Advisory">Full-Suite Advisory</option>
                     <option value="Other">Other</option>
                   </select>

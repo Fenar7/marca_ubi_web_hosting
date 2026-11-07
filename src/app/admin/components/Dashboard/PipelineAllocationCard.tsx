@@ -1,224 +1,70 @@
-"use client";
+'use client';
 
-import React, { useMemo, useState } from "react";
-import type { StageAllocationItem } from "./types";
-import styles from "./PipelineAllocationCard.module.scss";
+import React from 'react';
+import Link from 'next/link';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
+import type { StageAllocationItem } from './types';
+import styles from './PipelineAllocationCard.module.scss';
 
-export type { StageAllocationItem } from "./types";
+export type { StageAllocationItem } from './types';
 
 export interface PipelineAllocationCardProps {
-  totalValuation: number;
+  totalValuation: number | null;
   stages: StageAllocationItem[];
-  deltaPercentage?: number | null;
-  cadenceLabel?: string;
-  dataStatus?: "ready" | "unavailable";
+  dataStatus?: 'ready' | 'unavailable';
 }
 
-function formatRupees(amount: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-export const PipelineAllocationCard: React.FC<PipelineAllocationCardProps> = ({
-  totalValuation,
-  stages,
-  deltaPercentage,
-  cadenceLabel,
-  dataStatus = "ready",
-}) => {
-  const [hoveredStageId, setHoveredStageId] = useState<string | null>(null);
-  const rows = useMemo(
-    () =>
-      stages.map((stage) => ({
-        ...stage,
-        color: stage.color,
-        formattedAmount: stage.formattedAmount || formatRupees(stage.amount),
-      })),
-    [stages],
-  );
-  const totalActiveDeals = rows.reduce(
-    (sum, stage) => sum + stage.dealCount,
-    0,
-  );
-
-  if (dataStatus === "unavailable") {
-    return (
-      <div className={styles.pipelineCard}>
-        <h2 className={styles.title}>Pipeline Stages</h2>
-        <p className={styles.emptyState} role="status">
-          Pipeline stage data is unavailable. The source query did not complete.
-        </p>
-      </div>
-    );
-  }
-
-  if (rows.length === 0) {
-    return (
-      <div className={styles.pipelineCard}>
-        <div className={styles.headerBlock}>
-          <div className={styles.titleCluster}>
-            <h2 className={styles.title}>Pipeline Stages</h2>
-            <p className={styles.subtitle}>
-              Distribution across active conversion milestones.
-            </p>
-          </div>
-          <span className={styles.valuationBadge}>
-            {formatRupees(totalValuation)}
-          </span>
-        </div>
-        <p className={styles.emptyState} role="status">
-          No active pipeline deals were recorded for this view.
-        </p>
-      </div>
-    );
-  }
+export function PipelineAllocationCard({ totalValuation, stages, dataStatus = 'ready' }: PipelineAllocationCardProps): React.ReactElement {
+  const totalDeals = stages.reduce((total, stage) => total + stage.dealCount, 0);
 
   return (
-    <div className={styles.pipelineCard}>
-      <div className={styles.headerBlock}>
+    <section className={styles.pipelineCard} aria-labelledby="pipeline-heading">
+      <header className={styles.headerBlock}>
         <div className={styles.titleCluster}>
-          <h2 className={styles.title}>Pipeline Stages</h2>
-          <p className={styles.subtitle}>
-            Distribution across active conversion milestones and operational
-            deal velocity.
-          </p>
+          <p className={styles.eyebrow}>How work advances</p>
+          <h2 id="pipeline-heading" className={styles.title}>Pipeline by stage</h2>
+          <p className={styles.subtitle}>Select a stage to open its active deals.</p>
         </div>
         <div className={styles.headlineCluster}>
-          <div className={styles.valuationRow}>
-            <span className={styles.valuationBadge}>
-              {formatRupees(totalValuation)}
-            </span>
-            {deltaPercentage === null || deltaPercentage === undefined ? (
-              <span className={styles.comparisonUnavailable}>
-                Comparison unavailable
-              </span>
-            ) : (
-              <span className={styles.deltaPill}>
-                {deltaPercentage > 0 ? "+" : ""}
-                {deltaPercentage.toFixed(1)}%{" "}
-                {cadenceLabel || "vs prior period"}
-              </span>
-            )}
-          </div>
-          <span className={styles.dealCountMuted}>
-            {totalActiveDeals} active deals
-          </span>
+          <span className={styles.valuationLabel}>Active pipeline</span>
+          <strong className={styles.valuationBadge}>{dataStatus === 'ready' && totalValuation !== null ? formatCrmCurrency(totalValuation) : 'Unavailable'}</strong>
+          {dataStatus === 'ready' && <span className={styles.dealCountMuted}>{totalDeals.toLocaleString('en-IN')} active deals</span>}
         </div>
-      </div>
+      </header>
 
-      <div
-        className={styles.segmentedBarTrack}
-        role="img"
-        aria-label={
-          "Pipeline distribution across " + rows.length + " active stages"
-        }
-        onMouseLeave={() => setHoveredStageId(null)}
-      >
-        {rows.map((stage) => {
-          const isHovered = hoveredStageId === stage.id;
-          const isAnyHovered = Boolean(hoveredStageId);
-          return (
-            <div
-              key={stage.id}
-              className={
-                styles.segmentedBarSlice +
-                (isHovered
-                  ? " " + styles.sliceActive
-                  : isAnyHovered
-                    ? " " + styles.sliceDimmed
-                    : "")
-              }
-              style={{
-                flex: Math.max(0, stage.percentage),
-                backgroundColor: stage.color,
-              }}
-              onMouseEnter={() => setHoveredStageId(stage.id)}
-              title={
-                stage.name +
-                ": " +
-                stage.percentage.toFixed(1) +
-                "% (" +
-                formatRupees(stage.amount) +
-                ")"
-              }
-            />
-          );
-        })}
-      </div>
-
-      <div
-        className={styles.stageLedgerList}
-        role="list"
-        aria-label="Pipeline stages breakdown"
-        onMouseLeave={() => setHoveredStageId(null)}
-      >
-        {rows.map((stage) => {
-          const isHovered = hoveredStageId === stage.id;
-          const isAnyHovered = Boolean(hoveredStageId) && !isHovered;
-          const velocity =
-            stage.velocityDays === null || stage.velocityDays === undefined
-              ? "Average duration unavailable"
-              : stage.velocityDays.toFixed(1) + "d avg";
-
-          return (
-            <div
-              key={stage.id}
-              className={
-                styles.stageLedgerRow +
-                (isHovered
-                  ? " " + styles.rowActive
-                  : isAnyHovered
-                    ? " " + styles.rowDimmed
-                    : "")
-              }
-              role="listitem"
-              onMouseEnter={() => setHoveredStageId(stage.id)}
-            >
-              <div className={styles.stagePrimaryCluster}>
-                <div
-                  className={styles.circularAvatar}
-                  style={{ backgroundColor: stage.color + "15" }}
-                >
-                  <span
-                    className={styles.avatarDot}
-                    style={{ backgroundColor: stage.color }}
-                  />
-                </div>
-                <div className={styles.stageNameBlock}>
+      {dataStatus === 'unavailable' ? (
+        <p className={styles.emptyState} role="status">Pipeline stages could not be loaded. Other dashboard sections remain available.</p>
+      ) : stages.length === 0 ? (
+        <p className={styles.emptyState} role="status">No open or potential stages are configured.</p>
+      ) : totalDeals === 0 ? (
+        <p className={styles.emptyState} role="status">The pipeline has no active deals. New qualified work will appear here.</p>
+      ) : (
+        <>
+          <div className={styles.segmentedBarTrack} role="img" aria-label="Pipeline value distribution by stage">
+            {stages.map((stage) => stage.amount > 0 ? (
+              <span key={stage.id} className={styles.segmentedBarSlice} style={{ flexGrow: stage.amount, backgroundColor: stage.color }} />
+            ) : null)}
+          </div>
+          <ol className={styles.stageLedgerList}>
+            {stages.map((stage, index) => (
+              <li key={stage.id}>
+                <Link href={`/admin/deals?stage=${encodeURIComponent(stage.id)}`} className={styles.stageLedgerRow}>
+                  <span className={styles.stageIndex}>{String(index + 1).padStart(2, '0')}</span>
+                  <span className={styles.stageMark} style={{ backgroundColor: stage.color }} aria-hidden="true" />
                   <span className={styles.stageName}>{stage.name}</span>
-                  <span className={styles.stageVolumeSubText}>
-                    {stage.dealCount} deals � {velocity}
-                  </span>
-                </div>
-              </div>
-
-              <div className={styles.stageMetricsCluster}>
-                <span className={styles.stageValuation}>
-                  {formatRupees(stage.amount)}
-                </span>
-                <div className={styles.progressShareGroup}>
-                  <div className={styles.microProgressTrack} aria-hidden="true">
-                    <div
-                      className={styles.microProgressFill}
-                      style={{
-                        width:
-                          Math.min(100, Math.max(0, stage.percentage)) + "%",
-                        backgroundColor: stage.color,
-                      }}
-                    />
-                  </div>
-                  <span className={styles.percentageShareVal}>
+                  <span className={styles.stageCount}>{stage.dealCount.toLocaleString('en-IN')} {stage.dealCount === 1 ? 'deal' : 'deals'}</span>
+                  <span className={styles.stageShare}>
+                    <span className={styles.microProgressTrack} aria-hidden="true"><span className={styles.microProgressFill} style={{ width: `${Math.min(100, Math.max(0, stage.percentage))}%`, backgroundColor: stage.color }} /></span>
                     {stage.percentage.toFixed(1)}%
                   </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+                  <strong className={styles.stageValuation}>{formatCrmCurrency(stage.amount)}</strong>
+                  <span className={styles.rowArrow} aria-hidden="true">↗</span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+    </section>
   );
-};
+}

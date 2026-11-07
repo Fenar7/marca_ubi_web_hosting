@@ -1,0 +1,23 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--admin-border-default, #dedede);
+  padding: 1rem 0;
+  color: var(--admin-text-secondary, #444);
+  font-size: 0.8125rem;
+}
+
+.description { display: flex; flex-direction: column; gap: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; }
+.controls a, .controls > span { display: inline-flex; align-items: center; min-height: 44px; }
+.controls a { color: var(--admin-text-primary, #111); text-decoration: underline; text-underline-offset: 3px; }
+.controls a:focus-visible { outline: 2px solid #c40023; outline-offset: 3px; }
+.controls [aria-disabled='true'] { color: #666; }
+
+@media (max-width: 600px) {
+  .pagination { align-items: flex-start; flex-direction: column; }
+  .controls { width: 100%; justify-content: space-between; }
+}

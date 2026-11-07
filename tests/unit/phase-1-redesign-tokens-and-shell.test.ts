@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file tests/unit/phase-1-redesign-tokens-and-shell.test.ts
  * @description Dedicated Unit Test Suite for Phase 1:
  *              Typography Bindings, Master Light Tokens, Anti-Slop Cleansing & Shell Isolation.
@@ -104,12 +104,12 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
 
     it('declares all core palette tokens in tokens.scss', () => {
       const content = fs.readFileSync(tokensScssPath, 'utf8');
-      assert.ok(content.includes('--admin-canvas-bg: #f7f8fa'));
+      assert.ok(content.includes('--admin-canvas-bg: #f5f5f3'));
       assert.ok(content.includes('--admin-card-bg: #ffffff'));
-      assert.ok(content.includes('--admin-text-primary: #1f242f'));
-      assert.ok(content.includes('--admin-text-secondary: #525965'));
-      assert.ok(content.includes('--admin-accent-lemon: #eefb87'));
-      assert.ok(content.includes('--admin-border-strong: #1f242f'));
+      assert.ok(content.includes('--admin-text-primary: #111111'));
+      assert.ok(content.includes('--admin-text-secondary: #454542'));
+      assert.ok(content.includes('--admin-accent-brand: #ea002a'));
+      assert.ok(content.includes('--admin-border-strong: #111111'));
       assert.ok(content.includes('--admin-radius-pill: 9999px'));
     });
 
@@ -153,7 +153,7 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
 
   describe('4. Navigation Taxonomy & Anti-Slop Cleansing', () => {
     it('confirms "Command Center" is purged and replaced with "Executive Overview"', () => {
-      const commercialGroup = NAVIGATION_GROUPS.find((g) => g.groupTitle === 'Commercial Pipeline');
+      const commercialGroup = NAVIGATION_GROUPS.find((g) => g.groupTitle === 'Commercial');
       assert.ok(commercialGroup, 'Commercial Pipeline group must exist');
 
       const overviewItem = commercialGroup?.items.find((i) => i.key === 'command_center');
@@ -235,7 +235,7 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
       assert.ok(content.includes('.activePill'));
       assert.ok(content.includes('.systemStatusBlock'));
       assert.ok(content.includes('.statusDot'));
-      assert.ok(content.includes('.newLeadBtn'));
+      assert.strictEqual(content.includes('.newLeadBtn'), false);
       assert.ok(content.includes('visibility: hidden;'));
     });
   });

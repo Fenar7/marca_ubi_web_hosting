@@ -6,12 +6,12 @@
 .cardWrapper {
   background: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-card, 12px);
+  border-radius: 4px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   position: relative;
@@ -19,8 +19,7 @@
 
   &:hover {
     border-color: var(--admin-border-strong, #1f242f);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.08);
+    box-shadow: none;
   }
 
   &:focus-visible {

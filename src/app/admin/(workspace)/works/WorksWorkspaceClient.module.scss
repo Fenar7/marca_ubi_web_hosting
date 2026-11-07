@@ -26,7 +26,7 @@
   display: flex;
   align-items: center;
   flex: 1;
-  min-width: 280px;
+  min-width: 0;
   max-width: 480px;
 }
 
@@ -43,7 +43,7 @@
   padding: 0.65rem 0.85rem 0.65rem 2.25rem;
   background-color: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 9999px;
+  border-radius: 6px;
   color: var(--admin-text-primary, #1f242f);
   font-size: 0.84rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -63,16 +63,16 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background-color: var(--admin-surface-muted, #f0f2f5);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 9999px;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
   padding: 0.25rem;
 }
 
 .filterPill {
   background: transparent;
   border: none;
-  border-radius: 9999px;
+  border-radius: 6px;
   padding: 0.45rem 0.85rem;
   color: var(--admin-text-secondary, #525965);
   font-size: 0.78rem;
@@ -123,7 +123,7 @@
 .stagePillBtn {
   background-color: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 9999px;
+  border-radius: 6px;
   color: var(--admin-text-secondary, #525965);
   font-size: 0.74rem;
   font-weight: 500;
@@ -188,8 +188,8 @@
 
 .worksGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 32rem), 1fr));
+  gap: 1rem;
 
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
@@ -200,19 +200,12 @@
 .workCard {
   background-color: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 1.35rem;
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
-  box-shadow: 0 2px 8px rgba(31, 36, 47, 0.04);
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover {
-    border-color: var(--admin-border-strong, #1f242f);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(31, 36, 47, 0.08);
-  }
+  min-width: 0;
 }
 
 .cardHeader {
@@ -226,6 +219,8 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .projectCode {
@@ -311,11 +306,12 @@
 }
 
 .contractValue {
-  font-family: var(--font-admin-code, 'MessinaSansMono', monospace);
+  font-family: var(--font-admin-primary, sans-serif);
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .clientDetails {
@@ -348,10 +344,8 @@
 }
 
 .stageBlock {
-  background-color: var(--admin-surface-muted, #f0f2f5);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 8px;
-  padding: 0.85rem;
+  border-top: 1px solid #e7e7e5;
+  padding: .85rem 0 0;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
@@ -438,10 +432,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background-color: var(--admin-surface-muted, #f0f2f5);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 8px;
-  padding: 0.75rem;
+  border-top: 1px solid #e7e7e5;
+  padding: .85rem 0 0;
 }
 
 .milestonesHeader {
@@ -469,9 +461,12 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.45rem 0.65rem;
-  border-radius: 6px;
-  background-color: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
+  width: 100%;
+  border-radius: 0;
+  background-color: transparent;
+  border: 0;
+  border-bottom: 1px solid #ececea;
+  text-align: left;
   cursor: pointer;
   min-height: 44px;
   transition: all 0.15s ease;
@@ -487,9 +482,7 @@
 }
 
 .milestoneItemCompleted {
-  opacity: 0.75;
-  background-color: var(--admin-surface-muted, #f0f2f5);
-  border-color: var(--admin-border-default, #e2e5ea);
+  background-color: transparent;
 }
 
 .milestoneCheckbox {
@@ -562,15 +555,15 @@
 }
 
 .assignDirectorsBtn {
-  background-color: var(--admin-accent-lemon, #eefb87);
-  border: 1px solid var(--admin-border-strong, #1f242f);
-  border-radius: 9999px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  background-color: #fff;
+  border: 1px solid #b9b9b9;
+  border-radius: 6px;
+  color: #111;
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.72rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: none;
+  letter-spacing: normal;
   padding: 0.25rem 0.75rem;
   min-height: 44px;
   cursor: pointer;
@@ -579,8 +572,8 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: var(--admin-accent-lemon-hover, #e4f375);
-    transform: translateY(-1px);
+    background-color: #f7f7f6;
+    border-color: #111;
   }
 
   &:active {
@@ -748,25 +741,24 @@
 }
 
 .directorSubmitBtn {
-  background: var(--admin-accent-lemon, #eefb87);
-  border: 1px solid var(--admin-border-strong, #1f242f);
-  border-radius: 9999px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  background: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
+  border-radius: 6px;
+  color: var(--admin-btn-primary-text, #fff);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.84rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: none;
+  letter-spacing: normal;
   padding: 0.55rem 1.5rem;
   min-height: 44px;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
+  box-shadow: none;
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: var(--admin-accent-lemon-hover, #e4f375);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
+    background: var(--admin-btn-primary-hover, #c40023);
+    box-shadow: none;
   }
 
   &:active:not(:disabled) {
@@ -783,6 +775,9 @@
     cursor: not-allowed;
   }
 }
+
+.actionError { margin: 0; padding: .875rem 1rem; border: 1px solid #e8b7be; border-radius: 6px; color: #991b1b; background: #fff4f5; font-size: .875rem; }
+.milestoneItem:disabled { cursor: default; }
 
 @media (max-width: 768px) {
   .toolbar {

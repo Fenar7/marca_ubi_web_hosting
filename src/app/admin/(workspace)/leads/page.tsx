@@ -12,9 +12,10 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { CrmUserRole, FunnelBucket, PipelineRpcMetrics } from '@/types/crm';
-import { KpiRibbon } from '@/app/admin/components/kpi/KpiRibbon';
+import { ROLE_DEFAULT_TABS, type CrmUserRole, type FunnelBucket } from '@/types/crm';
+import { buildCommercialSearchFilter } from '@/app/admin/lib/commercialSearch';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
+import { ResultPagination } from '@/app/admin/components/LeadsTable/ResultPagination';
 import { LeadsWorkspaceClient, type HydratedLeadItem } from './LeadsWorkspaceClient';
 import { NewLeadHeaderButton } from './NewLeadHeaderButton';
 import type { FilterDropdownOption } from '@/app/admin/components/FilterActionBar';
@@ -38,7 +39,9 @@ interface AdminLeadsPageProps {
     source?: string;
     priority?: string;
     search?: string;
+    q?: string;
     action?: string;
+    page?: string;
   }>;
 }
 
@@ -49,6 +52,9 @@ export default async function AdminLeadsPage(
   // Note: Deep links with ?id= seamlessly hydrate the in-context Client 360 Slide-over
   // Drawer within LeadsWorkspaceClient, while legacy ?leadId= redirects to the dedicated full-page workspace.
   const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
+  const requestedPage = Number(resolvedSearchParams?.page ?? '1');
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 100000 ? requestedPage : 1;
+  const pageSize = 100;
   if (resolvedSearchParams?.leadId) {
     redirect(`/admin/leads/${resolvedSearchParams.leadId}`);
   }
@@ -69,24 +75,46 @@ export default async function AdminLeadsPage(
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.status === 'suspended') {
+  if (!profile || profile.status !== 'active') {
     redirect('/admin/login?error=account_suspended');
   }
 
-  const role = (profile?.role as CrmUserRole) || 'viewer';
-  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
-
-  const hasLeadsAccess = Array.isArray(allowedTabs)
+  const role = profile.role as CrmUserRole;
+  const allowedTabs = profile.allowed_tabs as string[] | undefined;
+  const hasLeadsAccess = role === 'admin' || (Array.isArray(allowedTabs) && allowedTabs.length > 0
     ? allowedTabs.includes('leads')
-    : true;
+    : Boolean(ROLE_DEFAULT_TABS[role]?.leads));
 
   if (!hasLeadsAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  // Parallel server query execution for instant shell rendering and metadata resolution
-  const [rpcRes, sourcesRes, profilesRes, statusesRes, leadsRes] = await Promise.all([
-    supabase.rpc('get_pipeline_kpis'),
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const { bucket, stage, assigned_to: assignedTo, source, priority } = resolvedSearchParams ?? {};
+  const search = buildCommercialSearchFilter(resolvedSearchParams?.search ?? resolvedSearchParams?.q);
+  const invalidFilter = [stage, assignedTo, source].some((value) => value && !uuid.test(value))
+    || Boolean(priority && !['high', 'medium', 'low'].includes(priority.toLowerCase()))
+    || Boolean(bucket && !['all', 'open', 'potential', 'converted', 'lost', 'overdue'].includes(bucket));
+
+  let leadsQuery = supabase.from('leads').select(`
+        id, lead_id, name, company, company_website, industry, phone, email,
+        preferred_channel, service_category, expected_value, priority, status_id,
+        assigned_to, lead_source_id, notes, brief_payload, next_follow_up,
+        revisit_date, created_at, updated_at,
+        funnel_statuses!inner(id, name, bucket, color_code, sort_order),
+        lead_sources(id, name, color_code),
+        profiles:crm_team_directory!leads_assigned_to_fkey(id, full_name, role)
+      `, { count: 'exact' });
+  if (!invalidFilter) {
+    if (stage) leadsQuery = leadsQuery.eq('status_id', stage);
+    if (assignedTo) leadsQuery = leadsQuery.eq('assigned_to', assignedTo);
+    if (source) leadsQuery = leadsQuery.eq('lead_source_id', source);
+    if (priority) leadsQuery = leadsQuery.ilike('priority', priority);
+    if (bucket && !['all', 'overdue'].includes(bucket)) leadsQuery = leadsQuery.eq('funnel_statuses.bucket', bucket);
+    if (search.filter) leadsQuery = leadsQuery.or(search.filter);
+  }
+
+  const [sourcesRes, profilesRes, statusesRes, leadsRes] = await Promise.all([
     supabase
       .from('lead_sources')
       .select('id, name, color_code')
@@ -101,36 +129,14 @@ export default async function AdminLeadsPage(
       .select('id, name, bucket, color_code, sort_order')
       .eq('is_active', true)
       .order('sort_order', { ascending: true }),
-    supabase
-      .from('leads')
-      .select(`
-        id,
-        lead_id,
-        name,
-        company,
-        company_website,
-        industry,
-        phone,
-        email,
-        preferred_channel,
-        service_category,
-        expected_value,
-        priority,
-        status_id,
-        assigned_to,
-        lead_source_id,
-        notes,
-        brief_payload,
-        next_follow_up,
-        revisit_date,
-        created_at,
-        updated_at,
-        funnel_statuses!inner(id, name, bucket, color_code, sort_order),
-        lead_sources(id, name, color_code),
-        profiles:crm_team_directory!leads_assigned_to_fkey(id, full_name, role)
-      `)
-      .order('created_at', { ascending: false }),
+    leadsQuery
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range((page - 1) * pageSize, page * pageSize - 1),
   ]);
+
+  if (leadsRes.error) console.error('[leads-workspace] Failed to load leads:', leadsRes.error.message);
+  if (statusesRes.error) console.error('[leads-workspace] Failed to load stages:', statusesRes.error.message);
 
   // Transform lookup catalog options for filter dropdown menus
   const availableSources: FilterDropdownOption[] = (sourcesRes.data || []).map((s) => ({
@@ -213,10 +219,10 @@ export default async function AdminLeadsPage(
       {/* Workspace Header & Operational Context */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Stage 01: Inbound Discovery</span>
-          <h1 className={styles.pageTitle}>Inbound Leads.</h1>
+          <span className={styles.eyebrow}>Sales pipeline</span>
+          <h1 className={styles.pageTitle}>Inbound leads</h1>
           <p className={styles.pageSubtitle}>
-            Triage incoming briefs, evaluate client scope, and advance qualified opportunities to negotiation.
+            Review inquiries, assign owners and keep follow-ups moving.
           </p>
         </div>
         <div className={styles.headerRight}>
@@ -224,23 +230,16 @@ export default async function AdminLeadsPage(
         </div>
       </header>
 
-      {/* Dark Luxury Executive KPI Ribbon with Reactive URL Filter Recalculation */}
-        <KpiRibbon
-          initialData={rpcRes.error || resolvedSearchParams && Object.values(resolvedSearchParams).some(Boolean)
-            ? null
-            : (rpcRes.data as unknown as PipelineRpcMetrics | null)}
-          syncWithUrlParams
-        />
-
       {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
       <Suspense fallback={<LeadsTableSkeleton rowCount={8} />}>
-        <LeadsWorkspaceClient
-          initialLeads={leads}
-          availableSources={availableSources}
-          availableAssignees={availableAssignees}
-          availableStatuses={availableStatuses}
-          userRole={role}
-        />
+        {invalidFilter || leadsRes.error || statusesRes.error || sourcesRes.error || profilesRes.error ? (
+          <div className={styles.loadError} role="alert">{invalidFilter ? 'A filter in this link is invalid. Open the leads page without filters to try again.' : 'Leads or filter options could not be loaded. Refresh the page to try again.'}</div>
+        ) : (
+          <>
+            {search.error ? <div className={styles.loadError} role="alert">{search.error}</div> : <ResultPagination page={page} pageSize={pageSize} loadedCount={leads.length} totalCount={leadsRes.count} />}
+            <LeadsWorkspaceClient initialLeads={search.error ? [] : leads} availableSources={availableSources} availableAssignees={availableAssignees} availableStatuses={availableStatuses} userRole={role} />
+          </>
+        )}
       </Suspense>
     </div>
   );

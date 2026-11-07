@@ -51,7 +51,7 @@ export function TeamWorkspaceClient({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<CrmUserRole | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<ProfileAccountStatus | 'all'>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
   // Governance Modals state
   const [avatarTarget, setAvatarTarget] = useState<TargetMemberAvatarContext | null>(null);
@@ -85,40 +85,8 @@ export function TeamWorkspaceClient({
 
   // Listen for team member creation events
   useEffect(() => {
-    const handleMemberCreated = (event: Event): void => {
-      const customEvent = event as CustomEvent<{
-        id?: string;
-        credentials: {
-          fullName: string;
-          email: string;
-          role: string;
-          jobTitle: string;
-          allowedTabs?: string[];
-        };
-      }>;
-      if (!customEvent.detail?.credentials) return;
-      const { id, credentials } = customEvent.detail;
-
-      const newMember: TeamMemberRosterItem = {
-        id: id || `usr-${Date.now()}`,
-        full_name: credentials.fullName,
-        email: credentials.email,
-        role: credentials.role as CrmUserRole,
-        job_title: credentials.jobTitle,
-        phone: null,
-        status: 'active',
-        avatar_url: null,
-        invited_by: currentUserId,
-        last_login_at: null,
-        must_change_password: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        allowed_tabs: credentials.allowedTabs || ['command_center', 'leads', 'deals', 'works', 'tasks'],
-        active_deals_count: 0,
-        total_deal_value: 0,
-      };
-
-      setRoster((prev) => [newMember, ...prev]);
+    const handleMemberCreated = (): void => {
+      // Refresh from the server rather than creating a temporary identity with guessed permissions.
       startTransition(() => {
         router.refresh();
       });
@@ -126,7 +94,7 @@ export function TeamWorkspaceClient({
 
     window.addEventListener('team-member-created', handleMemberCreated);
     return () => window.removeEventListener('team-member-created', handleMemberCreated);
-  }, [currentUserId, router]);
+  }, [router]);
 
   // Toast notice auto-dismiss
   useEffect(() => {
@@ -140,7 +108,7 @@ export function TeamWorkspaceClient({
   const tabCounts: TabCounts = useMemo(() => {
     return {
       all: roster.length,
-      leadership: roster.filter((m) => m.role === 'admin').length,
+      leadership: roster.filter((m) => m.role === 'admin' || m.role === 'sales_manager').length,
       sales: roster.filter((m) => m.role === 'sales_executive').length,
       suspended: roster.filter((m) => m.status === 'suspended').length,
     };
@@ -150,7 +118,7 @@ export function TeamWorkspaceClient({
   const filteredRoster = useMemo(() => {
     return roster.filter((member) => {
       // 1. Underlined Category Tab Filter
-      if (activeTab === 'leadership' && member.role !== 'admin') return false;
+      if (activeTab === 'leadership' && member.role !== 'admin' && member.role !== 'sales_manager') return false;
       if (activeTab === 'sales' && member.role !== 'sales_executive') return false;
       if (activeTab === 'suspended' && member.status !== 'suspended') return false;
 
@@ -264,8 +232,11 @@ export function TeamWorkspaceClient({
         startTransition(() => {
           router.refresh();
         });
+      } else {
+        setToastNotice(res.error || 'Could not reactivate this account.');
       }
-    } catch {
+    } catch (error) {
+      console.error('[team] Account reactivation failed:', error);
       setToastNotice('Failed to reactivate account.');
     }
   };
@@ -324,22 +295,8 @@ export function TeamWorkspaceClient({
         <div
           role="status"
           aria-live="polite"
-          style={{
-            padding: '0.65rem 1rem',
-            background: 'rgba(16, 185, 129, 0.12)',
-            border: '1px solid rgba(16, 185, 129, 0.25)',
-            color: '#34d399',
-            borderRadius: '8px',
-            fontSize: '0.82rem',
-            marginBottom: '1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
+          className={styles.notice}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
           <span>{toastNotice}</span>
         </div>
       )}

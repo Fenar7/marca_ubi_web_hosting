@@ -127,6 +127,6 @@ function getRevenueIntervals(slug: TimeframeSlug, start: Date, end: Date): { lab
   return Array.from({ length: count }, (_, index) => {
     const intervalStart = new Date(startMs + (span * index) / count);
     const intervalEnd = new Date(startMs + (span * (index + 1)) / count);
-    return { label: slug === '7d' ? format.format(intervalStart) : 'P' + (index + 1), fullLabel: format.format(intervalStart) + ' - ' + format.format(intervalEnd) };
+    return { label: format.format(intervalStart), fullLabel: format.format(intervalStart) + ' – ' + format.format(intervalEnd) };
   });
 }

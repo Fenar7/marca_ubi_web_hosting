@@ -11,6 +11,7 @@
 export * from './types';
 export { ExecutiveMasthead, type ExecutiveMastheadProps } from './ExecutiveMasthead';
 export { ExecutiveKpiGrid, type ExecutiveKpiGridProps } from './ExecutiveKpiGrid';
+export { AttentionQueue, type AttentionQueueItem, type AttentionQueueProps } from './AttentionQueue';
 export { RevenueDynamicsCard, type MonthlyRevenueMetric } from './RevenueDynamicsCard';
 export {
   PipelineAllocationCard,

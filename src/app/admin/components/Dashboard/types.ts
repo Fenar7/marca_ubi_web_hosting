@@ -24,21 +24,23 @@ import type { FunnelBucket, LeadPriority, ServiceCategory } from "@/types/crm";
  *   Metrics with missing denominators are unavailable, not zero.
  */
 export interface ExecutiveDashboardKpis {
-  totalPipelineValue: number;
+  totalPipelineValue: number | null;
   weightedPipelineValue: number | null;
-  pipelineDealsCount: number;
+  pipelineDealsCount: number | null;
   pipelineDeltaPercentage: number | null;
 
-  convertedRevenueValue: number;
-  convertedDealsCount: number;
+  convertedRevenueValue: number | null;
+  convertedDealsCount: number | null;
   revenueDeltaPercentage: number | null;
 
-  activeDealsCount: number;
-  overdueDealsCount: number;
+  activeDealsCount: number | null;
+  overdueDealsCount: number | null;
   dealsDeltaPercentage: number | null;
 
   conversionWinRate: number | null;
   winRateDeltaPercentage: number | null;
+  conversionWonCount: number | null;
+  conversionEligibleCount: number | null;
 
   /** Active comparison cadence (e.g. 'WoW', 'MoM', 'QoQ', 'YoY') */
   cadenceLabel?: string;
@@ -131,6 +133,7 @@ export interface ExecutiveKpiGridProps {
   kpis?: ExecutiveDashboardKpis | null;
   cadenceLabel?: string;
   dataStatus?: "ready" | "unavailable";
+  metricStatus?: { pipeline: "ready" | "unavailable"; revenue: "ready" | "unavailable"; cohort: "ready" | "unavailable" };
 }
 
 /**
@@ -188,6 +191,7 @@ export interface StageAllocationItem {
   slaOnTrackPct?: number;
   statusLabel?: string;
 }
+
 
 /**
  * Props contract for PipelineAllocationCard.

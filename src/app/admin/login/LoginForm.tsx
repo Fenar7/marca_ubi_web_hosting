@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file LoginForm.tsx
  * @description Interactive client-side component for the Marca Ubi CRM Authentication Portal.
  *              Integrates React 19 useActionState, brute-force lockout countdowns,
@@ -94,23 +94,14 @@ export function LoginForm(): React.ReactElement {
   return (
     <div className={styles.cardContainer}>
       <header className={styles.brandHeader}>
-        <div className={styles.brandLogoWrap}>
-          <img
-            src="/hero/marca-ubi-logo.png"
-            alt="Marca Ubi."
-            className={styles.brandLogo}
-            width={180}
-            height={38}
-          />
-        </div>
-        <h1 className={styles.brandTitle}>Sign in to Marca Ubi</h1>
+        <h2 className={styles.brandTitle}>Sign in</h2>
         <p className={styles.brandSubtitle}>
-          Enter your agency credentials to access the CRM console
+          Use your agency account to continue.
         </p>
       </header>
 
       {displayError && (
-        <div className={styles.alertBox} role="alert" aria-live="assertive">
+        <div id="login-error" className={styles.alertBox} role="alert" aria-live="assertive">
           <svg
             width="18"
             height="18"
@@ -137,7 +128,7 @@ export function LoginForm(): React.ReactElement {
         </div>
       )}
 
-      <form action={formAction} className={styles.form} suppressHydrationWarning>
+      <form action={formAction} className={styles.form} aria-describedby={displayError ? 'login-error' : undefined} suppressHydrationWarning>
         <input type="hidden" name="next" value={nextParam} />
 
         <div className={styles.fieldGroup}>
@@ -152,7 +143,6 @@ export function LoginForm(): React.ReactElement {
               autoComplete="email"
               required
               disabled={isPending || isLocked}
-              aria-invalid={Boolean(displayError)}
               placeholder="name@marcaubi.com"
               className={styles.input}
               suppressHydrationWarning
@@ -172,8 +162,7 @@ export function LoginForm(): React.ReactElement {
               autoComplete="current-password"
               required
               disabled={isPending || isLocked}
-              aria-invalid={Boolean(displayError)}
-              placeholder="••••••••••••••••"
+              placeholder="••••••••"
               className={`${styles.input} ${styles.inputWithToggle}`}
               suppressHydrationWarning
             />
@@ -183,7 +172,6 @@ export function LoginForm(): React.ReactElement {
               onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               disabled={isPending || isLocked}
-              tabIndex={0}
             >
               {showPassword ? (
                 <svg
@@ -243,15 +231,11 @@ export function LoginForm(): React.ReactElement {
         <a
           href="mailto:security@marcaubi.com?subject=Administrative%20Portal%20Access%20Inquiry"
           className={styles.helpLink}
-          tabIndex={0}
         >
           Need assistance with credentials? Contact Agency Administration
         </a>
       </div>
 
-      <footer className={styles.copyright}>
-        &copy; {new Date().getFullYear()} Marca Ubi. All rights reserved.
-      </footer>
     </div>
   );
 }

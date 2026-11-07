@@ -8,8 +8,9 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { CurrentUserSession } from './UserProfileDropdown';
 import { NAVIGATION_GROUPS, isTabAuthorized } from './navigationConfig';
@@ -29,20 +30,39 @@ export function AdminMobileDrawer({
   dueTasksCount,
 }: AdminMobileDrawerProps): React.ReactElement {
   const pathname = usePathname() || '/admin';
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-  // Lock body scroll and listen for Escape key when drawer is active
+  /** Keep focus inside the navigation while it is open, and return it to the trigger on close. */
   useEffect(() => {
     if (isOpen) {
+      const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      const previousOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      closeRef.current?.focus();
       const handleKeyDown = (e: KeyboardEvent): void => {
         if (e.key === 'Escape') {
+          e.preventDefault();
           onClose();
+        } else if (e.key === 'Tab' && drawerRef.current) {
+          const controls = Array.from(drawerRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'));
+          const first = controls[0];
+          const last = controls[controls.length - 1];
+          if (!first || !last) return;
+          if (e.shiftKey && (document.activeElement === first || !drawerRef.current.contains(document.activeElement))) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && (document.activeElement === last || !drawerRef.current.contains(document.activeElement))) {
+            e.preventDefault();
+            first.focus();
+          }
         }
       };
       window.addEventListener('keydown', handleKeyDown);
       return () => {
-        document.body.style.overflow = '';
+        document.body.style.overflow = previousOverflow;
         window.removeEventListener('keydown', handleKeyDown);
+        if (previousFocus?.isConnected) previousFocus.focus();
       };
     }
   }, [isOpen, onClose]);
@@ -75,20 +95,27 @@ export function AdminMobileDrawer({
 
       {/* Slide-out drawer sheet */}
       <aside
+        ref={drawerRef}
         className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}
         aria-label="Mobile Navigation Drawer"
         aria-hidden={!isOpen}
+        aria-modal={isOpen ? true : undefined}
+        role="dialog"
+        inert={!isOpen}
       >
         <div className={styles.drawerHeader}>
           <Link href="/admin" onClick={onClose} className={styles.brandLink}>
-            <img
-              src="/hero/marca-ubi-logo.png"
+            <Image
+              src="/images/marca-ubi-dark.svg"
               alt="Marca Ubi."
+              width={150}
+              height={34}
               className={styles.brandLogo}
             />
             <span className={styles.systemTag}>CRM Portal</span>
           </Link>
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
             className={styles.closeButton}
@@ -110,39 +137,6 @@ export function AdminMobileDrawer({
             </svg>
           </button>
         </div>
-
-        {/* Quick Action Button for Mobile: Gated against viewers */}
-        {currentUser.role !== 'viewer' && (
-          <div className={styles.quickActionBox}>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (typeof window !== 'undefined') {
-                  window.dispatchEvent(new CustomEvent('open-new-lead-modal'));
-                }
-              }}
-              className={styles.newLeadBtn}
-              aria-label="New Lead"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>New Lead</span>
-            </button>
-          </div>
-        )}
 
         <nav className={styles.navScrollArea}>
           {NAVIGATION_GROUPS.map((group) => {

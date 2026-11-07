@@ -36,14 +36,13 @@ export interface KpiRibbonProps {
 function KpiRibbonContent({
   initialData,
   syncWithUrlParams = false,
-  defaultCurrency = 'INR',
   className = '',
 }: KpiRibbonProps): React.ReactElement {
   const searchParams = useSearchParams();
 
   // Internal reactive state
   const [data, setData] = useState<PipelineRpcMetrics | null>(initialData ?? null);
-  const [currency, setCurrency] = useState<'INR' | 'USD'>(defaultCurrency);
+  const currency = 'INR';
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => (initialData ? new Date() : null));
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -131,6 +130,8 @@ function KpiRibbonContent({
           return;
         }
         console.error('[KPI_RIBBON_ERROR] Metric recalculation failed:', err);
+        setData(null);
+        setLastUpdated(null);
         setErrorMessage(
           err instanceof Error ? err.message : 'Pipeline recalculation failed.'
         );
@@ -244,34 +245,6 @@ function KpiRibbonContent({
         </div>
 
         <div className={styles.toolbarActions}>
-          {/* Dual-Currency Segmented Toggle */}
-          <div
-            className={styles.currencyToggle}
-            role="radiogroup"
-            aria-label="Select KPI currency presentation"
-          >
-            <button
-              type="button"
-              className={`${styles.currencyBtn} ${currency === 'INR' ? styles.currencyActive : ''}`}
-              onClick={() => setCurrency('INR')}
-              aria-checked={currency === 'INR'}
-              role="radio"
-              title="Display values in Indian Rupees with full digits"
-            >
-              ₹ INR
-            </button>
-            <button
-              type="button"
-              className={`${styles.currencyBtn} ${currency === 'USD' ? styles.currencyActive : ''}`}
-              onClick={() => setCurrency('USD')}
-              aria-checked={currency === 'USD'}
-              role="radio"
-              title="Display values in US Dollars ($ pegged at ₹83.50)"
-            >
-              $ USD
-            </button>
-          </div>
-
           {/* Manual Refresh Trigger */}
           <button
             type="button"
@@ -304,7 +277,7 @@ function KpiRibbonContent({
       </div>
 
       {/* 5 Canonical Logip x Sypher Scorecards Grid */}
-      <div className={styles.kpiGrid}>
+      {data ? <div className={styles.kpiGrid}>
         {/* Card 1: Total Leads */}
         <KpiCard
           id="total-leads"
@@ -361,9 +334,9 @@ function KpiRibbonContent({
         {/* Card 3: Converted Revenue */}
         <KpiCard
           id="converted-revenue"
-          label="Converted Revenue"
+          label="Converted Contract Value"
           value={formatKpiCurrency(metrics.convertedRevenue, currency)}
-          ariaLabel={`Converted Revenue: ${formatKpiCurrency(metrics.convertedRevenue, currency)}, ${metrics.convertedLeads} deals won`}
+          ariaLabel={`Converted contract value: ${formatKpiCurrency(metrics.convertedRevenue, currency)}, ${metrics.convertedLeads} deals won`}
           subtext={
             <span className={styles.positiveTrend}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -373,7 +346,7 @@ function KpiRibbonContent({
             </span>
           }
           href="/admin/deals?bucket=converted"
-          titleTooltip={`Cumulative Converted Revenue: ${formatFullCurrency(metrics.convertedRevenue, currency)}`}
+          titleTooltip={`Converted contract value: ${formatFullCurrency(metrics.convertedRevenue, currency)}`}
           icon={
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
@@ -391,55 +364,8 @@ function KpiRibbonContent({
           id="conversion-rate"
           label="Conversion Rate"
           value={`${metrics.conversionRate.toFixed(1)}%`}
-          ariaLabel={`Studio Conversion Rate: ${metrics.conversionRate.toFixed(1)}%, studio benchmark 12.0%`}
-          secondaryBadge={
-            <div
-              className={styles.microMeterTrack}
-              title={`Conversion Rate: ${metrics.conversionRate.toFixed(1)}% | Studio Benchmark: 12.0%`}
-              role="progressbar"
-              aria-label="Studio conversion rate progress against 12% benchmark"
-              aria-valuenow={Math.min(20, Math.max(0, Number(metrics.conversionRate.toFixed(1))))}
-              aria-valuemin={0}
-              aria-valuemax={20}
-              aria-valuetext={`${metrics.conversionRate.toFixed(1)}%`}
-            >
-              <div
-                className={styles.microMeterFill}
-                style={{ width: `${Math.min(100, Math.max(4, (metrics.conversionRate / 20) * 100))}%` }}
-              />
-              <div
-                className={styles.microMeterBenchmark}
-                style={{ left: '60%' }}
-                title="Studio Benchmark: 12.0%"
-              />
-            </div>
-          }
-          subtext={
-            <div className={styles.conversionMetricsRow}>
-              <span className={styles.neutralSubtext}>Benchmark 12.0%</span>
-              {metrics.conversionRate >= 12 ? (
-                <span className={styles.positiveTrend}>
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="12" y1="19" x2="12" y2="5" />
-                    <polyline points="5 12 12 5 19 12" />
-                  </svg>
-                  <span>Above Target</span>
-                </span>
-              ) : (
-                <span className={styles.neutralSubtext}>Pacing to Target</span>
-              )}
-            </div>
-          }
+          ariaLabel={`Conversion rate: ${metrics.conversionRate.toFixed(1)}%`}
+          subtext={<span className={styles.neutralSubtext}>Excludes invalid submissions</span>}
           href="/admin/deals?bucket=converted"
           titleTooltip={`Studio Conversion Rate: ${metrics.conversionRate.toFixed(1)}% (Excluding invalid submissions)`}
           icon={
@@ -483,7 +409,7 @@ function KpiRibbonContent({
             </svg>
           }
         />
-      </div>
+      </div> : <p role="status">{errorMessage ? 'Pipeline metrics are unavailable. Try refresh.' : 'Loading pipeline metrics…'}</p>}
     </section>
   );
 }

@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   flex: 1;
-  min-width: 280px;
+  min-width: min(100%, 280px);
   max-width: 440px;
 }
 
@@ -40,7 +40,7 @@
   padding: 0.65rem 1rem 0.65rem 2.5rem;
   background-color: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-pill, 9999px);
+  border-radius: 4px;
   color: var(--admin-text-primary, #1f242f);
   font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 0.84rem;
@@ -70,7 +70,7 @@
   align-items: center;
   background-color: var(--admin-surface-muted, #f0f2f5);
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-pill, 9999px);
+  border-radius: 4px;
   padding: 0.25rem;
   gap: 0.25rem;
 }
@@ -81,7 +81,7 @@
   gap: 0.45rem;
   background: transparent;
   border: none;
-  border-radius: var(--admin-radius-pill, 9999px);
+  border-radius: 3px;
   padding: 0.45rem 1rem;
   color: var(--admin-text-secondary, #525965);
   font-family: var(--font-admin-btn, sans-serif);
@@ -107,7 +107,7 @@
   background-color: #ffffff;
   color: var(--admin-text-primary, #1f242f);
   font-weight: 700;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.08);
+  box-shadow: none;
 }
 
 .bucketFilterGroup {
@@ -116,14 +116,14 @@
   gap: 0.25rem;
   background-color: var(--admin-surface-muted, #f0f2f5);
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-pill, 9999px);
+  border-radius: 4px;
   padding: 0.25rem;
 }
 
 .filterPill {
   background: transparent;
   border: none;
-  border-radius: var(--admin-radius-pill, 9999px);
+  border-radius: 3px;
   padding: 0.45rem 0.95rem;
   color: var(--admin-text-secondary, #525965);
   font-family: var(--font-admin-btn, sans-serif);
@@ -175,11 +175,11 @@
 .kanbanColumn {
   display: flex;
   flex-direction: column;
-  min-width: 320px;
+  min-width: min(320px, 85vw);
   max-width: 360px;
   background-color: var(--admin-surface-muted, #f0f2f5);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 14px;
+  border: 0;
+  border-radius: 4px;
   padding: 1rem;
   gap: 0.85rem;
   flex-shrink: 0;
@@ -266,19 +266,18 @@
 .kanbanCard {
   background-color: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 10px;
+  border-radius: 4px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  transition: border-color 0.15s ease;
+  box-shadow: none;
 
   &:hover {
     border-color: var(--admin-border-strong, #1f242f);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(31, 36, 47, 0.08);
+    box-shadow: none;
   }
 
   &:focus-visible {
@@ -381,10 +380,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--admin-surface-muted, #f8fafc);
-  border-radius: 6px;
-  padding: 0.45rem 0.65rem;
-  border: 1px solid var(--admin-border-subtle, #eef0f3);
+  background-color: transparent;
+  padding: 0;
+  border: 0;
   gap: 0.5rem;
 }
 
@@ -423,6 +421,16 @@
   font-weight: 700;
   color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.moveError {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid #c40023;
+  background: #fff;
+  color: #741321;
+  line-height: 1.5;
 }
 
 .cardFooter {
@@ -894,4 +902,155 @@
     outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 1px;
   }
+}
+
+.clientContainer {
+  gap: 1rem;
+  min-width: 0;
+}
+
+.topControlBar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto;
+  align-items: center;
+  padding: 0.8rem;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  background: var(--admin-card-bg, #fff);
+}
+
+.searchWrapper { max-width: 520px; }
+.searchInput {
+  min-height: 44px;
+  border-radius: var(--admin-radius-inner, 8px);
+  border-color: var(--admin-border-default, #d8d8d4);
+  background: var(--admin-canvas-bg, #f5f5f3);
+  color: var(--admin-text-primary, #111);
+}
+.searchInput:focus-visible,
+.viewModeBtn:focus-visible,
+.filterPill:focus-visible,
+.stageMoveBtn:focus-visible,
+.sortableHeaderCol:focus-visible,
+.inspectButton:focus-visible,
+.clearFilterBtn:focus-visible {
+  outline: 2px solid var(--admin-focus-ring, #9c001e);
+  outline-offset: 2px;
+}
+.rightControls { gap: 0.7rem; }
+.viewModeToggle,
+.bucketFilterGroup {
+  min-height: 44px;
+  padding: 3px;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-pill, 9999px);
+  background: var(--admin-surface-muted, #efefed);
+}
+.viewModeBtn,
+.filterPill {
+  min-height: 38px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: var(--admin-text-secondary, #454542);
+}
+.viewModeBtnActive,
+.filterPillActive {
+  background: var(--admin-surface-inverse, #111);
+  color: var(--admin-text-inverse, #fff);
+  box-shadow: none;
+}
+.kanbanBoardContainer {
+  align-items: stretch;
+  gap: 0.8rem;
+  padding: 0 0 0.5rem;
+  scrollbar-color: var(--admin-border-default, #d8d8d4) transparent;
+}
+.kanbanColumn {
+  min-width: 268px;
+  width: min(300px, 25vw);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  background: var(--admin-surface-muted, #efefed);
+}
+.columnHeader { padding: 1rem 1rem 0.85rem; }
+.columnTitle { color: var(--admin-text-primary, #111); }
+.columnValuationRow { padding-top: 0.65rem; }
+.columnValuationSum,
+.cardValueAmount,
+.valueNumber { font-variant-numeric: tabular-nums; }
+.columnCardList { padding: 0.65rem; gap: 0.6rem; }
+.kanbanCard {
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-inner, 8px);
+  background: var(--admin-card-bg, #fff);
+  box-shadow: none;
+}
+.kanbanCard:hover { border-color: var(--admin-border-default, #d8d8d4); box-shadow: none; }
+.cardClientName { color: var(--admin-text-primary, #111); }
+.stageMoveBtn,
+.inspectButton,
+.clearFilterBtn {
+  min-height: 44px;
+  border-radius: var(--admin-radius-inner, 8px);
+}
+.moveError {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--admin-status-rose-border, #f5b7c0);
+  border-left: 3px solid var(--admin-accent-brand, #ea002a);
+  border-radius: var(--admin-radius-inner, 8px);
+}
+.gridCard {
+  overflow: hidden;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  background: var(--admin-card-bg, #fff);
+}
+.tableHeader,
+.dealRow {
+  grid-template-columns: 86px minmax(150px, 1.35fr) minmax(100px, 0.9fr) minmax(120px, 1fr) 90px minmax(120px, 1fr) minmax(120px, 1fr) 130px;
+  gap: 0.75rem;
+}
+.tableHeader {
+  min-height: 48px;
+  background: var(--admin-surface-muted, #efefed);
+  color: var(--admin-text-muted, #696965);
+}
+.dealRow { min-height: 72px; border-bottom-color: var(--admin-border-subtle, #e7e7e4); }
+.dealRow:hover { background: var(--admin-surface-hover, #f7f7f5); }
+.monoId { font-family: var(--font-admin-code); }
+.valueNumber { white-space: nowrap; }
+
+@media (max-width: 1099px) {
+  .kanbanBoardContainer { display: none; }
+  .viewModeToggle { display: none; }
+  .gridCard { border: 0; background: transparent; overflow: visible; }
+  .tableHeader { display: none; }
+  .tableBody { display: grid; gap: 0.65rem; }
+  .dealRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.55rem 0.8rem;
+    min-height: auto;
+    padding: 0.9rem;
+    border: 1px solid var(--admin-border-subtle, #e7e7e4);
+    border-radius: var(--admin-radius-card, 12px);
+    background: var(--admin-card-bg, #fff);
+  }
+  .colId { grid-column: 1; grid-row: 1; }
+  .colClient { grid-column: 1; grid-row: 2; }
+  .colStage { grid-column: 2; grid-row: 1; }
+  .colValue { grid-column: 2; grid-row: 2; text-align: right; }
+  .colPriority,
+  .colOwner,
+  .colSla { grid-column: 1 / -1; }
+  .colAction { grid-column: 1 / -1; }
+  .inspectButton { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 640px) {
+  .topControlBar { grid-template-columns: minmax(0, 1fr); padding: 0.65rem; }
+  .searchWrapper { min-width: 0; width: 100%; }
+  .rightControls { justify-content: stretch; }
+  .bucketFilterGroup { width: 100%; overflow-x: auto; justify-content: flex-start; }
+  .filterPill { flex: 0 0 auto; }
 }

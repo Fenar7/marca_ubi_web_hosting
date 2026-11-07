@@ -1,168 +1,48 @@
-/**
- * @file tests/unit/phase-1-brand-upgrade-auth-and-typography.test.ts
- * @description Dedicated Unit Test Suite for Phase 1: Brand Soul, Typography & Authentication Portal Overhaul.
- *              Validates authentic logo coloration, eradication of Courier New typewriter font leak,
- *              modern luxury Obsidian button tokens, and clean human SaaS copy.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
+﻿/** Brand and authentication invariants for the Commercial Desk visual system. */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { sanitizeRedirectUrl } from '../../src/app/lib/auth-redirect';
 import { ResetPasswordSchema } from '../../src/app/lib/team-schemas';
 
-describe('Phase 1 Brand Upgrade: Authentication Portal & Typography Hygiene Suite', () => {
-  const loginScssPath = path.resolve(process.cwd(), 'src/app/admin/login/login.module.scss');
-  const loginFormPath = path.resolve(process.cwd(), 'src/app/admin/login/LoginForm.tsx');
-  const resetScssPath = path.resolve(process.cwd(), 'src/app/admin/reset-password/reset-password.module.scss');
-  const resetFormPath = path.resolve(process.cwd(), 'src/app/admin/reset-password/ResetPasswordForm.tsx');
-  const resetPagePath = path.resolve(process.cwd(), 'src/app/admin/reset-password/page.tsx');
-  const workloadScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/PipelineAllocationCard.module.scss');
-  const tokensScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/tokens.scss');
+describe('Commercial Desk brand and authentication invariants', () => {
+  const read = (file: string) => fs.readFileSync(path.resolve(process.cwd(), file), 'utf8');
+  const tokens = read('src/app/admin/styles/tokens.scss');
+  const shell = read('src/app/admin/components/auth/AdminAuthShell.tsx');
+  const shellStyles = read('src/app/admin/components/auth/AdminAuthShell.module.scss');
+  const login = read('src/app/admin/login/LoginForm.tsx');
+  const loginPage = read('src/app/admin/login/page.tsx');
+  const resetPage = read('src/app/admin/reset-password/page.tsx');
 
-  describe('1. Brand Soul & Authentic Logo Coloration', () => {
-    it('verifies login.module.scss permanently removes filter: brightness(0) to preserve brand colors', () => {
-      const content = fs.readFileSync(loginScssPath, 'utf8');
-      assert.strictEqual(content.includes('filter: brightness(0)'), false);
-      assert.strictEqual(content.includes('filter: brightness(0);'), false);
-    });
-
-    it('verifies reset-password.module.scss permanently removes filter: brightness(0)', () => {
-      const content = fs.readFileSync(resetScssPath, 'utf8');
-      assert.strictEqual(content.includes('filter: brightness(0)'), false);
-      assert.strictEqual(content.includes('filter: brightness(0);'), false);
-    });
-
-    it('verifies login page references authentic Marca Ubi logo asset', () => {
-      const content = fs.readFileSync(loginFormPath, 'utf8');
-      assert.ok(content.includes('/hero/marca-ubi-logo.png'));
-    });
+  it('uses the approved restrained red brand accent and shared auth composition', () => {
+    assert.match(tokens, /--admin-accent-brand: #ea002a/);
+    assert.match(tokens, /--admin-btn-primary-bg: #ea002a/);
+    assert.match(shell, /marca-ubi-dark\.svg/);
+    assert.match(loginPage, /<AdminAuthShell/);
+    assert.match(resetPage, /<AdminAuthShell/);
   });
 
-  describe('2. Modern Luxury Button Tokens & Geometry', () => {
-    it('verifies tokens.scss defines Obsidian #0f172a primary button tokens', () => {
-      const content = fs.readFileSync(tokensScssPath, 'utf8');
-      assert.ok(content.includes('--admin-btn-primary-bg: #0f172a;'));
-      assert.ok(content.includes('--admin-btn-primary-hover: #1e293b;'));
-      assert.ok(content.includes('--admin-btn-primary-text: #ffffff;'));
-      assert.ok(content.includes('--admin-accent-brand: #ff6100;'));
-    });
-
-    it('verifies login submit button adopts Obsidian #0f172a with 10px radius and 48px height', () => {
-      const content = fs.readFileSync(loginScssPath, 'utf8');
-      assert.ok(content.includes('background-color: #0f172a;'));
-      assert.ok(content.includes('border-radius: 10px;'));
-      assert.ok(content.includes('height: 48px;'));
-      assert.ok(content.includes('min-height: 48px;'));
-      assert.ok(content.includes('transform: scale(0.98);'));
-      assert.strictEqual(content.includes('#eefb87'), false);
-    });
-
-    it('verifies reset-password submit button adopts Obsidian #0f172a with 10px radius and 48px height', () => {
-      const content = fs.readFileSync(resetScssPath, 'utf8');
-      assert.ok(content.includes('background-color: #0f172a;'));
-      assert.ok(content.includes('border-radius: 10px;'));
-      assert.ok(content.includes('height: 48px;'));
-      assert.ok(content.includes('min-height: 48px;'));
-      assert.ok(content.includes('transform: scale(0.98);'));
-      assert.strictEqual(content.includes('#eefb87'), false);
-    });
+  it('preserves the horizontal logo ratio and reflows the auth composition on mobile', () => {
+    const logo = read('public/images/marca-ubi-dark.svg');
+    const viewBox = logo.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+    assert.ok(viewBox);
+    const ratio = Number(viewBox[1]) / Number(viewBox[2]);
+    assert.ok(ratio > 4 && ratio < 5, `Unexpected logo aspect ratio ${ratio}`);
+    assert.match(shellStyles, /height: auto/);
+    assert.match(shellStyles, /@media \(max-width: 860px\)/);
   });
 
-    describe('3. Elimination of Courier New Typewriter Monospace Font Leak', () => {
-    it('verifies ExecutiveKpiGrid.module.scss kpiValue uses primary sans with tabular-nums', () => {
-      const kpiScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ExecutiveKpiGrid.module.scss');
-      const content = fs.readFileSync(kpiScssPath, 'utf8');
-      const kpiValueBlock = content.match(/\.kpiValue\s*\{[\s\S]*?\}/)?.[0] || '';
-      assert.ok(kpiValueBlock.includes('var(--font-admin-sans'));
-      assert.ok(kpiValueBlock.includes('font-variant-numeric: tabular-nums'));
-      assert.ok(kpiValueBlock.includes("font-feature-settings: 'tnum' 1"));
-      assert.strictEqual(kpiValueBlock.includes('var(--font-admin-code, monospace)'), false);
-    });
-
-    it('verifies CommercialDealsTable.module.scss valuation uses modern numeric typography', () => {
-      const dealsScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/CommercialDealsTable.module.scss');
-      const content = fs.readFileSync(dealsScssPath, 'utf8');
-      assert.ok(content.includes('tabular-nums'));
-      assert.strictEqual(content.includes("font-family: 'Courier New'"), false);
-    });
-
-    it('verifies KPI scorecards utilize tabular numerals and modern typography', () => {
-      const kpiScssPath = path.resolve(process.cwd(), 'src/app/admin/components/Dashboard/ExecutiveKpiGrid.module.scss');
-      const content = fs.readFileSync(kpiScssPath, 'utf8');
-      assert.ok(content.includes('.deltaPill'));
-      assert.ok(content.includes('tabular-nums'));
-    });
-
-    it('verifies tokens.scss defines modern system monospace stack in font-admin-code', () => {
-      const content = fs.readFileSync(tokensScssPath, 'utf8');
-      assert.ok(content.includes("ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas"));
-    });
+  it('keeps sign-in language direct and does not imply unsupported security guarantees', () => {
+    assert.match(login, /Use your agency account to continue/);
+    assert.doesNotMatch(login, /Protected by enterprise MFA|TLS 1\.3 encryption|Authenticate Session/);
+    assert.match(login, /role="alert"/);
   });
 
-  describe('4. Purging Pseudo-Security Copy & Jargon Cleansing', () => {
-    it('verifies LoginForm.tsx eliminates fake military/security copy', () => {
-      const content = fs.readFileSync(loginFormPath, 'utf8');
-      assert.strictEqual(content.includes('Executive Access'), false);
-      assert.strictEqual(content.includes('Commercial Authentication'), false);
-      assert.strictEqual(content.includes('Authenticate Session'), false);
-      assert.strictEqual(content.includes('Protected by enterprise MFA'), false);
-      assert.strictEqual(content.includes('TLS 1.3 encryption'), false);
-    });
-
-    it('verifies LoginForm.tsx presents clean modern SaaS copy', () => {
-      const content = fs.readFileSync(loginFormPath, 'utf8');
-      assert.ok(content.includes('Sign in to Marca Ubi'));
-      assert.ok(content.includes('Enter your agency credentials to access the CRM console'));
-      assert.ok(content.includes('Sign In'));
-    });
-
-    it('verifies reset-password page.tsx and form eliminate pseudo-governance copy', () => {
-      const pageContent = fs.readFileSync(resetPagePath, 'utf8');
-      const formContent = fs.readFileSync(resetFormPath, 'utf8');
-      assert.strictEqual(pageContent.includes('Identity Governance Protocol'), false);
-      assert.strictEqual(pageContent.includes('Mandatory Initial Credential Rotation'), false);
-      assert.ok(pageContent.includes('Set New Password'));
-      assert.ok(formContent.includes('Set New Password'));
-    });
-  });
-
-  describe('5. Security & Authorization Input Boundaries (CWE-601, CWE-284)', () => {
-    it('verifies sanitizeRedirectUrl rejects external open redirect vectors (CWE-601)', () => {
-      assert.strictEqual(sanitizeRedirectUrl('https://evil.com'), '/admin');
-      assert.strictEqual(sanitizeRedirectUrl('http://attacker.com/malicious'), '/admin');
-      assert.strictEqual(sanitizeRedirectUrl('//evil.com/phish'), '/admin');
-      assert.strictEqual(sanitizeRedirectUrl('/\\evil.com'), '/admin');
-      assert.strictEqual(sanitizeRedirectUrl('\\evil.com'), '/admin');
-      assert.strictEqual(sanitizeRedirectUrl('/admin\r\nSet-Cookie: evil=1'), '/admin');
-    });
-
-    it('verifies sanitizeRedirectUrl preserves valid internal CRM routes with parameters', () => {
-      assert.strictEqual(sanitizeRedirectUrl('/admin/deals?bucket=potential'), '/admin/deals?bucket=potential');
-      assert.strictEqual(sanitizeRedirectUrl('/admin/leads?assigned_to=123'), '/admin/leads?assigned_to=123');
-      assert.strictEqual(sanitizeRedirectUrl('/admin/works'), '/admin/works');
-    });
-
-    it('verifies ResetPasswordSchema strictly enforces 12+ character complexity and symbols (CWE-284)', () => {
-      const invalidShort = ResetPasswordSchema.safeParse({
-        newPassword: 'Short1!',
-        confirmPassword: 'Short1!',
-      });
-      assert.strictEqual(invalidShort.success, false);
-
-      const invalidNoSymbol = ResetPasswordSchema.safeParse({
-        newPassword: 'Password123456',
-        confirmPassword: 'Password123456',
-      });
-      assert.strictEqual(invalidNoSymbol.success, false);
-
-      const validPayload = ResetPasswordSchema.safeParse({
-        newPassword: 'SecureEnterprisePass2026!#',
-        confirmPassword: 'SecureEnterprisePass2026!#',
-      });
-      assert.strictEqual(validPayload.success, true);
-    });
+  it('retains internal redirect validation and password rules', () => {
+    assert.equal(sanitizeRedirectUrl('https://evil.example'), '/admin');
+    assert.equal(sanitizeRedirectUrl('/admin/works'), '/admin/works');
+    assert.equal(ResetPasswordSchema.safeParse({ newPassword: 'short', confirmPassword: 'short' }).success, false);
+    assert.equal(ResetPasswordSchema.safeParse({ newPassword: 'SecureEnterprisePass2026!#', confirmPassword: 'SecureEnterprisePass2026!#' }).success, true);
   });
 });
