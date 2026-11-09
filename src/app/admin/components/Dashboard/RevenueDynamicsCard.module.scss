@@ -4,14 +4,20 @@
  */
 
 .performanceCard {
-  background: var(--admin-surface-primary, #ffffff);
-  border: 1px solid var(--admin-border-subtle, #dededb);
-  border-radius: 10px;
-  padding: 1.3rem 1.4rem 1.1rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: var(--admin-shadow-card, 0 4px 20px -2px rgba(12, 12, 13, 0.05), 0 1px 3px rgba(12, 12, 13, 0.02));
+  padding: 1.25rem 1.4rem 1.1rem;
   display: flex;
   flex-direction: column;
   position: relative;
   min-width: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--admin-border-default, #d8d8d4);
+  }
 }
 
 .cardHeader {

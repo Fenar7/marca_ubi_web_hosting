@@ -506,7 +506,15 @@ export default async function AdminDashboardPage(
     <div className={styles.dashboardContainer}>
       <main className={styles.fluidCanvas}>
         <ExecutiveMasthead selectedTimeframe={bounds.label} exportData={exportData} />
-        <ExecutiveKpiGrid kpis={executiveKpis} cadenceLabel={bounds.cadenceLabel} metricStatus={{ pipeline: pipelineAvailable ? 'ready' : 'unavailable', revenue: revenueAvailable ? 'ready' : 'unavailable', cohort: cohortAvailable ? 'ready' : 'unavailable' }} />
+        <ExecutiveKpiGrid
+          kpis={executiveKpis}
+          cadenceLabel={bounds.cadenceLabel}
+          metricStatus={{
+            pipeline: pipelineAvailable ? 'ready' : 'unavailable',
+            revenue: revenueAvailable ? 'ready' : 'unavailable',
+            cohort: cohortAvailable ? 'ready' : 'unavailable',
+          }}
+        />
         <section className={styles.analysisSection} aria-label="Performance and pipeline stage health">
           <RevenueDynamicsCard
             dataPoints={revenueSplinePoints}
@@ -525,7 +533,7 @@ export default async function AdminDashboardPage(
             items={(attentionRows ?? []).filter((lead) => {
               const stage = statusById.get(lead.status_id);
               return stage?.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
-            }).slice(0, 6).map((lead): AttentionQueueItem => ({
+            }).slice(0, 8).map((lead): AttentionQueueItem => ({
               id: lead.id,
               leadId: lead.lead_id,
               name: lead.name,
@@ -539,7 +547,7 @@ export default async function AdminDashboardPage(
             dueTodayCount={pipelineAvailable ? dueTodayCount : null}
             dataStatus={attentionError ? 'unavailable' : 'ready'}
           />
-          <section className={styles.dealsSection} aria-label="Recent active deals">
+          <section className={styles.dealsSection} aria-label="Recent active commercial opportunities">
             <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
           </section>
         </section>

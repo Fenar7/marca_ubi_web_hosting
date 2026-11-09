@@ -1,46 +1,257 @@
-.pipelineCard { min-width: 0; padding: 1.35rem 1.5rem .55rem; background: var(--admin-card-bg, #fff); border-top: 2px solid var(--admin-text-primary, #111); }
-.headerBlock { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; padding-bottom: 1rem; }
-.titleCluster { min-width: 0; }
-.eyebrow { margin: 0 0 .3rem; color: var(--admin-accent-brand, #ea002a); font-size: .68rem; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
-.title { margin: 0; color: var(--admin-text-primary, #111); font-family: var(--font-admin-primary, sans-serif); font-size: 1.12rem; font-weight: 650; letter-spacing: -.025em; line-height: 1.2; }
-.subtitle { margin: .35rem 0 0; color: var(--admin-text-secondary, #4b4b48); font-size: .82rem; line-height: 1.4; }
-.headlineCluster { display: flex; flex-direction: column; align-items: flex-end; gap: .18rem; text-align: right; }
-.valuationLabel { color: var(--admin-text-secondary, #4b4b48); font-size: .72rem; }
-.valuationBadge { color: var(--admin-text-primary, #111); font-family: var(--font-admin-numeric, var(--font-admin-primary, sans-serif)); font-size: clamp(1.25rem, 2vw, 1.65rem); font-weight: 650; font-variant-numeric: tabular-nums lining-nums; letter-spacing: -.04em; overflow-wrap: anywhere; }
-.dealCountMuted { color: var(--admin-text-secondary, #4b4b48); font-size: .73rem; }
-.segmentedBarTrack { display: flex; width: 100%; height: 6px; gap: 2px; overflow: hidden; background: var(--admin-surface-muted, #f0f0ee); }
-.segmentedBarSlice { display: block; min-width: 2px; height: 100%; }
-.stageLedgerList { margin: .55rem 0 0; padding: 0; list-style: none; }
-.stageLedgerRow { display: grid; grid-template-columns: 34px 9px minmax(120px, 1fr) minmax(95px, .55fr) minmax(82px, .55fr) minmax(145px, .8fr) 22px; align-items: center; gap: .75rem; min-height: 58px; border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4); color: inherit; text-decoration: none; }
-.stageLedgerList li:last-child .stageLedgerRow { border-bottom: 0; }
-.stageLedgerRow:hover { background: var(--admin-surface-hover, #f7f7f5); }
-.stageLedgerRow:focus-visible { position: relative; z-index: 1; outline: 2px solid var(--admin-focus-ring, #9c001e); outline-offset: -2px; }
-.stageIndex { color: var(--admin-text-muted, #696965); font-size: .7rem; font-variant-numeric: tabular-nums; }
-.stageMark { width: 8px; height: 8px; border-radius: 50%; }
-.stageName { min-width: 0; overflow: hidden; color: var(--admin-text-primary, #111); font-size: .84rem; font-weight: 620; text-overflow: ellipsis; white-space: nowrap; }
-.stageCount { color: var(--admin-text-secondary, #4b4b48); font-size: .77rem; font-variant-numeric: tabular-nums; }
-.stageShare { display: flex; align-items: center; gap: .5rem; color: var(--admin-text-secondary, #4b4b48); font-size: .72rem; font-variant-numeric: tabular-nums; }
-.microProgressTrack { width: 42px; height: 3px; overflow: hidden; background: var(--admin-surface-muted, #f0f0ee); }
-.microProgressFill { display: block; height: 100%; }
-.stageValuation { color: var(--admin-text-primary, #111); font-family: var(--font-admin-numeric, var(--font-admin-primary, sans-serif)); font-size: .85rem; font-variant-numeric: tabular-nums; letter-spacing: -.025em; text-align: right; }
-.rowArrow { color: var(--admin-accent-brand, #ea002a); font-size: .9rem; text-align: right; }
-.emptyState { margin: .4rem 0 0; padding: 1rem 0 1.35rem; border-top: 1px solid var(--admin-border-subtle, #e7e7e4); color: var(--admin-text-secondary, #4b4b48); font-size: .85rem; }
+/**
+ * @file PipelineAllocationCard.module.scss
+ * @description Luxury Styling for Pipeline Stage Velocity & Allocation Visualizer.
+ */
 
-@media (max-width: 760px) {
-  .stageLedgerRow { grid-template-columns: 28px 8px minmax(0, 1fr) minmax(125px, auto) 18px; gap: .6rem; min-height: 68px; }
-  .stageCount { grid-column: 3; grid-row: 2; font-size: .7rem; }
-  .stageShare { grid-column: 4; grid-row: 2; }
-  .stageValuation { grid-column: 4; grid-row: 1; }
-  .rowArrow { grid-column: 5; grid-row: 1 / span 2; }
+.pipelineCard {
+  min-width: 0;
+  padding: 1.25rem 1.35rem 0.85rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: var(--admin-shadow-card, 0 4px 20px -2px rgba(12, 12, 13, 0.05), 0 1px 3px rgba(12, 12, 13, 0.02));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--admin-border-default, #d8d8d4);
+  }
 }
 
-@media (max-width: 500px) {
-  .pipelineCard { padding: 1rem 1rem .35rem; }
-  .headerBlock { align-items: flex-start; flex-direction: column; gap: .85rem; }
-  .headlineCluster { align-items: flex-start; text-align: left; }
-  .stageLedgerRow { grid-template-columns: 23px 8px minmax(0, 1fr) 18px; gap: .5rem; }
-  .stageValuation { grid-column: 3; grid-row: 2; text-align: left; }
-  .stageCount { grid-column: 3; grid-row: 3; }
-  .stageShare { display: none; }
-  .rowArrow { grid-column: 4; grid-row: 1 / span 3; }
+.headerBlock {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding-bottom: 1rem;
+}
+
+.titleCluster {
+  min-width: 0;
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.25rem;
+}
+
+.radarDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--admin-text-muted, #767673);
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--admin-text-primary, #0c0c0d);
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--admin-text-secondary, #4a4a48);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.headlineCluster {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-align: right;
+}
+
+.valuationLabel {
+  color: var(--admin-text-muted, #767673);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.valuationBadge {
+  color: var(--admin-text-primary, #0c0c0d);
+  font-family: var(--font-admin-numeric, var(--font-admin-primary, sans-serif));
+  font-size: clamp(1.25rem, 1.6vw, 1.55rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.dealCountMuted {
+  color: var(--admin-text-muted, #767673);
+  font-size: 0.73rem;
+  font-family: var(--font-admin-code, monospace);
+}
+
+/* Multi-Color Segment Bar (Briefly Archetype) */
+.segmentedBarTrack {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--admin-canvas-bg, #f6f6f4);
+  margin-bottom: 0.75rem;
+}
+
+.segmentedBarSlice {
+  display: block;
+  min-width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.stageLedgerList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stageLedgerRow {
+  display: grid;
+  grid-template-columns: 28px 8px minmax(110px, 1.2fr) minmax(80px, 0.7fr) minmax(85px, 0.8fr) minmax(120px, 1fr) 20px;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 48px;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--admin-surface-hover, #f7f7f5);
+  }
+
+  &:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: -2px;
+  }
+}
+
+.stageLedgerList li:last-child .stageLedgerRow {
+  border-bottom: 0;
+}
+
+.stageIndex {
+  color: var(--admin-text-muted, #767673);
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stageMark {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stageName {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--admin-text-primary, #0c0c0d);
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stageCount {
+  color: var(--admin-text-secondary, #4a4a48);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stageShare {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--admin-text-muted, #767673);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-admin-code, monospace);
+}
+
+.microProgressTrack {
+  width: 36px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--admin-canvas-bg, #f6f6f4);
+}
+
+.microProgressFill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.stageValuation {
+  color: var(--admin-text-primary, #0c0c0d);
+  font-family: var(--font-admin-numeric, var(--font-admin-primary, sans-serif));
+  font-size: 0.84rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-align: right;
+}
+
+.rowArrow {
+  color: var(--admin-accent-brand, #ea002a);
+  font-size: 0.85rem;
+  text-align: right;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.stageLedgerRow:hover .rowArrow {
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+
+.emptyState {
+  margin: 0.4rem 0 0;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
+  color: var(--admin-text-secondary, #4a4a48);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 760px) {
+  .stageLedgerRow {
+    grid-template-columns: 24px 8px 1fr auto auto;
+    gap: 0.5rem;
+  }
+
+  .stageShare {
+    display: none;
+  }
 }
