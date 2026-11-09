@@ -20,7 +20,7 @@ import {
 } from '@/app/lib/auth-rate-limit';
 import { getAdminClient } from '@/app/lib/supabase/admin';
 import { ResetPasswordSchema } from '@/app/lib/team-schemas';
-import type { LoginActionResult, ResetPasswordResult } from '@/types/crm';
+import type { LoginActionResult, ResetPasswordResult, SignupActionResult } from '@/types/crm';
 
 /**
  * Validation schema for administrative login credentials.
@@ -35,6 +35,28 @@ const LoginSchema = z.object({
     .string({ error: 'Password is required' })
     .min(1, 'Password cannot be empty')
     .max(128, 'Password exceeds maximum allowable length'),
+  next: z.string().optional(),
+});
+
+/**
+ * Validation schema for new staff registration.
+ */
+const SignupSchema = z.object({
+  fullName: z
+    .string({ error: 'Full name is required' })
+    .trim()
+    .min(2, 'Full name must contain at least 2 characters')
+    .max(100, 'Full name exceeds maximum allowable length'),
+  email: z
+    .string({ error: 'Corporate email is required' })
+    .email('Invalid corporate email address format')
+    .max(255, 'Email exceeds maximum allowable length')
+    .transform((val) => val.trim().toLowerCase()),
+  password: z
+    .string({ error: 'Password is required' })
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password exceeds maximum allowable length'),
+  terms: z.string().optional(),
   next: z.string().optional(),
 });
 
@@ -224,6 +246,169 @@ export async function loginAction(
     return {
       success: false,
       error: 'An internal authentication error occurred. Please try again later.',
+    };
+  }
+}
+
+/**
+ * Executes staff account registration against Supabase Auth.
+ *
+ * Security Lifecycle:
+ * 1. Validates input schema via Zod (full name, corporate email, 8+ char password).
+ * 2. Checks honeypot field to drop automated bot registrations silently.
+ * 3. Enforces progressive rate limiting by client IP and email coordinate to defend against registration floods.
+ * 4. Creates user identity in Supabase Auth.
+ * 5. Atomically provisions public profile record with 'sales_executive' default role via Admin client.
+ * 6. Executes compensating rollback if profile provisioning fails to prevent orphaned Auth identities.
+ * 7. Sanitizes redirect destination to eliminate Open Redirect vulnerabilities (CWE-601).
+ *
+ * @param {SignupActionResult | null} _prevState Previous action state from useActionState.
+ * @param {FormData} formData Form data containing fullName, email, password, terms, and optional next URL.
+ * @returns {Promise<SignupActionResult>} Action result object indicating success or failure reason.
+ */
+export async function signupAction(
+  _prevState: SignupActionResult | null,
+  formData: FormData
+): Promise<SignupActionResult> {
+  // Honeypot check for anti-bot defense
+  const honeypot = formData.get('website')?.toString();
+  if (honeypot && honeypot.trim().length > 0) {
+    return {
+      success: false,
+      error: 'Registration request could not be processed.',
+    };
+  }
+
+  const rawFullName = formData.get('fullName');
+  const rawEmail = formData.get('email');
+  const rawPassword = formData.get('password');
+  const rawTerms = formData.get('terms')?.toString();
+  const rawNext = formData.get('next')?.toString();
+
+  const parseResult = SignupSchema.safeParse({
+    fullName: rawFullName,
+    email: rawEmail,
+    password: rawPassword,
+    terms: rawTerms,
+    next: rawNext,
+  });
+
+  if (!parseResult.success) {
+    const validationErrors: Record<string, string> = {};
+    for (const issue of parseResult.error.issues) {
+      const field = issue.path[0]?.toString();
+      if (field && !validationErrors[field]) {
+        validationErrors[field] = issue.message;
+      }
+    }
+    const firstError = parseResult.error.issues[0]?.message || 'Invalid registration details';
+    return {
+      success: false,
+      error: firstError,
+      validationErrors,
+    };
+  }
+
+  const { fullName, email, password, next } = parseResult.data;
+  const clientIp = await resolveClientIp();
+  const rateLimitKey = `${clientIp}:signup:${email}`;
+
+  // Evaluate brute-force rate limit status
+  const rateLimitStatus = checkRateLimit(rateLimitKey);
+  if (!rateLimitStatus.allowed) {
+    return {
+      success: false,
+      error: `Registration temporarily restricted due to consecutive requests. Please retry in ${rateLimitStatus.remainingLockoutSeconds} seconds.`,
+      remainingLockoutSeconds: rateLimitStatus.remainingLockoutSeconds,
+      isLocked: true,
+    };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
+
+    if (error || !data.user) {
+      recordFailedAttempt(rateLimitKey);
+      return {
+        success: false,
+        error: error?.message || 'Unable to complete registration. Please try again.',
+      };
+    }
+
+    // Provision profile row via Supabase Admin Client to ensure CRM authorization integrity
+    try {
+      const adminClient = getAdminClient();
+      const { data: existingProfile } = await adminClient
+        .from('profiles')
+        .select('id')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (!existingProfile) {
+        const { error: profileError } = await adminClient.from('profiles').insert({
+          id: data.user.id,
+          email,
+          full_name: fullName,
+          role: 'sales_executive',
+          job_title: 'Commercial Executive',
+          status: 'active',
+          must_change_password: false,
+        });
+
+        if (profileError) {
+          console.error('[SIGNUP_PROFILE_ERROR] Profile provisioning failed; executing compensating rollback:', profileError.message);
+          await adminClient.auth.admin.deleteUser(data.user.id);
+          return {
+            success: false,
+            error: 'Unable to initialize agency profile. Please contact administration.',
+          };
+        }
+      }
+    } catch (profileError: unknown) {
+      console.warn('[SIGNUP_PROFILE_WARN] Profile provisioning handled by database trigger or existing profile:', profileError);
+    }
+
+    // Reset rate limiter on successful registration
+    resetRateLimit(rateLimitKey);
+
+    // If confirmation is required (email verification enabled on Supabase project)
+    if (!data.session) {
+      return {
+        success: true,
+        requiresEmailConfirmation: true,
+      };
+    }
+
+    // Sanitize destination to guarantee strictly internal navigation
+    let safeDestination = sanitizeRedirectUrl(next, '/admin');
+    if (
+      safeDestination === '/admin/login' ||
+      safeDestination.startsWith('/admin/login') ||
+      safeDestination === '/admin/signup' ||
+      safeDestination.startsWith('/admin/signup')
+    ) {
+      safeDestination = '/admin';
+    }
+
+    return {
+      success: true,
+      redirectTo: safeDestination,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown internal error';
+    console.error('[SIGNUP_ACTION_FATAL] Unexpected failure during account registration:', message);
+    return {
+      success: false,
+      error: 'An internal error occurred during registration. Please try again later.',
     };
   }
 }

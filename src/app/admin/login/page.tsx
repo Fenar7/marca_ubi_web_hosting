@@ -1,6 +1,8 @@
 ﻿/**
  * @file page.tsx
  * @description Staff sign-in entry for the Marca Ubi Commercial Desk.
+ * @module admin/login/page
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React, { Suspense } from 'react';
@@ -18,11 +20,18 @@ export const metadata: Metadata = {
 export default function AdminLoginPage(): React.ReactElement {
   return (
     <AdminAuthShell
-      eyebrow="Marca Ubi · Staff workspace"
-      headline="Your commercial work, in one place."
-      description="Sign in with your agency account to manage leads, client work, and follow-ups."
+      eyebrow="A WISE QUOTE"
+      headline="Get Everything You Want"
+      description="You can get everything you want if you work hard, trust the process, and stick to the plan."
     >
-      <Suspense fallback={<div className={styles.loadingPanel} role="status"><span className={styles.btnSpinner} aria-hidden="true" />Loading sign-in form</div>}>
+      <Suspense
+        fallback={
+          <div className={styles.loadingPanel} role="status">
+            <span className={styles.btnSpinner} aria-hidden="true" />
+            Loading sign-in form
+          </div>
+        }
+      >
         <LoginForm />
       </Suspense>
     </AdminAuthShell>

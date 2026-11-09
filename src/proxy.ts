@@ -67,7 +67,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // Execute Supabase SSR session synchronization and cryptographic JWT validation
   const { supabaseResponse, user } = await updateSession(request);
 
-  const isAuthRoute = pathname === '/admin/login';
+  const isAuthRoute = pathname === '/admin/login' || pathname === '/admin/signup';
   const isAdminRoute = (pathname === '/admin' || pathname.startsWith('/admin/')) && !isAuthRoute;
 
   // Scenario 1: Unauthenticated visitor attempting to access protected administrative enclaves
@@ -139,8 +139,13 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     const rawNext = request.nextUrl.searchParams.get('next');
     let safeNext = sanitizeRedirectUrl(rawNext, '/admin');
 
-    // Prevent circular redirection loop back to the authentication route itself
-    if (safeNext === '/admin/login' || safeNext.startsWith('/admin/login')) {
+    // Prevent circular redirection loop back to the authentication routes themselves
+    if (
+      safeNext === '/admin/login' ||
+      safeNext.startsWith('/admin/login') ||
+      safeNext === '/admin/signup' ||
+      safeNext.startsWith('/admin/signup')
+    ) {
       safeNext = '/admin';
     }
 
