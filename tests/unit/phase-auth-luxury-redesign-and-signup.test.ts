@@ -1,8 +1,8 @@
 /**
  * @file phase-auth-luxury-redesign-and-signup.test.ts
- * @description Unit test suite for the Cogie & Pixelcot Luxury Auth Redesign and Admin Signup Portal.
+ * @description Unit test suite for the Cogie Full-Display Luxury Auth Redesign and Admin Signup Portal.
  *              Validates registration schema invariants, proxy perimeter route gating,
- *              editorial shell typography, and anti-AI-slop guarantees.
+ *              editorial shell typography, viewport-adaptive scaling, and anti-AI-slop guarantees.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -28,18 +28,20 @@ describe('Luxury Auth Redesign & Administrative Signup Portal', () => {
     assert.match(proxySource, /safeNext === '\/admin\/signup'/);
   });
 
-  it('eradicates fake telemetry and uppercase developer wireframe slop from Auth Shell', () => {
+  it('eradicates fake telemetry, residual status pills, and uppercase developer wireframe slop from Auth Shell', () => {
     // Zero unauthenticated fake telemetry metrics
     assert.doesNotMatch(authShell, /ACTIVE PIPELINE/);
     assert.doesNotMatch(authShell, /₹\s*65\.4L/);
     assert.doesNotMatch(authShell, /99\.98% Uptime/);
     assert.doesNotMatch(authShell, /End-to-End Enterprise Auth Guard/);
+    assert.doesNotMatch(authShell, /Commercial Intelligence · Active Telemetry/);
+    assert.doesNotMatch(authShell, /v2\.4\.0/);
 
-    // Verified luxury Cogie & Pixelcot design tokens
+    // Verified luxury Cogie full-display responsive design tokens
     assert.match(authShell, /FluidSilkArtwork/);
     assert.match(authShell, /quoteEyebrow/);
     assert.match(authShell, /quoteHairline/);
-    assert.match(authShellStyles, /width: min\(1060px, 100%\)/);
+    assert.match(authShellStyles, /clamp\(1040px, 90vw, 1540px\)/);
     assert.match(authShellStyles, /border-radius: 28px/);
   });
 
@@ -50,18 +52,26 @@ describe('Luxury Auth Redesign & Administrative Signup Portal', () => {
     assert.match(signupPage, /eyebrow="A WISE QUOTE"/);
   });
 
-  it('implements complete soft-filled squircle inputs and social auth in LoginForm', () => {
-    assert.match(loginForm, /styles\.badgeWrapper/);
-    assert.match(loginForm, /styles\.googleBtn/);
+  it('implements complete soft-filled squircle inputs and eradicates unconfigured social auth in LoginForm', () => {
+    // Zero Google OAuth slop
+    assert.doesNotMatch(loginForm, /Sign In with Google/);
+    assert.doesNotMatch(loginForm, /styles\.googleBtn/);
+    assert.doesNotMatch(loginForm, /styles\.badgeWrapper/);
+
+    assert.match(loginForm, /styles\.brandLogo/);
     assert.match(loginForm, /styles\.inputWithLeading/);
     assert.match(loginForm, /name="email"/);
     assert.match(loginForm, /name="password"/);
     assert.match(loginForm, /href="\/admin\/signup"/);
   });
 
-  it('implements registration controls, honeypot, and terms agreement in SignupForm', () => {
-    assert.match(signupForm, /styles\.badgeWrapper/);
-    assert.match(signupForm, /styles\.googleBtn/);
+  it('implements registration controls, honeypot, and terms agreement while eradicating social auth in SignupForm', () => {
+    // Zero Google OAuth slop
+    assert.doesNotMatch(signupForm, /Sign Up with Google/);
+    assert.doesNotMatch(signupForm, /styles\.googleBtn/);
+    assert.doesNotMatch(signupForm, /styles\.badgeWrapper/);
+
+    assert.match(signupForm, /styles\.brandLogo/);
     assert.match(signupForm, /name="website"/);
     assert.match(signupForm, /name="fullName"/);
     assert.match(signupForm, /name="email"/);

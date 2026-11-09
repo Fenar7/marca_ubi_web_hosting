@@ -150,19 +150,6 @@ export function AdminAuthShell({
               <h1 className={styles.displayHeading}>{headline}</h1>
               <p className={styles.displayDescription}>{description}</p>
             </div>
-
-            {/* Bottom Status & Security Coordinates */}
-            <div className={styles.panelFooter}>
-              <div className={styles.telemetryTag}>
-                <span className={styles.pulseDot} aria-hidden="true" />
-                <span>Commercial Intelligence · Active Telemetry</span>
-              </div>
-              <div className={styles.deskVersion}>
-                <span>Desk</span>
-                <span className={styles.dotDivider}>·</span>
-                <span>v2.4.0</span>
-              </div>
-            </div>
           </div>
         </aside>
 

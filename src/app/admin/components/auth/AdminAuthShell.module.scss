@@ -1,16 +1,24 @@
 ﻿/**
  * @file AdminAuthShell.module.scss
- * @description Luxury Styling for Master Dual-Pane Authentication Shell (Cogie & Pixelcot Archetypes).
+ * @description Luxury Styling for Master Dual-Pane Authentication Shell (Cogie Archetype).
+ *              Full-display responsive viewport architecture:
+ *              - Deep luxury ambient black canvas (#050508)
+ *              - Fluid card container (clamp(1040px, 90vw, 1540px) x clamp(700px, 86vh, 900px))
+ *              - Seamless left showcase panel (edge-to-edge, no inner margin, no double-box nesting)
+ *              - High-contrast luxury serif display typography
+ *              - Clean minimal pure white desk on right
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .canvas {
   position: relative;
-  display: grid;
+  display: flex;
   min-height: 100vh;
   min-height: 100dvh;
-  place-items: center;
-  padding: clamp(16px, 3.5vw, 40px);
-  background: var(--admin-canvas-bg, #f5f5f3);
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3.5vw, 48px);
+  background: #050508;
   color: var(--admin-text-primary, #0c0c0d);
   font-family: var(--font-admin-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   overflow-x: hidden;
@@ -22,42 +30,42 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 10% 20%, rgba(234, 0, 42, 0.04) 0%, transparent 45%),
-    radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.035) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(255, 97, 0, 0.02) 0%, transparent 60%);
+    radial-gradient(circle at 18% 28%, rgba(234, 0, 42, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 82% 72%, rgba(124, 58, 237, 0.07) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 97, 0, 0.03) 0%, transparent 65%);
 }
 
-/* 1060px Floating Luxury Card Container */
+/* Full-Display Responsive Luxury Card Container */
 .frame {
   position: relative;
   z-index: 2;
   display: grid;
-  width: min(1060px, 100%);
-  min-height: min(700px, calc(100dvh - 48px));
-  grid-template-columns: minmax(380px, 1fr) minmax(420px, 1fr);
+  width: 100%;
+  max-width: clamp(1040px, 90vw, 1540px);
+  min-height: clamp(700px, 86vh, 900px);
+  grid-template-columns: minmax(460px, 1fr) minmax(480px, 1fr);
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 28px;
   box-shadow:
-    0 24px 64px -16px rgba(12, 12, 13, 0.08),
-    0 4px 16px -2px rgba(12, 12, 13, 0.03),
-    0 1px 3px rgba(12, 12, 13, 0.02);
+    0 32px 80px -20px rgba(0, 0, 0, 0.7),
+    0 8px 24px -4px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
 
-/* Left: Cogie-Inspired Luxury Editorial Showcase Panel */
+/* Left: Cogie-Inspired Luxury Editorial Showcase Panel (Seamless edge-to-edge) */
 .brandPanel {
   position: relative;
   display: flex;
   min-width: 0;
   flex-direction: column;
   justify-content: space-between;
-  margin: 12px;
-  border-radius: 20px;
+  margin: 0;
+  border-radius: 0;
   background-color: #0c0c0d;
   color: #ffffff;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .artworkContainer {
@@ -79,9 +87,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(10, 10, 12, 0.45) 0%,
-    rgba(10, 10, 12, 0.15) 35%,
-    rgba(10, 10, 12, 0.75) 100%
+    rgba(10, 10, 12, 0.4) 0%,
+    rgba(10, 10, 12, 0.1) 35%,
+    rgba(10, 10, 12, 0.78) 100%
   );
   pointer-events: none;
 }
@@ -93,13 +101,13 @@
   flex: 1;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(28px, 4vw, 44px);
+  padding: clamp(36px, 4vw, 56px);
 }
 
 .panelTop {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .brandLink {
@@ -121,7 +129,7 @@
 
 .brandLogo {
   display: block;
-  width: 136px;
+  width: 142px;
   height: auto;
   aspect-ratio: 4.711 / 1;
   object-fit: contain;
@@ -130,15 +138,15 @@
 .quoteRuleBlock {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .quoteEyebrow {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
   font-family: var(--font-admin-primary, sans-serif);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -146,72 +154,31 @@
 .quoteHairline {
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Editorial Body Typography */
 .editorialBlock {
-  margin: 3rem 0 2rem;
+  margin: 3rem 0 1rem;
 }
 
 .displayHeading {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   color: #ffffff;
-  font-family: var(--font-admin-primary, sans-serif);
-  font-size: clamp(2rem, 2.7vw, 2.65rem);
-  font-weight: 750;
-  letter-spacing: -0.04em;
+  font-family: var(--font-serif, "Playfair Display", Didot, "Bodoni MT", Georgia, serif);
+  font-size: clamp(2.4rem, 3.2vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1.08;
   text-wrap: balance;
 }
 
 .displayDescription {
   margin: 0;
-  color: rgba(255, 255, 255, 0.76);
-  font-size: 0.88rem;
-  line-height: 1.6;
-  max-width: 360px;
-}
-
-/* Panel Footer */
-.panelFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 11px;
-}
-
-.telemetryTag {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 550;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.pulseDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
-}
-
-.deskVersion {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 10.5px;
-}
-
-.dotDivider {
-  color: var(--admin-accent-brand, #ea002a);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 420px;
 }
 
 /* Right: Minimal White Authentication Desk */
@@ -221,18 +188,18 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: clamp(32px, 4.5vw, 56px);
+  padding: clamp(36px, 4.5vw, 64px);
   background: #ffffff;
 }
 
 .formInner {
   width: 100%;
-  max-width: 410px;
+  max-width: 440px;
 }
 
 .formFooter {
-  margin-top: 28px;
-  padding-top: 18px;
+  margin-top: 32px;
+  padding-top: 20px;
   border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
   text-align: center;
 }
@@ -240,7 +207,7 @@
 .copyright {
   margin: 0;
   color: var(--admin-text-muted, #767673);
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.5;
 }
 

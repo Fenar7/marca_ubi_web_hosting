@@ -1,114 +1,71 @@
 ﻿/**
  * @file login.module.scss
- * @description Luxury Styling for Marca Ubi CRM Authentication Portal.
- *              Emulates the Cogie & Pixelcot archetypes:
- *              - Soft squircle icon badge
- *              - Editorial header typography
- *              - Full-width clean Google OAuth button
+ * @description Luxury Styling for Marca Ubi Commercial Desk Staff Sign-In Portal.
+ *              Emulates the Reference 0 (Cogie) Desk Architecture:
+ *              - High-contrast luxury serif header typography (Playfair Display)
+ *              - Zero Google OAuth bloat & zero floating icon badges
  *              - Soft-filled inputs (#f8fafc) with leading icon indicators and squircle radii
- *              - Solid sleek black luxury primary CTA
+ *              - Solid sleek black luxury primary CTA (height: 48px, radius: 10px)
  *              - Accessible focus rings and WCAG AA compliance
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .cardContainer {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   margin: 0 auto;
 }
 
-/* Pixelcot Archetype: Squircle Icon Badge */
-.badgeWrapper {
+/* Brand Lockup Header matching Cogie reference */
+.brandLockup {
   display: flex;
   margin-bottom: 24px;
 }
 
-.iconBadge {
-  display: flex;
-  width: 44px;
-  height: 44px;
+.brandLogoLink {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: #0f172a;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 3px;
+  }
 }
 
-/* Header & Typography */
+.brandLogo {
+  display: block;
+  width: 132px;
+  height: auto;
+  aspect-ratio: 4.711 / 1;
+  object-fit: contain;
+}
+
+/* Header & Luxury Serif Typography */
 .brandHeader {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .brandTitle {
   margin: 0;
   color: #09090b;
-  font-family: var(--font-display, "Plus Jakarta Sans", system-ui, -apple-system, sans-serif);
-  font-size: 28px;
+  font-family: var(--font-serif, "Playfair Display", Didot, "Bodoni MT", Georgia, serif);
+  font-size: clamp(28px, 2.5vw, 34px);
   font-weight: 700;
   letter-spacing: -0.03em;
-  line-height: 1.2;
+  line-height: 1.18;
 }
 
 .brandSubtitle {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: #64748b;
   font-size: 14px;
   line-height: 1.5;
-}
-
-/* Google OAuth Button */
-.googleBtn {
-  display: flex;
-  width: 100%;
-  height: 46px;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #1e293b;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 550;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e1;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
-  }
-
-  &:focus-visible {
-    outline: 2px solid #0f172a;
-    outline-offset: 2px;
-  }
-}
-
-/* Clean Divider */
-.orDivider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 20px 0;
-}
-
-.dividerLine {
-  flex: 1;
-  height: 1px;
-  background-color: #e2e8f0;
-}
-
-.dividerText {
-  color: #94a3b8;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: lowercase;
 }
 
 /* Alert Notification */
@@ -116,7 +73,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   padding: 12px 14px;
   color: #991b1b;
   background: #fef2f2;
@@ -142,7 +99,7 @@
 /* Form & Inputs */
 .form {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 
 .fieldGroup {
@@ -224,8 +181,8 @@
   position: absolute;
   right: 4px;
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   place-items: center;
   color: #94a3b8;
   background: transparent;
@@ -298,7 +255,8 @@
 .submitBtn {
   display: flex;
   width: 100%;
-  height: 46px;
+  height: 48px;
+  min-height: 48px;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -433,9 +391,9 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 860px) {
   .brandTitle {
-    font-size: 24px;
+    font-size: 26px;
   }
 
   .form {
