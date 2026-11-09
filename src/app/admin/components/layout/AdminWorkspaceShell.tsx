@@ -78,6 +78,8 @@ function AdminWorkspaceShellState({
   dueTasksCount,
 }: AdminWorkspaceShellProps): React.ReactElement {
   const router = useRouter();
+  const pathname = usePathname();
+  const isOverview = pathname === '/admin';
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const closeMobileNav = useCallback(() => setIsMobileOpen(false), []);
@@ -253,11 +255,12 @@ function AdminWorkspaceShellState({
       />
 
       {/* Main Viewport Enclave */}
-      <div className={styles.mainViewport}>
+      <div className={`${styles.mainViewport} ${isOverview ? styles.overviewViewport : ''}`}>
         <AdminHeader
           currentUser={currentUser}
           isMobileNavOpen={isMobileOpen}
           onOpenMobileNav={() => setIsMobileOpen(true)}
+          className={isOverview ? styles.overviewHeader : undefined}
         />
         <main className={styles.contentContainer} id="main-content">
           {children}

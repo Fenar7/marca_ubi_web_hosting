@@ -42,17 +42,17 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--admin-accent-brand, #ea002a);
+  background-color: #10b981;
 }
 
 .eyebrow {
   margin: 0;
-  color: var(--admin-accent-brand, #ea002a);
-  font-family: var(--font-admin-code, monospace);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  color: #64748b;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .heading {
@@ -206,13 +206,13 @@
   width: 36px;
   height: 36px;
   place-items: center;
-  border-radius: 9px;
-  background: var(--admin-canvas-bg, #f6f6f4);
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  color: var(--admin-text-primary, #0c0c0d);
-  font-family: var(--font-admin-code, monospace);
-  font-size: 0.72rem;
-  font-weight: 700;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 650;
   letter-spacing: 0.02em;
 }
 
@@ -277,11 +277,11 @@
 .priorityBadge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 9999px;
   font-size: 0.68rem;
   font-weight: 650;
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-primary, sans-serif);
 }
 
 .priorityHigh {

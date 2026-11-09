@@ -164,34 +164,33 @@ export function AdminSidebar({
             </section>
           );
         })}
+
+        {/* Conyest / Amirul Dark Luxury Telemetry Card */}
+        <div className={styles.sidebarPromoCard}>
+          <div className={styles.promoHeader}>
+            <span className={styles.promoBadge}>
+              <span className={styles.promoPulse} />
+              AGENCY INTELLIGENCE
+            </span>
+          </div>
+          <div className={styles.promoTitle}>Pipeline Velocity</div>
+          <div className={styles.promoMetrics}>
+            <span className={styles.promoValue}>₹65.4L Active</span>
+            <span className={styles.promoSub}>39 Commercial Deals</span>
+          </div>
+          <Link href="/admin/deals" className={styles.promoAction} title="Inspect active commercial pipeline">
+            View Pipeline Dynamics →
+          </Link>
+        </div>
       </nav>
 
-      {/* Conyest / Amirul Dark Luxury Telemetry Card */}
-      <div className={styles.sidebarPromoCard}>
-        <div className={styles.promoHeader}>
-          <span className={styles.promoBadge}>
-            <span className={styles.promoPulse} />
-            AGENCY INTELLIGENCE
-          </span>
-        </div>
-        <div className={styles.promoTitle}>Pipeline Velocity</div>
-        <div className={styles.promoMetrics}>
-          <span className={styles.promoValue}>₹65.4L Active</span>
-          <span className={styles.promoSub}>39 Commercial Deals</span>
-        </div>
-        <Link href="/admin/deals" className={styles.promoAction} title="Inspect active commercial pipeline">
-          View Pipeline Dynamics →
-        </Link>
-      </div>
-
-      {/* Agency Telemetry Footer & Collapse Toggle */}
+      {/* Sidebar Footer & Collapse Toggle */}
       <div className={styles.sidebarFooter}>
         <div className={styles.footerExpanded}>
           <div className={styles.telemetryStatusBlock} title={`Authenticated as ${currentUser.email} (${formattedRole})`}>
             <span className={styles.statusDot} aria-hidden="true" />
             <div className={styles.statusText}>
-              <span className={styles.statusLabel}>Supabase SSR · Live</span>
-              <span className={styles.statusSub}>{formattedRole}</span>
+              <span className={styles.statusLabel}>Live SSR</span>
             </div>
           </div>
           <button

@@ -16,19 +16,19 @@
   flex-direction: column;
   justify-content: space-between;
   min-width: 0;
-  min-height: 154px;
-  padding: 1.25rem 1.35rem 1.15rem;
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  min-height: 168px;
+  padding: 1.45rem 1.6rem 1.35rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--admin-radius-card, 16px);
-  box-shadow: var(--admin-shadow-card, 0 4px 20px -2px rgba(12, 12, 13, 0.05), 0 1px 3px rgba(12, 12, 13, 0.02));
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.04), 0 1px 3px rgba(12, 12, 13, 0.02);
   color: var(--admin-text-primary, #0c0c0d);
   text-decoration: none;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 
   &:hover {
-    border-color: var(--admin-border-default, #d8d8d4);
-    box-shadow: var(--admin-shadow-card-hover, 0 10px 30px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04));
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 32px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04);
     transform: translateY(-2px);
   }
 
@@ -41,51 +41,55 @@
 
 .heroCard {
   position: relative;
-  color: #ffffff;
-  background: #09090b;
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 140px;
-    height: 140px;
-    background: radial-gradient(circle at top right, rgba(234, 0, 42, 0.22), transparent 70%);
-    pointer-events: none;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 168px;
+  padding: 1.45rem 1.6rem 1.35rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.04), 0 1px 3px rgba(12, 12, 13, 0.02);
+  color: var(--admin-text-primary, #0c0c0d);
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.38);
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 32px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04);
     transform: translateY(-2px);
   }
 
   .kpiLabel {
-    color: #e4e4e7;
+    color: var(--admin-text-secondary, #4a4a48);
+    font-size: 0.82rem;
     font-weight: 650;
   }
 
   .kpiValue {
-    color: #ffffff;
+    font-size: clamp(1.85rem, 2.3vw, 2.4rem);
+    color: var(--admin-text-primary, #0c0c0d);
+    font-weight: 750;
+    font-variant-numeric: tabular-nums lining-nums;
   }
 
   .detail {
-    color: #a1a1aa;
+    color: var(--admin-text-muted, #767673);
+    font-size: 0.76rem;
   }
 
   .iconBadge {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
+    width: 32px;
+    height: 32px;
+    background: #f4f4f5;
+    color: #52525b;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
   }
 
   .badgeSlate {
-    color: #34d399;
-    background: rgba(16, 185, 129, 0.15);
-    border-color: rgba(16, 185, 129, 0.35);
+    color: var(--admin-status-slate-text, #393936);
+    background: var(--admin-status-slate-bg, #f2f2f0);
+    border: 1px solid var(--admin-status-slate-border, #d8d8d4);
+    font-weight: 650;
   }
 }
 
@@ -124,25 +128,26 @@
 
 .iconBadge {
   display: grid;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
   place-items: center;
-  color: #767673;
-  background: var(--admin-canvas-bg, #f6f6f4);
-  border-radius: 6px;
+  color: #52525b;
+  background: #f4f4f5;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
 }
 
 .kpiValue {
   max-width: 100%;
-  margin: 0.2rem 0;
+  margin: 0.35rem 0 0.45rem;
   color: var(--admin-text-primary, #0c0c0d);
   font-family: var(--font-admin-numeric, var(--font-admin-primary, sans-serif));
-  font-size: clamp(1.4rem, 1.8vw, 1.95rem);
-  font-weight: 700;
+  font-size: clamp(1.85rem, 2.3vw, 2.4rem);
+  font-weight: 750;
   font-variant-numeric: tabular-nums lining-nums;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
   overflow-wrap: anywhere;
 }
 
@@ -165,7 +170,7 @@
   width: fit-content;
   padding: 2px 7px;
   border-radius: var(--admin-radius-pill, 9999px);
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-primary, sans-serif);
   font-size: 0.7rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
@@ -190,7 +195,7 @@
   width: fit-content;
   padding: 2px 7px;
   border-radius: var(--admin-radius-pill, 9999px);
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-primary, sans-serif);
   font-size: 0.7rem;
   font-weight: 650;
   line-height: 1.2;

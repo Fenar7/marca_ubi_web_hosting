@@ -32,12 +32,12 @@
 
 .eyebrow {
   margin: 0;
-  color: var(--admin-text-muted, #767673);
-  font-family: var(--font-admin-code, monospace);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  color: #64748b;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .title {

@@ -1,6 +1,7 @@
 /**
  * @file page.module.scss
  * @description Layout geometry for Marca Ubi Executive Commercial Desk.
+ *              Emulates the Amirul Islam & Conyest luxury SaaS archetype.
  */
 
 .dashboardContainer {
@@ -19,11 +20,29 @@
   min-width: 0;
 }
 
-.analysisSection {
+/* Primary 2-Column Showcase (Amirul Islam Archetype: Deals Ledger on Left, Stage Allocation on Right) */
+.mainGridSection {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(400px, 0.8fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(380px, 0.95fr);
   gap: 1.25rem;
   align-items: start;
+  width: 100%;
+  min-width: 0;
+}
+
+.dealsPrimaryColumn {
+  width: 100%;
+  min-width: 0;
+}
+
+.allocationSecondaryColumn {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Secondary & Operations Sections */
+.analysisSection {
+  width: 100%;
   min-width: 0;
 }
 
@@ -41,7 +60,7 @@
 }
 
 @media (max-width: 1250px) {
-  .analysisSection {
+  .mainGridSection {
     grid-template-columns: minmax(0, 1fr);
   }
 }

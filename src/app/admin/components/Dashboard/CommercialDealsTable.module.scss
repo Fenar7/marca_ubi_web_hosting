@@ -42,17 +42,17 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--admin-accent-brand, #ea002a);
+  background-color: #10b981;
 }
 
 .eyebrow {
   margin: 0;
-  color: var(--admin-accent-brand, #ea002a);
-  font-family: var(--font-admin-code, monospace);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  color: #64748b;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .title {
@@ -133,14 +133,14 @@
 
 .dealsTable th {
   padding: 0.75rem 1rem;
-  background: var(--admin-canvas-bg, #f6f6f4);
+  background: #fafafb;
   border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
-  color: var(--admin-text-muted, #767673);
-  font-family: var(--font-admin-code, monospace);
-  font-size: 0.7rem;
-  font-weight: 650;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  color: #64748b;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -180,13 +180,13 @@
   height: 34px;
   flex: 0 0 34px;
   place-items: center;
-  border-radius: 8px;
-  background: var(--admin-canvas-bg, #f6f6f4);
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  color: var(--admin-text-primary, #0c0c0d);
-  font-family: var(--font-admin-code, monospace);
-  font-size: 0.7rem;
-  font-weight: 700;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 650;
 }
 
 .dealLink {
@@ -244,11 +244,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 3px 9px;
+  border-radius: 9999px;
   background: var(--admin-canvas-bg, #f6f6f4);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-primary, sans-serif);
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--admin-text-primary, #0c0c0d);
@@ -263,14 +263,14 @@
 
 .overdueBadge {
   display: inline-flex;
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 2px 7px;
+  border-radius: 9999px;
   background: var(--admin-status-rose-bg, #fff0f2);
   border: 1px solid var(--admin-status-rose-border, #f5b7c0);
   color: var(--admin-status-rose-text, #9c001e);
   font-size: 0.68rem;
   font-weight: 650;
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-primary, sans-serif);
 }
 
 .amount {
@@ -344,7 +344,7 @@
 .sampleNote {
   color: var(--admin-text-muted, #767673);
   font-size: 0.74rem;
-  font-family: var(--font-admin-code, monospace);
+  font-family: var(--font-admin-primary, sans-serif);
 }
 
 .openDealsLink {

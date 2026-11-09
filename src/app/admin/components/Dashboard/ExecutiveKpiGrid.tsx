@@ -41,7 +41,7 @@ export function ExecutiveKpiGrid({ kpis, cadenceLabel, metricStatus }: Executive
   const cards = [
     {
       id: 'pipeline',
-      isHero: true,
+      isHero: false,
       label: 'Active pipeline',
       value: metricStatus.pipeline === 'ready' && kpis.totalPipelineValue !== null ? formatCrmCurrency(kpis.totalPipelineValue) : 'Unavailable',
       detail: metricStatus.pipeline === 'unavailable' ? 'Pipeline records could not be loaded' : kpis.weightedPipelineValue === null ? 'Weighted value unavailable' : `Weighted ${formatCrmCurrency(kpis.weightedPipelineValue)}`,

@@ -114,10 +114,10 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
         <table className={styles.dealsTable}>
           <thead>
             <tr>
-              <th scope="col">Opportunity / Client</th>
+              <th scope="col">Opportunity / client</th>
               <th scope="col">Stage</th>
-              <th scope="col">Expected Value</th>
-              <th scope="col">Account Owner</th>
+              <th scope="col">Expected value</th>
+              <th scope="col">Account owner</th>
               <th scope="col" className={styles.thActions}>
                 Actions
               </th>

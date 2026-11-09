@@ -48,3 +48,21 @@
     transition: none;
   }
 }
+
+.overviewHeader {
+  @media (min-width: 1025px) {
+    display: none !important;
+  }
+}
+
+.overviewViewport {
+  @media (min-width: 1025px) {
+    > header {
+      display: none !important;
+    }
+
+    .contentContainer {
+      padding-top: 20px;
+    }
+  }
+}

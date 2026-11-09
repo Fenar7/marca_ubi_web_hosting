@@ -467,7 +467,7 @@ export default async function AdminDashboardPage(
 
   const stageStatus = activeRowsResult.error || statusesError ? 'unavailable' : 'ready';
   const revenueStatus = revenueRowsResult.error ? 'unavailable' : 'ready';
-  const dealsStatus = statusesError || topLeadsError || directoryError ? 'unavailable' : 'ready';
+  const dealsStatus = statusesError || topLeadsError ? 'unavailable' : 'ready';
   const currentConversionRate = cohortAvailable ? cohortConversionRate(currentCohort) : null;
   const exportData = pipelineAvailable && cohortAvailable && revenueAvailable && stageStatus === 'ready' && revenueStatus === 'ready' && dealsStatus === 'ready'
     ? {
@@ -515,20 +515,19 @@ export default async function AdminDashboardPage(
             cohort: cohortAvailable ? 'ready' : 'unavailable',
           }}
         />
-        <section className={styles.analysisSection} aria-label="Performance and pipeline stage health">
-          <RevenueDynamicsCard
-            dataPoints={revenueSplinePoints}
-            timeframe={bounds.label}
-            dataStatus={revenueStatus}
-            conversionCount={currentRevenueCount}
-          />
-          <PipelineAllocationCard
-            totalValuation={pipelineAvailable ? pipelineValue : null}
-            stages={dynamicStages}
-            dataStatus={stageStatus}
-          />
+        <section className={styles.mainGridSection} aria-label="Active opportunities and stage distribution">
+          <div className={styles.dealsPrimaryColumn}>
+            <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
+          </div>
+          <div className={styles.allocationSecondaryColumn}>
+            <PipelineAllocationCard
+              totalValuation={pipelineAvailable ? pipelineValue : null}
+              stages={dynamicStages}
+              dataStatus={stageStatus}
+            />
+          </div>
         </section>
-        <section className={styles.operationsSection} aria-label="Priority work and active deals">
+        <section className={styles.operationsSection} aria-label="Priority work and triage">
           <AttentionQueue
             items={(attentionRows ?? []).filter((lead) => {
               const stage = statusById.get(lead.status_id);
@@ -547,9 +546,14 @@ export default async function AdminDashboardPage(
             dueTodayCount={pipelineAvailable ? dueTodayCount : null}
             dataStatus={attentionError ? 'unavailable' : 'ready'}
           />
-          <section className={styles.dealsSection} aria-label="Recent active commercial opportunities">
-            <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
-          </section>
+        </section>
+        <section className={styles.analysisSection} aria-label="Performance and revenue pacing">
+          <RevenueDynamicsCard
+            dataPoints={revenueSplinePoints}
+            timeframe={bounds.label}
+            dataStatus={revenueStatus}
+            conversionCount={currentRevenueCount}
+          />
         </section>
       </main>
     </div>
