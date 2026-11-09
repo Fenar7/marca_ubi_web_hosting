@@ -166,8 +166,10 @@ export function AdminHeader({ currentUser, isMobileNavOpen, onOpenMobileNav }: A
           </div>
         </details>
 
-        {/* User Identity Popover */}
-        <UserProfileDropdown currentUser={currentUser} />
+        {/* User Identity Popover (Mobile Only — Desktop lives in Sidebar Lockup) */}
+        <div className={styles.headerUserControl}>
+          <UserProfileDropdown currentUser={currentUser} />
+        </div>
       </div>
     </header>
   );

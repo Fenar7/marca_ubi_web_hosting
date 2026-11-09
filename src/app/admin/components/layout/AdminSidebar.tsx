@@ -166,6 +166,24 @@ export function AdminSidebar({
         })}
       </nav>
 
+      {/* Conyest / Amirul Dark Luxury Telemetry Card */}
+      <div className={styles.sidebarPromoCard}>
+        <div className={styles.promoHeader}>
+          <span className={styles.promoBadge}>
+            <span className={styles.promoPulse} />
+            AGENCY INTELLIGENCE
+          </span>
+        </div>
+        <div className={styles.promoTitle}>Pipeline Velocity</div>
+        <div className={styles.promoMetrics}>
+          <span className={styles.promoValue}>₹65.4L Active</span>
+          <span className={styles.promoSub}>39 Commercial Deals</span>
+        </div>
+        <Link href="/admin/deals" className={styles.promoAction} title="Inspect active commercial pipeline">
+          View Pipeline Dynamics →
+        </Link>
+      </div>
+
       {/* Agency Telemetry Footer & Collapse Toggle */}
       <div className={styles.sidebarFooter}>
         <div className={styles.footerExpanded}>

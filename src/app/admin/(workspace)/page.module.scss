@@ -28,10 +28,10 @@
 }
 
 .operationsSection {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(380px, 0.75fr);
-  align-items: start;
-  gap: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
   min-width: 0;
 }
 
@@ -42,10 +42,6 @@
 
 @media (max-width: 1250px) {
   .analysisSection {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .operationsSection {
     grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveKpiGrid.tsx": {
-    "mtime": 1794203472.8473363,
-    "seen": 1794205709.790258,
-    "ast_hash": "69125ea831189db6fdd02acbb1d47199",
+    "mtime": 1794207447.7635324,
+    "seen": 1794208265.225445,
+    "ast_hash": "56728cb6c2471c2c72c9650087ffbb12",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveMasthead.tsx": {
@@ -1116,9 +1116,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminHeader.tsx": {
-    "mtime": 1794042475.6961184,
-    "seen": 1794044531.3041291,
-    "ast_hash": "c1e4054877e97aa472b15b653faad70d",
+    "mtime": 1794207280.8612545,
+    "seen": 1794208265.225548,
+    "ast_hash": "0b066c9eeae0432b7998581a7608591c",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminMobileDrawer.tsx": {
@@ -1134,9 +1134,9 @@
     "semantic_hash": "4572fabb70ae9163d445232dab7729ee"
   },
   "src/app/admin/components/layout/AdminSidebar.tsx": {
-    "mtime": 1794204735.6883645,
-    "seen": 1794205709.790258,
-    "ast_hash": "cb9fb6e8cb4f4620f5e525c4892f219a",
+    "mtime": 1794207319.5688663,
+    "seen": 1794208265.225548,
+    "ast_hash": "73af5a1b1f4b766a4eebc6c0db27b375",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminWorkspaceShell.tsx": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794201377.1660724,
-    "seen": 1794205709.7912478,
-    "ast_hash": "69f9ee225821689452a7dd9ce23c0d8e",
+    "mtime": 1794205876.9663904,
+    "seen": 1794208265.226054,
+    "ast_hash": "e7d2b76e146115407a935fb54c69f5d4",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5499,6 +5499,18 @@
     "mtime": 1794202937.6834404,
     "seen": 1794205709.7912478,
     "ast_hash": "1b958dced901c0403916f5df2577f5d7",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-09_23-00-00.md": {
+    "mtime": 1794205884.9492998,
+    "seen": 1794208265.226054,
+    "ast_hash": "6bbb963ed5d0237cf45f4f7020e82ba2",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/crm_saas_redesign/PR_BODY.md": {
+    "mtime": 1794205850.568576,
+    "seen": 1794208265.226054,
+    "ast_hash": "5b86693bf26c497e2af66e44003a57c2",
     "semantic_hash": ""
   },
   "package-lock.json": {

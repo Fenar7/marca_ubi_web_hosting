@@ -41,7 +41,7 @@ export function ExecutiveKpiGrid({ kpis, cadenceLabel, metricStatus }: Executive
   const cards = [
     {
       id: 'pipeline',
-      index: '01',
+      isHero: true,
       label: 'Active pipeline',
       value: metricStatus.pipeline === 'ready' && kpis.totalPipelineValue !== null ? formatCrmCurrency(kpis.totalPipelineValue) : 'Unavailable',
       detail: metricStatus.pipeline === 'unavailable' ? 'Pipeline records could not be loaded' : kpis.weightedPipelineValue === null ? 'Weighted value unavailable' : `Weighted ${formatCrmCurrency(kpis.weightedPipelineValue)}`,
@@ -56,7 +56,7 @@ export function ExecutiveKpiGrid({ kpis, cadenceLabel, metricStatus }: Executive
     },
     {
       id: 'revenue',
-      index: '02',
+      isHero: false,
       label: 'Converted contract value',
       value: metricStatus.revenue === 'ready' && kpis.convertedRevenueValue !== null ? formatCrmCurrency(kpis.convertedRevenueValue) : 'Unavailable',
       detail: metricStatus.revenue === 'unavailable' ? 'Conversion records could not be loaded' : `${(kpis.convertedDealsCount ?? 0).toLocaleString('en-IN')} conversions in ${cadenceLabel}`,
@@ -71,7 +71,7 @@ export function ExecutiveKpiGrid({ kpis, cadenceLabel, metricStatus }: Executive
     },
     {
       id: 'deals',
-      index: '03',
+      isHero: false,
       label: 'Active deals',
       value: metricStatus.pipeline === 'ready' && kpis.activeDealsCount !== null ? kpis.activeDealsCount.toLocaleString('en-IN') : 'Unavailable',
       detail: metricStatus.pipeline === 'unavailable' ? 'Pipeline records could not be loaded' : 'Open and potential records now',
@@ -88,7 +88,7 @@ export function ExecutiveKpiGrid({ kpis, cadenceLabel, metricStatus }: Executive
     },
     {
       id: 'cohort',
-      index: '04',
+      isHero: false,
       label: 'Lead conversion rate',
       value: metricStatus.cohort === 'ready' && kpis.conversionWinRate !== null ? `${kpis.conversionWinRate.toFixed(1)}%` : 'Unavailable',
       detail: metricStatus.cohort === 'unavailable'
@@ -111,12 +111,13 @@ export function ExecutiveKpiGrid({ kpis, cadenceLabel, metricStatus }: Executive
   return (
     <section className={styles.gridContainer} aria-label="Commercial performance snapshot">
       {cards.map((card) => (
-        <Link href={card.href} key={card.id} className={styles.kpiCard}>
+        <Link
+          href={card.href}
+          key={card.id}
+          className={`${styles.kpiCard} ${card.isHero ? styles.heroCard : ''}`}
+        >
           <div className={styles.cardHeader}>
-            <div className={styles.labelGroup}>
-              <span className={styles.kpiIndex}>{card.index}</span>
-              <span className={styles.kpiLabel}>{card.label}</span>
-            </div>
+            <span className={styles.kpiLabel}>{card.label}</span>
             <div className={styles.iconBadge} aria-hidden="true">
               {card.icon}
             </div>

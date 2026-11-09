@@ -326,6 +326,99 @@
   border: 1px solid var(--admin-status-rose-border, #f5b7c0);
 }
 
+/* Conyest / Amirul Dark Luxury Telemetry Card */
+.sidebarPromoCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 12px;
+  padding: 12px 14px;
+  color: #ffffff;
+  background: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at top right, rgba(234, 0, 42, 0.25), transparent 70%);
+    pointer-events: none;
+  }
+}
+
+.promoHeader {
+  display: flex;
+  align-items: center;
+}
+
+.promoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #a1a1aa;
+  font-family: var(--font-admin-code, monospace);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.promoPulse {
+  width: 5px;
+  height: 5px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.promoTitle {
+  color: #f4f4f5;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.promoMetrics {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.promoValue {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.promoSub {
+  color: #71717a;
+  font-size: 9.5px;
+}
+
+.promoAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: var(--admin-accent-brand, #ea002a);
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #ff3355;
+    text-decoration: underline;
+  }
+}
+
 /* Sidebar Footer & Collapse Toggle */
 .sidebarFooter {
   padding: 10px 12px;
@@ -423,6 +516,10 @@
 
 .collapsed .brandCollapsed {
   display: flex;
+}
+
+.collapsed .sidebarPromoCard {
+  display: none;
 }
 
 .collapsed .searchSection {

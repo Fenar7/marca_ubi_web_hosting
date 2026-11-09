@@ -114,6 +114,27 @@
 .primaryAction { color: var(--admin-accent-brand, #ea002a); }
 .secondaryAction { color: var(--admin-text-secondary, #454542); }
 
+.headerUserControl {
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 1025px) {
+  .header {
+    min-height: 48px;
+    background: transparent;
+    border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+  }
+
+  .omniSearchTrigger {
+    display: none;
+  }
+
+  .headerUserControl {
+    display: none;
+  }
+}
+
 @media (max-width: 1024px) { .mobileHamburger { display: inline-flex; } }
 @media (max-width: 760px) {
   .header { min-height: 58px; padding-inline: 14px; gap: 8px; }
