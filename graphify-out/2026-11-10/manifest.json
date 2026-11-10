@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794233155.0293672,
-    "seen": 1794286769.4296813,
-    "ast_hash": "036659e779da3ca5dfb9ca1ae4de7bb5",
+    "mtime": 1794286816.5658221,
+    "seen": 1794289523.5764594,
+    "ast_hash": "ac726c0bbffbf0ff563e77978324e44a",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5430,9 +5430,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/auth/AdminAuthShell.tsx": {
-    "mtime": 1794285957.362814,
-    "seen": 1794286769.4286833,
-    "ast_hash": "f0acc58c601095f018d03db22cb763f7",
+    "mtime": 1794289288.4134257,
+    "seen": 1794289523.5754614,
+    "ast_hash": "143f9391f0c64b59ccc55fa086bb9280",
     "semantic_hash": ""
   },
   "src/app/admin/lib/followUpQueue.ts": {
@@ -5565,6 +5565,18 @@
     "mtime": 1794233136.399994,
     "seen": 1794286769.4296813,
     "ast_hash": "91341c2cf369d9841b5e55b3f317385d",
+    "semantic_hash": ""
+  },
+  "docs/auth_redesign/LOGIN_AND_SIGNUP_ANIMATED_CREATIVE_SHOWCASE_PLAN.md": {
+    "mtime": 1794288282.9091487,
+    "seen": 1794289523.5759628,
+    "ast_hash": "612ce730cc7cc82660aa4c36d3a806e6",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-09_20-15-00.md": {
+    "mtime": 1794286770.5585527,
+    "seen": 1794289523.5764594,
+    "ast_hash": "b87e2961688f21db98d0b3b78ad88142",
     "semantic_hash": ""
   },
   "package-lock.json": {
