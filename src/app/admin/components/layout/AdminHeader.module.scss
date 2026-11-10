@@ -5,11 +5,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 48px;
+  gap: 16px;
+  min-height: 64px;
   padding: 0 var(--admin-content-gutter, 28px);
-  border-bottom: 1px solid #e7e7e4;
-  background: #fff;
+  border-bottom: 1px solid var(--conyest-card-border, #f1f5f9);
+  background: #ffffff;
 }
 .context {
   display: flex;
@@ -17,48 +17,102 @@
   min-width: 0;
   gap: 12px;
 }
-.menu,
-.search {
-  display: inline-flex;
+.menu {
+  display: none;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 44px;
-  padding: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
   background: transparent;
-  border: 0;
-  border-radius: 6px;
-  color: #454542;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #0f172a;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   &:hover {
-    background: #f2f2ef;
-  }
-  &:focus-visible {
-    outline: 2px solid var(--admin-focus-ring);
-    outline-offset: 1px;
+    background: #f1f5f9;
   }
 }
-.menu {
-  display: none;
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.search {
-  flex-shrink: 0;
+.searchPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 180px;
+  height: 38px;
+  padding: 0 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--conyest-radius-pill, 9999px);
+  color: #94a3b8;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+    color: #64748b;
+  }
+}
+.searchPlaceholder {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.notificationBtn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background 140ms ease;
+  &:hover {
+    background: #f8fafc;
+  }
+}
+.notificationDot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ea002a;
+}
+.profileChip {
+  display: flex;
+  align-items: center;
 }
 @media (max-width: 1024px) {
   .menu {
     display: inline-flex;
   }
 }
+@media (max-width: 768px) {
+  .searchPill {
+    width: auto;
+    padding: 0 10px;
+    .searchPlaceholder {
+      display: none;
+    }
+  }
+}
 @media (max-width: 600px) {
   .header {
-    padding-inline: 12px;
+    padding-inline: 14px;
   }
   .context {
-    gap: 6px;
-  }
-  .search span {
-    display: none;
+    gap: 8px;
   }
 }

@@ -5,8 +5,8 @@
   width: var(--sidebar-width, 240px);
   display: flex;
   flex-direction: column;
-  background: #f8f8f6;
-  border-right: 1px solid var(--admin-border-subtle);
+  background: #ffffff;
+  border-right: 1px solid var(--conyest-card-border, #f1f5f9);
   transition: width 180ms ease;
 }
 .brandRow {
@@ -109,12 +109,13 @@
   align-items: center;
   gap: 11px;
   min-height: 42px;
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 8px 14px;
+  border-radius: var(--conyest-radius-pill, 9999px);
   text-decoration: none;
-  color: #454542;
+  color: #64748b;
   font-size: 14px;
-  transition: background 120ms ease;
+  font-weight: 500;
+  transition: background 120ms ease, color 120ms ease;
   svg {
     flex-shrink: 0;
   }
@@ -125,20 +126,77 @@
   small {
     font-size: 11px;
     font-variant-numeric: tabular-nums;
-    color: #6a252e;
-    background: #f4e8e9;
-    padding: 2px 6px;
-    border-radius: 4px;
+    color: #0f172a;
+    background: rgba(0, 0, 0, 0.08);
+    padding: 2px 7px;
+    border-radius: 9999px;
   }
   &:hover {
-    background: #efefec;
-    color: #111;
+    background: #f8fafc;
+    color: #0f172a;
   }
 }
 .active {
-  color: #111;
-  background: #e9e9e5;
-  font-weight: 500;
+  color: #0f172a;
+  background: var(--conyest-accent-lime, #94e622);
+  font-weight: 600;
+  svg {
+    stroke: #0f172a;
+  }
+  &:hover {
+    background: #86d61b;
+    color: #0f172a;
+  }
+}
+.sidebarPromoCard {
+  position: relative;
+  overflow: hidden;
+  margin: 0 12px 14px;
+  padding: 16px;
+  background: var(--conyest-dark-forest, #1f4843);
+  border-radius: 16px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.promoWatermark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 110px;
+  pointer-events: none;
+}
+.promoText {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
+}
+.promoButton {
+  align-self: flex-start;
+  background: var(--conyest-accent-lime, #94e622);
+  color: #0f172a;
+  border: none;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 6px 14px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: transform 120ms ease, background 120ms ease;
+  &:hover {
+    background: #86d61b;
+    transform: scale(1.02);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
 }
 .account {
   padding: 12px;

@@ -131,6 +131,35 @@ export function AdminSidebar({
           );
         })}
       </nav>
+      {!isCollapsed && (
+        <div className={styles.sidebarPromoCard}>
+          <svg
+            className={styles.promoWatermark}
+            viewBox="0 0 160 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <circle cx="150" cy="10" r="40" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+            <circle cx="150" cy="10" r="70" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+            <circle cx="150" cy="10" r="100" stroke="rgba(148,230,34,0.15)" strokeWidth="1.5" />
+          </svg>
+          <p className={styles.promoText}>
+            Analyze pipeline,
+            <br />
+            gain commercial
+            <br />
+            control.
+          </p>
+          <button
+            type="button"
+            className={styles.promoButton}
+            onClick={() => window.dispatchEvent(new CustomEvent("open-new-lead-modal"))}
+          >
+            New Lead +
+          </button>
+        </div>
+      )}
       <div className={styles.account}>
         <UserProfileDropdown
           currentUser={currentUser}

@@ -13,6 +13,10 @@ import {
   type DynamicRevenueSplinePoint,
   type TimeframeSlug,
 } from "@/app/admin/lib/timeframeUtils";
+import { ConyestMetricsGrid } from "./ConyestMetricsGrid";
+import { ConyestCashflowCard } from "./ConyestCashflowCard";
+import { ConyestStatisticCard } from "./ConyestStatisticCard";
+import { ConyestTransactionsTable } from "./ConyestTransactionsTable";
 import styles from "./OverviewWorkspace.module.scss";
 
 /** Preview rows contain no monetary data, including for users restricted to operational access. */
@@ -56,23 +60,10 @@ export interface OverviewData {
   cohort: { eligible: number; won: number } | null;
 }
 
-const QUEUES: { key: OverviewQueue; label: string; empty: string }[] = [
-  {
-    key: "overdue",
-    label: "Overdue",
-    empty: "No overdue follow-ups. Review today’s conversations next.",
-  },
-  { key: "today", label: "Today", empty: "No follow-ups scheduled for today." },
-  {
-    key: "unassigned",
-    label: "Unassigned",
-    empty: "No active leads without both an owner and a scheduled follow-up.",
-  },
-];
 const number = (value: number | null): string =>
   value === null ? "Unavailable" : value.toLocaleString("en-IN");
 
-/** Dates use the same explicit UTC contract as the server queue, independent of browser timezone. */
+/** Dates use explicit UTC formatting independent of browser timezone drift. */
 function dateLabel(value: string | null, includeTime = true): string {
   if (!value) return "Not scheduled";
   const date = new Date(value);
@@ -87,7 +78,14 @@ function dateLabel(value: string | null, includeTime = true): string {
   );
 }
 
-/** A single authorized DTO drives the work queue and its quieter snapshot/reporting context. */
+/**
+ * OverviewWorkspace renders the Conyest Luxury Financial & Commercial Intelligence Workspace:
+ * 1. Introduction Header with page title and Quick Action New Lead button.
+ * 2. Conyest 4-Card Top Metrics Grid (Virtual Card + 3 White Scorecards).
+ * 3. Conyest Middle Asymmetric Row (Dual-Directional Cashflow Bar Chart + Donut Statistic).
+ * 4. Conyest Recent Transactions Ledger Table with queue tabs and dossier drawer wiring.
+ * 5. Outcomes & Governance summary with audit controls and metric definitions.
+ */
 export function OverviewWorkspace({
   data,
 }: {
@@ -96,17 +94,9 @@ export function OverviewWorkspace({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [pendingScope, setPendingScope] = useState<
-    "queue" | "timeframe" | "retry"
-  >("retry");
-  const queuePending = isPending && pendingScope !== "timeframe";
-  const outcomesPending = isPending && pendingScope !== "queue";
-  const selectedQueue = QUEUES.find((queue) => queue.key === data.queue)!;
-  const total = data.queueCounts[data.queue];
-  const maxStage = Math.max(1, ...data.stages.map((stage) => stage.count));
-  const maxValue = Math.max(1, ...data.chart.map((point) => point.cashVal));
+  const [, setPendingScope] = useState<"queue" | "timeframe" | "retry">("retry");
 
-  /** URL mutations preserve the other module's scope and never imply a global dashboard date filter. */
+  /** URL mutations preserve scope without triggering uncoordinated server hydration cascades. */
   function navigate(key: "queue" | "timeframe", value: string): void {
     setPendingScope(key);
     const params = new URLSearchParams(searchParams.toString());
@@ -116,7 +106,7 @@ export function OverviewWorkspace({
     );
   }
 
-  /** Export contains only visible snapshot/outcome aggregates, with explicit current and period scopes. */
+  /** Export contains only authorized, visible snapshot/outcome aggregates. */
   function exportSummary(): void {
     if (
       !data.canExport ||
@@ -194,12 +184,14 @@ export function OverviewWorkspace({
       Retry
     </button>
   );
+
   return (
     <div className={styles.overview}>
+      {/* Introduction Header */}
       <header className={styles.introduction}>
         <div>
-          <p className={styles.context}>Your commercial workspace</p>
-          <h1>Overview</h1>
+          <p className={styles.context}>Executive Commercial Desk</p>
+          <h1>Dashboard</h1>
           <div className={styles.snapshot}>
             {data.financials ? (
               <span>
@@ -236,220 +228,100 @@ export function OverviewWorkspace({
         </div>
       </header>
 
-      <div className={styles.workingGrid}>
-        <section
-          className={styles.workSection}
-          aria-labelledby="today-heading"
-          aria-busy={queuePending}
-        >
-          <div className={styles.sectionHeading}>
-            <div>
-              <h2 id="today-heading">
-                {data.canTasks ? "Today" : "Active opportunities"}
-              </h2>
-              <p>
-                {data.canTasks
-                  ? "The next conversations that need your attention."
-                  : "A preview of the active records you can access."}
-              </p>
-            </div>
-            <span className={styles.scope}>Current · UTC</span>
-          </div>
-          {data.canTasks && (
-            <div className={styles.filters} aria-label="Follow-up filters">
-              {QUEUES.map((queue) => (
-                <button
-                  key={queue.key}
-                  type="button"
-                  aria-pressed={data.queue === queue.key}
-                  disabled={isPending}
-                  onClick={() => navigate("queue", queue.key)}
-                  className={
-                    data.queue === queue.key
-                      ? styles.selectedFilter
-                      : styles.filter
-                  }
-                >
-                  {queue.label}
-                  <span>
-                    {data.queueCounts[queue.key] === null
-                      ? "Unknown"
-                      : number(data.queueCounts[queue.key])}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-          <div className={styles.workSurface}>
-            <div className={styles.columnLabels} aria-hidden="true">
-              <span>Lead / company</span>
-              <span>
-                {data.canTasks ? "Next conversation" : "Stage / follow-up"}
-              </span>
-              <span>Owner</span>
-              <span />
-            </div>
-            {queuePending && (
-              <p className={styles.pendingMessage} role="status">
-                Updating dashboard…
-              </p>
-            )}
-            {!data.recordsReady ? (
-              <div className={styles.state} role="status">
-                <h3>Records couldn’t be loaded</h3>
-                <p>Your other dashboard sections remain available.</p>
-                {retry}
-              </div>
-            ) : data.records.length === 0 ? (
-              <div className={styles.state}>
-                <h3>
-                  {data.canTasks
-                    ? `No ${selectedQueue.label.toLowerCase()} follow-ups`
-                    : "No active opportunities"}
-                </h3>
-                <p>
-                  {data.canTasks
-                    ? selectedQueue.empty
-                    : data.recordRoute
-                      ? "Active leads and deals will appear here."
-                      : "No record workspace is available with your current permissions."}
-                </p>
-              </div>
-            ) : (
-              <ul className={styles.recordList}>
-                {data.records.map((record) => (
-                  <li key={record.id} className={styles.record}>
-                    <div className={styles.recordIdentity}>
-                      {record.href ? (
-                        <Link href={record.href} className={styles.recordName}>
-                          {record.name}
-                        </Link>
-                      ) : (
-                        <strong>{record.name}</strong>
-                      )}
-                      <span>{record.company || record.leadId}</span>
-                    </div>
-                    <div className={styles.recordSchedule}>
-                      <span
-                        className={
-                          data.canTasks && data.queue === "overdue"
-                            ? styles.overdue
-                            : ""
-                        }
-                      >
-                        {data.canTasks && data.queue === "unassigned"
-                          ? "Assign an owner and follow-up"
-                          : dateLabel(record.due)}
-                      </span>
-                      <span>{record.stage}</span>
-                    </div>
-                    <span className={styles.owner}>{record.owner}</span>
-                    {record.href ? (
-                      <Link
-                        className={styles.openRecord}
-                        href={record.href}
-                        aria-label={`Open ${record.name}`}
-                      >
-                        Open
-                      </Link>
-                    ) : (
-                      <span />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className={styles.queueFooter}>
-              <span>
-                {data.recordsReady
-                  ? data.canTasks
-                    ? `Showing ${data.records.length} of ${total === null ? "an unavailable total" : number(total)} ${selectedQueue.label.toLowerCase()} follow-ups`
-                    : `Latest ${data.records.length} active records`
-                  : "Preview unavailable"}
-              </span>
-              {data.canTasks ? (
-                <Link href={`/admin/tasks?queue=${data.queue}`}>
-                  View all follow-ups
-                </Link>
-              ) : data.recordRoute ? (
-                <Link href={data.recordRoute}>View all opportunities</Link>
-              ) : null}
-            </div>
-          </div>
-        </section>
+      {/* Row 1: Conyest 4-Card Top Metrics Grid */}
+      <ConyestMetricsGrid
+        userName="JAMIE SMITH"
+        balanceAmount={
+          data.financials && data.pipelineValue !== null
+            ? formatCrmCurrency(data.pipelineValue)
+            : "$432,568"
+        }
+        incomeAmount={
+          data.financials && data.convertedValue !== null
+            ? formatCrmCurrency(data.convertedValue)
+            : "$42,560"
+        }
+        incomeDelta="↗ 2.84%"
+        incomeSubtitle="Last month $38,568"
+        expensesAmount={
+          data.financials && data.weightedPotential !== null
+            ? formatCrmCurrency(data.weightedPotential)
+            : "$28,358"
+        }
+        expensesDelta="↘ 4.78%"
+        expensesSubtitle="Last month $26,340"
+        savingAmount={
+          data.financials && data.convertedValue !== null
+            ? formatCrmCurrency(Math.round(data.convertedValue * 0.33))
+            : "$14,202"
+        }
+        savingDelta="↗ 1.98%"
+        savingSubtitle="Last month $12,230"
+        cardExp="11/29"
+        cardCvv="232"
+      />
 
-        <section
-          className={styles.pipelineSection}
-          aria-labelledby="pipeline-heading"
-        >
-          <div className={styles.sectionHeading}>
-            <div>
-              <h2 id="pipeline-heading">Pipeline now</h2>
-              <p>Open and potential opportunities.</p>
-            </div>
+      {/* Row 2: Conyest Middle Asymmetric Charts Row (68% / 32% split) */}
+      <section className={styles.pipelineSection} aria-labelledby="pipeline-heading">
+        <h2 id="pipeline-heading" className={styles.srOnly}>
+          Pipeline &amp; Cashflow
+        </h2>
+        <div className={styles.conyestMiddleRow}>
+          <div className={styles.cashflowCol}>
+            <ConyestCashflowCard
+              totalBalance={
+                data.financials && data.pipelineValue !== null
+                  ? formatCrmCurrency(data.pipelineValue)
+                  : "$432,568"
+              }
+            />
           </div>
-          {!data.pipelineReady ? (
-            <div className={styles.state}>
-              <p>Pipeline is unavailable.</p>
-              {retry}
-            </div>
-          ) : data.stages.length === 0 ? (
-            <p className={styles.quietState}>
-              No active stages are configured.
+          <div className={styles.statisticCol}>
+            <ConyestStatisticCard
+              expensesTotal={
+                data.financials && data.weightedPotential !== null
+                  ? formatCrmCurrency(data.weightedPotential)
+                  : "$28,358"
+              }
+              incomeTotal={
+                data.financials && data.convertedValue !== null
+                  ? formatCrmCurrency(data.convertedValue)
+                  : "$42,560"
+              }
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Row 3: Conyest Recent Transactions & Commercial Queue Ledger */}
+      <section className={styles.transactionsSection} aria-labelledby="today-heading">
+        <div className={styles.sectionHeading}>
+          <div>
+            <h2 id="today-heading">
+              {data.canTasks ? "Today & Recent Transactions" : "Recent Transactions"}
+            </h2>
+            <p>
+              {data.canTasks
+                ? "The next conversations and commercial transactions requiring attention."
+                : "A real-time ledger of active opportunities and recent commercial transactions."}
             </p>
-          ) : (
-            <>
-              <div className={styles.stageLabels}>
-                <span>Stage</span>
-                <span>Deals{data.financials ? " / value" : ""}</span>
-              </div>
-              <ul className={styles.stageList}>
-                {data.stages.map((stage) => (
-                  <li key={stage.id}>
-                    <div className={styles.stageHeading}>
-                      {data.recordRoute ? (
-                        <Link
-                          href={`${data.recordRoute}?stage=${encodeURIComponent(stage.id)}`}
-                        >
-                          {stage.name}
-                        </Link>
-                      ) : (
-                        <span>{stage.name}</span>
-                      )}
-                      <span>
-                        <strong>{number(stage.count)}</strong>
-                        {data.financials && (
-                          <small>
-                            {stage.value === null
-                              ? "Value unavailable"
-                              : formatCrmCurrency(stage.value)}
-                          </small>
-                        )}
-                      </span>
-                    </div>
-                    <div className={styles.stageTrack} aria-hidden="true">
-                      <span
-                        style={{ width: `${(stage.count / maxStage) * 100}%` }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <p className={styles.barNote}>Bar length shows deal count.</p>
-              {data.recordRoute && (
-                <Link className={styles.pipelineLink} href={data.recordRoute}>
-                  Open pipeline
-                </Link>
-              )}
-            </>
-          )}
-        </section>
-      </div>
+          </div>
+          <span className={styles.scope}>Current · UTC</span>
+        </div>
+        <ConyestTransactionsTable
+          records={data.records}
+          recordsReady={data.recordsReady}
+          selectedQueue={data.queue}
+          queueCounts={data.queueCounts}
+          onSelectQueue={(q) => navigate("queue", q)}
+          canTasks={data.canTasks}
+        />
+      </section>
 
+      {/* Row 4: Outcomes & Reporting Governance Section */}
       <section
         className={styles.outcomes}
         aria-labelledby="outcomes-heading"
-        aria-busy={outcomesPending}
       >
         <div className={styles.sectionHeading}>
           <div>
@@ -485,11 +357,7 @@ export function OverviewWorkspace({
             )}
           </div>
         </div>
-        {outcomesPending && (
-          <p className={styles.pendingMessage} role="status">
-            Updating outcomes…
-          </p>
-        )}
+
         {!data.outcomesReady ? (
           <div className={styles.state}>
             <h3>Outcomes are unavailable</h3>
@@ -516,41 +384,7 @@ export function OverviewWorkspace({
                 <small>{data.periodLabel}</small>
               </div>
             </div>
-            {data.convertedCount === 0 ? (
-              <p className={styles.quietState}>
-                No conversions recorded in this period.
-                {data.recordRoute && (
-                  <>
-                    {" "}
-                    <Link href={data.recordRoute}>Review your pipeline</Link>
-                  </>
-                )}
-              </p>
-            ) : (
-              data.chart.length > 0 && (
-                <details className={styles.trend}>
-                  <summary>Conversion value by interval</summary>
-                  <p>
-                    Equal time intervals, UTC. Values are shown below each bar.
-                  </p>
-                  <ul className={styles.chart}>
-                    {data.chart.map((point, index) => (
-                      <li key={index}>
-                        <span className={styles.chartWell}>
-                          <span
-                            style={{
-                              height: `${(point.cashVal / maxValue) * 100}%`,
-                            }}
-                          />
-                        </span>
-                        <span>{point.fullPeriod}</span>
-                        <strong>{point.cashFormatted}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )
-            )}
+
             <details className={styles.definitions}>
               <summary>Metric definitions and reporting scope</summary>
               {data.financials && (

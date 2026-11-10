@@ -135,6 +135,25 @@
     background: #c40023;
   }
 }
+.conyestMiddleRow {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(320px, 1fr);
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 24px;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.cashflowCol,
+.statisticCol {
+  min-width: 0;
+}
+.transactionsSection {
+  width: 100%;
+  margin-bottom: 24px;
+}
 .workingGrid {
   display: grid;
   grid-template-columns: minmax(0, 2.3fr) minmax(230px, 1fr);

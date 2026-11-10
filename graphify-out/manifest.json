@@ -888,9 +888,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/index.ts": {
-    "mtime": 1793949631.3018062,
-    "seen": 1793950560.1516914,
-    "ast_hash": "3980c709e7c6302b4913cfab5219a734",
+    "mtime": 1794343649.3249667,
+    "seen": 1794344162.8115563,
+    "ast_hash": "a4c4d5391cbf8b6778250f7cb24d8e03",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/types.ts": {
@@ -1116,9 +1116,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminHeader.tsx": {
-    "mtime": 1794339311.3230796,
-    "seen": 1794340370.0453835,
-    "ast_hash": "17ae1ab51297a6a169f711d48dce6bea",
+    "mtime": 1794343442.5082562,
+    "seen": 1794344162.8115563,
+    "ast_hash": "898c2d21434a9b22cb69f6a5cea4d5bc",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminMobileDrawer.tsx": {
@@ -1134,9 +1134,9 @@
     "semantic_hash": "4572fabb70ae9163d445232dab7729ee"
   },
   "src/app/admin/components/layout/AdminSidebar.tsx": {
-    "mtime": 1794340414.897507,
-    "seen": 1794340745.4233453,
-    "ast_hash": "7463621ed4df402cc3f431a75e6a257a",
+    "mtime": 1794343373.078902,
+    "seen": 1794344162.8115563,
+    "ast_hash": "988fef8e2227806e197bf75755164b7d",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminWorkspaceShell.tsx": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794340618.23556,
-    "seen": 1794340745.4258537,
-    "ast_hash": "410c31bbdc2698b7aa4864fe949078d0",
+    "mtime": 1794340846.254932,
+    "seen": 1794340958.857323,
+    "ast_hash": "bf4ac91d1b1a89944ac2ea566e560f05",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5658,9 +5658,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794339515.3983316,
-    "seen": 1794340370.0453835,
-    "ast_hash": "bcb629dc77b749b7529b3927fa66851c",
+    "mtime": 1794343822.6529331,
+    "seen": 1794344162.8115563,
+    "ast_hash": "6406517090ccfcf14561c8de8dc47b0b",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5724,9 +5724,9 @@
     "semantic_hash": ""
   },
   "docs/context/2026-11-11_dashboard-redesign.md": {
-    "mtime": 1794340617.0588257,
-    "seen": 1794340745.4258537,
-    "ast_hash": "f8ace1f45c99573caef507de7469c9c0",
+    "mtime": 1794340845.3570087,
+    "seen": 1794340958.857323,
+    "ast_hash": "5504eec0f42f72a10f8e98e1195c2907",
     "semantic_hash": ""
   },
   "docs/sales_funnel/dashboard_redesign_2026_11/DELIVERY_REPORT.md": {
@@ -5775,6 +5775,42 @@
     "mtime": 1794340486.1354835,
     "seen": 1794340745.4263527,
     "ast_hash": "814c1ebb3e90dbff7c314dfcd508646f",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/audit-attempt-2.md": {
+    "mtime": 1794340732.76813,
+    "seen": 1794340816.3646178,
+    "ast_hash": "3b74e54f78938875dea53b1bb2862580",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/ConyestCashflowCard.tsx": {
+    "mtime": 1794343553.388904,
+    "seen": 1794344162.8115563,
+    "ast_hash": "5c6506877aae8f626f36e9581e9ec3ff",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/ConyestMetricsGrid.tsx": {
+    "mtime": 1794343501.0523086,
+    "seen": 1794344162.8115563,
+    "ast_hash": "2c395b4594b55a12924f58357f6976df",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/ConyestStatisticCard.tsx": {
+    "mtime": 1794343587.257498,
+    "seen": 1794344162.8115563,
+    "ast_hash": "571ed56cad097544ec057e45c2e17312",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/ConyestTransactionsTable.tsx": {
+    "mtime": 1794343751.3558607,
+    "seen": 1794344162.8115563,
+    "ast_hash": "d4a494da03bacde99e9724f1bc001ce6",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_LUXURY_DASHBOARD_REDESIGN_PLAN.md": {
+    "mtime": 1794342762.5002482,
+    "seen": 1794344162.8127844,
+    "ast_hash": "c43562949b85476b180e6832ea6c5c5d",
     "semantic_hash": ""
   },
   "package-lock.json": {

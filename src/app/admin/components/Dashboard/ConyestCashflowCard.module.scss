@@ -1,0 +1,231 @@
+.cashflowCard {
+  background: #ffffff;
+  border: 1px solid var(--conyest-card-border, #f1f5f9);
+  border-radius: var(--conyest-radius-card, 20px);
+  padding: 24px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.balanceRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.balanceLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.balanceAmount {
+  font-family: var(--font-circular, sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.controlsArea {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.periodSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+.legendList {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendIncomeDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--conyest-accent-lime, #94e622);
+}
+
+.legendExpenseDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--conyest-dark-forest, #1f4843);
+}
+
+.chartContainer {
+  position: relative;
+  width: 100%;
+  height: 270px;
+  margin-top: 8px;
+}
+
+.chartSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: #f1f5f9;
+  stroke-width: 1;
+}
+
+.axisZeroLine {
+  stroke: #e2e8f0;
+  stroke-width: 1.2;
+}
+
+.axisLabel {
+  font-family: var(--font-graphik, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  fill: #94a3b8;
+  text-anchor: end;
+}
+
+.monthLabel {
+  font-family: var(--font-graphik, sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  fill: #64748b;
+  text-anchor: middle;
+  cursor: pointer;
+  transition: fill 120ms ease;
+
+  &.activeMonthLabel {
+    fill: #0f172a;
+    font-weight: 700;
+  }
+}
+
+.barIncome {
+  fill: var(--conyest-accent-lime, #94e622);
+  transition: fill 120ms ease;
+  cursor: pointer;
+
+  &:hover {
+    fill: #85d71c;
+  }
+}
+
+.barExpense {
+  fill: var(--conyest-dark-forest, #1f4843);
+  transition: fill 120ms ease;
+  cursor: pointer;
+
+  &:hover {
+    fill: #183e39;
+  }
+}
+
+.haloCapsule {
+  fill: rgba(226, 242, 203, 0.45);
+  stroke: var(--conyest-halo-border, #b9e57d);
+  stroke-width: 2;
+  rx: 14;
+  ry: 14;
+  pointer-events: none;
+  transition: x 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Tooltip Popover */
+.popoverTooltip {
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 6px 20px -2px rgba(12, 12, 13, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 110px;
+  pointer-events: none;
+  z-index: 10;
+  transition: left 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popoverHeader {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.popoverRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  span {
+    color: #64748b;
+  }
+  strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+}
