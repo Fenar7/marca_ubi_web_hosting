@@ -1260,9 +1260,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/login/page.tsx": {
-    "mtime": 1794228664.6154003,
-    "seen": 1794231148.5257118,
-    "ast_hash": "a83cd4fdd5d4f60410e1e6ea374ae710",
+    "mtime": 1794286543.4231663,
+    "seen": 1794286769.4291806,
+    "ast_hash": "e7495ea2c01b7deb3eee629edd52c1a5",
     "semantic_hash": ""
   },
   "src/app/admin/reset-password/ResetPasswordForm.tsx": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794230672.0764976,
-    "seen": 1794231148.5267112,
-    "ast_hash": "473fe0eb6a01b22482641986ba4f9da6",
+    "mtime": 1794233155.0293672,
+    "seen": 1794286769.4296813,
+    "ast_hash": "036659e779da3ca5dfb9ca1ae4de7bb5",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5430,9 +5430,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/auth/AdminAuthShell.tsx": {
-    "mtime": 1794230284.8621407,
-    "seen": 1794231148.5257118,
-    "ast_hash": "336f3baeabd6abc6bac525f708d68cc4",
+    "mtime": 1794285957.362814,
+    "seen": 1794286769.4286833,
+    "ast_hash": "f0acc58c601095f018d03db22cb763f7",
     "semantic_hash": ""
   },
   "src/app/admin/lib/followUpQueue.ts": {
@@ -5520,21 +5520,21 @@
     "semantic_hash": ""
   },
   "src/app/admin/signup/page.tsx": {
-    "mtime": 1794228657.2873907,
-    "seen": 1794231148.5257118,
-    "ast_hash": "6a85038240acc1cd72cf88c6f46945cb",
+    "mtime": 1794286550.8293002,
+    "seen": 1794286769.4291806,
+    "ast_hash": "8c6c3d4339df3c9fadc9b4f619d7d190",
     "semantic_hash": ""
   },
   "tests/unit/phase-auth-luxury-redesign-and-signup.test.ts": {
-    "mtime": 1794230576.2493255,
-    "seen": 1794231148.5267112,
-    "ast_hash": "20f09864ac6ed401bb23b465030a0a89",
+    "mtime": 1794286574.2327857,
+    "seen": 1794286769.4296813,
+    "ast_hash": "0bbf475b47063bdc6b0d530f3f611696",
     "semantic_hash": ""
   },
   "docs/auth_redesign/AUTH_PORTAL_LUXURY_REDESIGN_PRD.md": {
-    "mtime": 1794227987.3046162,
-    "seen": 1794231148.5267112,
-    "ast_hash": "7fe582e231877b2fca0a2c4c9e20b6c2",
+    "mtime": 1794233125.8478422,
+    "seen": 1794286769.4296813,
+    "ast_hash": "20c6448cc5288a3d05e74dbd367ed05a",
     "semantic_hash": ""
   },
   "docs/context/2026-11-09_14-15-00.md": {
@@ -5559,6 +5559,12 @@
     "mtime": 1794212120.7612605,
     "seen": 1794231148.5267112,
     "ast_hash": "fe1009829268cb455aceac920262d924",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-09_19-35-00.md": {
+    "mtime": 1794233136.399994,
+    "seen": 1794286769.4296813,
+    "ast_hash": "91341c2cf369d9841b5e55b3f317385d",
     "semantic_hash": ""
   },
   "package-lock.json": {

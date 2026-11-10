@@ -20,9 +20,9 @@ export const metadata: Metadata = {
 export default function AdminLoginPage(): React.ReactElement {
   return (
     <AdminAuthShell
-      eyebrow="A WISE QUOTE"
-      headline="Get Everything You Want"
-      description="You can get everything you want if you work hard, trust the process, and stick to the plan."
+      eyebrow="COMMERCIAL INTELLIGENCE"
+      headline="Architecting Living Brand Systems"
+      description="Enter your agency credentials to access the commercial desk workspace."
     >
       <Suspense
         fallback={

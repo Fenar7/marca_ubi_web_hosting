@@ -1,11 +1,11 @@
 ﻿/**
  * @file login.module.scss
  * @description Luxury Styling for Marca Ubi Commercial Desk Staff Sign-In Portal.
- *              Emulates the Reference 0 (Cogie) Desk Architecture:
- *              - High-contrast luxury serif header typography (Playfair Display)
+ *              Authentic Marca Ubi Brand Architecture:
+ *              - Pure Swiss Grotesque typography (Circular XX & Graphik)
  *              - Zero Google OAuth bloat & zero floating icon badges
  *              - Soft-filled inputs (#f8fafc) with leading icon indicators and squircle radii
- *              - Solid sleek black luxury primary CTA (height: 48px, radius: 10px)
+ *              - Solid sleek black luxury primary CTA transitioning to signature crimson (#ea002a)
  *              - Accessible focus rings and WCAG AA compliance
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -16,10 +16,14 @@
   margin: 0 auto;
 }
 
-/* Brand Lockup Header matching Cogie reference */
+/* Brand Lockup Header: Hidden on desktop (since Shell showcase displays the logo), visible on mobile/tablet viewports (< 1024px) */
 .brandLockup {
-  display: flex;
+  display: none;
   margin-bottom: 24px;
+
+  @media (max-width: 1023px) {
+    display: flex;
+  }
 }
 
 .brandLogoLink {
@@ -46,7 +50,7 @@
   object-fit: contain;
 }
 
-/* Header & Luxury Serif Typography */
+/* Header & Authentic Circular XX Typography */
 .brandHeader {
   margin-bottom: 28px;
 }
@@ -54,16 +58,17 @@
 .brandTitle {
   margin: 0;
   color: #09090b;
-  font-family: var(--font-serif, "Playfair Display", Didot, "Bodoni MT", Georgia, serif);
-  font-size: clamp(28px, 2.5vw, 34px);
+  font-family: var(--font-circular), var(--font-graphik), var(--font-admin-primary), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: clamp(26px, 2.4vw, 32px);
   font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.18;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
 }
 
 .brandSubtitle {
-  margin: 10px 0 0;
-  color: #64748b;
+  margin: 8px 0 0;
+  color: #52525b;
+  font-family: var(--font-graphik), var(--font-admin-primary), -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -153,9 +158,9 @@
 
   &:focus {
     background: #ffffff;
-    border-color: #0f172a;
+    border-color: #ea002a;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 0 0 3px rgba(234, 0, 42, 0.12);
   }
 
   &:disabled {
@@ -251,7 +256,7 @@
   }
 }
 
-/* Primary CTA: Solid Sleek Black Button */
+/* Primary CTA: Solid Sleek Black Button transitioning to Signature Crimson */
 .submitBtn {
   display: flex;
   width: 100%;
@@ -272,22 +277,22 @@
   letter-spacing: -0.01em;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s ease, box-shadow 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: #18181b;
-    border-color: #18181b;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+    background: #ea002a;
+    border-color: #ea002a;
+    box-shadow: 0 4px 16px rgba(234, 0, 42, 0.35);
     transform: translateY(-1px);
   }
 
   &:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 6px rgba(234, 0, 42, 0.25);
   }
 
   &:focus-visible {
-    outline: 2px solid #000000;
+    outline: 2px solid #ea002a;
     outline-offset: 2px;
   }
 

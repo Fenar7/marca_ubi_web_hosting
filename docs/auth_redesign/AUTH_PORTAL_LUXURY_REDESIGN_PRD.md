@@ -1,89 +1,60 @@
-# PRD: Commercial Desk Luxury Authentication Portal Redesign
+# Architectural Specification & PRD: Marca Ubi Authentic Brand Auth Gateway
 
-**Feature:** Luxury Authentication Gateway (Login & Signup Architecture)  
-**Target Routes:** `/admin/login`, `/admin/signup`  
-**Active Branch:** `redesign/crm-luxury-editorial-workspace`  
-**Base Branch:** `fix/crm-workspace-recovery`  
-**PR:** PR #116 (OPEN, DRAFT)  
-**Author:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`  
-**Benchmarks:** **Cogie** (Luxury Editorial) & **Pixelcot** (Clean Form Architecture)  
+**Module:** Commercial Desk Authentication & Registration Portal  
+**Target Routes:** `/admin/login`, `/admin/signup`, `/admin/reset-password`  
+**Location:** `docs/auth_redesign/AUTH_PORTAL_LUXURY_REDESIGN_PRD.md`  
+**Status:** PROPOSED ARCHITECTURAL SPECIFICATION (Awaiting User Execution Approval)  
+**Author:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`
 
 ---
 
-## 1. Problem Statement & Anti-Slop Directive
+## 1. Executive Summary & Root Cause Analysis
 
-The previous authentication screen suffered from several severe UX and visual defects:
-1. **Harsh Dark Wireframe Box**: The left panel rendered a pitch-black `#09090b` block that felt like an internal command-line terminal rather than consumer-grade luxury software.
-2. **Fake Live Telemetry Glitches**: Exposing internal unauthenticated metrics (`ACTIVE PIPELINE ₹ 65.4L`, `39 in motion`, `99.98% Uptime`) on a public login gateway is misleading AI slop that degrades brand trust.
-3. **Monospace Developer Labels**: Uppercase developer labels (`MARCA UBI · STAFF WORKSPACE`, `End-to-End Enterprise Auth Guard Commercial Desk · v2.4.0`) cluttered the visual hierarchy.
-4. **Missing Self-Service Signup**: The system lacked an `/admin/signup` route, forcing administrative users to rely solely on pre-provisioned credentials without self-service onboarding or invite flows.
-
----
-
-## 2. Benchmark Architecture: Cogie & Pixelcot Synergy
-
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│  MARCA UBI FLOATING LUXURY CONTAINER (1040px Max-Width · 28px Radius · Subtle Border)  │
-├───────────────────────────────────────────┬────────────────────────────────────────────┤
-│  LEFT: EDITORIAL VISUAL SHOWCASE          │  RIGHT: CLEAN MINIMAL AUTH DESK           │
-│  (Cogie Luxury Archetype)                 │  (Pixelcot / Cogie Form Archetype)         │
-│                                           │                                            │
-│  ┌─────────────────────────────────────┐  │  [Marca Ubi Logo Lockup]                   │
-│  │ A WISE QUOTE ────────────────────── │  │                                            │
-│  │                                     │  │  Welcome Back                              │
-│  │ [Fluid Chromatic Artwork            │  │  Enter your email and password to access   │
-│  │  Obsidian + Crimson / Violet Glow]  │  │                                            │
-│  │                                     │  │  Work Email                                │
-│  │                                     │  │  [✉  name@marcaubi.com                  ]  │
-│  │                                     │  │                                            │
-│  │                                     │  │  Password                                  │
-│  │ "Precision in Commercial            │  │  [🔒  ••••••••                        👁 ]  │
-│  │  Execution."                        │  │                                            │
-│  │                                     │  │  [✓] Remember me          Forgot Password? │
-│  │ "You can get everything you want if │  │                                            │
-│  │  you work hard, trust the process." │  │  [          Sign In (Solid Black)        ] │
-│  │                                     │  │                                            │
-│  │                                     │  │  ─────── or continue with ───────          │
-│  │                                     │  │                                            │
-│  │                                     │  │  [ G  Sign In with Google                ] │
-│  │                                     │  │                                            │
-│  │                                     │  │  Don't have an account? Sign Up            │
-│  └─────────────────────────────────────┘  │                                            │
-└───────────────────────────────────────────┴────────────────────────────────────────────┘
-```
+Following a visual audit of the live rendering on wide desktop displays (`Screenshot 2026-11-09 190939.png`), three critical anti-patterns and brand mismatches were identified:
+1. **Alien Typography**: The use of generic `Playfair Display` / `Georgia` serifs contradicted Marca Ubi's modern Swiss grotesque design identity (`Circular XX` and `Graphik`).
+2. **Floating Island Card on Black Void**: Constraining the layout to a centered card (`max-width: clamp(...)` inside `.canvas` with padding) created massive black empty gutters around the screen on 1080p, 1440p, and 4K monitors.
+3. **Foreign Purple/Magenta Wave**: Generating a purple/magenta/cyan fluid ribbon SVG (`#d946ef`, `#7c3aed`, `#2563eb`) introduced colors that are completely alien to Marca Ubi's strict obsidian (`#000000`), white (`#ffffff`), and signature crimson red (`#ea002a`) brand palette.
 
 ---
 
-## 3. Engineering Implementation Details
+## 2. Core Architecture: True 100vw × 100vh Full-Bleed Dual-Pane Split
 
-### A. Shared Auth Shell (`AdminAuthShell.tsx` & `AdminAuthShell.module.scss`)
-- Floating 1040px card with 28px border radius on an ambient canvas.
-- Replaces the dark terminal panel with a dedicated CSS/SVG fluid ribbon artwork container featuring `#ea002a` brand crimson and rich violet lighting sweeps.
-- Editorial quote lockup: "A WISE QUOTE" header, display serif title, and inspiring quote subtext.
+On desktop displays (`>= 1024px`), the portal will be an edge-to-edge, full-bleed split:
+- **Left Showcase Pane (50vw × 100vh)**:
+  - Deep Obsidian Black (`#000000` / `#09090b`).
+  - Authentic agency photography (`/images/hero-image.png`) with an architectural obsidian vignette scrim.
+  - Subtle brand crimson ambiance (`rgba(234, 0, 42, 0.14)`). Zero purple or magenta.
+  - Top header pairing the official white vector mark (`/images/marca-ubi-white.svg`, 148px) with a Raycast-style live indicator (`COMMERCIAL DESK`) and hairline rule.
+  - Authentic agency headline in **Circular XX Bold** with tight Swiss tracking (`-0.035em`).
+- **Right Commercial Desk Pane (50vw × 100vh)**:
+  - Pure Paper White (`#ffffff`) with hairline neutral separation (`1px solid #e4e4e7`).
+  - Centered form container (`max-width: 440px`).
+  - Eradicated duplicate brand logo on desktop (preserved on mobile).
+  - Soft-filled `#f8fafc` squircle inputs (48px height, 10px radius) with `#ea002a` focus states.
+  - Solid luxury black `#0a0a0a` primary CTA with `#ea002a` hover transition.
+- **Mobile Reflow (< 1024px)**:
+  - Gracefully stacks into a single-column layout with a compact obsidian header (240px) and full-width form desk.
 
-### B. Login Form (`LoginForm.tsx` & `login.module.scss`)
-- Title: "Welcome Back".
-- Subtitle: "Enter your email and password to access your account".
-- Soft-filled inputs (`#f8fafc`, 1px `#e2e8f0` border, 10px squircle radius) with subtle prefix icons (`[✉]`, `[🔒]`).
-- Interactive password toggle with stroke eye icons.
-- Remember me checkbox and Forgot password link.
-- High-contrast solid black primary button (`Sign In`).
-- Social auth button: `Sign In with Google` with full-color SVG logo.
-- Switcher link: "Don't have an account? Sign Up" linking to `/admin/signup`.
+---
 
-### C. Dedicated Signup Route (`/admin/signup/page.tsx`, `SignupForm.tsx`, `signup.module.scss`)
-- Title: "Create an Account".
-- Subtitle: "Enter your details to register your commercial workspace account."
-- Inputs:
-  - Full Name (`[👤] Full Name`)
-  - Work Email (`[✉] Work Email`)
-  - Password (`[🔒] Password`) with visibility toggle
-- Agreement checkbox: "I agree to the Terms of Service & Privacy Policy".
-- Primary button: Solid black `Create Account`.
-- Social auth button: `Sign Up with Google`.
-- Switcher link: "Already have an account? Sign In" linking to `/admin/login`.
+## 3. Typography System Matrix
 
-### D. Server Action & Security (`src/app/actions/auth.ts`)
-- Added `signupAction` enforcing Zod validation, IP-based rate limiting, Supabase Auth user registration, and automatic initial profile provisioning.
-- Preserves all existing lockout countdowns, brute-force defenses, and open redirect defenses.
+| Element | Typeface Token | Weight | Size | Tracking |
+| :--- | :--- | :--- | :--- | :--- |
+| **Showcase Headline** | `var(--font-circular)` | 700 (Bold) | `clamp(2.4rem, 3.4vw, 3.8rem)` | `-0.035em` |
+| **Showcase Subtitle** | `var(--font-graphik)` | 400 (Regular) | `clamp(0.95rem, 1.1vw, 1.05rem)` | Normal |
+| **Showcase Eyebrow** | `var(--font-circular)` | 700 (Bold) | 11px | `+0.14em` |
+| **Desk Title** | `var(--font-circular)` | 700 (Bold) | `clamp(1.75rem, 2.2vw, 2.25rem)` | `-0.03em` |
+| **Desk Subtitle** | `var(--font-graphik)` | 400 (Regular) | 14px | Normal |
+| **Form Inputs & Labels** | `var(--font-graphik)` | 500 (Medium) | 13–14px | `-0.01em` |
+| **Primary CTA Button** | `var(--font-circular)` | 600 (SemiBold) | 14px | `-0.01em` |
+| **Security Badges & Mono**| `var(--font-admin-mono)` | 500 (Medium) | 11px | `+0.04em` |
+
+---
+
+## 4. Security & Invariant Defenses
+
+1. **Edge Proxy Protection (`src/proxy.ts`)**: Preserves perimeter gating for both `/admin/login` and `/admin/signup`.
+2. **Brute-Force & Bot Defense**: Progressive IP rate limiting, hidden honeypot (`website`), and terms agreement.
+3. **Atomic Rollback in `signupAction`**: Service-role profile creation with compensating deletion rollback (`adminClient.auth.admin.deleteUser`).
+4. **Test Suite Compatibility**: 100% pass rate maintained across `phase-1`, `phase-2`, and `phase-auth` test suites.

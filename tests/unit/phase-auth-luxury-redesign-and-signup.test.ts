@@ -45,11 +45,22 @@ describe('Luxury Auth Redesign & Administrative Signup Portal', () => {
     assert.match(authShellStyles, /border-radius: 28px/);
   });
 
-  it('preserves Cogie editorial quotes on login and signup pages', () => {
-    assert.match(loginPage, /headline="Get Everything You Want"/);
-    assert.match(loginPage, /eyebrow="A WISE QUOTE"/);
+  it('enforces authentic Marca Ubi editorial copy and typography on login and signup pages', () => {
+    assert.match(loginPage, /headline="Architecting Living Brand Systems"/);
+    assert.match(loginPage, /eyebrow="COMMERCIAL INTELLIGENCE"/);
     assert.match(signupPage, /headline="Precision in Commercial Execution"/);
-    assert.match(signupPage, /eyebrow="A WISE QUOTE"/);
+    assert.match(signupPage, /eyebrow="COMMERCIAL GOVERNANCE"/);
+  });
+
+  it('guarantees zero generic serif typography (Playfair Display) across all auth desks', () => {
+    const loginStyles = read('src/app/admin/login/login.module.scss');
+    const signupStyles = read('src/app/admin/signup/signup.module.scss');
+
+    assert.doesNotMatch(loginStyles, /Playfair Display|Didot|Bodoni|Georgia/);
+    assert.doesNotMatch(signupStyles, /Playfair Display|Didot|Bodoni|Georgia/);
+    assert.doesNotMatch(authShellStyles, /Playfair Display|Didot|Bodoni|Georgia/);
+    assert.match(loginStyles, /var\(--font-circular\)/);
+    assert.match(signupStyles, /var\(--font-circular\)/);
   });
 
   it('implements complete soft-filled squircle inputs and eradicates unconfigured social auth in LoginForm', () => {
