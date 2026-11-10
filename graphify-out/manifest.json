@@ -2076,9 +2076,9 @@
     "semantic_hash": "91292ce3c45807a36fad9953cc6bf8fa"
   },
   "src/app/lib/supabase/middleware.ts": {
-    "mtime": 1794316086.9628222,
-    "seen": 1794318045.2173703,
-    "ast_hash": "632957801c49715979087c1e465ff912",
+    "mtime": 1794321605.7489047,
+    "seen": 1794322204.8467002,
+    "ast_hash": "4cce60cbee963b0f697af110f62de66f",
     "semantic_hash": ""
   },
   "src/app/lib/supabase/server.ts": {
@@ -5625,6 +5625,12 @@
     "mtime": 1794314735.993122,
     "seen": 1794318045.2178686,
     "ast_hash": "a94704314fbeacfdc26e82502a6c60d7",
+    "semantic_hash": ""
+  },
+  "scripts/pr-audit-watcher.js": {
+    "mtime": 1794318607.8502958,
+    "seen": 1794322204.8459852,
+    "ast_hash": "2f4301e7d2bae39229d5d2169d7371e8",
     "semantic_hash": ""
   },
   "package-lock.json": {

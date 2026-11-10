@@ -102,19 +102,13 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
 
     user = null;
 
-    // Purge corrupted auth cookies on both the outgoing response and the incoming request
+    // Collect corrupt auth cookies and sanitize the incoming request to prevent poisoning Server Components
+    const cookiesToPurge: string[] = [];
     request.cookies.getAll().forEach((cookie) => {
       if (cookie?.name && (cookie.name.startsWith('sb-') || cookie.name.includes('-auth-token'))) {
+        cookiesToPurge.push(cookie.name);
         try {
           request.cookies.delete(cookie.name);
-          supabaseResponse.cookies.set(cookie.name, '', {
-            path: '/',
-            maxAge: 0,
-            expires: new Date(0),
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-          });
         } catch {
           // Non-blocking fallback if cookie store mutation is constrained in mock runtime
         }
@@ -123,6 +117,22 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
 
     // Re-instantiate response with sanitized request headers to prevent poisoning downstream Server Components
     supabaseResponse = NextResponse.next({ request });
+
+    // Write tombstone eviction cookies to the outgoing response so the client browser purges corrupted tokens
+    cookiesToPurge.forEach((cookieName) => {
+      try {
+        supabaseResponse.cookies.set(cookieName, '', {
+          path: '/',
+          maxAge: 0,
+          expires: new Date(0),
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+        });
+      } catch {
+        // Non-blocking fallback if cookie store mutation is constrained in mock runtime
+      }
+    });
   }
 
   return {

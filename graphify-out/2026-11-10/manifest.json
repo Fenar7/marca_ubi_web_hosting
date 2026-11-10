@@ -462,9 +462,9 @@
     "semantic_hash": "835dcabb84f2e096b261c3c7d42cf617"
   },
   "src/app/actions/auth.ts": {
-    "mtime": 1794228556.6703498,
-    "seen": 1794231148.5257118,
-    "ast_hash": "c92d048a870e31e9ff02372f7cf3e9b0",
+    "mtime": 1794316537.2977803,
+    "seen": 1794318045.2163703,
+    "ast_hash": "549a9f50f687d73b50857b50259a8a8f",
     "semantic_hash": ""
   },
   "src/app/actions/avatarActions.ts": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/page.tsx": {
-    "mtime": 1794214481.3377059,
-    "seen": 1794231148.5257118,
-    "ast_hash": "f0cb757461f8892a88e05c2adfed8266",
+    "mtime": 1794316455.897334,
+    "seen": 1794318045.2163703,
+    "ast_hash": "ce32f88f6df6c0d3495e1a07b88c0728",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/settings/components/SettingsWorkspaceClient.tsx": {
@@ -2076,10 +2076,10 @@
     "semantic_hash": "91292ce3c45807a36fad9953cc6bf8fa"
   },
   "src/app/lib/supabase/middleware.ts": {
-    "mtime": 1793001812.926988,
-    "seen": 1793862052.6850302,
-    "ast_hash": "43fb74ab7b4fe06880faf993a02d8dc5",
-    "semantic_hash": "43fb74ab7b4fe06880faf993a02d8dc5"
+    "mtime": 1794316086.9628222,
+    "seen": 1794318045.2173703,
+    "ast_hash": "632957801c49715979087c1e465ff912",
+    "semantic_hash": ""
   },
   "src/app/lib/supabase/server.ts": {
     "mtime": 1793004272.4680028,
@@ -2268,9 +2268,9 @@
     "semantic_hash": "3aa339c792791c66ff87c8428b5c6831"
   },
   "src/proxy.ts": {
-    "mtime": 1794228506.6168582,
-    "seen": 1794231148.5262134,
-    "ast_hash": "355325707821d85d9d1c07396c82fbcc",
+    "mtime": 1794316138.5296545,
+    "seen": 1794318045.2173703,
+    "ast_hash": "e42fa20079323e3f2f416db7122a319d",
     "semantic_hash": ""
   },
   "src/sanity/env.ts": {
@@ -5591,18 +5591,6 @@
     "ast_hash": "b1407cceb2646eb93b319ddaa0318860",
     "semantic_hash": ""
   },
-  "scripts/auth-cinematic-execution-watcher.js": {
-    "mtime": 1794310634.354977,
-    "seen": 1794311186.826474,
-    "ast_hash": "ea5fe8ce99ee8f7660e238c5dc754100",
-    "semantic_hash": ""
-  },
-  "scripts/auth-creative-watcher.js": {
-    "mtime": 1794309733.417306,
-    "seen": 1794311186.826474,
-    "ast_hash": "ec913704d4d1d75aea44224ba8f22963",
-    "semantic_hash": ""
-  },
   "src/app/admin/components/auth/CinematicLivingVideo.tsx": {
     "mtime": 1794310745.373325,
     "seen": 1794311186.8269794,
@@ -5613,6 +5601,30 @@
     "mtime": 1794310533.857736,
     "seen": 1794311186.8279843,
     "ast_hash": "4c989b181f9b0b599fb2c1be28296a3a",
+    "semantic_hash": ""
+  },
+  "scratch/check-json.js": {
+    "mtime": 1794313501.852172,
+    "seen": 1794318045.2158718,
+    "ast_hash": "f60021afa3c47925ef6b95effe9176fc",
+    "semantic_hash": ""
+  },
+  "scratch/find-json-parse.js": {
+    "mtime": 1794313134.7720885,
+    "seen": 1794318045.2158718,
+    "ast_hash": "f4e34a70d166b929feac8156c4c349aa",
+    "semantic_hash": ""
+  },
+  "scratch/find-node-ports.js": {
+    "mtime": 1794313893.1023493,
+    "seen": 1794318045.2158718,
+    "ast_hash": "469e38dc85deb0336cab3bd9ee3f9e55",
+    "semantic_hash": ""
+  },
+  "docs/auth_redesign/AUTH_SYNTAX_AND_SYSTEM_DIAGNOSTICS_PLAN.md": {
+    "mtime": 1794314735.993122,
+    "seen": 1794318045.2178686,
+    "ast_hash": "a94704314fbeacfdc26e82502a6c60d7",
     "semantic_hash": ""
   },
   "package-lock.json": {
