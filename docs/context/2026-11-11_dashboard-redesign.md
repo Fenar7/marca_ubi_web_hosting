@@ -8,4 +8,4 @@ Implemented queue-first home, unboxed pipeline context, local Outcomes reporting
 
 Tests: 1,312/1,312 pass; typecheck and server-action boundaries pass. Browser actual-component fixtures25/25 pass, no serious/critical axe violations. Authenticated database, upload/logout mutation and actual zoom verification remain unperformed without isolated credentials. Keep PR draft rather than asserting approval-ready. Existing unrelated `scratch/` remains untracked and untouched.
 
-Current screenshots, repeatable harness and engineering logs live with the task. Final PR URL/commit must be recorded after creation. Public-site styles and authentication middleware/proxy remain unchanged.
+Current screenshots, repeatable harness and engineering logs live with the task. Implementation commit: `d2ca3fe`. Draft PR #118: https://github.com/Fenar7/marca_ubi_web_hosting/pull/118, targets `fix/auth-runtime-diagnostics-and-resilience`. Remains OPEN for manual review. Public-site styles and authentication middleware/proxy remain unchanged.
