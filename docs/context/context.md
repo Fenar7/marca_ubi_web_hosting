@@ -1,5 +1,7 @@
 # Current Engineering Context
 
+**Latest work (2026-11-11):** Dashboard/sidebar redesign on `redesign/dashboard-action-workspace`. Read [dashboard handoff](./2026-11-11_dashboard-redesign.md) first. Implementation and fixture checks are complete; authenticated verification gaps mean the redesign PR should remain draft. The auth-resilience history below remains the dependency context.
+
 **Active work:** Edge Session Cookie Sanitization, JWT Boundary Hardening, Schema Cache Fallback Resiliency, and Senior CTO PR Audit Remediation.  
 **Active branch:** `fix/auth-runtime-diagnostics-and-resilience`, based on `redesign/crm-luxury-editorial-workspace`.  
 **PR #117:** OPEN, APPROVAL-READY; targets `redesign/crm-luxury-editorial-workspace`. Keep open; never merge automatically. URL: https://github.com/Fenar7/marca_ubi_web_hosting/pull/117  

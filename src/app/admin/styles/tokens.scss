@@ -1,13 +1,21 @@
 ﻿/**
  * CRM-scoped design tokens. The root selector keeps the internal workspace separate from public pages.
  */
-@forward './mixins';
+@forward "./mixins";
 
 [data-admin-root="true"] {
-  --font-admin-primary: var(--font-circular), var(--font-admin-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-admin-btn: var(--font-circular), var(--font-admin-button), -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-admin-code: var(--font-admin-mono), ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-admin-numeric: var(--font-circular), var(--font-admin-num-font), var(--font-admin-sans), sans-serif;
+  --font-admin-primary:
+    var(--font-graphik), var(--font-admin-sans), -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-admin-btn:
+    var(--font-graphik), var(--font-admin-button), -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-admin-code:
+    var(--font-admin-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo,
+    Monaco, Consolas, monospace;
+  --font-admin-numeric:
+    var(--font-circular), var(--font-admin-num-font), var(--font-admin-sans),
+    sans-serif;
 
   --admin-canvas-bg: #f5f5f3;
   --admin-card-bg: #ffffff;
@@ -62,13 +70,16 @@
   --admin-radius-micro: 6px;
   --admin-shadow-none: none;
   --admin-shadow-subtle: 0 1px 2px rgba(17, 17, 17, 0.04);
-  --admin-shadow-card: 0 4px 20px -2px rgba(12, 12, 13, 0.05), 0 1px 3px rgba(12, 12, 13, 0.02);
-  --admin-shadow-card-hover: 0 10px 30px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04);
+  --admin-shadow-card:
+    0 4px 20px -2px rgba(12, 12, 13, 0.05), 0 1px 3px rgba(12, 12, 13, 0.02);
+  --admin-shadow-card-hover:
+    0 10px 30px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04);
   --admin-shadow-hover: 0 3px 10px rgba(17, 17, 17, 0.07);
-  --admin-shadow-dropdown: 0 12px 36px -4px rgba(12, 12, 13, 0.12), 0 4px 12px rgba(12, 12, 13, 0.04);
+  --admin-shadow-dropdown:
+    0 12px 36px -4px rgba(12, 12, 13, 0.12), 0 4px 12px rgba(12, 12, 13, 0.04);
   --admin-shadow-modal: 0 18px 48px rgba(17, 17, 17, 0.14);
 
-  --admin-sidebar-width-expanded: 248px;
+  --admin-sidebar-width-expanded: 240px;
   --admin-sidebar-width-collapsed: 72px;
   --admin-page-max-width: 1720px;
   --admin-content-gutter: clamp(20px, 2.1vw, 36px);

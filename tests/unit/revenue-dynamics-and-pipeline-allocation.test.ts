@@ -28,8 +28,8 @@ describe('Command Center trend and pipeline stage views', () => {
   });
 
   it('derives stage counts and value from configured status rows and links to the filtered deal view', () => {
-    assert.ok(page.includes('stageTotals'));
-    assert.ok(page.includes('statusById.get(lead.status_id)'));
+    assert.ok(page.includes('pipeline.stages'));
+    assert.ok(page.includes('stageById.get(row.status_id)'));
     assert.ok(page.includes('stage.value += amount'));
     assert.ok(pipeline.includes('stageLedgerList'));
     assert.ok(pipeline.includes('stage.dealCount'));
