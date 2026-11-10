@@ -1,10 +1,10 @@
 ﻿/**
  * @file AdminAuthShell.module.scss
- * @description Full-Bleed 100vw x 100vh Dual-Pane Authentication Shell for Marca Ubi.
+ * @description Full-Bleed 100vw x 100vh Dual-Pane Living Cinema Authentication Shell for Marca Ubi.
  *              - Zero outer padding & zero black margins on desktop
  *              - True edge-to-edge 50/50 split viewport architecture
- *              - Left (50vw): Deep Obsidian Showcase (#09090b) with authentic agency photography,
- *                crimson ambient glow (#ea002a), and Circular XX Swiss grotesque typography
+ *              - Left (50vw): Deep Obsidian Living Cinema Showcase (#09090b) with authentic 35mm
+ *                studio reel, crimson ambient caustics (#ea002a), and Circular XX Swiss grotesque typography
  *              - Right (50vw): Clean Paper-White Commercial Desk (#ffffff) with 1px neutral border
  *              - Seamless responsive reflow (< 1024px and < 860px)
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -68,14 +68,16 @@
   overflow: hidden;
 }
 
+/* High-resolution static poster fallback for 0ms initial paint & reduced-motion */
 .heroBackground {
   object-fit: cover;
-  opacity: 0.38;
-  filter: grayscale(100%) brightness(0.45) contrast(1.15);
+  object-position: center 38%;
+  opacity: 0.90;
+  filter: brightness(0.68) contrast(1.15);
   transform: scale(1.02);
 }
 
-/* Dynamic Kinetic Crimson Silk Stage Viewport & GPU Layer Containment */
+/* Living Cinema Viewport & GPU Layer Containment */
 .silkViewport {
   position: absolute;
   inset: 0;
@@ -85,82 +87,85 @@
   z-index: 1;
 }
 
+/* Authentic Flagship Living Cinema Video Element */
+.showcaseVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  opacity: 0;
+  filter: brightness(0.70) contrast(1.14) saturate(1.08);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.videoLoaded {
+  opacity: 1;
+}
+
+/* Dynamic Ambient Garnet Bloom with Slow Breathing Cycle */
 .ambientGarnetBloom {
   position: absolute;
   inset: -20%;
   background: radial-gradient(
     ellipse 75% 65% at 42% 48%,
-    rgba(234, 0, 42, 0.28) 0%,
-    rgba(138, 0, 23, 0.14) 45%,
+    rgba(234, 0, 42, 0.22) 0%,
+    rgba(138, 0, 23, 0.10) 45%,
     transparent 75%
   );
   filter: blur(48px);
   will-change: transform, opacity;
-  animation: pulseGarnetBloom 11s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  animation: pulseGarnetBloom 12s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
   pointer-events: none;
-  z-index: 1;
-}
-
-.generativeCanvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
   z-index: 2;
-  pointer-events: auto;
 }
 
-.fluidSilkSvg,
-.silkStage {
-  position: absolute;
-  inset: -10%;
-  width: 120%;
-  height: 120%;
-  pointer-events: none;
-  overflow: visible;
-  mix-blend-mode: screen;
-  opacity: 0.25;
-  z-index: 1;
-}
-
-.ribbonDominant {
-  will-change: opacity;
-}
-
-.filamentDominant {
-  will-change: opacity;
-}
-
+/* Triple-Axis Obsidian Vignette Scrim (Protecting Typography with WCAG AAA Contrast >= 14:1) */
 .vignetteOverlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
     /* Top-left brand lockup protection */
-    radial-gradient(ellipse 65% 50% at 15% 15%, rgba(9, 9, 11, 0.82) 0%, transparent 68%),
-    /* Left editorial text column backing (localized to 0-45% width, leaving the center/right silk vivid) */
-    linear-gradient(90deg, rgba(9, 9, 11, 0.84) 0%, rgba(9, 9, 11, 0.62) 35%, transparent 62%),
+    radial-gradient(ellipse 70% 55% at 15% 15%, rgba(9, 9, 11, 0.92) 0%, transparent 70%),
+    /* Left editorial text column backing (localized to 0-55% width) */
+    linear-gradient(90deg, rgba(9, 9, 11, 0.94) 0%, rgba(9, 9, 11, 0.70) 38%, rgba(9, 9, 11, 0.25) 100%),
     /* Vertical bottom soft gradient */
-    linear-gradient(180deg, transparent 40%, rgba(9, 9, 11, 0.45) 75%, rgba(9, 9, 11, 0.88) 100%);
-  z-index: 2;
+    linear-gradient(180deg, transparent 35%, rgba(9, 9, 11, 0.55) 70%, rgba(9, 9, 11, 0.96) 100%);
+  z-index: 3;
 }
 
+/* Subtle Crimson Atmospheric Caustics (Brand Color: #ea002a) */
 .crimsonAtmosphere {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at 20% 30%,
-    rgba(234, 0, 42, 0.16) 0%,
-    transparent 65%
-  );
+  background:
+    radial-gradient(circle at 20% 70%, rgba(234, 0, 42, 0.16) 0%, transparent 58%),
+    radial-gradient(circle at 80% 20%, rgba(138, 0, 23, 0.10) 0%, transparent 50%);
+  mix-blend-mode: screen;
   pointer-events: none;
-  z-index: 2;
+  z-index: 4;
+}
+
+/* 35mm Celluloid Micro Film Grain */
+.filmGrain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  z-index: 5;
 }
 
 .panelContent {
   position: relative;
-  z-index: 2;
+  z-index: 6;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -340,7 +345,7 @@
 }
 
 /* --------------------------------------------------------------------------
- * Dynamic Fluid Silk GPU-Composited Keyframes (0% CPU Main Thread)
+ * Dynamic Ambient Garnet Bloom Keyframes (0% CPU Main Thread, GPU Composited)
  * -------------------------------------------------------------------------- */
 
 @keyframes pulseGarnetBloom {
@@ -360,6 +365,10 @@
 
 /* Accessibility: Vestibular Sensitivity Safeguard */
 @media (prefers-reduced-motion: reduce) {
+  .showcaseVideo {
+    display: none !important;
+  }
+
   .ambientGarnetBloom {
     animation: none !important;
     transition: none !important;

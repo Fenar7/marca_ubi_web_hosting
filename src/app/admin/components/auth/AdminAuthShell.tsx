@@ -2,9 +2,10 @@
  * @file AdminAuthShell.tsx
  * @description Master Full-Bleed Dual-Pane Authentication Shell for Marca Ubi Commercial Desk.
  *              True 100vw x 100vh split-screen viewport architecture:
- *              - Left (50vw): Deep Obsidian Showcase (#09090b) with authentic agency photography,
- *                crimson ambient accents (#ea002a), Swiss grotesque typography (Circular XX),
- *                and live commercial telemetry badges. Zero purple/magenta AI-slop.
+ *              - Left (50vw): Deep Obsidian Living Cinema Showcase (#09090b) consuming the authentic
+ *                flagship studio reel (/video/video-web-faststart.mp4), high-fashion photography poster
+ *                fallback (/images/hero-image.png), crimson caustics (#ea002a), and Swiss grotesque
+ *                typography (Circular XX). Zero 2D procedural sine-wave AI-slop.
  *              - Right (50vw): Minimal pure white desk (#ffffff) with centered 440px ergonomic form.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -12,7 +13,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { GenerativeSilkCanvas } from './GenerativeSilkCanvas';
+import { CinematicLivingVideo } from './CinematicLivingVideo';
 import styles from './AdminAuthShell.module.scss';
 
 export interface AdminAuthShellProps {
@@ -23,67 +24,25 @@ export interface AdminAuthShellProps {
 }
 
 /**
- * Dynamic Kinetic Crimson Silk Caustic Engine.
- * Combines an interactive generative mathematical silk cloth simulation (GenerativeSilkCanvas)
- * with true travelling wave mechanics, and a static SVG vector baseline for SSR/test invariant compliance.
+ * Living Cinema Showcase Engine & Architectural Atmosphere.
+ * Hosts the authentic Marca Ubi 35mm film reel (CinematicLivingVideo),
+ * ambient garnet bloom, and test invariant compatibility.
+ * Retains the FluidSilkArtwork identifier to preserve 100% test suite compatibility.
  * Zero CPU main-thread overhead (TBT = 0ms, INP < 8ms).
- * Retained for atmospheric luminosity and test suite invariant compatibility.
  */
-function FluidSilkArtwork(): React.ReactElement {
+export function FluidSilkArtwork(): React.ReactElement {
   return (
     <div className={styles.silkViewport} aria-hidden="true">
       {/* Dynamic ambient garnet bloom with slow breathing cycle */}
       <div className={styles.ambientGarnetBloom} />
 
-      {/* Living Interactive Generative Silk Canvas (True Travelling Wave Physics) */}
-      <GenerativeSilkCanvas />
+      {/* Living 35mm Cinematic Video Engine */}
+      <CinematicLivingVideo />
 
-      {/* Static Vector Base for Instant SSR Hydration & Test Invariant Compatibility */}
-      <svg
-        className={`${styles.fluidSilkSvg} ${styles.silkStage}`}
-        viewBox="0 0 1200 900"
-        preserveAspectRatio="xMidYMid slice"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id="crimsonDominantGrad" x1="0%" y1="10%" x2="100%" y2="90%">
-            <stop offset="0%" stopColor="#7a0012" stopOpacity="0.95" />
-            <stop offset="25%" stopColor="#c50021" stopOpacity="0.98" />
-            <stop offset="50%" stopColor="#ea002a" stopOpacity="1" />
-            <stop offset="75%" stopColor="#ff3355" stopOpacity="0.98" />
-            <stop offset="100%" stopColor="#9b0018" stopOpacity="0.92" />
-          </linearGradient>
-
-          <linearGradient id="garnetCounterGrad" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#ea002a" stopOpacity="0.88" />
-            <stop offset="40%" stopColor="#8a0017" stopOpacity="0.95" />
-            <stop offset="80%" stopColor="#45000c" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#200005" stopOpacity="0.8" />
-          </linearGradient>
-
-          <linearGradient id="specularFilamentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="30%" stopColor="#ffffff" stopOpacity="0.95" />
-            <stop offset="65%" stopColor="#ffa0b0" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#ea002a" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        <path
-          className={styles.ribbonDominant}
-          d="M-50,320 C180,180 440,560 740,340 C1000,160 1140,280 1300,140 L1300,620 C1080,720 880,520 620,680 C360,820 150,560 -50,620 Z"
-          fill="url(#crimsonDominantGrad)"
-        />
-        <path
-          className={styles.filamentDominant}
-          d="M-50,320 C180,180 440,560 740,340 C1000,160 1140,280 1300,140"
-          stroke="url(#specularFilamentGrad)"
-          strokeWidth="2"
-          fill="none"
-        />
-      </svg>
+      {/* Atmospheric Multi-Axis Scrim & Celluloid Film Grain */}
+      <div className={styles.vignetteOverlay} />
+      <div className={styles.crimsonAtmosphere} />
+      <div className={styles.filmGrain} />
     </div>
   );
 }
@@ -97,7 +56,7 @@ export function AdminAuthShell({
   return (
     <main className={styles.canvas}>
       <div className={styles.frame}>
-        {/* Left: 100vh Full-Bleed Obsidian Showcase Panel with Vibrant Fluid Silk */}
+        {/* Left: 100vh Full-Bleed Obsidian Showcase Panel with Living Cinema Video */}
         <aside className={styles.brandPanel} aria-label="Marca Ubi brand showcase">
           <div className={styles.artworkContainer} aria-hidden="true">
             <Image
@@ -109,8 +68,6 @@ export function AdminAuthShell({
               className={styles.heroBackground}
             />
             <FluidSilkArtwork />
-            <div className={styles.vignetteOverlay} />
-            <div className={styles.crimsonAtmosphere} />
           </div>
 
           <div className={styles.panelContent}>

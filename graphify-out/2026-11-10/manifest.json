@@ -5430,9 +5430,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/auth/AdminAuthShell.tsx": {
-    "mtime": 1794306463.229885,
-    "seen": 1794306773.6901808,
-    "ast_hash": "83844fdb9e983be1eabc8ac77ddb3810",
+    "mtime": 1794307907.995504,
+    "seen": 1794308141.0050712,
+    "ast_hash": "78fcefb79e97c25eb360b406d2a5a353",
     "semantic_hash": ""
   },
   "src/app/admin/lib/followUpQueue.ts": {
@@ -5583,6 +5583,18 @@
     "mtime": 1794305752.701429,
     "seen": 1794306773.6911814,
     "ast_hash": "36f15c04bc44148c894af66319dc898a",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/auth/GenerativeSilkCanvas.tsx": {
+    "mtime": 1794307841.9163578,
+    "seen": 1794308141.0050712,
+    "ast_hash": "9116ec52750bc494701550580ece5c01",
+    "semantic_hash": ""
+  },
+  "docs/auth_redesign/CREATIVE_GENERATIVE_SILK_SIMULATION_PLAN.md": {
+    "mtime": 1794307565.491635,
+    "seen": 1794308141.0055711,
+    "ast_hash": "b1407cceb2646eb93b319ddaa0318860",
     "semantic_hash": ""
   },
   "package-lock.json": {
