@@ -18,9 +18,10 @@ interface AdminHeaderProps {
   currentUser: CurrentUserSession;
   isMobileNavOpen: boolean;
   onOpenMobileNav: () => void;
+  className?: string;
 }
 
-export function AdminHeader({ currentUser, isMobileNavOpen, onOpenMobileNav }: AdminHeaderProps): React.ReactElement {
+export function AdminHeader({ currentUser, isMobileNavOpen, onOpenMobileNav, className }: AdminHeaderProps): React.ReactElement {
   const canManageTeam = currentUser.role === 'admin';
   const canCreateLead = currentUser.role !== 'viewer';
 
@@ -37,7 +38,7 @@ export function AdminHeader({ currentUser, isMobileNavOpen, onOpenMobileNav }: A
   };
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${className || ''}`}>
       {/* Left: Mobile Toggle & Dynamic Hierarchical Breadcrumbs */}
       <div className={styles.headerLeft}>
         <button
@@ -166,8 +167,10 @@ export function AdminHeader({ currentUser, isMobileNavOpen, onOpenMobileNav }: A
           </div>
         </details>
 
-        {/* User Identity Popover */}
-        <UserProfileDropdown currentUser={currentUser} />
+        {/* User Identity Popover (Mobile Only — Desktop lives in Sidebar Lockup) */}
+        <div className={styles.headerUserControl}>
+          <UserProfileDropdown currentUser={currentUser} />
+        </div>
       </div>
     </header>
   );

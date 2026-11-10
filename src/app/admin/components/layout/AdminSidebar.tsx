@@ -2,9 +2,9 @@
 
 /**
  * @file AdminSidebar.tsx
- * @description Persistent grouped navigation for the Marca Ubi Commercial Desk.
- * @architecture Keeps route discovery separate from the horizontal context rail while preserving
- *               server-aligned tab visibility and a narrow icon mode for dense workspaces.
+ * @description Master Luxury Grouped Sidebar for Marca Ubi Commercial Desk.
+ *              Integrates horizontal Brand Header with User Switcher, dedicated 36px Omni-Search trigger,
+ *              tactile active pill navigation with 3px Crimson indicators, and real-time agency telemetry.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -12,7 +12,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import type { CurrentUserSession } from './UserProfileDropdown';
+import { UserProfileDropdown, type CurrentUserSession } from './UserProfileDropdown';
 import { NAVIGATION_GROUPS, isTabAuthorized } from './navigationConfig';
 import styles from './AdminSidebar.module.scss';
 
@@ -38,6 +38,10 @@ export function AdminSidebar({
     return pathname.startsWith(href);
   };
 
+  const handleOpenSearch = (): void => {
+    window.dispatchEvent(new CustomEvent('open-command-palette'));
+  };
+
   // Human-readable operational role formatter
   const formattedRole = currentUser.role
     .split('_')
@@ -49,26 +53,44 @@ export function AdminSidebar({
       className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}
       aria-label="Commercial Desk navigation"
     >
-      {/* Brand Header */}
+      {/* Brand & Compact User Switcher Header (User Selected Spec) */}
       <div className={styles.brandContainer}>
-        <Link href="/admin" className={styles.logoLink} title="Marca Ubi Commercial Desk overview">
-          <Image
-            src="/images/marca-ubi-dark.svg"
-            alt="Marca Ubi."
-            width={158}
-            height={34}
-            className={styles.brandLogo}
-          />
-          <span className={styles.brandMonogram} aria-hidden="true">M<span>.</span></span>
-          <span className={styles.brandDescriptor}>COMMERCIAL DESK</span>
-        </Link>
+        <div className={styles.brandExpanded}>
+          <div className={styles.brandLockup}>
+            <Link href="/admin" className={styles.logoLink} title="Marca Ubi Commercial Desk overview">
+              <Image
+                src="/images/marca-ubi-dark.svg"
+                alt="Marca Ubi."
+                width={124}
+                height={28}
+                className={styles.brandLogo}
+                priority
+              />
+              <span className={styles.brandDescriptor}>COMMERCIAL DESK</span>
+            </Link>
+          </div>
+          <div className={styles.headerUserControl}>
+            <UserProfileDropdown currentUser={currentUser} />
+          </div>
+        </div>
+        <div className={styles.brandCollapsed}>
+          <Link href="/admin" className={styles.collapsedLogoLink} title="Marca Ubi Commercial Desk">
+            <span className={styles.brandMonogram}>M<span>.</span></span>
+          </Link>
+          <div className={styles.collapsedUserControl}>
+            <UserProfileDropdown currentUser={currentUser} />
+          </div>
+        </div>
+      </div>
+
+      {/* Omni-Search Trigger Rail (⌘K) */}
+      <div className={styles.searchSection}>
         <button
           type="button"
-          onClick={onToggleCollapse}
-          className={styles.collapseToggle}
-          title={isCollapsed ? 'Expand navigation (Ctrl+B)' : 'Collapse navigation (Ctrl+B)'}
-          aria-label={isCollapsed ? 'Expand navigation' : 'Collapse navigation'}
-          aria-expanded={!isCollapsed}
+          onClick={handleOpenSearch}
+          className={styles.sidebarSearchBtn}
+          aria-label="Search clients, leads, deals, and team members (⌘K)"
+          title="Search deals, clients, or reps (⌘K)"
         >
           <svg
             width="14"
@@ -80,13 +102,13 @@ export function AdminSidebar({
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
+            className={styles.searchIcon}
           >
-            {isCollapsed ? (
-              <polyline points="9 18 15 12 9 6" />
-            ) : (
-              <polyline points="15 18 9 12 15 6" />
-            )}
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
+          <span className={styles.searchPlaceholder}>Quick search...</span>
+          <kbd className={styles.searchKbd}>⌘K</kbd>
         </button>
       </div>
 
@@ -122,6 +144,7 @@ export function AdminSidebar({
                         aria-label={isCollapsed ? `${group.groupTitle}: ${item.label}` : undefined}
                         aria-current={active ? 'page' : undefined}
                       >
+                        {active && <span className={styles.activePill} aria-hidden="true" />}
                         <div className={styles.iconWrapper}>
                           {item.icon({ active })}
                         </div>
@@ -133,7 +156,6 @@ export function AdminSidebar({
                             </span>
                           )}
                         </div>
-                        {active && <span className={styles.activePill} />}
                       </Link>
                     </li>
                   );
@@ -142,19 +164,50 @@ export function AdminSidebar({
             </section>
           );
         })}
+
+        {/* Conyest / Amirul Dark Luxury Telemetry Card */}
+        <div className={styles.sidebarPromoCard}>
+          <div className={styles.promoHeader}>
+            <span className={styles.promoBadge}>
+              <span className={styles.promoPulse} />
+              AGENCY INTELLIGENCE
+            </span>
+          </div>
+          <div className={styles.promoTitle}>Pipeline Velocity</div>
+          <div className={styles.promoMetrics}>
+            <span className={styles.promoValue}>₹65.4L Active</span>
+            <span className={styles.promoSub}>39 Commercial Deals</span>
+          </div>
+          <Link href="/admin/deals" className={styles.promoAction} title="Inspect active commercial pipeline">
+            View Pipeline Dynamics →
+          </Link>
+        </div>
       </nav>
 
-      {/* Identity remains available in the navigation when the global header is scrolled. */}
+      {/* Sidebar Footer & Collapse Toggle */}
       <div className={styles.sidebarFooter}>
-        <div
-          className={styles.systemStatusBlock}
-          title={`Authenticated as ${currentUser.email} (${formattedRole})`}
-        >
-          <span className={styles.statusDot} aria-hidden="true" />
-          <div className={styles.statusText}>
-            <span className={styles.statusLabel}>{formattedRole}</span>
-            <span className={styles.statusSub}>{currentUser.email}</span>
+        <div className={styles.footerExpanded}>
+          <div className={styles.telemetryStatusBlock} title={`Authenticated as ${currentUser.email} (${formattedRole})`}>
+            <span className={styles.statusDot} aria-hidden="true" />
+            <div className={styles.statusText}>
+              <span className={styles.statusLabel}>Live SSR</span>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className={styles.collapseToggle}
+            title={isCollapsed ? 'Expand navigation (Ctrl+B)' : 'Collapse navigation (Ctrl+B)'}
+            aria-label={isCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {isCollapsed ? (
+                <polyline points="9 18 15 12 9 6" />
+              ) : (
+                <polyline points="15 18 9 12 15 6" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
     </aside>

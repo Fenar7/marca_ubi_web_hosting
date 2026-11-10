@@ -33,15 +33,20 @@ describe('Executive overview reporting and responsive layout', () => {
     assert.ok(pipeline.includes('stage.amount'));
   });
 
-  it('places performance and stage health before priority work and the recent ledger', () => {
-    const analysisPosition = page.indexOf('className={styles.analysisSection}');
-    const attentionPosition = page.indexOf('<AttentionQueue');
+  it('places active opportunities and stage distribution in 2-column showcase before triage queue and revenue pacing', () => {
+    const mainGridPosition = page.indexOf('className={styles.mainGridSection}');
     const ledgerPosition = page.indexOf('<CommercialDealsTable');
-    assert.ok(analysisPosition >= 0 && analysisPosition < attentionPosition);
-    assert.ok(attentionPosition < ledgerPosition);
+    const allocationPosition = page.indexOf('<PipelineAllocationCard');
+    const attentionPosition = page.indexOf('<AttentionQueue');
+    const analysisPosition = page.indexOf('className={styles.analysisSection}');
+    assert.ok(mainGridPosition >= 0 && mainGridPosition < attentionPosition);
+    assert.ok(ledgerPosition >= 0 && ledgerPosition < attentionPosition);
+    assert.ok(allocationPosition >= 0 && allocationPosition < attentionPosition);
+    assert.ok(attentionPosition < analysisPosition);
     assert.ok(page.includes('<PipelineAllocationCard'));
     assert.ok(page.includes('<RevenueDynamicsCard'));
     assert.ok(layout.includes('.fluidCanvas'));
+    assert.ok(layout.includes('.mainGridSection'));
     assert.ok(layout.includes('.analysisSection'));
     assert.ok(layout.includes('.operationsSection'));
     assert.ok(layout.includes('@media (max-width: 1250px)'));

@@ -229,20 +229,46 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
         </p>
       ) : conversionCount === 0 ? (
         <div className={styles.zeroState} role="status">
-          <div className={styles.zeroStateCopy}>
-            <strong className={styles.zeroCount}>0</strong>
-            <div className={styles.zeroStateMessage}>
-              <strong>No conversions recorded</strong>
-              <span>Closed deals dated in {timeframe} will appear here.</span>
+          <div className={styles.zeroTelemetryBar}>
+            <div className={styles.zeroTelemetryBadge}>
+              <span className={styles.zeroPulseDot} aria-hidden="true" />
+              <span>Active Pacing Engine</span>
             </div>
+            <span className={styles.zeroPacingTarget}>
+              Pacing Window · {timeframe}
+            </span>
           </div>
-          <div className={styles.zeroTimeline} aria-label={`Converted contract value was zero across ${dataPoints.length} periods in ${timeframe}`}>
-            <span className={styles.zeroAxisLabel}>₹0</span>
-            <div className={styles.zeroAxis} aria-hidden="true">
-              {dataPoints.map((point) => <span key={point.fullPeriod} />)}
+          <div className={styles.zeroStateContent}>
+            <div className={styles.zeroStateCopy}>
+              <div className={styles.zeroCountBox}>
+                <strong className={styles.zeroCount}>0</strong>
+                <span className={styles.zeroCountTag}>Conversions</span>
+              </div>
+              <div className={styles.zeroStateMessage}>
+                <strong>No conversions recorded</strong>
+                <span>Closed deals dated in {timeframe} will appear here.</span>
+              </div>
             </div>
-            <div className={styles.zeroPeriodLabels}>
-              {dataPoints.map((point) => <span key={point.fullPeriod} title={point.fullPeriod}>{point.month}</span>)}
+            <div className={styles.zeroTimeline} aria-label={`Converted contract value was zero across ${dataPoints.length} periods in ${timeframe}`}>
+              <div className={styles.zeroWaveGraphic} aria-hidden="true">
+                <svg viewBox="0 0 400 50" preserveAspectRatio="none" className={styles.zeroWaveSvg}>
+                  <defs>
+                    <linearGradient id="zero-pacing-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ea002a" stopOpacity="0.08" />
+                      <stop offset="100%" stopColor="#ea002a" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M 0 45 Q 100 15 200 35 T 400 25 L 400 50 L 0 50 Z" fill="url(#zero-pacing-grad)" />
+                  <path d="M 0 45 Q 100 15 200 35 T 400 25" fill="none" stroke="#ea002a" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.35" />
+                </svg>
+              </div>
+              <span className={styles.zeroAxisLabel}>₹0</span>
+              <div className={styles.zeroAxis} aria-hidden="true">
+                {dataPoints.map((point) => <span key={point.fullPeriod} />)}
+              </div>
+              <div className={styles.zeroPeriodLabels}>
+                {dataPoints.map((point) => <span key={point.fullPeriod} title={point.fullPeriod}>{point.month}</span>)}
+              </div>
             </div>
           </div>
         </div>

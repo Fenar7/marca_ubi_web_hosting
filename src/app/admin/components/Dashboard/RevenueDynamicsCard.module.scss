@@ -4,14 +4,20 @@
  */
 
 .performanceCard {
-  background: var(--admin-surface-primary, #ffffff);
-  border: 1px solid var(--admin-border-subtle, #dededb);
-  border-radius: 10px;
-  padding: 1.3rem 1.4rem 1.1rem;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: var(--admin-shadow-card, 0 4px 20px -2px rgba(12, 12, 13, 0.05), 0 1px 3px rgba(12, 12, 13, 0.02));
+  padding: 1.25rem 1.4rem 1.1rem;
   display: flex;
   flex-direction: column;
   position: relative;
   min-width: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--admin-border-default, #d8d8d4);
+  }
 }
 
 .cardHeader {
@@ -198,13 +204,55 @@
 }
 
 .zeroState {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(260px, 1.1fr);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.25rem;
+  background: #fafaf8;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+}
+
+.zeroTelemetryBar {
+  display: flex;
   align-items: center;
-  gap: clamp(1.25rem, 3vw, 2.75rem);
-  min-height: 7.5rem;
-  padding: 1.2rem 0.2rem 0.25rem;
-  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
+  justify-content: space-between;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.zeroTelemetryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #047857;
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.zeroPulseDot {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.zeroPacingTarget {
+  color: #71717a;
+  font-size: 0.72rem;
+  font-family: var(--font-admin-code, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.zeroStateContent {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(280px, 1.1fr);
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .zeroStateCopy {
@@ -214,19 +262,43 @@
   min-width: 0;
 }
 
+.zeroCountBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
 .zeroCount {
   flex: 0 0 auto;
   color: var(--admin-text-primary, #111);
   font-family: var(--font-admin-numeric, var(--font-admin-primary, sans-serif));
-  font-size: clamp(2.25rem, 4vw, 3rem);
+  font-size: 1.85rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 650;
+  font-weight: 750;
   letter-spacing: -0.06em;
   line-height: 1;
 }
 
+.zeroCountTag {
+  color: #71717a;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+}
+
 .zeroStateMessage {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.35rem;
   min-width: 0;
 }
@@ -244,12 +316,29 @@
 }
 
 .zeroTimeline {
+  position: relative;
   display: grid;
   grid-template-columns: 2.75rem minmax(0, 1fr);
   align-items: center;
   column-gap: 0.65rem;
   row-gap: 0.45rem;
   min-width: 0;
+  padding: 0.75rem 0.65rem 0.45rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+}
+
+.zeroWaveGraphic {
+  position: absolute;
+  inset: -15px 0 auto 0;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.zeroWaveSvg {
+  width: 100%;
+  height: 45px;
 }
 
 .zeroAxisLabel {

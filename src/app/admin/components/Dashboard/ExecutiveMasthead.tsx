@@ -158,15 +158,16 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
     const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
     const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download =
-      "executive-report-" + timeframeToSlug(exportData.timeframe) + ".csv";
-    anchor.style.display = "none";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `marca_ubi_executive_report_${exportData.timeframe.toLowerCase().replace(/\s+/g, "_")}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -175,10 +176,13 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
       aria-label="Executive Overview Header"
     >
       <div className={styles.titleCluster}>
-        <p className={styles.eyebrow}>Commercial operations</p>
+        <div className={styles.eyebrowRow}>
+          <span className={styles.livePulseDot} aria-hidden="true" />
+          <p className={styles.eyebrow}>Commercial Operations · Live Telemetry</p>
+        </div>
         <h1 className={styles.title}>Commercial Desk</h1>
         <p className={styles.subtitle}>
-          Today’s priorities, active pipeline, and contract value from recorded wins.
+          Today’s priority work, active pipeline distribution, and converted revenue outcomes.
         </p>
       </div>
 
@@ -213,7 +217,7 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
             </svg>
             <span>{selectedRange}</span>
             <svg
-              className={styles.chevron}
+              className={`${styles.chevron} ${isDropdownOpen ? styles.chevronOpen : ""}`}
               width="13"
               height="13"
               viewBox="0 0 24 24"
@@ -279,8 +283,8 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
           }
         >
           <svg
-            width="15"
-            height="15"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -295,7 +299,6 @@ export const ExecutiveMasthead: React.FC<ExecutiveMastheadProps> = ({
           </svg>
           <span>Export Report</span>
         </button>
-
       </div>
     </header>
   );

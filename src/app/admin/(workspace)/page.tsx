@@ -467,7 +467,7 @@ export default async function AdminDashboardPage(
 
   const stageStatus = activeRowsResult.error || statusesError ? 'unavailable' : 'ready';
   const revenueStatus = revenueRowsResult.error ? 'unavailable' : 'ready';
-  const dealsStatus = statusesError || topLeadsError || directoryError ? 'unavailable' : 'ready';
+  const dealsStatus = statusesError || topLeadsError ? 'unavailable' : 'ready';
   const currentConversionRate = cohortAvailable ? cohortConversionRate(currentCohort) : null;
   const exportData = pipelineAvailable && cohortAvailable && revenueAvailable && stageStatus === 'ready' && revenueStatus === 'ready' && dealsStatus === 'ready'
     ? {
@@ -506,26 +506,33 @@ export default async function AdminDashboardPage(
     <div className={styles.dashboardContainer}>
       <main className={styles.fluidCanvas}>
         <ExecutiveMasthead selectedTimeframe={bounds.label} exportData={exportData} />
-        <ExecutiveKpiGrid kpis={executiveKpis} cadenceLabel={bounds.cadenceLabel} metricStatus={{ pipeline: pipelineAvailable ? 'ready' : 'unavailable', revenue: revenueAvailable ? 'ready' : 'unavailable', cohort: cohortAvailable ? 'ready' : 'unavailable' }} />
-        <section className={styles.analysisSection} aria-label="Performance and pipeline stage health">
-          <RevenueDynamicsCard
-            dataPoints={revenueSplinePoints}
-            timeframe={bounds.label}
-            dataStatus={revenueStatus}
-            conversionCount={currentRevenueCount}
-          />
-          <PipelineAllocationCard
-            totalValuation={pipelineAvailable ? pipelineValue : null}
-            stages={dynamicStages}
-            dataStatus={stageStatus}
-          />
+        <ExecutiveKpiGrid
+          kpis={executiveKpis}
+          cadenceLabel={bounds.cadenceLabel}
+          metricStatus={{
+            pipeline: pipelineAvailable ? 'ready' : 'unavailable',
+            revenue: revenueAvailable ? 'ready' : 'unavailable',
+            cohort: cohortAvailable ? 'ready' : 'unavailable',
+          }}
+        />
+        <section className={styles.mainGridSection} aria-label="Active opportunities and stage distribution">
+          <div className={styles.dealsPrimaryColumn}>
+            <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
+          </div>
+          <div className={styles.allocationSecondaryColumn}>
+            <PipelineAllocationCard
+              totalValuation={pipelineAvailable ? pipelineValue : null}
+              stages={dynamicStages}
+              dataStatus={stageStatus}
+            />
+          </div>
         </section>
-        <section className={styles.operationsSection} aria-label="Priority work and active deals">
+        <section className={styles.operationsSection} aria-label="Priority work and triage">
           <AttentionQueue
             items={(attentionRows ?? []).filter((lead) => {
               const stage = statusById.get(lead.status_id);
               return stage?.name !== 'On Hold' || !lead.revisit_date || lead.revisit_date <= todayUtc;
-            }).slice(0, 6).map((lead): AttentionQueueItem => ({
+            }).slice(0, 8).map((lead): AttentionQueueItem => ({
               id: lead.id,
               leadId: lead.lead_id,
               name: lead.name,
@@ -539,9 +546,14 @@ export default async function AdminDashboardPage(
             dueTodayCount={pipelineAvailable ? dueTodayCount : null}
             dataStatus={attentionError ? 'unavailable' : 'ready'}
           />
-          <section className={styles.dealsSection} aria-label="Recent active deals">
-            <CommercialDealsTable deals={activeDealsList} dataStatus={dealsStatus} />
-          </section>
+        </section>
+        <section className={styles.analysisSection} aria-label="Performance and revenue pacing">
+          <RevenueDynamicsCard
+            dataPoints={revenueSplinePoints}
+            timeframe={bounds.label}
+            dataStatus={revenueStatus}
+            conversionCount={currentRevenueCount}
+          />
         </section>
       </main>
     </div>
