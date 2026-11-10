@@ -440,11 +440,36 @@ export default async function AdminDashboardPage(
   if (topLeadsError) console.error('[admin-dashboard] recent deal query failed:', topLeadsError.message);
 
   const assignedIds = [...new Set((topLeads ?? []).flatMap((lead) => lead.assigned_to ? [lead.assigned_to] : []))];
-  const { data: directory, error: directoryError } = assignedIds.length === 0
-    ? { data: [], error: null }
-    : await supabase.from('crm_team_directory').select('id, full_name').in('id', assignedIds);
-  if (directoryError) console.error('[admin-dashboard] safe team directory query failed:', directoryError.message);
-  const ownerById = new Map(((directory ?? []) as TeamDirectoryRecord[]).map((member) => [member.id, member.full_name]));
+
+  // Resilient team directory resolution with schema-cache fallback:
+  // 1. Primary lookup: query public.crm_team_directory view
+  // 2. Fallback lookup: if the view is not yet indexed in PostgREST's schema cache, query public.profiles directly
+  let directoryRows: TeamDirectoryRecord[] = [];
+  if (assignedIds.length > 0) {
+    const { data: directory, error: directoryError } = await supabase
+      .from('crm_team_directory')
+      .select('id, full_name')
+      .in('id', assignedIds);
+
+    if (directory && !directoryError) {
+      directoryRows = directory as TeamDirectoryRecord[];
+    } else {
+      if (directoryError) {
+        console.warn('[admin-dashboard] crm_team_directory view query failed; executing resilient public.profiles fallback:', directoryError.message);
+      }
+      const { data: profileFallback, error: profileFallbackError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', assignedIds);
+
+      if (profileFallback && !profileFallbackError) {
+        directoryRows = profileFallback as TeamDirectoryRecord[];
+      } else if (profileFallbackError) {
+        console.error('[admin-dashboard] public.profiles directory fallback failed:', profileFallbackError.message);
+      }
+    }
+  }
+  const ownerById = new Map(directoryRows.map((member) => [member.id, member.full_name]));
 
   const activeDealsList: ActiveDealItem[] = (topLeads ?? []).map((lead) => {
     const status = statusById.get(lead.status_id);

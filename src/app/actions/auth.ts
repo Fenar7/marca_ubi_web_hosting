@@ -199,17 +199,23 @@ export async function loginAction(
           JSON.stringify(currentMetadata.allowed_tabs) !== JSON.stringify(profile.allowed_tabs);
 
         if (isStale) {
-          const adminClient = getAdminClient();
-          await adminClient.auth.admin.updateUserById(data.user.id, {
-            app_metadata: {
-              ...currentMetadata,
-              role: profile.role,
-              allowed_tabs: profile.allowed_tabs,
-            },
-          });
+          // If SUPABASE_SERVICE_ROLE_KEY is not configured in local dev, gracefully delegate claims evaluation to Server Components
+          const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          if (!serviceRoleKey || serviceRoleKey.trim().length < 20) {
+            console.info('[AUTH_SYNC_INFO] SUPABASE_SERVICE_ROLE_KEY not configured in environment; delegating role claims evaluation to Server Components.');
+          } else {
+            const adminClient = getAdminClient();
+            await adminClient.auth.admin.updateUserById(data.user.id, {
+              app_metadata: {
+                ...currentMetadata,
+                role: profile.role,
+                allowed_tabs: profile.allowed_tabs,
+              },
+            });
 
-          // Rotate session so newly minted app_metadata claims are written to the browser's response cookies
-          await supabase.auth.refreshSession();
+            // Rotate session so newly minted app_metadata claims are written to the browser's response cookies
+            await supabase.auth.refreshSession();
+          }
         }
       }
     } catch (syncError: unknown) {
@@ -431,44 +437,44 @@ export async function resetTemporaryPassword(
   _prevState: ResetPasswordResult | null,
   formData: FormData
 ): Promise<ResetPasswordResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-  if (authError || !user) {
-    return {
-      success: false,
-      error: 'Authentication required. Please log in before resetting credentials.',
-    };
-  }
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Authentication required. Please log in before resetting credentials.',
+      };
+    }
 
-  const rawNewPassword = formData.get('newPassword');
-  const rawConfirmPassword = formData.get('confirmPassword');
+    const rawNewPassword = formData.get('newPassword');
+    const rawConfirmPassword = formData.get('confirmPassword');
 
-  const parseResult = ResetPasswordSchema.safeParse({
-    newPassword: rawNewPassword,
-    confirmPassword: rawConfirmPassword,
-  });
-
-  if (!parseResult.success) {
-    const validationErrors: Record<string, string> = {};
-    parseResult.error.issues.forEach((issue) => {
-      const field = issue.path[0] ? String(issue.path[0]) : 'form';
-      validationErrors[field] = issue.message;
+    const parseResult = ResetPasswordSchema.safeParse({
+      newPassword: rawNewPassword,
+      confirmPassword: rawConfirmPassword,
     });
 
-    return {
-      success: false,
-      error: parseResult.error.issues[0]?.message || 'Validation failed. Please correct the highlighted errors.',
-      validationErrors,
-    };
-  }
+    if (!parseResult.success) {
+      const validationErrors: Record<string, string> = {};
+      parseResult.error.issues.forEach((issue) => {
+        const field = issue.path[0] ? String(issue.path[0]) : 'form';
+        validationErrors[field] = issue.message;
+      });
 
-  const { newPassword } = parseResult.data;
+      return {
+        success: false,
+        error: parseResult.error.issues[0]?.message || 'Validation failed. Please correct the highlighted errors.',
+        validationErrors,
+      };
+    }
 
-  try {
+    const { newPassword } = parseResult.data;
+
     // 1. Update Auth identity password and reset user_metadata flag
     const { error: updateAuthError } = await supabase.auth.updateUser({
       password: newPassword,

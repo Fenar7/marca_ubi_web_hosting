@@ -5430,9 +5430,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/auth/AdminAuthShell.tsx": {
-    "mtime": 1794307907.995504,
-    "seen": 1794308141.0050712,
-    "ast_hash": "78fcefb79e97c25eb360b406d2a5a353",
+    "mtime": 1794310779.8175085,
+    "seen": 1794311186.8269794,
+    "ast_hash": "776ac356a128957457fc66be7e46199d",
     "semantic_hash": ""
   },
   "src/app/admin/lib/followUpQueue.ts": {
@@ -5585,16 +5585,34 @@
     "ast_hash": "36f15c04bc44148c894af66319dc898a",
     "semantic_hash": ""
   },
-  "src/app/admin/components/auth/GenerativeSilkCanvas.tsx": {
-    "mtime": 1794307841.9163578,
-    "seen": 1794308141.0050712,
-    "ast_hash": "9116ec52750bc494701550580ece5c01",
-    "semantic_hash": ""
-  },
   "docs/auth_redesign/CREATIVE_GENERATIVE_SILK_SIMULATION_PLAN.md": {
     "mtime": 1794307565.491635,
     "seen": 1794308141.0055711,
     "ast_hash": "b1407cceb2646eb93b319ddaa0318860",
+    "semantic_hash": ""
+  },
+  "scripts/auth-cinematic-execution-watcher.js": {
+    "mtime": 1794310634.354977,
+    "seen": 1794311186.826474,
+    "ast_hash": "ea5fe8ce99ee8f7660e238c5dc754100",
+    "semantic_hash": ""
+  },
+  "scripts/auth-creative-watcher.js": {
+    "mtime": 1794309733.417306,
+    "seen": 1794311186.826474,
+    "ast_hash": "ec913704d4d1d75aea44224ba8f22963",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/auth/CinematicLivingVideo.tsx": {
+    "mtime": 1794310745.373325,
+    "seen": 1794311186.8269794,
+    "ast_hash": "3ae1476ac87d516e5e4c3585c13fb1f9",
+    "semantic_hash": ""
+  },
+  "docs/auth_redesign/AUTH_CINEMATIC_LIVING_SHOWCASE_PLAN.md": {
+    "mtime": 1794310533.857736,
+    "seen": 1794311186.8279843,
+    "ast_hash": "4c989b181f9b0b599fb2c1be28296a3a",
     "semantic_hash": ""
   },
   "package-lock.json": {
