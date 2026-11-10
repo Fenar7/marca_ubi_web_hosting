@@ -5430,9 +5430,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/auth/AdminAuthShell.tsx": {
-    "mtime": 1794289288.4134257,
-    "seen": 1794289523.5754614,
-    "ast_hash": "143f9391f0c64b59ccc55fa086bb9280",
+    "mtime": 1794306463.229885,
+    "seen": 1794306773.6901808,
+    "ast_hash": "83844fdb9e983be1eabc8ac77ddb3810",
     "semantic_hash": ""
   },
   "src/app/admin/lib/followUpQueue.ts": {
@@ -5577,6 +5577,12 @@
     "mtime": 1794286770.5585527,
     "seen": 1794289523.5764594,
     "ast_hash": "b87e2961688f21db98d0b3b78ad88142",
+    "semantic_hash": ""
+  },
+  "docs/auth_redesign/AI_SLOP_PURGE_AND_DYNAMIC_SILK_MOTION_PLAN.md": {
+    "mtime": 1794305752.701429,
+    "seen": 1794306773.6911814,
+    "ast_hash": "36f15c04bc44148c894af66319dc898a",
     "semantic_hash": ""
   },
   "package-lock.json": {

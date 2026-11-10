@@ -98,6 +98,17 @@
   will-change: transform, opacity;
   animation: pulseGarnetBloom 11s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
   pointer-events: none;
+  z-index: 1;
+}
+
+.generativeCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 2;
+  pointer-events: auto;
 }
 
 .fluidSilkSvg,
@@ -109,49 +120,16 @@
   pointer-events: none;
   overflow: visible;
   mix-blend-mode: screen;
-}
-
-.ribbonUpper {
-  will-change: transform;
-  transform-origin: 30% 20%;
-  animation: waveFlowUpper 9.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-}
-
-.ribbonCounter {
-  will-change: transform;
-  transform-origin: 55% 65%;
-  animation: waveFlowCounter 6.8s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  opacity: 0.25;
+  z-index: 1;
 }
 
 .ribbonDominant {
-  will-change: transform;
-  transform-origin: 50% 45%;
-  animation: waveFlowDominant 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-}
-
-.filamentDominant,
-.filamentCounter {
   will-change: opacity;
-  animation: shimmerFilaments 5.5s ease-in-out infinite alternate;
 }
 
-.causticSweepBeam {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    115deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.14) 48%,
-    rgba(234, 0, 42, 0.22) 52%,
-    transparent 65%
-  );
-  pointer-events: none;
-  mix-blend-mode: screen;
-  will-change: transform, opacity;
-  animation: causticSweepLuminous 6.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+.filamentDominant {
+  will-change: opacity;
 }
 
 .vignetteOverlay {
@@ -380,91 +358,11 @@
   }
 }
 
-@keyframes waveFlowDominant {
-  0% {
-    transform: translate3d(-3%, -2%, 0) scale(1) rotate(0deg);
-  }
-  35% {
-    transform: translate3d(5%, -6%, 0) scale(1.07) rotate(2.8deg);
-  }
-  70% {
-    transform: translate3d(-4%, 5%, 0) scale(0.96) rotate(-2.2deg);
-  }
-  100% {
-    transform: translate3d(-3%, -2%, 0) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes waveFlowCounter {
-  0% {
-    transform: translate3d(2%, 3%, 0) scale(1) rotate(0deg);
-  }
-  40% {
-    transform: translate3d(-6%, 4%, 0) scale(1.05) rotate(-3.2deg);
-  }
-  75% {
-    transform: translate3d(4%, -5%, 0) scale(0.98) rotate(2.4deg);
-  }
-  100% {
-    transform: translate3d(2%, 3%, 0) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes waveFlowUpper {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(-4%, 3%, 0) scale(1.04) rotate(-1.8deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes shimmerFilaments {
-  0% {
-    opacity: 0.40;
-  }
-  50% {
-    opacity: 0.98;
-  }
-  100% {
-    opacity: 0.40;
-  }
-}
-
-@keyframes causticSweepLuminous {
-  0% {
-    transform: translate3d(-100%, -100%, 0) rotate(28deg);
-    opacity: 0;
-  }
-  25% {
-    opacity: 0.85;
-  }
-  65% {
-    opacity: 0.85;
-  }
-  100% {
-    transform: translate3d(120%, 120%, 0) rotate(28deg);
-    opacity: 0;
-  }
-}
-
 /* Accessibility: Vestibular Sensitivity Safeguard */
 @media (prefers-reduced-motion: reduce) {
-  .ambientGarnetBloom,
-  .ribbonUpper,
-  .ribbonCounter,
-  .ribbonDominant,
-  .filamentDominant,
-  .filamentCounter {
+  .ambientGarnetBloom {
     animation: none !important;
     transition: none !important;
     transform: none !important;
-  }
-
-  .causticSweepBeam {
-    display: none !important;
   }
 }

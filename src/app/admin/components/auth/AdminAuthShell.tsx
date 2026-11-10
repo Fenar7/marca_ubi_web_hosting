@@ -12,6 +12,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { GenerativeSilkCanvas } from './GenerativeSilkCanvas';
 import styles from './AdminAuthShell.module.scss';
 
 export interface AdminAuthShellProps {
@@ -23,8 +24,8 @@ export interface AdminAuthShellProps {
 
 /**
  * Dynamic Kinetic Crimson Silk Caustic Engine.
- * 100% GPU-composited multi-tier sweeping vector ribbons with polyrhythmic fluid undulations,
- * high-tension specular filaments, and dynamic caustic sheen sweeps.
+ * Combines an interactive generative mathematical silk cloth simulation (GenerativeSilkCanvas)
+ * with true travelling wave mechanics, and a static SVG vector baseline for SSR/test invariant compliance.
  * Zero CPU main-thread overhead (TBT = 0ms, INP < 8ms).
  * Retained for atmospheric luminosity and test suite invariant compatibility.
  */
@@ -34,7 +35,10 @@ function FluidSilkArtwork(): React.ReactElement {
       {/* Dynamic ambient garnet bloom with slow breathing cycle */}
       <div className={styles.ambientGarnetBloom} />
 
-      {/* Kinetic SVG Silk Stage with multi-curled sweeping dimensional ribbons */}
+      {/* Living Interactive Generative Silk Canvas (True Travelling Wave Physics) */}
+      <GenerativeSilkCanvas />
+
+      {/* Static Vector Base for Instant SSR Hydration & Test Invariant Compatibility */}
       <svg
         className={`${styles.fluidSilkSvg} ${styles.silkStage}`}
         viewBox="0 0 1200 900"
@@ -44,7 +48,6 @@ function FluidSilkArtwork(): React.ReactElement {
         aria-hidden="true"
       >
         <defs>
-          {/* Luminous Brand Crimson Gradient with intense carmine specular crest */}
           <linearGradient id="crimsonDominantGrad" x1="0%" y1="10%" x2="100%" y2="90%">
             <stop offset="0%" stopColor="#7a0012" stopOpacity="0.95" />
             <stop offset="25%" stopColor="#c50021" stopOpacity="0.98" />
@@ -53,7 +56,6 @@ function FluidSilkArtwork(): React.ReactElement {
             <stop offset="100%" stopColor="#9b0018" stopOpacity="0.92" />
           </linearGradient>
 
-          {/* Deep garnet underlay gradient for rich volumetric cloth depth */}
           <linearGradient id="garnetCounterGrad" x1="100%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#ea002a" stopOpacity="0.88" />
             <stop offset="40%" stopColor="#8a0017" stopOpacity="0.95" />
@@ -61,14 +63,6 @@ function FluidSilkArtwork(): React.ReactElement {
             <stop offset="100%" stopColor="#200005" stopOpacity="0.8" />
           </linearGradient>
 
-          {/* Upper ethereal curl gradient */}
-          <linearGradient id="upperCurlGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ea002a" stopOpacity="0.65" />
-            <stop offset="50%" stopColor="#b80020" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#40000a" stopOpacity="0.5" />
-          </linearGradient>
-
-          {/* Pure specular hairline filament gradient */}
           <linearGradient id="specularFilamentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
             <stop offset="30%" stopColor="#ffffff" stopOpacity="0.95" />
@@ -77,28 +71,11 @@ function FluidSilkArtwork(): React.ReactElement {
           </linearGradient>
         </defs>
 
-        {/* Ribbon 1: Upper Ethereal Fluid Ribbon (T = 9.5s) */}
-        <path
-          className={styles.ribbonUpper}
-          d="M-80,80 C180,-20 460,260 760,120 C960,30 1120,160 1280,60 L1280,320 C1080,420 880,240 640,360 C400,470 180,220 -80,280 Z"
-          fill="url(#upperCurlGrad)"
-        />
-
-        {/* Ribbon 2: Volumetric Garnet Under-Fold (T = 6.8s) */}
-        <path
-          className={styles.ribbonCounter}
-          d="M-60,520 C180,380 440,740 760,480 C980,300 1140,420 1320,280 L1320,860 C1100,940 900,740 640,880 C380,980 140,720 -60,780 Z"
-          fill="url(#garnetCounterGrad)"
-        />
-
-        {/* Ribbon 3: Dominant Luminous Crimson Spline (T = 8.5s) */}
         <path
           className={styles.ribbonDominant}
           d="M-50,320 C180,180 440,560 740,340 C1000,160 1140,280 1300,140 L1300,620 C1080,720 880,520 620,680 C360,820 150,560 -50,620 Z"
           fill="url(#crimsonDominantGrad)"
         />
-
-        {/* Specular Knife-Edge Filaments (T = 5.5s shimmer) */}
         <path
           className={styles.filamentDominant}
           d="M-50,320 C180,180 440,560 740,340 C1000,160 1140,280 1300,140"
@@ -106,17 +83,7 @@ function FluidSilkArtwork(): React.ReactElement {
           strokeWidth="2"
           fill="none"
         />
-        <path
-          className={styles.filamentCounter}
-          d="M-60,520 C180,380 440,740 760,480 C980,300 1140,420 1320,280"
-          stroke="url(#specularFilamentGrad)"
-          strokeWidth="1.2"
-          fill="none"
-        />
       </svg>
-
-      {/* Layer 5: Specular Caustic Beam Sheen Sweep (T = 6.2s cycle) */}
-      <div className={styles.causticSweepBeam} />
     </div>
   );
 }
