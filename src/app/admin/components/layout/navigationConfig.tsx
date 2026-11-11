@@ -1,261 +1,163 @@
-﻿/**
- * @file navigationConfig.tsx
- * @description Canonical task-oriented navigation and RBAC mapping for Marca Ubi Commercial Desk.
- * @architecture Groups unchanged routes by the work users perform: daily triage, pipeline, delivery,
- *               insight, and workspace administration.
- *               Enforces granular tab-level authorization gating based on authenticated user allowed_tabs
- *               and provides calibrated SVG icons adhering to the Accordion & Sypher minimal design tokens.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-import React from 'react';
-import type { CrmTabKey } from '@/types/crm';
-import { ROLE_DEFAULT_TABS } from '@/types/crm';
-import type { CurrentUserSession } from './UserProfileDropdown';
+import React from "react";
+import { ROLE_DEFAULT_TABS, type CrmTabKey } from "@/types/crm";
+import type { CurrentUserSession } from "./UserProfileDropdown";
 
 export interface NavigationItem {
   key: CrmTabKey;
   label: string;
   href: string;
   icon: (props: { active: boolean }) => React.ReactNode;
-  getBadge?: (counts?: { dueTasksCount?: number }) => { text: string; variant: 'orange' | 'emerald' | 'amber' } | null;
+  getBadge?: (counts?: {
+    dueTasksCount?: number;
+  }) => { text: string; variant: "orange" | "emerald" | "amber" } | null;
 }
-
 export interface NavigationGroup {
   groupTitle: string;
   items: NavigationItem[];
 }
 
-/**
- * Evaluates whether an authenticated user is authorized to access a canonical workspace tab.
- * 
- * Evaluation Hierarchy:
- * 1. Explicit Profile Array: Evaluates containment within user's persisted allowed_tabs.
- * 2. Role Default Fallback: Reverts to static role baseline if allowed_tabs is unpopulated.
- * 3. Default Sandbox: Returns false if no matching permissions exist.
- */
-export function isTabAuthorized(tabKey: CrmTabKey, user: CurrentUserSession | null | undefined): boolean {
-  if (!user) {
-    return false;
-  }
-
-  // Canonical Invariant: Administrators have universal authorization across all tabs
-  if (user.role === 'admin') {
-    return true;
-  }
-
-  // Non-empty custom tab permissions override role defaults
-  if (Array.isArray(user.allowed_tabs) && user.allowed_tabs.length > 0) {
+/** Navigation mirrors server tab policy; visibility never replaces route authorization. */
+export function isTabAuthorized(
+  tabKey: CrmTabKey,
+  user: CurrentUserSession | null | undefined,
+): boolean {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  if (Array.isArray(user.allowed_tabs) && user.allowed_tabs.length > 0)
     return user.allowed_tabs.includes(tabKey);
-  }
-
-  // Role Default Fallback
-  const roleDefaults = user.role ? ROLE_DEFAULT_TABS[user.role] : undefined;
-  if (roleDefaults) {
-    return Boolean(roleDefaults[tabKey]);
-  }
-
-  return false;
+  return Boolean(ROLE_DEFAULT_TABS[user.role]?.[tabKey]);
 }
 
-/**
- * Routes retain their original tab keys so navigation organization cannot broaden permissions.
- */
+/** Consistent geometry stays legible without shifting icon weight on selection. */
+function icon(path: string): NavigationItem["icon"] {
+  return function NavigationIcon() {
+    return (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d={path} />
+      </svg>
+    );
+  };
+}
+
 export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
-    groupTitle: 'Today',
+    groupTitle: "Work",
     items: [
       {
-        key: 'command_center',
-        label: 'Executive Overview',
-        href: '/admin',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-          </svg>
-        ),
+        key: "command_center",
+        label: "Overview",
+        href: "/admin",
+        icon: icon("M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z"),
       },
       {
-        key: 'tasks',
-        label: 'Follow-up Tasks',
-        href: '/admin/tasks',
-        getBadge: (counts) => {
-          if (counts?.dueTasksCount && counts.dueTasksCount > 0) {
-            return {
-              text: `${counts.dueTasksCount} Due`,
-              variant: 'orange',
-            };
-          }
-          return null;
-        },
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-        ),
+        key: "tasks",
+        label: "Follow-ups",
+        href: "/admin/tasks",
+        icon: icon("M12 8v5l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"),
+        getBadge: (counts) =>
+          counts?.dueTasksCount && counts.dueTasksCount > 0
+            ? {
+                text: counts.dueTasksCount.toLocaleString("en-IN"),
+                variant: "orange",
+              }
+            : null,
+      },
+      {
+        key: "leads",
+        label: "Leads",
+        href: "/admin/leads",
+        icon: icon("M4 4h16v16H4z M4 13h5l2 3h2l2-3h5"),
+      },
+      {
+        key: "deals",
+        label: "Deals",
+        href: "/admin/deals",
+        icon: icon("M3 4h18l-7 9v6l-4 2v-8z"),
+      },
+      {
+        key: "works",
+        label: "Client works",
+        href: "/admin/works",
+        icon: icon("M3 7V4h6l2 3h10v13H3z"),
+      },
+      {
+        key: "ingestion",
+        label: "Inquiries",
+        href: "/admin/ingestion",
+        icon: icon("M4 5h16v14H4z M4 6l8 7 8-7"),
       },
     ],
   },
   {
-    groupTitle: 'Pipeline',
+    groupTitle: "Workspace",
     items: [
       {
-        key: 'leads',
-        label: 'Inbound Leads',
-        href: '/admin/leads',
-        icon: ({ active }) => (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? '2.2' : '1.8'} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-          </svg>
+        key: "analytics",
+        label: "Analytics",
+        href: "/admin/analytics",
+        icon: icon("M4 20V10 M12 20V4 M20 20V14"),
+      },
+      {
+        key: "users",
+        label: "Team",
+        href: "/admin/team",
+        icon: icon(
+          "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8 M17 4a4 4 0 0 1 0 8 M22 21v-2a4 4 0 0 0-3-4",
         ),
       },
       {
-        key: 'deals',
-        label: 'Pipeline Deals',
-        href: '/admin/deals',
-        icon: ({ active }) => (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? '2.2' : '1.8'} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    groupTitle: 'Delivery',
-    items: [
-      {
-        key: 'works',
-        label: 'Client Works',
-        href: '/admin/works',
-        icon: ({ active }) => (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? '2.2' : '1.8'} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="2" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    groupTitle: 'Insight',
-    items: [
-      {
-        key: 'analytics',
-        label: 'Executive Analytics',
-        href: '/admin/analytics',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
-          </svg>
-        ),
-      },
-      {
-        key: 'ingestion',
-        label: 'Website Inquiries',
-        href: '/admin/ingestion',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="4 17 10 11 4 5" />
-            <line x1="12" y1="19" x2="20" y2="19" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    groupTitle: 'Workspace',
-    items: [
-      {
-        key: 'users',
-        label: 'User Management',
-        href: '/admin/team',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        ),
-      },
-      {
-        key: 'settings',
-        label: 'Security & Settings',
-        href: '/admin/settings',
-        icon: ({ active }) => (
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={active ? '2.2' : '1.8'}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-        ),
+        key: "settings",
+        label: "Settings",
+        href: "/admin/settings",
+        icon: icon("M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z M9 12l2 2 4-4"),
       },
     ],
   },
 ];
+
+export interface NavigationSearchResult {
+  label: string;
+  href: string;
+  kind: "destination" | "search";
+}
+
+/** Records are searched by existing authorized lists rather than a fabricated global index. */
+export function getNavigationSearchResults(
+  query: string,
+  user: CurrentUserSession,
+): NavigationSearchResult[] {
+  const clean = query.trim().slice(0, 200);
+  const permitted = NAVIGATION_GROUPS.flatMap((group) => group.items).filter(
+    (item) => isTabAuthorized(item.key, user),
+  );
+  const results: NavigationSearchResult[] = permitted
+    .filter(
+      (item) =>
+        !clean || item.label.toLowerCase().includes(clean.toLowerCase()),
+    )
+    .map((item) => ({
+      label: item.label,
+      href: item.href,
+      kind: "destination",
+    }));
+  if (clean)
+    for (const key of ["leads", "deals"] as const) {
+      if (isTabAuthorized(key, user))
+        results.push({
+          label: `Search ${key} for “${clean}”`,
+          href: `/admin/${key}?${new URLSearchParams({ search: clean })}`,
+          kind: "search",
+        });
+    }
+  return results;
+}

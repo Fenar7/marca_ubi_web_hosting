@@ -1,0 +1,211 @@
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 24px;
+
+  @media (max-width: 1280px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Card 1: Virtual Obsidian Account Card */
+.virtualCard {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 172px;
+  padding: 22px 24px;
+  background: var(--admin-surface-inverse, #111111);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--conyest-radius-card, 20px);
+  color: #ffffff;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+}
+
+.virtualWatermark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 190px;
+  height: 150px;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.virtualTopRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.virtualUserTag {
+  font-family: var(--font-graphik, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.activeDeskBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+  font-family: var(--font-graphik, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.activeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.virtualBalanceArea {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+}
+
+.virtualLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.virtualAmount {
+  font-family: var(--font-circular, sans-serif);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.virtualFooterRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 8px;
+  font-family: var(--font-admin-code, monospace);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.virtualMetaItem {
+  display: flex;
+  gap: 6px;
+  span {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  strong {
+    color: #ffffff;
+    font-weight: 600;
+  }
+}
+
+/* Cards 2, 3, 4: Pure White KPI Scorecards */
+.scorecard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 172px;
+  padding: 22px 24px;
+  background: #ffffff;
+  border: 1px solid var(--conyest-card-border, #f1f5f9);
+  border-radius: var(--conyest-radius-card, 20px);
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(12, 12, 13, 0.06);
+  }
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+}
+
+.metricValue {
+  font-family: var(--font-circular, sans-serif);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  margin: 12px 0 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.trendPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.trendPositive {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.trendNegative {
+  background: #fee2e2;
+  color: #db0f0d;
+}
+
+.trendNeutral {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

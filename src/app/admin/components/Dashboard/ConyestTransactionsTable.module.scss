@@ -1,0 +1,243 @@
+.transactionsCard {
+  background: #ffffff;
+  border: 1px solid var(--conyest-card-border, #f1f5f9);
+  border-radius: var(--conyest-radius-card, 20px);
+  padding: 24px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.periodDropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+.filterIconButton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+.queueTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  overflow-x: auto;
+}
+
+.queueTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 120ms ease;
+
+  span {
+    padding: 1px 6px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 9999px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.activeQueueTab {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: #ffffff;
+
+    span {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+  }
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 720px;
+
+  th {
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #94a3b8;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 16px 14px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #0f172a;
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background 120ms ease;
+    cursor: pointer;
+
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+}
+
+.nameCell {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.typeCell {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.dateCell {
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timeCell {
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.amountCell {
+  font-family: var(--font-circular, sans-serif);
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.noteCell {
+  color: #64748b;
+  font-size: 13px;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusCell {
+  white-space: nowrap;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.statusOverdue,
+.statusFailed {
+  border-color: #fca5a5;
+  color: #ea002a;
+  background: #fff0f2;
+}
+
+.statusDueToday,
+.statusPending {
+  border-color: #fde68a;
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.statusCompleted {
+  border-color: #a7f3d0;
+  color: #065f46;
+  background: #ecfdf5;
+}
+
+.statusUnassigned {
+  border-color: #e2e8f0;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.emptyState {
+  padding: 32px 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+}
