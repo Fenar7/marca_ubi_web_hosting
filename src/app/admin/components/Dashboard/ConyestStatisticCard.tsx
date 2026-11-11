@@ -65,13 +65,15 @@ export function ConyestStatisticCard({
   const currentTotal = activeTab === "value" ? expensesTotal : incomeTotal;
   const currentLabel = activeTab === "value" ? "Active Pipeline" : "Total Volume";
 
-  // Precision 220x220 Donut calculation
-  // Radius: 80, strokeWidth: 12 => Inner Diameter: (80 - 6) * 2 = 148px
-  // Generous 40px clearance around ₹ 65,40,000 (108px text width)
-  const radius = 80;
+  // Precision Open Arc Gauge calculation (260° sweep, open bottom aperture)
+  // Radius: 66, strokeWidth: 12 => Center (110, 80) in viewBox 0 0 220 140
+  // Inner clearance: 132px diameter provides generous clearance for ₹ 65,40,000
+  const radius = 66;
   const strokeWidth = 12;
-  const circumference = 2 * Math.PI * radius;
-  const gapPx = 3.5; // Precision watchmaker spacer gap
+  const circumference = 2 * Math.PI * radius; // ~414.69px
+  const sweepAngle = 260; // 260 degrees arc
+  const gaugeArcLength = (sweepAngle / 360) * circumference; // ~299.5px
+  const gapPx = 3.0; // Precision watchmaker spacer gap
 
   let accumulatedPercent = 0;
 
@@ -132,32 +134,36 @@ export function ConyestStatisticCard({
         aria-labelledby={activeTab === "value" ? "tab-distribution-value" : "tab-distribution-volume"}
         className={styles.panelContainer}
       >
-        {/* Donut Chart Container */}
+        {/* Open Arc Gauge Container */}
         <div className={styles.donutWrapper}>
           <svg
             className={styles.donutSvg}
-            viewBox="0 0 220 220"
+            viewBox="0 0 220 140"
             role="img"
             aria-label={`${currentLabel}: ${currentTotal}`}
           >
-            {/* Base track circle */}
+            {/* Base track arc (260° sweep, open bottom aperture, softly rounded ends) */}
             <circle
               cx="110"
-              cy="110"
+              cy="80"
               r={radius}
               fill="none"
               stroke="#f1f5f9"
               strokeWidth={strokeWidth}
+              strokeDasharray={`${gaugeArcLength} ${circumference - gaugeArcLength}`}
+              strokeDashoffset={0}
+              transform="rotate(140 110 80)"
+              strokeLinecap="round"
             />
 
-            {/* Segment Arcs with Butt Caps and 3.5px spacer gaps */}
+            {/* Segment Arcs with calibrated 3px spacer gaps */}
             {items.map((cat) => {
               if (cat.percentage <= 0) return null;
-              const segmentArcLength = (cat.percentage / 100) * circumference;
+              const segmentArcLength = (cat.percentage / 100) * gaugeArcLength;
               const strokeDash = Math.max(0, segmentArcLength - gapPx);
               const strokeDasharray = `${strokeDash} ${circumference - strokeDash}`;
               const strokeDashoffset = -(
-                (accumulatedPercent / 100) * circumference +
+                (accumulatedPercent / 100) * gaugeArcLength +
                 gapPx / 2
               );
               accumulatedPercent += cat.percentage;
@@ -166,7 +172,7 @@ export function ConyestStatisticCard({
                 <circle
                   key={cat.label}
                   cx="110"
-                  cy="110"
+                  cy="80"
                   r={radius}
                   fill="none"
                   stroke={cat.color}
@@ -174,13 +180,14 @@ export function ConyestStatisticCard({
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="butt"
+                  transform="rotate(140 110 80)"
                   className={styles.donutSegment}
                 />
               );
             })}
           </svg>
 
-          {/* Center Text inside Donut with ample 40px clearance */}
+          {/* Center Text inside Open Arch with ample clearance */}
           <div className={styles.donutCenter}>
             <span className={styles.centerLabel}>{currentLabel}</span>
             <strong className={styles.centerTotal}>{currentTotal}</strong>

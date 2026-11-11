@@ -97,6 +97,17 @@ export function computeActiveHaloBounds(
       ? Math.max(3, Math.min(chartRange, (activeExpense / maxScale) * chartRange))
       : 0;
 
+  // Zero-height guard: Prevent ghost halo rectangle when values are 0
+  if (activeIncomeH <= 0 && activeExpenseH <= 0) {
+    return {
+      top: zeroY,
+      bottom: zeroY,
+      height: 0,
+      width: 0,
+      x: activeColCenter,
+    };
+  }
+
   const haloTop = zeroY - activeIncomeH - 8;
   const haloBottom = activeExpenseH > 0 ? zeroY + activeExpenseH + 8 : zeroY;
   const haloHeight = haloBottom - haloTop;

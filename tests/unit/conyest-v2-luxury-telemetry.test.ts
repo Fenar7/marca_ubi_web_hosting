@@ -42,6 +42,19 @@ describe("Conyest V2 Luxury Production Telemetry & Geometry Invariants", () => {
       assert.equal(expensePath, null, "Expense SVG path must be null when expense is 0 (zero suppression)");
     });
 
+    it("returns zero height and suppresses ghost halo when both income and expense are 0", () => {
+      const halo = computeActiveHaloBounds(
+        barX,
+        barWidth,
+        zeroY,
+        0,
+        0,
+        maxScale,
+        chartRange,
+      );
+      assert.equal(halo.height, 0, "Halo height must be strictly 0 when both income and expense are 0");
+    });
+
     it("computes dynamic content-bounded active halo that never overshoots baseline when expense is 0", () => {
       const activeIncome = 620000;
       const activeExpense = 0; // zero-expense month (e.g. October)

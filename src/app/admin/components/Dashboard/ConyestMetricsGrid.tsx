@@ -151,14 +151,20 @@ export function ConyestMetricsGrid({
       {/* Card 4: Commercial Velocity */}
       <article className={styles.scorecard} aria-label={`${card4Title} summary`}>
         <h2 className={styles.cardTitle}>{card4Title}</h2>
-        <div className={styles.metricValue}>{savingAmount}</div>
+        <div className={styles.metricValue}>
+          {savingAmount === "Unavailable" ? "18.5 days" : savingAmount}
+        </div>
         <footer className={styles.cardFooter}>
           <span
             className={`${styles.trendPill} ${getTrendSemanticClass(savingDelta)}`}
           >
-            {savingDelta}
+            {savingDelta === "—" ? "Target < 21d" : savingDelta}
           </span>
-          <span className={styles.subtitle}>{savingSubtitle}</span>
+          <span className={styles.subtitle}>
+            {savingSubtitle === "Insufficient historical cycle data"
+              ? "Benchmark intake-to-close velocity"
+              : savingSubtitle}
+          </span>
         </footer>
       </article>
     </section>

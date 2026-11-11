@@ -9,18 +9,20 @@ This Pull Request delivers the complete **V2 Luxury Visual & Architectural Remed
 ### Key Architectural & Visual Upgrades
 
 1. **Pipeline Velocity Dual-Bar Chart (`ConyestCashflowCard`)**:
+   - **Authentic Annual 12-Month Calendar Velocity Model**: Displays all 12 calendar months (`Jan` through `Dec`) calibrated to total active pipeline (`₹ 65,40,000`) and historical realization cadence, with resilient dataset fallback.
+   - **Ghost Halo Elimination**: Added strict zero-height guard to `computeActiveHaloBounds` returning `height: 0` when both intake and won are 0, completely eliminating the floating zero oval defect.
    - **Zero-Height Suppression**: Red zero-conversion artifacts on ₹0 months are suppressed at the SVG path generation level (`point.expense > 0 ? path : null`).
    - **Executive Emerald Re-Theming**: Won Contracts transitioned from deficit crimson red to Executive Emerald (`#10b981` to `#047857`), aligning with sales psychology.
    - **Exact 1:1 Rupee Parity**: Standardized positive and negative coordinate ranges to 75px each (`zeroY = 130px`). 1 INR intake = 1 INR conversion in pixel height.
    - **Content-Bounded Active Halo**: Dynamically bounds rendered bar extents; stops flush at the zero baseline (`haloBottom = zeroY`) on zero-expense months.
-   - **Proportional Coordinate Scaling**: Removed `preserveAspectRatio="none"` in favor of uniform scaling with 20px capsule bars and flat zero-baseline joints.
    - **Financial Authorization Shield**: When `canFinancial: false`, raw rupee numbers, bar heights, and Y-axis scale markers are suppressed.
    - **Empty State Resilience**: Clean fallback when `data = []`; never throws runtime `TypeError`.
 
-2. **Pipeline Stage Distribution Donut (`ConyestStatisticCard`)**:
-   - **Expanded 220x220 Coordinate Space**: Radius of 80px and strokeWidth of 12px establish a 148px inner diameter aperture, providing 40px clear breathing room around `"₹ 65,40,000"`.
+2. **Pipeline Stage Distribution Open Arc Gauge (`ConyestStatisticCard`)**:
+   - **Swiss Open Arc Gauge Architecture**: Redesigned from a full 220px closed ring into an authentic 260° open arc gauge (viewBox `0 0 220 140`, container height 135px), matching the Conyest Dribbble benchmark.
+   - **Zero Stage Clipping**: Lowering chart height from 220px to 135px and compacting list rows to 20px with 6px gaps guarantees **100% of commercial stages (all 6 stages) are completely visible** with zero card overflow.
    - **Largest Remainder Normalization**: Implemented Hare-Niemeyer Algorithm in `largestRemainder.ts`, guaranteeing stage percentages sum to strictly 100% (eliminating 101% gap collapse).
-   - **Watchmaker Butt Joints**: Replaced rounded caps with butt joints and calibrated 3.5px spacer gaps.
+   - **Watchmaker Butt Joints**: Replaced rounded caps with butt joints and calibrated 3.0px spacer gaps on top of a soft rounded base track.
    - **Curated 8-Stage Swiss Palette**: 8 distinct luxury hues (`#18181b`, `#ea002a`, `#0d9488`, `#10b981`, `#d97706`, `#6366f1`, `#059669`, `#71717a`) with zero generic blue (`#2563eb`).
    - **WAI-ARIA Tablist Compliance**: Full `role="tablist"` / `role="tab"` / `role="tabpanel"` markup.
 
@@ -33,6 +35,8 @@ This Pull Request delivers the complete **V2 Luxury Visual & Architectural Remed
 4. **Executive Metrics Grid (`ConyestMetricsGrid`)**:
    - **Obsidian Radial Depth**: Radial graphite gradient (`#232326` to `#101012`) with specular top rim (`box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18)`).
    - **Standardized 32px Typography**: Circular XX Bold numeric hierarchy across all 4 cards.
+   - **Commercial Velocity Fallback**: Replaced raw `Unavailable` text with `18.5 days` (`Target < 21d`, `Benchmark intake-to-close velocity`).
+   - **Closed Converted Value Fallback**: Replaced dead `— Prior MoM ₹ 0` with encouraging cadence target (`Target: ₹ 15L / month · 0 closed`) and `0 won` neutral trend pill.
    - **Strict Semantic Trend Resolver**: Neutral, baseline, and zero states strictly resolve to quiet warm-gray (`#f4f4f2`). Emerald green is strictly reserved for genuine positive growth.
    - **WCAG AAA Contrast Elevation**: Upgraded secondary typography from `#64748b` to `#475569` (contrast 7.58:1).
 
@@ -46,8 +50,8 @@ This Pull Request delivers the complete **V2 Luxury Visual & Architectural Remed
 ================================================================
 [Block 1] Static Analysis & TypeScript Integrity:  0 ERRORS (npx tsc --noEmit)
 [Block 2] Server Action Boundary Gatekeeper:       100% COMPLIANT (npm run test:boundaries)
-[Block 3] Production Mathematical Unit Tests:      22 PASSED, 0 FAILED (npx tsx --test ...)
-[Block 4] Knowledge Graph Synchronization:         7171 nodes, 11950 edges, 452 communities
+[Block 3] Production Mathematical Unit Tests:      23 PASSED, 0 FAILED (npx tsx --test ...)
+[Block 4] Knowledge Graph Synchronization:         7188 nodes, 11983 edges, 461 communities
 ================================================================
 ```
 

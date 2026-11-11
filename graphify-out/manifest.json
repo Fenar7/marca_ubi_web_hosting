@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794353913.3763702,
-    "seen": 1794356196.5108132,
-    "ast_hash": "76736d6df479189d6a9c74b52c0ba55f",
+    "mtime": 1794418838.033955,
+    "seen": 1794424337.3731236,
+    "ast_hash": "3bbc033cb5ef2169ddb8d2d991c27b7b",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794418610.0284367,
-    "seen": 1794418732.2819185,
-    "ast_hash": "925dda5b424292f227f3162658cf065c",
+    "mtime": 1794424143.028065,
+    "seen": 1794424337.3716187,
+    "ast_hash": "38583d410cb388786f0f667abd0e87b7",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5766,21 +5766,21 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestCashflowCard.tsx": {
-    "mtime": 1794418652.7188563,
-    "seen": 1794418732.2819185,
-    "ast_hash": "07989a4c59b57b39875d563b106ced46",
+    "mtime": 1794424076.752079,
+    "seen": 1794424337.3716187,
+    "ast_hash": "fd5d810a8afbeb021c8ec19ae9f9183a",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestMetricsGrid.tsx": {
-    "mtime": 1794418484.0377145,
-    "seen": 1794418732.2819185,
-    "ast_hash": "afad4e94cfb2035a14354f426a37482f",
+    "mtime": 1794424158.9411323,
+    "seen": 1794424337.3716187,
+    "ast_hash": "c3f1f59d5269232daafb69705db19330",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestStatisticCard.tsx": {
-    "mtime": 1794418202.7713451,
-    "seen": 1794418732.2819185,
-    "ast_hash": "cc31a5ffb416ec54d1f6476e38350a16",
+    "mtime": 1794423961.6685586,
+    "seen": 1794424337.3716187,
+    "ast_hash": "18d82a85c0dfe14b6fff13bb941e3615",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestTransactionsTable.tsx": {
@@ -5826,15 +5826,15 @@
     "semantic_hash": ""
   },
   "docs/crm_conyest_redesign/PR_BODY.md": {
-    "mtime": 1794348975.267661,
-    "seen": 1794356196.5108132,
-    "ast_hash": "3eea2414f42c9bcae40548e7a609eed4",
+    "mtime": 1794418803.9272406,
+    "seen": 1794424337.3731236,
+    "ast_hash": "7c56e73a4054d7d942a765302aa14c68",
     "semantic_hash": ""
   },
   "tests/unit/conyest-v2-luxury-telemetry.test.ts": {
-    "mtime": 1794418557.440562,
-    "seen": 1794418732.2829187,
-    "ast_hash": "ce2533df12de7bec807f9b9d6fa75fb0",
+    "mtime": 1794424251.9450855,
+    "seen": 1794424337.3721166,
+    "ast_hash": "da15beae191c448bc34d7e3ee77b0f83",
     "semantic_hash": ""
   },
   "docs/crm_conyest_redesign/CONYEST_LUXURY_REDESIGN_REMEDIATION_PLAN_V2.md": {
@@ -5844,9 +5844,9 @@
     "semantic_hash": ""
   },
   "docs/crm_conyest_redesign/CONYEST_V2_IMPLEMENTATION_REPORT.md": {
-    "mtime": 1794417306.223351,
-    "seen": 1794417592.255754,
-    "ast_hash": "5a81b5fb106dcefbe29ffc767daeb1e6",
+    "mtime": 1794418774.9451702,
+    "seen": 1794424337.3731236,
+    "ast_hash": "75f1353d01d17563926fc37d66ba332f",
     "semantic_hash": ""
   },
   "docs/crm_conyest_redesign/CONYEST_V2_VISUAL_VERIFICATION_REPORT.md": {
@@ -5856,9 +5856,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/chartGeometry.ts": {
-    "mtime": 1794418422.1472936,
-    "seen": 1794418732.2819185,
-    "ast_hash": "9db2a26a40bff3ad3ec1efbe1716cb77",
+    "mtime": 1794423896.517526,
+    "seen": 1794424337.3721166,
+    "ast_hash": "169e3b8d0489246bdcf6e89f6217e493",
     "semantic_hash": ""
   },
   "src/app/admin/lib/largestRemainder.ts": {
@@ -5877,6 +5877,24 @@
     "mtime": 1794418411.206258,
     "seen": 1794418732.2819185,
     "ast_hash": "8dffd72d7430f1c9d763c950dd3b9a78",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-11_23-15-00.md": {
+    "mtime": 1794418823.1318443,
+    "seen": 1794424337.3731236,
+    "ast_hash": "e5fed2aeacddefea44b6f26a44d21460",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_INDEPENDENT_AUDIT_REPORT.md": {
+    "mtime": 1794418750.2430267,
+    "seen": 1794424337.3731236,
+    "ast_hash": "9b8c5642b0cbfde9f069b6d436e22a76",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_PR_REMEDIATION_REPORT.md": {
+    "mtime": 1794418789.9034743,
+    "seen": 1794424337.3731236,
+    "ast_hash": "182fd35fe84e132a515ecdbb60592a50",
     "semantic_hash": ""
   },
   "package-lock.json": {
