@@ -1116,8 +1116,8 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminHeader.tsx": {
-    "mtime": 1794348976.08574,
-    "seen": 1794356196.5108132,
+    "mtime": 1794417387.5200973,
+    "seen": 1794417592.254753,
     "ast_hash": "e82d573134a03406340baf141b35f362",
     "semantic_hash": ""
   },
@@ -5358,9 +5358,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/currency.ts": {
-    "mtime": 1793944389.4392216,
-    "seen": 1793945072.1380515,
-    "ast_hash": "5d39dbefedf0e49e7470dcbab3adf50a",
+    "mtime": 1794418547.7219505,
+    "seen": 1794418732.2819185,
+    "ast_hash": "2814559b985b560265ed57504b7c2d02",
     "semantic_hash": ""
   },
   "supabase/migrations/20261105000001_preserve_activity_attribution_and_history.sql": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794352220.497233,
-    "seen": 1794356196.5108132,
-    "ast_hash": "bb022e0393a44564367b0079b59c3d59",
+    "mtime": 1794418610.0284367,
+    "seen": 1794418732.2819185,
+    "ast_hash": "925dda5b424292f227f3162658cf065c",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5766,21 +5766,21 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestCashflowCard.tsx": {
-    "mtime": 1794351968.5318089,
-    "seen": 1794356196.5108132,
-    "ast_hash": "a867d4bf3788009b0deb0375a622e1bb",
+    "mtime": 1794418652.7188563,
+    "seen": 1794418732.2819185,
+    "ast_hash": "07989a4c59b57b39875d563b106ced46",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestMetricsGrid.tsx": {
-    "mtime": 1794351826.5234933,
-    "seen": 1794356196.5108132,
-    "ast_hash": "30c05c48eb11d8596b0b2e20cc798c14",
+    "mtime": 1794418484.0377145,
+    "seen": 1794418732.2819185,
+    "ast_hash": "afad4e94cfb2035a14354f426a37482f",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestStatisticCard.tsx": {
-    "mtime": 1794351984.1910913,
-    "seen": 1794356196.5108132,
-    "ast_hash": "e3326fa96ff55f2fb283e6114f803269",
+    "mtime": 1794418202.7713451,
+    "seen": 1794418732.2819185,
+    "ast_hash": "cc31a5ffb416ec54d1f6476e38350a16",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestTransactionsTable.tsx": {
@@ -5829,6 +5829,54 @@
     "mtime": 1794348975.267661,
     "seen": 1794356196.5108132,
     "ast_hash": "3eea2414f42c9bcae40548e7a609eed4",
+    "semantic_hash": ""
+  },
+  "tests/unit/conyest-v2-luxury-telemetry.test.ts": {
+    "mtime": 1794418557.440562,
+    "seen": 1794418732.2829187,
+    "ast_hash": "ce2533df12de7bec807f9b9d6fa75fb0",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_LUXURY_REDESIGN_REMEDIATION_PLAN_V2.md": {
+    "mtime": 1794415863.3087795,
+    "seen": 1794417592.255754,
+    "ast_hash": "e2d8d9d1dfdf3a89b21477e928b539c5",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_IMPLEMENTATION_REPORT.md": {
+    "mtime": 1794417306.223351,
+    "seen": 1794417592.255754,
+    "ast_hash": "5a81b5fb106dcefbe29ffc767daeb1e6",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_VISUAL_VERIFICATION_REPORT.md": {
+    "mtime": 1794417331.0642014,
+    "seen": 1794417592.255754,
+    "ast_hash": "ef721e8b9cbcf2dbe20f10cd2f35d195",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/chartGeometry.ts": {
+    "mtime": 1794418422.1472936,
+    "seen": 1794418732.2819185,
+    "ast_hash": "9db2a26a40bff3ad3ec1efbe1716cb77",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/largestRemainder.ts": {
+    "mtime": 1794418101.9940495,
+    "seen": 1794418732.2819185,
+    "ast_hash": "fb35c73c77be02d35cb43ce016b06b13",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/stagePalette.ts": {
+    "mtime": 1794418403.6765444,
+    "seen": 1794418732.2819185,
+    "ast_hash": "ce16602ff222d7208053e64082b28914",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/trendResolution.ts": {
+    "mtime": 1794418411.206258,
+    "seen": 1794418732.2819185,
+    "ast_hash": "8dffd72d7430f1c9d763c950dd3b9a78",
     "semantic_hash": ""
   },
   "package-lock.json": {

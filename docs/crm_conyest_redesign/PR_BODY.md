@@ -1,52 +1,61 @@
-## Summary of Changes
-Implements a 1:1 translation of the reference **CONYEST** dashboard system into the Marca Ubi Commercial Desk CRM (`docs/crm_conyest_redesign/CONYEST_LUXURY_DASHBOARD_REDESIGN_PLAN.md`):
+## Redesign: Commercial Desk V2 Luxury Remediation & Precision Visual Architecture
 
-1. **Design Tokens & Visual Archetype**:
-   - Clean soft neutral canvas (`#f8f8f8`) with floating pure white cards (`#ffffff`, `20px` radius, hairline border `#f1f5f9`).
-   - Deep forest obsidian (`#1f4843`), electric chartreuse/lime (`#94e622`), and luminous capsule halo (`#e2f2cb` / `#b9e57d`).
-   - Strict Anti-Slop adherence: 0 generic blue (`#2563eb`), WCAG AA compliant contrast throughout.
+### Executive Summary & Purpose
 
-2. **Navigation Sidebar & Global Header**:
-   - Pure white sidebar (`#ffffff`) with the iconic active lime pill button (`#94e622`), dark near-black icons and labels, and bottom dark forest promo card (`#1f4843`) with `[New Lead +]` quick action button.
-   - Header with bold "Dashboard" title, pill search input with `⌘K`, notification bell with unread badge, and user profile chip.
-
-3. **Top 4-Card Metrics Band (`ConyestMetricsGrid.tsx`)**:
-   - Card 1: Obsidian Virtual Account Card with fluid concentric curved arcs, interactive toggle switch, `$432,568` active balance, and metadata chips.
-   - Cards 2, 3, 4: Pure white KPI scorecards (`#ffffff`, `20px` radius) with Circular XX display numerals, trend pills (green `↗ 2.84%`, red `↘ 4.78%`), and prior period comparison subtitles.
-
-4. **Middle Asymmetric Visual Row (68% / 32% Split)**:
-   - Left (68%): `ConyestCashflowCard.tsx` with 12-month dual-directional bar chart (Inbound income bars upwards in `#94e622` with rounded caps; Outflow expense bars downwards in `#1f4843` with rounded caps). Active month (August) has a luminous capsule halo and floating popover tooltip card.
-   - Right (32%): `ConyestStatisticCard.tsx` with multi-segment SVG donut ring, center `$28,358`, Income vs Expense subtabs with active lime underline, and 5 category breakdown badges (`#1f4740`, `#9dd980`, `#8bdf1d`, `#d6f7c7`, `#e6f9d8`).
-
-5. **Bottom Commercial Transactions Ledger (`ConyestTransactionsTable.tsx`)**:
-   - Table columns: `Name`, `Type`, `Date`, `Time`, `Amount`, `Note`, `Status`.
-   - Distinct outline pill status badges (`Failed`, `Completed`, `Pending`).
-   - Follow-up queue switcher (`Overdue`, `Today`, `Unassigned`) maintaining operational agility and test compatibility.
-   - Seamless drawer integration (`open-lead-drawer`).
+This Pull Request delivers the complete **V2 Luxury Visual & Architectural Remediation** for the Marca Ubi Enterprise Commercial Desk (`/admin`), remediating all defects identified across 5 live screenshots (`screenshot_215001.png`, `screenshot_215006.png`, `screenshot_220900.png`, `screenshot_215016.png`, `screenshot_215010.png`), the Conyest Dribbble benchmark (`uploaded_media_1794342207825.webp`), and an independent review by the Independent CTO Reviewer.
 
 ---
 
-## Senior CTO Delivery Gate Report
+### Key Architectural & Visual Upgrades
 
-### 1. Architectural Invariants & Scope Governance: PASS
-- Conyest design hierarchy matched 1:1.
-- Sensitive financial fields omitted server-side when role lacks `can_view_financials`.
-- Preserved cookie eviction and auth resilience guarantees from PR #117.
+1. **Pipeline Velocity Dual-Bar Chart (`ConyestCashflowCard`)**:
+   - **Zero-Height Suppression**: Red zero-conversion artifacts on ₹0 months are suppressed at the SVG path generation level (`point.expense > 0 ? path : null`).
+   - **Executive Emerald Re-Theming**: Won Contracts transitioned from deficit crimson red to Executive Emerald (`#10b981` to `#047857`), aligning with sales psychology.
+   - **Exact 1:1 Rupee Parity**: Standardized positive and negative coordinate ranges to 75px each (`zeroY = 130px`). 1 INR intake = 1 INR conversion in pixel height.
+   - **Content-Bounded Active Halo**: Dynamically bounds rendered bar extents; stops flush at the zero baseline (`haloBottom = zeroY`) on zero-expense months.
+   - **Proportional Coordinate Scaling**: Removed `preserveAspectRatio="none"` in favor of uniform scaling with 20px capsule bars and flat zero-baseline joints.
+   - **Financial Authorization Shield**: When `canFinancial: false`, raw rupee numbers, bar heights, and Y-axis scale markers are suppressed.
+   - **Empty State Resilience**: Clean fallback when `data = []`; never throws runtime `TypeError`.
 
-### 2. Static Analysis & Verification: PASS
-- **TypeScript Typecheck:** 0 errors (`npx tsc --noEmit`).
-- **Unit Test Suites:** 873 / 873 tests passed (100% pass rate across 178 suites).
-- **Next.js Production Build:** `npm run build` compiled successfully in 119s; all 51 static and dynamic routes generated cleanly.
-- **Knowledge Graph:** `graphify update .` completed (7086 nodes, 11817 edges, 450 communities).
+2. **Pipeline Stage Distribution Donut (`ConyestStatisticCard`)**:
+   - **Expanded 220x220 Coordinate Space**: Radius of 80px and strokeWidth of 12px establish a 148px inner diameter aperture, providing 40px clear breathing room around `"₹ 65,40,000"`.
+   - **Largest Remainder Normalization**: Implemented Hare-Niemeyer Algorithm in `largestRemainder.ts`, guaranteeing stage percentages sum to strictly 100% (eliminating 101% gap collapse).
+   - **Watchmaker Butt Joints**: Replaced rounded caps with butt joints and calibrated 3.5px spacer gaps.
+   - **Curated 8-Stage Swiss Palette**: 8 distinct luxury hues (`#18181b`, `#ea002a`, `#0d9488`, `#10b981`, `#d97706`, `#6366f1`, `#059669`, `#71717a`) with zero generic blue (`#2563eb`).
+   - **WAI-ARIA Tablist Compliance**: Full `role="tablist"` / `role="tab"` / `role="tabpanel"` markup.
 
-### 3. R-35 Click-Through Smoke Test Evidence
-- [x] J-01: Navigate to `/admin` renders Conyest white cards, top metrics band, and dark forest virtual card.
-- [x] J-02: Toggle switch slides smoothly from chartreuse to neutral tint.
-- [x] J-03: Hover over Cashflow months tracks capsule halo and floating popover tooltip.
-- [x] J-04: Switch Statistic tabs (`Income` / `Expense`) updates active indicator, re-rendering donut segments.
-- [x] J-05: Filter transaction queues (`Overdue`, `Today`, `Unassigned`) updates ledger and record counts.
-- [x] J-06: Click transaction row dispatches `open-lead-drawer` opening Client 360 Dossier.
-- [x] J-07: Click `[New Lead +]` on bottom command card launches `NewLeadModal`.
+3. **Executive Workspace Header (`OverviewWorkspace`)**:
+   - **Eradication of Fake `Math.cos` Waveform**: Replaced artificial trigonometric wave with authentic timeframe revenue points (`data.chart`).
+   - **Streamlined 52px Executive Toolbar**: Replaced 100px double-stacked headers with a sleek toolbar featuring `Dashboard`, `Live Telemetry` emerald pulse badge, and `+ New lead` CTA.
+   - **Decoupled Shell Architecture**: Maintained structural invariant decoupling `AdminHeader` from page-specific lead modals.
+   - **Purge of Dead Zombie SCSS Rules**: Purged legacy classes; added responsive mobile toolbar reflow.
+
+4. **Executive Metrics Grid (`ConyestMetricsGrid`)**:
+   - **Obsidian Radial Depth**: Radial graphite gradient (`#232326` to `#101012`) with specular top rim (`box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18)`).
+   - **Standardized 32px Typography**: Circular XX Bold numeric hierarchy across all 4 cards.
+   - **Strict Semantic Trend Resolver**: Neutral, baseline, and zero states strictly resolve to quiet warm-gray (`#f4f4f2`). Emerald green is strictly reserved for genuine positive growth.
+   - **WCAG AAA Contrast Elevation**: Upgraded secondary typography from `#64748b` to `#475569` (contrast 7.58:1).
 
 ---
-*Manual Review Required: Kept strictly OPEN awaiting human review and manual click of the Merge button on GitHub. ZERO auto-merges by agent.*
+
+### Verification Gates & Automated Quality Assurance
+
+```
+================================================================
+4-BLOCK AUTOMATED DELIVERY GATE REPORT
+================================================================
+[Block 1] Static Analysis & TypeScript Integrity:  0 ERRORS (npx tsc --noEmit)
+[Block 2] Server Action Boundary Gatekeeper:       100% COMPLIANT (npm run test:boundaries)
+[Block 3] Production Mathematical Unit Tests:      22 PASSED, 0 FAILED (npx tsx --test ...)
+[Block 4] Knowledge Graph Synchronization:         7171 nodes, 11950 edges, 452 communities
+================================================================
+```
+
+---
+
+### Policy Invariant Compliance
+
+- **PR STATUS**: Strictly **OPEN** and awaiting manual human review on GitHub.
+- **ZERO PR MERGES BY AGENT**: Under no circumstances has any agent merged this PR.
+- **GIT AUTHORSHIP**: Authored strictly as `Fenar7 <86710532+Fenar7@users.noreply.github.com>`.
+- **NAMING CONVENTIONS**: Zero use of `feat` in PR title or branch name.

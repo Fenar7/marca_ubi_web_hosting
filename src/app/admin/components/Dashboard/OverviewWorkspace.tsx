@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/lib/dashboardContracts";
 import type { CadenceLabel } from "@/app/admin/lib/timeframeUtils";
 import type { FunnelBucket } from "@/types/crm";
+import { largestRemainderRound } from "@/app/admin/lib/largestRemainder";
 import {
   TIMEFRAME_SLUG_LABELS,
   type DynamicRevenueSplinePoint,
@@ -20,6 +21,9 @@ import { ConyestCashflowCard } from "./ConyestCashflowCard";
 import { ConyestStatisticCard } from "./ConyestStatisticCard";
 import { ConyestTransactionsTable } from "./ConyestTransactionsTable";
 import styles from "./OverviewWorkspace.module.scss";
+
+import { SWISS_STAGE_PALETTE } from "@/app/admin/lib/stagePalette";
+export { SWISS_STAGE_PALETTE };
 
 /** Preview rows contain structured commercial lead attributes for the queue ledger. */
 export interface OverviewRecord {
@@ -197,43 +201,32 @@ export function OverviewWorkspace({
 
   return (
     <div className={styles.overview}>
-      {/* Introduction Header */}
-      <header className={styles.introduction}>
-        <div>
-          <p className={styles.context}>Executive Commercial Desk</p>
-          <h1>Dashboard</h1>
-          <div className={styles.snapshot}>
-            {data.financials ? (
-              <span>
-                <span className={styles.snapshotLabel}>Visible pipeline</span>
-                <strong>
-                  {data.pipelineValue === null
-                    ? "Value unavailable"
-                    : formatCrmCurrency(data.pipelineValue)}
-                </strong>
-              </span>
-            ) : null}
-            <span>
-              <strong>{number(data.pipelineCount)}</strong> active deals
-            </span>
+      {/* Executive Workspace Toolbar */}
+      <header className={styles.workspaceToolbar}>
+        <div className={styles.toolbarLeft}>
+          <div className={styles.kickerCluster}>
+            <span className={styles.kicker}>Executive Commercial Desk</span>
+            <div className={styles.liveTelemetryBadge}>
+              <span className={styles.liveDot} aria-hidden="true" />
+              <span>Live Telemetry</span>
+            </div>
           </div>
+          <h1 className={styles.workspaceTitle}>Dashboard</h1>
         </div>
-        <div className={styles.introActions}>
+
+        <div className={styles.toolbarRight}>
           {data.canCreate && (
             <button
               type="button"
-              className={styles.primaryButton}
+              className={styles.primaryActionButton}
               onClick={() =>
                 window.dispatchEvent(new CustomEvent("open-new-lead-modal"))
               }
+              aria-label="Create a new commercial lead"
             >
-              <span aria-hidden="true">+</span> New lead
+              <span className={styles.plusIcon} aria-hidden="true">+</span>
+              <span>New lead</span>
             </button>
-          )}
-          {data.pipelineReady && data.outcomesReady ? (
-            <p>Updated {dateLabel(data.generatedAt)}</p>
-          ) : (
-            <p>Some data is unavailable</p>
           )}
         </div>
       </header>
@@ -266,7 +259,9 @@ export function OverviewWorkspace({
         }
         incomeDelta={
           data.revenueDelta !== null
-            ? `${data.revenueDelta >= 0 ? "↗ +" : "↘ "}${data.revenueDelta}%`
+            ? data.revenueDelta === 0
+              ? "0.0%"
+              : `${data.revenueDelta > 0 ? "↗ +" : "↘ "}${data.revenueDelta}%`
             : "—"
         }
         incomeSubtitle={
@@ -296,23 +291,19 @@ export function OverviewWorkspace({
         savingAmount={
           data.averageCycleDays !== null
             ? `${data.averageCycleDays.toFixed(1)} days`
-            : data.cohort && data.cohort.eligible > 0
-              ? `${((data.cohort.won / data.cohort.eligible) * 100).toFixed(1)}%`
-              : "—"
+            : "Unavailable"
         }
         savingDelta={
           data.averageCycleDays !== null
             ? "Target < 21d"
-            : data.cohort
-              ? `${data.cohort.won} won`
-              : "—"
+            : "—"
         }
         savingSubtitle={
           data.averageCycleDays !== null
             ? "Average intake-to-close velocity"
-            : data.cohort
+            : data.cohort && data.cohort.eligible > 0
               ? `${data.cohort.won} of ${data.cohort.eligible} cohort converted`
-              : "Velocity metric"
+              : "Insufficient historical cycle data"
         }
       />
 
@@ -333,41 +324,20 @@ export function OverviewWorkspace({
                     ? "₹ 0"
                     : "Confidential"
               }
+              financials={data.financials}
+              periodLabel={data.periodLabel}
               data={(() => {
-                const currentYear = new Date().getUTCFullYear();
-                const MONTH_NAMES = [
-                  "January", "February", "March", "April", "May", "June",
-                  "July", "August", "September", "October", "November", "December",
-                ];
-                const MONTH_SHORTS = [
-                  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-                ];
-                return MONTH_SHORTS.map((shortMonth, mIndex) => {
-                  const matchingPoint = data.chart.find((pt) =>
-                    pt.month.toLowerCase().includes(shortMonth.toLowerCase()),
-                  );
-                  const converted = matchingPoint?.cashVal ?? 0;
-                  const intake =
-                    data.pipelineValue !== null
-                      ? Math.round(
-                          (data.pipelineValue / 12) *
-                            (1 + 0.25 * Math.cos(mIndex)),
-                        )
-                      : 0;
-                  return {
-                    month: shortMonth,
-                    fullName: `${MONTH_NAMES[mIndex]} ${currentYear}`,
-                    income: intake,
-                    expense: converted,
-                    incomeFormatted: data.financials
-                      ? formatCrmCurrency(intake)
-                      : "Confidential",
-                    expenseFormatted: data.financials
-                      ? formatCrmCurrency(converted)
-                      : "Confidential",
-                  };
-                });
+                if (!data.financials || !data.chart || data.chart.length === 0) {
+                  return [];
+                }
+                return data.chart.map((pt) => ({
+                  month: pt.month,
+                  fullName: pt.fullPeriod,
+                  income: 0,
+                  expense: pt.cashVal,
+                  incomeFormatted: formatCrmCurrency(0),
+                  expenseFormatted: pt.cashFormatted,
+                }));
               })()}
             />
           </div>
@@ -385,47 +355,41 @@ export function OverviewWorkspace({
               }
               incomeTotal={`${data.pipelineCount ?? 0} Deals`}
               expenseItems={(() => {
-                const totalPipelineVal =
-                  data.stages.reduce((sum, s) => sum + (s.value ?? 0), 0) || 1;
-                const STAGE_PALETTE = [
-                  { color: "#111111", badgeTextColor: "#ffffff" },
-                  { color: "#ea002a", badgeTextColor: "#ffffff" },
-                  { color: "#454542", badgeTextColor: "#ffffff" },
-                  { color: "#696965", badgeTextColor: "#ffffff" },
-                  { color: "#10b981", badgeTextColor: "#ffffff" },
-                ];
-                return data.stages.map((stage, idx) => ({
-                  percentage: Math.round(
-                    ((stage.value ?? 0) / totalPipelineVal) * 100,
-                  ),
-                  label: stage.name,
-                  amount:
-                    data.financials && stage.value !== null
-                      ? formatCrmCurrency(stage.value)
-                      : "Confidential",
-                  color: STAGE_PALETTE[idx % STAGE_PALETTE.length].color,
-                  badgeTextColor:
-                    STAGE_PALETTE[idx % STAGE_PALETTE.length].badgeTextColor,
-                }));
+                const valuePercentages = largestRemainderRound(
+                  data.stages,
+                  (stage) => stage.value ?? 0,
+                );
+                return data.stages.map((stage, idx) => {
+                  const palette = SWISS_STAGE_PALETTE[idx % SWISS_STAGE_PALETTE.length];
+                  return {
+                    percentage: valuePercentages[idx] ?? 0,
+                    label: stage.name,
+                    amount:
+                      data.financials && stage.value !== null
+                        ? formatCrmCurrency(stage.value)
+                        : "Confidential",
+                    color: palette.color,
+                    badgeBg: palette.badgeBg,
+                    badgeTextColor: palette.badgeTextColor,
+                  };
+                });
               })()}
               incomeItems={(() => {
-                const totalDealsCount =
-                  data.stages.reduce((sum, s) => sum + s.count, 0) || 1;
-                const STAGE_PALETTE = [
-                  { color: "#111111", badgeTextColor: "#ffffff" },
-                  { color: "#ea002a", badgeTextColor: "#ffffff" },
-                  { color: "#454542", badgeTextColor: "#ffffff" },
-                  { color: "#696965", badgeTextColor: "#ffffff" },
-                  { color: "#10b981", badgeTextColor: "#ffffff" },
-                ];
-                return data.stages.map((stage, idx) => ({
-                  percentage: Math.round((stage.count / totalDealsCount) * 100),
-                  label: stage.name,
-                  amount: `${stage.count} ${stage.count === 1 ? "deal" : "deals"}`,
-                  color: STAGE_PALETTE[idx % STAGE_PALETTE.length].color,
-                  badgeTextColor:
-                    STAGE_PALETTE[idx % STAGE_PALETTE.length].badgeTextColor,
-                }));
+                const volumePercentages = largestRemainderRound(
+                  data.stages,
+                  (stage) => stage.count,
+                );
+                return data.stages.map((stage, idx) => {
+                  const palette = SWISS_STAGE_PALETTE[idx % SWISS_STAGE_PALETTE.length];
+                  return {
+                    percentage: volumePercentages[idx] ?? 0,
+                    label: stage.name,
+                    amount: `${stage.count} ${stage.count === 1 ? "deal" : "deals"}`,
+                    color: palette.color,
+                    badgeBg: palette.badgeBg,
+                    badgeTextColor: palette.badgeTextColor,
+                  };
+                });
               })()}
             />
           </div>

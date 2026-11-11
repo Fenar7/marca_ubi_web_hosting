@@ -1,9 +1,9 @@
 .statisticCard {
   background: #ffffff;
-  border: 1px solid var(--conyest-card-border, #f1f5f9);
+  border: 1px solid var(--admin-card-border, #e7e7e4);
   border-radius: var(--conyest-radius-card, 20px);
   padding: 24px;
-  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03);
+  box-shadow: 0 1px 3px rgba(12, 12, 13, 0.03), 0 6px 16px -4px rgba(12, 12, 13, 0.04);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -19,8 +19,9 @@
 .cardTitle {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #111111;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .periodDropdown {
@@ -33,13 +34,18 @@
   border-radius: 9999px;
   font-size: 13px;
   font-weight: 500;
-  color: #0f172a;
+  color: #111111;
   cursor: pointer;
   transition: border-color 140ms ease, background 140ms ease;
 
   &:hover {
     border-color: #cbd5e1;
     background: #f8fafc;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 2px;
   }
 }
 
@@ -57,14 +63,20 @@
   border: none;
   font-size: 14px;
   font-weight: 500;
-  color: #64748b;
+  color: #475569;
   cursor: pointer;
   padding: 4px 8px 8px;
   position: relative;
   transition: color 140ms ease;
 
   &:hover {
-    color: #0f172a;
+    color: #111111;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   &.activeTab {
@@ -84,18 +96,24 @@
   }
 }
 
+.panelContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .donutWrapper {
   position: relative;
   display: grid;
   place-items: center;
   width: 100%;
-  height: 180px;
-  margin: 8px 0;
+  height: 220px;
+  margin: 6px 0;
 }
 
 .donutSvg {
-  width: 170px;
-  height: 170px;
+  width: 220px;
+  height: 220px;
   transform: rotate(-90deg);
 }
 
@@ -107,28 +125,29 @@
   justify-content: center;
   text-align: center;
   pointer-events: none;
+  max-width: 130px;
 }
 
-.centerLabel,
-.donutCenterLabel {
-  font-size: 11px;
-  font-weight: 500;
-  color: #64748b;
+.centerLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #475569;
 }
 
-.centerTotal,
-.donutCenterAmount {
+.centerTotal {
   font-family: var(--font-circular, sans-serif);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
+  color: #111111;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   margin-top: 2px;
+  line-height: 1.2;
 }
 
-.categoryList,
-.breakdownList {
+.categoryList {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -137,46 +156,42 @@
   list-style: none;
 }
 
-.categoryRow,
-.breakdownItem {
+.categoryRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 13px;
 }
 
-.catLeft,
-.itemLeft {
+.catLeft {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.percentageBadge,
-.pctBadge {
+.percentageBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
+  min-width: 40px;
   height: 22px;
-  padding: 0 6px;
-  border-radius: 4px;
+  padding: 0 8px;
+  border-radius: 9999px;
   font-size: 11px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
-.categoryLabel,
-.itemLabel {
+.categoryLabel {
   font-weight: 500;
-  color: #0f172a;
+  color: #111111;
 }
 
-.categoryAmount,
-.itemAmount {
+.categoryAmount {
   font-family: var(--font-circular, sans-serif);
   font-size: 13px;
   font-weight: 600;
-  color: #0f172a;
+  color: #111111;
   font-variant-numeric: tabular-nums;
 }
