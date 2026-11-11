@@ -6,17 +6,17 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import * as fs from 'fs';
-import * as path from 'path';
-import { NAVIGATION_GROUPS } from '../../src/app/admin/components/layout/navigationConfig';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import * as fs from "fs";
+import * as path from "path";
+import { NAVIGATION_GROUPS } from "../../src/app/admin/components/layout/navigationConfig";
 
 /**
  * Computes the relative luminance of an sRGB color per WCAG 2.1 specifications.
  */
 function getLuminance(hex: string): number {
-  const cleanHex = hex.replace('#', '');
+  const cleanHex = hex.replace("#", "");
   const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
   const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
   const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
@@ -39,46 +39,49 @@ function getContrastRatio(hex1: string, hex2: string): number {
   return (brightest + 0.05) / (darkest + 0.05);
 }
 
-describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', () => {
-  describe('1. Next.js Local Font Bindings (Messina Family)', () => {
-    const fontsSourcePath = path.resolve(process.cwd(), 'src/app/admin/fonts.ts');
+describe("Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite", () => {
+  describe("1. Next.js Local Font Bindings (Messina Family)", () => {
+    const fontsSourcePath = path.resolve(
+      process.cwd(),
+      "src/app/admin/fonts.ts",
+    );
 
-    it('verifies fonts.ts exports adminSans with CSS variable --font-admin-sans', () => {
+    it("verifies fonts.ts exports adminSans with CSS variable --font-admin-sans", () => {
       assert.strictEqual(fs.existsSync(fontsSourcePath), true);
-      const content = fs.readFileSync(fontsSourcePath, 'utf8');
-      assert.ok(content.includes('export const adminSans = localFont('));
+      const content = fs.readFileSync(fontsSourcePath, "utf8");
+      assert.ok(content.includes("export const adminSans = localFont("));
       assert.ok(content.includes("variable: '--font-admin-sans'"));
       assert.ok(content.includes("display: 'swap'"));
     });
 
-    it('verifies fonts.ts exports adminButtonFont with CSS variable --font-admin-button', () => {
-      const content = fs.readFileSync(fontsSourcePath, 'utf8');
-      assert.ok(content.includes('export const adminButtonFont = localFont('));
+    it("verifies fonts.ts exports adminButtonFont with CSS variable --font-admin-button", () => {
+      const content = fs.readFileSync(fontsSourcePath, "utf8");
+      assert.ok(content.includes("export const adminButtonFont = localFont("));
       assert.ok(content.includes("variable: '--font-admin-button'"));
       assert.ok(content.includes("display: 'swap'"));
     });
 
-    it('verifies fonts.ts exports adminMono with CSS variable --font-admin-mono', () => {
-      const content = fs.readFileSync(fontsSourcePath, 'utf8');
-      assert.ok(content.includes('export const adminMono = localFont('));
+    it("verifies fonts.ts exports adminMono with CSS variable --font-admin-mono", () => {
+      const content = fs.readFileSync(fontsSourcePath, "utf8");
+      assert.ok(content.includes("export const adminMono = localFont("));
       assert.ok(content.includes("variable: '--font-admin-mono'"));
       assert.ok(content.includes("display: 'swap'"));
     });
 
-    it('verifies physical existence of all configured font files on disk', () => {
-      const publicFontsDir = path.resolve(process.cwd(), 'public/fonts');
-      
+    it("verifies physical existence of all configured font files on disk", () => {
+      const publicFontsDir = path.resolve(process.cwd(), "public/fonts");
+
       const requiredFiles = [
-        'MessinaSans/MessinaSans-Light.ttf',
-        'MessinaSans/MessinaSans-Book.ttf',
-        'MessinaSans/MessinaSans-Regular.ttf',
-        'MessinaSans/MessinaSans-SemiBold.ttf',
-        'MessinaSans/MessinaSans-Bold.ttf',
-        'MessinaSans/MessinaSans-Black.ttf',
-        'MessinaSansBook/MessinaSansMono-Book.ttf',
-        'MessinaSansBook/MessinaSansMono-Regular.ttf',
-        'MessinaSansBook/MessinaSansMono-SemiBold.ttf',
-        'MessinaSansBook/MessinaSansMono-Bold.ttf',
+        "MessinaSans/MessinaSans-Light.ttf",
+        "MessinaSans/MessinaSans-Book.ttf",
+        "MessinaSans/MessinaSans-Regular.ttf",
+        "MessinaSans/MessinaSans-SemiBold.ttf",
+        "MessinaSans/MessinaSans-Bold.ttf",
+        "MessinaSans/MessinaSans-Black.ttf",
+        "MessinaSansBook/MessinaSansMono-Book.ttf",
+        "MessinaSansBook/MessinaSansMono-Regular.ttf",
+        "MessinaSansBook/MessinaSansMono-SemiBold.ttf",
+        "MessinaSansBook/MessinaSansMono-Bold.ttf",
       ];
 
       for (const relPath of requiredFiles) {
@@ -86,160 +89,180 @@ describe('Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite', 
         assert.strictEqual(
           fs.existsSync(fullPath),
           true,
-          `Font file missing from repository: ${relPath}`
+          `Font file missing from repository: ${relPath}`,
         );
       }
     });
   });
 
-  describe('2. Master Design Token Scoping & CSS Custom Properties', () => {
-    const tokensScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/tokens.scss');
+  describe("2. Master Design Token Scoping & CSS Custom Properties", () => {
+    const tokensScssPath = path.resolve(
+      process.cwd(),
+      "src/app/admin/styles/tokens.scss",
+    );
 
     it('verifies tokens.scss exists and is strictly scoped to [data-admin-root="true"]', () => {
       assert.strictEqual(fs.existsSync(tokensScssPath), true);
-      const content = fs.readFileSync(tokensScssPath, 'utf8');
+      const content = fs.readFileSync(tokensScssPath, "utf8");
       assert.ok(content.includes('[data-admin-root="true"]'));
-      assert.strictEqual(content.includes(':root {'), false);
+      assert.strictEqual(content.includes(":root {"), false);
     });
 
-    it('declares all core palette tokens in tokens.scss', () => {
-      const content = fs.readFileSync(tokensScssPath, 'utf8');
-      assert.ok(content.includes('--admin-canvas-bg: #f5f5f3'));
-      assert.ok(content.includes('--admin-card-bg: #ffffff'));
-      assert.ok(content.includes('--admin-text-primary: #111111'));
-      assert.ok(content.includes('--admin-text-secondary: #454542'));
-      assert.ok(content.includes('--admin-accent-brand: #ea002a'));
-      assert.ok(content.includes('--admin-border-strong: #111111'));
-      assert.ok(content.includes('--admin-radius-pill: 9999px'));
+    it("declares all core palette tokens in tokens.scss", () => {
+      const content = fs.readFileSync(tokensScssPath, "utf8");
+      assert.ok(content.includes("--admin-canvas-bg: #f5f5f3"));
+      assert.ok(content.includes("--admin-card-bg: #ffffff"));
+      assert.ok(content.includes("--admin-text-primary: #111111"));
+      assert.ok(content.includes("--admin-text-secondary: #454542"));
+      assert.ok(content.includes("--admin-accent-brand: #ea002a"));
+      assert.ok(content.includes("--admin-border-strong: #111111"));
+      assert.ok(content.includes("--admin-radius-pill: 9999px"));
     });
 
-    it('declares the Accordion button mixins in mixins.scss and forwards them in tokens.scss', () => {
-      const tokensContent = fs.readFileSync(tokensScssPath, 'utf8');
-      assert.ok(tokensContent.includes("@forward './mixins';"));
+    it("declares the Accordion button mixins in mixins.scss and forwards them in tokens.scss", () => {
+      const tokensContent = fs.readFileSync(tokensScssPath, "utf8");
+      assert.match(tokensContent, /@forward ['"]\.\/mixins['"];/);
 
-      const mixinsScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/mixins.scss');
+      const mixinsScssPath = path.resolve(
+        process.cwd(),
+        "src/app/admin/styles/mixins.scss",
+      );
       assert.strictEqual(fs.existsSync(mixinsScssPath), true);
-      const mixinsContent = fs.readFileSync(mixinsScssPath, 'utf8');
-      assert.ok(mixinsContent.includes('@mixin accordionPillPrimary'));
-      assert.ok(mixinsContent.includes('@mixin accordionPillSecondary'));
+      const mixinsContent = fs.readFileSync(mixinsScssPath, "utf8");
+      assert.ok(mixinsContent.includes("@mixin accordionPillPrimary"));
+      assert.ok(mixinsContent.includes("@mixin accordionPillSecondary"));
     });
   });
 
-  describe('3. WCAG AAA Contrast Ratio Engine & Invariants', () => {
-    it('verifies #1f242f on #ffffff exceeds WCAG AAA standard (>= 7:1)', () => {
-      const ratio = getContrastRatio('#1f242f', '#ffffff');
+  describe("3. WCAG AAA Contrast Ratio Engine & Invariants", () => {
+    it("verifies #1f242f on #ffffff exceeds WCAG AAA standard (>= 7:1)", () => {
+      const ratio = getContrastRatio("#1f242f", "#ffffff");
       assert.ok(ratio >= 7, `Expected contrast >= 7, got ${ratio}`);
       assert.ok(Math.abs(ratio - 15.54) < 0.2);
     });
 
-    it('verifies #525965 on #ffffff exceeds WCAG AA standard (>= 4.5:1) and AAA (>= 7:1)', () => {
-      const ratio = getContrastRatio('#525965', '#ffffff');
+    it("verifies #525965 on #ffffff exceeds WCAG AA standard (>= 4.5:1) and AAA (>= 7:1)", () => {
+      const ratio = getContrastRatio("#525965", "#ffffff");
       assert.ok(ratio >= 4.5, `Expected contrast >= 4.5, got ${ratio}`);
-      assert.ok(Math.abs(ratio - 7.10) < 0.2);
+      assert.ok(Math.abs(ratio - 7.1) < 0.2);
     });
 
-    it('verifies #1f242f on Lemon Yellow #eefb87 exceeds WCAG AAA standard (>= 7:1)', () => {
-      const ratio = getContrastRatio('#1f242f', '#eefb87');
+    it("verifies #1f242f on Lemon Yellow #eefb87 exceeds WCAG AAA standard (>= 7:1)", () => {
+      const ratio = getContrastRatio("#1f242f", "#eefb87");
       assert.ok(ratio >= 7, `Expected contrast >= 7, got ${ratio}`);
       assert.ok(Math.abs(ratio - 13.92) < 0.2);
     });
 
-    it('strictly proves that white text #ffffff on Lemon Yellow #eefb87 FAILS (< 4.5:1)', () => {
-      const ratio = getContrastRatio('#ffffff', '#eefb87');
+    it("strictly proves that white text #ffffff on Lemon Yellow #eefb87 FAILS (< 4.5:1)", () => {
+      const ratio = getContrastRatio("#ffffff", "#eefb87");
       assert.ok(ratio < 4.5, `Expected failure (< 4.5), got ${ratio}`);
       assert.ok(Math.abs(ratio - 1.12) < 0.2);
     });
   });
 
-  describe('4. Navigation Taxonomy & Anti-Slop Cleansing', () => {
-    it('keeps the overview in the task-first Today group', () => {
-      const todayGroup = NAVIGATION_GROUPS.find((g) => g.groupTitle === 'Today');
-      assert.ok(todayGroup, 'Today group must exist');
+  describe("4. Navigation Taxonomy & Anti-Slop Cleansing", () => {
+    it("keeps the overview in the primary Work group", () => {
+      const todayGroup = NAVIGATION_GROUPS.find((g) => g.groupTitle === "Work");
+      assert.ok(todayGroup, "Work group must exist");
 
-      const overviewItem = todayGroup?.items.find((i) => i.key === 'command_center');
-      assert.ok(overviewItem, 'command_center item must exist');
-      assert.strictEqual(overviewItem?.label, 'Executive Overview');
-      assert.strictEqual(overviewItem?.label.includes('Command Center'), false);
+      const overviewItem = todayGroup?.items.find(
+        (i) => i.key === "command_center",
+      );
+      assert.ok(overviewItem, "command_center item must exist");
+      assert.strictEqual(overviewItem?.label, "Overview");
+      assert.strictEqual(overviewItem?.label.includes("Command Center"), false);
     });
 
-    it('groups the nine existing navigation tabs by task without changing authorization keys', () => {
-      assert.deepStrictEqual(NAVIGATION_GROUPS.map((group) => group.groupTitle), [
-        'Today', 'Pipeline', 'Delivery', 'Insight', 'Workspace',
-      ]);
-      const allKeys = NAVIGATION_GROUPS.flatMap((g) => g.items.map((i) => i.key));
+    it("groups the nine existing navigation tabs by task without changing authorization keys", () => {
+      assert.deepStrictEqual(
+        NAVIGATION_GROUPS.map((group) => group.groupTitle),
+        ["Work", "Workspace"],
+      );
+      const allKeys = NAVIGATION_GROUPS.flatMap((g) =>
+        g.items.map((i) => i.key),
+      );
       assert.deepStrictEqual(allKeys, [
-        'command_center',
-        'tasks',
-        'leads',
-        'deals',
-        'works',
-        'analytics',
-        'ingestion',
-        'users',
-        'settings',
+        "command_center",
+        "tasks",
+        "leads",
+        "deals",
+        "works",
+        "ingestion",
+        "analytics",
+        "users",
+        "settings",
       ]);
     });
   });
 
-  describe('5. Public Website Isolation Guarantees', () => {
-    it('verifies public fonts.ts only imports Graphik and zero admin fonts', () => {
-      const publicFontsPath = path.resolve(process.cwd(), 'src/app/fonts.ts');
-      const content = fs.readFileSync(publicFontsPath, 'utf8');
-      assert.ok(content.includes('graphik'));
-      assert.strictEqual(content.includes('MessinaSans'), false);
-      assert.strictEqual(content.includes('--font-admin'), false);
+  describe("5. Public Website Isolation Guarantees", () => {
+    it("verifies public fonts.ts only imports Graphik and zero admin fonts", () => {
+      const publicFontsPath = path.resolve(process.cwd(), "src/app/fonts.ts");
+      const content = fs.readFileSync(publicFontsPath, "utf8");
+      assert.ok(content.includes("graphik"));
+      assert.strictEqual(content.includes("MessinaSans"), false);
+      assert.strictEqual(content.includes("--font-admin"), false);
     });
 
-    it('verifies public globals.scss contains zero admin tokens or overrides', () => {
-      const globalsScssPath = path.resolve(process.cwd(), 'src/app/globals.scss');
-      const content = fs.readFileSync(globalsScssPath, 'utf8');
-      assert.strictEqual(content.includes('--admin-canvas-bg'), false);
-      assert.strictEqual(content.includes('--admin-accent-lemon'), false);
+    it("verifies public globals.scss contains zero admin tokens or overrides", () => {
+      const globalsScssPath = path.resolve(
+        process.cwd(),
+        "src/app/globals.scss",
+      );
+      const content = fs.readFileSync(globalsScssPath, "utf8");
+      assert.strictEqual(content.includes("--admin-canvas-bg"), false);
+      assert.strictEqual(content.includes("--admin-accent-lemon"), false);
       assert.strictEqual(content.includes('[data-admin-root="true"]'), false);
     });
   });
 
-  describe('6. Shell Accessibility, Touch Targets & CSS Module Synchronization', () => {
-    it('enforces 44px minimum touch targets in mixins.scss (Rule R-03)', () => {
-      const mixinsScssPath = path.resolve(process.cwd(), 'src/app/admin/styles/mixins.scss');
-      const content = fs.readFileSync(mixinsScssPath, 'utf8');
-      assert.ok(content.includes('min-height: 44px;'));
-      assert.strictEqual(content.includes('min-height: 42px;'), false);
-      assert.strictEqual(content.includes('min-height: 36px;'), false);
-      assert.strictEqual(content.includes('// =========================================='), false);
+  describe("6. Shell Accessibility, Touch Targets & CSS Module Synchronization", () => {
+    it("enforces 44px minimum touch targets in mixins.scss (Rule R-03)", () => {
+      const mixinsScssPath = path.resolve(
+        process.cwd(),
+        "src/app/admin/styles/mixins.scss",
+      );
+      const content = fs.readFileSync(mixinsScssPath, "utf8");
+      assert.ok(content.includes("min-height: 44px;"));
+      assert.strictEqual(content.includes("min-height: 42px;"), false);
+      assert.strictEqual(content.includes("min-height: 36px;"), false);
+      assert.strictEqual(
+        content.includes("// =========================================="),
+        false,
+      );
     });
 
-    it('verifies UserProfileDropdown.module.scss contains all required JSX bindings', () => {
+    it("verifies UserProfileDropdown.module.scss contains all required JSX bindings", () => {
       const dropdownScssPath = path.resolve(
         process.cwd(),
-        'src/app/admin/components/layout/UserProfileDropdown.module.scss'
+        "src/app/admin/components/layout/UserProfileDropdown.module.scss",
       );
       assert.strictEqual(fs.existsSync(dropdownScssPath), true);
-      const content = fs.readFileSync(dropdownScssPath, 'utf8');
-      assert.ok(content.includes('.userTrigger'));
-      assert.ok(content.includes('.triggerAvatar'));
-      assert.ok(content.includes('.dropdownMenu'));
-      assert.ok(content.includes('.userEmail'));
-      assert.ok(content.includes('.workspaceStatusRow'));
-      assert.ok(content.includes('.divider'));
-      assert.ok(content.includes('.menuItem'));
-      assert.ok(content.includes('.signOutButton'));
+      const content = fs.readFileSync(dropdownScssPath, "utf8");
+      assert.ok(content.includes(".userTrigger"));
+      assert.ok(content.includes(".triggerAvatar"));
+      assert.ok(content.includes(".dropdownMenu"));
+      assert.ok(content.includes(".userEmail"));
+      assert.ok(content.includes(".identityHeader"));
+      assert.ok(content.includes(".divider"));
+      assert.ok(content.includes(".menuItem"));
+      assert.ok(content.includes(".signOutButton"));
     });
 
-    it('verifies AdminMobileDrawer.module.scss contains all required drawer classes', () => {
+    it("verifies AdminMobileDrawer.module.scss contains all required drawer classes", () => {
       const drawerScssPath = path.resolve(
         process.cwd(),
-        'src/app/admin/components/layout/AdminMobileDrawer.module.scss'
+        "src/app/admin/components/layout/AdminMobileDrawer.module.scss",
       );
       assert.strictEqual(fs.existsSync(drawerScssPath), true);
-      const content = fs.readFileSync(drawerScssPath, 'utf8');
-      assert.ok(content.includes('.drawer'));
-      assert.ok(content.includes('.drawerOpen'));
-      assert.ok(content.includes('.activePill'));
-      assert.ok(content.includes('.systemStatusBlock'));
-      assert.ok(content.includes('.statusDot'));
-      assert.strictEqual(content.includes('.newLeadBtn'), false);
-      assert.ok(content.includes('visibility: hidden;'));
+      const content = fs.readFileSync(drawerScssPath, "utf8");
+      assert.ok(content.includes(".drawer"));
+      assert.ok(content.includes(".drawerOpen"));
+      assert.ok(content.includes(".navItemActive"));
+      assert.ok(content.includes(".drawerFooter"));
+      assert.strictEqual(content.includes(".statusDot"), false);
+      assert.strictEqual(content.includes(".newLeadBtn"), false);
+      assert.ok(content.includes("visibility: hidden;"));
     });
   });
 });

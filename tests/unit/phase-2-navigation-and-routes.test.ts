@@ -4,68 +4,100 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import {
   NAVIGATION_GROUPS,
   isTabAuthorized,
-} from '../../src/app/admin/components/layout/navigationConfig';
-import {
-  CRM_TAB_REGISTRY,
-  type CurrentUserSession,
-} from '../../src/types/crm';
+  getNavigationSearchResults,
+} from "../../src/app/admin/components/layout/navigationConfig";
+import { CRM_TAB_REGISTRY, type CurrentUserSession } from "../../src/types/crm";
 
-describe('Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture', () => {
-  it('verifies NAVIGATION_GROUPS organizes all 9 canonical tabs by task', () => {
-    assert.strictEqual(NAVIGATION_GROUPS.length, 5);
+describe("Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture", () => {
+  it("limits launcher results and record search routes to permitted tabs", () => {
+    const restricted: CurrentUserSession = {
+      id: "restricted",
+      email: "restricted@example.test",
+      name: "Restricted",
+      role: "sales_manager",
+      allowed_tabs: ["deals"],
+    };
+    assert.deepStrictEqual(
+      getNavigationSearchResults("", restricted).map((item) => item.href),
+      ["/admin/deals"],
+    );
+    const matches = getNavigationSearchResults("Acme & Sons / +", restricted);
+    assert.strictEqual(matches.length, 1);
+    const target = new URL(matches[0].href, "https://example.test");
+    assert.strictEqual(target.pathname, "/admin/deals");
+    assert.strictEqual(target.searchParams.get("search"), "Acme & Sons / +");
+    assert.strictEqual(
+      getNavigationSearchResults("x".repeat(500), restricted)[0].label.includes(
+        "x".repeat(201),
+      ),
+      false,
+    );
+  });
+
+  it("omits unavailable and zero task badges rather than fabricating a count", () => {
+    const tasks = NAVIGATION_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.key === "tasks",
+    );
+    assert.strictEqual(tasks?.getBadge?.({}), null);
+    assert.strictEqual(tasks?.getBadge?.({ dueTasksCount: 0 }), null);
+    assert.strictEqual(tasks?.getBadge?.({ dueTasksCount: 12 })?.text, "12");
+  });
+  it("verifies NAVIGATION_GROUPS organizes all 9 canonical tabs by task", () => {
+    assert.strictEqual(NAVIGATION_GROUPS.length, 2);
 
     const groupTitles = NAVIGATION_GROUPS.map((g) => g.groupTitle);
-    assert.deepStrictEqual(groupTitles, [
-      'Today',
-      'Pipeline',
-      'Delivery',
-      'Insight',
-      'Workspace',
-    ]);
+    assert.deepStrictEqual(groupTitles, ["Work", "Workspace"]);
 
     const allKeys = NAVIGATION_GROUPS.flatMap((g) => g.items.map((i) => i.key));
     assert.strictEqual(allKeys.length, 9);
     assert.deepStrictEqual(allKeys, [
-      'command_center', 'tasks', 'leads', 'deals', 'works',
-      'analytics', 'ingestion', 'users', 'settings',
+      "command_center",
+      "tasks",
+      "leads",
+      "deals",
+      "works",
+      "ingestion",
+      "analytics",
+      "users",
+      "settings",
     ]);
 
     // Check that every registered CRM tab is accounted for
     CRM_TAB_REGISTRY.forEach((tab) => {
       assert.ok(
         allKeys.includes(tab.key),
-        `Canonical tab '${tab.key}' must be present in NAVIGATION_GROUPS`
+        `Canonical tab '${tab.key}' must be present in NAVIGATION_GROUPS`,
       );
     });
   });
 
-  it('validates navigation route paths map correctly to Next.js App Router workspace routes', () => {
+  it("validates navigation route paths map correctly to Next.js App Router workspace routes", () => {
     const flatItems = NAVIGATION_GROUPS.flatMap((g) => g.items);
     const pathMap = Object.fromEntries(flatItems.map((i) => [i.key, i.href]));
 
-    assert.strictEqual(pathMap.command_center, '/admin');
-    assert.strictEqual(pathMap.leads, '/admin/leads');
-    assert.strictEqual(pathMap.deals, '/admin/deals');
-    assert.strictEqual(pathMap.tasks, '/admin/tasks');
-    assert.strictEqual(pathMap.works, '/admin/works');
-    assert.strictEqual(pathMap.analytics, '/admin/analytics');
-    assert.strictEqual(pathMap.ingestion, '/admin/ingestion');
-    assert.strictEqual(pathMap.users, '/admin/team');
-    assert.strictEqual(pathMap.settings, '/admin/settings');
+    assert.strictEqual(pathMap.command_center, "/admin");
+    assert.strictEqual(pathMap.leads, "/admin/leads");
+    assert.strictEqual(pathMap.deals, "/admin/deals");
+    assert.strictEqual(pathMap.tasks, "/admin/tasks");
+    assert.strictEqual(pathMap.works, "/admin/works");
+    assert.strictEqual(pathMap.analytics, "/admin/analytics");
+    assert.strictEqual(pathMap.ingestion, "/admin/ingestion");
+    assert.strictEqual(pathMap.users, "/admin/team");
+    assert.strictEqual(pathMap.settings, "/admin/settings");
   });
 
-  it('evaluates isTabAuthorized for an Admin user with undefined allowed_tabs', () => {
+  it("evaluates isTabAuthorized for an Admin user with undefined allowed_tabs", () => {
     const adminUser: CurrentUserSession = {
-      id: 'a0000000-0000-0000-0000-000000000001',
-      email: 'admin@marcaubi.com',
-      name: 'Super Admin',
-      fullName: 'Super Admin',
-      role: 'admin',
+      id: "a0000000-0000-0000-0000-000000000001",
+      email: "admin@marcaubi.com",
+      name: "Super Admin",
+      fullName: "Super Admin",
+      role: "admin",
     };
 
     // Admin without explicit override should have access to all 9 tabs via ROLE_DEFAULT_TABS
@@ -73,115 +105,118 @@ describe('Phase 2: Navigation Taxonomy, RBAC Evaluation & Route Architecture', (
       assert.strictEqual(
         isTabAuthorized(tab.key, adminUser),
         true,
-        `Admin must have access to ${tab.key}`
+        `Admin must have access to ${tab.key}`,
       );
     });
   });
 
-  it('evaluates isTabAuthorized honoring granular allowed_tabs overrides', () => {
+  it("evaluates isTabAuthorized honoring granular allowed_tabs overrides", () => {
     const restrictedAdmin: CurrentUserSession = {
-      id: 'a0000000-0000-0000-0000-000000000002',
-      email: 'restricted@marcaubi.com',
-      name: 'Restricted User',
-      fullName: 'Restricted User',
-      role: 'sales_manager',
-      allowed_tabs: ['command_center', 'deals', 'works'],
+      id: "a0000000-0000-0000-0000-000000000002",
+      email: "restricted@marcaubi.com",
+      name: "Restricted User",
+      fullName: "Restricted User",
+      role: "sales_manager",
+      allowed_tabs: ["command_center", "deals", "works"],
     };
 
-    assert.strictEqual(isTabAuthorized('command_center', restrictedAdmin), true);
-    assert.strictEqual(isTabAuthorized('deals', restrictedAdmin), true);
-    assert.strictEqual(isTabAuthorized('works', restrictedAdmin), true);
-    assert.strictEqual(isTabAuthorized('leads', restrictedAdmin), false);
-    assert.strictEqual(isTabAuthorized('analytics', restrictedAdmin), false);
-    assert.strictEqual(isTabAuthorized('users', restrictedAdmin), false);
-    assert.strictEqual(isTabAuthorized('settings', restrictedAdmin), false);
+    assert.strictEqual(
+      isTabAuthorized("command_center", restrictedAdmin),
+      true,
+    );
+    assert.strictEqual(isTabAuthorized("deals", restrictedAdmin), true);
+    assert.strictEqual(isTabAuthorized("works", restrictedAdmin), true);
+    assert.strictEqual(isTabAuthorized("leads", restrictedAdmin), false);
+    assert.strictEqual(isTabAuthorized("analytics", restrictedAdmin), false);
+    assert.strictEqual(isTabAuthorized("users", restrictedAdmin), false);
+    assert.strictEqual(isTabAuthorized("settings", restrictedAdmin), false);
   });
 
-  it('evaluates isTabAuthorized for Sales Executive using default role matrix', () => {
+  it("evaluates isTabAuthorized for Sales Executive using default role matrix", () => {
     const execUser: CurrentUserSession = {
-      id: 'e0000000-0000-0000-0000-000000000001',
-      email: 'exec@marcaubi.com',
-      name: 'Sales Exec',
-      fullName: 'Sales Exec',
-      role: 'sales_executive',
+      id: "e0000000-0000-0000-0000-000000000001",
+      email: "exec@marcaubi.com",
+      name: "Sales Exec",
+      fullName: "Sales Exec",
+      role: "sales_executive",
     };
 
-    assert.strictEqual(isTabAuthorized('command_center', execUser), true);
-    assert.strictEqual(isTabAuthorized('leads', execUser), true);
-    assert.strictEqual(isTabAuthorized('deals', execUser), true);
-    assert.strictEqual(isTabAuthorized('works', execUser), true);
-    assert.strictEqual(isTabAuthorized('tasks', execUser), true);
+    assert.strictEqual(isTabAuthorized("command_center", execUser), true);
+    assert.strictEqual(isTabAuthorized("leads", execUser), true);
+    assert.strictEqual(isTabAuthorized("deals", execUser), true);
+    assert.strictEqual(isTabAuthorized("works", execUser), true);
+    assert.strictEqual(isTabAuthorized("tasks", execUser), true);
 
     // Forbidden for sales executive by default
-    assert.strictEqual(isTabAuthorized('users', execUser), false);
-    assert.strictEqual(isTabAuthorized('analytics', execUser), false);
-    assert.strictEqual(isTabAuthorized('ingestion', execUser), false);
-    assert.strictEqual(isTabAuthorized('settings', execUser), false);
+    assert.strictEqual(isTabAuthorized("users", execUser), false);
+    assert.strictEqual(isTabAuthorized("analytics", execUser), false);
+    assert.strictEqual(isTabAuthorized("ingestion", execUser), false);
+    assert.strictEqual(isTabAuthorized("settings", execUser), false);
   });
 
-  it('evaluates isTabAuthorized for Viewer role using default role matrix', () => {
+  it("evaluates isTabAuthorized for Viewer role using default role matrix", () => {
     const viewerUser: CurrentUserSession = {
-      id: 'v0000000-0000-0000-0000-000000000001',
-      email: 'viewer@marcaubi.com',
-      name: 'Finance Auditor',
-      fullName: 'Finance Auditor',
-      role: 'viewer',
+      id: "v0000000-0000-0000-0000-000000000001",
+      email: "viewer@marcaubi.com",
+      name: "Finance Auditor",
+      fullName: "Finance Auditor",
+      role: "viewer",
     };
 
-    assert.strictEqual(isTabAuthorized('command_center', viewerUser), true);
-    assert.strictEqual(isTabAuthorized('leads', viewerUser), true);
-    assert.strictEqual(isTabAuthorized('deals', viewerUser), true);
-    assert.strictEqual(isTabAuthorized('works', viewerUser), true);
-    assert.strictEqual(isTabAuthorized('analytics', viewerUser), true);
+    assert.strictEqual(isTabAuthorized("command_center", viewerUser), true);
+    assert.strictEqual(isTabAuthorized("leads", viewerUser), true);
+    assert.strictEqual(isTabAuthorized("deals", viewerUser), true);
+    assert.strictEqual(isTabAuthorized("works", viewerUser), true);
+    assert.strictEqual(isTabAuthorized("analytics", viewerUser), true);
 
     // Forbidden for viewer by default
-    assert.strictEqual(isTabAuthorized('tasks', viewerUser), false);
-    assert.strictEqual(isTabAuthorized('users', viewerUser), false);
-    assert.strictEqual(isTabAuthorized('ingestion', viewerUser), false);
-    assert.strictEqual(isTabAuthorized('settings', viewerUser), false);
+    assert.strictEqual(isTabAuthorized("tasks", viewerUser), false);
+    assert.strictEqual(isTabAuthorized("users", viewerUser), false);
+    assert.strictEqual(isTabAuthorized("ingestion", viewerUser), false);
+    assert.strictEqual(isTabAuthorized("settings", viewerUser), false);
   });
 
-  it('evaluates isTabAuthorized for Sales Manager role using default role matrix', () => {
+  it("evaluates isTabAuthorized for Sales Manager role using default role matrix", () => {
     const managerUser: CurrentUserSession = {
-      id: 'm0000000-0000-0000-0000-000000000001',
-      email: 'manager@marcaubi.com',
-      name: 'Sales Director',
-      fullName: 'Sales Director',
-      role: 'sales_manager',
+      id: "m0000000-0000-0000-0000-000000000001",
+      email: "manager@marcaubi.com",
+      name: "Sales Director",
+      fullName: "Sales Director",
+      role: "sales_manager",
     };
 
-    assert.strictEqual(isTabAuthorized('command_center', managerUser), true);
-    assert.strictEqual(isTabAuthorized('leads', managerUser), true);
-    assert.strictEqual(isTabAuthorized('deals', managerUser), true);
-    assert.strictEqual(isTabAuthorized('works', managerUser), true);
-    assert.strictEqual(isTabAuthorized('tasks', managerUser), true);
-    assert.strictEqual(isTabAuthorized('users', managerUser), true);
-    assert.strictEqual(isTabAuthorized('analytics', managerUser), true);
-    assert.strictEqual(isTabAuthorized('ingestion', managerUser), true);
+    assert.strictEqual(isTabAuthorized("command_center", managerUser), true);
+    assert.strictEqual(isTabAuthorized("leads", managerUser), true);
+    assert.strictEqual(isTabAuthorized("deals", managerUser), true);
+    assert.strictEqual(isTabAuthorized("works", managerUser), true);
+    assert.strictEqual(isTabAuthorized("tasks", managerUser), true);
+    assert.strictEqual(isTabAuthorized("users", managerUser), true);
+    assert.strictEqual(isTabAuthorized("analytics", managerUser), true);
+    assert.strictEqual(isTabAuthorized("ingestion", managerUser), true);
 
     // Only settings forbidden for sales manager
-    assert.strictEqual(isTabAuthorized('settings', managerUser), false);
+    assert.strictEqual(isTabAuthorized("settings", managerUser), false);
   });
 
-  it('falls back to role default baseline when allowed_tabs is an empty array []', () => {
+  it("falls back to role default baseline when allowed_tabs is an empty array []", () => {
     const managerUser: CurrentUserSession = {
-      id: 'm0000000-0000-0000-0000-000000000099',
-      email: 'manager@marcaubi.com',
-      name: 'Manager User',
-      fullName: 'Manager User',
-      role: 'sales_manager',
+      id: "m0000000-0000-0000-0000-000000000099",
+      email: "manager@marcaubi.com",
+      name: "Manager User",
+      fullName: "Manager User",
+      role: "sales_manager",
       allowed_tabs: [],
     };
 
     assert.strictEqual(
-      isTabAuthorized('users', managerUser),
+      isTabAuthorized("users", managerUser),
       true,
-      'Sales manager baseline grants access when allowed_tabs is empty'
+      "Sales manager baseline grants access when allowed_tabs is empty",
     );
   });
 
-  it('handles null or unauthenticated user defensively without throwing', () => {
-    assert.strictEqual(isTabAuthorized('command_center', null), false);
-    assert.strictEqual(isTabAuthorized('leads', undefined), false);
+  it("handles null or unauthenticated user defensively without throwing", () => {
+    assert.strictEqual(isTabAuthorized("command_center", null), false);
+    assert.strictEqual(isTabAuthorized("leads", undefined), false);
   });
 });

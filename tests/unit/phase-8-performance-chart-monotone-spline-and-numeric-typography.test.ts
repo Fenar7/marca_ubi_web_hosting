@@ -31,7 +31,7 @@ describe('Converted-value chart and numeric display contracts', () => {
   it('uses tabular figures and the shared Circular-first numeric font token', () => {
     assert.ok(styles.includes('font-variant-numeric: tabular-nums'));
     assert.ok(styles.includes('var(--font-admin-numeric'));
-    assert.ok(tokens.includes('--font-admin-numeric: var(--font-circular)'));
+    assert.match(tokens, /--font-admin-numeric:\s*var\(--font-circular\)/);
     assert.ok(styles.includes('@media (max-width: 520px)'));
   });
 

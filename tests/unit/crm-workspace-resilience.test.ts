@@ -7,8 +7,8 @@ describe('CRM list query resilience and overview hierarchy', () => {
   const read = (file: string) => fs.readFileSync(path.resolve(process.cwd(), file), 'utf8');
   const leads = read('src/app/admin/(workspace)/leads/page.tsx');
   const deals = read('src/app/admin/(workspace)/deals/page.tsx');
-  const overview = read('src/app/admin/(workspace)/page.tsx');
-  const overviewStyles = read('src/app/admin/(workspace)/page.module.scss');
+  const overview = read('src/app/admin/components/Dashboard/OverviewWorkspace.tsx');
+  const overviewStyles = read('src/app/admin/components/Dashboard/OverviewWorkspace.module.scss');
 
   it('keeps primary lead queries independent from owner-directory view relationships', () => {
     assert.ok(leads.includes(".from('crm_team_directory')"));
@@ -30,13 +30,11 @@ describe('CRM list query resilience and overview hierarchy', () => {
     assert.ok(deals.includes('Deal records are available'));
   });
 
-  it('orders performance and stage context before attention work and the recent deals ledger', () => {
-    const analysisPosition = overview.indexOf('className={styles.analysisSection}');
-    const attentionPosition = overview.indexOf('<AttentionQueue');
-    const ledgerPosition = overview.indexOf('<CommercialDealsTable');
-    assert.ok(analysisPosition >= 0 && analysisPosition < attentionPosition);
-    assert.ok(attentionPosition < ledgerPosition);
-    assert.ok(overviewStyles.includes('grid-template-columns: minmax(0, 1.2fr) minmax(400px, 0.8fr)'));
-    assert.ok(overviewStyles.includes('@media (max-width: 1250px)'));
+  it('prioritizes actionable work before period outcomes and reflows for narrow screens', () => {
+    const work = overview.indexOf('id="today-heading"');
+    const outcomes = overview.indexOf('id="outcomes-heading"');
+    assert.ok(work >= 0 && outcomes > work);
+    assert.ok(overviewStyles.includes('minmax(0, 1fr)'));
+    assert.ok(overviewStyles.includes('@media (max-width: 700px)'));
   });
 });

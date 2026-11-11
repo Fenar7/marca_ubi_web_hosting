@@ -6,7 +6,8 @@ import path from 'node:path';
 describe('Commercial Desk overview contracts', () => {
   const read = (file: string) => fs.readFileSync(path.resolve(process.cwd(), file), 'utf8');
   const page = read('src/app/admin/(workspace)/page.tsx');
-  const pageStyles = read('src/app/admin/(workspace)/page.module.scss');
+  const pageStyles = read('src/app/admin/components/Dashboard/OverviewWorkspace.module.scss');
+  const overview = read('src/app/admin/components/Dashboard/OverviewWorkspace.tsx');
   const kpis = read('src/app/admin/components/Dashboard/ExecutiveKpiGrid.tsx');
   const kpiStyles = read('src/app/admin/components/Dashboard/ExecutiveKpiGrid.module.scss');
   const chart = read('src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx');
@@ -17,13 +18,12 @@ describe('Commercial Desk overview contracts', () => {
   const mastheadStyles = read('src/app/admin/components/Dashboard/ExecutiveMasthead.module.scss');
 
   it('renders the complete overview hierarchy and responsive layout', () => {
-    for (const component of ['ExecutiveMasthead', 'ExecutiveKpiGrid', 'AttentionQueue', 'PipelineAllocationCard', 'RevenueDynamicsCard', 'CommercialDealsTable']) {
-      assert.ok(page.includes(`<${component}`), `${component} should be mounted`);
+    assert.ok(page.includes('<OverviewWorkspace data={data}'));
+    for (const landmark of ['today-heading', 'pipeline-heading', 'outcomes-heading']) {
+      assert.ok(overview.includes(`id="${landmark}"`));
     }
-    assert.ok(pageStyles.includes('.fluidCanvas'));
-    assert.ok(pageStyles.includes('.analysisSection'));
-    assert.ok(pageStyles.includes('.operationsSection'));
-    assert.ok(pageStyles.includes('@media (max-width: 1250px)'));
+    assert.ok(pageStyles.includes('.workingGrid'));
+    assert.ok(pageStyles.includes('@media (max-width: 700px)'));
   });
 
   it('keeps KPI labels tied to full digit currency and exact conversion cohort counts', () => {

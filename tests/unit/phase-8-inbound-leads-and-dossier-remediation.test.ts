@@ -346,7 +346,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const clientPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx');
       const code = fs.readFileSync(clientPath, 'utf8');
       assert.ok(
-        code.includes("searchParams.get('id') || searchParams.get('leadId')"),
+        /searchParams\.get\(["']id["']\)\s*\|\|\s*searchParams\.get\(["']leadId["']\)/.test(code),
         'LeadsWorkspaceClient must hydrate active drawer lead ID from id or leadId'
       );
       assert.ok(code.includes("url.searchParams.delete('id')"), 'handleCloseDrawer must delete id from searchParams');
@@ -357,7 +357,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const shellPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminWorkspaceShell.tsx');
       const code = fs.readFileSync(shellPath, 'utf8');
       assert.ok(
-        code.includes("searchParams.get('id') || searchParams.get('leadId')"),
+        /searchParams.get\(["']id["']\)\s*\|\|\s*searchParams.get\(["']leadId["']\)/.test(code),
         'AdminWorkspaceShell LeadUrlSync must check id or leadId'
       );
     });
@@ -436,7 +436,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const code = fs.readFileSync(shellPath, 'utf8');
       assert.ok(code.includes('usePathname'), 'AdminWorkspaceShell must consume usePathname');
       assert.ok(code.includes('setIsDrawerOpen(false);'), 'Must reset drawer state on navigation');
-      assert.ok(code.includes("document.body.style.overflow = '';"), 'Must reset document overflow on navigation');
+      assert.match(code, /document\.body\.style\.overflow = ["']["'];/, 'Must reset document overflow on navigation');
     });
 
     it('verifies src/middleware.ts checks hasExplicitAuthClaims to prevent false-positive role lockouts', () => {
@@ -571,10 +571,10 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       );
       assert.ok(code.includes('searchParams?: Promise<{'), 'page.tsx must accept async searchParams');
       assert.ok(code.includes('resolveTimeframeBounds'), 'Must resolve temporal boundaries');
-      assert.ok(code.includes('<ExecutiveMasthead selectedTimeframe={bounds.label} exportData={exportData} />'), 'Must pass active label and trusted export data to Masthead');
-      assert.ok(code.includes('cadenceLabel={bounds.cadenceLabel}'), 'Must pass dynamic cadence to KPI grid');
-      assert.ok(code.includes('dataPoints={revenueSplinePoints}'), 'Must pass dynamic spline points to RevenueDynamicsCard');
-      assert.ok(code.includes('stages={dynamicStages}'), 'Must pass dynamic stages array to PipelineAllocationCard');
+      assert.ok(code.includes('<OverviewWorkspace data={data}'), 'Must pass the authorized server DTO to Overview');
+      assert.ok(code.includes('periodStart: bounds.currentStart.toISOString()'), 'Must pass the explicit outcomes window');
+      assert.ok(code.includes('pipelineReady:'), 'Must preserve snapshot availability separately');
+      assert.ok(code.includes('outcomesReady:'), 'Must preserve reporting availability separately');
     });
   });
 });

@@ -1,0 +1,174 @@
+.statisticCard {
+  background: #ffffff;
+  border: 1px solid var(--conyest-card-border, #f1f5f9);
+  border-radius: var(--conyest-radius-card, 20px);
+  padding: 24px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.periodDropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+.tabRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.tabButton {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 8px 8px;
+  position: relative;
+  transition: color 140ms ease;
+
+  &:hover {
+    color: #0f172a;
+  }
+
+  &.activeTab {
+    color: #0f172a;
+    font-weight: 600;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--conyest-accent-lime, #94e622);
+      border-radius: 3px 3px 0 0;
+    }
+  }
+}
+
+.donutWrapper {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 180px;
+  margin: 8px 0;
+}
+
+.donutSvg {
+  width: 170px;
+  height: 170px;
+  transform: rotate(-90deg);
+}
+
+.donutCenter {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.donutCenterLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.donutCenterAmount {
+  font-family: var(--font-circular, sans-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.breakdownList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breakdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pctBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.itemLabel {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.itemAmount {
+  font-family: var(--font-circular, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}

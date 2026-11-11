@@ -28,3 +28,10 @@ export {
 export { ExecutiveKpiGrid as MinimalistStatPods } from './ExecutiveKpiGrid';
 export { RevenueDynamicsCard as PerformanceChart } from './RevenueDynamicsCard';
 export { CommercialDealsTable as CurrentDealsTable } from './CommercialDealsTable';
+
+// Conyest Luxury Financial & CRM Dashboard Modules
+export { ConyestMetricsGrid, type ConyestMetricsGridProps } from './ConyestMetricsGrid';
+export { ConyestCashflowCard, type ConyestCashflowCardProps, type MonthlyCashflowPoint } from './ConyestCashflowCard';
+export { ConyestStatisticCard, type ConyestStatisticCardProps, type StatisticCategoryItem } from './ConyestStatisticCard';
+export { ConyestTransactionsTable, type ConyestTransactionsTableProps, type TransactionRow } from './ConyestTransactionsTable';
+export { OverviewWorkspace, type OverviewData, type OverviewRecord } from './OverviewWorkspace';
