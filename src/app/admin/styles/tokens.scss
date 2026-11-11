@@ -33,18 +33,21 @@
   --admin-border-default: #d8d8d4;
   --admin-border-strong: #111111;
 
-  /* Conyest Luxury Financial Palette Tokens */
-  --conyest-canvas-bg: #f8f8f8;
-  --conyest-card-bg: #ffffff;
-  --conyest-card-border: #f1f5f9;
-  --conyest-dark-forest: #1f4843;
-  --conyest-dark-forest-hover: #173b37;
-  --conyest-accent-lime: #94e622;
-  --conyest-accent-lime-hover: #82cb1e;
-  --conyest-accent-lime-tint: rgba(148, 230, 34, 0.15);
-  --conyest-halo-border: #b9e57d;
-  --conyest-halo-bg: rgba(226, 242, 203, 0.45);
-  --conyest-bar-dark: #1f4941;
+  /* Marca Ubi Commercial Desk Visual Tokens */
+  --admin-radius-card: 20px;
+  --admin-radius-pill: 9999px;
+  --admin-radius-control: 12px;
+  --conyest-canvas-bg: var(--admin-canvas-bg);
+  --conyest-card-bg: var(--admin-card-bg);
+  --conyest-card-border: var(--admin-border-subtle);
+  --conyest-dark-forest: var(--admin-surface-inverse, #111111);
+  --conyest-dark-forest-hover: #000000;
+  --conyest-accent-lime: var(--admin-accent-brand, #ea002a);
+  --conyest-accent-lime-hover: var(--admin-btn-primary-hover, #c40023);
+  --conyest-accent-lime-tint: rgba(234, 0, 42, 0.08);
+  --conyest-halo-border: var(--admin-border-subtle);
+  --conyest-halo-bg: rgba(17, 17, 17, 0.04);
+  --conyest-bar-dark: #454542;
   --conyest-radius-card: 20px;
   --conyest-radius-pill: 9999px;
   --conyest-radius-control: 12px;

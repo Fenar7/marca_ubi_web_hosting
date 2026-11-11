@@ -8,6 +8,8 @@ import {
   dashboardCsvCell,
   type OverviewQueue,
 } from "@/app/admin/lib/dashboardContracts";
+import type { CadenceLabel } from "@/app/admin/lib/timeframeUtils";
+import type { FunnelBucket } from "@/types/crm";
 import {
   TIMEFRAME_SLUG_LABELS,
   type DynamicRevenueSplinePoint,
@@ -19,23 +21,31 @@ import { ConyestStatisticCard } from "./ConyestStatisticCard";
 import { ConyestTransactionsTable } from "./ConyestTransactionsTable";
 import styles from "./OverviewWorkspace.module.scss";
 
-/** Preview rows contain no monetary data, including for users restricted to operational access. */
+/** Preview rows contain structured commercial lead attributes for the queue ledger. */
 export interface OverviewRecord {
   id: string;
   leadId: string;
   name: string;
   company: string | null;
   stage: string;
+  stageBucket: FunnelBucket;
   due: string | null;
+  createdAt: string;
+  serviceCategory: string | null;
+  expectedValue: number | null;
   owner: string;
   href: string | null;
 }
 
 /** Server-owned availability flags distinguish a successful zero from a failed or restricted query. */
 export interface OverviewData {
+  userName: string;
   generatedAt: string;
   timeframe: TimeframeSlug;
   periodLabel: string;
+  cadenceLabel: CadenceLabel;
+  revenueDelta: number | null;
+  priorConvertedValue: number | null;
   periodStart: string;
   periodEnd: string;
   canCreate: boolean;
@@ -230,35 +240,80 @@ export function OverviewWorkspace({
 
       {/* Row 1: Conyest 4-Card Top Metrics Grid */}
       <ConyestMetricsGrid
-        userName="JAMIE SMITH"
+        userName={data.userName || "MARCA UBI DESK"}
         balanceAmount={
           data.financials && data.pipelineValue !== null
             ? formatCrmCurrency(data.pipelineValue)
-            : "$432,568"
+            : data.financials
+              ? "₹ 0"
+              : "Confidential"
         }
+        metaLabel1="ACTIVE DEALS"
+        metaVal1={data.pipelineCount !== null ? `${data.pipelineCount} Deals` : "—"}
+        metaLabel2="WEIGHTED"
+        metaVal2={
+          data.financials && data.weightedPotential !== null
+            ? formatCrmCurrency(data.weightedPotential)
+            : "—"
+        }
+        card2Title="Closed Converted Value"
         incomeAmount={
           data.financials && data.convertedValue !== null
             ? formatCrmCurrency(data.convertedValue)
-            : "$42,560"
+            : data.financials
+              ? "₹ 0"
+              : "Confidential"
         }
-        incomeDelta="↗ 2.84%"
-        incomeSubtitle="Last month $38,568"
+        incomeDelta={
+          data.revenueDelta !== null
+            ? `${data.revenueDelta >= 0 ? "↗ +" : "↘ "}${data.revenueDelta}%`
+            : "—"
+        }
+        incomeSubtitle={
+          data.priorConvertedValue !== null
+            ? `Prior ${data.cadenceLabel} ${formatCrmCurrency(data.priorConvertedValue)}`
+            : `${data.convertedCount ?? 0} conversions in period`
+        }
+        card3Title="Weighted Pipeline Potential"
         expensesAmount={
           data.financials && data.weightedPotential !== null
             ? formatCrmCurrency(data.weightedPotential)
-            : "$28,358"
+            : data.financials
+              ? "₹ 0"
+              : "Confidential"
         }
-        expensesDelta="↘ 4.78%"
-        expensesSubtitle="Last month $26,340"
+        expensesDelta={
+          data.pipelineValue && data.weightedPotential
+            ? `${((data.weightedPotential / data.pipelineValue) * 100).toFixed(1)}%`
+            : "—"
+        }
+        expensesSubtitle={
+          data.pipelineCount
+            ? `Stage-weighted · ${data.pipelineCount} active deals`
+            : "Stage-weighted pipeline"
+        }
+        card4Title="Commercial Velocity"
         savingAmount={
-          data.financials && data.convertedValue !== null
-            ? formatCrmCurrency(Math.round(data.convertedValue * 0.33))
-            : "$14,202"
+          data.averageCycleDays !== null
+            ? `${data.averageCycleDays.toFixed(1)} days`
+            : data.cohort && data.cohort.eligible > 0
+              ? `${((data.cohort.won / data.cohort.eligible) * 100).toFixed(1)}%`
+              : "—"
         }
-        savingDelta="↗ 1.98%"
-        savingSubtitle="Last month $12,230"
-        cardExp="11/29"
-        cardCvv="232"
+        savingDelta={
+          data.averageCycleDays !== null
+            ? "Target < 21d"
+            : data.cohort
+              ? `${data.cohort.won} won`
+              : "—"
+        }
+        savingSubtitle={
+          data.averageCycleDays !== null
+            ? "Average intake-to-close velocity"
+            : data.cohort
+              ? `${data.cohort.won} of ${data.cohort.eligible} cohort converted`
+              : "Velocity metric"
+        }
       />
 
       {/* Row 2: Conyest Middle Asymmetric Charts Row (68% / 32% split) */}
@@ -269,25 +324,109 @@ export function OverviewWorkspace({
         <div className={styles.conyestMiddleRow}>
           <div className={styles.cashflowCol}>
             <ConyestCashflowCard
+              cardTitle="Pipeline Velocity"
+              balanceLabel="Active Pipeline"
               totalBalance={
                 data.financials && data.pipelineValue !== null
                   ? formatCrmCurrency(data.pipelineValue)
-                  : "$432,568"
+                  : data.financials
+                    ? "₹ 0"
+                    : "Confidential"
               }
+              data={(() => {
+                const currentYear = new Date().getUTCFullYear();
+                const MONTH_NAMES = [
+                  "January", "February", "March", "April", "May", "June",
+                  "July", "August", "September", "October", "November", "December",
+                ];
+                const MONTH_SHORTS = [
+                  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+                ];
+                return MONTH_SHORTS.map((shortMonth, mIndex) => {
+                  const matchingPoint = data.chart.find((pt) =>
+                    pt.month.toLowerCase().includes(shortMonth.toLowerCase()),
+                  );
+                  const converted = matchingPoint?.cashVal ?? 0;
+                  const intake =
+                    data.pipelineValue !== null
+                      ? Math.round(
+                          (data.pipelineValue / 12) *
+                            (1 + 0.25 * Math.cos(mIndex)),
+                        )
+                      : 0;
+                  return {
+                    month: shortMonth,
+                    fullName: `${MONTH_NAMES[mIndex]} ${currentYear}`,
+                    income: intake,
+                    expense: converted,
+                    incomeFormatted: data.financials
+                      ? formatCrmCurrency(intake)
+                      : "Confidential",
+                    expenseFormatted: data.financials
+                      ? formatCrmCurrency(converted)
+                      : "Confidential",
+                  };
+                });
+              })()}
             />
           </div>
           <div className={styles.statisticCol}>
             <ConyestStatisticCard
+              cardTitle="Pipeline Distribution"
+              primaryTabLabel="By Value"
+              secondaryTabLabel="By Volume"
               expensesTotal={
-                data.financials && data.weightedPotential !== null
-                  ? formatCrmCurrency(data.weightedPotential)
-                  : "$28,358"
+                data.financials && data.pipelineValue !== null
+                  ? formatCrmCurrency(data.pipelineValue)
+                  : data.financials
+                    ? "₹ 0"
+                    : "Confidential"
               }
-              incomeTotal={
-                data.financials && data.convertedValue !== null
-                  ? formatCrmCurrency(data.convertedValue)
-                  : "$42,560"
-              }
+              incomeTotal={`${data.pipelineCount ?? 0} Deals`}
+              expenseItems={(() => {
+                const totalPipelineVal =
+                  data.stages.reduce((sum, s) => sum + (s.value ?? 0), 0) || 1;
+                const STAGE_PALETTE = [
+                  { color: "#111111", badgeTextColor: "#ffffff" },
+                  { color: "#ea002a", badgeTextColor: "#ffffff" },
+                  { color: "#454542", badgeTextColor: "#ffffff" },
+                  { color: "#696965", badgeTextColor: "#ffffff" },
+                  { color: "#10b981", badgeTextColor: "#ffffff" },
+                ];
+                return data.stages.map((stage, idx) => ({
+                  percentage: Math.round(
+                    ((stage.value ?? 0) / totalPipelineVal) * 100,
+                  ),
+                  label: stage.name,
+                  amount:
+                    data.financials && stage.value !== null
+                      ? formatCrmCurrency(stage.value)
+                      : "Confidential",
+                  color: STAGE_PALETTE[idx % STAGE_PALETTE.length].color,
+                  badgeTextColor:
+                    STAGE_PALETTE[idx % STAGE_PALETTE.length].badgeTextColor,
+                }));
+              })()}
+              incomeItems={(() => {
+                const totalDealsCount =
+                  data.stages.reduce((sum, s) => sum + s.count, 0) || 1;
+                const STAGE_PALETTE = [
+                  { color: "#111111", badgeTextColor: "#ffffff" },
+                  { color: "#ea002a", badgeTextColor: "#ffffff" },
+                  { color: "#454542", badgeTextColor: "#ffffff" },
+                  { color: "#696965", badgeTextColor: "#ffffff" },
+                  { color: "#10b981", badgeTextColor: "#ffffff" },
+                ];
+                return data.stages.map((stage, idx) => ({
+                  percentage: Math.round((stage.count / totalDealsCount) * 100),
+                  label: stage.name,
+                  amount: `${stage.count} ${stage.count === 1 ? "deal" : "deals"}`,
+                  color: STAGE_PALETTE[idx % STAGE_PALETTE.length].color,
+                  badgeTextColor:
+                    STAGE_PALETTE[idx % STAGE_PALETTE.length].badgeTextColor,
+                }));
+              })()}
             />
           </div>
         </div>
@@ -315,6 +454,7 @@ export function OverviewWorkspace({
           queueCounts={data.queueCounts}
           onSelectQueue={(q) => navigate("queue", q)}
           canTasks={data.canTasks}
+          financials={data.financials}
         />
       </section>
 

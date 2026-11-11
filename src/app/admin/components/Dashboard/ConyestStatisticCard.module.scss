@@ -68,7 +68,7 @@
   }
 
   &.activeTab {
-    color: #0f172a;
+    color: #111111;
     font-weight: 600;
 
     &::after {
@@ -78,7 +78,7 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: var(--conyest-accent-lime, #94e622);
+      background: var(--admin-accent-brand, #ea002a);
       border-radius: 3px 3px 0 0;
     }
   }
@@ -109,12 +109,14 @@
   pointer-events: none;
 }
 
+.centerLabel,
 .donutCenterLabel {
   font-size: 11px;
   font-weight: 500;
   color: #64748b;
 }
 
+.centerTotal,
 .donutCenterAmount {
   font-family: var(--font-circular, sans-serif);
   font-size: 20px;
@@ -125,6 +127,7 @@
   margin-top: 2px;
 }
 
+.categoryList,
 .breakdownList {
   display: flex;
   flex-direction: column;
@@ -134,6 +137,7 @@
   list-style: none;
 }
 
+.categoryRow,
 .breakdownItem {
   display: flex;
   align-items: center;
@@ -141,12 +145,14 @@
   font-size: 13px;
 }
 
+.catLeft,
 .itemLeft {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+.percentageBadge,
 .pctBadge {
   display: inline-flex;
   align-items: center;
@@ -160,11 +166,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+.categoryLabel,
 .itemLabel {
   font-weight: 500;
   color: #0f172a;
 }
 
+.categoryAmount,
 .itemAmount {
   font-family: var(--font-circular, sans-serif);
   font-size: 13px;

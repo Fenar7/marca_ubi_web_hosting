@@ -7,6 +7,7 @@ import {
   resolveTimeframeBounds,
   timeframeToSlug,
   aggregateTimeframeRevenue,
+  calculateMetricDelta,
 } from "@/app/admin/lib/timeframeUtils";
 import { getUtcDayWindow } from "@/app/admin/lib/followUpQueue";
 import {
@@ -14,6 +15,7 @@ import {
   dashboardFeature,
   dashboardTab,
   dashboardSelect,
+  dashboardPreviewSelect,
   foldDashboardPages as foldPages,
   overviewQueue,
   type OverviewQueue,
@@ -56,6 +58,9 @@ interface PreviewRow {
   status_id: string;
   assigned_to: string | null;
   next_follow_up: string | null;
+  created_at?: string;
+  service_category?: string | null;
+  expected_value?: number | string;
 }
 interface DirectoryRow {
   id: string;
@@ -77,10 +82,14 @@ export default async function AdminDashboardPage({
   if (!user) redirect("/admin/login?next=%2Fadmin");
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role, status, allowed_tabs, feature_permissions")
+    .select("role, status, allowed_tabs, feature_permissions, full_name")
     .eq("id", user.id)
     .maybeSingle();
   if (profileError || !profile || profile.status !== "active") notFound();
+  const userName =
+    profile.full_name?.trim() ||
+    user.email?.split("@")[0] ||
+    "Marca Ubi Root Admin";
   const role = profile.role as CrmUserRole;
   if (!dashboardTab(role, profile.allowed_tabs, "command_center")) notFound();
   const canFinancial = dashboardFeature(
@@ -242,6 +251,52 @@ export default async function AdminDashboardPage({
           },
         );
 
+  const priorOutcomePromise = stagesUnavailable
+    ? Promise.resolve(null)
+    : convertedIds.length === 0
+      ? Promise.resolve({
+          count: 0,
+          value: 0,
+          valid: true,
+        })
+      : foldPages<
+          ConversionRow,
+          {
+            count: number;
+            value: number;
+            valid: boolean;
+          }
+        >(
+          async (from, to) => {
+            const result = await supabase
+              .from("leads")
+              .select(dashboardSelect(canFinancial, "conversion"))
+              .in("status_id", convertedIds)
+              .gte("converted_at", bounds.priorStart.toISOString())
+              .lte("converted_at", bounds.priorEnd.toISOString())
+              .or(SYNTHETIC_EXCLUSION)
+              .order("id")
+              .range(from, to);
+            return {
+              data: result.data as unknown as ConversionRow[] | null,
+              error: result.error,
+            };
+          },
+          {
+            count: 0,
+            value: 0,
+            valid: true,
+          },
+          (summary, row) => {
+            const amount = canFinancial
+              ? dashboardAmount(row.expected_value)
+              : 0;
+            summary.count += 1;
+            if (amount === null) summary.valid = false;
+            summary.value += amount ?? 0;
+          },
+        );
+
   const cohortPromise = stagesUnavailable
     ? Promise.resolve(null)
     : foldPages<CohortRow, { eligible: number; won: number }>(
@@ -277,7 +332,7 @@ export default async function AdminDashboardPage({
     supabase
       .from("leads")
       .select(
-        "id, lead_id, name, company, status_id, assigned_to, next_follow_up",
+        dashboardPreviewSelect(canFinancial),
         { count: "exact", head },
       )
       .in("status_id", activeIds)
@@ -327,9 +382,7 @@ export default async function AdminDashboardPage({
             .limit(6)
         : await supabase
             .from("leads")
-            .select(
-              "id, lead_id, name, company, status_id, assigned_to, next_follow_up",
-            )
+            .select(dashboardPreviewSelect(canFinancial))
             .in("status_id", activeIds)
             .or(SYNTHETIC_EXCLUSION)
             .order("created_at", { ascending: false })
@@ -339,7 +392,7 @@ export default async function AdminDashboardPage({
     console.error("[dashboard] Preview failed", previewResult.error.message);
   else if (!previewResult.data)
     console.error("[dashboard] Preview returned no payload");
-  const preview = (previewResult.data ?? []) as PreviewRow[];
+  const preview = (previewResult.data ?? []) as unknown as PreviewRow[];
   const ownerIds = [
     ...new Set(
       preview.flatMap((row) => (row.assigned_to ? [row.assigned_to] : [])),
@@ -381,16 +434,21 @@ export default async function AdminDashboardPage({
     name: row.name,
     company: row.company,
     stage: stageById.get(row.status_id)?.name ?? "Unknown stage",
+    stageBucket: stageById.get(row.status_id)?.bucket ?? "open",
     due: row.next_follow_up,
+    createdAt: row.created_at ?? now.toISOString(),
+    serviceCategory: row.service_category ?? null,
+    expectedValue: canFinancial ? dashboardAmount(row.expected_value) : null,
     owner: !row.assigned_to
       ? "Unassigned"
       : (ownerById.get(row.assigned_to) ??
         (directoryFailed ? "Owner unavailable" : "Name unavailable")),
     href: recordRoute ? `${recordRoute}/${encodeURIComponent(row.id)}` : null,
   }));
-  const [pipeline, outcome, cohort] = await Promise.all([
+  const [pipeline, outcome, priorOutcome, cohort] = await Promise.all([
     pipelinePromise,
     outcomePromise,
+    priorOutcomePromise,
     cohortPromise,
   ]);
   const potentialStages = stages.filter(
@@ -415,10 +473,19 @@ export default async function AdminDashboardPage({
           0,
         )
       : null;
+  const revenueDelta =
+    canFinancial && outcome?.valid && priorOutcome?.valid
+      ? calculateMetricDelta(outcome.value, priorOutcome.value)
+      : null;
   const data: OverviewData = {
+    userName,
     generatedAt: now.toISOString(),
     timeframe: bounds.slug,
     periodLabel: bounds.label,
+    cadenceLabel: bounds.cadenceLabel,
+    revenueDelta,
+    priorConvertedValue:
+      canFinancial && priorOutcome?.valid ? priorOutcome.value : null,
     periodStart: bounds.currentStart.toISOString(),
     periodEnd: bounds.currentEnd.toISOString(),
     canCreate,

@@ -17,6 +17,16 @@ export function dashboardSelect(
   return columns + (financial ? ", expected_value" : "");
 }
 
+/**
+ * Select lists for the dashboard follow-up queue preview.
+ * When financial permissions are absent, expected_value is strictly omitted from the database read.
+ */
+export function dashboardPreviewSelect(financial: boolean): string {
+  const columns =
+    "id, lead_id, name, company, status_id, assigned_to, next_follow_up, created_at, service_category";
+  return columns + (financial ? ", expected_value" : "");
+}
+
 export interface DashboardPageResult<T> {
   data: T[] | null;
   error: { message: string } | null;

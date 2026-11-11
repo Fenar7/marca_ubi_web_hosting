@@ -108,11 +108,11 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  min-height: 42px;
+  min-height: 40px;
   padding: 8px 14px;
-  border-radius: var(--conyest-radius-pill, 9999px);
+  border-radius: 10px;
   text-decoration: none;
-  color: #64748b;
+  color: #454542;
   font-size: 14px;
   font-weight: 500;
   transition: background 120ms ease, color 120ms ease;
@@ -132,70 +132,24 @@
     border-radius: 9999px;
   }
   &:hover {
-    background: #f8fafc;
-    color: #0f172a;
+    background: #f7f7f5;
+    color: #111111;
   }
 }
 .active {
-  color: #0f172a;
-  background: var(--conyest-accent-lime, #94e622);
+  color: #ffffff;
+  background: var(--admin-surface-inverse, #111111);
   font-weight: 600;
   svg {
-    stroke: #0f172a;
+    stroke: #ffffff;
+  }
+  small {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
   }
   &:hover {
-    background: #86d61b;
-    color: #0f172a;
-  }
-}
-.sidebarPromoCard {
-  position: relative;
-  overflow: hidden;
-  margin: 0 12px 14px;
-  padding: 16px;
-  background: var(--conyest-dark-forest, #1f4843);
-  border-radius: 16px;
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.promoWatermark {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 140px;
-  height: 110px;
-  pointer-events: none;
-}
-.promoText {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: #ffffff;
-  position: relative;
-  z-index: 1;
-}
-.promoButton {
-  align-self: flex-start;
-  background: var(--conyest-accent-lime, #94e622);
-  color: #0f172a;
-  border: none;
-  border-radius: 9999px;
-  font-weight: 600;
-  font-size: 11px;
-  padding: 6px 14px;
-  cursor: pointer;
-  position: relative;
-  z-index: 1;
-  transition: transform 120ms ease, background 120ms ease;
-  &:hover {
-    background: #86d61b;
-    transform: scale(1.02);
-  }
-  &:active {
-    transform: scale(0.98);
+    background: #000000;
+    color: #ffffff;
   }
 }
 .account {

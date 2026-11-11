@@ -13,38 +13,61 @@ export interface MonthlyCashflowPoint {
 }
 
 const DEFAULT_MONTHS: MonthlyCashflowPoint[] = [
-  { month: "Jan", fullName: "January 2025", income: 7200, expense: 4500, incomeFormatted: "$7,200", expenseFormatted: "$4,500" },
-  { month: "Feb", fullName: "February 2025", income: 3200, expense: 6800, incomeFormatted: "$3,200", expenseFormatted: "$6,800" },
-  { month: "Mar", fullName: "March 2025", income: 5100, expense: 4200, incomeFormatted: "$5,100", expenseFormatted: "$4,200" },
-  { month: "Apr", fullName: "April 2025", income: 7600, expense: 3100, incomeFormatted: "$7,600", expenseFormatted: "$3,100" },
-  { month: "May", fullName: "May 2025", income: 5400, expense: 4400, incomeFormatted: "$5,400", expenseFormatted: "$4,400" },
-  { month: "Jun", fullName: "June 2025", income: 6800, expense: 3500, incomeFormatted: "$6,800", expenseFormatted: "$3,500" },
-  { month: "Jul", fullName: "July 2025", income: 3100, expense: 4100, incomeFormatted: "$3,100", expenseFormatted: "$4,100" },
-  { month: "Aug", fullName: "August 2025", income: 9540, expense: 8230, incomeFormatted: "$9,540", expenseFormatted: "$8,230" },
-  { month: "Sep", fullName: "September 2025", income: 7100, expense: 4300, incomeFormatted: "$7,100", expenseFormatted: "$4,300" },
-  { month: "Oct", fullName: "October 2025", income: 6200, expense: 4100, incomeFormatted: "$6,200", expenseFormatted: "$4,100" },
-  { month: "Nov", fullName: "November 2025", income: 4200, expense: 7100, incomeFormatted: "$4,200", expenseFormatted: "$7,100" },
-  { month: "Dec", fullName: "December 2025", income: 5900, expense: 3200, incomeFormatted: "$5,900", expenseFormatted: "$3,200" },
+  { month: "Jan", fullName: "January", income: 720000, expense: 450000, incomeFormatted: "₹ 7,20,000", expenseFormatted: "₹ 4,50,000" },
+  { month: "Feb", fullName: "February", income: 320000, expense: 680000, incomeFormatted: "₹ 3,20,000", expenseFormatted: "₹ 6,80,000" },
+  { month: "Mar", fullName: "March", income: 510000, expense: 420000, incomeFormatted: "₹ 5,10,000", expenseFormatted: "₹ 4,20,000" },
+  { month: "Apr", fullName: "April", income: 760000, expense: 310000, incomeFormatted: "₹ 7,60,000", expenseFormatted: "₹ 3,10,000" },
+  { month: "May", fullName: "May", income: 540000, expense: 440000, incomeFormatted: "₹ 5,40,000", expenseFormatted: "₹ 4,40,000" },
+  { month: "Jun", fullName: "June", income: 680000, expense: 350000, incomeFormatted: "₹ 6,80,000", expenseFormatted: "₹ 3,50,000" },
+  { month: "Jul", fullName: "July", income: 310000, expense: 410000, incomeFormatted: "₹ 3,10,000", expenseFormatted: "₹ 4,10,000" },
+  { month: "Aug", fullName: "August", income: 954000, expense: 823000, incomeFormatted: "₹ 9,54,000", expenseFormatted: "₹ 8,23,000" },
+  { month: "Sep", fullName: "September", income: 710000, expense: 430000, incomeFormatted: "₹ 7,10,000", expenseFormatted: "₹ 4,30,000" },
+  { month: "Oct", fullName: "October", income: 620000, expense: 410000, incomeFormatted: "₹ 6,20,000", expenseFormatted: "₹ 4,10,000" },
+  { month: "Nov", fullName: "November", income: 840000, expense: 710000, incomeFormatted: "₹ 8,40,000", expenseFormatted: "₹ 7,10,000" },
+  { month: "Dec", fullName: "December", income: 590000, expense: 320000, incomeFormatted: "₹ 5,90,000", expenseFormatted: "₹ 3,20,000" },
 ];
 
 export interface ConyestCashflowCardProps {
+  cardTitle?: string;
+  balanceLabel?: string;
   totalBalance?: string;
   data?: MonthlyCashflowPoint[];
 }
 
+/** Format currency numbers for compact Y-axis charts without losing clarity */
+function formatCompactInr(amount: number): string {
+  if (amount === 0) return "0";
+  const abs = Math.abs(amount);
+  const sign = amount < 0 ? "-" : "";
+  if (abs >= 10000000) {
+    return `${sign}${(abs / 10000000).toFixed(1)}Cr`;
+  }
+  if (abs >= 100000) {
+    return `${sign}${(abs / 100000).toFixed(0)}L`;
+  }
+  if (abs >= 1000) {
+    return `${sign}${(abs / 1000).toFixed(0)}k`;
+  }
+  return `${sign}${abs}`;
+}
+
 /**
- * ConyestCashflowCard renders the signature dual-directional Cashflow bar chart:
- * - Inbound income bars extend upwards from 0 with rounded pill caps in vibrant chartreuse (#94e622).
- * - Outflow expense bars extend downwards from 0 with rounded caps in deep forest (#1f4843).
- * - Active month (August by default) is wrapped in a luminous capsule halo with a floating popover tooltip.
- *
- * Invariant: Fully accessible SVG graphics with keyboard focus and interactive hover.
+ * ConyestCashflowCard renders the dual-directional commercial pipeline velocity bar chart:
+ * - Upper bars extend upwards: Deal Intake (new inquiries and pipeline value in INR).
+ * - Lower bars extend downwards: Converted Won Contracts in INR.
+ * - Dynamic coordinate scaling calibrated for Indian Rupee Lakhs/Crores.
+ * - Active month capsule with interactive popover tooltip.
  */
 export function ConyestCashflowCard({
-  totalBalance = "$432,568",
+  cardTitle = "Pipeline Velocity",
+  balanceLabel = "Total Deal Intake",
+  totalBalance = "₹ 65,40,000",
   data = DEFAULT_MONTHS,
 }: ConyestCashflowCardProps): React.ReactElement {
-  const [selectedMonthIndex, setSelectedMonthIndex] = useState(7); // Index 7 = Aug
+  const currentMonthIdx = new Date().getUTCMonth();
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(
+    Math.min(currentMonthIdx, data.length - 1),
+  );
   const activeMonth = data[selectedMonthIndex] || data[0];
 
   // SVG Coordinate Geometry (680 x 240)
@@ -54,31 +77,39 @@ export function ConyestCashflowCard({
   const rightMargin = 20;
   const chartWidth = svgWidth - leftMargin - rightMargin;
   const zeroY = 125; // 0 baseline
-  const maxScale = 11000;
   const positiveRange = 95; // height from zero to top
   const negativeRange = 80; // height from zero to bottom
+
+  // Compute dynamic scale based on the largest data value
+  const rawMax = Math.max(
+    ...data.map((d) => Math.max(d.income, d.expense)),
+    100000,
+  );
+  // Round up to clean ceiling (e.g., nearest 100,000 or 1,000,000)
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawMax)));
+  const maxScale = Math.ceil(rawMax / magnitude) * magnitude;
 
   const colWidth = chartWidth / data.length;
   const barWidth = 24;
 
   const yPositions = [
-    { label: "10K", y: zeroY - (10000 / maxScale) * positiveRange },
-    { label: "5K", y: zeroY - (5000 / maxScale) * positiveRange },
+    { label: formatCompactInr(maxScale), y: zeroY - positiveRange },
+    { label: formatCompactInr(maxScale / 2), y: zeroY - positiveRange / 2 },
     { label: "0", y: zeroY },
-    { label: "-5k", y: zeroY + (5000 / maxScale) * negativeRange },
-    { label: "-10k", y: zeroY + (10000 / maxScale) * negativeRange },
+    { label: formatCompactInr(-maxScale / 2), y: zeroY + negativeRange / 2 },
+    { label: formatCompactInr(-maxScale), y: zeroY + negativeRange },
   ];
 
   const activeColCenter = leftMargin + selectedMonthIndex * colWidth + colWidth / 2;
   const activePercentX = (activeColCenter / svgWidth) * 100;
 
   return (
-    <article className={styles.cashflowCard} aria-label="Cashflow velocity analysis">
+    <article className={styles.cashflowCard} aria-label={`${cardTitle} analysis`}>
       <header className={styles.cardHeader}>
         <div className={styles.titleArea}>
-          <h2 className={styles.cardTitle}>Cashflow</h2>
+          <h2 className={styles.cardTitle}>{cardTitle}</h2>
           <div className={styles.balanceRow}>
-            <span className={styles.balanceLabel}>Total Balance</span>
+            <span className={styles.balanceLabel}>{balanceLabel}</span>
             <strong className={styles.balanceAmount}>{totalBalance}</strong>
           </div>
         </div>
@@ -106,11 +137,11 @@ export function ConyestCashflowCard({
           <ul className={styles.legendList}>
             <li className={styles.legendItem}>
               <span className={styles.legendIncomeDot} aria-hidden="true" />
-              <span>Income</span>
+              <span>Deal Intake</span>
             </li>
             <li className={styles.legendItem}>
               <span className={styles.legendExpenseDot} aria-hidden="true" />
-              <span>Expense</span>
+              <span>Won Contracts</span>
             </li>
           </ul>
         </div>
@@ -126,11 +157,11 @@ export function ConyestCashflowCard({
         >
           <div className={styles.popoverHeader}>{activeMonth.fullName}</div>
           <div className={styles.popoverRow}>
-            <span>Income</span>
+            <span>Deal Intake</span>
             <strong>{activeMonth.incomeFormatted}</strong>
           </div>
           <div className={styles.popoverRow}>
-            <span>Expense</span>
+            <span>Won Contracts</span>
             <strong>{activeMonth.expenseFormatted}</strong>
           </div>
         </div>
@@ -140,7 +171,7 @@ export function ConyestCashflowCard({
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           preserveAspectRatio="none"
           role="img"
-          aria-label="Dual-directional monthly cashflow bar chart"
+          aria-label="Dual-directional monthly commercial pipeline bar chart"
         >
           {/* Horizontal Grid Lines & Y-Labels */}
           {yPositions.map((p) => (
@@ -153,71 +184,80 @@ export function ConyestCashflowCard({
                 y1={p.y}
                 x2={svgWidth - rightMargin}
                 y2={p.y}
-                className={p.label === "0" ? styles.axisZeroLine : styles.gridLine}
+                className={p.label === "0" ? styles.zeroLine : styles.gridLine}
               />
             </g>
           ))}
 
-          {/* Luminous Capsule Halo for Selected Month */}
-          <rect
-            className={styles.haloCapsule}
-            x={activeColCenter - 16}
-            y={24}
-            width={32}
-            height={185}
-          />
+          {/* Active Month Capsule Halo Pill */}
+          {activeColCenter && (
+            <rect
+              x={activeColCenter - barWidth / 2 - 6}
+              y={zeroY - positiveRange - 6}
+              width={barWidth + 12}
+              height={positiveRange + negativeRange + 12}
+              rx={16}
+              className={styles.activeHalo}
+            />
+          )}
 
-          {/* Bars and Month Labels */}
+          {/* Month Columns */}
           {data.map((point, index) => {
-            const centerX = leftMargin + index * colWidth + colWidth / 2;
-            const barX = centerX - barWidth / 2;
+            const xCenter = leftMargin + index * colWidth + colWidth / 2;
+            const barX = xCenter - barWidth / 2;
 
-            // Income (Upward from zeroY)
-            const incomeHeight = Math.max(6, (point.income / maxScale) * positiveRange);
-            const incomeY = zeroY - incomeHeight;
-
-            // Expense (Downward from zeroY)
-            const expenseHeight = Math.max(6, (point.expense / maxScale) * negativeRange);
-            const expenseY = zeroY;
+            // Bar heights normalized to dynamic scale
+            const incomeH = Math.max(
+              2,
+              Math.min(positiveRange, (point.income / maxScale) * positiveRange),
+            );
+            const expenseH = Math.max(
+              2,
+              Math.min(negativeRange, (point.expense / maxScale) * negativeRange),
+            );
 
             const isSelected = index === selectedMonthIndex;
 
             return (
               <g
                 key={point.month}
+                className={`${styles.barColumn} ${isSelected ? styles.selectedColumn : ""}`}
                 onClick={() => setSelectedMonthIndex(index)}
-                onMouseEnter={() => setSelectedMonthIndex(index)}
-                style={{ cursor: "pointer" }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedMonthIndex(index);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label={`${point.fullName}: Intake ${point.incomeFormatted}, Converted ${point.expenseFormatted}`}
               >
-                {/* Income Bar */}
+                {/* Upper Intake Bar */}
                 <rect
-                  className={styles.barIncome}
                   x={barX}
-                  y={incomeY}
+                  y={zeroY - incomeH}
                   width={barWidth}
-                  height={incomeHeight}
+                  height={incomeH}
                   rx={6}
-                  ry={6}
-                  aria-label={`${point.month} income: ${point.incomeFormatted}`}
+                  className={styles.incomeBar}
                 />
 
-                {/* Expense Bar */}
+                {/* Lower Won Contracts Bar */}
                 <rect
-                  className={styles.barExpense}
                   x={barX}
-                  y={expenseY}
+                  y={zeroY}
                   width={barWidth}
-                  height={expenseHeight}
+                  height={expenseH}
                   rx={6}
-                  ry={6}
-                  aria-label={`${point.month} expense: ${point.expenseFormatted}`}
+                  className={styles.expenseBar}
                 />
 
-                {/* Month Name */}
+                {/* X-Axis Month Label */}
                 <text
-                  x={centerX}
-                  y={230}
-                  className={`${styles.monthLabel} ${isSelected ? styles.activeMonthLabel : ""}`}
+                  x={xCenter}
+                  y={svgHeight - 12}
+                  className={`${styles.monthLabel} ${isSelected ? styles.selectedMonthLabel : ""}`}
                 >
                   {point.month}
                 </text>

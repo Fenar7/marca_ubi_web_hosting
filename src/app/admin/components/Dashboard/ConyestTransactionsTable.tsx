@@ -1,9 +1,17 @@
 "use client";
 
 import React from "react";
-import type { OverviewRecord } from "./OverviewWorkspace";
+import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewQueue } from "@/app/admin/lib/dashboardContracts";
+import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./ConyestTransactionsTable.module.scss";
+
+export type TransactionStatus =
+  | "Completed"
+  | "Overdue"
+  | "Due Today"
+  | "Pending"
+  | "Unassigned";
 
 export interface TransactionRow {
   id: string;
@@ -13,52 +21,9 @@ export interface TransactionRow {
   time: string;
   amount: string;
   note: string;
-  status: "Completed" | "Pending" | "Failed";
+  status: TransactionStatus;
   href?: string | null;
 }
-
-const DEFAULT_TRANSACTIONS: TransactionRow[] = [
-  {
-    id: "tx-1",
-    name: "Electricity Bill",
-    type: "Payments",
-    date: "01-11-2025",
-    time: "04:23 PM",
-    amount: "$295.41",
-    note: "Payment for monthly electricity bill",
-    status: "Failed",
-  },
-  {
-    id: "tx-2",
-    name: "Weekly Groceries",
-    type: "Shopping",
-    date: "28-10-2025",
-    time: "03:56 PM",
-    amount: "$120.75",
-    note: "Groceries shopping at local supermart",
-    status: "Completed",
-  },
-  {
-    id: "tx-3",
-    name: "Movie night",
-    type: "Entertainment",
-    date: "16-10-2025",
-    time: "02:35 PM",
-    amount: "$75.99",
-    note: "Tickets for movie night and snacks",
-    status: "Pending",
-  },
-  {
-    id: "tx-4",
-    name: "Gas Bill",
-    type: "Payments",
-    date: "01-11-2025",
-    time: "04:40 PM",
-    amount: "$150.00",
-    note: "Payment for monthly gas service",
-    status: "Pending",
-  },
-];
 
 export interface ConyestTransactionsTableProps {
   records?: OverviewRecord[];
@@ -67,13 +32,17 @@ export interface ConyestTransactionsTableProps {
   queueCounts?: Record<OverviewQueue, number | null>;
   onSelectQueue?: (queue: OverviewQueue) => void;
   canTasks?: boolean;
+  financials?: boolean;
 }
 
 /**
- * ConyestTransactionsTable renders the recent commercial transactions ledger:
- * - Table headers: Name, Type, Date, Time, Amount, Note, Status.
- * - Tabular numerics, crisp divider hairlines, and authentic outline status badges.
- * - Integrates with real CRM records, follow-up queues, and dossier drawer triggers.
+ * ConyestTransactionsTable presents the commercial follow-up queue and recent engagements:
+ * - Queue filter tabs (Overdue, Today, Unassigned) with live operational counts.
+ * - Tabular currency numerals in full Indian Rupees (en-IN) without fake arithmetic formulas.
+ * - Actionable CRM urgency badges ("Follow-up Overdue", "Due Today", "Contract Closed").
+ * - Click-through navigation to full deal dossier or preview drawer.
+ *
+ * Invariant: Preserves RBAC boundaries (confidential monetary states) and never outputs fake bank transactions.
  */
 export function ConyestTransactionsTable({
   records,
@@ -82,15 +51,17 @@ export function ConyestTransactionsTable({
   queueCounts,
   onSelectQueue,
   canTasks = true,
+  financials = true,
 }: ConyestTransactionsTableProps): React.ReactElement {
-  // Convert CRM OverviewRecords into Conyest TransactionRows if provided
+  // Convert CRM OverviewRecords into hydrated TransactionRows
   const rows: TransactionRow[] =
     records && records.length > 0
-      ? records.map((rec, index) => {
-          let dateStr = "01-11-2025";
-          let timeStr = "04:23 PM";
-          if (rec.due) {
-            const d = new Date(rec.due);
+      ? records.map((rec) => {
+          let dateStr = "Scheduled";
+          let timeStr = "UTC";
+          const timestampToParse = rec.due || rec.createdAt;
+          if (timestampToParse) {
+            const d = new Date(timestampToParse);
             if (Number.isFinite(d.getTime())) {
               dateStr = `${String(d.getUTCDate()).padStart(2, "0")}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${d.getUTCFullYear()}`;
               timeStr = d.toLocaleTimeString("en-US", {
@@ -101,27 +72,40 @@ export function ConyestTransactionsTable({
             }
           }
 
-          const status: "Completed" | "Pending" | "Failed" =
+          let status: TransactionStatus = "Pending";
+          if (
             rec.stage.toLowerCase().includes("won") ||
             rec.stage.toLowerCase().includes("converted")
-              ? "Completed"
-              : selectedQueue === "overdue"
-                ? "Failed"
-                : "Pending";
+          ) {
+            status = "Completed";
+          } else if (selectedQueue === "overdue") {
+            status = "Overdue";
+          } else if (selectedQueue === "today") {
+            status = "Due Today";
+          } else if (selectedQueue === "unassigned") {
+            status = "Unassigned";
+          }
+
+          const amountDisplay =
+            rec.expectedValue !== null && rec.expectedValue !== undefined
+              ? formatCrmCurrency(rec.expectedValue)
+              : canTasks && !financials
+                ? "Confidential"
+                : "—";
 
           return {
             id: rec.id,
             name: rec.name,
-            type: rec.company || "Enterprise Lead",
+            type: rec.serviceCategory || rec.company || "Enterprise Lead",
             date: dateStr,
             time: timeStr,
-            amount: `$${(150 + index * 85).toFixed(2)}`,
-            note: `${rec.stage} · Owner: ${rec.owner}`,
+            amount: amountDisplay,
+            note: `${rec.stage} · ${rec.owner}`,
             status,
             href: rec.href,
           };
         })
-      : DEFAULT_TRANSACTIONS;
+      : [];
 
   const handleRowClick = (row: TransactionRow): void => {
     if (row.href) {
@@ -135,16 +119,29 @@ export function ConyestTransactionsTable({
     }
   };
 
+  const getStatusBadgeClass = (status: TransactionStatus): string => {
+    switch (status) {
+      case "Overdue":
+        return styles.statusOverdue;
+      case "Due Today":
+        return styles.statusDueToday;
+      case "Completed":
+        return styles.statusCompleted;
+      case "Unassigned":
+        return styles.statusUnassigned;
+      default:
+        return styles.statusPending;
+    }
+  };
+
   return (
     <article
       className={styles.transactionsCard}
-      aria-label="Recent commercial transactions and operational queue"
+      aria-label="Commercial engagements and operational queue"
     >
       <header className={styles.cardHeader}>
         <div className={styles.titleArea}>
-          <h3 className={styles.cardTitle}>
-            Recent Transactions
-          </h3>
+          <h3 className={styles.cardTitle}>Commercial Engagements</h3>
         </div>
 
         <div className={styles.headerControls}>
@@ -153,7 +150,7 @@ export function ConyestTransactionsTable({
             className={styles.periodDropdown}
             aria-label="Filter transaction period"
           >
-            <span>This Month</span>
+            <span>Current Scope</span>
             <svg
               width="12"
               height="12"
@@ -166,33 +163,12 @@ export function ConyestTransactionsTable({
               <path d="M6 9l6 6 6-6" />
             </svg>
           </button>
-
-          <button
-            type="button"
-            className={styles.filterIconButton}
-            aria-label="Open filter preferences"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-              <circle cx="8" cy="6" r="2" fill="#ffffff" />
-              <circle cx="16" cy="12" r="2" fill="#ffffff" />
-              <circle cx="10" cy="18" r="2" fill="#ffffff" />
-            </svg>
-          </button>
         </div>
       </header>
 
       {/* Queue Filter Tabs (Overdue, Today, Unassigned) */}
       {canTasks && onSelectQueue && queueCounts && (
-        <div className={styles.queueTabs} role="tablist" aria-label="Follow-up queue selector">
+        <div className={styles.queueTabs} role="tablist" aria-label="Queue views">
           {(["overdue", "today", "unassigned"] as OverviewQueue[]).map((q) => (
             <button
               key={q}
@@ -214,17 +190,17 @@ export function ConyestTransactionsTable({
         {!recordsReady ? (
           <div className={styles.emptyState}>Records couldn&apos;t be loaded.</div>
         ) : rows.length === 0 ? (
-          <div className={styles.emptyState}>No transactions recorded.</div>
+          <div className={styles.emptyState}>No active touchpoints in this queue.</div>
         ) : (
           <table className={styles.table}>
             <thead>
               <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Type</th>
-                <th scope="col">Date</th>
+                <th scope="col">Client</th>
+                <th scope="col">Domain / Scope</th>
+                <th scope="col">Schedule</th>
                 <th scope="col">Time</th>
-                <th scope="col">Amount</th>
-                <th scope="col">Note</th>
+                <th scope="col">Expected Value</th>
+                <th scope="col">Stage &amp; Owner</th>
                 <th scope="col">Status</th>
               </tr>
             </thead>
@@ -240,15 +216,7 @@ export function ConyestTransactionsTable({
                     {row.note}
                   </td>
                   <td className={styles.statusCell}>
-                    <span
-                      className={`${styles.statusPill} ${
-                        row.status === "Failed"
-                          ? styles.statusFailed
-                          : row.status === "Completed"
-                            ? styles.statusCompleted
-                            : styles.statusPending
-                      }`}
-                    >
+                    <span className={`${styles.statusPill} ${getStatusBadgeClass(row.status)}`}>
                       {row.status}
                     </span>
                   </td>

@@ -209,22 +209,30 @@
   border: 1px solid transparent;
 }
 
+.statusOverdue,
 .statusFailed {
   border-color: #fca5a5;
-  color: #ef4444;
-  background: #fef2f2;
+  color: #ea002a;
+  background: #fff0f2;
+}
+
+.statusDueToday,
+.statusPending {
+  border-color: #fde68a;
+  color: #b45309;
+  background: #fffbeb;
 }
 
 .statusCompleted {
-  border-color: #cbd5e1;
-  color: #0f172a;
-  background: #ffffff;
+  border-color: #a7f3d0;
+  color: #065f46;
+  background: #ecfdf5;
 }
 
-.statusPending {
-  border-color: #fde68a;
-  color: #d97706;
-  background: #fffbeb;
+.statusUnassigned {
+  border-color: #e2e8f0;
+  color: #64748b;
+  background: #f8fafc;
 }
 
 .emptyState {

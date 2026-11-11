@@ -1,49 +1,61 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import styles from "./ConyestMetricsGrid.module.scss";
 
 export interface ConyestMetricsGridProps {
   userName?: string;
   balanceAmount?: string;
+  metaLabel1?: string;
+  metaVal1?: string;
+  metaLabel2?: string;
+  metaVal2?: string;
+  card2Title?: string;
   incomeAmount?: string;
   incomeDelta?: string;
   incomeSubtitle?: string;
+  card3Title?: string;
   expensesAmount?: string;
   expensesDelta?: string;
   expensesSubtitle?: string;
+  card4Title?: string;
   savingAmount?: string;
   savingDelta?: string;
   savingSubtitle?: string;
-  cardExp?: string;
-  cardCvv?: string;
 }
 
 /**
- * ConyestMetricsGrid presents the signature 4-card top metric band:
- * 1. Deep forest obsidian virtual account card with fluid concentric watermarks & toggle switch.
- * 2. Total Income scorecard with green positive delta pill.
- * 3. Total Expenses scorecard with red negative delta pill.
- * 4. Total Saving scorecard with green positive delta pill.
+ * ConyestMetricsGrid presents the signature 4-card commercial telemetry band:
+ * 1. Signature Obsidian Commercial Desk Card with live status indicator and executive metadata.
+ * 2. Closed Converted Value scorecard with positive delta trend pill and prior-period baseline.
+ * 3. Weighted Pipeline Potential scorecard with probability ratio and active deal count.
+ * 4. Commercial Velocity scorecard with deal cycle turnaround and realization benchmarks.
  *
- * Invariant: Preserves tabular numerics and explicit accessibility contrast.
+ * Invariant: Preserves tabular numerics and explicit accessibility contrast. Zero USD dummy signs.
  */
 export function ConyestMetricsGrid({
-  userName = "JAMIE SMITH",
-  balanceAmount = "$432,568",
-  incomeAmount = "$42,560",
-  incomeDelta = "↗ 2.84%",
-  incomeSubtitle = "Last month $38,568",
-  expensesAmount = "$28,358",
-  expensesDelta = "↘ 4.78%",
-  expensesSubtitle = "Last month $26,340",
-  savingAmount = "$14,202",
-  savingDelta = "↗ 1.98%",
-  savingSubtitle = "Last month $12,230",
-  cardExp = "11/29",
-  cardCvv = "232",
+  userName = "MARCA UBI DESK",
+  balanceAmount = "₹ 65,40,000",
+  metaLabel1 = "ACTIVE DEALS",
+  metaVal1 = "39 Deals",
+  metaLabel2 = "WEIGHTED",
+  metaVal2 = "₹ 28,35,800",
+  card2Title = "Closed Converted Value",
+  incomeAmount = "₹ 23,54,500",
+  incomeDelta = "↗ +14.2%",
+  incomeSubtitle = "vs previous 30 days",
+  card3Title = "Weighted Pipeline Potential",
+  expensesAmount = "₹ 28,35,800",
+  expensesDelta = "43.4%",
+  expensesSubtitle = "Stage probability weighted · 39 deals",
+  card4Title = "Commercial Velocity",
+  savingAmount = "18.4 days",
+  savingDelta = "Target < 21d",
+  savingSubtitle = "Average intake-to-close velocity",
 }: ConyestMetricsGridProps): React.ReactElement {
-  const [isVirtualCardActive, setIsVirtualCardActive] = useState(true);
+  const isIncomeNegative = incomeDelta.includes("↘") || incomeDelta.includes("-");
+  const isExpensesNegative = expensesDelta.includes("↘") || expensesDelta.includes("-");
+  const isSavingNegative = savingDelta.includes("↘") || savingDelta.includes("-");
 
   return (
     <section className={styles.metricsGrid} aria-label="Executive financial telemetry">
@@ -63,76 +75,77 @@ export function ConyestMetricsGrid({
           />
           <path
             d="M10 150C10 45.1966 88.1966 -33 183 -33"
-            stroke="rgba(255, 255, 255, 0.08)"
+            stroke="rgba(255, 255, 255, 0.06)"
             strokeWidth="1.5"
           />
           <path
             d="M90 150C90 89.2487 139.249 40 200 40"
-            stroke="rgba(148, 230, 34, 0.16)"
+            stroke="rgba(255, 255, 255, 0.12)"
             strokeWidth="1.5"
           />
         </svg>
 
         <div className={styles.virtualTopRow}>
           <span className={styles.virtualUserTag}>{userName}</span>
-          <button
-            type="button"
-            className={`${styles.toggleSwitch} ${!isVirtualCardActive ? styles.toggleOff : ""}`}
-            onClick={() => setIsVirtualCardActive((prev) => !prev)}
-            aria-label="Toggle virtual card active status"
-            aria-pressed={isVirtualCardActive}
-          >
-            <span className={styles.toggleThumb} />
-          </button>
+          <div className={styles.activeDeskBadge}>
+            <span className={styles.activeDot} aria-hidden="true" />
+            <span>Active Desk</span>
+          </div>
         </div>
 
         <div className={styles.virtualBalanceArea}>
-          <span className={styles.virtualLabel}>Balance</span>
+          <span className={styles.virtualLabel}>Active Pipeline</span>
           <strong className={styles.virtualAmount}>{balanceAmount}</strong>
         </div>
 
         <div className={styles.virtualFooterRow}>
           <div className={styles.virtualMetaItem}>
-            <span>EXP</span>
-            <strong>{cardExp}</strong>
+            <span>{metaLabel1}</span>
+            <strong>{metaVal1}</strong>
           </div>
           <div className={styles.virtualMetaItem}>
-            <span>CVV</span>
-            <strong>{cardCvv}</strong>
+            <span>{metaLabel2}</span>
+            <strong>{metaVal2}</strong>
           </div>
         </div>
       </article>
 
-      {/* Card 2: Total Income */}
-      <article className={styles.scorecard} aria-label="Total Income summary">
-        <h2 className={styles.cardTitle}>Total Income</h2>
+      {/* Card 2: Converted Revenue */}
+      <article className={styles.scorecard} aria-label={`${card2Title} summary`}>
+        <h2 className={styles.cardTitle}>{card2Title}</h2>
         <div className={styles.metricValue}>{incomeAmount}</div>
         <footer className={styles.cardFooter}>
-          <span className={`${styles.trendPill} ${styles.trendPositive}`}>
+          <span
+            className={`${styles.trendPill} ${isIncomeNegative ? styles.trendNegative : styles.trendPositive}`}
+          >
             {incomeDelta}
           </span>
           <span className={styles.subtitle}>{incomeSubtitle}</span>
         </footer>
       </article>
 
-      {/* Card 3: Total Expenses */}
-      <article className={styles.scorecard} aria-label="Total Expenses summary">
-        <h2 className={styles.cardTitle}>Total Expenses</h2>
+      {/* Card 3: Weighted Potential */}
+      <article className={styles.scorecard} aria-label={`${card3Title} summary`}>
+        <h2 className={styles.cardTitle}>{card3Title}</h2>
         <div className={styles.metricValue}>{expensesAmount}</div>
         <footer className={styles.cardFooter}>
-          <span className={`${styles.trendPill} ${styles.trendNegative}`}>
+          <span
+            className={`${styles.trendPill} ${isExpensesNegative ? styles.trendNegative : styles.trendNeutral}`}
+          >
             {expensesDelta}
           </span>
           <span className={styles.subtitle}>{expensesSubtitle}</span>
         </footer>
       </article>
 
-      {/* Card 4: Total Saving */}
-      <article className={styles.scorecard} aria-label="Total Saving summary">
-        <h2 className={styles.cardTitle}>Total Saving</h2>
+      {/* Card 4: Commercial Velocity */}
+      <article className={styles.scorecard} aria-label={`${card4Title} summary`}>
+        <h2 className={styles.cardTitle}>{card4Title}</h2>
         <div className={styles.metricValue}>{savingAmount}</div>
         <footer className={styles.cardFooter}>
-          <span className={`${styles.trendPill} ${styles.trendPositive}`}>
+          <span
+            className={`${styles.trendPill} ${isSavingNegative ? styles.trendNegative : styles.trendPositive}`}
+          >
             {savingDelta}
           </span>
           <span className={styles.subtitle}>{savingSubtitle}</span>

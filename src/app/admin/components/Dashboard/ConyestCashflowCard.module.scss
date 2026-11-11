@@ -102,14 +102,14 @@
   width: 10px;
   height: 10px;
   border-radius: 3px;
-  background: var(--conyest-accent-lime, #94e622);
+  background: var(--admin-text-primary, #111111);
 }
 
 .legendExpenseDot {
   width: 10px;
   height: 10px;
   border-radius: 3px;
-  background: var(--conyest-dark-forest, #1f4843);
+  background: var(--admin-accent-brand, #ea002a);
 }
 
 .chartContainer {
@@ -130,8 +130,9 @@
   stroke-width: 1;
 }
 
+.zeroLine,
 .axisZeroLine {
-  stroke: #e2e8f0;
+  stroke: #d8d8d4;
   stroke-width: 1.2;
 }
 
@@ -152,36 +153,51 @@
   cursor: pointer;
   transition: fill 120ms ease;
 
+  &.selectedMonthLabel,
   &.activeMonthLabel {
-    fill: #0f172a;
+    fill: #111111;
     font-weight: 700;
   }
 }
 
+.barColumn {
+  cursor: pointer;
+  outline: none;
+
+  &:hover .incomeBar,
+  &:hover .barIncome {
+    fill: #333330;
+  }
+
+  &:hover .expenseBar,
+  &:hover .barExpense {
+    fill: #c40023;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.incomeBar,
 .barIncome {
-  fill: var(--conyest-accent-lime, #94e622);
+  fill: var(--admin-text-primary, #111111);
   transition: fill 120ms ease;
   cursor: pointer;
-
-  &:hover {
-    fill: #85d71c;
-  }
 }
 
+.expenseBar,
 .barExpense {
-  fill: var(--conyest-dark-forest, #1f4843);
+  fill: var(--admin-accent-brand, #ea002a);
   transition: fill 120ms ease;
   cursor: pointer;
-
-  &:hover {
-    fill: #183e39;
-  }
 }
 
+.activeHalo,
 .haloCapsule {
-  fill: rgba(226, 242, 203, 0.45);
-  stroke: var(--conyest-halo-border, #b9e57d);
-  stroke-width: 2;
+  fill: rgba(17, 17, 17, 0.04);
+  stroke: rgba(17, 17, 17, 0.14);
+  stroke-width: 1.5;
   rx: 14;
   ry: 14;
   pointer-events: none;
