@@ -264,6 +264,11 @@
   cursor: pointer;
   transition: all 120ms ease;
 
+  @media (pointer: coarse), (max-width: 768px) {
+    min-height: 44px;
+    padding: 0 12px;
+  }
+
   &:hover {
     background: #ebebeb;
     border-color: #d0d0cc;
@@ -334,6 +339,11 @@
   border-radius: 6px;
   font-size: 0.75rem;
   cursor: pointer;
+
+  @media (pointer: coarse), (max-width: 768px) {
+    min-height: 44px;
+    min-width: 44px;
+  }
 
   &:disabled {
     opacity: 0.4;

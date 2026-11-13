@@ -322,28 +322,54 @@ export function OverviewWorkspace({
       </section>
 
       {/* 5. Guarded Stage Advancement Modal Integration */}
-      {isStageModalOpen && targetTransitionRecord && (
-        <StageTransitionModal
-          isOpen={isStageModalOpen}
-          onClose={() => {
-            setIsStageModalOpen(false);
-            setTargetTransitionRecord(null);
-          }}
-          leadId={targetTransitionRecord.id}
-          dealName={targetTransitionRecord.name}
-          currentExpectedValue={targetTransitionRecord.expectedValue ?? 0}
-          targetStatus={{
-            id: "next-stage",
-            name: "Negotiation",
-            bucket: "potential",
-          }}
-          onSuccess={() => {
-            setIsStageModalOpen(false);
-            setTargetTransitionRecord(null);
-            router.refresh();
-          }}
-        />
-      )}
+      {isStageModalOpen && targetTransitionRecord && (() => {
+        const currentStageIndex = data.stages.findIndex(
+          (s) =>
+            s.name.toLowerCase() === targetTransitionRecord.stage.toLowerCase() ||
+            s.id === targetTransitionRecord.stage
+        );
+        const resolvedNext =
+          currentStageIndex >= 0 && currentStageIndex < data.stages.length - 1
+            ? data.stages[currentStageIndex + 1]
+            : data.stages[data.stages.length - 1] || {
+                id: "next-stage",
+                name: "Negotiation",
+                count: 0,
+                value: null,
+              };
+
+        const targetBucket: FunnelBucket =
+          resolvedNext.name.toLowerCase().includes("won") ||
+          resolvedNext.name.toLowerCase().includes("converted")
+            ? "converted"
+            : resolvedNext.name.toLowerCase().includes("lost") ||
+              resolvedNext.name.toLowerCase().includes("hold")
+            ? "lost"
+            : "potential";
+
+        return (
+          <StageTransitionModal
+            isOpen={isStageModalOpen}
+            onClose={() => {
+              setIsStageModalOpen(false);
+              setTargetTransitionRecord(null);
+            }}
+            leadId={targetTransitionRecord.id}
+            dealName={targetTransitionRecord.name}
+            currentExpectedValue={targetTransitionRecord.expectedValue ?? 0}
+            targetStatus={{
+              id: resolvedNext.id,
+              name: resolvedNext.name,
+              bucket: targetBucket,
+            }}
+            onSuccess={() => {
+              setIsStageModalOpen(false);
+              setTargetTransitionRecord(null);
+              router.refresh();
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }

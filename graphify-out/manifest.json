@@ -1134,9 +1134,9 @@
     "semantic_hash": "4572fabb70ae9163d445232dab7729ee"
   },
   "src/app/admin/components/layout/AdminSidebar.tsx": {
-    "mtime": 1794567057.7269342,
-    "seen": 1794567937.030498,
-    "ast_hash": "c9da2156005ff8d208e5cefcbd14e3db",
+    "mtime": 1794568468.833749,
+    "seen": 1794568808.494647,
+    "ast_hash": "fe812b9c90c3479f40e10e113c6d9075",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminWorkspaceShell.tsx": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794557885.3911147,
-    "seen": 1794567937.0319965,
-    "ast_hash": "4a1da6e192b225b03e8c299ee7e55244",
+    "mtime": 1794567989.6465483,
+    "seen": 1794568808.4956474,
+    "ast_hash": "632069d6ef3cc5f49994e281f8a0f08e",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794567811.7428963,
-    "seen": 1794567937.030498,
-    "ast_hash": "eeffda5e23801b2f187c2b08d9469fdc",
+    "mtime": 1794568702.458321,
+    "seen": 1794568808.4941614,
+    "ast_hash": "4c6503044b5c540858a1d9bc8e1f5d2c",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5988,9 +5988,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CadenceUrgencyRail.tsx": {
-    "mtime": 1794567168.0537145,
-    "seen": 1794567937.030498,
-    "ast_hash": "a2e100965dbeac870a207dafea193ce6",
+    "mtime": 1794568694.317755,
+    "seen": 1794568808.4941614,
+    "ast_hash": "e5e3be5a344d04b9a02df4361461a88a",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialActionDesk.tsx": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1794567168.0501575,
-    "seen": 1794567937.030498,
-    "ast_hash": "2f70bf0a1e2e7216ba4d5062968f6550",
+    "mtime": 1794568473.480873,
+    "seen": 1794568808.4941614,
+    "ast_hash": "b87e143155ad33ad47ef64ad61693318",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6015,6 +6015,12 @@
     "mtime": 1794557734.8788612,
     "seen": 1794567937.0319965,
     "ast_hash": "cf684a0e1924bc66ff8d0ffd35bc5fd0",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-13_16-35-00.md": {
+    "mtime": 1794567978.8056347,
+    "seen": 1794568808.4956474,
+    "ast_hash": "2624cd7c8dc3d8ce65bb63a15641edeb",
     "semantic_hash": ""
   },
   "package-lock.json": {

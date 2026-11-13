@@ -377,6 +377,11 @@
   text-decoration: none;
   transition: all 140ms ease;
 
+  @media (pointer: coarse), (max-width: 768px) {
+    min-height: 44px;
+    padding: 0 14px;
+  }
+
   &:focus-visible {
     outline: 2px solid var(--admin-focus-ring, #9c001e);
     outline-offset: 2px;

@@ -36,6 +36,18 @@ export interface AdminSidebarProps {
   monthlyCadenceTarget?: number;
 }
 
+function formatCompactInr(value: number): string {
+  if (value >= 100000) {
+    const inLakhs = value / 100000;
+    return `₹${Number.isInteger(inLakhs) ? inLakhs : inLakhs.toFixed(2).replace(/\.?0+$/, "")}L`;
+  }
+  if (value >= 1000) {
+    const inThousands = value / 1000;
+    return `₹${Number.isInteger(inThousands) ? inThousands : inThousands.toFixed(1)}k`;
+  }
+  return `₹${value.toLocaleString("en-IN")}`;
+}
+
 export function AdminSidebar({
   currentUser,
   isCollapsed,
@@ -172,7 +184,8 @@ export function AdminSidebar({
           <div className={styles.cadenceHeader}>
             <span className={styles.cadenceCaption}>Monthly Cadence</span>
             <span className={styles.cadenceNumbers}>
-              ₹4.45L / ₹15L <span className={styles.cadenceSeparator}>•</span> {cadencePercent}%
+              {formatCompactInr(monthlyCadenceCurrent)} / {formatCompactInr(monthlyCadenceTarget)}{" "}
+              <span className={styles.cadenceSeparator}>•</span> {cadencePercent}%
             </span>
           </div>
           <div className={styles.cadenceTrack} aria-hidden="true">

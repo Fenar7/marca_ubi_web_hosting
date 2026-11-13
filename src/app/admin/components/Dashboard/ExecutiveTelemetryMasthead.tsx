@@ -297,7 +297,7 @@ export function ExecutiveTelemetryMasthead({
           <div className={styles.primaryMetric}>
             {averageCycleDays !== null
               ? `${averageCycleDays.toFixed(1)} days`
-              : "18.5 days"}
+              : "Unavailable"}
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>

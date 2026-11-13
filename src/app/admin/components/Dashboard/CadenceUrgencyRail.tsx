@@ -36,12 +36,15 @@ export function CadenceUrgencyRail({
   onEmailAction,
   onSnoozeAction,
 }: CadenceUrgencyRailProps): React.ReactElement {
-  // Revenue Realization Target Math
-  const realizedRevenue = convertedValue ?? 445000;
-  const realizationPercentage = Math.min(
-    100,
-    Math.round((realizedRevenue / targetMonthlyRevenue) * 100)
-  );
+  // Revenue Realization Target Math (Guarding against fabricated defaults)
+  const isConvertedAvailable = convertedValue !== null;
+  const realizedRevenue = convertedValue ?? 0;
+  const realizationPercentage = isConvertedAvailable
+    ? Math.min(
+        100,
+        Math.max(0, Math.round((realizedRevenue / (targetMonthlyRevenue || 1)) * 100))
+      )
+    : 0;
   const deltaRemaining = Math.max(0, targetMonthlyRevenue - realizedRevenue);
 
   // Filter urgent records (overdue or due today)
@@ -78,6 +81,7 @@ export function CadenceUrgencyRail({
 
         return {
           id: rec.id,
+          leadId: rec.leadId || rec.id,
           name: rec.name,
           reason,
           overdueInterval,
@@ -132,11 +136,15 @@ export function CadenceUrgencyRail({
           <div className={styles.targetNumBlock}>
             <span className={styles.realizedLabel}>Realized (Month)</span>
             <span className={styles.realizedAmount}>
-              {financials ? formatCrmCurrency(realizedRevenue) : "Confidential"}
+              {!financials
+                ? "Confidential"
+                : !isConvertedAvailable
+                ? "Unavailable"
+                : formatCrmCurrency(realizedRevenue)}
             </span>
           </div>
           <div className={styles.percentageBadge}>
-            {realizationPercentage}%
+            {!isConvertedAvailable ? "—" : `${realizationPercentage}%`}
           </div>
         </div>
 
@@ -144,13 +152,13 @@ export function CadenceUrgencyRail({
         <div
           className={styles.progressTrack}
           role="progressbar"
-          aria-valuenow={realizationPercentage}
+          aria-valuenow={isConvertedAvailable ? realizationPercentage : 0}
           aria-valuemin={0}
           aria-valuemax={100}
         >
           <div
             className={styles.progressFill}
-            style={{ width: `${realizationPercentage}%` }}
+            style={{ width: `${isConvertedAvailable ? realizationPercentage : 0}%` }}
           />
         </div>
 
@@ -160,7 +168,13 @@ export function CadenceUrgencyRail({
             Target: {financials ? formatCrmCurrency(targetMonthlyRevenue) : "Confidential"}
           </span>
           <span className={styles.deltaRemaining}>
-            Delta: {financials ? formatCrmCurrency(deltaRemaining) : "Confidential"} to close
+            {!financials
+              ? "Confidential"
+              : !isConvertedAvailable
+              ? "Tracking unavailable"
+              : deltaRemaining > 0
+              ? `Delta: ${formatCrmCurrency(deltaRemaining)} to close`
+              : "Quota Achieved"}
           </span>
         </div>
       </section>
@@ -238,7 +252,16 @@ export function CadenceUrgencyRail({
                       if (onCallAction) {
                         onCallAction({ id: item.id, name: item.name });
                       } else {
-                        window.location.href = `tel:+919876543210`;
+                        window.dispatchEvent(
+                          new CustomEvent("open-lead-drawer", {
+                            detail: {
+                              leadId: item.leadId || item.id,
+                              id: item.id,
+                              tab: "activity",
+                              intent: "call",
+                            },
+                          })
+                        );
                       }
                     }}
                     aria-label={`Call ${item.name}`}
@@ -265,9 +288,16 @@ export function CadenceUrgencyRail({
                       if (onEmailAction) {
                         onEmailAction({ id: item.id, name: item.name });
                       } else {
-                        window.location.href = `mailto:client@example.com?subject=Follow-up%3A%20${encodeURIComponent(
-                          item.name
-                        )}`;
+                        window.dispatchEvent(
+                          new CustomEvent("open-lead-drawer", {
+                            detail: {
+                              leadId: item.leadId || item.id,
+                              id: item.id,
+                              tab: "activity",
+                              intent: "email",
+                            },
+                          })
+                        );
                       }
                     }}
                     aria-label={`Email ${item.name}`}
