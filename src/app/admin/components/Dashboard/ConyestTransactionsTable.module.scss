@@ -1,9 +1,9 @@
 .transactionsCard {
   background: #ffffff;
-  border: 1px solid var(--conyest-card-border, #f1f5f9);
+  border: 1px solid var(--admin-card-border, #e7e7e4);
   border-radius: var(--conyest-radius-card, 20px);
   padding: 24px;
-  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03);
+  box-shadow: 0 1px 3px rgba(12, 12, 13, 0.03), 0 6px 16px -4px rgba(12, 12, 13, 0.04);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -27,8 +27,9 @@
 .cardTitle {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #111111;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .headerControls {
@@ -47,25 +48,7 @@
   border-radius: 9999px;
   font-size: 13px;
   font-weight: 500;
-  color: #0f172a;
-  cursor: pointer;
-  transition: border-color 140ms ease, background 140ms ease;
-
-  &:hover {
-    border-color: #cbd5e1;
-    background: #f8fafc;
-  }
-}
-
-.filterIconButton {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  color: #0f172a;
+  color: #111111;
   cursor: pointer;
   transition: border-color 140ms ease, background 140ms ease;
 
@@ -87,33 +70,51 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 9999px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: #64748b;
   cursor: pointer;
   transition: all 120ms ease;
 
-  span {
-    padding: 1px 6px;
-    background: rgba(0, 0, 0, 0.06);
-    border-radius: 9999px;
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
+  &:hover {
+    background: #f1f5f9;
+    color: #111111;
   }
 
   &.activeQueueTab {
-    background: #0f172a;
-    border-color: #0f172a;
+    background: #111111;
+    border-color: #111111;
     color: #ffffff;
+  }
+}
 
-    span {
-      background: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-    }
+.tabCountPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+
+  .activeQueueTab & {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+}
+
+.tabCountOverdue {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+
+  .activeQueueTab & {
+    background: #ea002a !important;
+    color: #ffffff !important;
   }
 }
 
@@ -126,22 +127,24 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  min-width: 720px;
+  min-width: 760px;
 
   th {
-    padding: 12px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #94a3b8;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 10px 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 1px solid #ebebea;
     white-space: nowrap;
   }
 
   td {
-    padding: 16px 14px;
-    font-size: 14px;
+    padding: 14px;
+    font-size: 13.5px;
     border-bottom: 1px solid #f1f5f9;
-    color: #0f172a;
+    color: #111111;
     vertical-align: middle;
   }
 
@@ -150,28 +153,81 @@
     cursor: pointer;
 
     &:hover {
-      background: #f8fafc;
+      background: #fafaf9;
+
+      .dossierBtn {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
     }
   }
 }
 
-.nameCell {
+/* Two-tier Client info with avatar */
+.clientCluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clientAvatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-family: var(--font-graphik, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.clientInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.clientName {
   font-weight: 600;
-  color: #0f172a;
+  color: #111111;
+  white-space: nowrap;
 }
 
-.typeCell {
+.clientScope {
+  font-size: 11.5px;
   color: #64748b;
-  font-size: 13px;
+  white-space: nowrap;
 }
 
-.dateCell {
-  color: #0f172a;
+/* Schedule with relative urgency */
+.scheduleCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scheduleDate {
+  font-weight: 500;
+  color: #111111;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.timeCell {
+.urgencyText {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ea002a;
+  white-space: nowrap;
+}
+
+.scheduleTime {
+  font-size: 11.5px;
   color: #64748b;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -180,40 +236,57 @@
 .amountCell {
   font-family: var(--font-circular, sans-serif);
   font-weight: 700;
-  color: #0f172a;
+  color: #111111;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.noteCell {
+/* Owner & Stage */
+.ownerCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stagePill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.ownerName {
+  font-size: 11.5px;
   color: #64748b;
-  font-size: 13px;
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.statusCell {
-  white-space: nowrap;
+/* Status & Action */
+.actionCluster {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .statusPill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 600;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .statusOverdue,
 .statusFailed {
-  border-color: #fca5a5;
-  color: #ea002a;
-  background: #fff0f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fee2e2;
 }
 
 .statusDueToday,
@@ -235,9 +308,31 @@
   background: #f8fafc;
 }
 
+.dossierBtn {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(2px);
+  transition: all 140ms ease;
+  padding: 3px 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #111111;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: #111111;
+    color: #ffffff;
+    border-color: #111111;
+  }
+}
+
 .emptyState {
-  padding: 32px 16px;
+  padding: 36px 16px;
   text-align: center;
   color: #64748b;
-  font-size: 14px;
+  font-size: 13.5px;
 }

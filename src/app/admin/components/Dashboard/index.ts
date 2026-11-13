@@ -34,4 +34,10 @@ export { ConyestMetricsGrid, type ConyestMetricsGridProps } from './ConyestMetri
 export { ConyestCashflowCard, type ConyestCashflowCardProps, type MonthlyCashflowPoint } from './ConyestCashflowCard';
 export { ConyestStatisticCard, type ConyestStatisticCardProps, type StatisticCategoryItem } from './ConyestStatisticCard';
 export { ConyestTransactionsTable, type ConyestTransactionsTableProps, type TransactionRow } from './ConyestTransactionsTable';
+
+// Swiss Editorial Luxury Commercial Desk Modules
+export { PipelineStageFlowBar, type PipelineStageFlowBarProps, type PipelineStageFlowItem } from './PipelineStageFlowBar';
+export { ExecutiveTelemetryMasthead, type ExecutiveTelemetryMastheadProps } from './ExecutiveTelemetryMasthead';
+export { CommercialActionDesk, type CommercialActionDeskProps, type DeskFilterTab } from './CommercialActionDesk';
+export { CadenceUrgencyRail, type CadenceUrgencyRailProps } from './CadenceUrgencyRail';
 export { OverviewWorkspace, type OverviewData, type OverviewRecord } from './OverviewWorkspace';

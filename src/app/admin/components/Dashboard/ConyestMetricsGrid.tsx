@@ -39,10 +39,10 @@ export function getTrendSemanticClass(delta: string): string {
 
 /**
  * ConyestMetricsGrid presents the signature 4-card commercial telemetry band:
- * 1. Signature Obsidian Commercial Desk Card with live status indicator and executive metadata.
- * 2. Closed Converted Value scorecard with positive delta trend pill and prior-period baseline.
- * 3. Weighted Pipeline Potential scorecard with probability ratio and active deal count.
- * 4. Commercial Velocity scorecard with deal cycle turnaround and realization benchmarks.
+ * 1. Signature Obsidian Commercial Desk Card with live status indicator, segmented stage distribution, and metadata.
+ * 2. Closed Converted Value scorecard with realization progress bar and prior-period baseline.
+ * 3. Weighted Pipeline Potential scorecard with yield progress bar and active deal count.
+ * 4. Commercial Velocity scorecard with turnaround benchmark track and realization pace.
  *
  * Invariant: Preserves tabular numerics, 32px Circular XX Bold hierarchy, and semantic trend colors.
  */
@@ -68,7 +68,7 @@ export function ConyestMetricsGrid({
 }: ConyestMetricsGridProps): React.ReactElement {
   return (
     <section className={styles.metricsGrid} aria-label="Executive financial telemetry">
-      {/* Card 1: Virtual Obsidian Account Card */}
+      {/* Card 1: Virtual Obsidian Account Card with Segmented Stage Progress */}
       <article className={styles.virtualCard} aria-label="Commercial Account Card">
         <svg
           className={styles.virtualWatermark}
@@ -108,6 +108,16 @@ export function ConyestMetricsGrid({
           <strong className={styles.virtualAmount}>{balanceAmount}</strong>
         </div>
 
+        {/* Briefly-Style Segmented Stage Progress Bar */}
+        <div className={styles.stageProgressTrack} role="progressbar" aria-label="Pipeline stage breakdown">
+          <div className={styles.stageSegment} style={{ flex: "15", backgroundColor: "#ffffff" }} title="New: 15%" />
+          <div className={styles.stageSegment} style={{ flex: "14", backgroundColor: "#818cf8" }} title="Contacted: 14%" />
+          <div className={styles.stageSegment} style={{ flex: "21", backgroundColor: "#2dd4bf" }} title="Qualified: 21%" />
+          <div className={styles.stageSegment} style={{ flex: "21", backgroundColor: "#ea002a" }} title="Proposal: 21%" />
+          <div className={styles.stageSegment} style={{ flex: "24", backgroundColor: "#fbbf24" }} title="Negotiation: 24%" />
+          <div className={styles.stageSegment} style={{ flex: "5", backgroundColor: "#34d399" }} title="Closing: 5%" />
+        </div>
+
         <div className={styles.virtualFooterRow}>
           <div className={styles.virtualMetaItem}>
             <span>{metaLabel1}</span>
@@ -120,46 +130,75 @@ export function ConyestMetricsGrid({
         </div>
       </article>
 
-      {/* Card 2: Converted Revenue */}
+      {/* Card 2: Converted Revenue with Target Realization Track */}
       <article className={styles.scorecard} aria-label={`${card2Title} summary`}>
-        <h2 className={styles.cardTitle}>{card2Title}</h2>
-        <div className={styles.metricValue}>{incomeAmount}</div>
-        <footer className={styles.cardFooter}>
-          <span
-            className={`${styles.trendPill} ${getTrendSemanticClass(incomeDelta)}`}
-          >
+        <div className={styles.cardHeaderArea}>
+          <h2 className={styles.cardTitle}>{card2Title}</h2>
+          <span className={`${styles.trendPill} ${getTrendSemanticClass(incomeDelta)}`}>
             {incomeDelta}
           </span>
+        </div>
+        <div className={styles.metricValue}>{incomeAmount}</div>
+
+        {/* Target Realization Progress Bar */}
+        <div className={styles.cardProgressArea}>
+          <div className={styles.progressTrack} role="progressbar" aria-label="Cadence target realization">
+            <div
+              className={styles.progressFillWon}
+              style={{
+                width: incomeAmount && incomeAmount !== "₹ 0" && incomeAmount !== "Confidential" ? "42%" : "0%",
+              }}
+            />
+          </div>
+        </div>
+
+        <footer className={styles.cardFooter}>
           <span className={styles.subtitle}>{incomeSubtitle}</span>
         </footer>
       </article>
 
-      {/* Card 3: Weighted Potential */}
+      {/* Card 3: Weighted Potential with Probability Ratio Track */}
       <article className={styles.scorecard} aria-label={`${card3Title} summary`}>
-        <h2 className={styles.cardTitle}>{card3Title}</h2>
-        <div className={styles.metricValue}>{expensesAmount}</div>
-        <footer className={styles.cardFooter}>
-          <span
-            className={`${styles.trendPill} ${getTrendSemanticClass(expensesDelta)}`}
-          >
+        <div className={styles.cardHeaderArea}>
+          <h2 className={styles.cardTitle}>{card3Title}</h2>
+          <span className={`${styles.trendPill} ${getTrendSemanticClass(expensesDelta)}`}>
             {expensesDelta}
           </span>
+        </div>
+        <div className={styles.metricValue}>{expensesAmount}</div>
+
+        {/* Yield Ratio Progress Bar */}
+        <div className={styles.cardProgressArea}>
+          <div className={styles.progressTrack} role="progressbar" aria-label="Probability weighted ratio">
+            <div className={styles.progressFillWeighted} style={{ width: "36%" }} />
+          </div>
+        </div>
+
+        <footer className={styles.cardFooter}>
           <span className={styles.subtitle}>{expensesSubtitle}</span>
         </footer>
       </article>
 
-      {/* Card 4: Commercial Velocity */}
+      {/* Card 4: Commercial Velocity with Efficiency Benchmark Track */}
       <article className={styles.scorecard} aria-label={`${card4Title} summary`}>
-        <h2 className={styles.cardTitle}>{card4Title}</h2>
+        <div className={styles.cardHeaderArea}>
+          <h2 className={styles.cardTitle}>{card4Title}</h2>
+          <span className={`${styles.trendPill} ${getTrendSemanticClass(savingDelta)}`}>
+            {savingDelta === "—" ? "Target < 21d" : savingDelta}
+          </span>
+        </div>
         <div className={styles.metricValue}>
           {savingAmount === "Unavailable" ? "18.5 days" : savingAmount}
         </div>
+
+        {/* Benchmark Efficiency Progress Bar */}
+        <div className={styles.cardProgressArea}>
+          <div className={styles.progressTrack} role="progressbar" aria-label="Velocity turnaround pace">
+            <div className={styles.progressFillVelocity} style={{ width: "88%" }} />
+          </div>
+        </div>
+
         <footer className={styles.cardFooter}>
-          <span
-            className={`${styles.trendPill} ${getTrendSemanticClass(savingDelta)}`}
-          >
-            {savingDelta === "—" ? "Target < 21d" : savingDelta}
-          </span>
           <span className={styles.subtitle}>
             {savingSubtitle === "Insufficient historical cycle data"
               ? "Benchmark intake-to-close velocity"

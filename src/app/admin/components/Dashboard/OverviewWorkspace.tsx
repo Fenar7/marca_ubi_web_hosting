@@ -1,7 +1,19 @@
 "use client";
 
+/**
+ * @file OverviewWorkspace.tsx
+ * @description Master Commercial Desk & Overview Workspace for Marca Ubi Enterprise CRM (/admin).
+ *              Replaces the old Conyest bento layout with:
+ *              1. ExecutiveTelemetryMasthead (Timeframe controls, CSV export, 4 telemetry scorecards).
+ *              2. PipelineStageFlowBar (Interactive sequential stage filter).
+ *              3. Two-Column Working Grid: CommercialActionDesk (70%) + CadenceUrgencyRail (30%).
+ *              4. Guarded StageTransitionModal and Dossier Drawer integrations.
+ *              5. Outcomes & Governance Summary.
+ * @module admin/components/Dashboard/OverviewWorkspace
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 import React, { useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import {
@@ -10,22 +22,18 @@ import {
 } from "@/app/admin/lib/dashboardContracts";
 import type { CadenceLabel } from "@/app/admin/lib/timeframeUtils";
 import type { FunnelBucket } from "@/types/crm";
-import { largestRemainderRound } from "@/app/admin/lib/largestRemainder";
 import {
   TIMEFRAME_SLUG_LABELS,
   type DynamicRevenueSplinePoint,
   type TimeframeSlug,
 } from "@/app/admin/lib/timeframeUtils";
-import { ConyestMetricsGrid } from "./ConyestMetricsGrid";
-import { ConyestCashflowCard } from "./ConyestCashflowCard";
-import { ConyestStatisticCard } from "./ConyestStatisticCard";
-import { ConyestTransactionsTable } from "./ConyestTransactionsTable";
+import { ExecutiveTelemetryMasthead } from "./ExecutiveTelemetryMasthead";
+import { PipelineStageFlowBar } from "./PipelineStageFlowBar";
+import { CommercialActionDesk } from "./CommercialActionDesk";
+import { CadenceUrgencyRail } from "./CadenceUrgencyRail";
+import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
 import styles from "./OverviewWorkspace.module.scss";
 
-import { SWISS_STAGE_PALETTE } from "@/app/admin/lib/stagePalette";
-export { SWISS_STAGE_PALETTE };
-
-/** Preview rows contain structured commercial lead attributes for the queue ledger. */
 export interface OverviewRecord {
   id: string;
   leadId: string;
@@ -41,7 +49,6 @@ export interface OverviewRecord {
   href: string | null;
 }
 
-/** Server-owned availability flags distinguish a successful zero from a failed or restricted query. */
 export interface OverviewData {
   userName: string;
   generatedAt: string;
@@ -77,7 +84,6 @@ export interface OverviewData {
 const number = (value: number | null): string =>
   value === null ? "Unavailable" : value.toLocaleString("en-IN");
 
-/** Dates use explicit UTC formatting independent of browser timezone drift. */
 function dateLabel(value: string | null, includeTime = true): string {
   if (!value) return "Not scheduled";
   const date = new Date(value);
@@ -92,14 +98,6 @@ function dateLabel(value: string | null, includeTime = true): string {
   );
 }
 
-/**
- * OverviewWorkspace renders the Conyest Luxury Financial & Commercial Intelligence Workspace:
- * 1. Introduction Header with page title and Quick Action New Lead button.
- * 2. Conyest 4-Card Top Metrics Grid (Virtual Card + 3 White Scorecards).
- * 3. Conyest Middle Asymmetric Row (Dual-Directional Cashflow Bar Chart + Donut Statistic).
- * 4. Conyest Recent Transactions Ledger Table with queue tabs and dossier drawer wiring.
- * 5. Outcomes & Governance summary with audit controls and metric definitions.
- */
 export function OverviewWorkspace({
   data,
 }: {
@@ -108,350 +106,150 @@ export function OverviewWorkspace({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [, setPendingScope] = useState<"queue" | "timeframe" | "retry">("retry");
 
-  /** URL mutations preserve scope without triggering uncoordinated server hydration cascades. */
+  // Active Stage Filter State (Interconnects PipelineStageFlowBar and CommercialActionDesk)
+  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
+
+  // Guarded Stage Transition Modal State
+  const [isStageModalOpen, setIsStageModalOpen] = useState(false);
+  const [targetTransitionRecord, setTargetTransitionRecord] = useState<OverviewRecord | null>(null);
+
   function navigate(key: "queue" | "timeframe", value: string): void {
-    setPendingScope(key);
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
     startTransition(() =>
-      router.push(`/admin?${params.toString()}`, { scroll: false }),
+      router.push(`/admin?${params.toString()}`, { scroll: false })
     );
   }
 
-  /** Export contains only authorized, visible snapshot/outcome aggregates. */
   function exportSummary(): void {
-    if (
-      !data.canExport ||
-      !data.pipelineReady ||
-      !data.outcomesReady ||
-      isPending
-    )
+    if (!data.canExport || !data.pipelineReady || !data.outcomesReady || isPending)
       return;
+
     const rows: (string | number | null)[][] = [
-      [
-        "Marca Ubi dashboard summary",
-        "RLS-visible records; synthetic benchmarks excluded",
-      ],
+      ["Marca Ubi Commercial Desk Summary", "RLS-visible records"],
       ["Generated at (UTC)", data.generatedAt],
       ["Snapshot scope", "Current open and potential pipeline"],
       ["Active deals", data.pipelineCount],
       ...(data.financials
-        ? [
-            [
-              "Current pipeline value (INR)",
-              data.pipelineValue ?? "Unavailable",
-            ],
-          ]
+        ? [["Current pipeline value (INR)", data.pipelineValue ?? "Unavailable"]]
         : []),
       ["Outcomes window start (UTC)", data.periodStart],
       ["Outcomes window end (UTC)", data.periodEnd],
       ["Conversions in period", data.convertedCount],
       ...(data.financials
-        ? [
-            [
-              "Converted contract value (INR; not payments)",
-              data.convertedValue ?? "Unavailable",
-            ],
-          ]
+        ? [["Converted contract value (INR)", data.convertedValue ?? "Unavailable"]]
         : []),
       [],
-      [
-        "Current stage",
-        "Deal count",
-        ...(data.financials ? ["Expected value (INR)"] : []),
-      ],
+      ["Current stage", "Deal count", ...(data.financials ? ["Expected value (INR)"] : [])],
       ...data.stages.map((stage) => [
         stage.name,
         stage.count,
         ...(data.financials ? [stage.value ?? "Unavailable"] : []),
       ]),
     ];
+
     const blob = new Blob(
-      [
-        "\uFEFF" +
-          rows.map((row) => row.map(dashboardCsvCell).join(",")).join("\r\n"),
-      ],
-      { type: "text/csv;charset=utf-8" },
+      ["\uFEFF" + rows.map((row) => row.map(dashboardCsvCell).join(",")).join("\r\n")],
+      { type: "text/csv;charset=utf-8" }
     );
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `marca-ubi-summary-${data.timeframe}.csv`;
+    link.download = `marca-ubi-commercial-desk-${data.timeframe}.csv`;
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
   }
 
-  const retry = (
-    <button
-      type="button"
-      className={styles.textButton}
-      disabled={isPending}
-      onClick={() => {
-        setPendingScope("retry");
-        startTransition(() => router.refresh());
-      }}
-    >
-      Retry
-    </button>
-  );
+  const handleAdvanceStage = (record: OverviewRecord) => {
+    setTargetTransitionRecord(record);
+    setIsStageModalOpen(true);
+  };
+
+  const handleOpenDossier = (record: OverviewRecord) => {
+    if (record.href) {
+      router.push(record.href);
+    } else {
+      window.dispatchEvent(
+        new CustomEvent("open-lead-drawer", {
+          detail: { leadId: record.id, id: record.id },
+        })
+      );
+    }
+  };
 
   return (
     <div className={styles.overview}>
-      {/* Executive Workspace Toolbar */}
-      <header className={styles.workspaceToolbar}>
-        <div className={styles.toolbarLeft}>
-          <div className={styles.kickerCluster}>
-            <span className={styles.kicker}>Executive Commercial Desk</span>
-            <div className={styles.liveTelemetryBadge}>
-              <span className={styles.liveDot} aria-hidden="true" />
-              <span>Live Telemetry</span>
-            </div>
-          </div>
-          <h1 className={styles.workspaceTitle}>Dashboard</h1>
-        </div>
-
-        <div className={styles.toolbarRight}>
-          {data.canCreate && (
-            <button
-              type="button"
-              className={styles.primaryActionButton}
-              onClick={() =>
-                window.dispatchEvent(new CustomEvent("open-new-lead-modal"))
-              }
-              aria-label="Create a new commercial lead"
-            >
-              <span className={styles.plusIcon} aria-hidden="true">+</span>
-              <span>New lead</span>
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Row 1: Conyest 4-Card Top Metrics Grid */}
-      <ConyestMetricsGrid
+      {/* 1. Executive Telemetry Masthead */}
+      <ExecutiveTelemetryMasthead
         userName={data.userName || "MARCA UBI DESK"}
-        balanceAmount={
-          data.financials && data.pipelineValue !== null
-            ? formatCrmCurrency(data.pipelineValue)
-            : data.financials
-              ? "₹ 0"
-              : "Confidential"
-        }
-        metaLabel1="ACTIVE DEALS"
-        metaVal1={data.pipelineCount !== null ? `${data.pipelineCount} Deals` : "—"}
-        metaLabel2="WEIGHTED"
-        metaVal2={
-          data.financials && data.weightedPotential !== null
-            ? formatCrmCurrency(data.weightedPotential)
-            : "—"
-        }
-        card2Title="Closed Converted Value"
-        incomeAmount={
-          data.financials && data.convertedValue !== null
-            ? formatCrmCurrency(data.convertedValue)
-            : data.financials
-              ? "₹ 0"
-              : "Confidential"
-        }
-        incomeDelta={
-          data.revenueDelta !== null
-            ? data.revenueDelta === 0
-              ? "0.0%"
-              : `${data.revenueDelta > 0 ? "↗ +" : "↘ "}${data.revenueDelta}%`
-            : "—"
-        }
-        incomeSubtitle={
-          data.priorConvertedValue !== null && data.priorConvertedValue > 0
-            ? `Prior ${data.cadenceLabel} ${formatCrmCurrency(data.priorConvertedValue)}`
-            : data.convertedCount && data.convertedCount > 0
-              ? `${data.convertedCount} conversions in period`
-              : "Cadence target: ₹ 15L / month"
-        }
-        card3Title="Weighted Pipeline Potential"
-        expensesAmount={
-          data.financials && data.weightedPotential !== null
-            ? formatCrmCurrency(data.weightedPotential)
-            : data.financials
-              ? "₹ 0"
-              : "Confidential"
-        }
-        expensesDelta={
-          data.pipelineValue && data.weightedPotential
-            ? `${((data.weightedPotential / data.pipelineValue) * 100).toFixed(1)}%`
-            : "—"
-        }
-        expensesSubtitle={
-          data.pipelineCount
-            ? `Stage-weighted · ${data.pipelineCount} active deals`
-            : "Stage-weighted pipeline"
-        }
-        card4Title="Commercial Velocity"
-        savingAmount={
-          data.averageCycleDays !== null
-            ? `${data.averageCycleDays.toFixed(1)} days`
-            : "18.5 days"
-        }
-        savingDelta="Target < 21d"
-        savingSubtitle={
-          data.averageCycleDays !== null
-            ? "Average intake-to-close velocity"
-            : "Benchmark intake-to-close velocity"
-        }
+        timeframe={data.timeframe}
+        periodLabel={data.periodLabel}
+        cadenceLabel={data.cadenceLabel}
+        pipelineValue={data.pipelineValue}
+        pipelineCount={data.pipelineCount}
+        weightedPotential={data.weightedPotential}
+        convertedValue={data.convertedValue}
+        convertedCount={data.convertedCount}
+        revenueDelta={data.revenueDelta}
+        priorConvertedValue={data.priorConvertedValue}
+        averageCycleDays={data.averageCycleDays}
+        financials={data.financials}
+        canExport={data.canExport}
+        onExportSummary={exportSummary}
       />
 
-      {/* Row 2: Conyest Middle Asymmetric Charts Row (68% / 32% split) */}
-      <section className={styles.pipelineSection} aria-labelledby="pipeline-heading">
-        <h2 id="pipeline-heading" className={styles.srOnly}>
-          Pipeline &amp; Cashflow
-        </h2>
-        <div className={styles.conyestMiddleRow}>
-          <div className={styles.cashflowCol}>
-            <ConyestCashflowCard
-              cardTitle="Pipeline Velocity"
-              balanceLabel="Active Pipeline"
-              totalBalance={
-                data.financials && data.pipelineValue !== null
-                  ? formatCrmCurrency(data.pipelineValue)
-                  : data.financials
-                    ? "₹ 0"
-                    : "Confidential"
-              }
-              financials={data.financials}
-              periodLabel="This Year"
-              data={(() => {
-                if (!data.financials) {
-                  return [];
-                }
-
-                // Authentic Annual 12-Month Calendar Velocity Model
-                // Calibrated to total active pipeline value and historical realization cadence
-                const monthWeights = [
-                  { short: "Jan", full: "January 2026", intakeW: 0.08, wonW: 0.07 },
-                  { short: "Feb", full: "February 2026", intakeW: 0.07, wonW: 0.08 },
-                  { short: "Mar", full: "March 2026", intakeW: 0.09, wonW: 0.09 },
-                  { short: "Apr", full: "April 2026", intakeW: 0.08, wonW: 0.07 },
-                  { short: "May", full: "May 2026", intakeW: 0.09, wonW: 0.08 },
-                  { short: "Jun", full: "June 2026", intakeW: 0.08, wonW: 0.07 },
-                  { short: "Jul", full: "July 2026", intakeW: 0.09, wonW: 0.09 },
-                  { short: "Aug", full: "August 2026", intakeW: 0.11, wonW: 0.10 },
-                  { short: "Sep", full: "September 2026", intakeW: 0.09, wonW: 0.08 },
-                  { short: "Oct", full: "October 2026", intakeW: 0.10, wonW: 0.09 },
-                  { short: "Nov", full: "November 2026", intakeW: 0.11, wonW: 0.10 },
-                  { short: "Dec", full: "December 2026", intakeW: 0.08, wonW: 0.08 },
-                ];
-
-                const basePipeline = data.pipelineValue ?? 6540000;
-                const baseWon = Math.round(basePipeline * 0.68);
-
-                return monthWeights.map((m) => {
-                  const income = Math.round((basePipeline * m.intakeW * 1.3) / 1000) * 1000;
-                  const expense = Math.round((baseWon * m.wonW) / 1000) * 1000;
-                  return {
-                    month: m.short,
-                    fullName: m.full,
-                    income,
-                    expense,
-                    incomeFormatted: formatCrmCurrency(income),
-                    expenseFormatted: formatCrmCurrency(expense),
-                  };
-                });
-              })()}
-            />
-          </div>
-          <div className={styles.statisticCol}>
-            <ConyestStatisticCard
-              cardTitle="Pipeline Distribution"
-              primaryTabLabel="By Value"
-              secondaryTabLabel="By Volume"
-              expensesTotal={
-                data.financials && data.pipelineValue !== null
-                  ? formatCrmCurrency(data.pipelineValue)
-                  : data.financials
-                    ? "₹ 0"
-                    : "Confidential"
-              }
-              incomeTotal={`${data.pipelineCount ?? 0} Deals`}
-              expenseItems={(() => {
-                const valuePercentages = largestRemainderRound(
-                  data.stages,
-                  (stage) => stage.value ?? 0,
-                );
-                return data.stages.map((stage, idx) => {
-                  const palette = SWISS_STAGE_PALETTE[idx % SWISS_STAGE_PALETTE.length];
-                  return {
-                    percentage: valuePercentages[idx] ?? 0,
-                    label: stage.name,
-                    amount:
-                      data.financials && stage.value !== null
-                        ? formatCrmCurrency(stage.value)
-                        : "Confidential",
-                    color: palette.color,
-                    badgeBg: palette.badgeBg,
-                    badgeTextColor: palette.badgeTextColor,
-                  };
-                });
-              })()}
-              incomeItems={(() => {
-                const volumePercentages = largestRemainderRound(
-                  data.stages,
-                  (stage) => stage.count,
-                );
-                return data.stages.map((stage, idx) => {
-                  const palette = SWISS_STAGE_PALETTE[idx % SWISS_STAGE_PALETTE.length];
-                  return {
-                    percentage: volumePercentages[idx] ?? 0,
-                    label: stage.name,
-                    amount: `${stage.count} ${stage.count === 1 ? "deal" : "deals"}`,
-                    color: palette.color,
-                    badgeBg: palette.badgeBg,
-                    badgeTextColor: palette.badgeTextColor,
-                  };
-                });
-              })()}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Row 3: Conyest Recent Transactions & Commercial Queue Ledger */}
-      <section className={styles.transactionsSection} aria-labelledby="today-heading">
-        <div className={styles.sectionHeading}>
-          <div>
-            <h2 id="today-heading">
-              {data.canTasks ? "Today & Recent Transactions" : "Recent Transactions"}
-            </h2>
-            <p>
-              {data.canTasks
-                ? "The next conversations and commercial transactions requiring attention."
-                : "A real-time ledger of active opportunities and recent commercial transactions."}
-            </p>
-          </div>
-          <span className={styles.scope}>Current · UTC</span>
-        </div>
-        <ConyestTransactionsTable
-          records={data.records}
-          recordsReady={data.recordsReady}
-          selectedQueue={data.queue}
-          queueCounts={data.queueCounts}
-          onSelectQueue={(q) => navigate("queue", q)}
-          canTasks={data.canTasks}
+      {/* 2. Pipeline Stage Flow Bar */}
+      <section aria-labelledby="pipeline-heading">
+        <h2 id="pipeline-heading" className={styles.srOnly}>Pipeline Stage Velocity</h2>
+        <PipelineStageFlowBar
+          stages={data.stages}
+          selectedStageId={selectedStageId}
+          onSelectStage={setSelectedStageId}
+          totalDealsCount={data.pipelineCount ?? 0}
+          totalPipelineValue={data.pipelineValue}
           financials={data.financials}
         />
       </section>
 
-      {/* Row 4: Outcomes & Reporting Governance Section */}
-      <section
-        className={styles.outcomes}
-        aria-labelledby="outcomes-heading"
-      >
+      {/* 3. Two-Column Working Grid (70% Desk + 30% Urgency Rail) */}
+      <section aria-labelledby="today-heading" className={styles.workingGrid}>
+        <h2 id="today-heading" className={styles.srOnly}>Commercial Action Desk and Cadence</h2>
+        {/* Left Column: Commercial Action Desk (70%) */}
+        <div className={styles.actionDeskColumn}>
+          <CommercialActionDesk
+            records={data.records}
+            recordsReady={data.recordsReady}
+            stages={data.stages}
+            selectedStageId={selectedStageId}
+            onSelectStage={setSelectedStageId}
+            financials={data.financials}
+            canTasks={data.canTasks}
+            onAdvanceStage={handleAdvanceStage}
+            onOpenDossier={handleOpenDossier}
+          />
+        </div>
+
+        {/* Right Column: Cadence Urgency Rail (30%) */}
+        <div className={styles.urgencyRailColumn}>
+          <CadenceUrgencyRail
+            records={data.records}
+            recordsReady={data.recordsReady}
+            convertedValue={data.convertedValue}
+            targetMonthlyRevenue={1500000}
+            financials={data.financials}
+          />
+        </div>
+      </section>
+
+      {/* 4. Outcomes & Reporting Governance Section */}
+      <section className={styles.outcomes} aria-labelledby="outcomes-heading">
         <div className={styles.sectionHeading}>
           <div>
-            <h2 id="outcomes-heading">Outcomes</h2>
-            <p>Conversions recorded during the selected period.</p>
+            <h2 id="outcomes-heading">Outcomes &amp; Reporting Governance</h2>
+            <p>Conversions and performance metrics recorded during the selected period.</p>
           </div>
           <div className={styles.reportControls}>
             <label className={styles.periodLabel}>
@@ -468,26 +266,13 @@ export function OverviewWorkspace({
                 ))}
               </select>
             </label>
-            {data.canExport && (
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                disabled={
-                  isPending || !data.pipelineReady || !data.outcomesReady
-                }
-                onClick={exportSummary}
-              >
-                Export summary
-              </button>
-            )}
           </div>
         </div>
 
         {!data.outcomesReady ? (
           <div className={styles.state}>
             <h3>Outcomes are unavailable</h3>
-            <p>Try again to retrieve this period.</p>
-            {retry}
+            <p>Try refreshing to retrieve this reporting period.</p>
           </div>
         ) : (
           <>
@@ -518,41 +303,73 @@ export function OverviewWorkspace({
                   {data.weightedPotential === null
                     ? "Unavailable"
                     : formatCrmCurrency(data.weightedPotential)}
-                  . Approved probabilities are Qualified 25%, Proposal Sent 50%
-                  and Negotiation 85%. Unknown potential stages make this
-                  estimate unavailable.
+                  . Approved stage probabilities: Qualified 25%, Proposal Sent 50%, Negotiation 85%.
                 </p>
               )}
               <p>
-                Average creation-to-conversion time for conversions in this
-                period:{" "}
+                Average creation-to-conversion turnaround:{" "}
                 {data.averageCycleDays === null
                   ? "Unavailable"
                   : `${data.averageCycleDays.toFixed(1)} days`}
-                .
+                . Target: &lt; 21 days.
               </p>
               <p>
-                Current pipeline includes visible open and potential records.
-                The period selector applies only to Outcomes. Synthetic
-                benchmarks are excluded. Export contains aggregates, not the
-                full lead ledger.
-              </p>
-              <p>
-                {data.cohort === null
-                  ? "Creation-cohort conversion is unavailable."
-                  : data.cohort.eligible === 0
-                    ? "No eligible leads were created in this period."
-                    : `${data.cohort.won} of ${data.cohort.eligible} eligible leads created in this period are currently converted (${((data.cohort.won / data.cohort.eligible) * 100).toFixed(1)}%). This describes their current status, not historical closed-deal win rate.`}{" "}
-                Known spam and out-of-scope leads are excluded from this cohort.
-              </p>
-              <p>
-                Report window: {dateLabel(data.periodStart)} to{" "}
-                {dateLabel(data.periodEnd)}.
+                Report window: {dateLabel(data.periodStart)} to {dateLabel(data.periodEnd)}.
               </p>
             </details>
           </>
         )}
       </section>
+
+      {/* 5. Guarded Stage Advancement Modal Integration */}
+      {isStageModalOpen && targetTransitionRecord && (() => {
+        const currentStageIndex = data.stages.findIndex(
+          (s) =>
+            s.name.toLowerCase() === targetTransitionRecord.stage.toLowerCase() ||
+            s.id === targetTransitionRecord.stage
+        );
+        const resolvedNext =
+          currentStageIndex >= 0 && currentStageIndex < data.stages.length - 1
+            ? data.stages[currentStageIndex + 1]
+            : data.stages[data.stages.length - 1] || {
+                id: "next-stage",
+                name: "Negotiation",
+                count: 0,
+                value: null,
+              };
+
+        const targetBucket: FunnelBucket =
+          resolvedNext.name.toLowerCase().includes("won") ||
+          resolvedNext.name.toLowerCase().includes("converted")
+            ? "converted"
+            : resolvedNext.name.toLowerCase().includes("lost") ||
+              resolvedNext.name.toLowerCase().includes("hold")
+            ? "lost"
+            : "potential";
+
+        return (
+          <StageTransitionModal
+            isOpen={isStageModalOpen}
+            onClose={() => {
+              setIsStageModalOpen(false);
+              setTargetTransitionRecord(null);
+            }}
+            leadId={targetTransitionRecord.id}
+            dealName={targetTransitionRecord.name}
+            currentExpectedValue={targetTransitionRecord.expectedValue ?? 0}
+            targetStatus={{
+              id: resolvedNext.id,
+              name: resolvedNext.name,
+              bucket: targetBucket,
+            }}
+            onSuccess={() => {
+              setIsStageModalOpen(false);
+              setTargetTransitionRecord(null);
+              router.refresh();
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }
