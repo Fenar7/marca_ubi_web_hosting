@@ -1116,8 +1116,8 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminHeader.tsx": {
-    "mtime": 1794348976.08574,
-    "seen": 1794356196.5108132,
+    "mtime": 1794417387.5200973,
+    "seen": 1794417592.254753,
     "ast_hash": "e82d573134a03406340baf141b35f362",
     "semantic_hash": ""
   },
@@ -3234,15 +3234,15 @@
     "semantic_hash": ""
   },
   ".agents/skills/master-ui-ux-design-system/SKILL.md": {
-    "mtime": 1793001766.0179107,
-    "seen": 1793885019.3674893,
-    "ast_hash": "ba8ec32ee75f5db8b2d03338ea644651",
+    "mtime": 1794546604.7139394,
+    "seen": 1794547051.7155752,
+    "ast_hash": "809d9bdf33bfc3b5146d2ce854984549",
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1793869954.7075357,
-    "seen": 1793885019.3674893,
-    "ast_hash": "b11294af1e97ec77c7827b3f4fe33be0",
+    "mtime": 1794546770.3128314,
+    "seen": 1794547051.7155752,
+    "ast_hash": "a596a89e0aac0121f80113fa21b7e1a4",
     "semantic_hash": ""
   },
   "DESIGN.md": {
@@ -3252,9 +3252,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1793869954.7626028,
-    "seen": 1793885019.3674893,
-    "ast_hash": "2c6d85e5864ffd1d35ed852ccda2b7d5",
+    "mtime": 1794546797.6619487,
+    "seen": 1794547051.7155752,
+    "ast_hash": "7c21ee49c0ce53519b334456ba4f3dec",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794353913.3763702,
-    "seen": 1794356196.5108132,
-    "ast_hash": "76736d6df479189d6a9c74b52c0ba55f",
+    "mtime": 1794424400.398949,
+    "seen": 1794547051.7157228,
+    "ast_hash": "135c1f848c6c623a8036bc54468260c1",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5358,9 +5358,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/currency.ts": {
-    "mtime": 1793944389.4392216,
-    "seen": 1793945072.1380515,
-    "ast_hash": "5d39dbefedf0e49e7470dcbab3adf50a",
+    "mtime": 1794418547.7219505,
+    "seen": 1794418732.2819185,
+    "ast_hash": "2814559b985b560265ed57504b7c2d02",
     "semantic_hash": ""
   },
   "supabase/migrations/20261105000001_preserve_activity_attribution_and_history.sql": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794352220.497233,
-    "seen": 1794356196.5108132,
-    "ast_hash": "bb022e0393a44564367b0079b59c3d59",
+    "mtime": 1794424143.028065,
+    "seen": 1794424337.3716187,
+    "ast_hash": "38583d410cb388786f0f667abd0e87b7",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5766,21 +5766,21 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestCashflowCard.tsx": {
-    "mtime": 1794351968.5318089,
-    "seen": 1794356196.5108132,
-    "ast_hash": "a867d4bf3788009b0deb0375a622e1bb",
+    "mtime": 1794424076.752079,
+    "seen": 1794424337.3716187,
+    "ast_hash": "fd5d810a8afbeb021c8ec19ae9f9183a",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestMetricsGrid.tsx": {
-    "mtime": 1794351826.5234933,
-    "seen": 1794356196.5108132,
-    "ast_hash": "30c05c48eb11d8596b0b2e20cc798c14",
+    "mtime": 1794424158.9411323,
+    "seen": 1794424337.3716187,
+    "ast_hash": "c3f1f59d5269232daafb69705db19330",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestStatisticCard.tsx": {
-    "mtime": 1794351984.1910913,
-    "seen": 1794356196.5108132,
-    "ast_hash": "e3326fa96ff55f2fb283e6114f803269",
+    "mtime": 1794423961.6685586,
+    "seen": 1794424337.3716187,
+    "ast_hash": "18d82a85c0dfe14b6fff13bb941e3615",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestTransactionsTable.tsx": {
@@ -5826,9 +5826,153 @@
     "semantic_hash": ""
   },
   "docs/crm_conyest_redesign/PR_BODY.md": {
-    "mtime": 1794348975.267661,
-    "seen": 1794356196.5108132,
-    "ast_hash": "3eea2414f42c9bcae40548e7a609eed4",
+    "mtime": 1794424428.6016228,
+    "seen": 1794547051.7157228,
+    "ast_hash": "3d66a457b8f86d534341e7b60cea6a77",
+    "semantic_hash": ""
+  },
+  "tests/unit/conyest-v2-luxury-telemetry.test.ts": {
+    "mtime": 1794424251.9450855,
+    "seen": 1794424337.3721166,
+    "ast_hash": "da15beae191c448bc34d7e3ee77b0f83",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_LUXURY_REDESIGN_REMEDIATION_PLAN_V2.md": {
+    "mtime": 1794415863.3087795,
+    "seen": 1794417592.255754,
+    "ast_hash": "e2d8d9d1dfdf3a89b21477e928b539c5",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_IMPLEMENTATION_REPORT.md": {
+    "mtime": 1794418774.9451702,
+    "seen": 1794424337.3731236,
+    "ast_hash": "75f1353d01d17563926fc37d66ba332f",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_VISUAL_VERIFICATION_REPORT.md": {
+    "mtime": 1794417331.0642014,
+    "seen": 1794417592.255754,
+    "ast_hash": "ef721e8b9cbcf2dbe20f10cd2f35d195",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/chartGeometry.ts": {
+    "mtime": 1794423896.517526,
+    "seen": 1794424337.3721166,
+    "ast_hash": "169e3b8d0489246bdcf6e89f6217e493",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/largestRemainder.ts": {
+    "mtime": 1794418101.9940495,
+    "seen": 1794418732.2819185,
+    "ast_hash": "fb35c73c77be02d35cb43ce016b06b13",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/stagePalette.ts": {
+    "mtime": 1794418403.6765444,
+    "seen": 1794418732.2819185,
+    "ast_hash": "ce16602ff222d7208053e64082b28914",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/trendResolution.ts": {
+    "mtime": 1794418411.206258,
+    "seen": 1794418732.2819185,
+    "ast_hash": "8dffd72d7430f1c9d763c950dd3b9a78",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-11_23-15-00.md": {
+    "mtime": 1794418823.1318443,
+    "seen": 1794424337.3731236,
+    "ast_hash": "e5fed2aeacddefea44b6f26a44d21460",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_INDEPENDENT_AUDIT_REPORT.md": {
+    "mtime": 1794418750.2430267,
+    "seen": 1794424337.3731236,
+    "ast_hash": "9b8c5642b0cbfde9f069b6d436e22a76",
+    "semantic_hash": ""
+  },
+  "docs/crm_conyest_redesign/CONYEST_V2_PR_REMEDIATION_REPORT.md": {
+    "mtime": 1794418789.9034743,
+    "seen": 1794424337.3731236,
+    "ast_hash": "182fd35fe84e132a515ecdbb60592a50",
+    "semantic_hash": ""
+  },
+  ".agents/skills/frontend-design/SKILL.md": {
+    "mtime": 1794546626.9403484,
+    "seen": 1794547051.7155752,
+    "ast_hash": "678f8332b13569f2f5c52cddec217a50",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ui-ux-pro-max/SKILL.md": {
+    "mtime": 1794546645.7243009,
+    "seen": 1794547051.7155752,
+    "ast_hash": "2d35b5ea6feeae60b4689015ec7c7bc7",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ui-ux-pro-max/references/semantic-palettes.md": {
+    "mtime": 1794546676.3632095,
+    "seen": 1794547051.7155752,
+    "ast_hash": "21a97237469f3a97a3b2197e6fc8dd7e",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ui-ux-pro-max/references/styles.md": {
+    "mtime": 1794546661.2266068,
+    "seen": 1794547051.7155752,
+    "ast_hash": "e510713b56186a43efd70894fd4b65f2",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ui-ux-pro-max/references/ux-checklists.md": {
+    "mtime": 1794546687.3089018,
+    "seen": 1794547051.7155752,
+    "ast_hash": "e1187f5c45281737e54f19ec166b2f37",
+    "semantic_hash": ""
+  },
+  ".agents/skills/vercel-agent-skills/SKILL.md": {
+    "mtime": 1794546703.072803,
+    "seen": 1794547051.7155752,
+    "ast_hash": "b3bdce84a3e9d7b34e47823a0c10f2d3",
+    "semantic_hash": ""
+  },
+  ".agents/skills/vercel-agent-skills/references/bundle-hygiene.md": {
+    "mtime": 1794546727.6772065,
+    "seen": 1794547051.7155752,
+    "ast_hash": "7894bc79a28c4296036ea9d17813cd45",
+    "semantic_hash": ""
+  },
+  ".agents/skills/vercel-agent-skills/references/server-actions.md": {
+    "mtime": 1794546738.8526475,
+    "seen": 1794547051.7155752,
+    "ast_hash": "9f8c74a51437cfd449e7d451089c82dd",
+    "semantic_hash": ""
+  },
+  ".agents/skills/vercel-agent-skills/references/waterfalls.md": {
+    "mtime": 1794546719.680385,
+    "seen": 1794547051.7155752,
+    "ast_hash": "6585cf2a8dc5cbf63b14296034ff2eb3",
+    "semantic_hash": ""
+  },
+  ".github/copilot-instructions.md": {
+    "mtime": 1794546830.5671246,
+    "seen": 1794547051.7155752,
+    "ast_hash": "ef1d9d97e7e19ac77fe1a1dd4190b72d",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1794546808.9305193,
+    "seen": 1794547051.7155752,
+    "ast_hash": "4d182888a1f391573e9ad3eacdb9a754",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-12_00-45-00.md": {
+    "mtime": 1794424389.480362,
+    "seen": 1794547051.7157228,
+    "ast_hash": "3d769e25dbc3678ce15e2d68c250be30",
+    "semantic_hash": ""
+  },
+  "docs/design_system_skills/DESIGN_SKILLS_INTEGRATION_PLAN.md": {
+    "mtime": 1794546073.546364,
+    "seen": 1794547051.7157228,
+    "ast_hash": "c2dc7b05d0f706fa341a602b2af9814c",
     "semantic_hash": ""
   },
   "package-lock.json": {

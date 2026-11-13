@@ -4,6 +4,16 @@
 > **Architecture & Rules**: Read `AGENTS.md` for multi-agent roles, strict branch hierarchy, and mandatory behavioral rules.
 > **Design Direction & Soul**: Read `DESIGN.md` and `.agents/skills/master-ui-ux-design-system/SKILL.md` for visual tokens, color palettes, and liveliness dials.
 
+<!-- design-skills:start -->
+## Design & Frontend Engineering Skills Suite
+For UI, UX, styling, performance, or copy work, activate the appropriate skills from `.agents/skills/`:
+- **Boutique Art Direction & Anti-Cliché**: `.agents/skills/frontend-design/SKILL.md`
+- **Design Intelligence & UX Guardrails**: `.agents/skills/ui-ux-pro-max/SKILL.md`
+- **Next.js & React 19 Performance**: `.agents/skills/vercel-agent-skills/SKILL.md`
+- **Brand Tokens & Component Archetypes**: `DESIGN.md` & `.agents/skills/master-ui-ux-design-system/SKILL.md`
+- **Slop Purge & Quality Gate (Core Filter)**: `.agents/skills/antislop/SKILL.md` (with sub-skills `antislop-ui`, `antislop-human`, `antislop-layoutmobile`, `antislop-copywriting`, `antislop-code`)
+<!-- design-skills:end -->
+
 <!-- antislop:start -->
 ## antislop
 For UI, copy, people, mobile layout, or code comments work, load the antislop skill for the task:

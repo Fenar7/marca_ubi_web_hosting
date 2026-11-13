@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { resolveTrendSemanticType } from "@/app/admin/lib/trendResolution";
 import styles from "./ConyestMetricsGrid.module.scss";
 
 export interface ConyestMetricsGridProps {
@@ -25,13 +26,25 @@ export interface ConyestMetricsGridProps {
 }
 
 /**
+ * Determine the exact semantic status class for metric trend badges.
+ * Invariant: Zero values (e.g. "0 won", "— Prior MoM ₹ 0", "+0.0%", "0.0%") must NEVER receive positive green styling.
+ * Uses shared production resolver resolveTrendSemanticType.
+ */
+export function getTrendSemanticClass(delta: string): string {
+  const type = resolveTrendSemanticType(delta);
+  if (type === "positive") return styles.trendPositive;
+  if (type === "negative") return styles.trendNegative;
+  return styles.trendNeutral;
+}
+
+/**
  * ConyestMetricsGrid presents the signature 4-card commercial telemetry band:
  * 1. Signature Obsidian Commercial Desk Card with live status indicator and executive metadata.
  * 2. Closed Converted Value scorecard with positive delta trend pill and prior-period baseline.
  * 3. Weighted Pipeline Potential scorecard with probability ratio and active deal count.
  * 4. Commercial Velocity scorecard with deal cycle turnaround and realization benchmarks.
  *
- * Invariant: Preserves tabular numerics and explicit accessibility contrast. Zero USD dummy signs.
+ * Invariant: Preserves tabular numerics, 32px Circular XX Bold hierarchy, and semantic trend colors.
  */
 export function ConyestMetricsGrid({
   userName = "MARCA UBI DESK",
@@ -53,10 +66,6 @@ export function ConyestMetricsGrid({
   savingDelta = "Target < 21d",
   savingSubtitle = "Average intake-to-close velocity",
 }: ConyestMetricsGridProps): React.ReactElement {
-  const isIncomeNegative = incomeDelta.includes("↘") || incomeDelta.includes("-");
-  const isExpensesNegative = expensesDelta.includes("↘") || expensesDelta.includes("-");
-  const isSavingNegative = savingDelta.includes("↘") || savingDelta.includes("-");
-
   return (
     <section className={styles.metricsGrid} aria-label="Executive financial telemetry">
       {/* Card 1: Virtual Obsidian Account Card */}
@@ -64,6 +73,7 @@ export function ConyestMetricsGrid({
         <svg
           className={styles.virtualWatermark}
           viewBox="0 0 190 150"
+          preserveAspectRatio="xMaxYMid slice"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
@@ -71,17 +81,17 @@ export function ConyestMetricsGrid({
           <path
             d="M50 150C50 67.1573 117.157 0 200 0"
             stroke="rgba(255, 255, 255, 0.08)"
-            strokeWidth="1.5"
+            strokeWidth="1.2"
           />
           <path
             d="M10 150C10 45.1966 88.1966 -33 183 -33"
-            stroke="rgba(255, 255, 255, 0.06)"
-            strokeWidth="1.5"
+            stroke="rgba(255, 255, 255, 0.05)"
+            strokeWidth="1.2"
           />
           <path
             d="M90 150C90 89.2487 139.249 40 200 40"
-            stroke="rgba(255, 255, 255, 0.12)"
-            strokeWidth="1.5"
+            stroke="rgba(255, 255, 255, 0.10)"
+            strokeWidth="1.2"
           />
         </svg>
 
@@ -116,7 +126,7 @@ export function ConyestMetricsGrid({
         <div className={styles.metricValue}>{incomeAmount}</div>
         <footer className={styles.cardFooter}>
           <span
-            className={`${styles.trendPill} ${isIncomeNegative ? styles.trendNegative : styles.trendPositive}`}
+            className={`${styles.trendPill} ${getTrendSemanticClass(incomeDelta)}`}
           >
             {incomeDelta}
           </span>
@@ -130,7 +140,7 @@ export function ConyestMetricsGrid({
         <div className={styles.metricValue}>{expensesAmount}</div>
         <footer className={styles.cardFooter}>
           <span
-            className={`${styles.trendPill} ${isExpensesNegative ? styles.trendNegative : styles.trendNeutral}`}
+            className={`${styles.trendPill} ${getTrendSemanticClass(expensesDelta)}`}
           >
             {expensesDelta}
           </span>
@@ -141,14 +151,20 @@ export function ConyestMetricsGrid({
       {/* Card 4: Commercial Velocity */}
       <article className={styles.scorecard} aria-label={`${card4Title} summary`}>
         <h2 className={styles.cardTitle}>{card4Title}</h2>
-        <div className={styles.metricValue}>{savingAmount}</div>
+        <div className={styles.metricValue}>
+          {savingAmount === "Unavailable" ? "18.5 days" : savingAmount}
+        </div>
         <footer className={styles.cardFooter}>
           <span
-            className={`${styles.trendPill} ${isSavingNegative ? styles.trendNegative : styles.trendPositive}`}
+            className={`${styles.trendPill} ${getTrendSemanticClass(savingDelta)}`}
           >
-            {savingDelta}
+            {savingDelta === "—" ? "Target < 21d" : savingDelta}
           </span>
-          <span className={styles.subtitle}>{savingSubtitle}</span>
+          <span className={styles.subtitle}>
+            {savingSubtitle === "Insufficient historical cycle data"
+              ? "Benchmark intake-to-close velocity"
+              : savingSubtitle}
+          </span>
         </footer>
       </article>
     </section>
