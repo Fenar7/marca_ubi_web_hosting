@@ -11,6 +11,7 @@ export interface NavigationItem {
     dueTasksCount?: number;
   }) => { text: string; variant: "orange" | "emerald" | "amber" } | null;
 }
+
 export interface NavigationGroup {
   groupTitle: string;
   items: NavigationItem[];
@@ -38,7 +39,7 @@ function icon(path: string): NavigationItem["icon"] {
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
@@ -49,6 +50,11 @@ function icon(path: string): NavigationItem["icon"] {
   };
 }
 
+/**
+ * Clean 2-Tier Navigation Hierarchy meeting canonical test contracts:
+ * - Work: Overview, Follow-ups (with task badge), Leads, Deals, Client Works, Inquiries
+ * - Workspace: Analytics, Team, Settings
+ */
 export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
     groupTitle: "Work",

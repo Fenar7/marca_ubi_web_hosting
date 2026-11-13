@@ -1,7 +1,23 @@
 "use client";
+
+/**
+ * @file AdminSidebar.tsx
+ * @description Master navigation rail for Marca Ubi Commercial Desk (/admin).
+ * @architecture
+ *  - Brand lockup: Monogram 'M.' in Circular XX, 'MARCA UBI' typography, sleek collapse trigger (⌘B).
+ *    Completely eliminates the awkward bordered 'COMMERCIAL DESK' pill badge.
+ *  - Zero duplicate search capsule (search lives strictly in the top header ⌘K).
+ *  - 3 structured sections: 'COMMERCIAL', 'OPERATIONS', and 'WORKSPACE'.
+ *  - Active state: Warm Alabaster (#f5f5f3) background pill, dark typography (#111111), and a 3px signature red (#ea002a) pip.
+ *  - Follow-up badge: Refined soft neutral or subtle soft crimson pill (zero neon pink).
+ *  - Bottom telemetry: 1-line integrated micro-telemetry rail for Monthly Cadence (3px hairline progress track, NO boxy card).
+ *  - Bottom identity: Single integrated user profile card via UserProfileDropdown.
+ *  - Breakpoint: Hidden at <= 1024px in favor of AdminMobileDrawer; adheres to prefers-reduced-motion.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   UserProfileDropdown,
@@ -10,48 +26,55 @@ import {
 import { NAVIGATION_GROUPS, isTabAuthorized } from "./navigationConfig";
 import styles from "./AdminSidebar.module.scss";
 
-interface AdminSidebarProps {
+export interface AdminSidebarProps {
   currentUser: CurrentUserSession;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   dueTasksCount?: number;
+  /** Optional cadence overrides (defaults to current commercial pacing) */
+  monthlyCadenceCurrent?: number;
+  monthlyCadenceTarget?: number;
 }
 
-/** Shared navigation exposes authorized destinations without embedding stale business snapshots. */
 export function AdminSidebar({
   currentUser,
   isCollapsed,
   onToggleCollapse,
   dueTasksCount,
+  monthlyCadenceCurrent = 445000,
+  monthlyCadenceTarget = 1500000,
 }: AdminSidebarProps): React.ReactElement {
   const pathname = usePathname() || "/admin";
+
+  // Calculate cadence percentage bounded between 0% and 100%
+  const cadencePercent = Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round((monthlyCadenceCurrent / (monthlyCadenceTarget || 1)) * 100),
+    ),
+  );
+
   return (
     <aside
       className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
       aria-label="Commercial Desk navigation"
     >
-      {/* 1. Header with Brand Lockup, Commercial Desk Badge, & Collapse Trigger */}
+      {/* 1. Brand Lockup & Sleek Collapse Trigger (Zero Awkward Desk Badge) */}
       <div className={styles.brandRow}>
         <Link
           href="/admin"
           className={styles.brandLockup}
           aria-label={isCollapsed ? "Marca Ubi Commercial Desk" : undefined}
         >
-          {isCollapsed ? (
-            <span className={styles.monogram}>M.</span>
-          ) : (
-            <div className={styles.brandCluster}>
-              <Image
-                src="/images/marca-ubi-dark.svg"
-                alt="Marca Ubi."
-                width={102}
-                height={23}
-                priority
-              />
-              <span className={styles.commercialBadge}>Commercial Desk</span>
-            </div>
+          <span className={styles.monogram} aria-hidden="true">
+            M.
+          </span>
+          {!isCollapsed && (
+            <span className={styles.brandTitle}>MARCA UBI</span>
           )}
         </Link>
+
         <button
           type="button"
           className={styles.collapseButton}
@@ -59,51 +82,46 @@ export function AdminSidebar({
           aria-label={isCollapsed ? "Expand navigation (⌘B)" : "Collapse navigation (⌘B)"}
           title={isCollapsed ? "Expand navigation (⌘B)" : "Collapse navigation (⌘B)"}
         >
-          <span className={styles.collapseIcon} aria-hidden="true">{isCollapsed ? "›" : "‹"}</span>
+          <svg
+            className={styles.collapseIcon}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            {isCollapsed ? (
+              <polyline points="9 18 15 12 9 6" />
+            ) : (
+              <polyline points="15 18 9 12 15 6" />
+            )}
+          </svg>
+          <span className={styles.shortcutTag}>⌘B</span>
         </button>
       </div>
 
-      {/* 2. Integrated Search Capsule with ⌘K Shortcut */}
-      <button
-        type="button"
-        className={styles.searchCapsule}
-        onClick={() =>
-          window.dispatchEvent(new CustomEvent("open-command-palette"))
-        }
-        aria-label={isCollapsed ? "Search or navigate (⌘K)" : undefined}
-        title={isCollapsed ? "Search or navigate (⌘K)" : undefined}
-      >
-        <svg
-          className={styles.searchIcon}
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          aria-hidden="true"
-        >
-          <circle cx="10.5" cy="10.5" r="7" />
-          <path d="m16 16 5 5" />
-        </svg>
-        <span className={styles.searchPlaceholder}>Search or navigate</span>
-        <kbd className={styles.shortcutKbd}>⌘K</kbd>
-      </button>
-
-      {/* 3. Categorized Work & Workspace Navigation */}
-      <nav className={styles.navigation} aria-label="Workspace sections">
+      {/* 2. Structured 3-Tier Navigation (COMMERCIAL, OPERATIONS, WORKSPACE) */}
+      <nav className={styles.navigation} aria-label="Commercial Desk navigation sections">
         {NAVIGATION_GROUPS.map((group) => {
           const items = group.items.filter((item) =>
             isTabAuthorized(item.key, currentUser),
           );
           if (!items.length) return null;
+
           return (
             <section
               key={group.groupTitle}
               className={styles.group}
               aria-label={group.groupTitle}
             >
-              <h2 className={styles.groupHeading}>{group.groupTitle}</h2>
+              {!isCollapsed && (
+                <h2 className={styles.groupHeading}>{group.groupTitle}</h2>
+              )}
+
               <ul className={styles.itemList}>
                 {items.map((item) => {
                   const active =
@@ -122,7 +140,9 @@ export function AdminSidebar({
                         aria-current={active ? "page" : undefined}
                         title={isCollapsed ? item.label : undefined}
                       >
-                        <span className={styles.itemIcon}>{item.icon({ active })}</span>
+                        <span className={styles.itemIcon}>
+                          {item.icon({ active })}
+                        </span>
                         <span className={styles.itemLabel}>{item.label}</span>
                         {badge && (
                           <span
@@ -142,24 +162,29 @@ export function AdminSidebar({
         })}
       </nav>
 
-      {/* 4. Monthly Cadence Telemetry Card (Replaces the empty void!) */}
+      {/* 3. 1-Line Integrated Micro-Telemetry Rail (NO Boxy Card, Pure Editorial Hairline) */}
       {!isCollapsed && (
-        <div className={styles.cadenceCard} role="region" aria-label="Monthly commercial cadence">
+        <div
+          className={styles.cadenceMicroRail}
+          role="region"
+          aria-label="Monthly commercial cadence"
+        >
           <div className={styles.cadenceHeader}>
-            <span className={styles.cadenceEyebrow}>MONTHLY CADENCE</span>
-            <span className={styles.cadenceTarget}>Target: ₹ 15,00,000</span>
+            <span className={styles.cadenceCaption}>Monthly Cadence</span>
+            <span className={styles.cadenceNumbers}>
+              ₹4.45L / ₹15L <span className={styles.cadenceSeparator}>•</span> {cadencePercent}%
+            </span>
           </div>
           <div className={styles.cadenceTrack} aria-hidden="true">
-            <div className={styles.cadenceFill} style={{ width: "24%" }} />
-          </div>
-          <div className={styles.cadenceMeta}>
-            <span className={styles.cadenceRealized}>Cadence Tracking</span>
-            <span className={styles.cadenceDeals}>39 active deals</span>
+            <div
+              className={styles.cadenceFill}
+              style={{ width: `${cadencePercent}%` }}
+            />
           </div>
         </div>
       )}
 
-      {/* 5. Bottom User Profile Card (Briefly-Style with 3-Dots Menu) */}
+      {/* 4. Single User Profile Card */}
       <div className={styles.accountCardWrapper}>
         <UserProfileDropdown
           currentUser={currentUser}
