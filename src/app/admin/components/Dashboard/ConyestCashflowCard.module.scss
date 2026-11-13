@@ -86,7 +86,8 @@
   background: #18181b;
 }
 
-.legendDotExpense {
+.legendDotExpense,
+.legendDotWon {
   width: 9px;
   height: 9px;
   border-radius: 2px;
@@ -225,7 +226,8 @@
   cursor: pointer;
 }
 
-.expenseBar {
+.expenseBar,
+.wonBar {
   transition: opacity 120ms ease;
   cursor: pointer;
 }
@@ -290,5 +292,9 @@
   strong {
     color: #111111;
     font-weight: 700;
+
+    &.wonNumber {
+      color: #059669;
+    }
   }
 }

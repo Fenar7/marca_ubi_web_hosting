@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { formatCompactInr } from "@/app/admin/lib/currency";
 import {
-  computeVelocityBarPaths,
-  computeActiveHaloBounds,
+  computeVelocityChartLayout,
+  type VelocityBarCluster,
 } from "@/app/admin/lib/chartGeometry";
 import styles from "./ConyestCashflowCard.module.scss";
 
@@ -44,14 +44,13 @@ export interface ConyestCashflowCardProps {
 export { formatCompactInr } from "@/app/admin/lib/currency";
 
 /**
- * ConyestCashflowCard renders the dual-directional commercial pipeline velocity bar chart:
- * - Upper bars extend upwards: Deal Intake (new inquiries and pipeline value in INR).
- * - Lower bars extend downwards: Converted Won Contracts in INR (Executive Emerald).
- * - Exact 1:1 rupee parity: 1 INR intake = 1 INR conversion in pixel height.
- * - Dynamic coordinate scaling calibrated for Indian Rupee Lakhs/Crores.
- * - Bespoke SVG path geometry with outer capsule caps and flat zero-baseline joints.
+ * ConyestCashflowCard renders the clustered dual-bar commercial pipeline velocity chart:
+ * - Deal Intake (Deep Obsidian) and Won Contracts (Executive Emerald) grow UPWARDS from a single baseline.
+ * - Flat 90-degree zero baseline joints with refined 3px rounded caps on top outer extremities.
+ * - Side-by-side clustered pairs: 14px bar width, 4px cluster gap, ~22px inter-month gap.
+ * - Dynamic Indian Rupee coordinate scaling with strict zero-suppression (no ghost bars).
  * - Active month capsule with dynamic content-bounded padding and clamped popover tooltip.
- * - Robust authorization shielding: When financials are restricted, proprietary rupee scales are suppressed.
+ * - Authorization shielding: When financials are restricted, proprietary rupee scales are suppressed.
  * - Complete empty data resilience: Never crashes on empty arrays or missing data.
  */
 export function ConyestCashflowCard({
@@ -117,54 +116,11 @@ export function ConyestCashflowCard({
   const validIndex = Math.max(0, Math.min(activeDataset.length - 1, selectedMonthIndex));
   const activeMonth = activeDataset[validIndex];
 
-  // SVG Coordinate Geometry (680 x 240)
-  const svgWidth = 680;
+  // SVG Coordinate Geometry (720 x 240)
+  const svgWidth = 720;
   const svgHeight = 240;
-  const leftMargin = 65; // margin for Y-axis labels
-  const rightMargin = 15;
-  const chartWidth = svgWidth - leftMargin - rightMargin;
 
-  // Strict 1:1 Rupee Parity: Intake height range matches Expense height range exactly
-  const zeroY = 130; // 0 baseline positioned for generous top clearance
-  const chartRange = 75; // equal positive and negative range (75px each)
-
-  // Compute dynamic scale based on the largest data value
-  const rawMax = Math.max(
-    ...activeDataset.map((d) => Math.max(d.income, d.expense)),
-    100000,
-  );
-  const magnitude = Math.pow(10, Math.floor(Math.log10(rawMax)));
-  const maxScale = Math.ceil(rawMax / magnitude) * magnitude;
-
-  const colWidth = chartWidth / activeDataset.length;
-  const barWidth = activeDataset.length <= 6 ? 22 : 16; // Refined Swiss luxury bar proportion
-
-  const yPositions = [
-    { label: formatCompactInr(maxScale), y: zeroY - chartRange },
-    { label: formatCompactInr(maxScale / 2), y: zeroY - chartRange / 2 },
-    { label: "0", y: zeroY },
-    { label: formatCompactInr(-maxScale / 2), y: zeroY + chartRange / 2 },
-    { label: formatCompactInr(-maxScale), y: zeroY + chartRange },
-  ];
-
-  const activeColCenter = leftMargin + validIndex * colWidth + colWidth / 2;
-
-  // Active halo dynamic bounding strictly adhering to rendered bar extents
-  const halo = computeActiveHaloBounds(
-    activeColCenter,
-    barWidth,
-    zeroY,
-    activeMonth?.income ?? 0,
-    activeMonth?.expense ?? 0,
-    maxScale,
-    chartRange,
-  );
-
-  // Clamped horizontal popover position to prevent viewport edge clipping
-  // Uses responsive percentages to avoid SVG-vs-CSS unit mismatch
-  const rawPercentX = (activeColCenter / svgWidth) * 100;
-  const clampedPercentX = Math.max(12, Math.min(88, rawPercentX));
-  const arrowShiftPercent = rawPercentX - clampedPercentX;
+  const layout = computeVelocityChartLayout(activeDataset, validIndex, svgWidth, svgHeight);
 
   return (
     <article className={styles.cashflowCard} aria-label={`${cardTitle} summary`}>
@@ -178,14 +134,14 @@ export function ConyestCashflowCard({
         </div>
 
         <div className={styles.controlsArea}>
-          {/* Visual Legend for dual directional flow */}
+          {/* Visual Legend for Clustered Dual Bars */}
           <div className={styles.legendGroup}>
             <div className={styles.legendItem}>
               <span className={styles.legendDotIntake} />
               <span>Deal Intake</span>
             </div>
             <div className={styles.legendItem}>
-              <span className={styles.legendDotExpense} />
+              <span className={styles.legendDotWon} />
               <span>Won Contracts</span>
             </div>
           </div>
@@ -215,8 +171,8 @@ export function ConyestCashflowCard({
             className={styles.popoverTooltip}
             style={
               {
-                left: `${clampedPercentX}%`,
-                "--arrow-shift": `${arrowShiftPercent * 1.5}px`,
+                left: `${layout.clampedTooltipPercentX}%`,
+                "--arrow-shift": `${layout.arrowShiftPx}px`,
               } as React.CSSProperties
             }
             aria-live="polite"
@@ -228,7 +184,7 @@ export function ConyestCashflowCard({
             </div>
             <div className={styles.popoverRow}>
               <span>Won:</span>
-              <strong>{activeMonth.expenseFormatted}</strong>
+              <strong className={styles.wonNumber}>{activeMonth.expenseFormatted}</strong>
             </div>
           </aside>
         )}
@@ -237,7 +193,7 @@ export function ConyestCashflowCard({
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className={styles.cashflowSvg}
           role="img"
-          aria-label={`${cardTitle} dual directional chart`}
+          aria-label={`${cardTitle} clustered bar chart`}
         >
           <defs>
             {/* Linear Gradient for Deal Intake (Obsidian/Slate Luxury Gradient) */}
@@ -246,27 +202,27 @@ export function ConyestCashflowCard({
               <stop offset="100%" stopColor="#141416" />
             </linearGradient>
 
-            {/* Linear Gradient for Won Contracts (Deep Executive Emerald #10b981 -> #047857) */}
+            {/* Linear Gradient for Won Contracts (Executive Emerald #10b981 -> #047857) */}
             <linearGradient id="velocityWonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#10b981" />
               <stop offset="100%" stopColor="#047857" />
             </linearGradient>
           </defs>
 
-          {/* Grid lines and Y-Axis labels */}
-          {yPositions.map((pos, idx) => (
+          {/* Grid lines and Y-Axis labels (All positive values above flat baseline) */}
+          {layout.yTicks.map((pos, idx) => (
             <g key={idx}>
               <line
-                x1={leftMargin}
+                x1={55}
                 y1={pos.y}
-                x2={svgWidth - rightMargin}
+                x2={svgWidth - 20}
                 y2={pos.y}
-                className={pos.y === zeroY ? styles.zeroLine : styles.gridLine}
+                className={pos.isZero ? styles.zeroLine : styles.gridLine}
               />
               <text
-                x={leftMargin - 12}
-                y={pos.y + 3}
-                className={pos.y === zeroY ? styles.zeroAxisLabel : styles.yAxisLabel}
+                x={45}
+                y={pos.y + 4}
+                className={pos.isZero ? styles.zeroAxisLabel : styles.yAxisLabel}
               >
                 {pos.label}
               </text>
@@ -274,36 +230,25 @@ export function ConyestCashflowCard({
           ))}
 
           {/* Active Column Bounding Halo: Suppressed when height is 0 */}
-          {activeMonth && halo.height > 0 && (
+          {layout.activeHalo && (
             <rect
-              x={halo.x}
-              y={halo.top}
-              width={halo.width}
-              height={halo.height}
+              x={layout.activeHalo.x}
+              y={layout.activeHalo.y}
+              width={layout.activeHalo.width}
+              height={layout.activeHalo.height}
               rx={10}
               className={styles.activeHalo}
             />
           )}
 
-          {/* Monthly Dual-Directional Bar Columns */}
-          {activeDataset.map((point, index) => {
-            const xCenter = leftMargin + index * colWidth + colWidth / 2;
-            const barX = xCenter - barWidth / 2;
-            const isSelected = index === validIndex;
-
-            const { intakePath, expensePath } = computeVelocityBarPaths(
-              barX,
-              barWidth,
-              zeroY,
-              point.income,
-              point.expense,
-              maxScale,
-              chartRange,
-            );
+          {/* Clustered Monthly Dual Bars */}
+          {layout.clusters.map((cluster: VelocityBarCluster, index: number) => {
+            const rawPoint = activeDataset[index];
+            const isSelected = cluster.isSelected;
 
             return (
               <g
-                key={point.month}
+                key={cluster.month}
                 className={`${styles.barColumn} ${isSelected ? styles.selectedColumn : ""}`}
                 onClick={() => setSelectedMonthIndex(index)}
                 onFocus={() => setSelectedMonthIndex(index)}
@@ -315,33 +260,33 @@ export function ConyestCashflowCard({
                 }}
                 tabIndex={0}
                 role="button"
-                aria-label={`${point.fullName}: Intake ${point.incomeFormatted}, Converted ${point.expenseFormatted}`}
+                aria-label={`${cluster.fullName}: Intake ${rawPoint?.incomeFormatted ?? "0"}, Converted ${rawPoint?.expenseFormatted ?? "0"}`}
               >
-                {/* Upper Intake Bar with Flat Baseline */}
-                {intakePath && (
+                {/* Left Bar: Deal Intake (Upwards from zeroY) */}
+                {cluster.intakePath && (
                   <path
-                    d={intakePath}
+                    d={cluster.intakePath}
                     fill="url(#velocityIntakeGrad)"
                     className={styles.incomeBar}
                   />
                 )}
 
-                {/* Lower Won Contracts Bar (Rendered ONLY when expense > 0) */}
-                {expensePath && (
+                {/* Right Bar: Won Contracts (Upwards from zeroY) */}
+                {cluster.wonPath && (
                   <path
-                    d={expensePath}
+                    d={cluster.wonPath}
                     fill="url(#velocityWonGrad)"
-                    className={styles.expenseBar}
+                    className={styles.wonBar}
                   />
                 )}
 
                 {/* X-Axis Month Label */}
                 <text
-                  x={xCenter}
-                  y={svgHeight - 14}
+                  x={cluster.xCenter}
+                  y={svgHeight - 24}
                   className={`${styles.monthLabel} ${isSelected ? styles.selectedMonthLabel : ""}`}
                 >
-                  {point.month}
+                  {cluster.month}
                 </text>
               </g>
             );

@@ -1,4 +1,4 @@
-.header {
+.executiveToolbar {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -6,113 +6,275 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 64px;
+  height: 56px;
+  min-height: 56px;
   padding: 0 var(--admin-content-gutter, 28px);
-  border-bottom: 1px solid var(--conyest-card-border, #f1f5f9);
+  border-bottom: 1px solid #ebebea;
   background: #ffffff;
+  box-sizing: border-box;
 }
-.context {
+
+// Left Cluster
+.toolbarLeft {
   display: flex;
   align-items: center;
-  min-width: 0;
   gap: 12px;
+  min-width: 0;
 }
-.menu {
+
+.mobileMenuTrigger {
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-height: 40px;
-  padding: 8px 12px;
-  background: transparent;
-  border: 1px solid #e2e8f0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ebebea;
   border-radius: 8px;
-  color: #0f172a;
-  font: inherit;
-  font-size: 13px;
+  background: transparent;
+  color: #111111;
   cursor: pointer;
+
   &:hover {
-    background: #f1f5f9;
+    background: #f5f5f3;
   }
 }
-.actions {
+
+.contextCluster {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
+
+.breadcrumbNav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-graphik, -apple-system, sans-serif);
+  font-size: 12px;
+  color: #62625d;
+  white-space: nowrap;
+}
+
+.crumbRoot {
+  color: #8a8a84;
+}
+
+.crumbSeparator {
+  color: #b5b5ae;
+  font-size: 11px;
+}
+
+.crumbLeaf {
+  color: #111111;
+  font-weight: 500;
+}
+
+.headerDivider {
+  width: 1px;
+  height: 16px;
+  background: #e5e5e0;
+}
+
+.deskTitle {
+  margin: 0;
+  font-family: var(--font-circular, -apple-system, sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+// Emerald Live Telemetry Pulse Pill
+.telemetryPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  white-space: nowrap;
+}
+
+.pulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  position: relative;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  animation: pulseRing 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.telemetryText {
+  font-family: var(--font-graphik, -apple-system, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+  letter-spacing: 0.02em;
+}
+
+// Right Cluster
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .searchPill {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 180px;
-  height: 38px;
-  padding: 0 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: var(--conyest-radius-pill, 9999px);
-  color: #94a3b8;
+  gap: 8px;
+  width: 190px;
+  height: 34px;
+  padding: 0 10px;
+  background: #f8f8f6;
+  border: 1px solid #ebebea;
+  border-radius: 8px;
+  color: #8a8a84;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   transition: border-color 140ms ease, background 140ms ease;
+
   &:hover {
-    border-color: #cbd5e1;
-    background: #f1f5f9;
-    color: #64748b;
+    border-color: #d4d4cf;
+    background: #f0f0ed;
+    color: #454542;
   }
 }
+
 .searchPlaceholder {
-  font-size: 13px;
-  color: #94a3b8;
+  flex: 1;
+  text-align: left;
 }
+
+.shortcutTag {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: #62625d;
+  background: #ffffff;
+  border: 1px solid #e0e0da;
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
 .notificationBtn {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 50%;
-  color: #0f172a;
+  border: 1px solid #ebebea;
+  border-radius: 8px;
+  color: #111111;
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background 140ms ease, border-color 140ms ease;
+
   &:hover {
-    background: #f8fafc;
+    background: #f7f7f5;
+    border-color: #d4d4cf;
   }
 }
+
 .notificationDot {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 7px;
+  right: 7px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: #ea002a;
 }
-.profileChip {
+
+// Signature Brand Red CTA Button
+.primaryLeadCta {
   display: flex;
   align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 7px;
+  background: #ea002a;
+  color: #ffffff;
+  font-family: var(--font-graphik, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease, transform 120ms ease, box-shadow 140ms ease;
+
+  &:hover {
+    background: #c40023;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(234, 0, 42, 0.28);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #9c001e;
+    outline-offset: 2px;
+  }
 }
+
+.plusSymbol {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ctaKbd {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+// Responsive
 @media (max-width: 1024px) {
-  .menu {
+  .mobileMenuTrigger {
     display: inline-flex;
   }
 }
+
 @media (max-width: 768px) {
   .searchPill {
-    width: auto;
-    padding: 0 10px;
-    .searchPlaceholder {
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+
+    .searchPlaceholder,
+    .shortcutTag {
       display: none;
     }
   }
-}
-@media (max-width: 600px) {
-  .header {
-    padding-inline: 14px;
-  }
-  .context {
-    gap: 8px;
+
+  .ctaKbd,
+  .headerDivider,
+  .telemetryPill {
+    display: none;
   }
 }

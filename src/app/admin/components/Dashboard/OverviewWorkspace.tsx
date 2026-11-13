@@ -201,37 +201,7 @@ export function OverviewWorkspace({
 
   return (
     <div className={styles.overview}>
-      {/* Executive Workspace Toolbar */}
-      <header className={styles.workspaceToolbar}>
-        <div className={styles.toolbarLeft}>
-          <div className={styles.kickerCluster}>
-            <span className={styles.kicker}>Executive Commercial Desk</span>
-            <div className={styles.liveTelemetryBadge}>
-              <span className={styles.liveDot} aria-hidden="true" />
-              <span>Live Telemetry</span>
-            </div>
-          </div>
-          <h1 className={styles.workspaceTitle}>Dashboard</h1>
-        </div>
-
-        <div className={styles.toolbarRight}>
-          {data.canCreate && (
-            <button
-              type="button"
-              className={styles.primaryActionButton}
-              onClick={() =>
-                window.dispatchEvent(new CustomEvent("open-new-lead-modal"))
-              }
-              aria-label="Create a new commercial lead"
-            >
-              <span className={styles.plusIcon} aria-hidden="true">+</span>
-              <span>New lead</span>
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Row 1: Conyest 4-Card Top Metrics Grid */}
+      {/* Row 1: 4-Card Executive Telemetry Grid */}
       <ConyestMetricsGrid
         userName={data.userName || "MARCA UBI DESK"}
         balanceAmount={

@@ -20,8 +20,10 @@ export interface TransactionRow {
   date: string;
   time: string;
   amount: string;
-  note: string;
+  stage: string;
+  owner: string;
   status: TransactionStatus;
+  isUrgent?: boolean;
   href?: string | null;
 }
 
@@ -35,14 +37,21 @@ export interface ConyestTransactionsTableProps {
   financials?: boolean;
 }
 
+/** Get initials for avatar */
+function getInitials(name: string): string {
+  if (!name) return "CL";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 /**
  * ConyestTransactionsTable presents the commercial follow-up queue and recent engagements:
  * - Queue filter tabs (Overdue, Today, Unassigned) with live operational counts.
- * - Tabular currency numerals in full Indian Rupees (en-IN) without fake arithmetic formulas.
- * - Actionable CRM urgency badges ("Follow-up Overdue", "Due Today", "Contract Closed").
+ * - Humanized two-tier client rows (client avatar + name + domain/scope subtitle).
+ * - Subtle relative urgency indicators instead of screaming red blocks.
+ * - Tabular currency numerals in full Indian Rupees (en-IN).
  * - Click-through navigation to full deal dossier or preview drawer.
- *
- * Invariant: Preserves RBAC boundaries (confidential monetary states) and never outputs fake bank transactions.
  */
 export function ConyestTransactionsTable({
   records,
@@ -73,6 +82,7 @@ export function ConyestTransactionsTable({
           }
 
           let status: TransactionStatus = "Pending";
+          let isUrgent = false;
           if (
             rec.stage.toLowerCase().includes("won") ||
             rec.stage.toLowerCase().includes("converted")
@@ -80,6 +90,7 @@ export function ConyestTransactionsTable({
             status = "Completed";
           } else if (selectedQueue === "overdue") {
             status = "Overdue";
+            isUrgent = true;
           } else if (selectedQueue === "today") {
             status = "Due Today";
           } else if (selectedQueue === "unassigned") {
@@ -96,12 +107,14 @@ export function ConyestTransactionsTable({
           return {
             id: rec.id,
             name: rec.name,
-            type: rec.serviceCategory || rec.company || "Enterprise Lead",
+            type: rec.serviceCategory || rec.company || "Enterprise Scope",
             date: dateStr,
             time: timeStr,
             amount: amountDisplay,
-            note: `${rec.stage} · ${rec.owner}`,
+            stage: rec.stage,
+            owner: rec.owner,
             status,
+            isUrgent,
             href: rec.href,
           };
         })
@@ -169,19 +182,27 @@ export function ConyestTransactionsTable({
       {/* Queue Filter Tabs (Overdue, Today, Unassigned) */}
       {canTasks && onSelectQueue && queueCounts && (
         <div className={styles.queueTabs} role="tablist" aria-label="Queue views">
-          {(["overdue", "today", "unassigned"] as OverviewQueue[]).map((q) => (
-            <button
-              key={q}
-              type="button"
-              role="tab"
-              aria-selected={selectedQueue === q}
-              className={`${styles.queueTab} ${selectedQueue === q ? styles.activeQueueTab : ""}`}
-              onClick={() => onSelectQueue(q)}
-            >
-              <span style={{ textTransform: "capitalize" }}>{q}</span>
-              <span>{queueCounts[q] ?? 0}</span>
-            </button>
-          ))}
+          {(["overdue", "today", "unassigned"] as OverviewQueue[]).map((q) => {
+            const count = queueCounts[q] ?? 0;
+            const isOverdueTab = q === "overdue" && count > 0;
+            return (
+              <button
+                key={q}
+                type="button"
+                role="tab"
+                aria-selected={selectedQueue === q}
+                className={`${styles.queueTab} ${selectedQueue === q ? styles.activeQueueTab : ""}`}
+                onClick={() => onSelectQueue(q)}
+              >
+                <span style={{ textTransform: "capitalize" }}>{q}</span>
+                <span
+                  className={`${styles.tabCountPill} ${isOverdueTab ? styles.tabCountOverdue : ""}`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -195,30 +216,59 @@ export function ConyestTransactionsTable({
           <table className={styles.table}>
             <thead>
               <tr>
-                <th scope="col">Client</th>
-                <th scope="col">Domain / Scope</th>
+                <th scope="col">Client &amp; Scope</th>
                 <th scope="col">Schedule</th>
-                <th scope="col">Time</th>
                 <th scope="col">Expected Value</th>
                 <th scope="col">Stage &amp; Owner</th>
-                <th scope="col">Status</th>
+                <th scope="col">Status &amp; Action</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} onClick={() => handleRowClick(row)}>
-                  <td className={styles.nameCell}>{row.name}</td>
-                  <td className={styles.typeCell}>{row.type}</td>
-                  <td className={styles.dateCell}>{row.date}</td>
-                  <td className={styles.timeCell}>{row.time}</td>
+                <tr key={row.id} onClick={() => handleRowClick(row)} className={styles.tableRow}>
+                  <td className={styles.clientCell}>
+                    <div className={styles.clientCluster}>
+                      <span className={styles.clientAvatar}>{getInitials(row.name)}</span>
+                      <div className={styles.clientInfo}>
+                        <span className={styles.clientName}>{row.name}</span>
+                        <span className={styles.clientScope}>{row.type}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className={styles.dateCell}>
+                    <div className={styles.scheduleCluster}>
+                      <span className={styles.scheduleDate}>{row.date}</span>
+                      {row.isUrgent ? (
+                        <span className={styles.urgencyText}>• Overdue Follow-up</span>
+                      ) : (
+                        <span className={styles.scheduleTime}>{row.time}</span>
+                      )}
+                    </div>
+                  </td>
                   <td className={styles.amountCell}>{row.amount}</td>
-                  <td className={styles.noteCell} title={row.note}>
-                    {row.note}
+                  <td className={styles.ownerCell}>
+                    <div className={styles.ownerCluster}>
+                      <span className={styles.stagePill}>{row.stage}</span>
+                      <span className={styles.ownerName}>{row.owner}</span>
+                    </div>
                   </td>
                   <td className={styles.statusCell}>
-                    <span className={`${styles.statusPill} ${getStatusBadgeClass(row.status)}`}>
-                      {row.status}
-                    </span>
+                    <div className={styles.actionCluster}>
+                      <span className={`${styles.statusPill} ${getStatusBadgeClass(row.status)}`}>
+                        {row.status}
+                      </span>
+                      <button
+                        type="button"
+                        className={styles.dossierBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowClick(row);
+                        }}
+                        aria-label={`Open dossier for ${row.name}`}
+                      >
+                        Open ↗
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
