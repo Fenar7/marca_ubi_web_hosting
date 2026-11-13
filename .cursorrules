@@ -1,0 +1,19 @@
+# Marca Ubi Enterprise — Cursor AI Rules
+
+## Core Rules & Context
+- Read `AGENTS.md` for project behavioral rules, strict PR merge prohibition, and git authorship (`Fenar7 <86710532+Fenar7@users.noreply.github.com>`).
+- Read `DESIGN.md` for visual tokens: Swiss light editorial interface (`#ffffff`, `#f5f5f3`, `#111111`, `#ea002a`), Circular XX, Graphik.
+
+## Design & Engineering Skills Suite
+When working on UI, styling, or frontend performance, activate the skills under `.agents/skills/`:
+- **Art Direction & Anti-Cliché**: `.agents/skills/frontend-design/SKILL.md`
+- **Design Intelligence & UX Guardrails**: `.agents/skills/ui-ux-pro-max/SKILL.md`
+- **React 19 & Next.js Performance**: `.agents/skills/vercel-agent-skills/SKILL.md`
+- **Brand System Blueprints**: `.agents/skills/master-ui-ux-design-system/SKILL.md`
+- **Anti-AI-Slop Filter**: `.agents/skills/antislop/SKILL.md`
+
+## Engineering Standards
+- TypeScript: Zero `any` types. Run `npx tsc --noEmit` before finishing.
+- Next.js Server Actions: Strict boundary enforcement (`npm run test:boundaries`).
+- Formatting: Currency in INR (`formatCrmCurrency`), tabular numerics (`tabular-nums`).
+- Documentation: Maintain dedicated task folders under `docs/<feature-name>/`.
