@@ -28,9 +28,12 @@ import {
   type TimeframeSlug,
 } from "@/app/admin/lib/timeframeUtils";
 import { ExecutiveTelemetryMasthead } from "./ExecutiveTelemetryMasthead";
+import { ConyestCashflowCard } from "./ConyestCashflowCard";
+import { ConyestStatisticCard } from "./ConyestStatisticCard";
 import { PipelineStageFlowBar } from "./PipelineStageFlowBar";
 import { CommercialActionDesk } from "./CommercialActionDesk";
 import { CadenceUrgencyRail } from "./CadenceUrgencyRail";
+import { RevenueDynamicsCard } from "./RevenueDynamicsCard";
 import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
 import styles from "./OverviewWorkspace.module.scss";
 
@@ -201,7 +204,57 @@ export function OverviewWorkspace({
         onExportSummary={exportSummary}
       />
 
-      {/* 2. Pipeline Stage Flow Bar */}
+      {/* 2. Visual Intelligence Cockpit: Clustered Dual-Bar Velocity (65%) + Segmented Donut Distribution (35%) */}
+      <section className={styles.visualCockpitGrid} aria-label="Commercial velocity and stage distribution charts">
+        {/* Left Column: Clustered Dual-Bar Velocity Chart */}
+        <div className={styles.velocityChartColumn}>
+          <ConyestCashflowCard
+            cardTitle="Pipeline Velocity"
+            balanceLabel="Total Deal Intake"
+            totalBalance={data.pipelineValue !== null ? formatCrmCurrency(data.pipelineValue) : "Confidential"}
+            financials={data.financials}
+            periodLabel="This Year"
+          />
+        </div>
+
+        {/* Right Column: Horological Segmented Donut / Arc Distribution Chart */}
+        <div className={styles.donutChartColumn}>
+          <ConyestStatisticCard
+            cardTitle="Pipeline Distribution"
+            primaryTabLabel="By Value"
+            secondaryTabLabel="By Volume"
+            expensesTotal={data.pipelineValue !== null ? formatCrmCurrency(data.pipelineValue) : "Confidential"}
+            incomeTotal={`${data.pipelineCount ?? 0} Deals`}
+            expenseItems={data.stages.map((stage, idx) => {
+              const colors = ["#18181b", "#ea002a", "#d97706", "#059669", "#6366f1", "#0284c7", "#4f46e5"];
+              const totalVal = data.pipelineValue || 1;
+              const val = stage.value ?? 0;
+              const percentage = Math.max(1, Math.round((val / totalVal) * 100));
+              return {
+                percentage,
+                label: stage.name,
+                amount: stage.value !== null ? formatCrmCurrency(stage.value) : `${stage.count} deals`,
+                color: colors[idx % colors.length],
+                badgeTextColor: colors[idx % colors.length],
+              };
+            })}
+            incomeItems={data.stages.map((stage, idx) => {
+              const colors = ["#18181b", "#ea002a", "#d97706", "#059669", "#6366f1", "#0284c7", "#4f46e5"];
+              const totalCount = data.pipelineCount || 1;
+              const percentage = Math.max(1, Math.round((stage.count / totalCount) * 100));
+              return {
+                percentage,
+                label: stage.name,
+                amount: `${stage.count} deals`,
+                color: colors[idx % colors.length],
+                badgeTextColor: colors[idx % colors.length],
+              };
+            })}
+          />
+        </div>
+      </section>
+
+      {/* 3. Pipeline Stage Flow Bar */}
       <section aria-labelledby="pipeline-heading">
         <h2 id="pipeline-heading" className={styles.srOnly}>Pipeline Stage Velocity</h2>
         <PipelineStageFlowBar
@@ -214,7 +267,7 @@ export function OverviewWorkspace({
         />
       </section>
 
-      {/* 3. Two-Column Working Grid (70% Desk + 30% Urgency Rail) */}
+      {/* 4. Two-Column Working Grid (70% Desk + 30% Urgency Rail) */}
       <section aria-labelledby="today-heading" className={styles.workingGrid}>
         <h2 id="today-heading" className={styles.srOnly}>Commercial Action Desk and Cadence</h2>
         {/* Left Column: Commercial Action Desk (70%) */}
@@ -244,81 +297,114 @@ export function OverviewWorkspace({
         </div>
       </section>
 
-      {/* 4. Outcomes & Reporting Governance Section */}
+      {/* 5. Outcomes & Revenue Realization Governance Section */}
       <section className={styles.outcomes} aria-labelledby="outcomes-heading">
-        <div className={styles.sectionHeading}>
-          <div>
-            <h2 id="outcomes-heading">Outcomes &amp; Reporting Governance</h2>
-            <p>Conversions and performance metrics recorded during the selected period.</p>
-          </div>
-          <div className={styles.reportControls}>
-            <label className={styles.periodLabel}>
-              <span className={styles.srOnly}>Outcomes period</span>
-              <select
-                value={data.timeframe}
-                disabled={isPending}
-                onChange={(event) => navigate("timeframe", event.target.value)}
-              >
-                {Object.entries(TIMEFRAME_SLUG_LABELS).map(([key, option]) => (
-                  <option key={key} value={key}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-
-        {!data.outcomesReady ? (
-          <div className={styles.state}>
-            <h3>Outcomes are unavailable</h3>
-            <p>Try refreshing to retrieve this reporting period.</p>
-          </div>
-        ) : (
-          <>
-            <div className={styles.outcomeMetrics}>
-              {data.financials && (
-                <div>
-                  <span>Converted contract value</span>
-                  <strong>
-                    {data.convertedValue === null
-                      ? "Unavailable"
-                      : formatCrmCurrency(data.convertedValue)}
-                  </strong>
-                  <small>Contract value, not collected payments</small>
-                </div>
-              )}
-              <div>
-                <span>Conversions</span>
-                <strong>{number(data.convertedCount)}</strong>
-                <small>{data.periodLabel}</small>
-              </div>
+        <div className={styles.outcomesCard}>
+          <div className={styles.sectionHeading}>
+            <div>
+              <h2 id="outcomes-heading">Outcomes &amp; Revenue Realization</h2>
+              <p>Conversions, spline trajectory, and governance metrics recorded during the selected period.</p>
             </div>
+            <div className={styles.reportControls}>
+              <label className={styles.periodLabel}>
+                <span className={styles.srOnly}>Outcomes period</span>
+                <select
+                  value={data.timeframe}
+                  disabled={isPending}
+                  onChange={(event) => navigate("timeframe", event.target.value)}
+                >
+                  {Object.entries(TIMEFRAME_SLUG_LABELS).map(([key, option]) => (
+                    <option key={key} value={key}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
 
-            <details className={styles.definitions}>
-              <summary>Metric definitions and reporting scope</summary>
-              {data.financials && (
+          {!data.outcomesReady ? (
+            <div className={styles.state}>
+              <h3>Outcomes are unavailable</h3>
+              <p>Try refreshing to retrieve this reporting period.</p>
+            </div>
+          ) : (
+            <>
+              {/* Spline Chart of Converted Value Trajectory */}
+              <div className={styles.outcomesChartWrapper}>
+                <RevenueDynamicsCard
+                  dataPoints={data.chart}
+                  timeframe={data.periodLabel}
+                  conversionCount={data.convertedCount}
+                  dataStatus={data.outcomesReady ? "ready" : "unavailable"}
+                />
+              </div>
+
+              {/* Metric Summary Tiles */}
+              <div className={styles.outcomeMetrics}>
+                {data.financials && (
+                  <div>
+                    <span>Converted contract value</span>
+                    <strong>
+                      {data.convertedValue === null
+                        ? "Unavailable"
+                        : formatCrmCurrency(data.convertedValue)}
+                    </strong>
+                    <small>Contract value, not collected payments</small>
+                  </div>
+                )}
+                <div>
+                  <span>Conversions</span>
+                  <strong>{number(data.convertedCount)}</strong>
+                  <small>{data.periodLabel}</small>
+                </div>
+                {data.cohort && (
+                  <div>
+                    <span>Conversion Yield</span>
+                    <strong>
+                      {data.cohort.eligible > 0
+                        ? `${Math.round((data.cohort.won / data.cohort.eligible) * 100)}%`
+                        : "0%"}
+                    </strong>
+                    <small>{data.cohort.won} won / {data.cohort.eligible} eligible</small>
+                  </div>
+                )}
+                <div>
+                  <span>Commercial Turnaround</span>
+                  <strong>
+                    {data.averageCycleDays === null
+                      ? "Unavailable"
+                      : `${data.averageCycleDays.toFixed(1)} days`}
+                  </strong>
+                  <small>Target: &lt; 21 days</small>
+                </div>
+              </div>
+
+              <details className={styles.definitions}>
+                <summary>Metric definitions and reporting scope</summary>
+                {data.financials && (
+                  <p>
+                    Weighted potential:{" "}
+                    {data.weightedPotential === null
+                      ? "Unavailable"
+                      : formatCrmCurrency(data.weightedPotential)}
+                    . Approved stage probabilities: Qualified 25%, Proposal Sent 50%, Negotiation 85%.
+                  </p>
+                )}
                 <p>
-                  Weighted potential:{" "}
-                  {data.weightedPotential === null
+                  Average creation-to-conversion turnaround:{" "}
+                  {data.averageCycleDays === null
                     ? "Unavailable"
-                    : formatCrmCurrency(data.weightedPotential)}
-                  . Approved stage probabilities: Qualified 25%, Proposal Sent 50%, Negotiation 85%.
+                    : `${data.averageCycleDays.toFixed(1)} days`}
+                  . Target: &lt; 21 days.
                 </p>
-              )}
-              <p>
-                Average creation-to-conversion turnaround:{" "}
-                {data.averageCycleDays === null
-                  ? "Unavailable"
-                  : `${data.averageCycleDays.toFixed(1)} days`}
-                . Target: &lt; 21 days.
-              </p>
-              <p>
-                Report window: {dateLabel(data.periodStart)} to {dateLabel(data.periodEnd)}.
-              </p>
-            </details>
-          </>
-        )}
+                <p>
+                  Report window: {dateLabel(data.periodStart)} to {dateLabel(data.periodEnd)}.
+                </p>
+              </details>
+            </>
+          )}
+        </div>
       </section>
 
       {/* 5. Guarded Stage Advancement Modal Integration */}
