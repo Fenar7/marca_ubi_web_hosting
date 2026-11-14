@@ -14,6 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { MarcaUbiLogo } from '@/app/components/ui/MarcaUbiLogo/MarcaUbiLogo';
 import styles from './AdminBreadcrumbs.module.scss';
 
 /**
@@ -223,7 +224,9 @@ export function AdminBreadcrumbs(): React.ReactElement {
                   </span>
                 ) : item.isRoot ? (
                   <Link href={item.href || '/admin'} className={styles.rootLink} title="Marca Ubi CRM Executive Overview">
-                    <span className={styles.rootMonogram} aria-hidden="true">M<span>.</span></span>
+                    <span className={styles.rootMonogram} aria-hidden="true">
+                      <MarcaUbiLogo variant="monogram" width={14} height={12} color="#ffffff" accentColor="#ea002a" />
+                    </span>
                     <span className={styles.rootText}>{item.label}</span>
                   </Link>
                 ) : (

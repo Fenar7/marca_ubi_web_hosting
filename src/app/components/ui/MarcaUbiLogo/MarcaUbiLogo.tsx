@@ -10,11 +10,12 @@ interface MarcaUbiLogoProps {
   height?: number | string;
   ariaLabel?: string;
   role?: string;
+  variant?: 'full' | 'monogram';
 }
 
 /**
  * Authentic Marca Ubi Vector Logo Component.
- * Features vector path precision with viewBox="0 0 2538.61 538.79".
+ * Features vector path precision with viewBox="0 0 2538.61 538.79" (full) or cropped monogram.
  * Letterforms dynamically inherit `fill="currentColor"` (or `color` prop) to adapt
  * seamlessly between dark video cutouts and light Swiss editorial curtains,
  * while brand red accents permanently preserve `#ea002a` with zero optical corruption.
@@ -25,16 +26,48 @@ export function MarcaUbiLogo({
   className,
   color = "currentColor",
   accentColor = "#ea002a",
-  width = 160,
-  height = 34,
+  width,
+  height,
   ariaLabel = "Marca Ubi",
   role = "img",
+  variant = "full",
 }: MarcaUbiLogoProps) {
+  if (variant === "monogram") {
+    return (
+      <svg
+        viewBox="60 140 420 350"
+        width={width ?? 32}
+        height={height ?? 26}
+        className={className}
+        role={role}
+        aria-label={ariaLabel}
+        style={{
+          display: "block",
+          aspectRatio: "420 / 350",
+          color,
+        }}
+      >
+        <g>
+          {/* Authentic Letter 'M' Vector */}
+          <path
+            fill="currentColor"
+            d="M337.62,160.64l-39,147.8,33.36,90.32,56.88-182.96h12.92v259.89h66.93V160.64h-131.09ZM206.06,160.64H74.96v315.05h66.93V215.8h12.93l74.23,238.81,31.81-86.3-54.8-207.67Z"
+          />
+          {/* Signature Brand Red Dot */}
+          <circle cx="430" cy="445" r="22" fill={accentColor} />
+        </g>
+      </svg>
+    );
+  }
+
+  const defaultWidth = width ?? 160;
+  const defaultHeight = height ?? 34;
+
   return (
     <svg
       viewBox="0 0 2538.61 538.79"
-      width={width}
-      height={height}
+      width={defaultWidth}
+      height={defaultHeight}
       className={className}
       role={role}
       aria-label={ariaLabel}
