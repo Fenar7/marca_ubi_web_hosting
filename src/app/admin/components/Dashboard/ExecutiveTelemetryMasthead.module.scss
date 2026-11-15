@@ -1,3 +1,10 @@
+/**
+ * @file ExecutiveTelemetryMasthead.module.scss
+ * @description Luxury Styling for Executive Masthead and 4-Pod Telemetry Grid.
+ *              Includes Obsidian VIP Card (#111111 with red radial wash) and 3 crisp white companion cards.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .mastheadWrapper {
   margin-bottom: 24px;
 }
@@ -147,12 +154,70 @@
   }
 }
 
+/* Card 1: Obsidian VIP Featured Anchor Card (Conyest Style) */
+.obsidianScorecard {
+  background: #111111;
+  background: radial-gradient(circle at 90% 15%, rgba(234, 0, 42, 0.22) 0%, #111111 70%);
+  border: 1px solid #222222;
+  border-radius: var(--admin-radius-card, 16px);
+  padding: 18px 20px;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+
+  .cardKicker {
+    font-family: var(--font-graphik), sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #9e9e99;
+  }
+
+  .dealsPill {
+    font-family: var(--font-graphik), sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .primaryMetric {
+    font-family: var(--font-circular), sans-serif;
+    font-size: clamp(1.5rem, 2vw, 1.85rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: #ffffff;
+    margin-bottom: 8px;
+  }
+
+  .cardFooter {
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    padding-top: 8px;
+  }
+
+  .footerMuted {
+    font-family: var(--font-graphik), sans-serif;
+    font-size: 0.72rem;
+    color: #9e9e99;
+    margin: 0;
+  }
+}
+
+/* Cards 2-4: Clean White Scorecard Companions */
 .scorecard {
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: var(--admin-radius-card, 16px);
   padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(17, 17, 17, 0.03);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -229,6 +294,7 @@
 
 .footerMuted {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: var(--admin-text-muted, #696965);
+  margin: 0;
 }

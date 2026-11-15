@@ -41,3 +41,8 @@ export { ExecutiveTelemetryMasthead, type ExecutiveTelemetryMastheadProps } from
 export { CommercialActionDesk, type CommercialActionDeskProps, type DeskFilterTab } from './CommercialActionDesk';
 export { CadenceUrgencyRail, type CadenceUrgencyRailProps } from './CadenceUrgencyRail';
 export { OverviewWorkspace, type OverviewData, type OverviewRecord } from './OverviewWorkspace';
+
+// From-Scratch Finexy & AI Manager Dashboard Modules
+export { CommercialVelocityBarChart, type CommercialVelocityBarChartProps, type MonthlyBarData } from './CommercialVelocityBarChart';
+export { PipelineDonutChart, type PipelineDonutChartProps, type CategorySlice } from './PipelineDonutChart';
+export { CommercialDealsLedger, type CommercialDealsLedgerProps, type LedgerFilterTab } from './CommercialDealsLedger';

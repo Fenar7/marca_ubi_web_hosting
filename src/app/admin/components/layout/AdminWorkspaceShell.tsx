@@ -277,7 +277,7 @@ function AdminWorkspaceShellState({
       className={styles.layoutRoot}
       style={
         {
-          "--sidebar-width": isCollapsed ? "72px" : "240px",
+          "--sidebar-width": isCollapsed ? "68px" : "256px",
         } as React.CSSProperties
       }
     >

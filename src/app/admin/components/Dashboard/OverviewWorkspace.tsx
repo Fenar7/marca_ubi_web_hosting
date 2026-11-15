@@ -2,20 +2,18 @@
 
 /**
  * @file OverviewWorkspace.tsx
- * @description Master Commercial Desk & Overview Workspace for Marca Ubi Enterprise CRM (/admin).
- *              Replaces the old Conyest bento layout with:
- *              1. ExecutiveTelemetryMasthead (Timeframe controls, CSV export, 4 telemetry scorecards).
- *              2. PipelineStageFlowBar (Interactive sequential stage filter).
- *              3. Two-Column Working Grid: CommercialActionDesk (70%) + CadenceUrgencyRail (30%).
- *              4. Guarded StageTransitionModal and Dossier Drawer integrations.
- *              5. Outcomes & Governance Summary.
+ * @description Master Commercial Desk Workspace for Marca Ubi Enterprise CRM (/admin).
+ *              Complete from-scratch synthesis of the Finexy and AI Manager archetypes:
+ *              Tier 1: Executive Telemetry Masthead (Obsidian VIP card + 3 white scorecards).
+ *              Tier 2: Visual Intelligence Cockpit (68% Commercial Velocity Dual-Bar + 32% Donut Gauge).
+ *              Tier 3: Master Commercial Deals Ledger (AI Manager multi-segment progress pips).
+ *              Modal: Guarded StageTransitionModal for 1-click pipeline progression.
  * @module admin/components/Dashboard/OverviewWorkspace
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { formatCrmCurrency } from "@/app/admin/lib/currency";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   dashboardCsvCell,
   type OverviewQueue,
@@ -23,14 +21,13 @@ import {
 import type { CadenceLabel } from "@/app/admin/lib/timeframeUtils";
 import type { FunnelBucket } from "@/types/crm";
 import {
-  TIMEFRAME_SLUG_LABELS,
   type DynamicRevenueSplinePoint,
   type TimeframeSlug,
 } from "@/app/admin/lib/timeframeUtils";
 import { ExecutiveTelemetryMasthead } from "./ExecutiveTelemetryMasthead";
-import { PipelineStageFlowBar } from "./PipelineStageFlowBar";
-import { CommercialActionDesk } from "./CommercialActionDesk";
-import { CadenceUrgencyRail } from "./CadenceUrgencyRail";
+import { CommercialVelocityBarChart } from "./CommercialVelocityBarChart";
+import { PipelineDonutChart } from "./PipelineDonutChart";
+import { CommercialDealsLedger } from "./CommercialDealsLedger";
 import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
 import styles from "./OverviewWorkspace.module.scss";
 
@@ -81,49 +78,19 @@ export interface OverviewData {
   cohort: { eligible: number; won: number } | null;
 }
 
-const number = (value: number | null): string =>
-  value === null ? "Unavailable" : value.toLocaleString("en-IN");
-
-function dateLabel(value: string | null, includeTime = true): string {
-  if (!value) return "Not scheduled";
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return "Schedule unavailable";
-  return (
-    new Intl.DateTimeFormat("en-IN", {
-      day: "numeric",
-      month: "short",
-      ...(includeTime ? ({ hour: "numeric", minute: "2-digit" } as const) : {}),
-      timeZone: "UTC",
-    }).format(date) + (includeTime ? " UTC" : "")
-  );
-}
-
 export function OverviewWorkspace({
   data,
 }: {
   data: OverviewData;
 }): React.ReactElement {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
-
-  // Active Stage Filter State (Interconnects PipelineStageFlowBar and CommercialActionDesk)
-  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
 
   // Guarded Stage Transition Modal State
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
   const [targetTransitionRecord, setTargetTransitionRecord] = useState<OverviewRecord | null>(null);
 
-  function navigate(key: "queue" | "timeframe", value: string): void {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(key, value);
-    startTransition(() =>
-      router.push(`/admin?${params.toString()}`, { scroll: false })
-    );
-  }
-
   function exportSummary(): void {
-    if (!data.canExport || !data.pipelineReady || !data.outcomesReady || isPending)
+    if (!data.canExport || !data.pipelineReady)
       return;
 
     const rows: (string | number | null)[][] = [
@@ -182,7 +149,7 @@ export function OverviewWorkspace({
 
   return (
     <div className={styles.overview}>
-      {/* 1. Executive Telemetry Masthead */}
+      {/* Tier 1: Executive Telemetry Masthead (Obsidian VIP Card + 3 White Companion Scorecards) */}
       <ExecutiveTelemetryMasthead
         userName={data.userName || "MARCA UBI DESK"}
         timeframe={data.timeframe}
@@ -201,127 +168,46 @@ export function OverviewWorkspace({
         onExportSummary={exportSummary}
       />
 
-      {/* 2. Pipeline Stage Flow Bar */}
-      <section aria-labelledby="pipeline-heading">
-        <h2 id="pipeline-heading" className={styles.srOnly}>Pipeline Stage Velocity</h2>
-        <PipelineStageFlowBar
-          stages={data.stages}
-          selectedStageId={selectedStageId}
-          onSelectStage={setSelectedStageId}
-          totalDealsCount={data.pipelineCount ?? 0}
-          totalPipelineValue={data.pipelineValue}
+      {/* Tier 2: Visual Intelligence Cockpit (68% Dual-Bar Chart + 32% Donut Gauge) */}
+      <section
+        className={styles.visualCockpitGrid}
+        aria-label="Commercial velocity dual-bar chart and pipeline category distribution"
+      >
+        {/* Left Column (68%): Finexy Dual-Bar Chart */}
+        <div className={styles.chartColumn}>
+          <CommercialVelocityBarChart
+            chart={data.chart}
+            totalIntake={data.pipelineValue}
+            totalRealized={data.convertedValue}
+            financials={data.financials}
+          />
+        </div>
+
+        {/* Right Column (32%): Finexy Donut Gauge */}
+        <div className={styles.donutColumn}>
+          <PipelineDonutChart
+            records={data.records}
+            totalValue={data.pipelineValue}
+            financials={data.financials}
+          />
+        </div>
+      </section>
+
+      {/* Tier 3: Master Commercial Deals Ledger (AI Manager Multi-Segment Progress Pips) */}
+      <section
+        className={styles.ledgerSection}
+        aria-label="Commercial opportunities and action queue"
+      >
+        <CommercialDealsLedger
+          records={data.records}
+          recordsReady={data.recordsReady}
           financials={data.financials}
+          onAdvanceStage={handleAdvanceStage}
+          onOpenDossier={handleOpenDossier}
         />
       </section>
 
-      {/* 3. Two-Column Working Grid (70% Desk + 30% Urgency Rail) */}
-      <section aria-labelledby="today-heading" className={styles.workingGrid}>
-        <h2 id="today-heading" className={styles.srOnly}>Commercial Action Desk and Cadence</h2>
-        {/* Left Column: Commercial Action Desk (70%) */}
-        <div className={styles.actionDeskColumn}>
-          <CommercialActionDesk
-            records={data.records}
-            recordsReady={data.recordsReady}
-            stages={data.stages}
-            selectedStageId={selectedStageId}
-            onSelectStage={setSelectedStageId}
-            financials={data.financials}
-            canTasks={data.canTasks}
-            onAdvanceStage={handleAdvanceStage}
-            onOpenDossier={handleOpenDossier}
-          />
-        </div>
-
-        {/* Right Column: Cadence Urgency Rail (30%) */}
-        <div className={styles.urgencyRailColumn}>
-          <CadenceUrgencyRail
-            records={data.records}
-            recordsReady={data.recordsReady}
-            convertedValue={data.convertedValue}
-            targetMonthlyRevenue={1500000}
-            financials={data.financials}
-          />
-        </div>
-      </section>
-
-      {/* 4. Outcomes & Reporting Governance Section */}
-      <section className={styles.outcomes} aria-labelledby="outcomes-heading">
-        <div className={styles.sectionHeading}>
-          <div>
-            <h2 id="outcomes-heading">Outcomes &amp; Reporting Governance</h2>
-            <p>Conversions and performance metrics recorded during the selected period.</p>
-          </div>
-          <div className={styles.reportControls}>
-            <label className={styles.periodLabel}>
-              <span className={styles.srOnly}>Outcomes period</span>
-              <select
-                value={data.timeframe}
-                disabled={isPending}
-                onChange={(event) => navigate("timeframe", event.target.value)}
-              >
-                {Object.entries(TIMEFRAME_SLUG_LABELS).map(([key, option]) => (
-                  <option key={key} value={key}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-
-        {!data.outcomesReady ? (
-          <div className={styles.state}>
-            <h3>Outcomes are unavailable</h3>
-            <p>Try refreshing to retrieve this reporting period.</p>
-          </div>
-        ) : (
-          <>
-            <div className={styles.outcomeMetrics}>
-              {data.financials && (
-                <div>
-                  <span>Converted contract value</span>
-                  <strong>
-                    {data.convertedValue === null
-                      ? "Unavailable"
-                      : formatCrmCurrency(data.convertedValue)}
-                  </strong>
-                  <small>Contract value, not collected payments</small>
-                </div>
-              )}
-              <div>
-                <span>Conversions</span>
-                <strong>{number(data.convertedCount)}</strong>
-                <small>{data.periodLabel}</small>
-              </div>
-            </div>
-
-            <details className={styles.definitions}>
-              <summary>Metric definitions and reporting scope</summary>
-              {data.financials && (
-                <p>
-                  Weighted potential:{" "}
-                  {data.weightedPotential === null
-                    ? "Unavailable"
-                    : formatCrmCurrency(data.weightedPotential)}
-                  . Approved stage probabilities: Qualified 25%, Proposal Sent 50%, Negotiation 85%.
-                </p>
-              )}
-              <p>
-                Average creation-to-conversion turnaround:{" "}
-                {data.averageCycleDays === null
-                  ? "Unavailable"
-                  : `${data.averageCycleDays.toFixed(1)} days`}
-                . Target: &lt; 21 days.
-              </p>
-              <p>
-                Report window: {dateLabel(data.periodStart)} to {dateLabel(data.periodEnd)}.
-              </p>
-            </details>
-          </>
-        )}
-      </section>
-
-      {/* 5. Guarded Stage Advancement Modal Integration */}
+      {/* Guarded Stage Advancement Modal Integration */}
       {isStageModalOpen && targetTransitionRecord && (() => {
         const currentStageIndex = data.stages.findIndex(
           (s) =>

@@ -19,6 +19,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MarcaUbiLogo } from "@/app/components/ui/MarcaUbiLogo/MarcaUbiLogo";
 import {
   UserProfileDropdown,
   type CurrentUserSession,
@@ -77,13 +78,24 @@ export function AdminSidebar({
         <Link
           href="/admin"
           className={styles.brandLockup}
-          aria-label={isCollapsed ? "Marca Ubi Commercial Desk" : undefined}
+          aria-label="Marca Ubi Commercial Desk"
         >
-          <span className={styles.monogram} aria-hidden="true">
-            M.
-          </span>
-          {!isCollapsed && (
-            <span className={styles.brandTitle}>MARCA UBI</span>
+          {isCollapsed ? (
+            <MarcaUbiLogo
+              variant="monogram"
+              width={26}
+              height={22}
+              color="#111111"
+              accentColor="#ea002a"
+            />
+          ) : (
+            <MarcaUbiLogo
+              variant="full"
+              width={132}
+              height={28}
+              color="#111111"
+              accentColor="#ea002a"
+            />
           )}
         </Link>
 
