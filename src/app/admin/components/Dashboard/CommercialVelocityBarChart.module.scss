@@ -1,14 +1,16 @@
 /**
  * @file CommercialVelocityBarChart.module.scss
  * @description Luxury Styling for Commercial Velocity Dual-Bar Chart (Finexy Archetype).
- *              High-rhythm architectural background capsules, rounded pill caps,
- *              solid Swiss hairlines, and floating interactive scrubber.
+ *              Open-air white canvas, grounded pill bars, ephemeral hover slot washes,
+ *              and Finexy Cadence Telemetry Shelf footer equalizing cockpit height.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .cardContainer {
   min-width: 0;
   width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: var(--admin-radius-card, 12px);
@@ -16,6 +18,7 @@
   padding: 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
@@ -28,7 +31,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 1.15rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -131,7 +134,10 @@
 .svgWrapper {
   width: 100%;
   position: relative;
-  min-height: 230px;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  min-height: 280px;
 }
 
 .chartSvg {
@@ -177,19 +183,15 @@
   font-weight: 600;
 }
 
-/* Finexy Architectural Column Capsule */
-.slotCapsule {
-  fill: #f7f7f5;
-  transition: fill 0.2s ease;
+/* Ephemeral Hover Slot Capsules (Zero Permanent Test-Tube Monoliths) */
+.slotCapsuleIdle {
+  fill: transparent;
+  transition: fill 0.15s ease;
 }
 
-.slotCapsuleActive {
-  fill: #ededeb;
-}
-
-/* Internal Pill Channel Tracks */
-.channelTrack {
-  fill: rgba(0, 0, 0, 0.025);
+.slotCapsuleHover {
+  fill: #f5f5f3;
+  transition: fill 0.15s ease;
 }
 
 /* Pillar Bars */
@@ -213,7 +215,7 @@
   }
 }
 
-/* Zero Baseline Grounding Indicators (Ensures symmetry when 0) */
+/* Zero Baseline Grounding Indicators */
 .barIntakeZero {
   fill: #d8d8d4;
 }
@@ -314,4 +316,45 @@
   font-weight: 600;
   color: #ffffff;
   font-family: var(--font-circular), sans-serif;
+}
+
+/* Finexy Cadence Telemetry Shelf: Grounding Runway Equalizing Card Height */
+.telemetryShelf {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  padding-top: 1rem;
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
+}
+
+.telemetryPod {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.telemetryLabel {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #696965);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.telemetryValue {
+  font-family: var(--font-circular), sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.telemetryDivider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--admin-border-subtle, #e7e7e4);
+  margin: 0 16px;
 }

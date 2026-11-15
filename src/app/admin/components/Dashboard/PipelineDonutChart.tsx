@@ -32,8 +32,8 @@ export interface PipelineDonutChartProps {
 const LUXURY_PALETTE = [
   "#111111", // Obsidian Ink (Lead Category)
   "#ea002a", // Marca Ubi Signature Crimson
-  "#52525b", // Charcoal Zinc (4.5:1 contrast)
-  "#a1a1aa", // Platinum Silver Zinc
+  "#3f3f46", // Charcoal Zinc (WCAG AA > 7:1)
+  "#52525b", // Medium Zinc (WCAG AA > 5.8:1)
 ];
 
 export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
@@ -93,9 +93,9 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
     return [];
   }, [rawCategories, records, totalValue]);
 
-  // Finexy Donut Geometry: 200x200 viewBox, R=74, W=14, Aperture=134px
-  const radius = 74;
-  const circumference = 2 * Math.PI * radius; // ~464.96
+  // Streamlined Finexy Donut Geometry: 180x180 viewBox, R=68, W=12, Aperture=120px
+  const radius = 68;
+  const circumference = 2 * Math.PI * radius; // ~427.26
 
   let accumulatedPercent = 0;
   const slicesWithOffsets = categories.map((cat) => {
@@ -152,15 +152,15 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
       {/* Center Donut SVG Graphic with expanded 134px interior aperture */}
       <div className={styles.chartVisualWrapper}>
         <svg
-          viewBox="0 0 200 200"
+          viewBox="0 0 180 180"
           className={styles.donutSvg}
           role="img"
           aria-label="Pipeline distribution donut ring by service category"
         >
           {/* Base track ring */}
           <circle
-            cx="100"
-            cy="100"
+            cx="90"
+            cy="90"
             r={radius}
             className={styles.donutBackgroundTrack}
           />
@@ -173,8 +173,8 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
             return (
               <circle
                 key={idx}
-                cx="100"
-                cy="100"
+                cx="90"
+                cy="90"
                 r={radius}
                 className={isHovered ? styles.donutSegmentActive : styles.donutSegment}
                 style={{
