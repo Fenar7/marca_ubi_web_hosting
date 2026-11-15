@@ -1,0 +1,222 @@
+/**
+ * @file CommercialVelocityBarChart.module.scss
+ * @description Luxury Styling for Commercial Velocity Dual-Bar Chart (Finexy Archetype).
+ *              High-rhythm vertical column bars with pill caps, subtle hairlines, and hover scrubber.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.cardContainer {
+  min-width: 0;
+  width: 100%;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: none;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--admin-border-default, #d8d8d4);
+  }
+}
+
+.chartHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.titleGroup {
+  min-width: 0;
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.25rem;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--admin-accent-brand, #ea002a);
+}
+
+.eyebrow {
+  margin: 0;
+  color: #696965;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+.title {
+  margin: 0;
+  color: var(--admin-text-primary, #111111);
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--admin-text-secondary, #454542);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.controlsGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  color: var(--admin-text-secondary, #454542);
+  font-weight: 500;
+}
+
+.legendSquareIntake {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background-color: #27272a;
+}
+
+.legendSquareRealized {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background-color: var(--admin-accent-brand, #ea002a);
+}
+
+.timeframeSelect {
+  height: 32px;
+  padding: 0 10px;
+  background: var(--admin-canvas-bg, #f5f5f3);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-control, 8px);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--admin-text-primary, #111111);
+  cursor: pointer;
+}
+
+.svgWrapper {
+  width: 100%;
+  position: relative;
+  min-height: 220px;
+}
+
+.chartSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: #ebebea;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.axisText {
+  font-family: var(--font-circular), sans-serif;
+  font-size: 10px;
+  fill: #8e8e8a;
+  text-anchor: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.monthText {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 11px;
+  fill: #696965;
+  text-anchor: middle;
+  font-weight: 500;
+}
+
+.barIntake {
+  fill: #27272a;
+  transition: fill 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    fill: #111111;
+  }
+}
+
+.barRealized {
+  fill: var(--admin-accent-brand, #ea002a);
+  transition: fill 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    fill: #c40023;
+  }
+}
+
+.columnHoverArea {
+  fill: transparent;
+  cursor: pointer;
+
+  &:hover {
+    fill: rgba(17, 17, 17, 0.03);
+  }
+}
+
+.tooltipContainer {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: #111111;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tooltipMonth {
+  font-weight: 600;
+  color: #d4d4d0;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  padding-right: 8px;
+}
+
+.tooltipValues {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}

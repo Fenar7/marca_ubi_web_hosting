@@ -1,0 +1,201 @@
+/**
+ * @file PipelineDonutChart.module.scss
+ * @description Luxury Styling for Pipeline Distribution Donut Gauge (Finexy Archetype).
+ *              High-precision circular SVG ring with center valuation anchor and ranked category legend.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.cardContainer {
+  min-width: 0;
+  width: 100%;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: none;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--admin-border-default, #d8d8d4);
+  }
+}
+
+.donutHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.titleGroup {
+  min-width: 0;
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.25rem;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--admin-accent-brand, #ea002a);
+}
+
+.eyebrow {
+  margin: 0;
+  color: #696965;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+.title {
+  margin: 0;
+  color: var(--admin-text-primary, #111111);
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.viewModePill {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--admin-canvas-bg, #f5f5f3);
+  color: var(--admin-text-secondary, #454542);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+}
+
+.chartVisualWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 0 1rem;
+  position: relative;
+}
+
+.donutSvg {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+.donutBackgroundTrack {
+  fill: none;
+  stroke: #f0f0ee;
+  stroke-width: 18;
+}
+
+.donutSegment {
+  fill: none;
+  stroke-width: 18;
+  transition: stroke-dasharray 0.3s ease, stroke 0.2s ease;
+}
+
+.centerTextWrapper {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.centerLabel {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #8e8e8a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.centerValue {
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #111111);
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+
+.categoryLegendList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
+  list-style: none;
+}
+
+.categoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+}
+
+.categoryLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.colorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.categoryName {
+  font-family: var(--font-graphik), sans-serif;
+  color: var(--admin-text-primary, #111111);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.categoryRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.percentagePill {
+  font-family: var(--font-circular), sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: var(--admin-canvas-bg, #f5f5f3);
+  color: var(--admin-text-secondary, #454542);
+  font-variant-numeric: tabular-nums;
+}
+
+.categoryAmount {
+  font-family: var(--font-circular), sans-serif;
+  font-weight: 650;
+  color: var(--admin-text-primary, #111111);
+  font-variant-numeric: tabular-nums;
+  min-width: 60px;
+  text-align: right;
+}
