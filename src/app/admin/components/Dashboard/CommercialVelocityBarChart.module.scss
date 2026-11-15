@@ -1,7 +1,8 @@
 /**
  * @file CommercialVelocityBarChart.module.scss
  * @description Luxury Styling for Commercial Velocity Dual-Bar Chart (Finexy Archetype).
- *              High-rhythm vertical column bars with pill caps, subtle hairlines, and hover scrubber.
+ *              High-rhythm architectural background capsules, rounded pill caps,
+ *              solid Swiss hairlines, and floating interactive scrubber.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -15,7 +16,7 @@
   padding: 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     border-color: var(--admin-border-default, #d8d8d4);
@@ -27,7 +28,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
   flex-wrap: wrap;
 }
 
@@ -63,7 +64,7 @@
   color: var(--admin-text-primary, #111111);
   font-family: var(--font-circular), sans-serif;
   font-size: 1.15rem;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.2;
 }
@@ -103,7 +104,7 @@
   width: 10px;
   height: 10px;
   border-radius: 3px;
-  background-color: #27272a;
+  background-color: #18181b;
 }
 
 .legendSquareRealized {
@@ -130,7 +131,7 @@
 .svgWrapper {
   width: 100%;
   position: relative;
-  min-height: 220px;
+  min-height: 230px;
 }
 
 .chartSvg {
@@ -140,10 +141,15 @@
   overflow: visible;
 }
 
-.gridLine {
-  stroke: #ebebea;
+/* Swiss Hairline Gridlines */
+.hairlineGrid {
+  stroke: #eeeeec;
   stroke-width: 1;
-  stroke-dasharray: 4 4;
+}
+
+.axisBaseline {
+  stroke: #e2e2df;
+  stroke-width: 1.25;
 }
 
 .axisText {
@@ -160,64 +166,152 @@
   fill: #696965;
   text-anchor: middle;
   font-weight: 500;
+  transition: fill 0.15s ease;
 }
 
+.monthTextActive {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 11px;
+  fill: var(--admin-text-primary, #111111);
+  text-anchor: middle;
+  font-weight: 600;
+}
+
+/* Finexy Architectural Column Capsule */
+.slotCapsule {
+  fill: #f7f7f5;
+  transition: fill 0.2s ease;
+}
+
+.slotCapsuleActive {
+  fill: #ededeb;
+}
+
+/* Internal Pill Channel Tracks */
+.channelTrack {
+  fill: rgba(0, 0, 0, 0.025);
+}
+
+/* Pillar Bars */
 .barIntake {
-  fill: #27272a;
-  transition: fill 0.15s ease;
+  fill: #18181b;
   cursor: pointer;
+  transition: fill 0.15s ease, opacity 0.15s ease;
 
   &:hover {
-    fill: #111111;
+    fill: #09090b;
   }
 }
 
 .barRealized {
   fill: var(--admin-accent-brand, #ea002a);
-  transition: fill 0.15s ease;
   cursor: pointer;
+  transition: fill 0.15s ease;
 
   &:hover {
     fill: #c40023;
   }
 }
 
-.columnHoverArea {
-  fill: transparent;
-  cursor: pointer;
-
-  &:hover {
-    fill: rgba(17, 17, 17, 0.03);
-  }
+/* Zero Baseline Grounding Indicators (Ensures symmetry when 0) */
+.barIntakeZero {
+  fill: #d8d8d4;
 }
 
+.barRealizedZero {
+  fill: #e4e4e1;
+}
+
+.hitArea {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.columnGroup {
+  cursor: pointer;
+}
+
+/* Floating Adaptive Tooltip */
 .tooltipContainer {
   position: absolute;
-  top: 10px;
-  right: 14px;
+  top: 4px;
+  transform: translateX(-50%);
   background: #111111;
   color: #ffffff;
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.74rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.1);
   pointer-events: none;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+  min-width: 140px;
+  white-space: nowrap;
+  animation: tooltipFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.tooltipMonth {
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.tooltipHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 4px;
+}
+
+.tooltipPeriod {
   font-weight: 600;
-  color: #d4d4d0;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  padding-right: 8px;
+  color: #e4e4e1;
+  font-size: 0.72rem;
 }
 
-.tooltipValues {
+.tooltipMetrics {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltipMetricRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-variant-numeric: tabular-nums;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tooltipPipIntake {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #a1a1aa;
+  flex-shrink: 0;
+}
+
+.tooltipPipRealized {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ea002a;
+  flex-shrink: 0;
+}
+
+.tooltipLabel {
+  color: #a1a1aa;
+  font-size: 0.7rem;
+}
+
+.tooltipValue {
+  font-weight: 600;
+  color: #ffffff;
+  font-family: var(--font-circular), sans-serif;
 }

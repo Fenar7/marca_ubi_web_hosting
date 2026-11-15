@@ -3,8 +3,9 @@
 /**
  * @file CommercialVelocityBarChart.tsx
  * @description Master Commercial Velocity Dual-Bar Chart modeled 1:1 after the Finexy archetype.
- *              Displays monthly vertical column bars with rounded pill caps (Intake vs. Realized),
- *              subtle hairline gridlines, INR axis milestones, and an interactive hover scrubber.
+ *              Displays dual vertical columns with rounded pill caps (Intake vs. Realized),
+ *              architectural background slot capsules, zero-baseline grounding pills,
+ *              hairline gridlines, and an interactive dynamic hover scrubber.
  * @module admin/components/Dashboard/CommercialVelocityBarChart
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -18,6 +19,7 @@ export interface MonthlyBarData {
   month: string;
   intake: number;
   realized: number;
+  fullPeriod?: string;
 }
 
 export interface CommercialVelocityBarChartProps {
@@ -39,24 +41,22 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
 }) => {
   const [activeHoverIndex, setActiveHoverIndex] = useState<number | null>(null);
 
-  // Compute monthly column buckets based directly on live CRM timeframe points or real calendar intervals
+  // Derive column data directly from bucketed CRM events or calibrated pipeline trajectory
   const monthlyData = useMemo<MonthlyBarData[]>(() => {
     if (chart && chart.length > 0) {
-      // If pt.intakeVal exists and is provided from bucketed events, use it directly!
       const hasRealIntakeEvents = chart.some((pt) => typeof pt.intakeVal === "number" && pt.intakeVal > 0);
 
       if (hasRealIntakeEvents) {
         return chart.map((pt) => ({
           month: pt.month,
+          fullPeriod: pt.fullPeriod,
           intake: pt.intakeVal || 0,
           realized: pt.cashVal || 0,
         }));
       }
 
-      // If no lead creation dates fell directly in the window, distribute based on dynamic pipeline maturation trajectory
       const baseIntake = totalIntake && totalIntake > 0 ? totalIntake : 0;
       const pointCount = chart.length;
-      // Progressive cadence weights representing pipeline velocity trajectory
       const cadenceWeights =
         pointCount === 5
           ? [0.14, 0.22, 0.18, 0.26, 0.20]
@@ -66,46 +66,50 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
 
       return chart.map((pt, idx) => ({
         month: pt.month,
+        fullPeriod: pt.fullPeriod,
         intake: Math.round(baseIntake * (cadenceWeights[idx] || 1 / pointCount)),
         realized: pt.cashVal || 0,
       }));
     }
 
-    // Default cadence calendar when points are not pre-bucketed
-    const months = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
-    return months.map((m) => ({
+    const defaultCadence = ["W1", "W2", "W3", "W4", "W5"];
+    return defaultCadence.map((m) => ({
       month: m,
+      fullPeriod: m,
       intake: 0,
       realized: 0,
     }));
   }, [chart, totalIntake]);
 
-  // Dimensions for SVG
-  const svgWidth = 600;
-  const svgHeight = 220;
-  const paddingLeft = 55;
-  const paddingRight = 20;
-  const paddingTop = 25;
-  const paddingBottom = 35;
+  // Precise Finexy SVG Dimensions (Balanced 52% Column Slot Occupancy)
+  const svgWidth = 640;
+  const svgHeight = 230;
+  const paddingLeft = 58;
+  const paddingRight = 22;
+  const paddingTop = 26;
+  const paddingBottom = 36;
 
-  const chartWidth = svgWidth - paddingLeft - paddingRight;
-  const chartHeight = svgHeight - paddingTop - paddingBottom;
+  const chartWidth = svgWidth - paddingLeft - paddingRight; // 560
+  const chartHeight = svgHeight - paddingTop - paddingBottom; // 168
 
-  // Max scale calculation
+  // Max valuation ceiling calculation (Multiples of 5L or dynamic)
   const maxVal = useMemo(() => {
     const highest = Math.max(...monthlyData.map((d) => Math.max(d.intake, d.realized)), 2000000);
     return Math.ceil(highest / 500000) * 500000;
   }, [monthlyData]);
 
-  // Y-axis milestones (0, 5L, 10L, 15L, 20L)
+  // 5 Y-axis milestones (0, 25%, 50%, 75%, 100%)
   const yMilestones = [0, maxVal * 0.25, maxVal * 0.5, maxVal * 0.75, maxVal];
 
-  // Column calculations - Balanced Finexy proportions (50-55% slot occupancy)
+  // Finexy Column Proportions
   const colWidth = chartWidth / (monthlyData.length || 1);
-  const barWidth = 22; // Substantial luxury pill width (up from 14px)
+  const barWidth = 20;
   const barGap = 6;
+  const capsuleWidth = barWidth * 2 + barGap + 12; // 58px capsule (51.8% of 112px slot)
 
   const activeItem = activeHoverIndex !== null ? monthlyData[activeHoverIndex] : null;
+  const activeCenterX =
+    activeHoverIndex !== null ? paddingLeft + activeHoverIndex * colWidth + colWidth / 2 : null;
 
   return (
     <article
@@ -145,14 +149,36 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
       </header>
 
       <div className={styles.svgWrapper}>
-        {/* Floating Tooltip Scrubber */}
-        {activeItem && (
-          <div className={styles.tooltipContainer} role="status" aria-live="polite">
-            <span className={styles.tooltipMonth}>{activeItem.month}</span>
-            <div className={styles.tooltipValues}>
-              <span>Intake: <strong>{financials ? formatCrmCurrency(activeItem.intake) : "Confidential"}</strong></span>
-              <span>·</span>
-              <span>Realized: <strong>{financials ? formatCrmCurrency(activeItem.realized) : "Confidential"}</strong></span>
+        {/* Dynamic Floating Tooltip Scrubber anchored directly above hovered column */}
+        {activeItem && activeCenterX !== null && (
+          <div
+            className={styles.tooltipContainer}
+            style={{
+              left: `${Math.max(12, Math.min(88, (activeCenterX / svgWidth) * 100))}%`,
+            }}
+            role="status"
+            aria-live="polite"
+          >
+            <div className={styles.tooltipHeader}>
+              <span className={styles.tooltipPeriod}>
+                {activeItem.fullPeriod || activeItem.month}
+              </span>
+            </div>
+            <div className={styles.tooltipMetrics}>
+              <div className={styles.tooltipMetricRow}>
+                <span className={styles.tooltipPipIntake} aria-hidden="true" />
+                <span className={styles.tooltipLabel}>Intake:</span>
+                <strong className={styles.tooltipValue}>
+                  {financials ? formatCrmCurrency(activeItem.intake) : "Confidential"}
+                </strong>
+              </div>
+              <div className={styles.tooltipMetricRow}>
+                <span className={styles.tooltipPipRealized} aria-hidden="true" />
+                <span className={styles.tooltipLabel}>Realized:</span>
+                <strong className={styles.tooltipValue}>
+                  {financials ? formatCrmCurrency(activeItem.realized) : "Confidential"}
+                </strong>
+              </div>
             </div>
           </div>
         )}
@@ -163,7 +189,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
           role="img"
           aria-label="Commercial velocity dual-bar chart showing monthly intake vs realized revenue"
         >
-          {/* Horizontal Hairline Gridlines and Y-Axis Labels */}
+          {/* Subtle Hairline Gridlines and Y-Axis Labels */}
           {yMilestones.map((milestone, idx) => {
             const y = paddingTop + chartHeight - (milestone / maxVal) * chartHeight;
             const labelStr =
@@ -180,10 +206,10 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                   y1={y}
                   x2={svgWidth - paddingRight}
                   y2={y}
-                  className={styles.gridLine}
+                  className={idx === 0 ? styles.axisBaseline : styles.hairlineGrid}
                 />
                 <text
-                  x={paddingLeft - 8}
+                  x={paddingLeft - 10}
                   y={y + 3.5}
                   className={styles.axisText}
                 >
@@ -193,11 +219,15 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             );
           })}
 
-          {/* Monthly Dual Columns */}
+          {/* Monthly Dual Columns with Finexy Architectural Background Capsules */}
           {monthlyData.map((item, idx) => {
             const centerX = paddingLeft + idx * colWidth + colWidth / 2;
-            const intakeHeight = item.intake > 0 ? Math.max(6, (item.intake / maxVal) * chartHeight) : 0;
-            const realizedHeight = item.realized > 0 ? Math.max(6, (item.realized / maxVal) * chartHeight) : 0;
+            const capsuleX = centerX - capsuleWidth / 2;
+
+            const intakeHeight =
+              item.intake > 0 ? Math.max(8, (item.intake / maxVal) * chartHeight) : 0;
+            const realizedHeight =
+              item.realized > 0 ? Math.max(8, (item.realized / maxVal) * chartHeight) : 0;
 
             const intakeX = centerX - barWidth - barGap / 2;
             const intakeY = paddingTop + chartHeight - intakeHeight;
@@ -205,23 +235,47 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             const realizedX = centerX + barGap / 2;
             const realizedY = paddingTop + chartHeight - realizedHeight;
 
+            const isHovered = activeHoverIndex === idx;
+
             return (
               <g
                 key={idx}
                 onMouseEnter={() => setActiveHoverIndex(idx)}
                 onMouseLeave={() => setActiveHoverIndex(null)}
+                className={styles.columnGroup}
               >
-                {/* Invisible wide hit area for seamless hovering */}
+                {/* Architectural Background Slot Capsule (Finexy Archetype) */}
                 <rect
-                  x={paddingLeft + idx * colWidth}
+                  x={capsuleX}
                   y={paddingTop}
-                  width={colWidth}
+                  width={capsuleWidth}
                   height={chartHeight}
-                  className={styles.columnHoverArea}
+                  rx="8"
+                  className={isHovered ? styles.slotCapsuleActive : styles.slotCapsule}
                 />
 
-                {/* Intake Bar (Obsidian Charcoal with rounded top pill) */}
-                {intakeHeight > 0 && (
+                {/* Left Bar Channel Track (Intake) */}
+                <rect
+                  x={intakeX}
+                  y={paddingTop + 4}
+                  width={barWidth}
+                  height={chartHeight - 4}
+                  rx="6"
+                  className={styles.channelTrack}
+                />
+
+                {/* Right Bar Channel Track (Realized) */}
+                <rect
+                  x={realizedX}
+                  y={paddingTop + 4}
+                  width={barWidth}
+                  height={chartHeight - 4}
+                  rx="6"
+                  className={styles.channelTrack}
+                />
+
+                {/* Pipeline Intake Bar (Obsidian Charcoal Pill) */}
+                {intakeHeight > 0 ? (
                   <rect
                     x={intakeX}
                     y={intakeY}
@@ -230,10 +284,19 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                     rx="6"
                     className={styles.barIntake}
                   />
+                ) : (
+                  <rect
+                    x={intakeX}
+                    y={paddingTop + chartHeight - 4}
+                    width={barWidth}
+                    height={4}
+                    rx="2"
+                    className={styles.barIntakeZero}
+                  />
                 )}
 
-                {/* Realized Bar (Signature Brand Red) - Suppress distorted 3px sliver when 0 */}
-                {realizedHeight > 0 && (
+                {/* Realized Revenue Bar (Signature Brand Crimson Pill) */}
+                {realizedHeight > 0 ? (
                   <rect
                     x={realizedX}
                     y={realizedY}
@@ -242,13 +305,32 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                     rx="6"
                     className={styles.barRealized}
                   />
+                ) : (
+                  /* Graceful Zero-Realized Revenue Grounding Pill (Never an empty void!) */
+                  <rect
+                    x={realizedX}
+                    y={paddingTop + chartHeight - 4}
+                    width={barWidth}
+                    height={4}
+                    rx="2"
+                    className={styles.barRealizedZero}
+                  />
                 )}
 
-                {/* Month Label */}
+                {/* Transparent hit area for frictionless pointer hover */}
+                <rect
+                  x={paddingLeft + idx * colWidth}
+                  y={paddingTop}
+                  width={colWidth}
+                  height={chartHeight}
+                  className={styles.hitArea}
+                />
+
+                {/* X-Axis Interval Label */}
                 <text
                   x={centerX}
                   y={svgHeight - 12}
-                  className={styles.monthText}
+                  className={isHovered ? styles.monthTextActive : styles.monthText}
                 >
                   {item.month}
                 </text>

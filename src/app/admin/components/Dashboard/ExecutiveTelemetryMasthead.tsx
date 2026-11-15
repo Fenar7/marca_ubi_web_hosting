@@ -234,9 +234,16 @@ export function ExecutiveTelemetryMasthead({
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>
-              {financials && weightedPotential !== null
-                ? `Weighted ${formatCrmCurrency(weightedPotential)}`
-                : "Stage-weighted risk potential"}
+              {financials && weightedPotential !== null ? (
+                <>
+                  <span className={styles.footerLabel}>Risk-weighted yield:</span>{" "}
+                  <span className={styles.footerHighlight}>
+                    {formatCrmCurrency(weightedPotential)}
+                  </span>
+                </>
+              ) : (
+                "Stage-weighted risk potential"
+              )}
             </span>
           </div>
         </article>
@@ -258,11 +265,21 @@ export function ExecutiveTelemetryMasthead({
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>
-              {convertedCount !== null && convertedCount > 0
-                ? `${convertedCount} conversions in ${periodLabel}`
-                : priorConvertedValue !== null && priorConvertedValue > 0
-                  ? `Prior ${cadenceLabel}: ${formatCrmCurrency(priorConvertedValue)}`
-                  : `Cadence benchmark`}
+              {convertedCount !== null && convertedCount > 0 ? (
+                <>
+                  <span className={styles.footerHighlight}>{convertedCount}</span>{" "}
+                  <span>conversions in {periodLabel}</span>
+                </>
+              ) : priorConvertedValue !== null && priorConvertedValue > 0 ? (
+                <>
+                  <span className={styles.footerLabel}>Prior {cadenceLabel}:</span>{" "}
+                  <span className={styles.footerHighlight}>
+                    {formatCrmCurrency(priorConvertedValue)}
+                  </span>
+                </>
+              ) : (
+                "Cadence benchmark"
+              )}
             </span>
           </div>
         </article>
@@ -286,7 +303,7 @@ export function ExecutiveTelemetryMasthead({
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>
-              Probability calibrated risk-adjusted pipeline
+              Probability-calibrated risk-adjusted pipeline
             </span>
           </div>
         </article>
@@ -298,9 +315,14 @@ export function ExecutiveTelemetryMasthead({
             <span className={styles.targetPill}>Target &lt; 21d</span>
           </div>
           <div className={styles.primaryMetric}>
-            {averageCycleDays !== null && Number.isFinite(averageCycleDays) && averageCycleDays > 0
-              ? `${averageCycleDays.toFixed(1)} Days`
-              : "—"}
+            {averageCycleDays !== null && Number.isFinite(averageCycleDays) && averageCycleDays > 0 ? (
+              <>
+                <span>{averageCycleDays.toFixed(1)}</span>
+                <span className={styles.metricUnit}>Days</span>
+              </>
+            ) : (
+              "—"
+            )}
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>

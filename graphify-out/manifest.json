@@ -1134,15 +1134,15 @@
     "semantic_hash": "4572fabb70ae9163d445232dab7729ee"
   },
   "src/app/admin/components/layout/AdminSidebar.tsx": {
-    "mtime": 1794761148.5783277,
-    "seen": 1794761557.5190904,
-    "ast_hash": "eb51c088a4d67e32acf5608f1cdfbf55",
+    "mtime": 1794766641.5747185,
+    "seen": 1794766995.249293,
+    "ast_hash": "45f6a1e8cb73dd49972a92e9351e3a5b",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminWorkspaceShell.tsx": {
-    "mtime": 1794671482.77366,
-    "seen": 1794734582.8670247,
-    "ast_hash": "012fd8fe7e88afd4a8d3763fcc0d88c5",
+    "mtime": 1794766669.4296408,
+    "seen": 1794766995.249293,
+    "ast_hash": "86de237443a1d8d5d427cab80b388c48",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/NewLeadDrawer.tsx": {
@@ -1158,9 +1158,9 @@
     "semantic_hash": "b433161636b77dc07082d6d4ab5126ba"
   },
   "src/app/admin/components/layout/UserProfileDropdown.tsx": {
-    "mtime": 1794348976.1168454,
-    "seen": 1794356196.5108132,
-    "ast_hash": "e29f77e929bc302c2d7bd693ab11946d",
+    "mtime": 1794766602.6229076,
+    "seen": 1794766995.249293,
+    "ast_hash": "ba8a5424dd21f1ff00b20825e28e3995",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/navigationConfig.tsx": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1794764096.7679572,
-    "seen": 1794764899.0985758,
-    "ast_hash": "d51e68ff772769d3803be241e0f291d2",
+    "mtime": 1794766768.8827288,
+    "seen": 1794766995.2482936,
+    "ast_hash": "cd9185e3276b08d2d1da8140a1793e12",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6030,15 +6030,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1794764411.133443,
-    "seen": 1794764899.0985758,
-    "ast_hash": "babbf536e337acc0a4b09c5d23e5473a",
+    "mtime": 1794766794.7583964,
+    "seen": 1794766995.2482936,
+    "ast_hash": "c4a19f0866d02527a196106d3370caa7",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
-    "mtime": 1794764355.169495,
-    "seen": 1794764899.0985758,
-    "ast_hash": "a9045c2c2c80f6825872c09194a1360c",
+    "mtime": 1794766831.888227,
+    "seen": 1794766995.2482936,
+    "ast_hash": "9136cb643dbea89b50f607c6bca03924",
     "semantic_hash": ""
   },
   "docs/context/2026-11-14_12-30-00.md": {
@@ -6099,6 +6099,18 @@
     "mtime": 1794763484.1828797,
     "seen": 1794764899.1005754,
     "ast_hash": "0eedf128f42ea741017729d6580f9158",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_V4_MASTER_PLAN.md": {
+    "mtime": 1794765693.8693712,
+    "seen": 1794766995.2502933,
+    "ast_hash": "f6f9e5df6316c140716e1eb1d39cdc8e",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/PR_122_V3_BODY.md": {
+    "mtime": 1794764977.7387972,
+    "seen": 1794766995.2502933,
+    "ast_hash": "5d2b2ab316d364ae698f5a75706e3a77",
     "semantic_hash": ""
   },
   "package-lock.json": {

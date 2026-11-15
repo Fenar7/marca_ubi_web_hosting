@@ -4,19 +4,19 @@
  * @file AdminSidebar.tsx
  * @description Master navigation rail for Marca Ubi Commercial Desk (/admin).
  * @architecture
- *  - Brand lockup: Monogram 'M.' in Circular XX, 'MARCA UBI' typography, sleek collapse trigger (⌘B).
- *    Completely eliminates the awkward bordered 'COMMERCIAL DESK' pill badge.
- *  - Zero duplicate search capsule (search lives strictly in the top header ⌘K).
- *  - 3 structured sections: 'COMMERCIAL', 'OPERATIONS', and 'WORKSPACE'.
- *  - Active state: Warm Alabaster (#f5f5f3) background pill, dark typography (#111111), and a 3px signature red (#ea002a) pip.
- *  - Follow-up badge: Refined soft neutral or subtle soft crimson pill (zero neon pink).
- *  - Bottom telemetry: 1-line integrated micro-telemetry rail for Monthly Cadence (3px hairline progress track, NO boxy card).
- *  - Bottom identity: Single integrated user profile card via UserProfileDropdown.
+ *  - Brand lockup: Monogram 'M.' in Circular XX with signature red dot, 'MARCA UBI' typography,
+ *    integrated ghost collapse trigger (⌘B).
+ *  - In-sidebar search launcher capsule: '🔍 Search or navigate... ⌘K' triggering Command Palette.
+ *  - Collapsible navigation groups with smooth micro-chevrons ('Work', 'Workspace').
+ *  - Active state: Velvety Warm Alabaster (#f5f5f3) rounded pill, dark typography (#111111, weight 600),
+ *    zero harsh left red border strip.
+ *  - Refined follow-up badge: Soft neutral capsule (#ebebea, text #454542) or subtle brand crimson (zero neon pink).
+ *  - Bottom identity: Integrated user profile card via UserProfileDropdown with avatar squircle and presence dot.
  *  - Breakpoint: Hidden at <= 1024px in favor of AdminMobileDrawer; adheres to prefers-reduced-motion.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MarcaUbiLogo } from "@/app/components/ui/MarcaUbiLogo/MarcaUbiLogo";
@@ -41,13 +41,27 @@ export function AdminSidebar({
   dueTasksCount,
 }: AdminSidebarProps): React.ReactElement {
   const pathname = usePathname() || "/admin";
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (groupTitle: string) => {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [groupTitle]: !prev[groupTitle],
+    }));
+  };
+
+  const handleLaunchSearch = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("open-command-palette"));
+    }
+  };
 
   return (
     <aside
       className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
       aria-label="Commercial Desk navigation"
     >
-      {/* 1. Brand Lockup & Sleek Collapse Trigger (Zero Awkward Desk Badge) */}
+      {/* 1. Brand Lockup & Integrated Collapse Trigger (⌘B) */}
       <div className={styles.brandRow}>
         <Link
           href="/admin"
@@ -65,8 +79,8 @@ export function AdminSidebar({
           ) : (
             <MarcaUbiLogo
               variant="full"
-              width={132}
-              height={28}
+              width={128}
+              height={26}
               color="#111111"
               accentColor="#ea002a"
             />
@@ -102,13 +116,69 @@ export function AdminSidebar({
         </button>
       </div>
 
-      {/* 2. Structured 3-Tier Navigation (COMMERCIAL, OPERATIONS, WORKSPACE) */}
+      {/* 2. In-Sidebar Search Capsule (AI Manager & Linear Standard) */}
+      <div className={styles.searchSection}>
+        {isCollapsed ? (
+          <button
+            type="button"
+            className={styles.searchLauncherCollapsed}
+            onClick={handleLaunchSearch}
+            aria-label="Search workspace or navigate (⌘K)"
+            title="Search workspace or navigate (⌘K)"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.searchLauncher}
+            onClick={handleLaunchSearch}
+            aria-label="Search workspace or navigate (⌘K)"
+            title="Search workspace or navigate (⌘K)"
+          >
+            <svg
+              className={styles.searchIcon}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span className={styles.searchText}>Search or navigate...</span>
+            <kbd className={styles.searchKbd}>⌘K</kbd>
+          </button>
+        )}
+      </div>
+
+      {/* 3. Collapsible Navigation Groups (Work, Workspace) */}
       <nav className={styles.navigation} aria-label="Commercial Desk navigation sections">
         {NAVIGATION_GROUPS.map((group) => {
           const items = group.items.filter((item) =>
             isTabAuthorized(item.key, currentUser),
           );
           if (!items.length) return null;
+
+          const isGroupCollapsed = Boolean(collapsedGroups[group.groupTitle]);
 
           return (
             <section
@@ -117,50 +187,74 @@ export function AdminSidebar({
               aria-label={group.groupTitle}
             >
               {!isCollapsed && (
-                <h2 className={styles.groupHeading}>{group.groupTitle}</h2>
+                <button
+                  type="button"
+                  className={styles.groupHeaderBtn}
+                  onClick={() => toggleGroup(group.groupTitle)}
+                  aria-expanded={!isGroupCollapsed}
+                  aria-label={`Toggle ${group.groupTitle} section`}
+                >
+                  <span className={styles.groupHeading}>{group.groupTitle}</span>
+                  <svg
+                    className={`${styles.groupChevron} ${isGroupCollapsed ? styles.groupChevronCollapsed : ""}`}
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
               )}
 
-              <ul className={styles.itemList}>
-                {items.map((item) => {
-                  const active =
-                    item.href === "/admin"
-                      ? pathname === item.href
-                      : pathname === item.href ||
-                        pathname.startsWith(`${item.href}/`);
-                  const badge = item.getBadge?.({ dueTasksCount });
-                  const isFollowUp = item.key === "tasks";
+              {(!isGroupCollapsed || isCollapsed) && (
+                <ul className={styles.itemList}>
+                  {items.map((item) => {
+                    const active =
+                      item.href === "/admin"
+                        ? pathname === item.href
+                        : pathname === item.href ||
+                          pathname.startsWith(`${item.href}/`);
+                    const badge = item.getBadge?.({ dueTasksCount });
+                    const isFollowUp = item.key === "tasks";
 
-                  return (
-                    <li key={item.key}>
-                      <Link
-                        href={item.href}
-                        className={`${styles.item} ${active ? styles.active : ""}`}
-                        aria-current={active ? "page" : undefined}
-                        title={isCollapsed ? item.label : undefined}
-                      >
-                        <span className={styles.itemIcon}>
-                          {item.icon({ active })}
-                        </span>
-                        <span className={styles.itemLabel}>{item.label}</span>
-                        {badge && (
-                          <span
-                            className={`${styles.counterBadge} ${isFollowUp ? styles.urgencyPill : ""}`}
-                            aria-label={`${badge.text} follow-ups due`}
-                          >
-                            {badge.text}
+                    return (
+                      <li key={item.key}>
+                        <Link
+                          href={item.href}
+                          className={`${styles.item} ${active ? styles.active : ""}`}
+                          aria-current={active ? "page" : undefined}
+                          title={isCollapsed ? item.label : undefined}
+                        >
+                          <span className={styles.itemIcon}>
+                            {item.icon({ active })}
                           </span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+                          <span className={styles.itemLabel}>{item.label}</span>
+                          {badge && (
+                            <span
+                              className={`${styles.counterBadge} ${isFollowUp ? styles.urgencyPill : ""}`}
+                              aria-label={`${badge.text} follow-ups due`}
+                            >
+                              {badge.text}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </section>
           );
         })}
       </nav>
 
-      {/* 3. Single User Profile Card */}
+      {/* 4. Single User Profile Card */}
       <div className={styles.accountCardWrapper}>
         <UserProfileDropdown
           currentUser={currentUser}

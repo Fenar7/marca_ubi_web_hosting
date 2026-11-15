@@ -3,12 +3,13 @@
 /**
  * @file PipelineDonutChart.tsx
  * @description Master Pipeline Distribution Donut Gauge modeled 1:1 after the Finexy archetype.
- *              Features circular SVG ring with center valuation anchor and ranked service category breakdown.
+ *              Features an expanded 134px interior aperture, bidirectional slice highlighting,
+ *              dynamic central telemetry HUD, and ranked category cardlets with horizontal micro-bars.
  * @module admin/components/Dashboard/PipelineDonutChart
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./PipelineDonutChart.module.scss";
@@ -18,6 +19,7 @@ export interface CategorySlice {
   value: number;
   percentage: number;
   color: string;
+  count?: number;
 }
 
 export interface PipelineDonutChartProps {
@@ -28,10 +30,10 @@ export interface PipelineDonutChartProps {
 }
 
 const LUXURY_PALETTE = [
-  "#111111", // Obsidian (Lead Category)
-  "#ea002a", // Marca Ubi Brand Red
-  "#71717a", // Slate / Neutral Zinc
-  "#d4d4d8", // Light Silver / Platinum
+  "#111111", // Obsidian Ink (Lead Category)
+  "#ea002a", // Marca Ubi Signature Crimson
+  "#52525b", // Charcoal Zinc (4.5:1 contrast)
+  "#a1a1aa", // Platinum Silver Zinc
 ];
 
 export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
@@ -40,40 +42,50 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
   totalValue = null,
   financials = true,
 }) => {
-  // Aggregate categories strictly across full active pipeline
+  const [activeHoverIndex, setActiveHoverIndex] = useState<number | null>(null);
+
+  // Aggregate categories across active pipeline scope
   const categories = useMemo<CategorySlice[]>(() => {
-    // 1. Prioritize server-aggregated categories across all active deals
     if (rawCategories && rawCategories.length > 0) {
-      const validTotal = totalValue && totalValue > 0
-        ? totalValue
-        : rawCategories.reduce((sum, c) => sum + c.value, 0);
+      const validTotal =
+        totalValue && totalValue > 0
+          ? totalValue
+          : rawCategories.reduce((sum, c) => sum + c.value, 0);
+
       const top4 = rawCategories.slice(0, 4);
       return top4.map((c, idx) => ({
         name: c.name,
         value: c.value,
-        percentage: validTotal > 0 ? Math.max(1, Math.round((c.value / validTotal) * 100)) : 0,
+        count: c.count,
+        percentage:
+          validTotal > 0 ? Math.max(1, Math.round((c.value / validTotal) * 100)) : 0,
         color: LUXURY_PALETTE[idx % LUXURY_PALETTE.length],
       }));
     }
 
-    // 2. Fallback to client records if rawCategories is not provided
     if (records && records.length > 0) {
-      const catMap = new Map<string, number>();
+      const catMap = new Map<string, { value: number; count: number }>();
       for (const r of records) {
         const cat = r.serviceCategory || "Advisory & Strategy";
         const val = r.expectedValue ?? 0;
-        catMap.set(cat, (catMap.get(cat) ?? 0) + val);
+        const existing = catMap.get(cat) ?? { value: 0, count: 0 };
+        catMap.set(cat, {
+          value: existing.value + val,
+          count: existing.count + 1,
+        });
       }
 
-      const sortedEntries = [...catMap.entries()].sort((a, b) => b[1] - a[1]);
+      const sortedEntries = [...catMap.entries()].sort((a, b) => b[1].value - a[1].value);
       const top4 = sortedEntries.slice(0, 4);
-      const sumTop4 = top4.reduce((acc, curr) => acc + curr[1], 0);
+      const sumTop4 = top4.reduce((acc, curr) => acc + curr[1].value, 0);
       const validTotal = totalValue && totalValue > 0 ? totalValue : sumTop4;
 
-      return top4.map(([name, val], idx) => ({
+      return top4.map(([name, data], idx) => ({
         name,
-        value: val,
-        percentage: validTotal > 0 ? Math.max(1, Math.round((val / validTotal) * 100)) : 0,
+        value: data.value,
+        count: data.count,
+        percentage:
+          validTotal > 0 ? Math.max(1, Math.round((data.value / validTotal) * 100)) : 0,
         color: LUXURY_PALETTE[idx % LUXURY_PALETTE.length],
       }));
     }
@@ -81,11 +93,10 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
     return [];
   }, [rawCategories, records, totalValue]);
 
-  // SVG Donut geometry (Finexy Luxury Proportions: 180x180 viewBox, R=64, W=12)
-  const radius = 64;
-  const circumference = 2 * Math.PI * radius; // ~402.12
+  // Finexy Donut Geometry: 200x200 viewBox, R=74, W=14, Aperture=134px
+  const radius = 74;
+  const circumference = 2 * Math.PI * radius; // ~464.96
 
-  // Compute stroke-dasharray and stroke-dashoffset for each slice with subtle gap
   let accumulatedPercent = 0;
   const slicesWithOffsets = categories.map((cat) => {
     const rawDash = (cat.percentage / 100) * circumference;
@@ -100,6 +111,11 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
     };
   });
 
+  const totalDealsCount = useMemo(() => {
+    const summedCounts = categories.reduce((acc, c) => acc + (c.count ?? 0), 0);
+    return summedCounts > 0 ? summedCounts : records.length;
+  }, [categories, records]);
+
   const displayValuation =
     financials && totalValue !== null
       ? totalValue >= 10000000
@@ -108,6 +124,11 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
       : financials
         ? "₹ 0"
         : "Confidential";
+
+  const activeSlice =
+    activeHoverIndex !== null && categories[activeHoverIndex]
+      ? categories[activeHoverIndex]
+      : null;
 
   return (
     <article
@@ -128,74 +149,120 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
         <span className={styles.viewModePill}>By Category</span>
       </header>
 
-      {/* Center Donut SVG Graphic with expanded 116px interior breathing room */}
+      {/* Center Donut SVG Graphic with expanded 134px interior aperture */}
       <div className={styles.chartVisualWrapper}>
         <svg
-          viewBox="0 0 180 180"
+          viewBox="0 0 200 200"
           className={styles.donutSvg}
           role="img"
           aria-label="Pipeline distribution donut ring by service category"
         >
           {/* Base track ring */}
           <circle
-            cx="90"
-            cy="90"
+            cx="100"
+            cy="100"
             r={radius}
             className={styles.donutBackgroundTrack}
           />
 
-          {/* Slices */}
-          {slicesWithOffsets.map((slice, idx) => (
-            <circle
-              key={idx}
-              cx="90"
-              cy="90"
-              r={radius}
-              className={styles.donutSegment}
-              style={{
-                stroke: slice.color,
-                strokeDasharray: slice.strokeDasharray,
-                strokeDashoffset: slice.strokeDashoffset,
-              }}
-            />
-          ))}
+          {/* Interactive Slices with Smooth Stroke Expansion on Hover */}
+          {slicesWithOffsets.map((slice, idx) => {
+            const isHovered = activeHoverIndex === idx;
+            const isDimmed = activeHoverIndex !== null && !isHovered;
+
+            return (
+              <circle
+                key={idx}
+                cx="100"
+                cy="100"
+                r={radius}
+                className={isHovered ? styles.donutSegmentActive : styles.donutSegment}
+                style={{
+                  stroke: slice.color,
+                  strokeDasharray: slice.strokeDasharray,
+                  strokeDashoffset: slice.strokeDashoffset,
+                  opacity: isDimmed ? 0.35 : 1,
+                }}
+                onMouseEnter={() => setActiveHoverIndex(idx)}
+                onMouseLeave={() => setActiveHoverIndex(null)}
+              />
+            );
+          })}
         </svg>
 
-        {/* Center Text Hole */}
+        {/* Dynamic Central Telemetry HUD */}
         <div className={styles.centerTextWrapper}>
-          <span className={styles.centerLabel}>Total Value</span>
-          <span className={styles.centerValue}>{displayValuation}</span>
+          <span className={styles.centerLabel}>
+            {activeSlice ? activeSlice.name : "Total Pipeline"}
+          </span>
+          <span className={styles.centerValue}>
+            {activeSlice
+              ? financials
+                ? formatCrmCurrency(activeSlice.value)
+                : "Confidential"
+              : displayValuation}
+          </span>
+          <span className={styles.centerSubtext}>
+            {activeSlice
+              ? `${activeSlice.percentage}% of allocation`
+              : `${totalDealsCount} active deals`}
+          </span>
         </div>
       </div>
 
-      {/* Category Breakdown Rows */}
+      {/* Ranked Category Cardlets with Horizontal Micro-Progress Meters */}
       {categories.length === 0 ? (
         <div className={styles.emptyCategories} role="status">
           <span>No pipeline categories recorded in this scope.</span>
         </div>
       ) : (
         <ul className={styles.categoryLegendList}>
-          {categories.map((cat, idx) => (
-            <li key={idx} className={styles.categoryRow}>
-              <div className={styles.categoryLeft}>
-                <span
-                  className={styles.colorDot}
-                  style={{ backgroundColor: cat.color }}
-                  aria-hidden="true"
-                />
-                <span className={styles.categoryName} title={cat.name}>
-                  {cat.name}
-                </span>
-              </div>
+          {categories.map((cat, idx) => {
+            const isHovered = activeHoverIndex === idx;
 
-              <div className={styles.categoryRight}>
-                <span className={styles.percentagePill}>{cat.percentage}%</span>
-                <span className={styles.categoryAmount}>
-                  {financials ? formatCrmCurrency(cat.value) : "Confidential"}
-                </span>
-              </div>
-            </li>
-          ))}
+            return (
+              <li
+                key={idx}
+                className={isHovered ? styles.categoryRowActive : styles.categoryRow}
+                onMouseEnter={() => setActiveHoverIndex(idx)}
+                onMouseLeave={() => setActiveHoverIndex(null)}
+              >
+                <div className={styles.categoryTopLine}>
+                  <div className={styles.categoryLeft}>
+                    <span
+                      className={styles.colorSwatch}
+                      style={{ backgroundColor: cat.color }}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.categoryName} title={cat.name}>
+                      {cat.name}
+                    </span>
+                    {typeof cat.count === "number" && cat.count > 0 && (
+                      <span className={styles.dealCountTag}>({cat.count})</span>
+                    )}
+                  </div>
+
+                  <div className={styles.categoryRight}>
+                    <span className={styles.categoryAmount}>
+                      {financials ? formatCrmCurrency(cat.value) : "Confidential"}
+                    </span>
+                    <span className={styles.percentagePill}>{cat.percentage}%</span>
+                  </div>
+                </div>
+
+                {/* Horizontal Micro-Progress Meter (Finexy Archetype) */}
+                <div className={styles.microTrack}>
+                  <div
+                    className={styles.microFill}
+                    style={{
+                      width: `${Math.min(100, Math.max(3, cat.percentage))}%`,
+                      backgroundColor: cat.color,
+                    }}
+                  />
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </article>

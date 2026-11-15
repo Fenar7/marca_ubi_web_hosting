@@ -1,19 +1,23 @@
 /**
  * @file AdminSidebar.module.scss
- * @description Editorial luxury styling for Marca Ubi AdminSidebar.
+ * @description Swiss Editorial luxury styling for Marca Ubi AdminSidebar.
  *              Strictly enforces Marca Ubi Design Tokens:
  *              - #ffffff (Primary Canvas Surface)
  *              - #f5f5f3 (Warm Alabaster active pill background)
  *              - #111111 (Obsidian Ink typography)
- *              - #ea002a (Signature Brand Red 3px accent pip)
+ *              - #ea002a (Signature Brand Red accent)
  *              - #ebebea (Hairline divider boundary)
+ *              Zero harsh left-wall red strip on active items.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
+  bottom: 0;
+  height: auto;
   z-index: 120;
-  width: var(--sidebar-width, 256px);
+  width: var(--sidebar-width, 240px);
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -45,26 +49,6 @@
     max-width: 100%;
     height: auto;
   }
-}
-
-.monogram {
-  font-family: var(--font-circular, -apple-system, sans-serif);
-  font-size: 20px;
-  font-weight: 700;
-  color: #111111;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-.brandTitle {
-  font-family: var(--font-circular, -apple-system, sans-serif);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #111111;
-  line-height: 1;
-  white-space: nowrap;
 }
 
 .collapseButton {
@@ -117,41 +101,153 @@
   transition: color 140ms ease, border-color 140ms ease;
 }
 
-// 2. Structured 3-Tier Navigation
+// 2. In-Sidebar Search Capsule (AI Manager & Linear Archetype)
+.searchSection {
+  padding: 10px 12px 6px;
+}
+
+.searchLauncher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  background: #f5f5f3;
+  border: 1px solid #e7e7e4;
+  border-radius: 8px;
+  color: #696965;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+
+  &:hover {
+    background: #eeeeec;
+    border-color: #d8d8d4;
+    color: #111111;
+
+    .searchKbd {
+      border-color: #c4c4be;
+      color: #111111;
+    }
+  }
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  color: #8a8a84;
+}
+
+.searchText {
+  flex: 1;
+  text-align: left;
+  font-family: var(--font-graphik, sans-serif);
+  font-size: 12px;
+  font-weight: 450;
+  color: inherit;
+}
+
+.searchKbd {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: #8a8a84;
+  background: #ffffff;
+  border: 1px solid #d4d4cf;
+  border-radius: 4px;
+  padding: 1px 4px;
+  line-height: 1.2;
+}
+
+.searchLauncherCollapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin: 0 auto;
+  background: #f5f5f3;
+  border: 1px solid #e7e7e4;
+  border-radius: 8px;
+  color: #696965;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+
+  &:hover {
+    background: #eeeeec;
+    border-color: #d8d8d4;
+    color: #111111;
+  }
+}
+
+// 3. Navigation Sections & Collapsible Groups
 .navigation {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 0;
-  padding: 16px 10px;
+  padding: 6px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #e2e2df transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #e2e2df;
+    border-radius: 4px;
+  }
 }
 
 .group {
-  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+}
 
-  &:last-child {
-    margin-bottom: 0;
+.groupHeaderBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 14px 4px 18px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 4px;
+  transition: opacity 140ms ease;
+
+  &:hover {
+    opacity: 0.8;
   }
 }
 
 .groupHeading {
-  padding: 0 12px 6px;
-  margin: 0;
-  color: #8a8a84;
-  font-family: var(--font-graphik, -apple-system, sans-serif);
-  font-size: 10px;
-  font-weight: 700;
+  font-family: var(--font-circular, -apple-system, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: #8a8a84;
+  line-height: 1;
+}
+
+.groupChevron {
+  color: #8a8a84;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.groupChevronCollapsed {
+  transform: rotate(-90deg);
 }
 
 .itemList {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
 }
 
 .item {
@@ -159,37 +255,30 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 38px;
-  padding: 0 12px;
+  min-height: 36px;
+  padding: 0 10px;
   border-radius: 8px;
-  text-decoration: none;
   color: #454542;
+  text-decoration: none;
   font-family: var(--font-graphik, -apple-system, sans-serif);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 450;
   transition: background 140ms ease, color 140ms ease;
 
   &:hover {
     background: #f7f7f5;
     color: #111111;
-
-    .itemIcon svg {
-      stroke: #111111;
-    }
   }
 }
 
 .itemIcon {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  color: #62625d;
-
-  svg {
-    transition: stroke 140ms ease;
-  }
+  color: currentColor;
 }
 
 .itemLabel {
@@ -199,30 +288,18 @@
   text-overflow: ellipsis;
 }
 
-// Active State: Warm Alabaster (#f5f5f3) Background Pill + 3px Signature Red Pip
+// Active State: Velvety Warm Alabaster Pill (NO 3px left red vertical strip!)
 .active {
-  background: #f5f5f3 !important;
-  color: #111111 !important;
-  font-weight: 600 !important;
+  background: #f2f2ef;
+  color: #111111;
+  font-weight: 600;
 
-  .itemIcon svg {
-    stroke: #111111 !important;
-  }
-
-  // Signature 3px Marca Ubi Red Pip
-  &::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 7px;
-    bottom: 7px;
-    width: 3px;
-    background: #ea002a;
-    border-radius: 0 2px 2px 0;
+  .itemIcon {
+    color: #111111;
   }
 }
 
-// Follow-up Badges: Soft Neutral or Subtle Soft Crimson (NOT Neon Pink)
+// Follow-up Badges: Soft Neutral or Subtle Soft Rose (Zero Neon Pink)
 .counterBadge {
   font-family: var(--font-graphik, -apple-system, sans-serif);
   font-size: 11px;
@@ -234,24 +311,25 @@
   border-radius: 9999px;
   line-height: 1.4;
   white-space: nowrap;
+  margin-left: auto;
 }
 
 .urgencyPill {
-  background: rgba(234, 0, 42, 0.08) !important;
-  color: #9c001e !important;
-  border: 1px solid rgba(234, 0, 42, 0.18);
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca;
 }
 
-// 3. User Profile Card Enclosure
+// 4. User Profile Card Enclosure
 .accountCardWrapper {
-  padding: 10px 10px 12px;
-  border-top: 1px solid #ebebea;
+  padding: 8px 10px 10px;
+  border-top: 1px solid #e7e7e4;
   background: #ffffff;
 }
 
-// Collapsed Rail State (68px)
+// Collapsed Rail State (72px)
 .collapsed {
-  width: 68px;
+  width: var(--sidebar-width, 72px);
 
   .brandRow {
     justify-content: center;
@@ -260,6 +338,14 @@
 
   .shortcutTag {
     display: none;
+  }
+
+  .searchSection {
+    padding: 8px 6px;
+  }
+
+  .itemList {
+    padding: 0 6px;
   }
 
   .item {
@@ -273,7 +359,7 @@
   }
 
   .accountCardWrapper {
-    padding: 8px 6px;
+    padding: 6px;
   }
 }
 
@@ -295,7 +381,8 @@
   .sidebar,
   .item,
   .collapseButton,
-  .cadenceFill {
+  .searchLauncher,
+  .groupChevron {
     transition: none !important;
   }
 }
