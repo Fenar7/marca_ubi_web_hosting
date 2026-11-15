@@ -75,6 +75,7 @@ export interface OverviewData {
   convertedCount: number | null;
   convertedValue: number | null;
   chart: DynamicRevenueSplinePoint[];
+  categories: { name: string; value: number; count: number }[];
   cohort: { eligible: number; won: number } | null;
 }
 
@@ -179,6 +180,8 @@ export function OverviewWorkspace({
             chart={data.chart}
             totalIntake={data.pipelineValue}
             totalRealized={data.convertedValue}
+            periodLabel={data.periodLabel}
+            timeframe={data.timeframe}
             financials={data.financials}
           />
         </div>
@@ -186,7 +189,7 @@ export function OverviewWorkspace({
         {/* Right Column (32%): Finexy Donut Gauge */}
         <div className={styles.donutColumn}>
           <PipelineDonutChart
-            records={data.records}
+            categories={data.categories}
             totalValue={data.pipelineValue}
             financials={data.financials}
           />

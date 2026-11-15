@@ -87,20 +87,20 @@
 }
 
 .donutSvg {
-  width: 140px;
-  height: 140px;
+  width: 175px;
+  height: 175px;
   transform: rotate(-90deg);
 }
 
 .donutBackgroundTrack {
   fill: none;
   stroke: #f0f0ee;
-  stroke-width: 18;
+  stroke-width: 12;
 }
 
 .donutSegment {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 12;
   transition: stroke-dasharray 0.3s ease, stroke 0.2s ease;
 }
 
@@ -115,22 +115,22 @@
 }
 
 .centerLabel {
-  font-family: var(--font-graphik), sans-serif;
+  font-family: var(--font-circular), sans-serif;
   font-size: 0.65rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #8e8e8a;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .centerValue {
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-size: 1.15rem;
-  font-weight: 300;
-  letter-spacing: -0.02em;
+  font-family: var(--font-circular), var(--font-helvetica-neue), sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   color: var(--admin-text-primary, #111111);
   font-variant-numeric: tabular-nums;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .emptyCategories {

@@ -21,57 +21,76 @@ export interface CategorySlice {
 }
 
 export interface PipelineDonutChartProps {
+  categories?: { name: string; value: number; count?: number }[];
   records?: OverviewRecord[];
   totalValue?: number | null;
   financials?: boolean;
 }
 
 const LUXURY_PALETTE = [
-  "#111111", // Obsidian
+  "#111111", // Obsidian (Lead Category)
   "#ea002a", // Marca Ubi Brand Red
-  "#d97706", // Amber
-  "#059669", // Emerald
+  "#71717a", // Slate / Neutral Zinc
+  "#d4d4d8", // Light Silver / Platinum
 ];
 
 export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
+  categories: rawCategories = [],
   records = [],
   totalValue = null,
   financials = true,
 }) => {
-  // Aggregate real records strictly by serviceCategory
+  // Aggregate categories strictly across full active pipeline
   const categories = useMemo<CategorySlice[]>(() => {
-    if (!records || records.length === 0) {
-      return [];
+    // 1. Prioritize server-aggregated categories across all active deals
+    if (rawCategories && rawCategories.length > 0) {
+      const validTotal = totalValue && totalValue > 0
+        ? totalValue
+        : rawCategories.reduce((sum, c) => sum + c.value, 0);
+      const top4 = rawCategories.slice(0, 4);
+      return top4.map((c, idx) => ({
+        name: c.name,
+        value: c.value,
+        percentage: validTotal > 0 ? Math.max(1, Math.round((c.value / validTotal) * 100)) : 0,
+        color: LUXURY_PALETTE[idx % LUXURY_PALETTE.length],
+      }));
     }
 
-    const catMap = new Map<string, number>();
-    for (const r of records) {
-      const cat = r.serviceCategory || "Advisory & Strategy";
-      const val = r.expectedValue ?? 0;
-      catMap.set(cat, (catMap.get(cat) ?? 0) + val);
+    // 2. Fallback to client records if rawCategories is not provided
+    if (records && records.length > 0) {
+      const catMap = new Map<string, number>();
+      for (const r of records) {
+        const cat = r.serviceCategory || "Advisory & Strategy";
+        const val = r.expectedValue ?? 0;
+        catMap.set(cat, (catMap.get(cat) ?? 0) + val);
+      }
+
+      const sortedEntries = [...catMap.entries()].sort((a, b) => b[1] - a[1]);
+      const top4 = sortedEntries.slice(0, 4);
+      const sumTop4 = top4.reduce((acc, curr) => acc + curr[1], 0);
+      const validTotal = totalValue && totalValue > 0 ? totalValue : sumTop4;
+
+      return top4.map(([name, val], idx) => ({
+        name,
+        value: val,
+        percentage: validTotal > 0 ? Math.max(1, Math.round((val / validTotal) * 100)) : 0,
+        color: LUXURY_PALETTE[idx % LUXURY_PALETTE.length],
+      }));
     }
 
-    const sortedEntries = [...catMap.entries()].sort((a, b) => b[1] - a[1]);
-    const top4 = sortedEntries.slice(0, 4);
-    const sumTop4 = top4.reduce((acc, curr) => acc + curr[1], 0);
-    const divisor = sumTop4 > 0 ? sumTop4 : (totalValue ?? 1);
+    return [];
+  }, [rawCategories, records, totalValue]);
 
-    return top4.map(([name, val], idx) => ({
-      name,
-      value: val,
-      percentage: Math.max(1, Math.round((val / divisor) * 100)),
-      color: LUXURY_PALETTE[idx % LUXURY_PALETTE.length],
-    }));
-  }, [records, totalValue]);
+  // SVG Donut geometry (Finexy Luxury Proportions: 180x180 viewBox, R=64, W=12)
+  const radius = 64;
+  const circumference = 2 * Math.PI * radius; // ~402.12
 
-  // SVG Donut geometry
-  const radius = 50;
-  const circumference = 2 * Math.PI * radius; // ~314.16
-
-  // Compute stroke-dasharray and stroke-dashoffset for each slice
+  // Compute stroke-dasharray and stroke-dashoffset for each slice with subtle gap
   let accumulatedPercent = 0;
   const slicesWithOffsets = categories.map((cat) => {
-    const strokeDasharray = `${(cat.percentage / 100) * circumference} ${circumference}`;
+    const rawDash = (cat.percentage / 100) * circumference;
+    const gap = categories.length > 1 ? 2.5 : 0;
+    const strokeDasharray = `${Math.max(1, rawDash - gap)} ${circumference}`;
     const strokeDashoffset = -((accumulatedPercent / 100) * circumference);
     accumulatedPercent += cat.percentage;
     return {
@@ -87,7 +106,7 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
         ? `₹ ${(totalValue / 10000000).toFixed(1)}Cr`
         : `₹ ${(totalValue / 100000).toFixed(1)}L`
       : financials
-        ? "₹ 65.4L"
+        ? "₹ 0"
         : "Confidential";
 
   return (
@@ -109,18 +128,18 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
         <span className={styles.viewModePill}>By Category</span>
       </header>
 
-      {/* Center Donut SVG Graphic */}
+      {/* Center Donut SVG Graphic with expanded 116px interior breathing room */}
       <div className={styles.chartVisualWrapper}>
         <svg
-          viewBox="0 0 140 140"
+          viewBox="0 0 180 180"
           className={styles.donutSvg}
           role="img"
           aria-label="Pipeline distribution donut ring by service category"
         >
           {/* Base track ring */}
           <circle
-            cx="70"
-            cy="70"
+            cx="90"
+            cy="90"
             r={radius}
             className={styles.donutBackgroundTrack}
           />
@@ -129,8 +148,8 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
           {slicesWithOffsets.map((slice, idx) => (
             <circle
               key={idx}
-              cx="70"
-              cy="70"
+              cx="90"
+              cy="90"
               r={radius}
               className={styles.donutSegment}
               style={{

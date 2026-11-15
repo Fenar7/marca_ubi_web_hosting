@@ -6071,6 +6071,30 @@
     "ast_hash": "244cbea4732e8cfda318b63d0d983226",
     "semantic_hash": ""
   },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_IMPLEMENTATION_REPORT.md": {
+    "mtime": 1794761580.282813,
+    "seen": 1794761819.1401684,
+    "ast_hash": "ecb5806427efe16b9a191f6d4df34e3c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_INDEPENDENT_AUDIT.md": {
+    "mtime": 1794761770.5895543,
+    "seen": 1794761819.1401684,
+    "ast_hash": "e0f7c20051f4e387f902649558c4a429",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_PR_REMEDIATION_REPORT.md": {
+    "mtime": 1794761787.354286,
+    "seen": 1794761819.1401684,
+    "ast_hash": "895f1534f27fae12d69ad86c6aad18ce",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_VISUAL_QA_REPORT.md": {
+    "mtime": 1794761752.7988634,
+    "seen": 1794761819.1401684,
+    "ast_hash": "8be2108bd467d5374640c8b7fc23e2cd",
+    "semantic_hash": ""
+  },
   "package-lock.json": {
     "mtime": 1793001779.78659,
     "seen": 1793885019.371995,

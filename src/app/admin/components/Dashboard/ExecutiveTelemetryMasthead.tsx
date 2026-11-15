@@ -214,12 +214,15 @@ export function ExecutiveTelemetryMasthead({
 
       {/* Row of 4 Telemetry Scorecards */}
       <div className={styles.telemetryGrid}>
-        {/* Card 1: Active Pipeline Valuation (Obsidian VIP Anchor) */}
-        <article className={styles.obsidianScorecard}>
+        {/* Card 1: Active Pipeline Valuation (Featured Architectural Anchor) */}
+        <article className={`${styles.scorecard} ${styles.featuredScorecard}`}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardKicker}>TOTAL PIPELINE VALUATION</span>
+            <div className={styles.kickerWithDot}>
+              <span className={styles.brandDot} aria-hidden="true" />
+              <span className={styles.cardKicker}>TOTAL PIPELINE VALUATION</span>
+            </div>
             <span className={styles.dealsPill}>
-              {pipelineCount !== null ? `${pipelineCount} Deals` : "39 Deals"}
+              {pipelineCount !== null ? `${pipelineCount} Deals` : "0 Deals"}
             </span>
           </div>
           <div className={styles.primaryMetric}>
@@ -269,9 +272,9 @@ export function ExecutiveTelemetryMasthead({
           <div className={styles.cardHeader}>
             <span className={styles.cardKicker}>WEIGHTED YIELD</span>
             <span className={styles.ratioPill}>
-              {pipelineValue && weightedPotential
+              {pipelineValue && weightedPotential && pipelineValue > 0
                 ? `${((weightedPotential / pipelineValue) * 100).toFixed(1)}%`
-                : "36.0%"}
+                : "0.0%"}
             </span>
           </div>
           <div className={styles.primaryMetric}>
@@ -297,7 +300,7 @@ export function ExecutiveTelemetryMasthead({
           <div className={styles.primaryMetric}>
             {averageCycleDays !== null && Number.isFinite(averageCycleDays) && averageCycleDays > 0
               ? `${averageCycleDays.toFixed(1)} Days`
-              : "14.8 Days"}
+              : "—"}
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>

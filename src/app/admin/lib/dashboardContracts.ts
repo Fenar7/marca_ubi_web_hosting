@@ -13,7 +13,9 @@ export function dashboardSelect(
   kind: "pipeline" | "conversion",
 ): string {
   const columns =
-    kind === "pipeline" ? "id, status_id" : "converted_at, created_at";
+    kind === "pipeline"
+      ? "id, status_id, service_category, created_at"
+      : "converted_at, created_at";
   return columns + (financial ? ", expected_value" : "");
 }
 
