@@ -17,11 +17,22 @@
     var(--font-circular), var(--font-admin-num-font), var(--font-admin-sans),
     sans-serif;
 
+  /* Notion / Linear Swiss Editorial Typography Tokens */
+  --font-admin-display:
+    var(--font-helvetica-neue), "Helvetica Neue", -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-admin-metric:
+    var(--font-helvetica-neue), "Helvetica Neue", -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-admin-headline:
+    var(--font-circular), -apple-system,
+    BlinkMacSystemFont, sans-serif;
+
   font-family: var(--font-admin-primary);
 
-  --admin-canvas-bg: #f5f5f3;
+  --admin-canvas-bg: #fbfbfa;
   --admin-card-bg: #ffffff;
-  --admin-surface-muted: #efefed;
+  --admin-surface-muted: #f5f5f3;
   --admin-surface-hover: #f7f7f5;
   --admin-surface-active: #ececea;
   --admin-surface-inverse: #111111;
@@ -32,27 +43,15 @@
   --admin-text-inverse: #ffffff;
 
   --admin-border-subtle: #e7e7e4;
+  --admin-border-hairline: rgba(0, 0, 0, 0.07);
   --admin-border-default: #d8d8d4;
   --admin-border-strong: #111111;
 
-  /* Marca Ubi Commercial Desk Visual Tokens */
-  --admin-radius-card: 20px;
+  /* Marca Ubi Notion / Linear Precision Geometry Tokens */
+  --admin-radius-card: 12px;
   --admin-radius-pill: 9999px;
-  --admin-radius-control: 12px;
-  --conyest-canvas-bg: var(--admin-canvas-bg);
-  --conyest-card-bg: var(--admin-card-bg);
-  --conyest-card-border: var(--admin-border-subtle);
-  --conyest-dark-forest: var(--admin-surface-inverse, #111111);
-  --conyest-dark-forest-hover: #000000;
-  --conyest-accent-lime: var(--admin-accent-brand, #ea002a);
-  --conyest-accent-lime-hover: var(--admin-btn-primary-hover, #c40023);
-  --conyest-accent-lime-tint: rgba(234, 0, 42, 0.08);
-  --conyest-halo-border: var(--admin-border-subtle);
-  --conyest-halo-bg: rgba(17, 17, 17, 0.04);
-  --conyest-bar-dark: #454542;
-  --conyest-radius-card: 20px;
-  --conyest-radius-pill: 9999px;
-  --conyest-radius-control: 12px;
+  --admin-radius-control: 8px;
+  --admin-radius-pip: 2px;
 
   --admin-accent-brand: #ea002a;
   --admin-btn-primary-bg: #ea002a;
@@ -60,7 +59,7 @@
   --admin-btn-primary-text: #ffffff;
   --admin-focus-ring: #9c001e;
 
-  /* Legacy aliases stay mapped while the remaining workspace components migrate. */
+  /* Legacy aliases stay mapped while remaining workspace components migrate. */
   --admin-accent-lemon: var(--admin-btn-primary-bg);
   --admin-accent-lemon-hover: var(--admin-btn-primary-hover);
   --admin-accent-lemon-ink: var(--admin-btn-primary-text);
@@ -83,25 +82,22 @@
   --admin-status-slate-text: #393936;
   --admin-status-slate-dot: #666663;
 
-  --admin-radius-pill: 9999px;
   --admin-radius-outer: 16px;
-  --admin-radius-card: 16px;
   --admin-radius-inner: 12px;
-  --admin-radius-control: 8px;
   --admin-radius-micro: 6px;
   --admin-shadow-none: none;
   --admin-shadow-subtle: 0 1px 2px rgba(17, 17, 17, 0.04);
   --admin-shadow-card:
-    0 4px 20px -2px rgba(12, 12, 13, 0.05), 0 1px 3px rgba(12, 12, 13, 0.02);
+    0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04);
   --admin-shadow-card-hover:
-    0 10px 30px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04);
+    0 2px 6px rgba(0, 0, 0, 0.04), 0 12px 32px -4px rgba(0, 0, 0, 0.06);
   --admin-shadow-hover: 0 3px 10px rgba(17, 17, 17, 0.07);
   --admin-shadow-dropdown:
     0 12px 36px -4px rgba(12, 12, 13, 0.12), 0 4px 12px rgba(12, 12, 13, 0.04);
   --admin-shadow-modal: 0 18px 48px rgba(17, 17, 17, 0.14);
 
-  --admin-sidebar-width-expanded: 240px;
-  --admin-sidebar-width-collapsed: 72px;
+  --admin-sidebar-width-expanded: 256px;
+  --admin-sidebar-width-collapsed: 68px;
   --admin-page-max-width: 1720px;
   --admin-content-gutter: clamp(20px, 2.1vw, 36px);
 }

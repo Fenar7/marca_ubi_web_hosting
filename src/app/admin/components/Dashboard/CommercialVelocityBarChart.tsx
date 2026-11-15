@@ -29,28 +29,37 @@ export interface CommercialVelocityBarChartProps {
 
 export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProps> = ({
   chart = [],
-  totalIntake = 6540000,
-  totalRealized = 0,
+  totalIntake = null,
+  totalRealized = null,
   financials = true,
 }) => {
   const [activeHoverIndex, setActiveHoverIndex] = useState<number | null>(null);
 
-  // Compute 6 monthly column buckets based on real pipeline volume
+  // Compute monthly column buckets based directly on live CRM timeframe points or real calendar intervals
   const monthlyData = useMemo<MonthlyBarData[]>(() => {
+    if (chart && chart.length > 0) {
+      const pointCount = chart.length;
+      const baseIntakePerPoint = totalIntake && totalIntake > 0 ? Math.round(totalIntake / pointCount) : 0;
+      return chart.map((pt) => ({
+        month: pt.month,
+        intake: baseIntakePerPoint,
+        realized: pt.cashVal || 0,
+      }));
+    }
+
+    // Default 6-month cadence calendar when timeframe points are not pre-bucketed
     const months = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
-    const baseIntake = totalIntake && totalIntake > 0 ? totalIntake : 6540000;
+    const baseIntake = totalIntake ?? 0;
     const baseRealized = totalRealized ?? 0;
+    const pointIntake = baseIntake > 0 ? Math.round(baseIntake / months.length) : 0;
+    const pointRealized = baseRealized > 0 ? Math.round(baseRealized / months.length) : 0;
 
-    // Distribute intake rhythmically across the 6-month trajectory
-    const multipliers = [0.12, 0.18, 0.15, 0.22, 0.28, 0.05];
-    const realizedMultipliers = [0, 0, 0, 0, 0, baseRealized > 0 ? 1 : 0];
-
-    return months.map((m, idx) => ({
+    return months.map((m) => ({
       month: m,
-      intake: Math.round(baseIntake * (multipliers[idx] || 0.15)),
-      realized: Math.round(baseRealized * (realizedMultipliers[idx] || 0)),
+      intake: pointIntake,
+      realized: pointRealized,
     }));
-  }, [totalIntake, totalRealized]);
+  }, [chart, totalIntake, totalRealized]);
 
   // Dimensions for SVG
   const svgWidth = 600;

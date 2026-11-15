@@ -10,8 +10,8 @@
   width: 100%;
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: var(--admin-radius-card, 16px);
-  box-shadow: none;
+  border-radius: var(--admin-radius-card, 12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   transition: border-color 0.2s ease;
 

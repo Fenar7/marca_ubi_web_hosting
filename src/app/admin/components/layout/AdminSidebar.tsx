@@ -32,21 +32,6 @@ export interface AdminSidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   dueTasksCount?: number;
-  /** Optional cadence overrides (defaults to current commercial pacing) */
-  monthlyCadenceCurrent?: number;
-  monthlyCadenceTarget?: number;
-}
-
-function formatCompactInr(value: number): string {
-  if (value >= 100000) {
-    const inLakhs = value / 100000;
-    return `₹${Number.isInteger(inLakhs) ? inLakhs : inLakhs.toFixed(2).replace(/\.?0+$/, "")}L`;
-  }
-  if (value >= 1000) {
-    const inThousands = value / 1000;
-    return `₹${Number.isInteger(inThousands) ? inThousands : inThousands.toFixed(1)}k`;
-  }
-  return `₹${value.toLocaleString("en-IN")}`;
 }
 
 export function AdminSidebar({
@@ -54,19 +39,8 @@ export function AdminSidebar({
   isCollapsed,
   onToggleCollapse,
   dueTasksCount,
-  monthlyCadenceCurrent = 445000,
-  monthlyCadenceTarget = 1500000,
 }: AdminSidebarProps): React.ReactElement {
   const pathname = usePathname() || "/admin";
-
-  // Calculate cadence percentage bounded between 0% and 100%
-  const cadencePercent = Math.min(
-    100,
-    Math.max(
-      0,
-      Math.round((monthlyCadenceCurrent / (monthlyCadenceTarget || 1)) * 100),
-    ),
-  );
 
   return (
     <aside
@@ -186,30 +160,7 @@ export function AdminSidebar({
         })}
       </nav>
 
-      {/* 3. 1-Line Integrated Micro-Telemetry Rail (NO Boxy Card, Pure Editorial Hairline) */}
-      {!isCollapsed && (
-        <div
-          className={styles.cadenceMicroRail}
-          role="region"
-          aria-label="Monthly commercial cadence"
-        >
-          <div className={styles.cadenceHeader}>
-            <span className={styles.cadenceCaption}>Monthly Cadence</span>
-            <span className={styles.cadenceNumbers}>
-              {formatCompactInr(monthlyCadenceCurrent)} / {formatCompactInr(monthlyCadenceTarget)}{" "}
-              <span className={styles.cadenceSeparator}>•</span> {cadencePercent}%
-            </span>
-          </div>
-          <div className={styles.cadenceTrack} aria-hidden="true">
-            <div
-              className={styles.cadenceFill}
-              style={{ width: `${cadencePercent}%` }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* 4. Single User Profile Card */}
+      {/* 3. Single User Profile Card */}
       <div className={styles.accountCardWrapper}>
         <UserProfileDropdown
           currentUser={currentUser}

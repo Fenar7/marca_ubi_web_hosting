@@ -35,37 +35,31 @@ const LUXURY_PALETTE = [
 
 export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
   records = [],
-  totalValue = 6540000,
+  totalValue = null,
   financials = true,
 }) => {
-  // Aggregate real records by serviceCategory
+  // Aggregate real records strictly by serviceCategory
   const categories = useMemo<CategorySlice[]>(() => {
-    const validTotal = totalValue && totalValue > 0 ? totalValue : 6540000;
-
     if (!records || records.length === 0) {
-      return [
-        { name: "Web & Digital Experience", value: Math.round(validTotal * 0.42), percentage: 42, color: LUXURY_PALETTE[0] },
-        { name: "Full-Suite Brand Advisory", value: Math.round(validTotal * 0.28), percentage: 28, color: LUXURY_PALETTE[1] },
-        { name: "Enterprise Consultation", value: Math.round(validTotal * 0.18), percentage: 18, color: LUXURY_PALETTE[2] },
-        { name: "UI/UX Design Systems", value: Math.round(validTotal * 0.12), percentage: 12, color: LUXURY_PALETTE[3] },
-      ];
+      return [];
     }
 
     const catMap = new Map<string, number>();
     for (const r of records) {
-      const cat = r.serviceCategory || "Enterprise Consultation";
-      const val = r.expectedValue ?? 100000;
+      const cat = r.serviceCategory || "Advisory & Strategy";
+      const val = r.expectedValue ?? 0;
       catMap.set(cat, (catMap.get(cat) ?? 0) + val);
     }
 
     const sortedEntries = [...catMap.entries()].sort((a, b) => b[1] - a[1]);
     const top4 = sortedEntries.slice(0, 4);
-    const sumTop4 = top4.reduce((acc, curr) => acc + curr[1], 0) || validTotal;
+    const sumTop4 = top4.reduce((acc, curr) => acc + curr[1], 0);
+    const divisor = sumTop4 > 0 ? sumTop4 : (totalValue ?? 1);
 
     return top4.map(([name, val], idx) => ({
       name,
       value: val,
-      percentage: Math.max(1, Math.round((val / sumTop4) * 100)),
+      percentage: Math.max(1, Math.round((val / divisor) * 100)),
       color: LUXURY_PALETTE[idx % LUXURY_PALETTE.length],
     }));
   }, [records, totalValue]);
@@ -156,29 +150,35 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
       </div>
 
       {/* Category Breakdown Rows */}
-      <ul className={styles.categoryLegendList}>
-        {categories.map((cat, idx) => (
-          <li key={idx} className={styles.categoryRow}>
-            <div className={styles.categoryLeft}>
-              <span
-                className={styles.colorDot}
-                style={{ backgroundColor: cat.color }}
-                aria-hidden="true"
-              />
-              <span className={styles.categoryName} title={cat.name}>
-                {cat.name}
-              </span>
-            </div>
+      {categories.length === 0 ? (
+        <div className={styles.emptyCategories} role="status">
+          <span>No pipeline categories recorded in this scope.</span>
+        </div>
+      ) : (
+        <ul className={styles.categoryLegendList}>
+          {categories.map((cat, idx) => (
+            <li key={idx} className={styles.categoryRow}>
+              <div className={styles.categoryLeft}>
+                <span
+                  className={styles.colorDot}
+                  style={{ backgroundColor: cat.color }}
+                  aria-hidden="true"
+                />
+                <span className={styles.categoryName} title={cat.name}>
+                  {cat.name}
+                </span>
+              </div>
 
-            <div className={styles.categoryRight}>
-              <span className={styles.percentagePill}>{cat.percentage}%</span>
-              <span className={styles.categoryAmount}>
-                {financials ? formatCrmCurrency(cat.value) : "Confidential"}
-              </span>
-            </div>
-          </li>
-        ))}
-      </ul>
+              <div className={styles.categoryRight}>
+                <span className={styles.percentagePill}>{cat.percentage}%</span>
+                <span className={styles.categoryAmount}>
+                  {financials ? formatCrmCurrency(cat.value) : "Confidential"}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </article>
   );
 };

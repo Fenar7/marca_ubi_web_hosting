@@ -55,20 +55,20 @@ function getStagePipProgress(stageName: string): { filled: number; percentage: n
 
 /** Determines SLA urgency intervals */
 function getUrgencyStatus(due: string | null): { text: string; isOverdue: boolean } {
-  if (!due) return { text: "• In cadence", isOverdue: false };
+  if (!due) return { text: "In cadence", isOverdue: false };
   const time = new Date(due).getTime();
-  if (!Number.isFinite(time)) return { text: "• In cadence", isOverdue: false };
+  if (!Number.isFinite(time)) return { text: "In cadence", isOverdue: false };
 
   const now = Date.now();
   const diffDays = Math.floor((time - now) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
-    return { text: `⚠️ ${Math.abs(diffDays)}d overdue`, isOverdue: true };
+    return { text: `Overdue ${Math.abs(diffDays)}d`, isOverdue: true };
   }
   if (diffDays === 0) {
-    return { text: "• Due today", isOverdue: false };
+    return { text: "Due today", isOverdue: false };
   }
-  return { text: `• Due in ${diffDays}d`, isOverdue: false };
+  return { text: `Due in ${diffDays}d`, isOverdue: false };
 }
 
 export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
@@ -91,7 +91,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     [records]
   );
   const todayCount = useMemo(
-    () => records.filter((r) => getUrgencyStatus(r.due).text === "• Due today").length,
+    () => records.filter((r) => getUrgencyStatus(r.due).text === "Due today").length,
     [records]
   );
 
@@ -105,7 +105,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     } else if (activeTab === "overdue") {
       list = list.filter((r) => getUrgencyStatus(r.due).isOverdue);
     } else if (activeTab === "today") {
-      list = list.filter((r) => getUrgencyStatus(r.due).text === "• Due today");
+      list = list.filter((r) => getUrgencyStatus(r.due).text === "Due today");
     }
 
     // Search query filter

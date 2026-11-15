@@ -10,8 +10,8 @@
   width: 100%;
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: var(--admin-radius-card, 16px);
-  box-shadow: none;
+  border-radius: var(--admin-radius-card, 12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04);
   padding: 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
@@ -124,12 +124,21 @@
 }
 
 .centerValue {
-  font-family: var(--font-circular), sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
   color: var(--admin-text-primary, #111111);
   font-variant-numeric: tabular-nums;
   margin-top: 1px;
+}
+
+.emptyCategories {
+  padding: 1.5rem 0;
+  text-align: center;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8rem;
+  color: var(--admin-text-muted, #696965);
 }
 
 .categoryLegendList {
