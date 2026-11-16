@@ -24,6 +24,12 @@ export interface DynamicRevenueSplinePoint {
   fullPeriod: string;
   cashVal: number;
   cashFormatted: string;
+  intakeVal?: number;
+}
+
+export interface IntakeEvent {
+  createdAt: string;
+  amount: number;
 }
 
 export interface RevenueEvent {
@@ -98,29 +104,53 @@ export function calculateMetricDelta(current: number, prior: number): number | n
   return Math.round((((current - prior) / prior) * 100) * 10) / 10;
 }
 
-/** Buckets converted contract values into display intervals; no payment or quota is inferred. */
-export function aggregateTimeframeRevenue(slug: TimeframeSlug, bounds: Pick<TimeframeBounds, 'currentStart' | 'currentEnd'>, events: RevenueEvent[]): DynamicRevenueSplinePoint[] {
+/** Buckets converted contract values and lead intake into display intervals; no payment or quota is inferred. */
+export function aggregateTimeframeRevenue(
+  slug: TimeframeSlug,
+  bounds: Pick<TimeframeBounds, 'currentStart' | 'currentEnd'>,
+  events: RevenueEvent[],
+  intakeEvents?: IntakeEvent[]
+): DynamicRevenueSplinePoint[] {
   const start = bounds.currentStart.getTime();
   const end = bounds.currentEnd.getTime();
   const span = end - start;
   if (!Number.isFinite(start) || !Number.isFinite(end) || span <= 0) return [];
   const intervals = getRevenueIntervals(slug, bounds.currentStart, bounds.currentEnd);
   const totals = intervals.map(() => 0);
+  const intakeTotals = intervals.map(() => 0);
+
   for (const event of events) {
     const timestamp = Date.parse(event.convertedAt);
     if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end || !Number.isFinite(event.amount)) continue;
     const index = Math.min(intervals.length - 1, Math.floor(((timestamp - start) / span) * intervals.length));
     totals[index] += event.amount;
   }
+
+  if (intakeEvents && intakeEvents.length > 0) {
+    for (const event of intakeEvents) {
+      const timestamp = Date.parse(event.createdAt);
+      if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end || !Number.isFinite(event.amount)) continue;
+      const index = Math.min(intervals.length - 1, Math.floor(((timestamp - start) / span) * intervals.length));
+      intakeTotals[index] += event.amount;
+    }
+  }
+
   const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
   return intervals.map((interval, index) => {
     const amount = Math.round(totals[index] * 100) / 100;
-    return { month: interval.label, fullPeriod: interval.fullLabel, cashVal: amount, cashFormatted: currency.format(amount) };
+    const intakeAmount = Math.round(intakeTotals[index] * 100) / 100;
+    return {
+      month: interval.label,
+      fullPeriod: interval.fullLabel,
+      cashVal: amount,
+      cashFormatted: currency.format(amount),
+      intakeVal: intakeAmount,
+    };
   });
 }
 
 function getRevenueIntervals(slug: TimeframeSlug, start: Date, end: Date): { label: string; fullLabel: string }[] {
-  const count = slug === '7d' ? 7 : slug === '30d' ? 5 : slug === 'year' ? 12 : 3;
+  const count = slug === '7d' ? 7 : slug === '30d' ? 8 : slug === '90d' ? 8 : slug === 'quarter' ? 6 : slug === 'year' ? 12 : 8;
   const startMs = start.getTime();
   const span = end.getTime() - startMs;
   const format = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });

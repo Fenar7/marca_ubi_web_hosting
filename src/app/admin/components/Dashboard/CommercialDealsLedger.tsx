@@ -32,6 +32,24 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+/** Resolves deterministic luxury mineral pastel styling for client monogram avatar */
+function getClientAvatarStyle(name: string): { bg: string; color: string; border: string } {
+  const PALETTES = [
+    { bg: "#f1f3f7", color: "#2c3a50", border: "#dce3ec" }, // Soft Slate
+    { bg: "#f6f3ee", color: "#4a3e35", border: "#e8e2d8" }, // Warm Taupe
+    { bg: "#eef4f0", color: "#264332", border: "#d5e5db" }, // Mineral Sage
+    { bg: "#f9f6f0", color: "#453c29", border: "#ede5d5" }, // Desert Sand
+    { bg: "#f0f3f9", color: "#243b53", border: "#d9e2ec" }, // Nordic Indigo
+    { bg: "#fdf2f4", color: "#6e2938", border: "#f7d6dd" }, // Rose Quartz
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash << 5) - hash + name.charCodeAt(i);
+    hash |= 0;
+  }
+  return PALETTES[Math.abs(hash) % PALETTES.length];
+}
+
 /** Resolves the 5-segment pip fill level and percentage for a given stage */
 function getStagePipProgress(stageName: string): { filled: number; percentage: number; color: string } {
   const norm = stageName.trim().toLowerCase();
@@ -39,10 +57,10 @@ function getStagePipProgress(stageName: string): { filled: number; percentage: n
     return { filled: 5, percentage: 100, color: "#059669" };
   }
   if (norm.includes("negotiation") || norm.includes("review")) {
-    return { filled: 4, percentage: 85, color: "#ea002a" };
+    return { filled: 4, percentage: 85, color: "#111111" };
   }
   if (norm.includes("proposal") || norm.includes("pitch")) {
-    return { filled: 4, percentage: 80, color: "#d97706" };
+    return { filled: 4, percentage: 80, color: "#111111" };
   }
   if (norm.includes("qualified") || norm.includes("discovery")) {
     return { filled: 3, percentage: 60, color: "#111111" };
@@ -53,22 +71,22 @@ function getStagePipProgress(stageName: string): { filled: number; percentage: n
   return { filled: 1, percentage: 20, color: "#111111" };
 }
 
-/** Determines SLA urgency intervals */
-function getUrgencyStatus(due: string | null): { text: string; isOverdue: boolean } {
-  if (!due) return { text: "• In cadence", isOverdue: false };
+/** Determines SLA urgency intervals with calm, non-alarmist phrasing */
+function getUrgencyStatus(due: string | null): { text: string; isOverdue: boolean; isToday: boolean } {
+  if (!due) return { text: "On track", isOverdue: false, isToday: false };
   const time = new Date(due).getTime();
-  if (!Number.isFinite(time)) return { text: "• In cadence", isOverdue: false };
+  if (!Number.isFinite(time)) return { text: "On track", isOverdue: false, isToday: false };
 
   const now = Date.now();
   const diffDays = Math.floor((time - now) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
-    return { text: `⚠️ ${Math.abs(diffDays)}d overdue`, isOverdue: true };
+    return { text: `Follow-up ${Math.abs(diffDays)}d ago`, isOverdue: true, isToday: false };
   }
   if (diffDays === 0) {
-    return { text: "• Due today", isOverdue: false };
+    return { text: "Due today", isOverdue: false, isToday: true };
   }
-  return { text: `• Due in ${diffDays}d`, isOverdue: false };
+  return { text: `Due in ${diffDays}d`, isOverdue: false, isToday: false };
 }
 
 export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
@@ -91,7 +109,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     [records]
   );
   const todayCount = useMemo(
-    () => records.filter((r) => getUrgencyStatus(r.due).text === "• Due today").length,
+    () => records.filter((r) => getUrgencyStatus(r.due).isToday).length,
     [records]
   );
 
@@ -105,7 +123,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     } else if (activeTab === "overdue") {
       list = list.filter((r) => getUrgencyStatus(r.due).isOverdue);
     } else if (activeTab === "today") {
-      list = list.filter((r) => getUrgencyStatus(r.due).text === "• Due today");
+      list = list.filter((r) => getUrgencyStatus(r.due).isToday);
     }
 
     // Search query filter
@@ -133,14 +151,13 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
       <header className={styles.ledgerHeader}>
         <div className={styles.headerTitleBlock}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.dot} aria-hidden="true" />
-            <p className={styles.eyebrow}>Commercial Pipeline &amp; Action Queue</p>
+            <p className={styles.eyebrow}>Commercial Opportunities</p>
           </div>
           <h2 className={styles.title} id="commercial-ledger-title">
-            Commercial Opportunities
+            Deals &amp; Opportunities
           </h2>
           <p className={styles.subtitle}>
-            Enterprise opportunities, stage velocity progress pips, and instantaneous actions
+            Active pipeline deals, stage progress, and upcoming actions.
           </p>
         </div>
 
@@ -211,7 +228,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             }`}
             onClick={() => setActiveTab("overdue")}
           >
-            <span>Overdue Action</span>
+            <span>Needs Follow-up</span>
             <span className={`${styles.countBadge} ${overdueCount > 0 ? styles.countBadgeOverdue : ""}`}>
               {overdueCount}
             </span>
@@ -236,11 +253,11 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
         <table className={styles.dealsTable}>
           <thead>
             <tr>
-              <th scope="col">Opportunity / client</th>
+              <th scope="col">Deal / Client</th>
               <th scope="col">Service</th>
-              <th scope="col">Stage &amp; progress</th>
-              <th scope="col">Expected value</th>
-              <th scope="col">Account owner</th>
+              <th scope="col">Stage &amp; Progress</th>
+              <th scope="col">Expected Value</th>
+              <th scope="col">Owner</th>
               <th scope="col" style={{ textAlign: "right", paddingRight: "1.4rem" }}>
                 Actions
               </th>
@@ -264,13 +281,22 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                 const pip = getStagePipProgress(deal.stage);
                 const urgency = getUrgencyStatus(deal.due);
                 const displayName = deal.company || deal.name;
+                const avatarStyle = getClientAvatarStyle(displayName);
 
                 return (
                   <tr key={deal.id} className={styles.tableRow}>
                     {/* Opportunity & Client Monogram */}
                     <td>
                       <div className={styles.clientCell}>
-                        <div className={styles.avatarPill} aria-hidden="true">
+                        <div
+                          className={styles.avatarPill}
+                          style={{
+                            backgroundColor: avatarStyle.bg,
+                            color: avatarStyle.color,
+                            borderColor: avatarStyle.border,
+                          }}
+                          aria-hidden="true"
+                        >
                           {getInitials(displayName)}
                         </div>
                         <Link
@@ -307,22 +333,28 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                       <div className={styles.stageProgressCell}>
                         <div className={styles.stageTokenRow}>
                           <span className={styles.stageName}>{deal.stage}</span>
-                          {urgency.isOverdue && (
+                          {urgency.isToday ? (
+                            <span className={styles.dueTodayTag}>{urgency.text}</span>
+                          ) : urgency.isOverdue ? (
                             <span className={styles.overdueTag}>{urgency.text}</span>
+                          ) : (
+                            <span className={styles.cadenceMuted}>{urgency.text}</span>
                           )}
                         </div>
 
-                        {/* 5-segment pip bar */}
-                        <div className={styles.pipTrack} aria-label={`${deal.stage} progress: ${pip.percentage}%`}>
-                          {[1, 2, 3, 4, 5].map((segmentIdx) => (
-                            <span
-                              key={segmentIdx}
-                              className={`${styles.pipSegment} ${
-                                segmentIdx <= pip.filled ? styles.pipSegmentFilled : ""
-                              }`}
-                              style={segmentIdx <= pip.filled ? { backgroundColor: pip.color } : {}}
-                            />
-                          ))}
+                        {/* 5-segment continuous pip bar */}
+                        <div className={styles.pipRow}>
+                          <div className={styles.pipTrack} aria-label={`${deal.stage} progress: ${pip.percentage}%`}>
+                            {[1, 2, 3, 4, 5].map((segmentIdx) => (
+                              <span
+                                key={segmentIdx}
+                                className={`${styles.pipSegment} ${
+                                  segmentIdx <= pip.filled ? styles.pipSegmentFilled : ""
+                                }`}
+                                style={segmentIdx <= pip.filled ? { backgroundColor: pip.color } : undefined}
+                              />
+                            ))}
+                          </div>
                           <span className={styles.pipPercentage}>{pip.percentage}%</span>
                         </div>
                       </div>

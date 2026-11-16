@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/page.tsx": {
-    "mtime": 1794355994.7558417,
-    "seen": 1794356196.5108132,
-    "ast_hash": "9cd1323d705c7740c84c9c11839d27e5",
+    "mtime": 1794764824.4730883,
+    "seen": 1794764899.0985758,
+    "ast_hash": "a364bc3b78a13e2d2e315b7781d03ca1",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/settings/components/SettingsWorkspaceClient.tsx": {
@@ -1134,15 +1134,15 @@
     "semantic_hash": "4572fabb70ae9163d445232dab7729ee"
   },
   "src/app/admin/components/layout/AdminSidebar.tsx": {
-    "mtime": 1794636356.9907238,
-    "seen": 1794734582.8670247,
-    "ast_hash": "28e6b2208eea9065cd4f92acdc1c955c",
+    "mtime": 1794766641.5747185,
+    "seen": 1794766995.249293,
+    "ast_hash": "45f6a1e8cb73dd49972a92e9351e3a5b",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminWorkspaceShell.tsx": {
-    "mtime": 1794671482.77366,
-    "seen": 1794734582.8670247,
-    "ast_hash": "012fd8fe7e88afd4a8d3763fcc0d88c5",
+    "mtime": 1794766669.4296408,
+    "seen": 1794766995.249293,
+    "ast_hash": "86de237443a1d8d5d427cab80b388c48",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/NewLeadDrawer.tsx": {
@@ -1158,9 +1158,9 @@
     "semantic_hash": "b433161636b77dc07082d6d4ab5126ba"
   },
   "src/app/admin/components/layout/UserProfileDropdown.tsx": {
-    "mtime": 1794348976.1168454,
-    "seen": 1794356196.5108132,
-    "ast_hash": "e29f77e929bc302c2d7bd693ab11946d",
+    "mtime": 1794766602.6229076,
+    "seen": 1794766995.249293,
+    "ast_hash": "ba8a5424dd21f1ff00b20825e28e3995",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/navigationConfig.tsx": {
@@ -1242,15 +1242,15 @@
     "semantic_hash": "ae4590ff2e15fec27574d846f25d8864"
   },
   "src/app/admin/layout.tsx": {
-    "mtime": 1794636247.5800834,
-    "seen": 1794734582.8670247,
-    "ast_hash": "c08deb198e71d2bb3196c4d8928c4707",
+    "mtime": 1794761068.1379085,
+    "seen": 1794761557.5190904,
+    "ast_hash": "ca5d662ba9dadba24ba1dd67f0670ad0",
     "semantic_hash": ""
   },
   "src/app/admin/lib/timeframeUtils.ts": {
-    "mtime": 1793950187.1171143,
-    "seen": 1793950560.1516914,
-    "ast_hash": "7a5fd07c555b27fa8fb3fb7420e9d3fc",
+    "mtime": 1794808399.695368,
+    "seen": 1794808940.8647454,
+    "ast_hash": "715d86773d55bd71ba24845ec32decc9",
     "semantic_hash": ""
   },
   "src/app/admin/login/LoginForm.tsx": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794669850.1389313,
-    "seen": 1794734582.8670247,
-    "ast_hash": "88039f3c193bd0a7e08248d556ae2dd9",
+    "mtime": 1794764273.170691,
+    "seen": 1794764899.0985758,
+    "ast_hash": "938db179ca8b9b45631a5f63b25b0966",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5658,9 +5658,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/dashboardContracts.ts": {
-    "mtime": 1794351148.3775666,
-    "seen": 1794356196.5108132,
-    "ast_hash": "9cc7581ef529198203586a2632f9bcdb",
+    "mtime": 1794764218.818508,
+    "seen": 1794764899.0990756,
+    "ast_hash": "2812dd77ffbdae17803eb2f07bed7bed",
     "semantic_hash": ""
   },
   "tests/unit/dashboard-server-assembly.test.ts": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1794669564.2842083,
-    "seen": 1794734582.8670247,
-    "ast_hash": "235c6c02b161b15f0db42dae2a7c9447",
+    "mtime": 1794766768.8827288,
+    "seen": 1794766995.2482936,
+    "ast_hash": "cd9185e3276b08d2d1da8140a1793e12",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6024,21 +6024,21 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1794669808.4184747,
-    "seen": 1794734582.8670247,
-    "ast_hash": "be1a005319bd5e580893d53cd147572b",
+    "mtime": 1794764683.3848584,
+    "seen": 1794764899.0985758,
+    "ast_hash": "d0de1dd0aa8d6304c6de771a45b74d13",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1794669665.3893063,
-    "seen": 1794734582.8670247,
-    "ast_hash": "229f9ecd609e2488317d51df913c371d",
+    "mtime": 1794808449.1614642,
+    "seen": 1794808940.8647454,
+    "ast_hash": "94df7334c6ec0b11534d4ec9a109b258",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
-    "mtime": 1794669718.766302,
-    "seen": 1794734582.8670247,
-    "ast_hash": "b936a3dbecfa77371b876566d30450c8",
+    "mtime": 1794808498.2681615,
+    "seen": 1794808940.8647454,
+    "ast_hash": "66b84a43531d65d858b043ed6d7dd5f6",
     "semantic_hash": ""
   },
   "docs/context/2026-11-14_12-30-00.md": {
@@ -6063,6 +6063,84 @@
     "mtime": 1794670079.933944,
     "seen": 1794734582.8670247,
     "ast_hash": "c2b1a0a73d14d0f7a3d34e945aa55e25",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_NOTION_LINEAR_REDESIGN_PLAN.md": {
+    "mtime": 1794760316.2228472,
+    "seen": 1794761557.520601,
+    "ast_hash": "244cbea4732e8cfda318b63d0d983226",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_IMPLEMENTATION_REPORT.md": {
+    "mtime": 1794761580.282813,
+    "seen": 1794761819.1401684,
+    "ast_hash": "ecb5806427efe16b9a191f6d4df34e3c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_INDEPENDENT_AUDIT.md": {
+    "mtime": 1794761770.5895543,
+    "seen": 1794761819.1401684,
+    "ast_hash": "e0f7c20051f4e387f902649558c4a429",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_PR_REMEDIATION_REPORT.md": {
+    "mtime": 1794761787.354286,
+    "seen": 1794761819.1401684,
+    "ast_hash": "895f1534f27fae12d69ad86c6aad18ce",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_VISUAL_QA_REPORT.md": {
+    "mtime": 1794761752.7988634,
+    "seen": 1794761819.1401684,
+    "ast_hash": "8be2108bd467d5374640c8b7fc23e2cd",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_V3_AUDIT_AND_PLAN.md": {
+    "mtime": 1794763484.1828797,
+    "seen": 1794764899.1005754,
+    "ast_hash": "0eedf128f42ea741017729d6580f9158",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_V4_MASTER_PLAN.md": {
+    "mtime": 1794765693.8693712,
+    "seen": 1794766995.2502933,
+    "ast_hash": "f6f9e5df6316c140716e1eb1d39cdc8e",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/PR_122_V3_BODY.md": {
+    "mtime": 1794764977.7387972,
+    "seen": 1794766995.2502933,
+    "ast_hash": "5d2b2ab316d364ae698f5a75706e3a77",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/PR_122_DESCRIPTION_V4.md": {
+    "mtime": 1794767069.7281973,
+    "seen": 1794768844.8367457,
+    "ast_hash": "ff5e6679ba52eb81eeea75137fde9213",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/SENIOR_CTO_PR_122_AUDIT_REPORT.md": {
+    "mtime": 1794767470.2295978,
+    "seen": 1794768844.8367457,
+    "ast_hash": "e864a624f3d9d18c0ee0720a4f472c55",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/VISUAL_COCKPIT_HEIGHT_AND_DESIGN_OVERHAUL_PLAN.md": {
+    "mtime": 1794768324.8549383,
+    "seen": 1794768844.8367457,
+    "ast_hash": "c068c4afe7761d8ede335600e5f7d83e",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MASTER_GRAPH_AND_COCKPIT_REDESIGN_PLAN_V6.md": {
+    "mtime": 1794807964.4796655,
+    "seen": 1794808940.8662975,
+    "ast_hash": "7e9fa8be19d058fa0d48c0acfe7c4266",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/PR_122_DESCRIPTION.md": {
+    "mtime": 1794768937.3557773,
+    "seen": 1794808940.8662975,
+    "ast_hash": "8b967c81717a8654cf05f45d41577b18",
     "semantic_hash": ""
   },
   "package-lock.json": {

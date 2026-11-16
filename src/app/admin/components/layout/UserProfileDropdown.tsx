@@ -161,22 +161,37 @@ export function UserProfileDropdown({
         aria-label={compact ? `Account: ${name}, ${role}` : undefined}
         onClick={() => setOpen(!open)}
       >
-        <span className={styles.triggerAvatar} aria-hidden="true">
-          {avatarUrl ? (
-            <Image src={avatarUrl} alt="" width={30} height={30} unoptimized />
-          ) : (
-            initials
-          )}
+        <span className={styles.avatarWrapper}>
+          <span className={styles.triggerAvatar} aria-hidden="true">
+            {avatarUrl ? (
+              <Image src={avatarUrl} alt="" width={32} height={32} unoptimized />
+            ) : (
+              initials
+            )}
+          </span>
+          <span className={styles.presenceDot} aria-hidden="true" />
         </span>
         {!compact && (
           <span className={styles.identity}>
-            <span>{name}</span>
-            <small>{role}</small>
+            <span className={styles.userName}>{name}</span>
+            <small className={styles.userRole}>{role}</small>
           </span>
         )}
-        <span className={styles.chevron} aria-hidden="true">
-          ⌃
-        </span>
+        <svg
+          className={styles.chevron}
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="7 15 12 20 17 15" />
+          <polyline points="7 9 12 4 17 9" />
+        </svg>
       </button>
       {open && (
         <div

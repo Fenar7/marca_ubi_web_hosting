@@ -40,6 +40,8 @@ interface PipelineRow {
   id: string;
   status_id: string;
   expected_value?: number | string;
+  service_category?: string;
+  created_at?: string;
 }
 interface ConversionRow {
   converted_at: string;
@@ -143,6 +145,8 @@ export default async function AdminDashboardPage({
           value: 0,
           valid: true,
           stages: new Map<string, { count: number; value: number }>(),
+          categories: new Map<string, { count: number; value: number }>(),
+          intakeEvents: [] as { createdAt: string; amount: number }[],
         })
       : foldPages<
           PipelineRow,
@@ -151,6 +155,8 @@ export default async function AdminDashboardPage({
             value: number;
             valid: boolean;
             stages: Map<string, { count: number; value: number }>;
+            categories: Map<string, { count: number; value: number }>;
+            intakeEvents: { createdAt: string; amount: number }[];
           }
         >(
           async (from, to) => {
@@ -166,7 +172,14 @@ export default async function AdminDashboardPage({
               error: result.error,
             };
           },
-          { count: 0, value: 0, valid: true, stages: new Map() },
+          {
+            count: 0,
+            value: 0,
+            valid: true,
+            stages: new Map(),
+            categories: new Map(),
+            intakeEvents: [],
+          },
           (summary, row) => {
             const amount = canFinancial
               ? dashboardAmount(row.expected_value)
@@ -181,6 +194,23 @@ export default async function AdminDashboardPage({
             stage.count += 1;
             stage.value += amount ?? 0;
             summary.stages.set(row.status_id, stage);
+
+            const catName =
+              row.service_category?.trim() || "Full-Suite Advisory";
+            const cat = summary.categories.get(catName) ?? {
+              count: 0,
+              value: 0,
+            };
+            cat.count += 1;
+            cat.value += amount ?? 0;
+            summary.categories.set(catName, cat);
+
+            if (row.created_at) {
+              summary.intakeEvents.push({
+                createdAt: row.created_at,
+                amount: amount ?? 0,
+              });
+            }
           },
         );
 
@@ -367,19 +397,21 @@ export default async function AdminDashboardPage({
       return result.error ? null : result.count;
     }),
   );
-  const selectedQueue = overviewQueue(params?.queue, counts[0]);
+  const selectedQueue: OverviewQueue | null = params?.queue
+    ? overviewQueue(params.queue, counts[0])
+    : null;
   const previewResult = stagesUnavailable
     ? { data: null, error: stageError ?? { message: "Stages unavailable" } }
     : activeIds.length === 0 || (!canTasks && !recordRoute)
       ? { data: [], error: null }
-      : canTasks
+      : selectedQueue && canTasks
         ? await queueQuery(selectedQueue)
             .order(
               selectedQueue === "unassigned" ? "created_at" : "next_follow_up",
               { ascending: true },
             )
             .order("id")
-            .limit(6)
+            .limit(25)
         : await supabase
             .from("leads")
             .select(dashboardPreviewSelect(canFinancial))
@@ -387,7 +419,7 @@ export default async function AdminDashboardPage({
             .or(SYNTHETIC_EXCLUSION)
             .order("created_at", { ascending: false })
             .order("id")
-            .limit(6);
+            .limit(25);
   if (previewResult.error)
     console.error("[dashboard] Preview failed", previewResult.error.message);
   else if (!previewResult.data)
@@ -512,7 +544,7 @@ export default async function AdminDashboardPage({
             : null,
       })),
     pipelineReady: pipeline !== null,
-    queue: selectedQueue,
+    queue: selectedQueue ?? "overdue",
     queueCounts: {
       overdue: counts[0],
       today: counts[1],
@@ -525,7 +557,22 @@ export default async function AdminDashboardPage({
     convertedValue: canFinancial && outcome?.valid ? outcome.value : null,
     chart:
       canFinancial && outcome?.valid
-        ? aggregateTimeframeRevenue(bounds.slug, bounds, outcome.events)
+        ? aggregateTimeframeRevenue(
+            bounds.slug,
+            bounds,
+            outcome.events,
+            pipeline?.intakeEvents,
+          )
+        : [],
+    categories:
+      pipeline?.valid && pipeline.categories
+        ? Array.from(pipeline.categories.entries())
+            .map(([name, cat]) => ({
+              name,
+              value: canFinancial ? cat.value : 0,
+              count: cat.count,
+            }))
+            .sort((a, b) => b.value - a.value)
         : [],
     cohort: cohort ? { eligible: cohort.eligible, won: cohort.won } : null,
   };
