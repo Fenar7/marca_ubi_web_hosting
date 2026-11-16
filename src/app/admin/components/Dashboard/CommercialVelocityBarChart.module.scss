@@ -1,8 +1,9 @@
 /**
  * @file CommercialVelocityBarChart.module.scss
- * @description Luxury Styling for Commercial Velocity Dual-Bar Chart (Finexy Archetype).
- *              Open-air white canvas, grounded pill bars, ephemeral hover slot washes,
- *              and Finexy Cadence Telemetry Shelf footer equalizing cockpit height.
+ * @description Luxury Styling for Cash Flow Bar Chart (Fundora & Finlo Flash Archetype).
+ *              Pristine canvas, bold headline valuation, segmented perspective controls,
+ *              soft warm-neutral pill bars (#f0f0ee), brand crimson vertical spotlight gradient,
+ *              and tactile apex beacon ring with zero text collision.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -13,9 +14,9 @@
   flex: 1 1 auto;
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: var(--admin-radius-card, 12px);
+  border-radius: var(--admin-radius-card, 14px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04);
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -31,104 +32,244 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
-.titleGroup {
+.titleAndValuation {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.eyebrowRow {
+.titleRow {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 0.25rem;
-}
-
-.statusDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--admin-accent-brand, #ea002a);
-}
-
-.eyebrow {
-  margin: 0;
-  color: #696965;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: normal;
 }
 
 .title {
   margin: 0;
   color: var(--admin-text-primary, #111111);
-  font-family: var(--font-circular), sans-serif;
+  font-family: var(--font-graphik), sans-serif;
   font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
-.subtitle {
-  margin: 0.2rem 0 0;
-  color: var(--admin-text-secondary, #454542);
+.infoIcon {
+  font-size: 0.78rem;
+  color: #8e8e8a;
+  cursor: help;
+  user-select: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #111111;
+  }
+}
+
+.heroValuation {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", var(--font-graphik), sans-serif;
+  font-size: clamp(2.1rem, 2.5vw, 2.55rem);
+  font-weight: 300;
+  color: var(--admin-text-primary, #111111);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  margin: 0.35rem 0 0.75rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Fundora Segmented Perspective Controls */
+.segmentedControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.segmentedPill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: var(--admin-canvas-bg, #f5f5f3);
+  color: #52525b;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.74rem;
-  line-height: 1.35;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-height: 44px;
+    min-width: 100%;
+  }
+
+  &:hover {
+    background: #ebebe8;
+    color: #111111;
+  }
+}
+
+.segmentedPillActive {
+  background: #111111 !important;
+  color: #ffffff !important;
+  border-color: #111111 !important;
+  font-weight: 600;
 }
 
 .controlsGroup {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.legendRow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.dropdownContainer {
+  position: relative;
 }
 
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  color: var(--admin-text-secondary, #454542);
-  font-weight: 500;
-}
-
-.legendSquareIntake {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background-color: #18181b;
-}
-
-.legendSquareRealized {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background-color: var(--admin-accent-brand, #ea002a);
-}
-
-.timeframePill {
+.timeframeButton {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  height: 28px;
-  padding: 0 10px;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
   background: var(--admin-canvas-bg, #f5f5f3);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 9999px;
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 500;
   color: var(--admin-text-secondary, #454542);
+  user-select: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-height: 44px;
+    min-width: 100%;
+  }
+
+  &:hover {
+    background: #ebebe8;
+    color: #111111;
+    border-color: #dcdcd8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #111111;
+    outline-offset: 2px;
+  }
+}
+
+.timeframeButtonActive {
+  background: #ffffff;
+  color: #111111;
+  border-color: #111111;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.chevron {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #696965;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  z-index: 50;
+  list-style: none;
+  margin: 0;
+  animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--admin-text-primary, #111111);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+
+  &:hover,
+  &.dropdownItemFocused {
+    background: #f5f5f3;
+  }
+}
+
+.dropdownItemActive {
+  font-weight: 600;
+  color: #111111;
+  background: #f9f9f8;
+}
+
+.optionLabel {
+  display: block;
+}
+
+.optionSubtext {
+  display: block;
+  font-size: 0.66rem;
+  color: #8c8c88;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.activeCheck {
+  color: var(--admin-accent-brand, #ea002a);
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-left: 8px;
 }
 
 .svgWrapper {
@@ -137,8 +278,8 @@
   flex: 1 1 auto;
   display: flex;
   align-items: center;
-  min-height: 185px;
-  max-height: 215px;
+  justify-content: center;
+  min-height: 200px;
 }
 
 .chartSvg {
@@ -148,7 +289,7 @@
   overflow: visible;
 }
 
-/* Swiss Dashed Hairline Gridlines (Finexy Archetype) */
+/* Swiss Dashed Hairline Gridlines */
 .hairlineGrid {
   stroke: #ebebe8;
   stroke-width: 1;
@@ -163,7 +304,7 @@
 .axisText {
   font-family: var(--font-circular), sans-serif;
   font-size: 10px;
-  fill: #8e8e8a;
+  fill: #696965;
   text-anchor: end;
   font-variant-numeric: tabular-nums;
 }
@@ -185,39 +326,23 @@
   font-weight: 600;
 }
 
-/* Ephemeral Hover Slot Capsules (Zero Permanent Test-Tube Monoliths) */
-.slotCapsuleIdle {
-  fill: transparent;
-  transition: fill 0.15s ease;
-}
-
-.slotCapsuleHover {
-  fill: #f5f5f3;
-  transition: fill 0.15s ease;
-}
-
 /* Pillar Bars */
-.barIntake {
-  fill: #18181b;
+.barIdle {
   cursor: pointer;
-  transition: fill 0.15s ease, opacity 0.15s ease;
+  transition: fill 0.2s ease, opacity 0.2s ease;
 
   &:hover {
-    fill: #09090b;
+    fill: #e5e5e2;
   }
 }
 
-.barRealized {
-  fill: var(--admin-accent-brand, #ea002a);
+.barActive {
   cursor: pointer;
-  transition: fill 0.15s ease;
-
-  &:hover {
-    fill: #c40023;
-  }
+  filter: drop-shadow(0 4px 14px rgba(234, 0, 42, 0.26));
+  transition: fill 0.2s ease, filter 0.2s ease;
 }
 
-/* Grounded Pedestal Zero Indicators (Finexy / Fundora Tactile Chronograph Pin) */
+/* Grounded Pedestal Zero Indicators */
 .barPedestalZero {
   fill: #e8e8e5;
   transition: fill 0.15s ease;
@@ -228,7 +353,7 @@
   fill: #ffffff;
   stroke: var(--admin-accent-brand, #ea002a);
   stroke-width: 2.5;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
   pointer-events: none;
 }
 
@@ -241,128 +366,56 @@
   cursor: pointer;
 }
 
-/* Floating Adaptive Tooltip */
-.tooltipContainer {
+/* Fundora Pristine White Floating Tooltip Card */
+.floatingBadge {
   position: absolute;
-  top: 4px;
-  transform: translateX(-50%);
-  background: #111111;
-  color: #ffffff;
-  padding: 8px 12px;
+  transform: translate(-50%, -100%);
+  background: #ffffff;
+  color: #111111;
+  padding: 6px 14px;
   border-radius: 8px;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e7e7e4;
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
   pointer-events: none;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  z-index: 10;
-  min-width: 140px;
+  align-items: center;
+  gap: 7px;
+  z-index: 20;
   white-space: nowrap;
-  animation: tooltipFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: badgeFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes tooltipFadeIn {
+@keyframes badgeFadeIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -4px);
+    transform: translate(-50%, calc(-100% - 4px));
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translate(-50%, -100%);
   }
 }
 
-.tooltipHeader {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  padding-bottom: 4px;
-}
-
-.tooltipPeriod {
-  font-weight: 600;
-  color: #e4e4e1;
-  font-size: 0.72rem;
-}
-
-.tooltipMetrics {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  font-variant-numeric: tabular-nums;
-}
-
-.tooltipMetricRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.tooltipPipIntake {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #a1a1aa;
-  flex-shrink: 0;
-}
-
-.tooltipPipRealized {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #ea002a;
-  flex-shrink: 0;
-}
-
-.tooltipLabel {
-  color: #a1a1aa;
-  font-size: 0.7rem;
-}
-
-.tooltipValue {
-  font-weight: 600;
-  color: #ffffff;
-  font-family: var(--font-circular), sans-serif;
-}
-
-/* Finexy Cadence Telemetry Shelf: Grounding Runway Equalizing Card Height */
-.telemetryShelf {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
-  align-items: center;
-  padding-top: 0.65rem;
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
-}
-
-.telemetryPod {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.telemetryLabel {
+.badgeDate {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.68rem;
   font-weight: 500;
-  color: var(--admin-text-secondary, #696965);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  color: #696965;
 }
 
-.telemetryValue {
-  font-family: var(--font-circular), sans-serif;
-  font-size: 0.82rem;
+.badgeAmount {
   font-weight: 600;
-  color: var(--admin-text-primary, #111111);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  font-size: 0.88rem;
+  color: #111111;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-.telemetryDivider {
-  width: 1px;
-  height: 20px;
-  background-color: var(--admin-border-subtle, #e7e7e4);
-  margin: 0 16px;
+/* Connecting Stem Line in SVG */
+.stemLine {
+  stroke: var(--admin-accent-brand, #ea002a);
+  stroke-width: 1px;
+  stroke-dasharray: 2 2;
+  opacity: 0.65;
+  pointer-events: none;
 }

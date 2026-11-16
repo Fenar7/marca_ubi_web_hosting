@@ -108,12 +108,11 @@ export function ExecutiveTelemetryMasthead({
       <div className={styles.topControlRow}>
         <div className={styles.identityGroup}>
           <div className={styles.eyebrow}>
-            <span className={styles.pulseDot} aria-hidden="true" />
-            <span>LIVE COMMERCIAL DESK · UTC</span>
+            <span>COMMERCIAL DESK</span>
           </div>
           <h1 className={styles.deskTitle}>{userName}</h1>
           <p className={styles.deskSubtitle}>
-            Real-time opportunity velocity, pipeline health, and revenue realization cadence.
+            Track active pipeline, closed revenue, and sales cycle performance.
           </p>
         </div>
 
@@ -217,10 +216,7 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 1: Active Pipeline Valuation (Featured Architectural Anchor) */}
         <article className={`${styles.scorecard} ${styles.featuredScorecard}`}>
           <div className={styles.cardHeader}>
-            <div className={styles.kickerWithDot}>
-              <span className={styles.brandDot} aria-hidden="true" />
-              <span className={styles.cardKicker}>TOTAL PIPELINE VALUATION</span>
-            </div>
+            <span className={styles.cardKicker}>TOTAL PIPELINE</span>
             <span className={styles.dealsPill}>
               {pipelineCount !== null ? `${pipelineCount} Deals` : "0 Deals"}
             </span>
@@ -236,13 +232,13 @@ export function ExecutiveTelemetryMasthead({
             <span className={styles.footerMuted}>
               {financials && weightedPotential !== null ? (
                 <>
-                  <span className={styles.footerLabel}>Risk-weighted yield:</span>{" "}
+                  <span className={styles.footerLabel}>Weighted pipeline:</span>{" "}
                   <span className={styles.footerHighlight}>
                     {formatCrmCurrency(weightedPotential)}
                   </span>
                 </>
               ) : (
-                "Stage-weighted risk potential"
+                "Based on deal stage win probability"
               )}
             </span>
           </div>
@@ -251,7 +247,7 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 2: Converted Contract Value */}
         <article className={styles.scorecard}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardKicker}>REALIZED REVENUE</span>
+            <span className={styles.cardKicker}>CLOSED REVENUE</span>
             <span className={`${styles.trendPill} ${trendClass}`}>
               {revenueDeltaStr}
             </span>
@@ -278,7 +274,7 @@ export function ExecutiveTelemetryMasthead({
                   </span>
                 </>
               ) : (
-                "Cadence benchmark"
+                "vs. previous period"
               )}
             </span>
           </div>
@@ -287,7 +283,7 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 3: Weighted Pipeline Potential */}
         <article className={styles.scorecard}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardKicker}>WEIGHTED YIELD</span>
+            <span className={styles.cardKicker}>WEIGHTED VALUE</span>
             <span className={styles.ratioPill}>
               {pipelineValue && weightedPotential && pipelineValue > 0
                 ? `${((weightedPotential / pipelineValue) * 100).toFixed(1)}%`
@@ -303,7 +299,7 @@ export function ExecutiveTelemetryMasthead({
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>
-              Probability-calibrated risk-adjusted pipeline
+              Adjusted for deal stage probabilities
             </span>
           </div>
         </article>
@@ -311,7 +307,7 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 4: Commercial Velocity */}
         <article className={styles.scorecard}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardKicker}>COMMERCIAL VELOCITY</span>
+            <span className={styles.cardKicker}>AVG. SALES CYCLE</span>
             <span className={styles.targetPill}>Target &lt; 21d</span>
           </div>
           <div className={styles.primaryMetric}>
@@ -326,7 +322,7 @@ export function ExecutiveTelemetryMasthead({
           </div>
           <div className={styles.cardFooter}>
             <span className={styles.footerMuted}>
-              Intake-to-conversion turnaround cadence
+              Average time from lead creation to close
             </span>
           </div>
         </article>

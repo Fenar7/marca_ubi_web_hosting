@@ -2,15 +2,15 @@
 
 /**
  * @file CommercialVelocityBarChart.tsx
- * @description Master Commercial Velocity Dual-Bar Chart modeled 1:1 after the Finexy archetype.
- *              Displays dual vertical columns with grounded pill paths (Intake vs. Realized),
- *              open-air canvas, ephemeral hover slot washes, zero-baseline instrument ticks,
- *              hairline gridlines, and a Finexy Cadence Telemetry Shelf footer.
+ * @description Master Cash Flow Bar Chart synthesized 1:1 from the Fundora & Finlo Flash archetypes.
+ *              Features bold headline valuation, segmented perspective controls ([Pipeline Intake] | Converted Revenue | Net Delta),
+ *              soft warm-neutral rounded pill bars (#f0f0ee), interactive brand crimson spotlight gradient,
+ *              apex beacon circle, floating obsidian milestone badge, and coordinate isolation preventing text collision.
  * @module admin/components/Dashboard/CommercialVelocityBarChart
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { DynamicRevenueSplinePoint, TimeframeSlug } from "@/app/admin/lib/timeframeUtils";
 import styles from "./CommercialVelocityBarChart.module.scss";
@@ -29,7 +29,10 @@ export interface CommercialVelocityBarChartProps {
   periodLabel?: string;
   timeframe?: TimeframeSlug;
   financials?: boolean;
+  onTimeframeChange?: (slug: TimeframeSlug) => void;
 }
+
+export type CashFlowPerspective = "intake" | "realized" | "net";
 
 /**
  * Calibrated cadence distribution weights for common telemetry intervals.
@@ -38,9 +41,9 @@ export interface CommercialVelocityBarChartProps {
 const CADENCE_INTERVAL_PRESETS: Record<number, number[]> = {
   // 5 intervals: Smooth ramp up to W4 crest
   5: [0.14, 0.22, 0.18, 0.26, 0.20],
-  // 7 intervals: Weekly view with mid-week cadence surge
+  // 7 intervals: Weekly view with mid-week surge
   7: [0.10, 0.12, 0.18, 0.16, 0.22, 0.14, 0.08],
-  // 8 intervals: 30-day view (3.75d slots) with organic rise-and-fall commercial wave
+  // 8 intervals: 30-day view (3.75d intervals) with organic commercial wave
   8: [0.08, 0.14, 0.11, 0.18, 0.15, 0.21, 0.16, 0.12],
 };
 
@@ -68,7 +71,7 @@ function getGroundedPillPath(
   y: number,
   width: number,
   height: number,
-  radius = 5,
+  radius = 6,
 ): string {
   if (height <= 0) return "";
   const r = Math.min(radius, width / 2, height);
@@ -83,8 +86,33 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
   periodLabel = "Last 30 Days",
   timeframe = "30d",
   financials = true,
+  onTimeframeChange,
 }) => {
   const [activeHoverIndex, setActiveHoverIndex] = useState<number | null>(null);
+  const [perspective, setPerspective] = useState<CashFlowPerspective>("intake");
+  const [isTimeframeOpen, setIsTimeframeOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsTimeframeOpen(false);
+      }
+    }
+    if (isTimeframeOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isTimeframeOpen]);
+
+  const handleSelectTimeframe = (slug: TimeframeSlug) => {
+    setIsTimeframeOpen(false);
+    if (onTimeframeChange) {
+      onTimeframeChange(slug);
+    }
+  };
 
   // Derive column data directly from bucketed CRM events or calibrated pipeline trajectory
   const monthlyData = useMemo<MonthlyBarData[]>(() => {
@@ -112,8 +140,8 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
       }));
     }
 
-    const defaultCadence = ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"];
-    return defaultCadence.map((m) => ({
+    const defaultIntervals = ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"];
+    return defaultIntervals.map((m) => ({
       month: m,
       fullPeriod: m,
       intake: 0,
@@ -121,21 +149,46 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     }));
   }, [chart, totalIntake]);
 
-  // Compact Finexy Stately SVG Dimensions (Calibrated for ~328px total cockpit card height)
-  const svgWidth = 680;
-  const svgHeight = 210;
-  const paddingLeft = 48;
-  const paddingRight = 16;
-  const paddingTop = 20;
-  const paddingBottom = 38;
+  // Aggregate Perspective Values
+  const totalIntakeVal = useMemo(() => {
+    if (totalIntake && totalIntake > 0) return totalIntake;
+    return monthlyData.reduce((sum, d) => sum + d.intake, 0);
+  }, [totalIntake, monthlyData]);
 
-  const chartWidth = svgWidth - paddingLeft - paddingRight; // 616
-  const chartHeight = svgHeight - paddingTop - paddingBottom; // 152
-  const baselineY = paddingTop + chartHeight; // 172
+  const totalRealizedVal = useMemo(() => {
+    if (totalRealized && totalRealized > 0) return totalRealized;
+    return monthlyData.reduce((sum, d) => sum + d.realized, 0);
+  }, [totalRealized, monthlyData]);
+
+  const activePerspectiveTotal = useMemo(() => {
+    if (perspective === "intake") return totalIntakeVal;
+    if (perspective === "realized") return totalRealizedVal;
+    return Math.max(0, totalIntakeVal - totalRealizedVal);
+  }, [perspective, totalIntakeVal, totalRealizedVal]);
+
+  // Fundora Calibrated ViewBox & Geometry (Generous 56px Gutter Eradicating Text Collisions)
+  const svgWidth = 680;
+  const svgHeight = 220;
+  const paddingLeft = 56;
+  const paddingRight = 20;
+  const paddingTop = 28;
+  const paddingBottom = 34;
+
+  const chartWidth = svgWidth - paddingLeft - paddingRight; // 604
+  const chartHeight = svgHeight - paddingTop - paddingBottom; // 158
+  const baselineY = paddingTop + chartHeight; // 186
 
   // Dynamic valuation ceiling with clean 4-milestone integer quantization
   const { maxVal, yMilestones } = useMemo(() => {
-    const highest = Math.max(...monthlyData.map((d) => Math.max(d.intake, d.realized)), 0);
+    const highest = Math.max(
+      ...monthlyData.map((d) => {
+        if (perspective === "intake") return d.intake;
+        if (perspective === "realized") return d.realized;
+        return Math.abs(d.intake - d.realized);
+      }),
+      0
+    );
+
     if (highest <= 0) {
       const fallbackMax = 400000; // ₹4L clean baseline when pipeline is empty
       return {
@@ -144,8 +197,8 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
       };
     }
 
-    // Target peak bar to occupy ~84% height (breathing headroom for tooltips & apex beacon rings)
-    const targetQuarter = (highest * 1.18) / 4;
+    // Target peak bar to occupy ~82% height (breathing headroom for tooltips & apex beacon rings)
+    const targetQuarter = (highest * 1.20) / 4;
     const stepUnit =
       targetQuarter > 2500000
         ? 2500000
@@ -162,112 +215,202 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     const milestones = [0, cleanQuarter, cleanQuarter * 2, cleanQuarter * 3, ceiling];
 
     return { maxVal: ceiling, yMilestones: milestones };
-  }, [monthlyData]);
+  }, [monthlyData, perspective]);
 
-  // Finexy Column Proportions (20px bars, 6px gap = 46px pair, 54px capsule in 77px slot -> 70.1% occupancy)
+  // Fundora Single Pill Column Proportions (26px wide, smooth center alignment)
   const colWidth = chartWidth / (monthlyData.length || 1);
-  const barWidth = 20;
-  const barGap = 6;
-  const capsuleWidth = 54;
+  const barWidth = 26;
 
-  const activeItem = activeHoverIndex !== null ? monthlyData[activeHoverIndex] : null;
-  const activeCenterX =
-    activeHoverIndex !== null ? paddingLeft + activeHoverIndex * colWidth + colWidth / 2 : null;
+  // Active or Default Spotlight (Hovered item or Peak item when idle)
+  const peakIndex = useMemo(() => {
+    if (!monthlyData.length) return 0;
+    let maxIdx = 0;
+    let maxValItem = -1;
+    monthlyData.forEach((d, i) => {
+      const val =
+        perspective === "intake"
+          ? d.intake
+          : perspective === "realized"
+            ? d.realized
+            : Math.abs(d.intake - d.realized);
+      if (val > maxValItem) {
+        maxValItem = val;
+        maxIdx = i;
+      }
+    });
+    return maxIdx;
+  }, [monthlyData, perspective]);
 
-  // Cadence Telemetry Summary Calculations
-  const totalIntakeVal = useMemo(() => {
-    if (totalIntake && totalIntake > 0) return totalIntake;
-    return monthlyData.reduce((sum, d) => sum + d.intake, 0);
-  }, [totalIntake, monthlyData]);
+  const spotlightIndex = activeHoverIndex !== null ? activeHoverIndex : peakIndex;
+  const spotlightItem = monthlyData[spotlightIndex] || monthlyData[0] || null;
 
-  const totalRealizedVal = useMemo(() => {
-    if (totalRealized && totalRealized > 0) return totalRealized;
-    return monthlyData.reduce((sum, d) => sum + d.realized, 0);
-  }, [totalRealized, monthlyData]);
+  const spotlightVal = useMemo(() => {
+    if (!spotlightItem) return 0;
+    if (perspective === "intake") return spotlightItem.intake;
+    if (perspective === "realized") return spotlightItem.realized;
+    return Math.abs(spotlightItem.intake - spotlightItem.realized);
+  }, [spotlightItem, perspective]);
 
-  const peakItem = useMemo(() => {
-    if (!monthlyData.length) return null;
-    return [...monthlyData].sort((a, b) => b.intake - a.intake)[0] || null;
-  }, [monthlyData]);
-
-  const avgCadencePace = useMemo(() => {
-    return Math.round(totalIntakeVal / (monthlyData.length || 1));
-  }, [totalIntakeVal, monthlyData]);
-
-  const yieldRatio = useMemo(() => {
-    if (totalIntakeVal <= 0) return 0;
-    return Math.min(100, (totalRealizedVal / totalIntakeVal) * 100);
-  }, [totalIntakeVal, totalRealizedVal]);
+  const spotlightCenterX =
+    paddingLeft + spotlightIndex * colWidth + colWidth / 2;
+  const spotlightHeight =
+    spotlightVal > 0 ? Math.max(10, (spotlightVal / maxVal) * chartHeight) : 6;
+  const spotlightTopY = baselineY - spotlightHeight;
 
   return (
-    <article
-      className={styles.cardContainer}
-      aria-labelledby="commercial-velocity-title"
-    >
+    <article className={styles.cardContainer} aria-labelledby="cash-flow-title">
+      {/* Header: Fundora Stately Architecture */}
       <header className={styles.chartHeader}>
-        <div className={styles.titleGroup}>
-          <div className={styles.eyebrowRow}>
-            <span className={styles.statusDot} aria-hidden="true" />
-            <p className={styles.eyebrow}>Cadence Intelligence</p>
+        <div className={styles.titleAndValuation}>
+          <div className={styles.titleRow}>
+            <h2 className={styles.title} id="cash-flow-title">
+              Cash Flow
+            </h2>
+            <span
+              className={styles.infoIcon}
+              title="Pipeline volume and revenue collection trajectory"
+              aria-label="Information regarding cash flow calculation"
+            >
+              ⓘ
+            </span>
           </div>
-          <h2 className={styles.title} id="commercial-velocity-title">
-            Commercial Velocity
-          </h2>
-          <p className={styles.subtitle}>
-            Pipeline intake vs. converted revenue
-          </p>
+
+          <div className={styles.heroValuation}>
+            {financials ? formatCrmCurrency(activePerspectiveTotal) : "Confidential"}
+          </div>
+
+          {/* Segmented Filter Pills (Fundora Archetype) */}
+          <div className={styles.segmentedControls} role="tablist" aria-label="Perspective switch">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={perspective === "intake"}
+              className={`${styles.segmentedPill} ${
+                perspective === "intake" ? styles.segmentedPillActive : ""
+              }`}
+              onClick={() => setPerspective("intake")}
+            >
+              Pipeline Intake
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={perspective === "realized"}
+              className={`${styles.segmentedPill} ${
+                perspective === "realized" ? styles.segmentedPillActive : ""
+              }`}
+              onClick={() => setPerspective("realized")}
+            >
+              Converted Revenue
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={perspective === "net"}
+              className={`${styles.segmentedPill} ${
+                perspective === "net" ? styles.segmentedPillActive : ""
+              }`}
+              onClick={() => setPerspective("net")}
+            >
+              Net Delta
+            </button>
+          </div>
         </div>
 
         <div className={styles.controlsGroup}>
-          <div className={styles.legendRow}>
-            <div className={styles.legendItem}>
-              <span className={styles.legendSquareIntake} aria-hidden="true" />
-              <span>Pipeline Intake</span>
-            </div>
-            <div className={styles.legendItem}>
-              <span className={styles.legendSquareRealized} aria-hidden="true" />
-              <span>Realized Revenue</span>
-            </div>
-          </div>
+          <div className={styles.dropdownContainer} ref={dropdownRef}>
+            <button
+              type="button"
+              id="velocity-timeframe-trigger"
+              className={`${styles.timeframeButton} ${
+                isTimeframeOpen ? styles.timeframeButtonActive : ""
+              }`}
+              onClick={() => setIsTimeframeOpen((prev) => !prev)}
+              aria-haspopup="listbox"
+              aria-expanded={isTimeframeOpen}
+              aria-controls="velocity-timeframe-menu"
+              aria-label="Select cash flow timeframe"
+            >
+              <span>{periodLabel}</span>
+              <svg
+                className={`${styles.chevron} ${
+                  isTimeframeOpen ? styles.chevronOpen : ""
+                }`}
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
 
-          <span className={styles.timeframePill} aria-label="Current velocity timeframe">
-            {periodLabel}
-          </span>
+            {isTimeframeOpen && (
+              <ul
+                id="velocity-timeframe-menu"
+                className={styles.dropdownMenu}
+                role="listbox"
+                aria-labelledby="velocity-timeframe-trigger"
+              >
+                {(
+                  [
+                    { slug: "7d", label: "Last 7 Days", sub: "Daily deal intake" },
+                    { slug: "30d", label: "Last 30 Days", sub: "Weekly cadence intervals" },
+                    { slug: "90d", label: "Last 90 Days", sub: "Quarterly momentum" },
+                    { slug: "quarter", label: "This Quarter", sub: "Current fiscal quarter" },
+                    { slug: "year", label: "This Year", sub: "Annual trajectory" },
+                  ] as const
+                ).map((opt) => (
+                  <li key={opt.slug} role="presentation">
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={timeframe === opt.slug}
+                      className={`${styles.dropdownItem} ${
+                        timeframe === opt.slug ? styles.dropdownItemActive : ""
+                      }`}
+                      onClick={() => handleSelectTimeframe(opt.slug)}
+                    >
+                      <div>
+                        <span className={styles.optionLabel}>{opt.label}</span>
+                        <span className={styles.optionSubtext}>{opt.sub}</span>
+                      </div>
+                      {timeframe === opt.slug && (
+                        <span className={styles.activeCheck} aria-hidden="true">✓</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </header>
 
+      {/* SVG Canvas with Fluid Layout & Coordinate Isolation */}
       <div className={styles.svgWrapper}>
-        {/* Dynamic Floating Tooltip Scrubber anchored directly above hovered column */}
-        {activeItem && activeCenterX !== null && (
+        {/* Floating Obsidian Milestone Badge directly crowned over the spotlighted column */}
+        {spotlightItem && (
           <div
-            className={styles.tooltipContainer}
+            className={styles.floatingBadge}
             style={{
-              left: `${Math.max(12, Math.min(88, (activeCenterX / svgWidth) * 100))}%`,
+              left: `${Math.max(16, Math.min(84, (spotlightCenterX / svgWidth) * 100))}%`,
+              top: `${Math.max(2, (spotlightTopY / svgHeight) * 100 - 15)}%`,
             }}
             role="status"
             aria-live="polite"
           >
-            <div className={styles.tooltipHeader}>
-              <span className={styles.tooltipPeriod}>
-                {activeItem.fullPeriod || activeItem.month}
-              </span>
-            </div>
-            <div className={styles.tooltipMetrics}>
-              <div className={styles.tooltipMetricRow}>
-                <span className={styles.tooltipPipIntake} aria-hidden="true" />
-                <span className={styles.tooltipLabel}>Intake:</span>
-                <strong className={styles.tooltipValue}>
-                  {financials ? formatCrmCurrency(activeItem.intake) : "Confidential"}
-                </strong>
-              </div>
-              <div className={styles.tooltipMetricRow}>
-                <span className={styles.tooltipPipRealized} aria-hidden="true" />
-                <span className={styles.tooltipLabel}>Realized:</span>
-                <strong className={styles.tooltipValue}>
-                  {financials ? formatCrmCurrency(activeItem.realized) : "Confidential"}
-                </strong>
-              </div>
-            </div>
+            <span className={styles.badgeDate}>
+              {spotlightItem.fullPeriod || spotlightItem.month} :
+            </span>
+            <strong className={styles.badgeAmount}>
+              {financials ? formatCrmCurrency(spotlightVal) : "Confidential"}
+            </strong>
           </div>
         )}
 
@@ -275,9 +418,18 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className={styles.chartSvg}
           role="img"
-          aria-label="Commercial velocity dual-bar chart showing monthly intake vs realized revenue"
+          aria-label="Cash flow chart displaying interval intake and revenue milestones"
         >
-          {/* Subtle Hairline Gridlines and Y-Axis Labels */}
+          <defs>
+            {/* Fundora Crimson Luxury Vertical Spotlight Gradient */}
+            <linearGradient id="fundoraCrimsonGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ea002a" />
+              <stop offset="65%" stopColor="#f43f5e" />
+              <stop offset="100%" stopColor="rgba(234, 0, 42, 0.28)" />
+            </linearGradient>
+          </defs>
+
+          {/* Clean Dashed Hairline Gridlines and Y-Axis INR Labels */}
           {yMilestones.map((milestone, idx) => {
             const y = paddingTop + chartHeight - (milestone / maxVal) * chartHeight;
             const labelStr =
@@ -296,34 +448,30 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                   y2={y}
                   className={idx === 0 ? styles.axisBaseline : styles.hairlineGrid}
                 />
-                <text
-                  x={paddingLeft - 10}
-                  y={y + 3.5}
-                  className={styles.axisText}
-                >
+                <text x={paddingLeft - 10} y={y + 3.5} className={styles.axisText}>
                   {labelStr}
                 </text>
               </g>
             );
           })}
 
-          {/* Monthly Columns with Open-Air Canvas & Ephemeral Hover Washes (Finexy Archetype) */}
+          {/* Interval Columns: Soft Warm-Neutral Rounded Pills (#f0f0ee) with Active Spotlight */}
           {monthlyData.map((item, idx) => {
             const centerX = paddingLeft + idx * colWidth + colWidth / 2;
-            const capsuleX = centerX - capsuleWidth / 2;
+            const barX = centerX - barWidth / 2;
 
-            const intakeHeight =
-              item.intake > 0 ? Math.max(8, (item.intake / maxVal) * chartHeight) : 0;
-            const realizedHeight =
-              item.realized > 0 ? Math.max(8, (item.realized / maxVal) * chartHeight) : 0;
+            const currentVal =
+              perspective === "intake"
+                ? item.intake
+                : perspective === "realized"
+                  ? item.realized
+                  : Math.abs(item.intake - item.realized);
 
-            const intakeX = centerX - barWidth - barGap / 2;
-            const intakeY = baselineY - intakeHeight;
+            const barHeight =
+              currentVal > 0 ? Math.max(10, (currentVal / maxVal) * chartHeight) : 6;
+            const barY = baselineY - barHeight;
 
-            const realizedX = centerX + barGap / 2;
-            const realizedY = baselineY - realizedHeight;
-
-            const isHovered = activeHoverIndex === idx;
+            const isSpotlighted = spotlightIndex === idx;
 
             return (
               <g
@@ -332,75 +480,58 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                 onMouseLeave={() => setActiveHoverIndex(null)}
                 className={styles.columnGroup}
               >
-                {/* Ephemeral Hover Slot Capsule (Only visible on hover — NO permanent grey monoliths!) */}
-                <rect
-                  x={capsuleX}
-                  y={paddingTop}
-                  width={capsuleWidth}
-                  height={chartHeight}
-                  rx="8"
-                  className={isHovered ? styles.slotCapsuleHover : styles.slotCapsuleIdle}
-                />
-
-                {/* Pipeline Intake Bar: Grounded Pill Path with Rounded Top Shoulders */}
-                {intakeHeight > 0 ? (
-                  <path
-                    d={getGroundedPillPath(intakeX, intakeY, barWidth, intakeHeight, 6)}
-                    className={styles.barIntake}
-                  />
-                ) : (
-                  <rect
-                    x={intakeX}
-                    y={baselineY - 6}
-                    width={barWidth}
-                    height={6}
-                    rx="3"
-                    className={styles.barPedestalZero}
-                  />
-                )}
-
-                {/* Realized Revenue Bar: Grounded Pill Path or Calibrated Instrument Zero Pedestal */}
-                {realizedHeight > 0 ? (
-                  <path
-                    d={getGroundedPillPath(realizedX, realizedY, barWidth, realizedHeight, 6)}
-                    className={styles.barRealized}
-                  />
-                ) : (
-                  /* Calibrated Grounded Zero Pedestal (Finexy Tactile Chronograph Zero Pin) */
-                  <rect
-                    x={realizedX}
-                    y={baselineY - 6}
-                    width={barWidth}
-                    height={6}
-                    rx="3"
-                    className={styles.barPedestalZero}
-                  />
-                )}
-
-                {/* Fundora Tactile Dot Ring Beacon on Active Column Apex */}
-                {isHovered && (
-                  <circle
-                    cx={intakeHeight > 0 ? intakeX + barWidth / 2 : realizedX + barWidth / 2}
-                    cy={intakeHeight > 0 ? intakeY : realizedHeight > 0 ? realizedY : baselineY - 3}
-                    r={5}
-                    className={styles.beaconRing}
-                  />
-                )}
-
-                {/* Transparent hit area for frictionless pointer hover */}
+                {/* Transparent hit area for frictionless mouse hover */}
                 <rect
                   x={paddingLeft + idx * colWidth}
                   y={paddingTop}
                   width={colWidth}
-                  height={chartHeight}
+                  height={chartHeight + paddingBottom}
                   className={styles.hitArea}
                 />
+
+                {/* Grounded Vertical Pill Bar */}
+                {currentVal > 0 ? (
+                  <path
+                    d={getGroundedPillPath(barX, barY, barWidth, barHeight, 7)}
+                    className={isSpotlighted ? styles.barActive : styles.barIdle}
+                    fill={isSpotlighted ? "url(#fundoraCrimsonGradient)" : "#f0f0ee"}
+                  />
+                ) : (
+                  /* Tactile Instrument Zero Pedestal */
+                  <rect
+                    x={barX}
+                    y={baselineY - 6}
+                    width={barWidth}
+                    height={6}
+                    rx="3"
+                    className={styles.barPedestalZero}
+                  />
+                )}
+
+                {/* Fundora Apex Beacon Ring on Spotlighted Column Crest */}
+                {isSpotlighted && currentVal > 0 && (
+                  <>
+                    <line
+                      x1={centerX}
+                      y1={barY - 5.5}
+                      x2={centerX}
+                      y2={Math.max(8, barY - 26)}
+                      className={styles.stemLine}
+                    />
+                    <circle
+                      cx={centerX}
+                      cy={barY}
+                      r={5.5}
+                      className={styles.beaconRing}
+                    />
+                  </>
+                )}
 
                 {/* X-Axis Interval Label */}
                 <text
                   x={centerX}
-                  y={svgHeight - 14}
-                  className={isHovered ? styles.monthTextActive : styles.monthText}
+                  y={svgHeight - 12}
+                  className={isSpotlighted ? styles.monthTextActive : styles.monthText}
                 >
                   {item.month}
                 </text>
@@ -409,32 +540,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
           })}
         </svg>
       </div>
-
-      {/* Finexy Cadence Telemetry Shelf: Grounding Runway Equalizing Card Height */}
-      <footer className={styles.telemetryShelf} aria-label="Cadence performance summary">
-        <div className={styles.telemetryPod}>
-          <span className={styles.telemetryLabel}>Velocity Pace</span>
-          <strong className={styles.telemetryValue}>
-            {financials ? `${formatCrmCurrency(avgCadencePace)} / slot` : "Confidential"}
-          </strong>
-        </div>
-        <div className={styles.telemetryDivider} aria-hidden="true" />
-        <div className={styles.telemetryPod}>
-          <span className={styles.telemetryLabel}>Peak Cadence</span>
-          <strong className={styles.telemetryValue}>
-            {peakItem && peakItem.intake > 0 ? (
-              financials ? `${peakItem.month} (${formatCrmCurrency(peakItem.intake)})` : peakItem.month
-            ) : "—"}
-          </strong>
-        </div>
-        <div className={styles.telemetryDivider} aria-hidden="true" />
-        <div className={styles.telemetryPod}>
-          <span className={styles.telemetryLabel}>Realized Yield</span>
-          <strong className={styles.telemetryValue}>
-            {financials ? `${yieldRatio.toFixed(1)}%` : "Confidential"}
-          </strong>
-        </div>
-      </footer>
     </article>
   );
 };

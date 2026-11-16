@@ -12,8 +12,8 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   dashboardCsvCell,
   type OverviewQueue,
@@ -85,10 +85,20 @@ export function OverviewWorkspace({
   data: OverviewData;
 }): React.ReactElement {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
   // Guarded Stage Transition Modal State
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
   const [targetTransitionRecord, setTargetTransitionRecord] = useState<OverviewRecord | null>(null);
+
+  function handleTimeframeChange(newSlug: TimeframeSlug): void {
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.set("timeframe", newSlug);
+    startTransition(() => {
+      router.push(`/admin?${params.toString()}`, { scroll: false });
+    });
+  }
 
   function exportSummary(): void {
     if (!data.canExport || !data.pipelineReady)
@@ -169,10 +179,10 @@ export function OverviewWorkspace({
         onExportSummary={exportSummary}
       />
 
-      {/* Tier 2: Visual Intelligence Cockpit (68% Dual-Bar Chart + 32% Donut Gauge) */}
+      {/* Tier 2: Visual Intelligence Cockpit (68% Cash Flow Bar Chart + 32% Category Breakdown) */}
       <section
         className={styles.visualCockpitGrid}
-        aria-label="Commercial velocity dual-bar chart and pipeline category distribution"
+        aria-label="Commercial cash flow bar chart and pipeline category breakdown"
       >
         {/* Left Column (68%): Finexy Dual-Bar Chart */}
         <div className={styles.chartColumn}>
@@ -183,6 +193,7 @@ export function OverviewWorkspace({
             periodLabel={data.periodLabel}
             timeframe={data.timeframe}
             financials={data.financials}
+            onTimeframeChange={handleTimeframeChange}
           />
         </div>
 
@@ -190,6 +201,7 @@ export function OverviewWorkspace({
         <div className={styles.donutColumn}>
           <PipelineDonutChart
             categories={data.categories}
+            records={data.records}
             totalValue={data.pipelineValue}
             financials={data.financials}
           />

@@ -71,11 +71,11 @@ function getStagePipProgress(stageName: string): { filled: number; percentage: n
   return { filled: 1, percentage: 20, color: "#111111" };
 }
 
-/** Determines SLA urgency intervals with calm, non-alarmist cadence phrasing */
+/** Determines SLA urgency intervals with calm, non-alarmist phrasing */
 function getUrgencyStatus(due: string | null): { text: string; isOverdue: boolean; isToday: boolean } {
-  if (!due) return { text: "In cadence", isOverdue: false, isToday: false };
+  if (!due) return { text: "On track", isOverdue: false, isToday: false };
   const time = new Date(due).getTime();
-  if (!Number.isFinite(time)) return { text: "In cadence", isOverdue: false, isToday: false };
+  if (!Number.isFinite(time)) return { text: "On track", isOverdue: false, isToday: false };
 
   const now = Date.now();
   const diffDays = Math.floor((time - now) / (1000 * 60 * 60 * 24));
@@ -151,14 +151,13 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
       <header className={styles.ledgerHeader}>
         <div className={styles.headerTitleBlock}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.dot} aria-hidden="true" />
-            <p className={styles.eyebrow}>Commercial Pipeline &amp; Action Queue</p>
+            <p className={styles.eyebrow}>Commercial Opportunities</p>
           </div>
           <h2 className={styles.title} id="commercial-ledger-title">
-            Commercial Opportunities
+            Deals &amp; Opportunities
           </h2>
           <p className={styles.subtitle}>
-            Enterprise opportunities, stage velocity progress pips, and instantaneous actions
+            Active pipeline deals, stage progress, and upcoming actions.
           </p>
         </div>
 
@@ -229,7 +228,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             }`}
             onClick={() => setActiveTab("overdue")}
           >
-            <span>Overdue Action</span>
+            <span>Needs Follow-up</span>
             <span className={`${styles.countBadge} ${overdueCount > 0 ? styles.countBadgeOverdue : ""}`}>
               {overdueCount}
             </span>
@@ -254,11 +253,11 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
         <table className={styles.dealsTable}>
           <thead>
             <tr>
-              <th scope="col">Opportunity / client</th>
+              <th scope="col">Deal / Client</th>
               <th scope="col">Service</th>
-              <th scope="col">Stage &amp; progress</th>
-              <th scope="col">Expected value</th>
-              <th scope="col">Account owner</th>
+              <th scope="col">Stage &amp; Progress</th>
+              <th scope="col">Expected Value</th>
+              <th scope="col">Owner</th>
               <th scope="col" style={{ textAlign: "right", paddingRight: "1.4rem" }}>
                 Actions
               </th>
