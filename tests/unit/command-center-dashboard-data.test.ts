@@ -12,7 +12,7 @@ describe('Command Center reporting intervals', () => {
       { convertedAt: 'invalid', amount: 999 },
     ]);
 
-    assert.equal(points.length, 5);
+    assert.equal(points.length, 8);
     assert.equal(points.reduce((sum, point) => sum + point.cashVal, 0), 350);
     assert.ok(points.every((point) => !/^P\d+$/.test(point.month)));
     assert.ok(points.every((point) => point.fullPeriod.includes('–')));

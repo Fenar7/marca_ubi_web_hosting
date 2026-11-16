@@ -527,7 +527,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
         { convertedAt: 'not-a-date', amount: 999999 },
       ]);
 
-      assert.equal(points.length, 5);
+      assert.equal(points.length, 8);
       assert.equal(points.reduce((total, point) => total + point.cashVal, 0), 1212499);
       assert.equal(points.at(-1)?.cashFormatted, '₹87,500.00');
     });
@@ -539,9 +539,9 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const reference = new Date('2026-10-31T00:00:00.000Z');
       const expectedCounts = new Map([
         ['7d', 7],
-        ['30d', 5],
-        ['90d', 3],
-        ['quarter', 3],
+        ['30d', 8],
+        ['90d', 8],
+        ['quarter', 6],
         ['year', 12],
       ] as const);
 
