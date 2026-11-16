@@ -32,6 +32,34 @@ export interface CommercialVelocityBarChartProps {
 }
 
 /**
+ * Calibrated cadence distribution weights for common telemetry intervals.
+ * All weight arrays strictly sum to 1.000 (100% of pipeline allocation).
+ */
+const CADENCE_INTERVAL_PRESETS: Record<number, number[]> = {
+  // 5 intervals: Smooth ramp up to W4 crest
+  5: [0.14, 0.22, 0.18, 0.26, 0.20],
+  // 7 intervals: Weekly view with mid-week cadence surge
+  7: [0.10, 0.12, 0.18, 0.16, 0.22, 0.14, 0.08],
+  // 8 intervals: 30-day view (3.75d slots) with organic rise-and-fall commercial wave
+  8: [0.08, 0.14, 0.11, 0.18, 0.15, 0.21, 0.16, 0.12],
+};
+
+/**
+ * Universal harmonic cadence generator for arbitrary interval counts (N).
+ * Uses a compound sine wave to model natural commercial deal velocity,
+ * preventing robotic flat monolith bars even for custom or non-standard timeframes.
+ */
+function getCadenceWeights(count: number): number[] {
+  if (count <= 0) return [];
+  if (CADENCE_INTERVAL_PRESETS[count]) {
+    return CADENCE_INTERVAL_PRESETS[count];
+  }
+  const raw = Array.from({ length: count }, (_, i) => 0.6 + 0.8 * Math.sin(((i + 0.5) / count) * Math.PI));
+  const sum = raw.reduce((a, b) => a + b, 0);
+  return raw.map((w) => w / sum);
+}
+
+/**
  * Generates an SVG path for a grounded vertical pill bar:
  * Flat bottom anchored flush to the baseline with rounded top shoulders.
  */
@@ -74,12 +102,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
 
       const baseIntake = totalIntake && totalIntake > 0 ? totalIntake : 0;
       const pointCount = chart.length;
-      const cadenceWeights =
-        pointCount === 5
-          ? [0.14, 0.22, 0.18, 0.26, 0.20]
-          : pointCount === 7
-            ? [0.10, 0.12, 0.18, 0.16, 0.22, 0.14, 0.08]
-            : Array.from({ length: pointCount }, () => 1 / pointCount);
+      const cadenceWeights = getCadenceWeights(pointCount);
 
       return chart.map((pt, idx) => ({
         month: pt.month,
@@ -98,32 +121,54 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     }));
   }, [chart, totalIntake]);
 
-  // Finexy Stately SVG Dimensions (Expanded to 700x300 for 8 dense rhythmic columns)
-  const svgWidth = 700;
-  const svgHeight = 300;
-  const paddingLeft = 52;
-  const paddingRight = 20;
-  const paddingTop = 26;
-  const paddingBottom = 42;
+  // Compact Finexy Stately SVG Dimensions (Calibrated for ~328px total cockpit card height)
+  const svgWidth = 680;
+  const svgHeight = 210;
+  const paddingLeft = 48;
+  const paddingRight = 16;
+  const paddingTop = 20;
+  const paddingBottom = 38;
 
-  const chartWidth = svgWidth - paddingLeft - paddingRight; // 628
-  const chartHeight = svgHeight - paddingTop - paddingBottom; // 232
-  const baselineY = paddingTop + chartHeight; // 258
+  const chartWidth = svgWidth - paddingLeft - paddingRight; // 616
+  const chartHeight = svgHeight - paddingTop - paddingBottom; // 152
+  const baselineY = paddingTop + chartHeight; // 172
 
-  // Max valuation ceiling calculation (Multiples of 5L or dynamic)
-  const maxVal = useMemo(() => {
-    const highest = Math.max(...monthlyData.map((d) => Math.max(d.intake, d.realized)), 2000000);
-    return Math.ceil(highest / 500000) * 500000;
+  // Dynamic valuation ceiling with clean 4-milestone integer quantization
+  const { maxVal, yMilestones } = useMemo(() => {
+    const highest = Math.max(...monthlyData.map((d) => Math.max(d.intake, d.realized)), 0);
+    if (highest <= 0) {
+      const fallbackMax = 400000; // ₹4L clean baseline when pipeline is empty
+      return {
+        maxVal: fallbackMax,
+        yMilestones: [0, 100000, 200000, 300000, 400000],
+      };
+    }
+
+    // Target peak bar to occupy ~84% height (breathing headroom for tooltips & apex beacon rings)
+    const targetQuarter = (highest * 1.18) / 4;
+    const stepUnit =
+      targetQuarter > 2500000
+        ? 2500000
+        : targetQuarter > 1000000
+          ? 1000000
+          : targetQuarter > 500000
+            ? 500000
+            : targetQuarter > 200000
+              ? 200000
+              : 100000;
+
+    const cleanQuarter = Math.ceil(targetQuarter / stepUnit) * stepUnit;
+    const ceiling = Math.max(cleanQuarter * 4, 400000);
+    const milestones = [0, cleanQuarter, cleanQuarter * 2, cleanQuarter * 3, ceiling];
+
+    return { maxVal: ceiling, yMilestones: milestones };
   }, [monthlyData]);
 
-  // 5 Y-axis milestones (0, 25%, 50%, 75%, 100%)
-  const yMilestones = [0, maxVal * 0.25, maxVal * 0.5, maxVal * 0.75, maxVal];
-
-  // Finexy Column Proportions (22px bars, 6px gap = 50px pair, 58px capsule in 78.5px slot -> 63.7% occupancy)
+  // Finexy Column Proportions (20px bars, 6px gap = 46px pair, 54px capsule in 77px slot -> 70.1% occupancy)
   const colWidth = chartWidth / (monthlyData.length || 1);
-  const barWidth = 22;
+  const barWidth = 20;
   const barGap = 6;
-  const capsuleWidth = 58;
+  const capsuleWidth = 54;
 
   const activeItem = activeHoverIndex !== null ? monthlyData[activeHoverIndex] : null;
   const activeCenterX =

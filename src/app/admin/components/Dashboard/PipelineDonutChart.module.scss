@@ -15,10 +15,11 @@
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: var(--admin-radius-card, 12px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04);
-  padding: 1.25rem 1.4rem;
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 6px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
@@ -65,18 +66,18 @@
   margin: 0;
   color: var(--admin-text-primary, #111111);
   font-family: var(--font-circular), sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.2;
 }
 
 .subtitle {
-  margin: 0.25rem 0 0;
+  margin: 0.2rem 0 0;
   color: var(--admin-text-secondary, #454542);
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.78rem;
-  line-height: 1.4;
+  font-size: 0.74rem;
+  line-height: 1.35;
 }
 
 .viewModePill {
@@ -95,13 +96,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0.25rem 0 0.5rem;
+  padding: 0.15rem 0;
   position: relative;
 }
 
 .donutSvg {
-  width: 204px;
-  height: 204px;
+  width: 152px;
+  height: 152px;
   transform: rotate(-90deg);
   overflow: visible;
 }
@@ -109,21 +110,21 @@
 .donutBackgroundTrack {
   fill: none;
   stroke: #f0f0ee;
-  stroke-width: 13;
+  stroke-width: 10;
 }
 
 .donutSegment {
   fill: none;
-  stroke-width: 13;
+  stroke-width: 10;
   cursor: pointer;
   transition: stroke-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 .donutSegmentActive {
   fill: none;
-  stroke-width: 16.5;
+  stroke-width: 13;
   cursor: pointer;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.16));
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.14));
   transition: stroke-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
@@ -136,66 +137,67 @@
   justify-content: center;
   text-align: center;
   pointer-events: none;
-  max-width: 136px;
+  max-width: 104px;
 }
 
 .centerLabel {
   font-family: var(--font-circular), sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 600;
   color: #71717a;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
+  max-width: 98px;
 }
 
 .centerValue {
   font-family: var(--font-circular), sans-serif;
-  font-size: 1.65rem;
+  font-size: 1.30rem;
   font-weight: 600;
   letter-spacing: -0.035em;
   color: var(--admin-text-primary, #111111);
   font-variant-numeric: tabular-nums;
-  margin-top: 2px;
+  margin-top: 1px;
   line-height: 1.1;
 }
 
 .centerSubtext {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   color: var(--admin-text-secondary, #454542);
-  margin-top: 2px;
+  margin-top: 1px;
   font-weight: 500;
 }
 
 .emptyCategories {
-  padding: 1.5rem 0;
+  padding: 1.25rem 0;
   text-align: center;
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--admin-text-muted, #696965);
 }
 
-/* Ranked Category Cardlets with Embedded Precision Gauges (Finexy / Linear Standard) */
+/* Single-Row Category Items with Inline 44px Precision Capsule Gauges (Linear / Raycast Archetype) */
 .categoryCardletList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   margin: 0;
-  padding: 0.5rem 0 0;
+  padding: 0.35rem 0 0;
   border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
   list-style: none;
 }
 
 .cardletItem {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 7px 10px;
-  border-radius: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
   background: #fafaf9;
   border: 1px solid #ededeb;
   cursor: pointer;
@@ -211,34 +213,28 @@
 
 .cardletItemActive {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 7px 10px;
-  border-radius: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
   background-color: #f4f4f2;
   border: 1px solid #dcdcd8;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   cursor: pointer;
 }
 
-.cardletTopLine {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 0.78rem;
-}
-
 .cardletMetaLeft {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .colorSwatch {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 2px;
   flex-shrink: 0;
 }
@@ -250,17 +246,17 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
 }
 
 .dealCountTag {
   font-family: var(--font-graphik), sans-serif;
   color: #71717a;
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 500;
   background: #eeeee9;
-  padding: 1px 5px;
-  border-radius: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
 .cardletMetaRight {
@@ -270,41 +266,38 @@
   flex-shrink: 0;
 }
 
-.categoryAmount {
-  font-family: var(--font-circular), sans-serif;
-  font-weight: 600;
-  color: var(--admin-text-primary, #111111);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.78rem;
-  min-width: 65px;
-  text-align: right;
+/* Linear / Raycast Single-Row Inline Capsule Gauge */
+.inlineGaugeTrack {
+  width: 44px;
+  height: 4px;
+  background-color: #e5e5e2;
+  border-radius: 9999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.inlineGaugeFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .percentagePill {
   font-family: var(--font-circular), sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 9999px;
-  background: #ffffff;
-  border: 1px solid var(--admin-border-subtle, #e2e2df);
-  color: var(--admin-text-secondary, #454542);
+  color: #52525b;
   font-variant-numeric: tabular-nums;
-  min-width: 32px;
-  text-align: center;
+  min-width: 26px;
+  text-align: right;
 }
 
-/* Embedded Precision Instrument Meter Track */
-.cardletMeterTrack {
-  width: 100%;
-  height: 3px;
-  background-color: #e5e5e2;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.cardletMeterFill {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+.categoryAmount {
+  font-family: var(--font-circular), sans-serif;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.76rem;
+  min-width: 65px;
+  text-align: right;
 }

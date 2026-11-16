@@ -93,9 +93,9 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
     return [];
   }, [rawCategories, records, totalValue]);
 
-  // Stately Finexy Donut Geometry: 200x200 viewBox, R=78, W=13, Aperture=142.5px
-  const radius = 78;
-  const circumference = 2 * Math.PI * radius; // ~490.09
+  // Compact Stately Donut Geometry: 160x160 viewBox, R=60, W=10, Aperture=100px
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius; // ~376.99
 
   let accumulatedPercent = 0;
   const slicesWithOffsets = categories.map((cat) => {
@@ -152,18 +152,18 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
         <span className={styles.viewModePill}>By Category</span>
       </header>
 
-      {/* Center Donut SVG Graphic with expanded 142.5px interior aperture */}
+      {/* Center Donut SVG Graphic with compact 100px interior aperture */}
       <div className={styles.chartVisualWrapper}>
         <svg
-          viewBox="0 0 200 200"
+          viewBox="0 0 160 160"
           className={styles.donutSvg}
           role="img"
           aria-label="Pipeline distribution donut ring by service category"
         >
           {/* Base track ring */}
           <circle
-            cx="100"
-            cy="100"
+            cx="80"
+            cy="80"
             r={radius}
             className={styles.donutBackgroundTrack}
           />
@@ -176,8 +176,8 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
             return (
               <circle
                 key={idx}
-                cx="100"
-                cy="100"
+                cx="80"
+                cy="80"
                 r={radius}
                 className={isHovered ? styles.donutSegmentActive : styles.donutSegment}
                 style={{
@@ -213,7 +213,7 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
         </div>
       </div>
 
-      {/* Ranked Category Cardlets with Embedded Precision Gauges (Finexy / Linear Standard) */}
+      {/* Ranked Category Items with Inline 44px Precision Capsule Gauges (Linear / Raycast Archetype) */}
       {categories.length === 0 ? (
         <div className={styles.emptyCategories} role="status">
           <span>No pipeline categories recorded in this scope.</span>
@@ -230,38 +230,35 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
                 onMouseEnter={() => setActiveHoverIndex(idx)}
                 onMouseLeave={() => setActiveHoverIndex(null)}
               >
-                <div className={styles.cardletTopLine}>
-                  <div className={styles.cardletMetaLeft}>
-                    <span
-                      className={styles.colorSwatch}
-                      style={{ backgroundColor: cat.color }}
-                      aria-hidden="true"
-                    />
-                    <span className={styles.categoryName} title={cat.name}>
-                      {cat.name}
-                    </span>
-                    {typeof cat.count === "number" && cat.count > 0 && (
-                      <span className={styles.dealCountTag}>{cat.count} deals</span>
-                    )}
-                  </div>
-
-                  <div className={styles.cardletMetaRight}>
-                    <span className={styles.categoryAmount}>
-                      {financials ? formatCrmCurrency(cat.value) : "Confidential"}
-                    </span>
-                    <span className={styles.percentagePill}>{cat.percentage}%</span>
-                  </div>
+                <div className={styles.cardletMetaLeft}>
+                  <span
+                    className={styles.colorSwatch}
+                    style={{ backgroundColor: cat.color }}
+                    aria-hidden="true"
+                  />
+                  <span className={styles.categoryName} title={cat.name}>
+                    {cat.name}
+                  </span>
+                  {typeof cat.count === "number" && cat.count > 0 && (
+                    <span className={styles.dealCountTag}>{cat.count}</span>
+                  )}
                 </div>
 
-                {/* Embedded Precision Instrument Meter (Enclosed inside cardlet boundary) */}
-                <div className={styles.cardletMeterTrack}>
-                  <div
-                    className={styles.cardletMeterFill}
-                    style={{
-                      width: `${Math.min(100, Math.max(3, cat.percentage))}%`,
-                      backgroundColor: cat.color,
-                    }}
-                  />
+                <div className={styles.cardletMetaRight}>
+                  {/* Single-row inline 44px capsule meter (100% eradicates the underline defect) */}
+                  <div className={styles.inlineGaugeTrack} aria-hidden="true">
+                    <div
+                      className={styles.inlineGaugeFill}
+                      style={{
+                        width: `${Math.min(100, Math.max(8, cat.percentage))}%`,
+                        backgroundColor: cat.color,
+                      }}
+                    />
+                  </div>
+                  <span className={styles.percentagePill}>{cat.percentage}%</span>
+                  <span className={styles.categoryAmount}>
+                    {financials ? formatCrmCurrency(cat.value) : "Confidential"}
+                  </span>
                 </div>
               </li>
             );
