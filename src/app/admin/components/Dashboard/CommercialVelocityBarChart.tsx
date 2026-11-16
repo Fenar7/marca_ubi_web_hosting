@@ -89,7 +89,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
       }));
     }
 
-    const defaultCadence = ["W1", "W2", "W3", "W4", "W5"];
+    const defaultCadence = ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"];
     return defaultCadence.map((m) => ({
       month: m,
       fullPeriod: m,
@@ -98,15 +98,15 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     }));
   }, [chart, totalIntake]);
 
-  // Finexy Stately SVG Dimensions (Expanded to 300px height for +38% vertical dynamic range)
-  const svgWidth = 640;
+  // Finexy Stately SVG Dimensions (Expanded to 700x300 for 8 dense rhythmic columns)
+  const svgWidth = 700;
   const svgHeight = 300;
-  const paddingLeft = 58;
-  const paddingRight = 22;
+  const paddingLeft = 52;
+  const paddingRight = 20;
   const paddingTop = 26;
   const paddingBottom = 42;
 
-  const chartWidth = svgWidth - paddingLeft - paddingRight; // 560
+  const chartWidth = svgWidth - paddingLeft - paddingRight; // 628
   const chartHeight = svgHeight - paddingTop - paddingBottom; // 232
   const baselineY = paddingTop + chartHeight; // 258
 
@@ -119,11 +119,11 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
   // 5 Y-axis milestones (0, 25%, 50%, 75%, 100%)
   const yMilestones = [0, maxVal * 0.25, maxVal * 0.5, maxVal * 0.75, maxVal];
 
-  // Finexy Column Proportions (18px bars, 6px gap, 60px slot capsule)
+  // Finexy Column Proportions (22px bars, 6px gap = 50px pair, 58px capsule in 78.5px slot -> 63.7% occupancy)
   const colWidth = chartWidth / (monthlyData.length || 1);
-  const barWidth = 18;
+  const barWidth = 22;
   const barGap = 6;
-  const capsuleWidth = barWidth * 2 + barGap + 18; // 60px capsule (53.5% of 112px slot)
+  const capsuleWidth = 58;
 
   const activeItem = activeHoverIndex !== null ? monthlyData[activeHoverIndex] : null;
   const activeCenterX =
@@ -300,35 +300,45 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                 {/* Pipeline Intake Bar: Grounded Pill Path with Rounded Top Shoulders */}
                 {intakeHeight > 0 ? (
                   <path
-                    d={getGroundedPillPath(intakeX, intakeY, barWidth, intakeHeight, 5)}
+                    d={getGroundedPillPath(intakeX, intakeY, barWidth, intakeHeight, 6)}
                     className={styles.barIntake}
                   />
                 ) : (
                   <rect
                     x={intakeX}
-                    y={baselineY - 3}
+                    y={baselineY - 6}
                     width={barWidth}
-                    height={3}
-                    rx="1.5"
-                    className={styles.barIntakeZero}
+                    height={6}
+                    rx="3"
+                    className={styles.barPedestalZero}
                   />
                 )}
 
-                {/* Realized Revenue Bar: Grounded Pill Path or Calibrated Instrument Zero Tick */}
+                {/* Realized Revenue Bar: Grounded Pill Path or Calibrated Instrument Zero Pedestal */}
                 {realizedHeight > 0 ? (
                   <path
-                    d={getGroundedPillPath(realizedX, realizedY, barWidth, realizedHeight, 5)}
+                    d={getGroundedPillPath(realizedX, realizedY, barWidth, realizedHeight, 6)}
                     className={styles.barRealized}
                   />
                 ) : (
-                  /* Delicate Grounded Zero Instrument Tick (Zero Asymmetric Shift, Zero Grey Tube) */
+                  /* Calibrated Grounded Zero Pedestal (Finexy Tactile Chronograph Zero Pin) */
                   <rect
                     x={realizedX}
-                    y={baselineY - 3}
+                    y={baselineY - 6}
                     width={barWidth}
-                    height={3}
-                    rx="1.5"
-                    className={styles.barRealizedZero}
+                    height={6}
+                    rx="3"
+                    className={styles.barPedestalZero}
+                  />
+                )}
+
+                {/* Fundora Tactile Dot Ring Beacon on Active Column Apex */}
+                {isHovered && (
+                  <circle
+                    cx={intakeHeight > 0 ? intakeX + barWidth / 2 : realizedX + barWidth / 2}
+                    cy={intakeHeight > 0 ? intakeY : realizedHeight > 0 ? realizedY : baselineY - 3}
+                    r={5}
+                    className={styles.beaconRing}
                   />
                 )}
 

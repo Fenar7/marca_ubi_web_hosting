@@ -147,10 +147,11 @@
   overflow: visible;
 }
 
-/* Swiss Hairline Gridlines */
+/* Swiss Dashed Hairline Gridlines (Finexy Archetype) */
 .hairlineGrid {
-  stroke: #eeeeec;
+  stroke: #ebebe8;
   stroke-width: 1;
+  stroke-dasharray: 3 4;
 }
 
 .axisBaseline {
@@ -215,13 +216,19 @@
   }
 }
 
-/* Zero Baseline Grounding Indicators */
-.barIntakeZero {
-  fill: #d8d8d4;
+/* Grounded Pedestal Zero Indicators (Finexy / Fundora Tactile Chronograph Pin) */
+.barPedestalZero {
+  fill: #e8e8e5;
+  transition: fill 0.15s ease;
 }
 
-.barRealizedZero {
-  fill: #e4e4e1;
+/* Fundora Tactile Dot Ring Beacon */
+.beaconRing {
+  fill: #ffffff;
+  stroke: var(--admin-accent-brand, #ea002a);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
+  pointer-events: none;
 }
 
 .hitArea {

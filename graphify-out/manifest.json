@@ -1248,9 +1248,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/timeframeUtils.ts": {
-    "mtime": 1794764249.4684381,
-    "seen": 1794764899.0990756,
-    "ast_hash": "ffb49ff47d3c9864ca4d3203990a1884",
+    "mtime": 1794808399.695368,
+    "seen": 1794808940.8647454,
+    "ast_hash": "715d86773d55bd71ba24845ec32decc9",
     "semantic_hash": ""
   },
   "src/app/admin/login/LoginForm.tsx": {
@@ -6030,15 +6030,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1794768537.7147367,
-    "seen": 1794768844.8342097,
-    "ast_hash": "eb7afa3c510ef39319bc9275c79ead8f",
+    "mtime": 1794808449.1614642,
+    "seen": 1794808940.8647454,
+    "ast_hash": "94df7334c6ec0b11534d4ec9a109b258",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
-    "mtime": 1794768684.614532,
-    "seen": 1794768844.8342097,
-    "ast_hash": "c9fa8b7d238190daa13f056a3bcf08ea",
+    "mtime": 1794808498.2681615,
+    "seen": 1794808940.8647454,
+    "ast_hash": "66b84a43531d65d858b043ed6d7dd5f6",
     "semantic_hash": ""
   },
   "docs/context/2026-11-14_12-30-00.md": {
@@ -6129,6 +6129,18 @@
     "mtime": 1794768324.8549383,
     "seen": 1794768844.8367457,
     "ast_hash": "c068c4afe7761d8ede335600e5f7d83e",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MASTER_GRAPH_AND_COCKPIT_REDESIGN_PLAN_V6.md": {
+    "mtime": 1794807964.4796655,
+    "seen": 1794808940.8662975,
+    "ast_hash": "7e9fa8be19d058fa0d48c0acfe7c4266",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/PR_122_DESCRIPTION.md": {
+    "mtime": 1794768937.3557773,
+    "seen": 1794808940.8662975,
+    "ast_hash": "8b967c81717a8654cf05f45d41577b18",
     "semantic_hash": ""
   },
   "package-lock.json": {

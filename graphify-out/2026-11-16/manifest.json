@@ -6030,15 +6030,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1794766794.7583964,
-    "seen": 1794766995.2482936,
-    "ast_hash": "c4a19f0866d02527a196106d3370caa7",
+    "mtime": 1794768537.7147367,
+    "seen": 1794768844.8342097,
+    "ast_hash": "eb7afa3c510ef39319bc9275c79ead8f",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
-    "mtime": 1794766831.888227,
-    "seen": 1794766995.2482936,
-    "ast_hash": "9136cb643dbea89b50f607c6bca03924",
+    "mtime": 1794768684.614532,
+    "seen": 1794768844.8342097,
+    "ast_hash": "c9fa8b7d238190daa13f056a3bcf08ea",
     "semantic_hash": ""
   },
   "docs/context/2026-11-14_12-30-00.md": {
@@ -6111,6 +6111,24 @@
     "mtime": 1794764977.7387972,
     "seen": 1794766995.2502933,
     "ast_hash": "5d2b2ab316d364ae698f5a75706e3a77",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/PR_122_DESCRIPTION_V4.md": {
+    "mtime": 1794767069.7281973,
+    "seen": 1794768844.8367457,
+    "ast_hash": "ff5e6679ba52eb81eeea75137fde9213",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/SENIOR_CTO_PR_122_AUDIT_REPORT.md": {
+    "mtime": 1794767470.2295978,
+    "seen": 1794768844.8367457,
+    "ast_hash": "e864a624f3d9d18c0ee0720a4f472c55",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/VISUAL_COCKPIT_HEIGHT_AND_DESIGN_OVERHAUL_PLAN.md": {
+    "mtime": 1794768324.8549383,
+    "seen": 1794768844.8367457,
+    "ast_hash": "c068c4afe7761d8ede335600e5f7d83e",
     "semantic_hash": ""
   },
   "package-lock.json": {

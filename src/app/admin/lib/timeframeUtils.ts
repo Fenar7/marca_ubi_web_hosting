@@ -150,7 +150,7 @@ export function aggregateTimeframeRevenue(
 }
 
 function getRevenueIntervals(slug: TimeframeSlug, start: Date, end: Date): { label: string; fullLabel: string }[] {
-  const count = slug === '7d' ? 7 : slug === '30d' ? 5 : slug === 'year' ? 12 : 3;
+  const count = slug === '7d' ? 7 : slug === '30d' ? 8 : slug === '90d' ? 8 : slug === 'quarter' ? 6 : slug === 'year' ? 12 : 8;
   const startMs = start.getTime();
   const span = end.getTime() - startMs;
   const format = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });

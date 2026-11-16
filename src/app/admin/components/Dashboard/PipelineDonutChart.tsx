@@ -93,9 +93,9 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
     return [];
   }, [rawCategories, records, totalValue]);
 
-  // Streamlined Finexy Donut Geometry: 180x180 viewBox, R=68, W=12, Aperture=120px
-  const radius = 68;
-  const circumference = 2 * Math.PI * radius; // ~427.26
+  // Stately Finexy Donut Geometry: 200x200 viewBox, R=78, W=13, Aperture=142.5px
+  const radius = 78;
+  const circumference = 2 * Math.PI * radius; // ~490.09
 
   let accumulatedPercent = 0;
   const slicesWithOffsets = categories.map((cat) => {
@@ -144,23 +144,26 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
           <h2 className={styles.title} id="pipeline-distribution-title">
             Pipeline Distribution
           </h2>
+          <p className={styles.subtitle}>
+            Active deal capital allocation by service line
+          </p>
         </div>
 
         <span className={styles.viewModePill}>By Category</span>
       </header>
 
-      {/* Center Donut SVG Graphic with expanded 134px interior aperture */}
+      {/* Center Donut SVG Graphic with expanded 142.5px interior aperture */}
       <div className={styles.chartVisualWrapper}>
         <svg
-          viewBox="0 0 180 180"
+          viewBox="0 0 200 200"
           className={styles.donutSvg}
           role="img"
           aria-label="Pipeline distribution donut ring by service category"
         >
           {/* Base track ring */}
           <circle
-            cx="90"
-            cy="90"
+            cx="100"
+            cy="100"
             r={radius}
             className={styles.donutBackgroundTrack}
           />
@@ -173,8 +176,8 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
             return (
               <circle
                 key={idx}
-                cx="90"
-                cy="90"
+                cx="100"
+                cy="100"
                 r={radius}
                 className={isHovered ? styles.donutSegmentActive : styles.donutSegment}
                 style={{
@@ -210,25 +213,25 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
         </div>
       </div>
 
-      {/* Ranked Category Cardlets with Horizontal Micro-Progress Meters */}
+      {/* Ranked Category Cardlets with Embedded Precision Gauges (Finexy / Linear Standard) */}
       {categories.length === 0 ? (
         <div className={styles.emptyCategories} role="status">
           <span>No pipeline categories recorded in this scope.</span>
         </div>
       ) : (
-        <ul className={styles.categoryLegendList}>
+        <ul className={styles.categoryCardletList}>
           {categories.map((cat, idx) => {
             const isHovered = activeHoverIndex === idx;
 
             return (
               <li
                 key={idx}
-                className={isHovered ? styles.categoryRowActive : styles.categoryRow}
+                className={isHovered ? styles.cardletItemActive : styles.cardletItem}
                 onMouseEnter={() => setActiveHoverIndex(idx)}
                 onMouseLeave={() => setActiveHoverIndex(null)}
               >
-                <div className={styles.categoryTopLine}>
-                  <div className={styles.categoryLeft}>
+                <div className={styles.cardletTopLine}>
+                  <div className={styles.cardletMetaLeft}>
                     <span
                       className={styles.colorSwatch}
                       style={{ backgroundColor: cat.color }}
@@ -238,11 +241,11 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
                       {cat.name}
                     </span>
                     {typeof cat.count === "number" && cat.count > 0 && (
-                      <span className={styles.dealCountTag}>({cat.count})</span>
+                      <span className={styles.dealCountTag}>{cat.count} deals</span>
                     )}
                   </div>
 
-                  <div className={styles.categoryRight}>
+                  <div className={styles.cardletMetaRight}>
                     <span className={styles.categoryAmount}>
                       {financials ? formatCrmCurrency(cat.value) : "Confidential"}
                     </span>
@@ -250,10 +253,10 @@ export const PipelineDonutChart: React.FC<PipelineDonutChartProps> = ({
                   </div>
                 </div>
 
-                {/* Horizontal Micro-Progress Meter (Finexy Archetype) */}
-                <div className={styles.microTrack}>
+                {/* Embedded Precision Instrument Meter (Enclosed inside cardlet boundary) */}
+                <div className={styles.cardletMeterTrack}>
                   <div
-                    className={styles.microFill}
+                    className={styles.cardletMeterFill}
                     style={{
                       width: `${Math.min(100, Math.max(3, cat.percentage))}%`,
                       backgroundColor: cat.color,
