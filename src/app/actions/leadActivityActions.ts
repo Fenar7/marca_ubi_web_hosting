@@ -271,7 +271,7 @@ export async function getLeadActivitiesAction(
         description,
         metadata,
         created_at,
-        profiles:crm_team_directory!lead_activities_actor_id_fkey (
+        profiles:profiles!lead_activities_actor_id_fkey (
           id,
           full_name,
           role,

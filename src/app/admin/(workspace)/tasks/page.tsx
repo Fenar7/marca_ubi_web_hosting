@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { ROLE_DEFAULT_TABS, type CrmUserRole, type LeadPriority } from '@/types/crm';
 import { getUtcDayWindow, parseFollowUpPage, parseFollowUpQueue, type FollowUpQueue } from '@/app/admin/lib/followUpQueue';
+import { getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import { TaskCard, type TaskLeadItem } from './components/TaskCard';
 import styles from './tasks.module.scss';
 
@@ -151,7 +152,6 @@ export default async function AdminTasksPage({
   const baseRows = supabase.from('leads').select(`
       id, lead_id, name, company, phone, email, preferred_channel, priority,
       expected_value, next_follow_up, revisit_date, assigned_to, created_at,
-      profiles:crm_team_directory!leads_assigned_to_fkey(full_name),
       funnel_statuses!inner(name, bucket)
     `)
     .in('funnel_statuses.bucket', ['open', 'potential'])
@@ -180,6 +180,13 @@ export default async function AdminTasksPage({
     return <WorkspaceError reference={reference} queue={queue} page={page} message="Follow-ups could not be loaded." />;
   }
 
+  const ownerIds = [
+    ...new Set(
+      rawLeads.flatMap((lead) => (lead.assigned_to ? [lead.assigned_to] : []))
+    ),
+  ];
+  const ownerNameById = await getCrmDirectoryMap(supabase, ownerIds);
+
   const leads: TaskLeadItem[] = rawLeads.map((lead) => ({
     id: lead.id,
     lead_id: lead.lead_id,
@@ -193,7 +200,7 @@ export default async function AdminTasksPage({
     next_follow_up: lead.next_follow_up,
     revisit_date: lead.revisit_date,
     assigned_to: lead.assigned_to,
-    assignee_name: (lead.profiles as { full_name?: string } | null)?.full_name || 'Unassigned',
+    assignee_name: (lead.assigned_to && ownerNameById.get(lead.assigned_to)) || 'Unassigned',
     status_name: (lead.funnel_statuses as { name?: string } | null)?.name || 'Active',
   }));
 

@@ -480,9 +480,9 @@
     "semantic_hash": "fa254f73e7e92b1d033fa81564781337"
   },
   "src/app/actions/leadActivityActions.ts": {
-    "mtime": 1793885416.0202012,
-    "seen": 1793885701.1972334,
-    "ast_hash": "e4513b917e74e883b887b1550cd32098",
+    "mtime": 1794906288.101998,
+    "seen": 1794906819.2750888,
+    "ast_hash": "5bec28bdf5ab8827a3e1fc5172afad23",
     "semantic_hash": ""
   },
   "src/app/actions/leadInlineActions.ts": {
@@ -492,9 +492,9 @@
     "semantic_hash": "54c652a32b58263f650b1f5cd60d297c"
   },
   "src/app/actions/leads.ts": {
-    "mtime": 1793944992.2288034,
-    "seen": 1793945072.1154573,
-    "ast_hash": "3e38114424ea8dc08307ee3d11f51c92",
+    "mtime": 1794906270.839383,
+    "seen": 1794906819.2750888,
+    "ast_hash": "877b34e247aa33522086f13e3909c186",
     "semantic_hash": ""
   },
   "src/app/actions/reassignment.ts": {
@@ -660,9 +660,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/page.tsx": {
-    "mtime": 1793952334.974822,
-    "seen": 1793952511.2021596,
-    "ast_hash": "1b4b8d719e996f5dff862b0de0e60ebf",
+    "mtime": 1794905582.6383643,
+    "seen": 1794906819.2750888,
+    "ast_hash": "31c0a64e74916dec4b97a5da217ec7d3",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/team/[id]/components/CommercialVelocityScorecards.tsx": {
@@ -834,9 +834,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/works/page.tsx": {
-    "mtime": 1793950766.4365957,
-    "seen": 1793951105.795258,
-    "ast_hash": "3f822b55909a8fa279e88db0ea16f519",
+    "mtime": 1794905656.8373415,
+    "seen": 1794906819.2760882,
+    "ast_hash": "0f6154954328094a91d86ec656e9cf1e",
     "semantic_hash": ""
   },
   "src/app/admin/components/Badges/OverdueBadge.tsx": {
@@ -3048,9 +3048,9 @@
     "semantic_hash": ""
   },
   "tests/unit/phase-8-inbound-leads-and-dossier-remediation.test.ts": {
-    "mtime": 1794348976.2777812,
-    "seen": 1794356196.5108132,
-    "ast_hash": "5af9e39ed63d16f4437b20b789d415d8",
+    "mtime": 1794809762.4134855,
+    "seen": 1794906819.277086,
+    "ast_hash": "730894c888a1fca1d3235c2c6fde068d",
     "semantic_hash": ""
   },
   "tests/unit/phase-8-performance-chart-monotone-spline-and-numeric-typography.test.ts": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794670096.1755126,
-    "seen": 1794734582.8670247,
-    "ast_hash": "bd221d4e10fc3d4fd51eb8e72c7c8ada",
+    "mtime": 1794906751.5503337,
+    "seen": 1794906819.277591,
+    "ast_hash": "e2fcb8a7f531d085be08fda9b2b1f340",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5442,9 +5442,9 @@
     "semantic_hash": ""
   },
   "tests/unit/command-center-dashboard-data.test.ts": {
-    "mtime": 1793950516.8520749,
-    "seen": 1793950560.1521914,
-    "ast_hash": "783ae8e0ea49e44adebb6e399e00472d",
+    "mtime": 1794809731.940691,
+    "seen": 1794906819.277086,
+    "ast_hash": "af03bd68368ecd19a272fa5326d33452",
     "semantic_hash": ""
   },
   "tests/unit/follow-up-queue.test.ts": {
@@ -5472,9 +5472,9 @@
     "semantic_hash": ""
   },
   "tests/unit/crm-workspace-resilience.test.ts": {
-    "mtime": 1794348976.1873608,
-    "seen": 1794356196.5108132,
-    "ast_hash": "809e146a9ef3571df1873652a4ac07a1",
+    "mtime": 1794906587.1897442,
+    "seen": 1794906819.277086,
+    "ast_hash": "b7c2d2ff098608b19eb7afa402469d6f",
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/REDESIGN_RECOVERY_PLAN_2026-11-07.md": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794764273.170691,
-    "seen": 1794764899.0985758,
-    "ast_hash": "938db179ca8b9b45631a5f63b25b0966",
+    "mtime": 1794821994.7671976,
+    "seen": 1794906819.2760882,
+    "ast_hash": "9d45c99836ae5f1062fff3ac1872801f",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1794766768.8827288,
-    "seen": 1794766995.2482936,
-    "ast_hash": "cd9185e3276b08d2d1da8140a1793e12",
+    "mtime": 1794816122.5089974,
+    "seen": 1794906819.2760882,
+    "ast_hash": "4c5721be57e87f9564d95441ab13af85",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6024,21 +6024,21 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1794764683.3848584,
-    "seen": 1794764899.0985758,
-    "ast_hash": "d0de1dd0aa8d6304c6de771a45b74d13",
+    "mtime": 1794816180.7614002,
+    "seen": 1794906819.2760882,
+    "ast_hash": "7798788c16dd7dbabaa1889df95971bf",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1794808449.1614642,
-    "seen": 1794808940.8647454,
-    "ast_hash": "94df7334c6ec0b11534d4ec9a109b258",
+    "mtime": 1794821474.5162716,
+    "seen": 1794906819.2760882,
+    "ast_hash": "e5af6460704307db625e0e6e9842326a",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
-    "mtime": 1794808498.2681615,
-    "seen": 1794808940.8647454,
-    "ast_hash": "66b84a43531d65d858b043ed6d7dd5f6",
+    "mtime": 1794821886.0502193,
+    "seen": 1794906819.2760882,
+    "ast_hash": "d028edc953b98b0a3a799292443b7a10",
     "semantic_hash": ""
   },
   "docs/context/2026-11-14_12-30-00.md": {
@@ -6138,9 +6138,57 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/dashboard_redesign_2026_11/PR_122_DESCRIPTION.md": {
-    "mtime": 1794768937.3557773,
-    "seen": 1794808940.8662975,
-    "ast_hash": "8b967c81717a8654cf05f45d41577b18",
+    "mtime": 1794809063.521381,
+    "seen": 1794906819.277591,
+    "ast_hash": "82ebf363e74ccefdacc0850f7446a2b8",
+    "semantic_hash": ""
+  },
+  "src/app/admin/lib/crmDirectory.ts": {
+    "mtime": 1794905453.760567,
+    "seen": 1794906819.2760882,
+    "ast_hash": "06f28ad10b9ab823bf1ee99a850465ea",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-16_14-00-00.md": {
+    "mtime": 1794817619.0043514,
+    "seen": 1794906819.277591,
+    "ast_hash": "6bfb59b94a96fc7dfe105fd1d2eae378",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-16_15-00-00.md": {
+    "mtime": 1794822059.9811404,
+    "seen": 1794906819.277591,
+    "ast_hash": "f48d37f5ad13d864ef0cef7c0f950c1c",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-17_14-00-00.md": {
+    "mtime": 1794906716.9739375,
+    "seen": 1794906819.277591,
+    "ast_hash": "1a5ee16a642c0c08d128e2997456d865",
+    "semantic_hash": ""
+  },
+  "docs/crm_tasks_resilience/CRM_TASKS_DIRECTORY_RESILIENCE_PLAN.md": {
+    "mtime": 1794903836.9582038,
+    "seen": 1794906819.277591,
+    "ast_hash": "01c50847a45f1bc395b91235a9478fd7",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MASTER_GRAPH_AND_COCKPIT_REDESIGN_PLAN_V7.md": {
+    "mtime": 1794812484.7317648,
+    "seen": 1794906819.277591,
+    "ast_hash": "201b61f6d170be0548e5bb30cca985a0",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MASTER_GRAPH_AND_COCKPIT_REDESIGN_PLAN_V8.md": {
+    "mtime": 1794815298.814494,
+    "seen": 1794906819.277591,
+    "ast_hash": "83b273a7f7c1295feab4ab008d14dd1e",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/MASTER_GRAPH_AND_COCKPIT_REDESIGN_PLAN_V9.md": {
+    "mtime": 1794820282.385973,
+    "seen": 1794906819.277591,
+    "ast_hash": "1c93a6b9f8dc2e799fcee0475f9f3371",
     "semantic_hash": ""
   },
   "package-lock.json": {
