@@ -69,7 +69,27 @@
   height: 100%;
 }
 
-/* Tier 3: Full-Width Master Ledger Section */
+/* Tier 3: 50% / 50% Reference Action & Urgency Widgets */
+.actionWidgetsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 20px;
+
+  @media (max-width: 960px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.widgetColumn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Tier 4: Full-Width Master Ledger Section */
 .ledgerSection {
   width: 100%;
   margin-bottom: 28px;

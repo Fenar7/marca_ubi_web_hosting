@@ -27,6 +27,8 @@ import {
 import { ExecutiveTelemetryMasthead } from "./ExecutiveTelemetryMasthead";
 import { CommercialVelocityBarChart } from "./CommercialVelocityBarChart";
 import { PipelineDonutChart } from "./PipelineDonutChart";
+import { LuxuryQuickDispatchPod } from "./LuxuryQuickDispatchPod";
+import { LuxurySlaFeedCard } from "./LuxurySlaFeedCard";
 import { CommercialDealsLedger } from "./CommercialDealsLedger";
 import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
 import styles from "./OverviewWorkspace.module.scss";
@@ -208,7 +210,28 @@ export function OverviewWorkspace({
         </div>
       </section>
 
-      {/* Tier 3: Master Commercial Deals Ledger (AI Manager Multi-Segment Progress Pips) */}
+      {/* Tier 3: Reference Action & Urgency Widgets (Quick Dispatch Pod + Upcoming SLA Milestones) */}
+      <section
+        className={styles.actionWidgetsGrid}
+        aria-label="Quick commercial stage dispatch and upcoming client SLA milestones"
+      >
+        <div className={styles.widgetColumn}>
+          <LuxuryQuickDispatchPod
+            records={data.records}
+            onAdvanceStage={handleAdvanceStage}
+            financials={data.financials}
+          />
+        </div>
+        <div className={styles.widgetColumn}>
+          <LuxurySlaFeedCard
+            records={data.records}
+            onOpenDossier={handleOpenDossier}
+            financials={data.financials}
+          />
+        </div>
+      </section>
+
+      {/* Tier 4: Master Commercial Deals Ledger (AI Manager Multi-Segment Progress Pips) */}
       <section
         className={styles.ledgerSection}
         aria-label="Commercial opportunities and action queue"

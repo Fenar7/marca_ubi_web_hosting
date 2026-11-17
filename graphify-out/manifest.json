@@ -636,8 +636,8 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/page.tsx": {
-    "mtime": 1794764824.4730883,
-    "seen": 1794764899.0985758,
+    "mtime": 1794926615.16805,
+    "seen": 1794927174.0849726,
     "ast_hash": "a364bc3b78a13e2d2e315b7781d03ca1",
     "semantic_hash": ""
   },
@@ -882,15 +882,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx": {
-    "mtime": 1794210936.61147,
-    "seen": 1794231148.5257118,
-    "ast_hash": "1d4f3a3fdd1184c4fdf4727f2d9d7155",
+    "mtime": 1794910246.7379434,
+    "seen": 1794927174.086485,
+    "ast_hash": "d4db20e4cc74c5c3c855f7a609c4929d",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/index.ts": {
-    "mtime": 1794671395.9414072,
-    "seen": 1794734582.8670247,
-    "ast_hash": "f6566a4ef9e97eea6629c8575415a34e",
+    "mtime": 1794926840.1246333,
+    "seen": 1794927174.086485,
+    "ast_hash": "7909e703d584627d48e7f1c56ac50dba",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/types.ts": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794821994.7671976,
-    "seen": 1794906819.2760882,
-    "ast_hash": "9d45c99836ae5f1062fff3ac1872801f",
+    "mtime": 1794926529.101599,
+    "seen": 1794927174.086485,
+    "ast_hash": "842e2200de42374813866f6395e7121a",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1794816122.5089974,
-    "seen": 1794906819.2760882,
-    "ast_hash": "4c5721be57e87f9564d95441ab13af85",
+    "mtime": 1794926151.752203,
+    "seen": 1794927174.086485,
+    "ast_hash": "568f99f7116da489f68d5c51addcb05a",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6030,15 +6030,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1794821474.5162716,
-    "seen": 1794906819.2760882,
-    "ast_hash": "e5af6460704307db625e0e6e9842326a",
+    "mtime": 1794910246.7214909,
+    "seen": 1794927174.086485,
+    "ast_hash": "d44a33213cf9deb141267bd92766c5a7",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
-    "mtime": 1794821886.0502193,
-    "seen": 1794906819.2760882,
-    "ast_hash": "d028edc953b98b0a3a799292443b7a10",
+    "mtime": 1794926789.760738,
+    "seen": 1794927174.086485,
+    "ast_hash": "32574492b4150f5f1e338c96f6b2deae",
     "semantic_hash": ""
   },
   "docs/context/2026-11-14_12-30-00.md": {
@@ -6189,6 +6189,42 @@
     "mtime": 1794820282.385973,
     "seen": 1794906819.277591,
     "ast_hash": "1c93a6b9f8dc2e799fcee0475f9f3371",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/LuxuryDonutCookieChart.tsx": {
+    "mtime": 1794925827.7378638,
+    "seen": 1794927174.086485,
+    "ast_hash": "930d3f03d7cf0370335407256bdb9533",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/LuxuryQuickDispatchPod.tsx": {
+    "mtime": 1794925946.3024206,
+    "seen": 1794927174.086485,
+    "ast_hash": "b51994b60256dce9c1188d8c915e4327",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/LuxurySlaFeedCard.tsx": {
+    "mtime": 1794926051.2067294,
+    "seen": 1794927174.086485,
+    "ast_hash": "b86f8e1cf2bf2a9b7e467c38c2f4f13e",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx": {
+    "mtime": 1794925746.0908835,
+    "seen": 1794927174.086485,
+    "ast_hash": "1bccaea6e5966a088e187c2ccba7fada",
+    "semantic_hash": ""
+  },
+  "docs/LuxuryDashboard/LUXURY_DASHBOARD_GREENFIELD_PLAN.md": {
+    "mtime": 1794911227.4711452,
+    "seen": 1794927174.086485,
+    "ast_hash": "bb9ed52618b641c5b9424c383df1b045",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/MASTER_LUXURY_DASHBOARD_REDESIGN_PLAN.md": {
+    "mtime": 1794923457.5074346,
+    "seen": 1794927174.0876813,
+    "ast_hash": "33e3b6bef9442b84e956a2b6d7e78b16",
     "semantic_hash": ""
   },
   "package-lock.json": {

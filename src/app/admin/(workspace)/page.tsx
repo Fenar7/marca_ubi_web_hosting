@@ -20,7 +20,6 @@ import {
   overviewQueue,
   type OverviewQueue,
 } from "@/app/admin/lib/dashboardContracts";
-import { LuxuryDashboard } from "@/app/admin/components/LuxuryDashboard/LuxuryDashboard";
 import {
   OverviewWorkspace,
   type OverviewData,
@@ -577,5 +576,5 @@ export default async function AdminDashboardPage({
         : [],
     cohort: cohort ? { eligible: cohort.eligible, won: cohort.won } : null,
   };
-  return <LuxuryDashboard><OverviewWorkspace data={data} /></LuxuryDashboard>;
+  return <OverviewWorkspace data={data} />;
 }

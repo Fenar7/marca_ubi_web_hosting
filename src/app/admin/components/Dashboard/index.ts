@@ -45,4 +45,8 @@ export { OverviewWorkspace, type OverviewData, type OverviewRecord } from './Ove
 // From-Scratch Finexy & AI Manager Dashboard Modules
 export { CommercialVelocityBarChart, type CommercialVelocityBarChartProps, type MonthlyBarData } from './CommercialVelocityBarChart';
 export { PipelineDonutChart, type PipelineDonutChartProps, type CategorySlice } from './PipelineDonutChart';
+export { LuxuryDonutCookieChart, type LuxuryDonutCookieChartProps, type DonutCategorySlice } from './LuxuryDonutCookieChart';
+export { LuxuryVirtualCard, type LuxuryVirtualCardProps } from './LuxuryVirtualCard';
+export { LuxuryQuickDispatchPod, type LuxuryQuickDispatchPodProps } from './LuxuryQuickDispatchPod';
+export { LuxurySlaFeedCard, type LuxurySlaFeedCardProps } from './LuxurySlaFeedCard';
 export { CommercialDealsLedger, type CommercialDealsLedgerProps, type LedgerFilterTab } from './CommercialDealsLedger';
