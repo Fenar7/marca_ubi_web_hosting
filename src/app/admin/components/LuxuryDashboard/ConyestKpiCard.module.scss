@@ -1,0 +1,51 @@
+
+.card {
+  background-color: var(--conyest-card-bg);
+  border-radius: var(--conyest-radius-card);
+  padding: 24px;
+  border: 1px solid var(--conyest-card-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  color: var(--conyest-ink-secondary);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.metric {
+  font-family: 'Circular XX', sans-serif;
+  font-weight: 700;
+  font-size: 34px;
+  color: var(--conyest-ink-primary);
+  margin-bottom: 16px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trend {
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.up {
+  background-color: var(--conyest-trend-green-bg);
+  color: var(--conyest-trend-green-text);
+}
+
+.down {
+  background-color: var(--conyest-trend-red-bg);
+  color: var(--conyest-trend-red-text);
+}
+
+.subtitle {
+  color: var(--conyest-ink-secondary);
+  font-size: 12px;
+}

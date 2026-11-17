@@ -20,11 +20,8 @@ import {
   overviewQueue,
   type OverviewQueue,
 } from "@/app/admin/lib/dashboardContracts";
-import {
-  OverviewWorkspace,
-  type OverviewData,
-  type OverviewRecord,
-} from "@/app/admin/components/Dashboard/OverviewWorkspace";
+import { LuxuryDashboard } from "@/app/admin/components/LuxuryDashboard/LuxuryDashboard";
+import { OverviewWorkspace } from "@/app/admin/components/Dashboard/OverviewWorkspace";
 
 export const metadata: Metadata = {
   title: "Overview | Marca Ubi Commercial Desk",
@@ -576,5 +573,5 @@ export default async function AdminDashboardPage({
         : [],
     cohort: cohort ? { eligible: cohort.eligible, won: cohort.won } : null,
   };
-  return <OverviewWorkspace data={data} />;
+  return <LuxuryDashboard><OverviewWorkspace data={data} /></LuxuryDashboard>;
 }

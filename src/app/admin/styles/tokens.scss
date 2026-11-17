@@ -101,3 +101,45 @@
   --admin-page-max-width: 1720px;
   --admin-content-gutter: clamp(20px, 2.1vw, 36px);
 }
+
+/* Conyest Dashboard Redesign Tokens */
+$conyest-backdrop: #e7e9ed;
+$conyest-canvas-bg: #f8f8f8;
+$conyest-card-bg: #ffffff;
+$conyest-card-border: #f1f5f9;
+
+$conyest-dark-forest: #1f4843;
+$conyest-dark-forest-hover: #193d39;
+$conyest-accent-lime: #94e622;
+$conyest-accent-lime-hover: #82cb1e;
+$conyest-accent-lime-tint: rgba(148, 230, 34, 0.12);
+
+$conyest-halo-border: #b9e57d;
+$conyest-halo-bg: rgba(226, 242, 203, 0.45);
+$conyest-bar-dark: #1f4941;
+
+$conyest-trend-green-bg: #dcfce7;
+$conyest-trend-green-text: #15803d;
+$conyest-trend-red-bg: #fee2e2;
+$conyest-trend-red-text: #db0f0d;
+
+$conyest-badge-completed-border: #0f172a;
+$conyest-badge-completed-text: #0f172a;
+$conyest-badge-failed-border: #fca5a5;
+$conyest-badge-failed-text: #ef4444;
+$conyest-badge-pending-border: #fcd34d;
+$conyest-badge-pending-text: #d97706;
+
+$conyest-ink-primary: #0f172a;
+$conyest-ink-secondary: #64748b;
+$conyest-ink-muted: #94a3b8;
+
+$conyest-radius-card: 20px;
+$conyest-radius-pill: 9999px;
+$conyest-radius-control: 12px;
+$conyest-radius-bar: 8px;
+
+$conyest-card-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.04), 0 1px 3px rgba(12, 12, 13, 0.02);
+$conyest-card-shadow-hover: 0 10px 30px -4px rgba(12, 12, 13, 0.08);
+$conyest-grid-gap: 24px;
+

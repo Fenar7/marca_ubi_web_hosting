@@ -1,0 +1,14 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--conyest-grid-gap);
+  margin-top: 24px;
+}
+
+.card {
+  background-color: var(--conyest-card-bg);
+  border: 1px solid var(--conyest-card-border);
+  border-radius: var(--conyest-radius-card);
+  padding: 24px;
+  box-shadow: var(--conyest-card-shadow);
+}
