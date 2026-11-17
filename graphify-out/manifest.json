@@ -882,9 +882,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/RevenueDynamicsCard.tsx": {
-    "mtime": 1794210936.61147,
-    "seen": 1794231148.5257118,
-    "ast_hash": "1d4f3a3fdd1184c4fdf4727f2d9d7155",
+    "mtime": 1794909765.8382962,
+    "seen": 1794910009.8048158,
+    "ast_hash": "605fff986f9ca85f7119dc230f010bf8",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/index.ts": {
@@ -6030,9 +6030,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1794821474.5162716,
-    "seen": 1794906819.2760882,
-    "ast_hash": "e5af6460704307db625e0e6e9842326a",
+    "mtime": 1794909789.381894,
+    "seen": 1794910009.8048158,
+    "ast_hash": "95d7bcc776bac9bde7302b6d8d784499",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
@@ -6189,6 +6189,18 @@
     "mtime": 1794820282.385973,
     "seen": 1794906819.277591,
     "ast_hash": "1c93a6b9f8dc2e799fcee0475f9f3371",
+    "semantic_hash": ""
+  },
+  "docs/dashboard_luxury_redesign/IMPLEMENTATION_PLAN.md": {
+    "mtime": 1794909546.6224058,
+    "seen": 1794909675.6606262,
+    "ast_hash": "9e61e3ee6ec902c7dcb625923a5fa779",
+    "semantic_hash": ""
+  },
+  "docs/hierarchy-typography/PLAN.md": {
+    "mtime": 1794909895.1448033,
+    "seen": 1794910009.8058462,
+    "ast_hash": "9cbe73950ffaff9c33af029dfb36977d",
     "semantic_hash": ""
   },
   "package-lock.json": {

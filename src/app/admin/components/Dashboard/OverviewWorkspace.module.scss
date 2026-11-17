@@ -8,10 +8,10 @@
  */
 
 .overview {
-  color: var(--admin-text-primary, #111111);
-  font-family: var(--font-graphik), sans-serif;
+  color: var(--admin-text-primary, var(--color-text-main));
+  font-family: var(--font-family-body, sans-serif);
   font-size: 0.875rem;
-  padding: 8px 0 40px;
+  padding: var(--spacing-2) 0 var(--spacing-8);
   max-width: 1760px;
   margin-inline: auto;
   min-width: 0;
@@ -21,13 +21,13 @@
   }
 
   h1, h2, h3 {
-    font-family: var(--font-circular), sans-serif;
+    font-family: var(--font-family-display, sans-serif);
     font-weight: 600;
   }
 
   a, button, select, summary {
     &:focus-visible {
-      outline: 2px solid var(--admin-focus-ring, #9c001e);
+      outline: 2px solid var(--color-brand-red);
       outline-offset: 2px;
     }
   }
@@ -45,13 +45,13 @@
 .visualCockpitGrid {
   display: grid;
   grid-template-columns: minmax(0, 68fr) minmax(330px, 32fr);
-  gap: 16px;
+  gap: var(--spacing-4);
   align-items: stretch;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-3);
 
   @media (max-width: 1180px) {
     grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
+    gap: var(--spacing-2);
   }
 }
 
@@ -72,7 +72,7 @@
 /* Tier 3: Full-Width Master Ledger Section */
 .ledgerSection {
   width: 100%;
-  margin-bottom: 28px;
+  margin-bottom: var(--spacing-4);
 }
 
 .srOnly {
