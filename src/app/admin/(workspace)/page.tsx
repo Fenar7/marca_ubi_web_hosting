@@ -21,7 +21,11 @@ import {
   type OverviewQueue,
 } from "@/app/admin/lib/dashboardContracts";
 import { LuxuryDashboard } from "@/app/admin/components/LuxuryDashboard/LuxuryDashboard";
-import { OverviewWorkspace } from "@/app/admin/components/Dashboard/OverviewWorkspace";
+import {
+  OverviewWorkspace,
+  type OverviewData,
+  type OverviewRecord,
+} from "@/app/admin/components/Dashboard/OverviewWorkspace";
 
 export const metadata: Metadata = {
   title: "Overview | Marca Ubi Commercial Desk",

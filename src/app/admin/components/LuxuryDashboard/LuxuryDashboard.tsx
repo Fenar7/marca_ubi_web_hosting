@@ -1,7 +1,6 @@
 
 import React from 'react';
 import styles from './LuxuryDashboardShell.module.scss';
-import '../../styles/ConyestTheme.module.scss'; 
 
 interface LuxuryDashboardProps {
   children?: React.ReactNode;
