@@ -19,11 +19,14 @@ interface Point2D {
   y: number;
 }
 
-/** Builds a monotone cubic path so sparse revenue observations do not imply false peaks. */
+/**
+ * Builds a monotone cubic path to ensure high-fidelity spline interpolation
+ * that avoids artificial osculations or jagged artifacting on sparse data.
+ */
 function generateMonotoneBezierPath(points: Point2D[]): string {
   if (points.length === 0) return "";
   if (points.length === 1)
-    return "M " + points[0].x.toFixed(2) + " " + points[0].y.toFixed(2);
+    return `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
 
   const slopes: number[] = [];
   const intervals: number[] = [];
@@ -63,7 +66,7 @@ function generateMonotoneBezierPath(points: Point2D[]): string {
     }
   }
 
-  let path = "M " + points[0].x.toFixed(2) + " " + points[0].y.toFixed(2);
+  let path = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
   for (let index = 0; index < points.length - 1; index += 1) {
     const start = points[index];
     const end = points[index + 1];
@@ -78,28 +81,11 @@ function generateMonotoneBezierPath(points: Point2D[]): string {
     };
 
     path +=
-      " C " +
-      firstControl.x.toFixed(2) +
-      " " +
-      firstControl.y.toFixed(2) +
-      ", " +
-      secondControl.x.toFixed(2) +
-      " " +
-      secondControl.y.toFixed(2) +
-      ", " +
-      end.x.toFixed(2) +
-      " " +
-      end.y.toFixed(2);
+      ` C ${firstControl.x.toFixed(2)} ${firstControl.y.toFixed(2)}, ` +
+      `${secondControl.x.toFixed(2)} ${secondControl.y.toFixed(2)}, ` +
+      `${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
   }
   return path;
-}
-
-function formatCurrency(amount: number): string {
-  return formatCrmCurrency(amount);
-}
-
-function formatAxis(amount: number): string {
-  return formatCurrency(amount);
 }
 
 export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
@@ -144,15 +130,8 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
   const areaPath =
     coordinates.length > 0
       ? curvePath +
-        " L " +
-        coordinates[coordinates.length - 1].x.toFixed(2) +
-        " " +
-        chartBottom +
-        " L " +
-        coordinates[0].x.toFixed(2) +
-        " " +
-        chartBottom +
-        " Z"
+        ` L ${coordinates[coordinates.length - 1].x.toFixed(2)} ${chartBottom}` +
+        ` L ${coordinates[0].x.toFixed(2)} ${chartBottom} Z`
       : "";
   const safeIdx =
     activeIdx === null
@@ -282,7 +261,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
           <div className={styles.headlineRow}>
             <div className={styles.headlineMetrics}>
               <span className={styles.headlineCash}>
-                {formatCurrency(totalConvertedValue)}
+                {formatCrmCurrency(totalConvertedValue)}
               </span>
               <span className={styles.headlineBaseline}>
                 Converted contract value
@@ -333,7 +312,7 @@ export const RevenueDynamicsCard: React.FC<RevenueDynamicsCardProps> = ({
                     textAnchor="end"
                     className={styles.yAxisText}
                   >
-                    {formatAxis(line.value)}
+                    {formatCrmCurrency(line.value)}
                   </text>
                 </g>
               ))}

@@ -33,21 +33,21 @@
 .eyebrow {
   margin: 0;
   color: #64748b;
-  font-family: var(--font-admin-primary, sans-serif);
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
+  font-family: var(--font-family-body, sans-serif);
+  font-size: var(--font-size-metadata, 12px);
+  font-weight: var(--font-weight-regular, 400);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .title {
   margin: 0;
-  color: var(--admin-text-primary, #0c0c0d);
-  font-family: var(--font-admin-primary, sans-serif);
-  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  font-weight: 650;
-  letter-spacing: -0.04em;
-  line-height: 1.08;
+  color: var(--color-text-main, #111111);
+  font-family: var(--font-family-display, sans-serif);
+  font-size: var(--font-size-hero, 32px);
+  font-weight: var(--font-weight-bold, 700);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .subtitle {

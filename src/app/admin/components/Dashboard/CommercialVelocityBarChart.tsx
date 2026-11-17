@@ -36,21 +36,17 @@ export type CashFlowPerspective = "intake" | "realized" | "net";
 
 /**
  * Calibrated cadence distribution weights for common telemetry intervals.
- * All weight arrays strictly sum to 1.000 (100% of pipeline allocation).
+ * All weight arrays strictly sum to 1.000.
  */
 const CADENCE_INTERVAL_PRESETS: Record<number, number[]> = {
-  // 5 intervals: Smooth ramp up to W4 crest
   5: [0.14, 0.22, 0.18, 0.26, 0.20],
-  // 7 intervals: Weekly view with mid-week surge
   7: [0.10, 0.12, 0.18, 0.16, 0.22, 0.14, 0.08],
-  // 8 intervals: 30-day view (3.75d intervals) with organic commercial wave
   8: [0.08, 0.14, 0.11, 0.18, 0.15, 0.21, 0.16, 0.12],
 };
 
 /**
- * Universal harmonic cadence generator for arbitrary interval counts (N).
- * Uses a compound sine wave to model natural commercial deal velocity,
- * preventing robotic flat monolith bars even for custom or non-standard timeframes.
+ * Harmonic cadence generator for arbitrary interval counts (N).
+ * Uses a compound sine wave to model natural commercial deal velocity.
  */
 function getCadenceWeights(count: number): number[] {
   if (count <= 0) return [];
@@ -114,7 +110,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     }
   };
 
-  // Derive column data directly from bucketed CRM events or calibrated pipeline trajectory
   const monthlyData = useMemo<MonthlyBarData[]>(() => {
     if (chart && chart.length > 0) {
       const hasRealIntakeEvents = chart.some((pt) => typeof pt.intakeVal === "number" && pt.intakeVal > 0);
@@ -149,7 +144,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     }));
   }, [chart, totalIntake]);
 
-  // Aggregate Perspective Values
   const totalIntakeVal = useMemo(() => {
     if (totalIntake && totalIntake > 0) return totalIntake;
     return monthlyData.reduce((sum, d) => sum + d.intake, 0);
@@ -166,7 +160,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     return Math.max(0, totalIntakeVal - totalRealizedVal);
   }, [perspective, totalIntakeVal, totalRealizedVal]);
 
-  // Fundora Calibrated ViewBox & Geometry (Generous 56px Gutter Eradicating Text Collisions)
   const svgWidth = 680;
   const svgHeight = 220;
   const paddingLeft = 56;
@@ -174,11 +167,10 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
   const paddingTop = 28;
   const paddingBottom = 34;
 
-  const chartWidth = svgWidth - paddingLeft - paddingRight; // 604
-  const chartHeight = svgHeight - paddingTop - paddingBottom; // 158
-  const baselineY = paddingTop + chartHeight; // 186
+  const chartWidth = svgWidth - paddingLeft - paddingRight;
+  const chartHeight = svgHeight - paddingTop - paddingBottom;
+  const baselineY = paddingTop + chartHeight;
 
-  // Dynamic valuation ceiling with clean 4-milestone integer quantization
   const { maxVal, yMilestones } = useMemo(() => {
     const highest = Math.max(
       ...monthlyData.map((d) => {
@@ -190,14 +182,13 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     );
 
     if (highest <= 0) {
-      const fallbackMax = 400000; // ₹4L clean baseline when pipeline is empty
+      const fallbackMax = 400000;
       return {
         maxVal: fallbackMax,
         yMilestones: [0, 100000, 200000, 300000, 400000],
       };
     }
 
-    // Target peak bar to occupy ~82% height (breathing headroom for tooltips & apex beacon rings)
     const targetQuarter = (highest * 1.20) / 4;
     const stepUnit =
       targetQuarter > 2500000
@@ -217,11 +208,9 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     return { maxVal: ceiling, yMilestones: milestones };
   }, [monthlyData, perspective]);
 
-  // Fundora Single Pill Column Proportions (26px wide, smooth center alignment)
   const colWidth = chartWidth / (monthlyData.length || 1);
   const barWidth = 26;
 
-  // Active or Default Spotlight (Hovered item or Peak item when idle)
   const peakIndex = useMemo(() => {
     if (!monthlyData.length) return 0;
     let maxIdx = 0;
@@ -259,7 +248,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
 
   return (
     <article className={styles.cardContainer} aria-labelledby="cash-flow-title">
-      {/* Header: Fundora Stately Architecture */}
       <header className={styles.chartHeader}>
         <div className={styles.titleAndValuation}>
           <div className={styles.titleRow}>
@@ -279,7 +267,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             {financials ? formatCrmCurrency(activePerspectiveTotal) : "Confidential"}
           </div>
 
-          {/* Segmented Filter Pills (Fundora Archetype) */}
           <div className={styles.segmentedControls} role="tablist" aria-label="Perspective switch">
             <button
               type="button"
@@ -392,9 +379,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
         </div>
       </header>
 
-      {/* SVG Canvas with Fluid Layout & Coordinate Isolation */}
       <div className={styles.svgWrapper}>
-        {/* Floating Obsidian Milestone Badge directly crowned over the spotlighted column */}
         {spotlightItem && (
           <div
             className={styles.floatingBadge}
@@ -421,7 +406,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
           aria-label="Cash flow chart displaying interval intake and revenue milestones"
         >
           <defs>
-            {/* Fundora Crimson Luxury Vertical Spotlight Gradient */}
             <linearGradient id="fundoraCrimsonGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#ea002a" />
               <stop offset="65%" stopColor="#f43f5e" />
@@ -429,7 +413,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             </linearGradient>
           </defs>
 
-          {/* Clean Dashed Hairline Gridlines and Y-Axis INR Labels */}
           {yMilestones.map((milestone, idx) => {
             const y = paddingTop + chartHeight - (milestone / maxVal) * chartHeight;
             const labelStr =
@@ -455,7 +438,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             );
           })}
 
-          {/* Interval Columns: Soft Warm-Neutral Rounded Pills (#f0f0ee) with Active Spotlight */}
           {monthlyData.map((item, idx) => {
             const centerX = paddingLeft + idx * colWidth + colWidth / 2;
             const barX = centerX - barWidth / 2;
@@ -480,7 +462,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                 onMouseLeave={() => setActiveHoverIndex(null)}
                 className={styles.columnGroup}
               >
-                {/* Transparent hit area for frictionless mouse hover */}
                 <rect
                   x={paddingLeft + idx * colWidth}
                   y={paddingTop}
@@ -489,7 +470,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                   className={styles.hitArea}
                 />
 
-                {/* Grounded Vertical Pill Bar */}
                 {currentVal > 0 ? (
                   <path
                     d={getGroundedPillPath(barX, barY, barWidth, barHeight, 7)}
@@ -497,7 +477,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                     fill={isSpotlighted ? "url(#fundoraCrimsonGradient)" : "#f0f0ee"}
                   />
                 ) : (
-                  /* Tactile Instrument Zero Pedestal */
                   <rect
                     x={barX}
                     y={baselineY - 6}
@@ -508,7 +487,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                   />
                 )}
 
-                {/* Fundora Apex Beacon Ring on Spotlighted Column Crest */}
                 {isSpotlighted && currentVal > 0 && (
                   <>
                     <line
@@ -527,7 +505,6 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                   </>
                 )}
 
-                {/* X-Axis Interval Label */}
                 <text
                   x={centerX}
                   y={svgHeight - 12}
