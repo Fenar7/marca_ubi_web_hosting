@@ -3,13 +3,13 @@
 /**
  * @file LuxuryVirtualCard.tsx
  * @description Master Executive VIP Virtual Card Widget modeled 1:1 after the Conyest/Finlo luxury archetype.
- *              Features dark obsidian/forest backdrop, concentric SVG watermark arcs, tactile toggle switch,
+ *              Features dark obsidian/forest backdrop, concentric SVG watermark arcs,
  *              large tabular valuation, and executive metadata chips.
  * @module admin/components/Dashboard/LuxuryVirtualCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import styles from "./LuxuryVirtualCard.module.scss";
 
@@ -28,8 +28,6 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   winRate = 84,
   financials = true,
 }) => {
-  const [isLiveActive, setIsLiveActive] = useState(true);
-
   const displayBalance =
     financials && balance !== null ? formatCrmCurrency(balance) : "Confidential";
 
@@ -52,23 +50,12 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
         <circle cx="280" cy="40" r="24" fill="rgba(234, 0, 42, 0.08)" />
       </svg>
 
-      {/* Top Header: Moniker & Toggle Switch */}
+      {/* Top Header: Moniker Only (Toggle Removed) */}
       <div className={styles.cardHeader}>
         <div className={styles.monikerGroup}>
           <span className={styles.monikerPrefix}>EXECUTIVE DESK</span>
           <h2 className={styles.monikerTitle}>{userName}</h2>
         </div>
-
-        <button
-          type="button"
-          role="switch"
-          aria-checked={isLiveActive}
-          aria-label="Toggle telemetry telemetry feed live state"
-          onClick={() => setIsLiveActive((prev) => !prev)}
-          className={`${styles.toggleTrack} ${isLiveActive ? styles.toggleTrackActive : ""}`}
-        >
-          <span className={styles.toggleThumb} />
-        </button>
       </div>
 
       {/* Mid Body: Balance Label & Tabular Numerical Amount */}

@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794992275.0975783,
-    "seen": 1794992314.0696216,
-    "ast_hash": "587f536324a926315fa528becd9ac20b",
+    "mtime": 1794994116.736984,
+    "seen": 1794994190.793734,
+    "ast_hash": "d0265eab875de3ec51488930d74af060",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -6024,9 +6024,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1794993800.5316691,
-    "seen": 1794994062.0848749,
-    "ast_hash": "a815a4fa6074c1f78a7bdd9ba494773a",
+    "mtime": 1794996172.672336,
+    "seen": 1795026500.138609,
+    "ast_hash": "2db2824816004a8148c3801c21e37dd1",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
@@ -6210,9 +6210,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx": {
-    "mtime": 1794985991.078301,
-    "seen": 1794986589.56971,
-    "ast_hash": "3ab8e2afea23be5e2be07df94b92f3ef",
+    "mtime": 1795026301.636944,
+    "seen": 1795026500.138609,
+    "ast_hash": "bfc1d9ea086c9abf87d9e168fc65b597",
     "semantic_hash": ""
   },
   "docs/LuxuryDashboard/LUXURY_DASHBOARD_GREENFIELD_PLAN.md": {
@@ -6315,6 +6315,18 @@
     "mtime": 1794993428.6592147,
     "seen": 1794994062.0868945,
     "ast_hash": "d7576f372589eef7bb6cedffdd036a48",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-18_15-00-00.md": {
+    "mtime": 1794994100.0817218,
+    "seen": 1794994190.793734,
+    "ast_hash": "4df4e068ce6b12c43983179cfeee5e2b",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_cockpit_redesign/AUDIT_LOG.md": {
+    "mtime": 1794995337.360497,
+    "seen": 1795026500.1406884,
+    "ast_hash": "779f5a1f6c9751b9c6936fa863a186f3",
     "semantic_hash": ""
   },
   "package-lock.json": {
