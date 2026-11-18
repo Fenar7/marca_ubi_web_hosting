@@ -63,10 +63,10 @@
   height: 100%;
 }
 
-/* Tier 3: Row 2 & 3 - Asymmetric 65% / 35% Cockpit Grid */
+/* Tier 3: Row 2 & 3 - Asymmetric 64% / 36% Cockpit Grid */
 .fundoraAsymmetricCockpitGrid {
   display: grid;
-  grid-template-columns: minmax(0, 65fr) minmax(340px, 35fr);
+  grid-template-columns: minmax(0, 64fr) minmax(340px, 36fr);
   gap: 16px;
   align-items: stretch;
   margin-bottom: 24px;

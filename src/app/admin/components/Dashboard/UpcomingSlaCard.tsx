@@ -22,7 +22,7 @@ export interface UpcomingSlaItem {
   status: string;
   badgeType: "scheduled" | "today" | "overdue";
   monogram: string;
-  colorType: "red" | "green" | "coral";
+  colorType: "red" | "green" | "coral" | "blue";
 }
 
 export interface UpcomingSlaCardProps {
@@ -62,6 +62,16 @@ const DEFAULT_ITEMS: UpcomingSlaItem[] = [
     monogram: "V",
     colorType: "coral",
   },
+  {
+    id: "sla-4",
+    title: "Apex Strategic Systems",
+    dateStr: "July 15, 2025",
+    amount: 1650000,
+    status: "Scheduled",
+    badgeType: "scheduled",
+    monogram: "S",
+    colorType: "blue",
+  },
 ];
 
 export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
@@ -74,17 +84,17 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
       return DEFAULT_ITEMS;
     }
 
-    const colors: ("red" | "green" | "coral")[] = ["red", "green", "coral"];
-    return records.slice(0, 3).map((rec, idx) => {
+    const colors: ("red" | "green" | "coral" | "blue")[] = ["red", "green", "coral", "blue"];
+    return records.slice(0, 4).map((rec, idx) => {
       let badgeType: "scheduled" | "today" | "overdue" = "scheduled";
       let statusStr = "Scheduled";
 
       if (idx === 0) {
         badgeType = "today";
         statusStr = "Due Today";
-      } else if (idx === 1) {
-        badgeType = "scheduled";
-        statusStr = "Scheduled";
+      } else if (idx === 3) {
+        badgeType = "overdue";
+        statusStr = "Overdue 1d";
       } else {
         badgeType = "scheduled";
         statusStr = "Scheduled";
@@ -116,7 +126,12 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
       aria-label="Upcoming Commitments and Milestone SLA Ledger"
     >
       <header className={styles.headerRow}>
-        <h2 className={styles.title}>Upcoming Milestones & SLA</h2>
+        <div className={styles.titleCluster}>
+          <h2 className={styles.title}>Upcoming Milestones & SLA</h2>
+          <p className={styles.subtitle}>
+            {displayItems.length} Active Commitments • 98% On-Time SLA
+          </p>
+        </div>
 
         <button
           type="button"
@@ -134,6 +149,8 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
               ? styles.avatarGreen
               : item.colorType === "coral"
               ? styles.avatarCoral
+              : item.colorType === "blue"
+              ? styles.avatarBlue
               : styles.avatarRed;
 
           const badgeClass =

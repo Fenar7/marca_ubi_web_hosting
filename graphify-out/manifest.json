@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794980354.0180695,
-    "seen": 1794986589.5712862,
-    "ast_hash": "c5d4f6ea375e90d7c73274bd7aeba4a9",
+    "mtime": 1794989071.667531,
+    "seen": 1794989081.9695292,
+    "ast_hash": "f7bfe58254ba36641a0e3ccf986fe7ff",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -6246,9 +6246,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/UpcomingSlaCard.tsx": {
-    "mtime": 1794986167.4721687,
-    "seen": 1794986589.56971,
-    "ast_hash": "eaffbc487ccb8c8b3c8bc14db812b169",
+    "mtime": 1794987782.99517,
+    "seen": 1794989081.9669216,
+    "ast_hash": "55f76442e42fa9583517658df62c6879",
     "semantic_hash": ""
   },
   "docs/context/2026-11-17_20-30-00.md": {
@@ -6273,6 +6273,18 @@
     "mtime": 1794986250.8858345,
     "seen": 1794986589.5712862,
     "ast_hash": "e60509b2b46317c7e500a9921286fa27",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-18_12-50-00.md": {
+    "mtime": 1794986642.2532682,
+    "seen": 1794989081.9695292,
+    "ast_hash": "e38de155626d590f1e837b0d30d0bf82",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/RIGHT_COLUMN_AND_COCKPIT_REMEDIATION_PLAN.md": {
+    "mtime": 1794987623.6253269,
+    "seen": 1794989081.9695292,
+    "ast_hash": "00d9a1f6f5d3971d3e9da647f2ad233a",
     "semantic_hash": ""
   },
   "package-lock.json": {

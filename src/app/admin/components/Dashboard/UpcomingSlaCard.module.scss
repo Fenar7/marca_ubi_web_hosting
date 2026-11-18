@@ -19,7 +19,7 @@
   padding: 24px 26px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
@@ -29,9 +29,17 @@
 
 .headerRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.titleCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .title {
@@ -41,6 +49,14 @@
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  color: #64748b;
+  letter-spacing: -0.01em;
 }
 
 .addButton {
@@ -55,6 +71,7 @@
   justify-content: center;
   font-size: 1.1rem;
   cursor: pointer;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 
   &:hover {
@@ -72,15 +89,16 @@
 .itemsList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 11px;
+  margin-bottom: 16px;
+  flex-grow: 1;
 }
 
 .itemCard {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 8px;
+  padding: 12px 14px;
   background: #ffffff;
   border: 1px solid #f1f5f9;
   border-radius: 12px;
@@ -139,6 +157,12 @@
   border: 1px solid #ffedd5;
 }
 
+.avatarBlue {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
+
 .itemMeta {
   display: flex;
   flex-direction: column;
@@ -177,8 +201,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px dashed #f1f5f9;
+  padding-top: 2px;
 }
 
 .amount {
@@ -222,6 +245,7 @@
 
 /* Full Width View All Button */
 .viewAllButton {
+  margin-top: auto;
   width: 100%;
   height: 42px;
   border-radius: 10px;
