@@ -93,10 +93,10 @@
   height: 44px;
   min-height: 44px;
   padding: 0 1rem;
-  background: var(--admin-accent-lemon, #eefb87);
+  background: var(--admin-accent-lemon, #ea002a);
   border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 8px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: var(--admin-btn-primary-text, #ffffff);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
@@ -242,10 +242,10 @@
 .modalCloseBtn {
   height: 44px;
   min-height: 44px;
-  background: var(--admin-accent-lemon, #eefb87);
+  background: var(--admin-accent-lemon, #ea002a);
   border: 1px solid var(--admin-border-strong, #1f242f);
   border-radius: 8px;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  color: var(--admin-btn-primary-text, #ffffff);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;

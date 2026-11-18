@@ -1,402 +1,580 @@
-/**
- * @file page.tsx
- * @description Master Executive Overview Dashboard for Marca Ubi Enterprise Agency CRM (/admin).
- *              Benchmarked against MedTrackr Report & Analytics architecture and Accordion Executive Advisory:
- *              - 100% full-width fluid responsive canvas
- *              - Executive masthead with date range filter, export trigger, and Signature Lemon Yellow New Lead CTA
- *              - 4-Card Executive KPI Grid (Sky Blue, Mint Green, Lavender, Warm Amber) with circular triggers
- *              - 60% / 40% mid-tier analytics split (Revenue Dynamics & Monotone Curve × Pipeline Stage Allocation)
- *              - High-density Commercial Deals Ledger with search pill (⌘K), category filters, and radar status indicators
- *              - Complete Next.js 16 reactive URL search parameter binding (?timeframe=7d | 30d | 90d | quarter | year)
- * @module app/admin/(workspace)/page
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-import React from 'react';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { createClient } from '@/app/lib/supabase/server';
-import type { PipelineRpcMetrics, CrmUserRole } from '@/types/crm';
-import {
-  ExecutiveMasthead,
-  ExecutiveKpiGrid,
-  RevenueDynamicsCard,
-  PipelineAllocationCard,
-  CommercialDealsTable,
-  type ActiveDealItem,
-  type ExecutiveDashboardKpis,
-  type StageAllocationItem,
-} from '@/app/admin/components/Dashboard';
+import React from "react";
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/app/lib/supabase/server";
+import type { CrmUserRole, FunnelBucket } from "@/types/crm";
 import {
   resolveTimeframeBounds,
   timeframeToSlug,
+  aggregateTimeframeRevenue,
   calculateMetricDelta,
-  generateTimeframeSplinePoints,
-} from '@/app/admin/lib/timeframeUtils';
-import styles from './page.module.scss';
+} from "@/app/admin/lib/timeframeUtils";
+import { getUtcDayWindow } from "@/app/admin/lib/followUpQueue";
+import {
+  dashboardAmount,
+  dashboardFeature,
+  dashboardTab,
+  dashboardSelect,
+  dashboardPreviewSelect,
+  foldDashboardPages as foldPages,
+  overviewQueue,
+  type OverviewQueue,
+} from "@/app/admin/lib/dashboardContracts";
+import {
+  OverviewWorkspace,
+  type OverviewData,
+  type OverviewRecord,
+} from "@/app/admin/components/Dashboard/OverviewWorkspace";
 
 export const metadata: Metadata = {
-  title: 'Executive Overview & Revenue Intelligence | Marca Ubi Enterprise CRM',
-  robots: {
-    index: false,
-    follow: false,
-  },
+  title: "Overview | Marca Ubi Commercial Desk",
+  robots: { index: false, follow: false },
 };
 
-export interface AdminDashboardPageProps {
-  searchParams?: Promise<{
-    timeframe?: string;
-  }>;
+interface Stage {
+  id: string;
+  name: string;
+  bucket: FunnelBucket;
 }
+interface PipelineRow {
+  id: string;
+  status_id: string;
+  expected_value?: number | string;
+  service_category?: string;
+  created_at?: string;
+}
+interface ConversionRow {
+  converted_at: string;
+  created_at: string;
+  expected_value?: number | string;
+}
+interface CohortRow {
+  status_id: string;
+  lost_reason: string | null;
+}
+interface PreviewRow {
+  id: string;
+  lead_id: string;
+  name: string;
+  company: string | null;
+  status_id: string;
+  assigned_to: string | null;
+  next_follow_up: string | null;
+  created_at?: string;
+  service_category?: string | null;
+  expected_value?: number | string;
+}
+interface DirectoryRow {
+  id: string;
+  full_name: string | null;
+}
+const SYNTHETIC_EXCLUSION =
+  "brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true";
 
-export default async function AdminDashboardPage(
-  props: AdminDashboardPageProps
-): Promise<React.ReactElement> {
+/** Reads authenticated, RLS-visible data; monetary fields are never selected for restricted roles. */
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ timeframe?: string; queue?: string }>;
+}): Promise<React.ReactElement> {
   const supabase = await createClient();
-
-  // Invariant: Short-circuit unauthenticated calls before issuing telemetry queries
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
-    redirect('/admin/login?next=%2Fadmin');
-  }
-
-  // 1. Fetch User Profile for Role & Context Verification
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, full_name, role, email, avatar_url')
-    .eq('id', user.id)
+  if (!user) redirect("/admin/login?next=%2Fadmin");
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role, status, allowed_tabs, feature_permissions, full_name")
+    .eq("id", user.id)
     .maybeSingle();
-
-  const currentUserName = profile?.full_name || user.user_metadata?.full_name || 'Principal';
-  const currentUserRole = (profile?.role || 'admin') as CrmUserRole;
-
-  // 2. Resolve Timeframe Bounds from Asynchronous Next.js 16 searchParams
-  const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
-  const timeframeSlug = timeframeToSlug(resolvedSearchParams?.timeframe);
-  const bounds = resolveTimeframeBounds(timeframeSlug);
-
-  const currentStartIso = bounds.currentStart.toISOString();
-  const currentEndIso = bounds.currentEnd.toISOString();
-  const priorStartIso = bounds.priorStart.toISOString();
-  const priorEndIso = bounds.priorEnd.toISOString();
-
-  // 3. Parallel Fetching: Current Window Telemetry & Prior Window Baseline
-  const [currentRpcRes, priorRpcRes] = await Promise.all([
-    supabase.rpc('get_pipeline_kpis', {
-      p_start_date: currentStartIso,
-      p_end_date: currentEndIso,
-    }),
-    supabase.rpc('get_pipeline_kpis', {
-      p_start_date: priorStartIso,
-      p_end_date: priorEndIso,
-    }),
-  ]);
-
-  const rawCurrent =
-    !currentRpcRes.error && currentRpcRes.data
-      ? (currentRpcRes.data as unknown as PipelineRpcMetrics)
-      : null;
-  const rawPrior =
-    !priorRpcRes.error && priorRpcRes.data
-      ? (priorRpcRes.data as unknown as PipelineRpcMetrics)
-      : null;
-
-  const isSyntheticVolume = Boolean(
-    rawCurrent &&
-      (rawCurrent.total_leads_count > 500 || rawCurrent.potential_pipeline_value > 20000000)
+  if (profileError || !profile || profile.status !== "active") notFound();
+  const userName =
+    profile.full_name?.trim() ||
+    user.email?.split("@")[0] ||
+    "Marca Ubi Root Admin";
+  const role = profile.role as CrmUserRole;
+  if (!dashboardTab(role, profile.allowed_tabs, "command_center")) notFound();
+  const canFinancial = dashboardFeature(
+    role,
+    profile.feature_permissions,
+    "can_view_financials",
   );
+  const canExport = dashboardFeature(
+    role,
+    profile.feature_permissions,
+    "can_export_data",
+  );
+  const canTasks = dashboardTab(role, profile.allowed_tabs, "tasks");
+  const recordRoute = dashboardTab(role, profile.allowed_tabs, "deals")
+    ? "/admin/deals"
+    : dashboardTab(role, profile.allowed_tabs, "leads")
+      ? "/admin/leads"
+      : null;
+  const canCreate =
+    role !== "viewer" && dashboardTab(role, profile.allowed_tabs, "leads");
+  const params = searchParams ? await searchParams : undefined;
+  const now = new Date();
+  const window = getUtcDayWindow(now);
+  const bounds = resolveTimeframeBounds(
+    timeframeToSlug(params?.timeframe),
+    now,
+  );
+  const { data: rawStages, error: stageError } = await supabase
+    .from("funnel_statuses")
+    .select("id, name, bucket")
+    .order("sort_order", { ascending: true });
+  if (stageError)
+    console.error("[dashboard] Stage lookup failed", stageError.message);
+  const stages = (rawStages ?? []) as Stage[];
+  const stagesUnavailable = Boolean(stageError || !rawStages);
+  if (!rawStages && !stageError)
+    console.error("[dashboard] Stage lookup returned no payload");
+  const activeIds = stages
+    .filter((stage) => stage.bucket === "open" || stage.bucket === "potential")
+    .map((stage) => stage.id);
+  const convertedIds = stages
+    .filter((stage) => stage.bucket === "converted")
+    .map((stage) => stage.id);
+  const stageById = new Map(stages.map((stage) => [stage.id, stage]));
 
-  // Calibrated agency financial models per timeframe window
-  const CALIBRATED_WINDOWS: Record<
-    string,
-    {
-      pipelineValuation: number;
-      cashCollected: number;
-      closedCount: number;
-      activeCount: number;
-      winRate: number;
-      pipelineDelta: number;
-      revenueDelta: number;
-      dealsDelta: number;
-      winRateDelta: number;
-      slaOnTrack: number;
-      salesCycleDays: number;
-    }
-  > = {
-    '7d': {
-      pipelineValuation: 6840000,
-      cashCollected: 480000,
-      closedCount: 2,
-      activeCount: 24,
-      winRate: 33.3,
-      pipelineDelta: 4.2,
-      revenueDelta: 6.8,
-      dealsDelta: 2.1,
-      winRateDelta: 1.5,
-      slaOnTrack: 98.4,
-      salesCycleDays: 16.2,
-    },
-    '30d': {
-      pipelineValuation: 6840000,
-      cashCollected: 4280000,
-      closedCount: 14,
-      activeCount: 24,
-      winRate: 28.6,
-      pipelineDelta: 14.2,
-      revenueDelta: 8.4,
-      dealsDelta: 5.1,
-      winRateDelta: 2.3,
-      slaOnTrack: 98.2,
-      salesCycleDays: 18.4,
-    },
-    '90d': {
-      pipelineValuation: 7420000,
-      cashCollected: 11250000,
-      closedCount: 36,
-      activeCount: 28,
-      winRate: 31.4,
-      pipelineDelta: 16.8,
-      revenueDelta: 12.1,
-      dealsDelta: 8.4,
-      winRateDelta: 3.1,
-      slaOnTrack: 97.8,
-      salesCycleDays: 19.1,
-    },
-    quarter: {
-      pipelineValuation: 7890000,
-      cashCollected: 14520000,
-      closedCount: 44,
-      activeCount: 31,
-      winRate: 32.1,
-      pipelineDelta: 19.5,
-      revenueDelta: 14.3,
-      dealsDelta: 10.2,
-      winRateDelta: 3.7,
-      slaOnTrack: 98.0,
-      salesCycleDays: 18.8,
-    },
-    year: {
-      pipelineValuation: 8450000,
-      cashCollected: 38400000,
-      closedCount: 118,
-      activeCount: 36,
-      winRate: 34.2,
-      pipelineDelta: 24.6,
-      revenueDelta: 21.8,
-      dealsDelta: 15.4,
-      winRateDelta: 4.9,
-      slaOnTrack: 98.6,
-      salesCycleDays: 17.9,
-    },
-  };
+  const pipelinePromise = stagesUnavailable
+    ? Promise.resolve(null)
+    : activeIds.length === 0
+      ? Promise.resolve({
+          count: 0,
+          value: 0,
+          valid: true,
+          stages: new Map<string, { count: number; value: number }>(),
+          categories: new Map<string, { count: number; value: number }>(),
+          intakeEvents: [] as { createdAt: string; amount: number }[],
+        })
+      : foldPages<
+          PipelineRow,
+          {
+            count: number;
+            value: number;
+            valid: boolean;
+            stages: Map<string, { count: number; value: number }>;
+            categories: Map<string, { count: number; value: number }>;
+            intakeEvents: { createdAt: string; amount: number }[];
+          }
+        >(
+          async (from, to) => {
+            const result = await supabase
+              .from("leads")
+              .select(dashboardSelect(canFinancial, "pipeline"))
+              .in("status_id", activeIds)
+              .or(SYNTHETIC_EXCLUSION)
+              .order("id")
+              .range(from, to);
+            return {
+              data: result.data as unknown as PipelineRow[] | null,
+              error: result.error,
+            };
+          },
+          {
+            count: 0,
+            value: 0,
+            valid: true,
+            stages: new Map(),
+            categories: new Map(),
+            intakeEvents: [],
+          },
+          (summary, row) => {
+            const amount = canFinancial
+              ? dashboardAmount(row.expected_value)
+              : 0;
+            if (amount === null) summary.valid = false;
+            summary.count += 1;
+            summary.value += amount ?? 0;
+            const stage = summary.stages.get(row.status_id) ?? {
+              count: 0,
+              value: 0,
+            };
+            stage.count += 1;
+            stage.value += amount ?? 0;
+            summary.stages.set(row.status_id, stage);
 
-  const windowBaseline = CALIBRATED_WINDOWS[timeframeSlug] || CALIBRATED_WINDOWS['30d'];
+            const catName =
+              row.service_category?.trim() || "Full-Suite Advisory";
+            const cat = summary.categories.get(catName) ?? {
+              count: 0,
+              value: 0,
+            };
+            cat.count += 1;
+            cat.value += amount ?? 0;
+            summary.categories.set(catName, cat);
 
-  let executiveKpis: ExecutiveDashboardKpis;
+            if (row.created_at) {
+              summary.intakeEvents.push({
+                createdAt: row.created_at,
+                amount: amount ?? 0,
+              });
+            }
+          },
+        );
 
-  if (rawCurrent && !isSyntheticVolume) {
-    const pipeDelta = calculateMetricDelta(
-      rawCurrent.potential_pipeline_value,
-      rawPrior?.potential_pipeline_value ?? 0
-    );
-    const revDelta = calculateMetricDelta(
-      rawCurrent.converted_revenue_value,
-      rawPrior?.converted_revenue_value ?? 0
-    );
-    const currActive = rawCurrent.potential_leads_count + rawCurrent.open_leads_count;
-    const priorActive = (rawPrior?.potential_leads_count ?? 0) + (rawPrior?.open_leads_count ?? 0);
-    const dealDelta = calculateMetricDelta(currActive, priorActive);
-    const winDelta = calculateMetricDelta(
-      rawCurrent.conversion_rate_percentage,
-      rawPrior?.conversion_rate_percentage ?? 0
-    );
+  const outcomePromise = stagesUnavailable
+    ? Promise.resolve(null)
+    : convertedIds.length === 0
+      ? Promise.resolve({
+          count: 0,
+          value: 0,
+          valid: true,
+          cycleDays: 0,
+          cycleCount: 0,
+          events: [] as { convertedAt: string; amount: number }[],
+        })
+      : foldPages<
+          ConversionRow,
+          {
+            count: number;
+            value: number;
+            valid: boolean;
+            cycleDays: number;
+            cycleCount: number;
+            events: { convertedAt: string; amount: number }[];
+          }
+        >(
+          async (from, to) => {
+            const result = await supabase
+              .from("leads")
+              .select(dashboardSelect(canFinancial, "conversion"))
+              .in("status_id", convertedIds)
+              .gte("converted_at", bounds.currentStart.toISOString())
+              .lte("converted_at", bounds.currentEnd.toISOString())
+              .or(SYNTHETIC_EXCLUSION)
+              .order("id")
+              .range(from, to);
+            return {
+              data: result.data as unknown as ConversionRow[] | null,
+              error: result.error,
+            };
+          },
+          {
+            count: 0,
+            value: 0,
+            valid: true,
+            cycleDays: 0,
+            cycleCount: 0,
+            events: [],
+          },
+          (summary, row) => {
+            const amount = canFinancial
+              ? dashboardAmount(row.expected_value)
+              : 0;
+            summary.count += 1;
+            const cycle =
+              (Date.parse(row.converted_at) - Date.parse(row.created_at)) /
+              86_400_000;
+            if (Number.isFinite(cycle) && cycle >= 0) {
+              summary.cycleDays += cycle;
+              summary.cycleCount += 1;
+            }
+            if (amount === null) summary.valid = false;
+            summary.value += amount ?? 0;
+            if (canFinancial)
+              summary.events.push({
+                convertedAt: row.converted_at,
+                amount: amount ?? 0,
+              });
+          },
+        );
 
-    executiveKpis = {
-      totalPipelineValue: rawCurrent.potential_pipeline_value || windowBaseline.pipelineValuation,
-      weightedPipelineValue: Math.round(
-        (rawCurrent.potential_pipeline_value || windowBaseline.pipelineValuation) * 0.536
-      ),
-      pipelineDealsCount: currActive || windowBaseline.activeCount,
-      pipelineDeltaPercentage: pipeDelta !== 0 ? pipeDelta : windowBaseline.pipelineDelta,
+  const priorOutcomePromise = stagesUnavailable
+    ? Promise.resolve(null)
+    : convertedIds.length === 0
+      ? Promise.resolve({
+          count: 0,
+          value: 0,
+          valid: true,
+        })
+      : foldPages<
+          ConversionRow,
+          {
+            count: number;
+            value: number;
+            valid: boolean;
+          }
+        >(
+          async (from, to) => {
+            const result = await supabase
+              .from("leads")
+              .select(dashboardSelect(canFinancial, "conversion"))
+              .in("status_id", convertedIds)
+              .gte("converted_at", bounds.priorStart.toISOString())
+              .lte("converted_at", bounds.priorEnd.toISOString())
+              .or(SYNTHETIC_EXCLUSION)
+              .order("id")
+              .range(from, to);
+            return {
+              data: result.data as unknown as ConversionRow[] | null,
+              error: result.error,
+            };
+          },
+          {
+            count: 0,
+            value: 0,
+            valid: true,
+          },
+          (summary, row) => {
+            const amount = canFinancial
+              ? dashboardAmount(row.expected_value)
+              : 0;
+            summary.count += 1;
+            if (amount === null) summary.valid = false;
+            summary.value += amount ?? 0;
+          },
+        );
 
-      convertedRevenueValue: rawCurrent.converted_revenue_value || windowBaseline.cashCollected,
-      convertedDealsCount: rawCurrent.converted_leads_count || windowBaseline.closedCount,
-      revenueDeltaPercentage: revDelta !== 0 ? revDelta : windowBaseline.revenueDelta,
-
-      activeDealsCount: currActive || windowBaseline.activeCount,
-      overdueDealsCount: rawCurrent.overdue_follow_ups_count || 4,
-      dealsDeltaPercentage: dealDelta !== 0 ? dealDelta : windowBaseline.dealsDelta,
-
-      conversionWinRate:
-        rawCurrent.conversion_rate_percentage || windowBaseline.winRate,
-      benchmarkWinRate: 25.0,
-      winRateDeltaPercentage: winDelta !== 0 ? winDelta : windowBaseline.winRateDelta,
-
-      cadenceLabel: bounds.cadenceLabel,
-      slaOnTrackPercentage: windowBaseline.slaOnTrack,
-      averageSalesCycleDays: windowBaseline.salesCycleDays,
-    };
-  } else {
-    // Relational Fallback excluding synthetic stress-test records
-    const { data: activeLeads } = await supabase
-      .from('leads')
-      .select('expected_value, next_follow_up, funnel_statuses!inner(bucket)')
-      .in('funnel_statuses.bucket', ['open', 'potential'])
-      .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true');
-
-    let dynamicPipeline = windowBaseline.pipelineValuation;
-    let dynamicActiveCount = windowBaseline.activeCount;
-    let overdueCount = 4;
-
-    if (activeLeads && activeLeads.length > 0) {
-      dynamicActiveCount = activeLeads.length;
-      const sumVal = activeLeads.reduce(
-        (acc, l) => acc + (Number(l.expected_value) || 0),
-        0
+  const cohortPromise = stagesUnavailable
+    ? Promise.resolve(null)
+    : foldPages<CohortRow, { eligible: number; won: number }>(
+        async (from, to) => {
+          const result = await supabase
+            .from("leads")
+            .select("status_id, lost_reason")
+            .gte("created_at", bounds.currentStart.toISOString())
+            .lte("created_at", bounds.currentEnd.toISOString())
+            .or(SYNTHETIC_EXCLUSION)
+            .order("id")
+            .range(from, to);
+          return {
+            data: result.data as CohortRow[] | null,
+            error: result.error,
+          };
+        },
+        { eligible: 0, won: 0 },
+        (summary, row) => {
+          if (
+            row.lost_reason === "spam_invalid" ||
+            row.lost_reason === "out_of_scope"
+          )
+            return;
+          summary.eligible += 1;
+          if (stageById.get(row.status_id)?.bucket === "converted")
+            summary.won += 1;
+        },
       );
-      if (sumVal > 0) dynamicPipeline = sumVal;
 
-      const nowIso = new Date().toISOString();
-      overdueCount = activeLeads.filter(
-        (l) => l.next_follow_up && l.next_follow_up < nowIso
-      ).length;
-    }
-
-    const slaPercentage =
-      dynamicActiveCount > 0
-        ? Math.round(
-            ((dynamicActiveCount - overdueCount) / dynamicActiveCount) * 1000
-          ) / 10
-        : windowBaseline.slaOnTrack;
-
-    executiveKpis = {
-      totalPipelineValue: dynamicPipeline,
-      weightedPipelineValue: Math.round(dynamicPipeline * 0.536),
-      pipelineDealsCount: dynamicActiveCount,
-      pipelineDeltaPercentage: windowBaseline.pipelineDelta,
-
-      convertedRevenueValue: windowBaseline.cashCollected,
-      convertedDealsCount: windowBaseline.closedCount,
-      revenueDeltaPercentage: windowBaseline.revenueDelta,
-
-      activeDealsCount: dynamicActiveCount,
-      overdueDealsCount: overdueCount,
-      dealsDeltaPercentage: windowBaseline.dealsDelta,
-
-      conversionWinRate: windowBaseline.winRate,
-      benchmarkWinRate: 25.0,
-      winRateDeltaPercentage: windowBaseline.winRateDelta,
-
-      cadenceLabel: bounds.cadenceLabel,
-      slaOnTrackPercentage: slaPercentage,
-      averageSalesCycleDays: windowBaseline.salesCycleDays,
-    };
-  }
-
-  // 4. Dynamic Pipeline Stage Allocation with WCAG AA tokens and operational velocity
-  const stageWeights = [
-    { id: 'stage-discovery', code: 'DISC-01', name: 'Discovery', color: '#0284c7', pct: 20.8, count: 4, velocityDays: 3.8, dropOffRatePct: 8.4, passThroughPct: 91.6, slaOnTrackPct: 100 },
-    { id: 'stage-proposal', code: 'PROP-02', name: 'Proposal', color: '#4f46e5', pct: 32.9, count: 5, velocityDays: 6.2, dropOffRatePct: 12.1, passThroughPct: 87.9, slaOnTrackPct: 96.5 },
-    { id: 'stage-negotiation', code: 'NEGO-03', name: 'Negotiation', color: '#d97706', pct: 24.6, count: 3, velocityDays: 5.4, dropOffRatePct: 14.8, passThroughPct: 85.2, slaOnTrackPct: 95.0 },
-    { id: 'stage-review', code: 'REVW-04', name: 'Review', color: '#059669', pct: 13.7, count: 2, velocityDays: 3.0, dropOffRatePct: 4.2, passThroughPct: 95.8, slaOnTrackPct: 98.0 },
-    { id: 'stage-won', code: 'WON-05', name: 'Closed Won', color: '#ff6100', pct: 8.0, count: 2, velocityDays: 18.4, dropOffRatePct: 0.0, passThroughPct: 100.0, slaOnTrackPct: 100 },
+  /** Tasks eligibility runs before counting or limiting, so deferred rows cannot starve the preview. */
+  const queueBase = (head: boolean) =>
+    supabase
+      .from("leads")
+      .select(
+        dashboardPreviewSelect(canFinancial),
+        { count: "exact", head },
+      )
+      .in("status_id", activeIds)
+      .or(
+        `and(or(revisit_date.is.null,revisit_date.lte.${window.date}),or(${SYNTHETIC_EXCLUSION}))`,
+      );
+  const queueQuery = (queue: OverviewQueue, head = false) => {
+    const query = queueBase(head);
+    if (queue === "unassigned")
+      return query.is("assigned_to", null).is("next_follow_up", null);
+    if (queue === "overdue")
+      return query
+        .not("next_follow_up", "is", null)
+        .lt("next_follow_up", window.start);
+    return query
+      .not("next_follow_up", "is", null)
+      .gte("next_follow_up", window.start)
+      .lte("next_follow_up", window.end);
+  };
+  const queueNames: OverviewQueue[] = ["overdue", "today", "unassigned"];
+  const counts = await Promise.all(
+    queueNames.map(async (queue) => {
+      if (!canTasks || stagesUnavailable) return null;
+      if (!activeIds.length) return 0;
+      const result = await queueQuery(queue, true);
+      if (result.error)
+        console.error(
+          "[dashboard] Queue count failed",
+          queue,
+          result.error.message,
+        );
+      return result.error ? null : result.count;
+    }),
+  );
+  const selectedQueue: OverviewQueue | null = params?.queue
+    ? overviewQueue(params.queue, counts[0])
+    : null;
+  const previewResult = stagesUnavailable
+    ? { data: null, error: stageError ?? { message: "Stages unavailable" } }
+    : activeIds.length === 0 || (!canTasks && !recordRoute)
+      ? { data: [], error: null }
+      : selectedQueue && canTasks
+        ? await queueQuery(selectedQueue)
+            .order(
+              selectedQueue === "unassigned" ? "created_at" : "next_follow_up",
+              { ascending: true },
+            )
+            .order("id")
+            .limit(25)
+        : await supabase
+            .from("leads")
+            .select(dashboardPreviewSelect(canFinancial))
+            .in("status_id", activeIds)
+            .or(SYNTHETIC_EXCLUSION)
+            .order("created_at", { ascending: false })
+            .order("id")
+            .limit(25);
+  if (previewResult.error)
+    console.error("[dashboard] Preview failed", previewResult.error.message);
+  else if (!previewResult.data)
+    console.error("[dashboard] Preview returned no payload");
+  const preview = (previewResult.data ?? []) as unknown as PreviewRow[];
+  const ownerIds = [
+    ...new Set(
+      preview.flatMap((row) => (row.assigned_to ? [row.assigned_to] : [])),
+    ),
   ];
-
-  const totalPipe = executiveKpis.totalPipelineValue;
-  const dynamicStages: StageAllocationItem[] = stageWeights.map((st) => {
-    const stageAmount = Math.round(totalPipe * (st.pct / 100));
-    return {
-      id: st.id,
-      code: st.code,
-      name: st.name,
-      color: st.color,
-      dealCount: Math.max(1, Math.round(st.count * (executiveKpis.activeDealsCount / 24))),
-      amount: stageAmount,
-      formattedAmount: `₹${stageAmount.toLocaleString('en-IN')}`,
-      percentage: st.pct,
-      velocityDays: st.velocityDays,
-      dropOffRatePct: st.dropOffRatePct,
-      passThroughPct: st.passThroughPct,
-      slaOnTrackPct: st.slaOnTrackPct,
-      statusLabel:
-        st.id === 'stage-won'
-          ? 'Converted'
-          : st.id === 'stage-negotiation'
-          ? 'Priority Review'
-          : 'On Track',
-    };
-  });
-
-  // 5. Dynamic Revenue Dynamics Points for Fritsch-Carlson Spline
-  const revenueSplinePoints = generateTimeframeSplinePoints(
-    bounds.slug,
-    executiveKpis.convertedRevenueValue
+  let directory: DirectoryRow[] = [];
+  let directoryFailed = false;
+  if (ownerIds.length) {
+    const primary = await supabase
+      .from("crm_team_directory")
+      .select("id, full_name")
+      .in("id", ownerIds);
+    if (!primary.error && primary.data)
+      directory = primary.data as DirectoryRow[];
+    else {
+      console.warn(
+        "[dashboard] Directory view unavailable, using profiles",
+        primary.error?.message,
+      );
+      const fallback = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ownerIds);
+      if (!fallback.error && fallback.data)
+        directory = fallback.data as DirectoryRow[];
+      else {
+        directoryFailed = true;
+        console.error(
+          "[dashboard] Directory fallback failed",
+          fallback.error?.message,
+        );
+      }
+    }
+  }
+  const ownerById = new Map(directory.map((row) => [row.id, row.full_name]));
+  const records: OverviewRecord[] = preview.map((row) => ({
+    id: row.id,
+    leadId: row.lead_id,
+    name: row.name,
+    company: row.company,
+    stage: stageById.get(row.status_id)?.name ?? "Unknown stage",
+    stageBucket: stageById.get(row.status_id)?.bucket ?? "open",
+    due: row.next_follow_up,
+    createdAt: row.created_at ?? now.toISOString(),
+    serviceCategory: row.service_category ?? null,
+    expectedValue: canFinancial ? dashboardAmount(row.expected_value) : null,
+    owner: !row.assigned_to
+      ? "Unassigned"
+      : (ownerById.get(row.assigned_to) ??
+        (directoryFailed ? "Owner unavailable" : "Name unavailable")),
+    href: recordRoute ? `${recordRoute}/${encodeURIComponent(row.id)}` : null,
+  }));
+  const [pipeline, outcome, priorOutcome, cohort] = await Promise.all([
+    pipelinePromise,
+    outcomePromise,
+    priorOutcomePromise,
+    cohortPromise,
+  ]);
+  const potentialStages = stages.filter(
+    (stage) => stage.bucket === "potential",
   );
-
-  // 6. Fetch Top Active Leads for CommercialDealsTable excluding synthetic stress-test benchmarks
-  const { data: topLeads } = await supabase
-    .from('leads')
-    .select(
-      'id, lead_id, name, company, service_category, expected_value, priority, next_follow_up, created_at, funnel_statuses(name, bucket)'
+  const weights: Record<string, number> = {
+    qualified: 0.25,
+    "proposal sent": 0.5,
+    negotiation: 0.85,
+  };
+  const weightedPotential =
+    canFinancial &&
+    pipeline?.valid &&
+    potentialStages.every((stage) =>
+      Object.hasOwn(weights, stage.name.trim().toLowerCase()),
     )
-    .in('funnel_statuses.bucket', ['open', 'potential'])
-    .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true')
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-  const activeDealsList: ActiveDealItem[] = (topLeads || []).map((l, index) => {
-    const statusObj = l.funnel_statuses as { name?: string; bucket?: string } | null;
-    const defaultOwners = ['Tariq Al-Mansoor', 'Sarah Chen', 'Elena Rostova', 'Marcus Vance'];
-    return {
-      id: l.id,
-      leadId: l.lead_id || `LD-${10490 - index}`,
-      name: l.name,
-      company: l.company,
-      serviceCategory: l.service_category || 'Branding',
-      stageName: statusObj?.name || 'Negotiation',
-      stageBucket: statusObj?.bucket || 'potential',
-      expectedValue: Number(l.expected_value) || 0,
-      nextFollowUp: l.next_follow_up,
-      priority: l.priority || 'Medium',
-      owner: defaultOwners[index % defaultOwners.length],
-    };
-  });
-
-  return (
-    <div className={styles.dashboardContainer}>
-      <main className={styles.fluidCanvas}>
-        {/* 1. Executive Masthead & Revenue Intelligence Header with Reactive URL Query Sync */}
-        <ExecutiveMasthead selectedTimeframe={bounds.label} />
-
-        {/* 2. 4-Card Responsive Executive KPI Grid with Dynamic Cadence & Footers */}
-        <ExecutiveKpiGrid
-          kpis={executiveKpis}
-          cadenceLabel={bounds.cadenceLabel}
-        />
-
-        {/* 3. Mid-Tier Analytics Grid (60% / 40% Split: Dynamics & Allocation) */}
-        <section className={styles.midTierGrid} aria-label="Executive Performance Analytics">
-          <RevenueDynamicsCard
-            dataPoints={revenueSplinePoints}
-            timeframe={bounds.label}
-          />
-          <PipelineAllocationCard
-            totalValuation={executiveKpis.totalPipelineValue}
-            stages={dynamicStages}
-            deltaPercentage={executiveKpis.pipelineDeltaPercentage}
-            cadenceLabel={bounds.cadenceLabel}
-            conversionWinRate={executiveKpis.conversionWinRate}
-            averageSalesCycleDays={executiveKpis.averageSalesCycleDays}
-          />
-        </section>
-
-        {/* 4. Full-Width Commercial Deals Ledger */}
-        <section className={styles.bottomSection} aria-label="Commercial Deals Table">
-          <CommercialDealsTable deals={activeDealsList} />
-        </section>
-      </main>
-    </div>
-  );
+      ? potentialStages.reduce(
+          (sum, stage) =>
+            sum +
+            (pipeline.stages.get(stage.id)?.value ?? 0) *
+              weights[stage.name.trim().toLowerCase()],
+          0,
+        )
+      : null;
+  const revenueDelta =
+    canFinancial && outcome?.valid && priorOutcome?.valid
+      ? calculateMetricDelta(outcome.value, priorOutcome.value)
+      : null;
+  const data: OverviewData = {
+    userName,
+    generatedAt: now.toISOString(),
+    timeframe: bounds.slug,
+    periodLabel: bounds.label,
+    cadenceLabel: bounds.cadenceLabel,
+    revenueDelta,
+    priorConvertedValue:
+      canFinancial && priorOutcome?.valid ? priorOutcome.value : null,
+    periodStart: bounds.currentStart.toISOString(),
+    periodEnd: bounds.currentEnd.toISOString(),
+    canCreate,
+    canTasks,
+    canExport,
+    recordRoute,
+    pipelineCount: pipeline?.count ?? null,
+    pipelineValue: canFinancial && pipeline?.valid ? pipeline.value : null,
+    weightedPotential,
+    averageCycleDays:
+      outcome && outcome.cycleCount > 0
+        ? outcome.cycleDays / outcome.cycleCount
+        : null,
+    financials: canFinancial,
+    stages: stages
+      .filter((stage) => activeIds.includes(stage.id))
+      .map((stage) => ({
+        id: stage.id,
+        name: stage.name,
+        count: pipeline?.stages.get(stage.id)?.count ?? 0,
+        value:
+          canFinancial && pipeline?.valid
+            ? (pipeline.stages.get(stage.id)?.value ?? 0)
+            : null,
+      })),
+    pipelineReady: pipeline !== null,
+    queue: selectedQueue ?? "overdue",
+    queueCounts: {
+      overdue: counts[0],
+      today: counts[1],
+      unassigned: counts[2],
+    },
+    records,
+    recordsReady: Boolean(previewResult.data && !previewResult.error),
+    outcomesReady: outcome !== null,
+    convertedCount: outcome?.count ?? null,
+    convertedValue: canFinancial && outcome?.valid ? outcome.value : null,
+    chart:
+      canFinancial && outcome?.valid
+        ? aggregateTimeframeRevenue(
+            bounds.slug,
+            bounds,
+            outcome.events,
+            pipeline?.intakeEvents,
+          )
+        : [],
+    categories:
+      pipeline?.valid && pipeline.categories
+        ? Array.from(pipeline.categories.entries())
+            .map(([name, cat]) => ({
+              name,
+              value: canFinancial ? cat.value : 0,
+              count: cat.count,
+            }))
+            .sort((a, b) => b.value - a.value)
+        : [],
+    cohort: cohort ? { eligible: cohort.eligible, won: cohort.won } : null,
+  };
+  return <OverviewWorkspace data={data} />;
 }

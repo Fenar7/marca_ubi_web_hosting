@@ -1,254 +1,244 @@
 /**
  * @file ExecutiveKpiGrid.module.scss
- * @description 4-Card Responsive Executive KPI Grid benchmarked against MedTrackr Report & Analytics
- *              and Accordion Executive Advisory. Enforces pure white 14px radius cards,
- *              circular action triggers, pastel category chips, and Plus Jakarta Sans tabular figures.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ * @description Master Luxury Styling for 4 Independent Floating KPI Scorecards.
  */
 
 .gridContainer {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 1.75rem;
-
-  @media (max-width: 1180px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 0.85rem;
-  }
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
 }
 
 .kpiCard {
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #eaecf0);
-  border-radius: 14px;
-  padding: 1.25rem 1.35rem;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 156px;
-  position: relative;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
+  min-width: 0;
+  min-height: 168px;
+  padding: 1.45rem 1.6rem 1.35rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.04), 0 1px 3px rgba(12, 12, 13, 0.02);
+  color: var(--admin-text-primary, #0c0c0d);
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 
   &:hover {
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 32px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(31, 36, 47, 0.06);
-    border-color: #cbd5e1;
-
-    .circleBtn {
-      border-color: #0f172a;
-      background-color: #0f172a;
-      color: #ffffff;
-      transform: translateX(3px);
-    }
   }
 
   &:focus-visible {
-    outline: 2px solid var(--admin-accent-brand, #ff6100);
+    z-index: 1;
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
     outline-offset: 2px;
   }
 }
 
-.cardTopRow {
+.heroCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 168px;
+  padding: 1.45rem 1.6rem 1.35rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--admin-radius-card, 16px);
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.04), 0 1px 3px rgba(12, 12, 13, 0.02);
+  color: var(--admin-text-primary, #0c0c0d);
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 32px -4px rgba(12, 12, 13, 0.08), 0 2px 6px rgba(12, 12, 13, 0.04);
+    transform: translateY(-2px);
+  }
+
+  .kpiLabel {
+    color: var(--admin-text-secondary, #4a4a48);
+    font-size: 0.82rem;
+    font-weight: 650;
+  }
+
+  .kpiValue {
+    font-size: clamp(1.85rem, 2.3vw, 2.4rem);
+    color: var(--admin-text-primary, #0c0c0d);
+    font-weight: 750;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .detail {
+    color: var(--admin-text-muted, #767673);
+    font-size: 0.76rem;
+  }
+
+  .iconBadge {
+    width: 32px;
+    height: 32px;
+    background: #f4f4f5;
+    color: #52525b;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+  }
+
+  .badgeSlate {
+    color: var(--admin-status-slate-text, #393936);
+    background: var(--admin-status-slate-bg, #f2f2f0);
+    border: 1px solid var(--admin-status-slate-border, #d8d8d4);
+    font-weight: 650;
+  }
+}
+
+.cardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.85rem;
+  gap: 8px;
+  margin-bottom: 0.75rem;
 }
 
-/* Reference Pastel Icon Chips */
-.iconChip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Pastel Sky Blue (Screenshot 131420) */
-  &.skyBlue {
-    background-color: #e7f5ff;
-    border: 1px solid rgba(116, 192, 252, 0.45);
-    color: #1971c2;
-  }
-
-  /* Pastel Mint Green (Screenshot 131420) */
-  &.mintGreen {
-    background-color: #ebfbee;
-    border: 1px solid rgba(105, 219, 124, 0.45);
-    color: #2b8a3e;
-  }
-
-  /* Pastel Lavender (Screenshot 131420) */
-  &.lavender {
-    background-color: #f3f0ff;
-    border: 1px solid rgba(177, 151, 252, 0.45);
-    color: #6741d9;
-  }
-
-  /* Pastel Warm Amber (Screenshot 131420) */
-  &.warmAmber {
-    background-color: #fff4e6;
-    border: 1px solid rgba(255, 212, 59, 0.5);
-    color: #d9480f;
-  }
-}
-
-/* Reference Circular Action Button ( > ) */
-.circleBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid #eaecf0;
-  background-color: #ffffff;
-  color: #64748b;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: -6px; // Expands touch target to 44px x 44px
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2.5;
-  }
-}
-
-.cardBody {
+.labelGroup {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.kpiIndex {
+  color: var(--admin-accent-brand, #ea002a);
+  font-family: var(--font-admin-code, monospace);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
 }
 
 .kpiLabel {
-  font-family: var(--font-admin-primary, sans-serif);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--admin-text-secondary, #525965);
+  overflow: hidden;
+  color: var(--admin-text-secondary, #4a4a48);
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.metricRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+.iconBadge {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  color: #52525b;
+  background: #f4f4f5;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
 }
 
 .kpiValue {
-  font-family: var(--font-admin-numeric, var(--font-admin-sans, sans-serif));
-  font-size: 1.65rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #0f172a);
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  max-width: 100%;
+  margin: 0.35rem 0 0.45rem;
+  color: var(--admin-text-primary, #0c0c0d);
+  font-family: var(--font-admin-numeric, var(--font-admin-primary, sans-serif));
+  font-size: clamp(1.85rem, 2.3vw, 2.4rem);
+  font-weight: 750;
   font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: 'tnum' 1, 'cv01' 1;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
-/* Trend Delta Pill */
-.deltaPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-family: var(--font-admin-numeric, var(--font-admin-sans, sans-serif));
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.18rem 0.5rem;
-  border-radius: 9999px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-
-  &.positive {
-    background-color: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: #065f46;
-  }
-
-  &.negative {
-    background-color: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
-  }
-
-  &.neutral {
-    background-color: #f1f5f9;
-    border: 1px solid #e2e5ea;
-    color: #475569;
-  }
-
-  svg {
-    stroke-width: 2.5;
-  }
-}
-
-/* Sub-stat Bottom Metadata */
 .cardFooter {
   display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 0.75rem;
+}
+
+.detail {
+  color: var(--admin-text-muted, #767673);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.trendPill {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.65rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid #f1f3f5;
-  font-size: 0.78rem;
-  color: #64748b;
-  font-weight: 500;
+  width: fit-content;
+  padding: 2px 7px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
-/* Radar SLA Status Dot */
-.radarPulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: #10b981;
-  position: relative;
-  flex-shrink: 0;
+.trendPositive {
+  color: var(--admin-status-emerald-text, #065f46);
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  border: 1px solid var(--admin-status-emerald-border, #a7f3d0);
+}
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: -2.5px;
-    left: -2.5px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #10b981;
-    opacity: 0.45;
-    animation: radar-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+.trendNegative {
+  color: var(--admin-status-rose-text, #9c001e);
+  background: var(--admin-status-rose-bg, #fff0f2);
+  border: 1px solid var(--admin-status-rose-border, #f5b7c0);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 7px;
+  border-radius: var(--admin-radius-pill, 9999px);
+  font-family: var(--font-admin-primary, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.badgeEmerald {
+  color: var(--admin-status-emerald-text, #065f46);
+  background: var(--admin-status-emerald-bg, #ecfdf5);
+  border: 1px solid var(--admin-status-emerald-border, #a7f3d0);
+}
+
+.badgeAmber {
+  color: var(--admin-status-amber-text, #78350f);
+  background: var(--admin-status-amber-bg, #fffbeb);
+  border: 1px solid var(--admin-status-amber-border, #fde68a);
+}
+
+.badgeSlate {
+  color: var(--admin-status-slate-text, #393936);
+  background: var(--admin-status-slate-bg, #f2f2f0);
+  border: 1px solid var(--admin-status-slate-border, #d8d8d4);
+}
+
+/* Responsive Grid */
+@media (max-width: 1150px) {
+  .gridContainer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@keyframes radar-ping {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.6;
+@media (max-width: 600px) {
+  .gridContainer {
+    grid-template-columns: 1fr;
   }
-  75%, 100% {
-    transform: scale(2.2);
-    opacity: 0;
+
+  .kpiCard {
+    min-height: auto;
+    padding: 1rem 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpiCard {
+    transition: none;
   }
 }

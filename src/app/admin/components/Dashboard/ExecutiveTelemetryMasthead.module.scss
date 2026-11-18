@@ -1,0 +1,311 @@
+/**
+ * @file ExecutiveTelemetryMasthead.module.scss
+ * @description Swiss Editorial & Luxury Fintech Typography & Scorecard Architecture.
+ *              Synthesized 1:1 from Conyest, Fundora, and Finlo Flash archetypes.
+ *              Strictly pure SCSS selectors.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.mastheadWrapper {
+  margin-bottom: 24px;
+}
+
+.topControlRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.identityGroup {
+  min-width: 0;
+}
+
+.deskTitle {
+  font-family: var(--font-circular), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: #111827;
+  margin: 0 0 4px;
+}
+
+.deskSubtitle {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  max-width: 620px;
+}
+
+.controlsCluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdownRelative {
+  position: relative;
+}
+
+.timeframeButton,
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 140ms ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.16);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 2px;
+  }
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 170px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.12);
+  padding: 6px;
+  z-index: 50;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8rem;
+  color: #111827;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.dropdownItemActive {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+.activeCheck {
+  color: #ea002a;
+  font-weight: 700;
+}
+
+/* 4-Pod Grid Container */
+.telemetryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Base Scorecard Container (Cards 2-4)
+   ========================================================================== */
+.scorecard {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 180px;
+  position: relative;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.kickerGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardKicker {
+  font-family: var(--font-circular), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  line-height: 1;
+}
+
+.infoDot {
+  font-size: 11px;
+  color: #94a3b8;
+  cursor: help;
+  line-height: 1;
+
+  &:hover {
+    color: #475569;
+  }
+}
+
+/* Pill Badges */
+.ratioPill,
+.targetPill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2.5px 8px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ratioPill {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.targetPill {
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+.trendPill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-graphik), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 2.5px 8px;
+  border-radius: 9999px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.trendPositive {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.trendNegative {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.trendNeutral {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+/* ==========================================================================
+   Primary Metric Numerals
+   ========================================================================== */
+.primaryMetric {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(1.75rem, 2.2vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: #111827;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.metricUnit {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.52em;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-left: 4px;
+  vertical-align: baseline;
+}
+
+/* ==========================================================================
+   Card Footers
+   ========================================================================== */
+.cardFooter {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+  margin-top: auto;
+}
+
+.footerMuted {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #64748b;
+  margin: 0;
+  display: block;
+}
+
+.footerLabel {
+  color: #64748b;
+}
+
+.footerHighlight {
+  color: #0f172a;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

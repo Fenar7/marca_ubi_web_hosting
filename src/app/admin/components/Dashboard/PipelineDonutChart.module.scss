@@ -1,0 +1,427 @@
+/**
+ * @file PipelineDonutChart.module.scss
+ * @description Luxury Styling for Pipeline Breakdown Component (Fundora & Finlo Flash Archetype).
+ *              Continuous multi-segment horizontal progress bar, bold headline valuation,
+ *              horizontal category legend with colored circular dots, and hairline detail rows.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.cardContainer {
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 14px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--admin-border-default, #d8d8d4);
+  }
+}
+
+.breakdownHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.titleAndValuation {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.title {
+  margin: 0;
+  color: var(--admin-text-primary, #111111);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.infoIcon {
+  font-size: 0.78rem;
+  color: #8e8e8a;
+  cursor: help;
+  user-select: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #111111;
+  }
+}
+
+.valuationRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.heroValuation {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", var(--font-graphik), sans-serif;
+  font-size: clamp(1.95rem, 2.3vw, 2.35rem);
+  font-weight: 300;
+  color: var(--admin-text-primary, #111111);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.dealCountBadge {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #065f46;
+  background: #ecfdf5;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  border: 1px solid #d1fae5;
+  display: inline-flex;
+  align-items: center;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--admin-text-secondary, #696965);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.dropdownContainer {
+  position: relative;
+}
+
+.viewModeButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  background: var(--admin-canvas-bg, #f5f5f3);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 9999px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #454542);
+  user-select: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-height: 44px;
+    min-width: 100%;
+  }
+
+  &:hover {
+    background: #ebebe8;
+    color: #111111;
+    border-color: #dcdcd8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #111111;
+    outline-offset: 2px;
+  }
+}
+
+.viewModeButtonActive {
+  background: #ffffff;
+  color: #111111;
+  border-color: #111111;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.chevron {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #696965;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  z-index: 50;
+  list-style: none;
+  margin: 0;
+  animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: #f5f5f3;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #111111;
+    outline-offset: -2px;
+  }
+}
+
+.dropdownItemActive {
+  background: #f5f5f3;
+}
+
+.optionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.optionLabel {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--admin-text-primary, #111111);
+}
+
+.optionSubtext {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.68rem;
+  color: #71717a;
+}
+
+.activeCheck {
+  font-size: 0.76rem;
+  color: var(--admin-accent-brand, #ea002a);
+  font-weight: 700;
+}
+
+/* Continuous Multi-Segment Horizontal Progress Bar (Fundora Archetype) */
+.progressContainer {
+  position: relative;
+  width: 100%;
+  margin: 0.5rem 0 0.65rem;
+}
+
+.segmentTooltip {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  color: #111111;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.70rem;
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  animation: tooltipFade 0.15s ease;
+
+  strong {
+    font-family: var(--font-graphik), sans-serif;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 600;
+  }
+}
+
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.multiSegmentBar {
+  width: 100%;
+  height: 14px;
+  border-radius: 9999px;
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+  background-color: #f0f0ee;
+}
+
+.barSegment {
+  height: 100%;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+
+  &:first-child {
+    border-radius: 9999px 0 0 9999px;
+  }
+
+  &:last-child {
+    border-radius: 0 9999px 9999px 0;
+  }
+}
+
+.barSegmentHovered {
+  filter: brightness(1.12);
+}
+
+.barSegmentDimmed {
+  opacity: 0.35;
+}
+
+.emptyCategories {
+  padding: 1.5rem 0;
+  text-align: center;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78rem;
+  color: var(--admin-text-muted, #696965);
+}
+
+/* Ranked Detail Rows with Hairline Separators (No boxed cardlets) */
+.categoryDetailList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0.25rem 0 0;
+  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
+  list-style: none;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 4px;
+  border-bottom: 1px solid #f2f2ef;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #fafaf9;
+  }
+}
+
+.detailRowActive {
+  background-color: #fafaf9;
+}
+
+.detailMetaLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.detailDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.detailCategoryName {
+  font-family: var(--font-graphik), sans-serif;
+  color: var(--admin-text-primary, #111111);
+  font-weight: 500;
+  font-size: 0.76rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detailCountBadge {
+  font-family: var(--font-graphik), sans-serif;
+  color: #52525b;
+  font-size: 0.66rem;
+  font-weight: 500;
+  background: #f0f0ee;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.detailMetaRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.detailPercentagePill {
+  font-family: var(--font-circular), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #52525b;
+  font-variant-numeric: tabular-nums;
+  min-width: 28px;
+  text-align: right;
+}
+
+.detailAmount {
+  font-family: var(--font-circular), sans-serif;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  min-width: 75px;
+  text-align: right;
+}

@@ -25,6 +25,7 @@ import { formatDealValuation } from '@/app/lib/team-utils';
 import type { CurrentUserSession } from '@/app/admin/components/layout/UserProfileDropdown';
 import type { PreferredChannel, ServiceCategory, LeadPriority } from '@/types/crm';
 import { useModalAnimation } from './useModalAnimation';
+import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
 import styles from './NewLeadModal.module.scss';
 
 export interface NewLeadModalProps {
@@ -491,7 +492,7 @@ export function NewLeadModal({
               >
                 {BUDGET_TIERS.map((tier) => (
                   <option key={tier} value={tier}>
-                    {tier}
+                    {formatBudgetTierLabel(tier)}
                   </option>
                 ))}
               </select>

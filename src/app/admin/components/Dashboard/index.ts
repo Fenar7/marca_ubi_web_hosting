@@ -11,6 +11,7 @@
 export * from './types';
 export { ExecutiveMasthead, type ExecutiveMastheadProps } from './ExecutiveMasthead';
 export { ExecutiveKpiGrid, type ExecutiveKpiGridProps } from './ExecutiveKpiGrid';
+export { AttentionQueue, type AttentionQueueItem, type AttentionQueueProps } from './AttentionQueue';
 export { RevenueDynamicsCard, type MonthlyRevenueMetric } from './RevenueDynamicsCard';
 export {
   PipelineAllocationCard,
@@ -27,3 +28,25 @@ export {
 export { ExecutiveKpiGrid as MinimalistStatPods } from './ExecutiveKpiGrid';
 export { RevenueDynamicsCard as PerformanceChart } from './RevenueDynamicsCard';
 export { CommercialDealsTable as CurrentDealsTable } from './CommercialDealsTable';
+
+// Conyest Luxury Financial & CRM Dashboard Modules
+export { ConyestMetricsGrid, type ConyestMetricsGridProps } from './ConyestMetricsGrid';
+export { ConyestCashflowCard, type ConyestCashflowCardProps, type MonthlyCashflowPoint } from './ConyestCashflowCard';
+export { ConyestStatisticCard, type ConyestStatisticCardProps, type StatisticCategoryItem } from './ConyestStatisticCard';
+export { ConyestTransactionsTable, type ConyestTransactionsTableProps, type TransactionRow } from './ConyestTransactionsTable';
+
+// Swiss Editorial Luxury Commercial Desk Modules
+export { PipelineStageFlowBar, type PipelineStageFlowBarProps, type PipelineStageFlowItem } from './PipelineStageFlowBar';
+export { ExecutiveTelemetryMasthead, type ExecutiveTelemetryMastheadProps } from './ExecutiveTelemetryMasthead';
+export { CommercialActionDesk, type CommercialActionDeskProps, type DeskFilterTab } from './CommercialActionDesk';
+export { CadenceUrgencyRail, type CadenceUrgencyRailProps } from './CadenceUrgencyRail';
+export { OverviewWorkspace, type OverviewData, type OverviewRecord } from './OverviewWorkspace';
+
+// From-Scratch Finexy & AI Manager Dashboard Modules
+export { CommercialVelocityBarChart, type CommercialVelocityBarChartProps, type MonthlyBarData } from './CommercialVelocityBarChart';
+export { PipelineDonutChart, type PipelineDonutChartProps, type CategorySlice } from './PipelineDonutChart';
+export { LuxuryDonutCookieChart, type LuxuryDonutCookieChartProps, type DonutCategorySlice } from './LuxuryDonutCookieChart';
+export { LuxuryVirtualCard, type LuxuryVirtualCardProps } from './LuxuryVirtualCard';
+export { LuxuryQuickDispatchPod, type LuxuryQuickDispatchPodProps } from './LuxuryQuickDispatchPod';
+export { LuxurySlaFeedCard, type LuxurySlaFeedCardProps } from './LuxurySlaFeedCard';
+export { CommercialDealsLedger, type CommercialDealsLedgerProps, type LedgerFilterTab } from './CommercialDealsLedger';

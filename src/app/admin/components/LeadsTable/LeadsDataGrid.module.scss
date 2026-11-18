@@ -11,18 +11,18 @@
 
 // Dedicated 9-Column Collision-Free Grid Metrics
 // 1: Lead ID | 2: Client & Org | 3: Service Scope | 4: Funnel Stage | 5: Expected Value | 6: Representative | 7: Priority | 8: Next SLA | 9: Actions
-$grid-columns: 85px minmax(170px, 1.3fr) 115px 125px 105px 125px 100px 120px 190px;
-$grid-min-width: 1140px;
+$grid-columns: 85px minmax(170px, 1.3fr) 115px 125px 150px 125px 100px 120px 190px;
+$grid-min-width: 1200px;
 
 // Desktop & Tablet Virtualized View
 .virtualScrollContainer {
   width: 100%;
   background: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-card, 12px);
+  border-radius: 4px;
   overflow-x: auto;
   overflow-y: auto;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   max-height: calc(100vh - 280px);
   min-height: 400px;
   position: relative;
@@ -57,7 +57,7 @@ $grid-min-width: 1140px;
   position: sticky;
   top: 0;
   z-index: 20;
-  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   box-sizing: border-box;
 }
 
@@ -531,4 +531,34 @@ $grid-min-width: 1140px;
     outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
+}
+
+.virtualScrollContainer {
+  min-height: 280px;
+  max-height: calc(100vh - 330px);
+  border-color: var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  background: var(--admin-card-bg, #fff);
+}
+.tableHeader { background: var(--admin-surface-muted, #efefed); }
+.thCell {
+  color: var(--admin-text-muted, #696965);
+  letter-spacing: 0.08em;
+}
+.virtualRow { border-bottom-color: var(--admin-border-subtle, #e7e7e4); }
+.virtualRow:hover { background: var(--admin-surface-hover, #f7f7f5); }
+.leadIdToken {
+  border-radius: var(--admin-radius-micro, 4px);
+  background: var(--admin-surface-muted, #efefed);
+}
+.clientName,
+.dealValue { color: var(--admin-text-primary, #111); }
+.emptyState {
+  border-color: var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .mobileCardsContainer { gap: 0.6rem; }
 }

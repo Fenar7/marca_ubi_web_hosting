@@ -13,6 +13,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as sass from 'sass';
 
 /**
  * Computes the relative luminance of an sRGB color per WCAG 2.1 specifications.
@@ -76,10 +77,9 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       assert.ok(Math.abs(ratio - 7.10) < 0.2);
     });
 
-    it('verifies primary pill ink #1f242f on Lemon Yellow #eefb87 exceeds WCAG AAA (>= 7:1)', () => {
-      const ratio = getContrastRatio('#1f242f', '#eefb87');
-      assert.ok(ratio >= 7, `Expected contrast >= 7, got ${ratio}`);
-      assert.ok(Math.abs(ratio - 13.92) < 0.2);
+    it('verifies white CTA text on the Marca Ubi red accent meets WCAG AA', () => {
+      const ratio = getContrastRatio('#ffffff', '#ea002a');
+      assert.ok(ratio >= 4.5, `Expected contrast >= 4.5, got ${ratio}`);
     });
 
     it('verifies emerald success text #065f46 on tint #ecfdf5 exceeds WCAG AAA (>= 7:1)', () => {
@@ -107,7 +107,7 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
         const content = fs.readFileSync(fullPath, 'utf8');
         const hasLegacyOrangeHex = /ff6100/i.test(content);
         const hasLegacyOrangeRgb = /255\s*,\s*97\s*,\s*0/i.test(content);
-        const hasCtaOrangeVariable = /\$cta-orange/i.test(content);
+
         assert.equal(
           hasLegacyOrangeHex,
           false,
@@ -163,72 +163,51 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
     }
   });
 
-  describe('5. Editorial Trailing Period Standards (Accordion Aesthetic)', () => {
-    it('verifies /admin/works has editorial trailing periods on primary titles', () => {
+  describe('5. Commercial Desk page behavior contracts', () => {
+    it('keeps Works source failures visible and avoids inventing missing delivery dates', () => {
       const pageContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/works/page.tsx'),
         'utf8'
       );
-      assert.ok(pageContent.includes('Client Deliverables.'));
-
-      const clientContent = fs.readFileSync(
-        path.resolve(process.cwd(), 'src/app/admin/(workspace)/works/WorksWorkspaceClient.tsx'),
-        'utf8'
-      );
-      assert.ok(clientContent.includes('Assign Project Directors.'));
+      assert.match(pageContent, /if \(error\)/);
+      assert.match(pageContent, /Not recorded/);
+      assert.match(pageContent, /\|\| ''/);
     });
 
-    it('verifies /admin/team has editorial trailing periods on primary titles and modals', () => {
+    it('keeps team roster failure separate from an empty roster', () => {
       const pageContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/page.tsx'),
         'utf8'
       );
-      assert.ok(pageContent.includes('Commercial Team & Governance.'));
-
-      const modalContent = fs.readFileSync(
-        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/EditUserPermissionsModal.tsx'),
-        'utf8'
-      );
-      assert.ok(modalContent.includes('Configure Tab Permissions.'));
-
-      const wizardContent = fs.readFileSync(
-        path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/LeadReassignmentWizardModal.tsx'),
-        'utf8'
-      );
-      assert.ok(wizardContent.includes('Pipeline Lead Reassignment Wizard.'));
+      assert.match(pageContent, /getTeamRoster\(\)/);
+      assert.match(pageContent, /if \(!result\.success \|\| !result\.data\)/);
+      assert.match(pageContent, /role="alert"/);
+      assert.match(pageContent, /initialRoster=\{roster\}/);
     });
 
-    it('verifies /admin/settings has editorial trailing periods on primary titles and sections', () => {
+    it('reports unavailable settings and audit history without fabricating records', () => {
       const pageContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/settings/page.tsx'),
         'utf8'
       );
-      assert.ok(pageContent.includes('Operational Governance & Settings.'));
-      assert.ok(pageContent.includes('Commercial Authorization Matrix.'));
-
-      const clientContent = fs.readFileSync(
-        path.resolve(process.cwd(), 'src/app/admin/(workspace)/settings/components/SettingsWorkspaceClient.tsx'),
-        'utf8'
-      );
-      assert.ok(clientContent.includes('Operational SLAs & Automated Alert Thresholds.'));
-      assert.ok(clientContent.includes('Security & Governance Audit Trail.'));
+      assert.match(pageContent, /auditUnavailable=\{Boolean\(auditResult\.error\)\}/);
+      assert.match(pageContent, /auditResult\.data \?\?/);
+      assert.match(pageContent, /Settings unavailable/);
     });
 
-    it('verifies /admin/ingestion has editorial trailing periods on primary titles and modals', () => {
+    it('shows ingestion query failures and does not claim endpoint health is monitored', () => {
       const pageContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/ingestion/page.tsx'),
         'utf8'
       );
-      assert.ok(pageContent.includes('Inbound Lead Ingestion Protocols.'));
-      assert.ok(pageContent.includes('Automated Deduplication Protocol.'));
-
       const clientContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient.tsx'),
         'utf8'
       );
-      assert.ok(clientContent.includes('Simulate Inbound Website Brief.'));
-      assert.ok(clientContent.includes('Recent Inbound Brief Submissions.'));
-      assert.ok(clientContent.includes('Intake & Deduplication Activity Feed.'));
+      assert.match(pageContent, /submissionsUnavailable=\{Boolean\(recentLeadsError\)\}/);
+      assert.match(pageContent, /endpointHealth: 'Unavailable'/);
+      assert.match(clientContent, /Recent leads could not be loaded/);
+      assert.match(clientContent, /Endpoint health is not measured here/);
     });
   });
 
@@ -250,7 +229,7 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       );
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fteam\')'));
       assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
-      assert.ok(content.includes('hasUsersAccess'));
+      assert.ok(content.includes('hasPersonnelDirectoryAccess'));
     });
 
     it('verifies /admin/settings enforces administrative gating and active status', () => {
@@ -260,7 +239,7 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       );
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fsettings\')'));
       assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
-      assert.ok(content.includes('hasSettingsAccess'));
+      assert.ok(content.includes("includes('settings')"));
     });
 
     it('verifies /admin/ingestion enforces administrative gating and active status', () => {
@@ -298,22 +277,22 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       });
     }
 
-    it('verifies primaryActionButton in team.module.scss uses Signature Accordion Lemon tokens', () => {
+    it('verifies primaryActionButton uses the Marca Ubi red token with accessible text', () => {
       const fileContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/team.module.scss'),
         'utf8'
       );
       assert.ok(fileContent.includes('--admin-accent-lemon'));
-      assert.ok(fileContent.includes('--admin-accent-lemon-ink'));
+      assert.ok(fileContent.includes('--admin-btn-primary-text'));
     });
 
-    it('verifies submitButton in EditUserPermissionsModal.module.scss uses Signature Accordion Lemon tokens', () => {
+    it('verifies permission modal CTA uses the Marca Ubi red token with accessible text', () => {
       const fileContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/team/components/EditUserPermissionsModal.module.scss'),
         'utf8'
       );
       assert.ok(fileContent.includes('--admin-accent-lemon'));
-      assert.ok(fileContent.includes('--admin-accent-lemon-ink'));
+      assert.ok(fileContent.includes('--admin-btn-primary-text'));
     });
 
     it('verifies PersonnelCard.tsx healthy capacity (<70%) uses emerald green, not orange', () => {
@@ -334,7 +313,6 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
     });
 
     it('verifies 100% clean Sass compilation across all 7 Team SCSS modules with zero syntax errors', () => {
-      const sass = require('sass');
       const scssFiles = [
         'src/app/admin/(workspace)/team/team.module.scss',
         'src/app/admin/(workspace)/team/components/CategoryUnderlineTabs.module.scss',

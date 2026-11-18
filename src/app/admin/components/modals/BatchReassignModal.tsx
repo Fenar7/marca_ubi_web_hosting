@@ -14,6 +14,7 @@
 
 import React, { useState, useEffect, useRef, useId, useTransition } from 'react';
 import { OverdueBadge } from '@/app/admin/components/Badges';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { batchReassignOverdueLeadsAction } from '@/app/actions/workloadActions';
 import type { OverdueLeadSummary } from '@/app/lib/workload-schemas';
 import styles from './BatchReassignModal.module.scss';
@@ -39,14 +40,7 @@ export interface BatchReassignModalProps {
 }
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`;
-  if (amount >= 100000) return `₹${(amount / 100000).toFixed(2)} L`;
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCrmCurrency(amount);
 }
 
 export function BatchReassignModal({

@@ -46,7 +46,21 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll();
+          const cookiesList = request.cookies.getAll();
+          if (!Array.isArray(cookiesList)) return [];
+          // Defensive Sanitization: Prune null, undefined, non-object, and empty/whitespace-only cookie values.
+          // Prevents TypeError in @supabase/ssr chunk reassembly and SyntaxError in GoTrueClient decodeJWT.
+          return cookiesList.filter(
+            (c): c is { name: string; value: string } =>
+              Boolean(
+                c &&
+                typeof c === 'object' &&
+                typeof c.name === 'string' &&
+                typeof c.value === 'string' &&
+                c.name.trim().length > 0 &&
+                c.value.trim().length > 0
+              )
+          );
         },
         setAll(cookiesToSet) {
           // Mutate the request cookies so downstream route handlers/Server Components see refreshed state
@@ -72,10 +86,54 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
     }
   );
 
-  // Cryptographically authenticate user with Supabase Auth
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Cryptographically authenticate user with Supabase Auth.
+  // Wrapped in a defensive boundary to catch corrupt token decoding errors (SyntaxError) or network timeouts,
+  // preventing Edge Middleware from escalating malformed browser tokens into an unhandled HTTP 500 loop.
+  let user: Awaited<ReturnType<ReturnType<typeof createServerClient>['auth']['getUser']>>['data']['user'] = null;
+
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error && data?.user) {
+      user = data.user;
+    }
+  } catch (authError: unknown) {
+    const message = authError instanceof Error ? authError.message : String(authError);
+    console.warn('[MIDDLEWARE_AUTH_RECOVERY] Malformed auth token or session exception caught; purging corrupt session cookies:', message);
+
+    user = null;
+
+    // Collect corrupt auth cookies and sanitize the incoming request to prevent poisoning Server Components
+    const cookiesToPurge: string[] = [];
+    request.cookies.getAll().forEach((cookie) => {
+      if (cookie?.name && (cookie.name.startsWith('sb-') || cookie.name.includes('-auth-token'))) {
+        cookiesToPurge.push(cookie.name);
+        try {
+          request.cookies.delete(cookie.name);
+        } catch {
+          // Non-blocking fallback if cookie store mutation is constrained in mock runtime
+        }
+      }
+    });
+
+    // Re-instantiate response with sanitized request headers to prevent poisoning downstream Server Components
+    supabaseResponse = NextResponse.next({ request });
+
+    // Write tombstone eviction cookies to the outgoing response so the client browser purges corrupted tokens
+    cookiesToPurge.forEach((cookieName) => {
+      try {
+        supabaseResponse.cookies.set(cookieName, '', {
+          path: '/',
+          maxAge: 0,
+          expires: new Date(0),
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+        });
+      } catch {
+        // Non-blocking fallback if cookie store mutation is constrained in mock runtime
+      }
+    });
+  }
 
   return {
     supabaseResponse,

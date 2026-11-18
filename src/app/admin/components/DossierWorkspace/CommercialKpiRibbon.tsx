@@ -4,7 +4,7 @@
  * @file CommercialKpiRibbon.tsx
  * @description Commercial KPI Ribbon presenting 3 Minimalist Stat Pods for the Client 360° Workspace.
  *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
- *              1. Expected Valuation in Indian Rupees (Lakhs/Crores) with tabular numeric stabilization
+ *              1. Expected Valuation in Indian Rupees with full digits and tabular numeric stabilization
  *                 and 44px circular Emerald icon chip (#ecfdf5).
  *              2. Priority SLA Badge with semantic radar dot indicator and 44px Amber icon chip (#fffbeb).
  *              3. Win Probability & Deal Momentum index derived from current funnel stage mechanics
@@ -16,6 +16,7 @@
 import React, { useMemo } from 'react';
 import type { LeadPriority, FunnelBucket } from '@/types/crm';
 import { formatDossierCurrency } from '../DossierDrawer/dossierUtils';
+import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
 import styles from './LeadDossierWorkspace.module.scss';
 
 export interface CommercialKpiRibbonProps {
@@ -127,7 +128,7 @@ export function CommercialKpiRibbon({
           <div className={styles.scorecardLabelGroup}>
             <span className={styles.scorecardLabel}>Expected Valuation</span>
             <span className={styles.scorecardPill}>
-              {budgetBracket ? budgetBracket : 'Calculated Scope'}
+              {budgetBracket ? formatBudgetTierLabel(budgetBracket) : 'Calculated Scope'}
             </span>
           </div>
           <div

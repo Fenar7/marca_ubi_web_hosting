@@ -1,81 +1,12 @@
-# Full Engineering Context Register — Latest Active Context
+# Current Engineering Context
 
-> **Start here.** This is the authoritative live pointer file; the comprehensive engineering detail lives in the linked registers.
-> Any agent (human or AI) opening this project must read this file first, then the latest dated register.
->
-> **LATEST ACTIVE REGISTER (Graphify Knowledge Graph Architecture — 5 Nov 2026):**  
-> 👉 [`docs/context/2026-11-05_16-07-00.md`](./2026-11-05_16-07-00.md) — Complete Graphify Knowledge Graph Architecture & GraphRAG Traversal Engine: AST Extraction (2,549 nodes, 6,448 edges, 140 communities), 105.2x token reduction benchmark (99.05% reduction), interactive HTML visualizer, automated git hooks (post-commit, post-checkout, post-merge), and multi-platform AI agent governance (PR #112 merged commit `0c17486`).
->
-> **Previous Foundation Registers:**  
-> 👉 [`docs/context/2026-11-05_10-23-00.md`](./2026-11-05_10-23-00.md) (AIOSEO 100/100 Score Recovery - PR #111 merged)  
-> 👉 [`docs/context/2026-11-04_18-59-00.md`](./2026-11-04_18-59-00.md) (Full Production Release: Workflow 1 & Workflow 2)  
-> 👉 [`docs/context/2026-11-04_10-20-00.md`](./2026-11-04_10-20-00.md) (Chat Pod Pass 4/5 Third CTO Audit & Test Hardening)  
-> 👉 [`docs/context/2026-11-03_21-07-00.md`](./2026-11-03_21-07-00.md) (Chat Pod Part D Scroll Ownership & Viewport Lock)  
-> 👉 [`docs/context/2026-11-03_14-55-00.md`](./2026-11-03_14-55-00.md) (Chat Pod Part C Comprehension & Intake Remediation)  
-> 👉 [`docs/context/2026-11-03_11-23-34.md`](./2026-11-03_11-23-34.md) (Chat Pod Parts A & B Motion & Contrast Certification)  
->
-> **AIOSEO & Technical SEO Deep Architecture Reports:**  
-> 👉 [`docs/seo_ai_search_architecture/AIOSEO_AUDIT_REPORT_AND_REMEDIATION_PLAN.md`](../seo_ai_search_architecture/AIOSEO_AUDIT_REPORT_AND_REMEDIATION_PLAN.md)  
-> 👉 [`docs/seo_ai_search_architecture/TECHNICAL_SEO_ONPAGE_AUDIT_REPORT.md`](../seo_ai_search_architecture/TECHNICAL_SEO_ONPAGE_AUDIT_REPORT.md)
+**Latest work (2026-11-17 20:30):** Phase 15: Commercial Desk Luxury Redesign (Conyest, Fundora & Finlo Flash 1:1 Parity). Completely replaced progress bar with SVG Donut ("Cookie") Chart, implemented Executive Virtual VIP Card, Quick Deal Dispatch Pod, Upcoming SLA Urgency Feed, and pure-white 20px scorecards. PR #125 OPEN. Read [2026-11-17 20:30 register](./2026-11-17_20-30-00.md) first.
 
-**Recorded At:** `2026-11-05T16:07:00+05:30`  
-**Current Branch:** `master` (Checked out locally & 100% synchronized with `origin/master`)  
-**Base Branch:** `master`  
-**Latest State:** `All PRs in the stack (PR #112, PR #111, PR #109, PR #107, PR #106, PR #105) are officially APPROVED and MERGED into master. The Graphify Knowledge Graph Architecture, AIOSEO 100/100 remediation, Workflow 1 (Chat Pod), and Workflow 2 (Technical SEO & AI Search Engine) are 100% LIVE IN PRODUCTION.`  
-**Pull Requests Status (ALL MERGED INTO PRODUCTION):**  
-- [PR #112 (MERGED)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/112): `Infrastructure: Graphify Knowledge Graph Architecture, GraphRAG Engine & Git Hooks` (Merged commit `0c17486`)  
-- [PR #111 (MERGED)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/111): `Remediation: AIOSEO 100/100 Score Recovery, Image Alt Attributes & Metadata Precision Engine` (Merged commit `c848354`)  
-- [PR #109 (MERGED)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/109): `Phase 16: AI Search Optimization, LLM Indexing Grounding & Comprehensive Technical SEO Engine` (Merged commit `a56d49f`)  
-- [PR #107 (MERGED)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/107): `Remediation: Chat Pod Swiss Light Editorial Luxury Overhaul, Brand Red Alignment & Launcher Avatar` (Merged commit `d589c2d`)  
-- [PR #106 (MERGED)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/106): `Phase 15.2: Chat Pod Right-Side Docking, Editorial Concierge Profile & Fluid Interaction Engine` (Merged commit `f86f08e`)  
-- [PR #105 (MERGED)](https://github.com/Fenar7/marca_ubi_web_hosting/pull/105): `Phase 15: Chat Pod Deterministic Assistant and Conversational Intake Architecture` (Merged commit `1717038`)  
-**Author Identity:** `Fenar7 <86710532+Fenar7@users.noreply.github.com>`  
-**TypeScript Status:** `0 errors` (`npx tsc --noEmit` verified exit code 0 on `master`)  
-**Unit Tests:** `1,386 pass / 0 fail` across `358 suites`  
-**Server Action Boundaries:** `100% compliant` (13 files, 49 actions verified)  
-**Production Build:** `npm run build` cleanly prerenders 51/51 static and SSG routes  
-**Working Tree:** Clean, nothing uncommitted  
+**Active work:** Commercial Desk Luxury Redesign (Phase 15).  
+**Active branch:** `redesign/crm-conyest-luxury-dashboard`.  
+**Target branch:** `master` (PR #125 OPEN).  
+**Latest handoff:** [2026-11-17_20-30-00.md](./2026-11-17_20-30-00.md). Use that detailed register as current source of truth.
 
----
+**Task state:** 4-tier luxury grid delivered, Donut Cookie Chart, Virtual VIP Card, Quick Dispatch, SLA Feeds implemented, zero `any` types, TypeScript 0 errors, boundaries 100%, tests passing 6/6, PR #125 OPEN. All PRs remain strictly OPEN awaiting manual human review. NEVER auto-merge.
 
-## 1. Overview of the Production Architecture
-
-```mermaid
-graph TD
-    subgraph W3["AIOSEO 100/100 SCORE RECOVERY (PR #111)"]
-        C1["Title 52 chars (layout.tsx) & Description 156 chars"]
-        C2["8 Images Alt Text Binding (ServicesAccordion.tsx)"]
-        C3["Apex Canonical Lock & Subpage Title Deduplication"]
-        C4["Tree-Shaking optimizePackageImports (next.config.ts)"]
-    end
-
-    subgraph W2["WORKFLOW 2: Enterprise Technical SEO & AI Search Engine"]
-        A1["Crawler Governance & AI Allowlist (robots.ts)"]
-        A2["Unified XML Sitemap Engine (sitemap.ts)"]
-        A3["RFC 7538 HTTP 308 Permanent Redirections (next.config.ts)"]
-        A4["Schema.org Graphs (JobPosting, WebSite SearchAction)"]
-        A5["Semantic Headings (H1-H3) & Canonical URL Dedup"]
-    end
-
-    subgraph W1["WORKFLOW 1: Chat Pod Conversational Intake Engine"]
-        B1["Deterministic Comprehension Engine (match.ts)"]
-        B2["Finite State Machine Intake Flow (slots.ts, submit.ts)"]
-        B3["Single Scroll Ownership (.flow) & overlayScrollLock.ts"]
-        B4["Swiss Light Luxury Design Tokens & Contrast AA"]
-    end
-
-    W2 -->|"PR #109 (Merged)"| S1["remediation/turbopack-compaction-dev-server"]
-    W1 -->|"PR #107 (Merged)"| S2["redesign/chat-pod-luxury-interaction"]
-    S1 -->|Merged| S2
-    S2 -->|"PR #106 (Merged)"| S3["feature/chat-pod"]
-    S3 -->|"PR #105 (Merged)"| M1["master"]
-    W3 -->|"PR #111 (Merged)"| PROD["master (PRODUCTION 🚀 100/100)"]
-```
-
----
-
-## 2. Historical Context & Previous Merged Phases
-1. **PR #111 (Merged `c848354`):** Remediation: AIOSEO 100/100 Score Recovery, Image Alt Attributes & Metadata Precision Engine.
-2. **PR #105 (Merged `1717038`):** Phase 15 Chat Pod Deterministic Assistant and Conversational Intake Architecture.
-3. **PR #109 (Merged `a56d49f`):** Phase 16 AI Search Optimization, LLM Indexing Grounding (`llms.txt`) & Technical SEO.
-4. **PR #104 (Merged `3f1318a`):** Phase 14 Blog redesign — Journal rail, `/blog` masthead, article reading column with NO `max-width` cap; 16-18px body type.
+**Historical registers:** [2026-11-17 20:30 register](./2026-11-17_20-30-00.md), [2026-11-17 14:00 register](./2026-11-17_14-00-00.md), [2026-11-16 15:00 register](./2026-11-16_15-00-00.md), [2026-11-16 14:00 register](./2026-11-16_14-00-00.md), [2026-11-14 21:00 register](./2026-11-14_21-00-00.md), [2026-11-14 19:30 register](./2026-11-14_19-30-00.md), [2026-11-14 14:10 register](./2026-11-14_14-10-00.md), [2026-11-14 12:30 register](./2026-11-14_12-30-00.md), [2026-11-13 16:35 register](./2026-11-13_16-35-00.md), [2026-11-13 13:45 register](./2026-11-13_13-45-00.md), [2026-11-13 10:45 register](./2026-11-13_10-45-00.md), [2026-11-12 00:45 register](./2026-11-12_00-45-00.md), [2026-11-11 03:45 register](./2026-11-11_03-45-00.md), [2026-11-09 20:15 register](./2026-11-09_20-15-00.md), [2026-11-09 18:30 register](./2026-11-09_18-30-00.md), [2026-11-09 14:15 register](./2026-11-09_14-15-00.md), [2026-11-09 23:45 register](./2026-11-09_23-45-00.md), [2026-11-09 23:00 register](./2026-11-09_23-00-00.md), [2026-11-09 19:00 register](./2026-11-09_19-00-00.md), [2026-11-07 15:00 register](./2026-11-07_15-00-00.md), [2026-11-07 11:00 register](./2026-11-07_11-00-00.md), and [2026-11-06 12:00 register](./2026-11-06_12-00-00.md).

@@ -10,9 +10,10 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { updateLeadStatusInlineAction } from '@/app/actions/leadInlineActions';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
@@ -54,19 +55,12 @@ export interface FunnelStatusItem {
 interface DealsWorkspaceClientProps {
   initialDeals: HydratedDealItem[];
   sources?: Array<{ id: string; name: string }>;
-  profiles?: Array<{ id: string; full_name: string; email: string; role: string }>;
   statuses?: FunnelStatusItem[];
   userRole?: string;
 }
 
 function formatDealValue(amount: number): string {
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2)} Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 /**
@@ -80,10 +74,10 @@ function formatStageAge(updatedAt: string): string {
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffMins < 60) return diffMins <= 1 ? 'Updated just now' : `${diffMins}m in stage`;
-  if (diffHours < 24) return `${diffHours}h in stage`;
-  if (diffDays === 1) return '1d in stage';
-  return `${diffDays}d in stage`;
+  if (diffMins < 60) return diffMins <= 1 ? 'Updated just now' : `Updated ${diffMins}m ago`;
+  if (diffHours < 24) return `Updated ${diffHours}h ago`;
+  if (diffDays === 1) return 'Updated 1d ago';
+  return `Updated ${diffDays}d ago`;
 }
 
 type SortField =
@@ -106,13 +100,15 @@ export function DealsWorkspaceClient({
   const assignedToParam = searchParams.get('assigned_to');
   const searchParam = searchParams.get('search') || searchParams.get('q') || '';
 
-  const initialBucket: 'all' | 'open' | 'potential' | 'converted' =
-    bucketParam === 'potential' || bucketParam === 'converted' || bucketParam === 'open'
+  const initialBucket: 'all' | 'open' | 'potential' | 'converted' | 'lost' =
+    bucketParam === 'potential' || bucketParam === 'converted' || bucketParam === 'open' || bucketParam === 'lost'
       ? bucketParam
       : 'all';
 
   const [deals, setDeals] = useState<HydratedDealItem[]>(initialDeals);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [movingLeadId, setMovingLeadId] = useState<string | null>(null);
+  const [moveError, setMoveError] = useState<string | null>(null);
 
   const handleCopyDealId = (dealIdStr: string, e: React.MouseEvent): void => {
     e.stopPropagation();
@@ -128,22 +124,57 @@ export function DealsWorkspaceClient({
     setDeals(initialDeals);
   }, [initialDeals]);
 
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('table');
   const [searchTerm, setSearchTerm] = useState(searchParam);
-  const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted'>(initialBucket);
+  const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted' | 'lost'>(initialBucket);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assignedToParam);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sortField, setSortField] = useState<SortField>('expected_value');
   const [sortAscending, setSortAscending] = useState(false);
 
+  useEffect(() => {
+    const desktopBoard = window.matchMedia('(min-width: 1100px)');
+    if (desktopBoard.matches) setViewMode('kanban');
+    const handleViewportChange = (event: MediaQueryListEvent): void => {
+      if (!event.matches) setViewMode('table');
+    };
+    desktopBoard.addEventListener('change', handleViewportChange);
+    return () => desktopBoard.removeEventListener('change', handleViewportChange);
+  }, []);
+
   // Synchronize with URL search parameters on route navigation
   useEffect(() => {
-    if (bucketParam && ['open', 'potential', 'converted'].includes(bucketParam)) {
-      setSelectedBucket(bucketParam as 'open' | 'potential' | 'converted');
-    }
-    if (assignedToParam !== null) {
-      setSelectedAssigneeId(assignedToParam);
-    }
+    setSelectedBucket(bucketParam && ['open', 'potential', 'converted', 'lost'].includes(bucketParam)
+      ? bucketParam as 'open' | 'potential' | 'converted' | 'lost' : 'all');
+    setSelectedAssigneeId(assignedToParam);
   }, [bucketParam, assignedToParam]);
+
+  useEffect(() => { if (!searchTimer.current) setSearchTerm(searchParam); }, [searchParam]);
+  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
+
+  const updateServerFilter = (key: string, value: string | null): void => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value !== 'all') params.set(key, value);
+    else params.delete(key);
+    params.delete('page');
+    const query = params.toString();
+    router.replace(query ? `/admin/deals?${query}` : '/admin/deals', { scroll: false });
+  };
+
+  const updateSearch = (value: string): void => {
+    setSearchTerm(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (value.trim()) params.set('search', value.trim());
+      else params.delete('search');
+      params.delete('q');
+      params.delete('page');
+      const query = params.toString();
+      router.replace(query ? `/admin/deals?${query}` : '/admin/deals', { scroll: false });
+      searchTimer.current = null;
+    }, 300);
+  };
 
   // Drawer and modal state
   const [activeDrawerDealId, setActiveDrawerDealId] = useState<string | null>(null);
@@ -167,23 +198,24 @@ export function DealsWorkspaceClient({
   // Filtered deals
   const filteredDeals = useMemo(() => {
     return deals.filter((deal) => {
-      const q = searchTerm.toLowerCase().trim();
-      const matchesSearch =
-        !q ||
-        deal.name.toLowerCase().includes(q) ||
-        (deal.company && deal.company.toLowerCase().includes(q)) ||
-        deal.lead_id.toLowerCase().includes(q) ||
-        deal.assigned_to_name.toLowerCase().includes(q);
-
       const matchesBucket =
         selectedBucket === 'all' || deal.status_bucket === selectedBucket;
 
       const matchesAssignee =
         !selectedAssigneeId || deal.assigned_to === selectedAssigneeId;
 
-      return matchesSearch && matchesBucket && matchesAssignee;
+      return matchesBucket && matchesAssignee;
     });
-  }, [deals, searchTerm, selectedBucket, selectedAssigneeId]);
+  }, [deals, selectedBucket, selectedAssigneeId]);
+
+  const loadedPipelineValue = useMemo(
+    () => filteredDeals.reduce((total, deal) => total + (Number.isFinite(deal.expected_value) ? deal.expected_value : 0), 0),
+    [filteredDeals]
+  );
+  const scheduledFollowUpCount = useMemo(
+    () => filteredDeals.filter((deal) => Boolean(deal.next_follow_up)).length,
+    [filteredDeals]
+  );
 
   // Sorted deals for Table view
   const sortedTableDeals = useMemo(() => {
@@ -236,10 +268,9 @@ export function DealsWorkspaceClient({
     }
   };
 
-  const handleInspectDeal = (dealId: string): void => {
+  const handleInspectDeal = useCallback((dealId: string): void => {
     router.push(`/admin/deals/${dealId}`);
-
-  };
+  }, [router]);
 
   const handleCloseDrawer = (): void => {
     setIsDrawerOpen(false);
@@ -260,7 +291,7 @@ export function DealsWorkspaceClient({
     };
     window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
     return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
-  }, []);
+  }, [handleInspectDeal]);
 
   /**
    * Evaluates if advancing to a target status triggers guarded requirements.
@@ -282,7 +313,7 @@ export function DealsWorkspaceClient({
    */
   const handleMoveStage = useCallback(
     async (deal: HydratedDealItem, direction: 'prev' | 'next'): Promise<void> => {
-      if (userRole === 'viewer') return;
+      if (userRole === 'viewer' || movingLeadId) return;
 
       const currentIndex = sortedStages.findIndex((s) => s.id === deal.status_id);
       if (currentIndex === -1) return;
@@ -306,7 +337,9 @@ export function DealsWorkspaceClient({
         return;
       }
 
-      // Optimistic in-memory update
+      setMoveError(null);
+      setMovingLeadId(deal.id);
+      // Keep a copy for rollback if the server rejects the transition.
       setDeals((prev) =>
         prev.map((d) =>
           d.id === deal.id
@@ -322,16 +355,19 @@ export function DealsWorkspaceClient({
       );
 
       // Perform server mutation
-      const res = await updateLeadStatusInlineAction(deal.id, targetStage.id);
-      if (!res.success) {
-        // Targeted rollback for this deal only
-        setDeals((prev) =>
-          prev.map((d) => (d.id === deal.id ? deal : d))
-        );
-        console.error('[DealsWorkspaceClient] Stage transition failed:', res.error);
+      try {
+        const res = await updateLeadStatusInlineAction(deal.id, targetStage.id);
+        if (!res.success) throw new Error(res.error || 'The stage change could not be saved.');
+      } catch (error) {
+        setDeals((prev) => prev.map((d) => (d.id === deal.id ? deal : d)));
+        const message = error instanceof Error ? error.message : 'The stage change could not be saved.';
+        console.error('[DealsWorkspaceClient] Stage transition failed:', message);
+        setMoveError(message);
+      } finally {
+        setMovingLeadId(null);
       }
     },
-    [sortedStages, userRole]
+    [sortedStages, userRole, movingLeadId]
   );
 
   const handleStageTransitionSuccess = (payload: GuardedTransitionResultPayload): void => {
@@ -356,6 +392,27 @@ export function DealsWorkspaceClient({
 
   return (
     <div className={styles.clientContainer}>
+      {moveError && <p className={styles.moveError} role="alert">{moveError}</p>}
+      <section className={styles.pipelineSummary} aria-label="Loaded deal summary">
+        <div className={styles.pipelineSummaryIntro}>
+          <span className={styles.pipelineEyebrow}>Pipeline snapshot</span>
+          <p>Figures reflect the records currently loaded for this view.</p>
+        </div>
+        <dl className={styles.pipelineSummaryMetrics}>
+          <div>
+            <dt>Loaded deals</dt>
+            <dd>{filteredDeals.length}</dd>
+          </div>
+          <div>
+            <dt>Loaded value</dt>
+            <dd>{formatDealValue(loadedPipelineValue)}</dd>
+          </div>
+          <div>
+            <dt>With follow-up</dt>
+            <dd>{scheduledFollowUpCount}</dd>
+          </div>
+        </dl>
+      </section>
       {/* Search & Operational Controls Toolbar */}
       <div className={styles.topControlBar}>
         <div className={styles.searchWrapper}>
@@ -377,9 +434,10 @@ export function DealsWorkspaceClient({
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Search deals by client, company, deal ref, or owner..."
+            aria-label="Search deals by name, company or reference"
+            placeholder="Search name, company or deal reference..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => updateSearch(e.target.value)}
           />
         </div>
 
@@ -421,30 +479,38 @@ export function DealsWorkspaceClient({
             <button
               type="button"
               className={`${styles.filterPill} ${selectedBucket === 'all' ? styles.filterPillActive : ''}`}
-              onClick={() => setSelectedBucket('all')}
+              onClick={() => { setSelectedBucket('all'); updateServerFilter('bucket', null); }}
+              aria-pressed={selectedBucket === 'all'}
             >
               All ({deals.length})
             </button>
             <button
               type="button"
               className={`${styles.filterPill} ${selectedBucket === 'open' ? styles.filterPillActive : ''}`}
-              onClick={() => setSelectedBucket('open')}
+              onClick={() => { setSelectedBucket('open'); updateServerFilter('bucket', 'open'); }}
+              aria-pressed={selectedBucket === 'open'}
             >
               Active
             </button>
             <button
               type="button"
               className={`${styles.filterPill} ${selectedBucket === 'potential' ? styles.filterPillActive : ''}`}
-              onClick={() => setSelectedBucket('potential')}
+              onClick={() => { setSelectedBucket('potential'); updateServerFilter('bucket', 'potential'); }}
+              aria-pressed={selectedBucket === 'potential'}
             >
               Potential
             </button>
             <button
               type="button"
               className={`${styles.filterPill} ${selectedBucket === 'converted' ? styles.filterPillActive : ''}`}
-              onClick={() => setSelectedBucket('converted')}
+              onClick={() => { setSelectedBucket('converted'); updateServerFilter('bucket', 'converted'); }}
+              aria-pressed={selectedBucket === 'converted'}
             >
               Converted
+            </button>
+            <button type="button" className={`${styles.filterPill} ${selectedBucket === 'lost' ? styles.filterPillActive : ''}`}
+              onClick={() => { setSelectedBucket('lost'); updateServerFilter('bucket', 'lost'); }} aria-pressed={selectedBucket === 'lost'}>
+              Lost
             </button>
           </div>
         </div>
@@ -458,7 +524,7 @@ export function DealsWorkspaceClient({
           <button
             type="button"
             className={styles.clearFilterBtn}
-            onClick={() => setSelectedAssigneeId(null)}
+            onClick={() => { setSelectedAssigneeId(null); updateServerFilter('assigned_to', null); }}
             aria-label="Clear representative filter"
           >
             Clear Filter
@@ -576,7 +642,7 @@ export function DealsWorkspaceClient({
                             <div className={styles.cardMetaPills}>
                               <span
                                 className={styles.velocityBadge}
-                                title={`Deal velocity: last updated ${new Date(deal.updated_at).toLocaleString()}`}
+                                title={`Last updated ${new Date(deal.updated_at).toLocaleString()}`}
                               >
                                 {formatStageAge(deal.updated_at)}
                               </span>
@@ -668,7 +734,7 @@ export function DealsWorkspaceClient({
                                 type="button"
                                 className={styles.stageMoveBtn}
                                 title={userRole === 'viewer' ? 'Read-only access' : 'Move to previous stage'}
-                                disabled={stageIdx === 0 || userRole === 'viewer'}
+                                disabled={stageIdx === 0 || userRole === 'viewer' || movingLeadId !== null}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleMoveStage(deal, 'prev');
@@ -684,7 +750,7 @@ export function DealsWorkspaceClient({
                                 type="button"
                                 className={styles.stageMoveBtn}
                                 title={userRole === 'viewer' ? 'Read-only access' : 'Advance to next stage'}
-                                disabled={stageIdx === sortedStages.length - 1 || userRole === 'viewer'}
+                                disabled={stageIdx === sortedStages.length - 1 || userRole === 'viewer' || movingLeadId !== null}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleMoveStage(deal, 'next');

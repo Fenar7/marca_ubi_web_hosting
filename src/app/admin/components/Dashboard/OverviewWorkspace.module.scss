@@ -1,0 +1,108 @@
+/**
+ * @file OverviewWorkspace.module.scss
+ * @description Master Commercial Desk Workspace Layout (Finexy + AI Manager Archetype).
+ *              Tier 1: Executive Telemetry (Obsidian Card + 3 white scorecards).
+ *              Tier 2: 68% / 32% Visual Intelligence Cockpit (Dual-Bar Chart + Donut Ring).
+ *              Tier 3: Master Commercial Deals Ledger (Full-width AI Manager list).
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.overview {
+  color: var(--admin-text-primary, #111111);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.875rem;
+  padding: 8px 0 40px;
+  max-width: 1760px;
+  margin-inline: auto;
+  min-width: 0;
+
+  h1, h2, h3, p {
+    margin: 0;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-circular), sans-serif;
+    font-weight: 600;
+  }
+
+  a, button, select, summary {
+    &:focus-visible {
+      outline: 2px solid var(--admin-focus-ring, #9c001e);
+      outline-offset: 2px;
+    }
+  }
+
+  button, select {
+    font: inherit;
+  }
+
+  a {
+    color: inherit;
+  }
+}
+
+/* Tier 2: 68% / 32% Visual Intelligence Cockpit (Finexy Dual-Bar + Donut Ring) */
+.visualCockpitGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 68fr) minmax(330px, 32fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 20px;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+.chartColumn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.donutColumn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Tier 3: 50% / 50% Reference Action & Urgency Widgets */
+.actionWidgetsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 20px;
+
+  @media (max-width: 960px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.widgetColumn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Tier 4: Full-Width Master Ledger Section */
+.ledgerSection {
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

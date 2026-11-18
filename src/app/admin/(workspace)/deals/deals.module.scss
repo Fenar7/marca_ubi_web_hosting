@@ -6,7 +6,7 @@
 .dealsWorkspace {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.5rem;
   width: 100%;
 }
 
@@ -59,6 +59,57 @@
   max-width: 720px;
 }
 
+.loadWarning {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--admin-border-default, #dedede);
+  border-left: 3px solid var(--admin-text-secondary, #444);
+  color: var(--admin-text-primary, #111);
+  background: var(--admin-surface-muted, #f3f3f1);
+  line-height: 1.5;
+}
+
+.retryLink {
+  width: fit-content;
+  color: var(--admin-accent-brand, #a5001d);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  &:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+}
+
+.dealsWorkspace { gap: 1.25rem; }
+.header {
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom-color: var(--admin-border-subtle, #e7e7e4);
+}
+.eyebrow {
+  color: var(--admin-accent-brand, #ea002a);
+  letter-spacing: 0.11em;
+}
+.heading {
+  font-size: clamp(1.7rem, 2.2vw, 2.35rem);
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+.subheading { max-width: 58ch; font-size: 0.95rem; }
+.loadError {
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--admin-status-rose-border, #f5b7c0);
+  border-left: 3px solid var(--admin-accent-brand, #ea002a);
+  border-radius: var(--admin-radius-inner, 8px);
+  background: var(--admin-status-rose-bg, #fff0f2);
+  color: var(--admin-status-rose-text, #9c001e);
+}
+
 .kpiContainer {
   width: 100%;
+}
+
+.loadError {
+  border-left: 3px solid #c40023;
+  background: #fff;
+  color: #741321;
+  padding: 1rem;
+  line-height: 1.5;
 }

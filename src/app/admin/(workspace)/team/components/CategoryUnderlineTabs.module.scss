@@ -26,6 +26,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
+  min-height: 44px;
   background: transparent;
   border: none;
   color: var(--admin-text-secondary, #475569);
@@ -57,7 +58,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: var(--admin-border-strong, #1f242f);
+    background: #ea002a;
     border-radius: 2px 2px 0 0;
   }
 }
@@ -80,7 +81,7 @@
 }
 
 .tabButtonActive .counterBadge {
-  background: var(--admin-accent-lemon-tint, rgba(238, 251, 135, 0.45));
-  color: var(--admin-accent-lemon-ink, #1f242f);
-  border-color: var(--admin-border-strong, #1f242f);
+  background: #f1f1ef;
+  color: #111;
+  border-color: #dedede;
 }

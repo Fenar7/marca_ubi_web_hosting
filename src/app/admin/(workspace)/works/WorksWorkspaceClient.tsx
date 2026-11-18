@@ -11,8 +11,9 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import type { ClientWorkItem, ClientWorkDeliveryStage, ClientWorkHealthStatus } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import {
   updateClientWorkMilestoneAction,
   updateClientWorkStageAction,
@@ -25,16 +26,11 @@ interface WorksWorkspaceClientProps {
   initialWorks: ClientWorkItem[];
   userRole?: string;
   profiles?: Array<{ id: string; full_name: string; email?: string; role?: string }>;
+  directoryAvailable?: boolean;
 }
 
 function formatCurrency(amount: number): string {
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2)} Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 const STAGE_OPTIONS: Array<{ key: ClientWorkDeliveryStage; label: string }> = [
@@ -57,6 +53,7 @@ export function WorksWorkspaceClient({
   initialWorks,
   userRole,
   profiles = [],
+  directoryAvailable = true,
 }: WorksWorkspaceClientProps): React.ReactElement {
   const [works, setWorks] = useState<ClientWorkItem[]>(initialWorks);
   const [searchTerm, setSearchTerm] = useState('');
@@ -70,6 +67,22 @@ export function WorksWorkspaceClient({
   const [selectedTechLead, setSelectedTechLead] = useState<string>('');
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
   const [assignError, setAssignError] = useState<string | null>(null);
+  const [workError, setWorkError] = useState<string | null>(null);
+  const [pendingWorks, setPendingWorks] = useState<Set<string>>(new Set());
+  const pendingRef = useRef(new Set<string>());
+
+  // Serialize updates per project so a failed optimistic write cannot undo a later change.
+  const beginUpdate = useCallback((workId: string): boolean => {
+    if (pendingRef.current.has(workId)) return false;
+    pendingRef.current.add(workId);
+    setPendingWorks(new Set(pendingRef.current));
+    setWorkError(null);
+    return true;
+  }, []);
+  const endUpdate = useCallback((workId: string): void => {
+    pendingRef.current.delete(workId);
+    setPendingWorks(new Set(pendingRef.current));
+  }, []);
 
   // Synchronize state when server hydration updates
   useEffect(() => {
@@ -89,7 +102,7 @@ export function WorksWorkspaceClient({
   }, [assigningWork]);
 
   const isViewer = userRole === 'viewer';
-  const canAssignDirectors = userRole === 'admin' || userRole === 'sales_manager';
+  const canAssignDirectors = directoryAvailable && (userRole === 'admin' || userRole === 'sales_manager');
 
   const filteredWorks = useMemo(() => {
     return works.filter((work) => {
@@ -108,6 +121,12 @@ export function WorksWorkspaceClient({
     });
   }, [works, searchTerm, selectedHealth, selectedStage]);
 
+  const deliverySummary = useMemo(() => ({
+    loaded: works.length,
+    attention: works.filter((work) => work.health_status === 'at_risk' || work.health_status === 'blocked').length,
+    delivered: works.filter((work) => work.health_status === 'completed').length,
+  }), [works]);
+
   /**
    * Toggles milestone status between pending and completed with single-item rollback.
    */
@@ -116,7 +135,7 @@ export function WorksWorkspaceClient({
       if (isViewer) return;
 
       const currentItem = works.find((w) => w.id === workId);
-      if (!currentItem) return;
+      if (!currentItem || !beginUpdate(workId)) return;
       const previousMilestones = currentItem.milestones;
 
       const nextStatus: 'pending' | 'completed' =
@@ -146,6 +165,9 @@ export function WorksWorkspaceClient({
         workId,
         milestoneId,
         status: nextStatus,
+      }).catch((error: unknown) => {
+        console.error('[works] Milestone update failed:', error);
+        return { success: false, error: 'Unable to update this milestone. Please try again.' };
       });
 
       if (!result.success) {
@@ -156,9 +178,11 @@ export function WorksWorkspaceClient({
           )
         );
         console.error('[WorksWorkspaceClient] Milestone update failed:', result.error);
+        setWorkError(result.error || 'Unable to update this milestone. Please try again.');
       }
+      endUpdate(workId);
     },
-    [works, isViewer]
+    [works, isViewer, beginUpdate, endUpdate]
   );
 
   /**
@@ -169,7 +193,7 @@ export function WorksWorkspaceClient({
       if (isViewer) return;
 
       const currentItem = works.find((w) => w.id === workId);
-      if (!currentItem) return;
+      if (!currentItem || !beginUpdate(workId)) return;
       const previousStage = currentItem.delivery_stage;
       const previousHealth = currentItem.health_status;
 
@@ -188,6 +212,9 @@ export function WorksWorkspaceClient({
       const result = await updateClientWorkStageAction({
         workId,
         stage: newStage,
+      }).catch((error: unknown) => {
+        console.error('[works] Stage update failed:', error);
+        return { success: false, error: 'Unable to update the project stage. Please try again.' };
       });
 
       if (!result.success) {
@@ -200,9 +227,11 @@ export function WorksWorkspaceClient({
           )
         );
         console.error('[WorksWorkspaceClient] Stage transition failed:', result.error);
+        setWorkError(result.error || 'Unable to update the project stage. Please try again.');
       }
+      endUpdate(workId);
     },
-    [works, isViewer]
+    [works, isViewer, beginUpdate, endUpdate]
   );
 
   /**
@@ -213,7 +242,7 @@ export function WorksWorkspaceClient({
       if (isViewer) return;
 
       const currentItem = works.find((w) => w.id === workId);
-      if (!currentItem) return;
+      if (!currentItem || !beginUpdate(workId)) return;
       const previousHealth = currentItem.health_status;
 
       // Targeted optimistic update
@@ -230,6 +259,9 @@ export function WorksWorkspaceClient({
       const result = await updateClientWorkHealthAction({
         workId,
         healthStatus: newHealth,
+      }).catch((error: unknown) => {
+        console.error('[works] Health update failed:', error);
+        return { success: false, error: 'Unable to update project health. Please try again.' };
       });
 
       if (!result.success) {
@@ -240,9 +272,11 @@ export function WorksWorkspaceClient({
           )
         );
         console.error('[WorksWorkspaceClient] Health status update failed:', result.error);
+        setWorkError(result.error || 'Unable to update project health. Please try again.');
       }
+      endUpdate(workId);
     },
-    [works, isViewer]
+    [works, isViewer, beginUpdate, endUpdate]
   );
 
   const handleOpenDirectorModal = (work: ClientWorkItem): void => {
@@ -266,6 +300,9 @@ export function WorksWorkspaceClient({
       workId: assigningWork.id,
       creativeLeadId: cLeadId,
       techLeadId: tLeadId,
+    }).catch((error: unknown) => {
+      console.error('[works] Director assignment failed:', error);
+      return { success: false, error: 'Unable to assign directors. Please try again.' };
     });
 
     setIsAssigning(false);
@@ -295,6 +332,18 @@ export function WorksWorkspaceClient({
 
   return (
     <div className={styles.clientContainer}>
+      {workError && <p className={styles.actionError} role="alert">{workError}</p>}
+      <section className={styles.deliverySummary} aria-label="Loaded delivery portfolio">
+        <div className={styles.deliverySummaryIntro}>
+          <span>Delivery portfolio</span>
+          <p>Counts reflect the project records loaded for your access.</p>
+        </div>
+        <dl className={styles.deliverySummaryMetrics}>
+          <div><dt>Loaded projects</dt><dd>{deliverySummary.loaded.toLocaleString('en-IN')}</dd></div>
+          <div><dt>At risk or blocked</dt><dd>{deliverySummary.attention.toLocaleString('en-IN')}</dd></div>
+          <div><dt>Delivered</dt><dd>{deliverySummary.delivered.toLocaleString('en-IN')}</dd></div>
+        </dl>
+      </section>
       {/* Search & Filter Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.searchWrapper}>
@@ -317,6 +366,7 @@ export function WorksWorkspaceClient({
             type="text"
             className={styles.searchInput}
             placeholder="Search projects by client, project code (PRJ-1001), or scope..."
+            aria-label="Search projects by client, project code, or service"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -327,6 +377,7 @@ export function WorksWorkspaceClient({
             type="button"
             className={`${styles.filterPill} ${selectedHealth === 'all' ? styles.filterPillActive : ''}`}
             onClick={() => setSelectedHealth('all')}
+            aria-pressed={selectedHealth === 'all'}
           >
             All Projects ({works.length})
           </button>
@@ -334,6 +385,7 @@ export function WorksWorkspaceClient({
             type="button"
             className={`${styles.filterPill} ${selectedHealth === 'on_track' ? styles.filterPillActive : ''}`}
             onClick={() => setSelectedHealth('on_track')}
+            aria-pressed={selectedHealth === 'on_track'}
           >
             On Track
           </button>
@@ -341,13 +393,23 @@ export function WorksWorkspaceClient({
             type="button"
             className={`${styles.filterPill} ${selectedHealth === 'at_risk' ? styles.filterPillActive : ''}`}
             onClick={() => setSelectedHealth('at_risk')}
+            aria-pressed={selectedHealth === 'at_risk'}
           >
             At Risk
           </button>
           <button
             type="button"
+            className={`${styles.filterPill} ${selectedHealth === 'blocked' ? styles.filterPillActive : ''}`}
+            onClick={() => setSelectedHealth('blocked')}
+            aria-pressed={selectedHealth === 'blocked'}
+          >
+            Blocked
+          </button>
+          <button
+            type="button"
             className={`${styles.filterPill} ${selectedHealth === 'completed' ? styles.filterPillActive : ''}`}
             onClick={() => setSelectedHealth('completed')}
+            aria-pressed={selectedHealth === 'completed'}
           >
             Delivered
           </button>
@@ -369,6 +431,7 @@ export function WorksWorkspaceClient({
               type="button"
               className={`${styles.stagePillBtn} ${selectedStage === stg.key ? styles.stagePillBtnActive : ''}`}
               onClick={() => setSelectedStage(stg.key)}
+              aria-pressed={selectedStage === stg.key}
             >
               {stg.label}
             </button>
@@ -376,7 +439,12 @@ export function WorksWorkspaceClient({
         </div>
       </div>
 
-      {/* Grid of Client Works Deliverable Cards */}
+      <div className={styles.resultsHeading}>
+        <h2>Projects</h2>
+        <span>{filteredWorks.length.toLocaleString('en-IN')} shown</span>
+      </div>
+
+      {/* Project rows keep stage, health, ownership, and milestone actions together. */}
       {filteredWorks.length === 0 ? (
         <div className={styles.emptyCard}>
           <p className={styles.emptyTitle}>No matching client engagements</p>
@@ -412,6 +480,7 @@ export function WorksWorkspaceClient({
                       <select
                         className={`${styles.healthSelect} ${healthConfig.className}`}
                         value={work.health_status}
+                        disabled={pendingWorks.has(work.id)}
                         onChange={(e) => handleChangeHealth(work.id, e.target.value as ClientWorkHealthStatus)}
                         aria-label={`Update operational health for ${work.project_code}`}
                       >
@@ -446,6 +515,7 @@ export function WorksWorkspaceClient({
                       <select
                         className={styles.stageSelect}
                         value={work.delivery_stage}
+                        disabled={pendingWorks.has(work.id)}
                         onChange={(e) => handleChangeStage(work.id, e.target.value as ClientWorkDeliveryStage)}
                         aria-label={`Advance production delivery stage for ${work.project_code}`}
                       >
@@ -498,19 +568,14 @@ export function WorksWorkspaceClient({
                         const isInProgress = m.status === 'in_progress';
 
                         return (
-                          <div
+                          <button
                             key={m.id}
+                            type="button"
                             className={`${styles.milestoneItem} ${isCompleted ? styles.milestoneItemCompleted : ''}`}
                             onClick={() => handleToggleMilestone(work.id, m.id, m.status)}
                             role="checkbox"
                             aria-checked={isCompleted}
-                            tabIndex={isViewer ? -1 : 0}
-                            onKeyDown={(e) => {
-                              if (e.key === ' ' || e.key === 'Enter') {
-                                e.preventDefault();
-                                handleToggleMilestone(work.id, m.id, m.status);
-                              }
-                            }}
+                            disabled={isViewer || pendingWorks.has(work.id)}
                           >
                             <span
                               className={`${styles.milestoneCheckbox} ${
@@ -548,7 +613,7 @@ export function WorksWorkspaceClient({
                             >
                               {m.title}
                             </span>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>

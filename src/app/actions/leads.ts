@@ -14,6 +14,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
+import { getCrmDirectoryList } from '@/app/admin/lib/crmDirectory';
 import { normalizeEmail, normalizePhone, sanitizeHtml } from '@/app/lib/normalization';
 import {
   createManualLeadSchema,
@@ -213,37 +214,24 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
  * @returns {Promise<AssigneeOption[]>} List of active commercial personnel.
  */
 export async function getActiveTeamAssignees(): Promise<AssigneeOption[]> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return [];
-    }
-
-    const { data: roster, error: rosterError } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, role')
-      .eq('status', 'active')
-      .in('role', ['admin', 'sales_manager', 'sales_executive'])
-      .order('full_name', { ascending: true });
-
-    if (rosterError || !roster) {
-      return [];
-    }
-
-    return roster.map((p) => ({
-      id: p.id,
-      fullName: p.full_name,
-      email: p.email,
-      role: p.role as CrmUserRole,
-    }));
-  } catch {
+  if (authError || !user) {
     return [];
   }
+
+  const roster = await getCrmDirectoryList(supabase, ['admin', 'sales_manager', 'sales_executive']);
+
+  return roster.map((p) => ({
+    id: p.id,
+    fullName: p.full_name,
+    email: '',
+    role: (p.role as CrmUserRole) || 'sales_executive',
+  }));
 }
 
 /**
@@ -329,7 +317,7 @@ export async function getLeadDetails(
         updated_at,
         funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at),
         lead_sources(id, name, color_code, is_active, created_at),
-        profiles!leads_assigned_to_fkey(id, full_name, role, email, avatar_url)
+        profiles:profiles!leads_assigned_to_fkey(id, full_name, role, avatar_url)
       `)
       .eq('id', leadId)
       .maybeSingle();
@@ -358,7 +346,7 @@ export async function getLeadDetails(
         description,
         metadata,
         created_at,
-        profiles(id, full_name, role, avatar_url, email)
+        profiles:profiles!lead_activities_actor_id_fkey(id, full_name, role, avatar_url)
       `)
       .eq('lead_id', leadId)
       .order('created_at', { ascending: false });
@@ -833,9 +821,16 @@ export async function updateLeadDealParameters(
  */
 export async function clearLeadFollowUp(
   leadId: string,
+  expectedFollowUp: string,
   note?: string
 ): Promise<LeadActionResult> {
   try {
+    const isTimestamp = typeof expectedFollowUp === 'string' &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(expectedFollowUp) &&
+      Number.isFinite(Date.parse(expectedFollowUp));
+    if (typeof leadId !== 'string' || !isValidUuid(leadId) || !isTimestamp || (note !== undefined && (typeof note !== 'string' || note.length > 2000 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(note)))) {
+      return { success: false, error: 'Invalid follow-up details.' };
+    }
     const supabase = await createClient();
     const {
       data: { user },
@@ -848,36 +843,28 @@ export async function clearLeadFollowUp(
 
     const { data: callerProfile } = await supabase
       .from('profiles')
-      .select('full_name, role, status')
+      .select('role, status')
       .eq('id', user.id)
       .maybeSingle();
 
     if (!callerProfile || callerProfile.status !== 'active') {
       return { success: false, error: 'Account suspended or unverified.' };
     }
-
-    const { error: updateError } = await supabase
-      .from('leads')
-      .update({ next_follow_up: null })
-      .eq('id', leadId);
-
-    if (updateError) {
-      return { success: false, error: `Clearing follow-up failed: ${updateError.message}` };
+    if (!['admin', 'sales_manager', 'sales_executive'].includes(callerProfile.role)) {
+      return { success: false, error: 'Your role cannot complete follow-ups.' };
     }
-
-    const cleanNote = note ? sanitizeHtml(note) ?? note : undefined;
-    const desc = `Scheduled follow-up marked as completed by ${callerProfile.full_name}.${cleanNote ? ` Note: ${cleanNote}` : ''}`;
-
-    await supabase.from('lead_activities').insert({
-      lead_id: leadId,
-      actor_id: user.id,
-      activity_type: 'note_added',
-      description: desc,
-      metadata: {
-        cleared_follow_up: true,
-        note: cleanNote,
-      },
+    const cleanNote = note ? sanitizeHtml(note) : null;
+    if (cleanNote && cleanNote.length > 2000) return { success: false, error: 'Follow-up note is too long.' };
+    const { data: completed, error: updateError } = await supabase.rpc('complete_lead_follow_up', {
+      p_lead_id: leadId,
+      p_expected_follow_up: expectedFollowUp,
+      p_note: cleanNote,
     });
+    if (updateError) {
+      console.error('[clear-follow-up] Transaction failed:', updateError.message);
+      return { success: false, error: 'Could not complete this follow-up. Please try again.' };
+    }
+    if (!completed) return { success: false, error: 'Follow-up changed, was already completed, or is inaccessible. Refresh and try again.' };
 
     revalidatePath('/admin');
     revalidatePath('/admin/tasks');
@@ -885,8 +872,8 @@ export async function clearLeadFollowUp(
 
     return { success: true, id: leadId };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Clear follow-up fault.';
-    return { success: false, error: message };
+    console.error('[clear-follow-up] Unexpected failure:', err);
+    return { success: false, error: 'Could not complete this follow-up. Please try again.' };
   }
 }
 

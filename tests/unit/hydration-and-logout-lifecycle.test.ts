@@ -78,14 +78,14 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
       );
     });
 
-    it('verifies UserProfileDropdown.tsx implements client handleLogout with memory purge & window.location.href', () => {
-      const content = fs.readFileSync(userProfileDropdownPath, 'utf8');
+    it('keeps failed logout retryable and performs hard navigation only after successful invalidation', () => {
+      const content = fs.readFileSync(userProfileDropdownPath, 'utf8').replace(/"/g, "'");
       assert.ok(
-        content.includes('const handleLogout = async'),
-        'UserProfileDropdown must declare handleLogout async handler'
+        /async function signOut\s*\(/.test(content),
+        'UserProfileDropdown must declare an asynchronous sign-out handler'
       );
       assert.ok(
-        content.includes("window.location.href = res?.redirectTo || '/admin/login'"),
+        content.includes("window.location.assign(result?.redirectTo || '/admin/login')"),
         'handleLogout must perform hard window navigation to completely flush client heap and RSC cache'
       );
       assert.ok(
@@ -93,17 +93,19 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
         'handleLogout must purge data-admin-route attribute before navigation'
       );
       assert.ok(
-        content.includes('isLoggingOut'),
+        content.includes('if (pending) return'),
         'UserProfileDropdown must track isLoggingOut state to prevent duplicate submissions'
       );
       assert.ok(
-        content.includes('aria-busy={isLoggingOut}'),
+        content.includes('aria-busy={pending}'),
         'Sign out button must declare aria-busy={isLoggingOut}'
       );
       assert.ok(
-        content.includes('onSubmit={handleLogout}'),
+        content.includes('onSubmit={signOut}'),
         'Logout form must wire onSubmit={handleLogout}'
       );
+      assert.match(content, /if \(!result.success\)\s*\{[^}]*setError\([^;]+;\s*setPending\(false\);\s*return;/,
+        'A resolved server error must retain a visible retry without clearing the session UI');
     });
 
     it('verifies UserProfileDropdown.module.scss defines disabled styling and guards hover states', () => {
@@ -121,8 +123,8 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
         'Sign-out button must declare &:disabled styles'
       );
       assert.ok(
-        scssContent.includes('cursor: not-allowed;'),
-        'Disabled button must enforce cursor: not-allowed'
+        /&:disabled\s*\{[^}]*cursor:\s*(?:wait|not-allowed);/.test(scssContent),
+        'Pending sign-out must communicate a noninteractive cursor'
       );
     });
   });
@@ -141,39 +143,33 @@ describe('SSR Hydration & Session Logout Lifecycle Suite', () => {
     });
   });
 
-  describe('4. Input Autofill Shielding & Suspense Semantic Tag Synchronization', () => {
+  describe('4. Input Autofill Shielding & Suspense Loading Status Semantics', () => {
     it('verifies LoginForm.tsx inputs and form declare suppressHydrationWarning', () => {
       const content = fs.readFileSync(loginFormPath, 'utf8').replace(/\r\n/g, '\n');
       assert.ok(
-        content.includes('<form action={formAction} className={styles.form} suppressHydrationWarning>'),
+        content.includes("className={styles.form} aria-describedby={displayError ? 'login-error' : undefined} suppressHydrationWarning"),
         'Login form must declare suppressHydrationWarning'
       );
       assert.ok(
-        content.includes('placeholder="name@marcaubi.com"\n              className={styles.input}\n              suppressHydrationWarning'),
+        /<input\b[^>]*id="email"[^>]*suppressHydrationWarning[^>]*\/>/.test(content),
         'Email input must declare suppressHydrationWarning'
       );
       assert.ok(
-        content.includes('className={`${styles.input} ${styles.inputWithToggle}`}\n              suppressHydrationWarning'),
+        /<input\b[^>]*id="password"[^>]*suppressHydrationWarning[^>]*\/>/.test(content),
         'Password input must declare suppressHydrationWarning'
       );
     });
 
-    it('verifies login/page.tsx Suspense fallback header tag identically matches LoginForm.tsx header', () => {
+    it('verifies login/page.tsx announces the Suspense fallback as a loading status', () => {
       const pageContent = fs.readFileSync(loginPagePath, 'utf8');
-      const formContent = fs.readFileSync(loginFormPath, 'utf8');
 
       assert.ok(
-        pageContent.includes('<header className={styles.brandHeader}>'),
-        'Suspense fallback in login/page.tsx must use <header> element'
+        /fallback=\{\s*<div className=\{styles.loadingPanel\} role="status">/.test(pageContent),
+        'Suspense fallback must expose a live status while the sign-in form loads'
       );
       assert.ok(
-        formContent.includes('<header className={styles.brandHeader}>'),
-        'LoginForm.tsx must use <header> element'
-      );
-      assert.strictEqual(
-        pageContent.includes('<div className={styles.brandHeader}>'),
-        false,
-        'Suspense fallback must not use <div> for brandHeader'
+        pageContent.includes('Loading sign-in form'),
+        'Suspense status must explain what is loading'
       );
     });
   });

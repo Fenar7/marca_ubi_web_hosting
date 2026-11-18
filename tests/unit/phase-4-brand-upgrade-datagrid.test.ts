@@ -103,8 +103,8 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
         'Must define precise 9-column layout metrics'
       );
       assert.ok(
-        scss.includes('$grid-min-width:') && (scss.includes('1125px;') || scss.includes('1140px;')),
-        'Must define min-width constraint to prevent horizontal collision'
+        scss.includes('$grid-min-width:') && scss.includes('1200px;'),
+        'Desktop grid must retain its minimum width while mobile uses the dedicated card view'
       );
 
       // Check tableHeader, virtualViewport, virtualRow

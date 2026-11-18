@@ -47,61 +47,60 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.status !== 'active') {
+  if (!profile || profile.status !== 'active') {
     redirect('/admin/login?error=account_suspended');
   }
 
-  const role = (profile?.role as CrmUserRole) || 'viewer';
-  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
+  const role = profile.role as CrmUserRole;
+  const allowedTabs = profile.allowed_tabs as string[] | undefined;
 
-  const hasIngestionAccess = Array.isArray(allowedTabs)
+  const hasIngestionAccess = role === 'admin' || (Array.isArray(allowedTabs) && allowedTabs.length > 0
     ? allowedTabs.includes('ingestion')
-    : role === 'admin' || role === 'sales_manager';
+    : role === 'sales_manager');
 
   if (!hasIngestionAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  // Calculate dynamic deduplication window baseline
+  // This server-rendered queue metric must use a fresh, request-time 24-hour window.
+  // eslint-disable-next-line react-hooks/purity -- A current timestamp is required for this server-side operational count.
   const window24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   // Aggregate verified inquiry volume within active rolling window
-  const { count: inboundCount } = await supabase
+  const { count: inboundCount, error: inboundError } = await supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
-    .gte('created_at', window24h);
+    .gte('created_at', window24h)
+    .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true');
 
   // Aggregate duplicate smart merges logged during identical window
-  const { count: dedupCount } = await supabase
+  const { count: dedupCount, error: dedupError } = await supabase
     .from('lead_activities')
     .select('*', { count: 'exact', head: true })
     .eq('activity_type', 'duplicate_inquiry')
-    .gte('created_at', window24h);
+    .gte('created_at', window24h)
+    .or('metadata->synthetic_benchmark.is.null,metadata->>synthetic_benchmark.neq.true');
 
   // Retrieve calibrated operational settings for rate limiting and dedup thresholds
   const settingsResult = await getAgencySettingsAction();
-  const settings = settingsResult.data || {
-    id: 'default' as const,
-    lead_response_sla_minutes: 60,
-    followup_grace_period_hours: 4,
-    stale_deal_threshold_days: 14,
-    dedup_window_hours: 24,
-    bot_rate_limit_per_minute: 10,
-    notification_email: 'executive@marcaubi.com',
-  };
+  const settings = settingsResult.success ? settingsResult.data : null;
+  if (inboundError || dedupError || !settings) {
+    console.error('[admin-ingestion] Telemetry unavailable:', inboundError?.message ?? dedupError?.message ?? settingsResult.error);
+  }
 
   const telemetry: IngestionTelemetryData = {
-    inboundCount24h: inboundCount ?? 0,
-    dedupMerges24h: dedupCount ?? 0,
-    dedupWindowHours: settings.dedup_window_hours,
-    botRateLimit: settings.bot_rate_limit_per_minute,
-    endpointHealth: '200 OK: Active',
+    inboundCount24h: inboundError ? null : inboundCount,
+    dedupMerges24h: dedupError ? null : dedupCount,
+    dedupWindowHours: settings?.dedup_window_hours ?? null,
+    botRateLimit: settings?.bot_rate_limit_per_minute ?? null,
+    endpointHealth: 'Unavailable',
   };
 
   // Hydrate recent inbound brief submissions with raw payload structures
-  const { data: recentLeads } = await supabase
+  const { data: recentLeads, error: recentLeadsError } = await supabase
     .from('leads')
     .select('id, lead_id, name, company, email, phone, service_category, expected_value, created_at, brief_payload')
+    .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true')
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -112,17 +111,18 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     company: lead.company,
     email: lead.email,
     phone: lead.phone,
-    service_category: lead.service_category || 'Web & Digital',
+    service_category: lead.service_category || 'Not recorded',
     expected_value: Number(lead.expected_value) || 0,
     created_at: lead.created_at,
     brief_payload: (lead.brief_payload as Record<string, unknown>) || null,
   }));
 
   // Fetch recent ingestion and deduplication activities
-  const { data: ingestionActivities } = await supabase
+  const { data: ingestionActivities, error: activitiesError } = await supabase
     .from('lead_activities')
     .select('id, activity_type, description, created_at')
     .in('activity_type', ['duplicate_inquiry', 'system_event', 'status_change'])
+    .or('metadata->synthetic_benchmark.is.null,metadata->>synthetic_benchmark.neq.true')
     .order('created_at', { ascending: false })
     .limit(8);
 
@@ -139,10 +139,10 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Ingestion Protocols</span>
-          <h1 className={styles.pageTitle}>Inbound Lead Ingestion Protocols.</h1>
+          <span className={styles.eyebrow}>Commercial CRM</span>
+          <h1 className={styles.pageTitle}>Website inquiries</h1>
           <p className={styles.pageSubtitle}>
-            Monitor inbound inquiries, inspect raw webhook JSON brief payloads, and simulate test submissions.
+            Review recent leads and intake activity. The list includes leads from all sources.
           </p>
         </div>
       </header>
@@ -152,6 +152,8 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
         telemetry={telemetry}
         recentSubmissions={submissions}
         recentActivities={activities}
+        submissionsUnavailable={Boolean(recentLeadsError)}
+        activitiesUnavailable={Boolean(activitiesError)}
         canSimulate={canSimulate}
       />
 
@@ -180,7 +182,7 @@ export default async function AdminIngestionPage(): Promise<React.ReactElement> 
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>
-              <strong>Repeat Inquiry Tracking:</strong> Duplicate inquiries within the {settings.dedup_window_hours}-hour window update `inquiry_count` and append an immutable touchpoint record to `lead_activities` without resetting deal stages.
+              <strong>Repeat Inquiry Tracking:</strong> Duplicate inquiries can add an activity to the existing lead without resetting its stage.
             </span>
           </div>
         </div>

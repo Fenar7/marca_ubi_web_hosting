@@ -15,6 +15,7 @@ import React, { useState, useEffect, useRef, useTransition, useCallback } from '
 import { transitionToConvertedAction } from '@/app/actions/stageTransitionActions';
 import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
 import { useModalAnimation } from './useModalAnimation';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from './StageModals.module.scss';
 
 export interface ConvertedCelebrationModalProps {
@@ -28,14 +29,7 @@ export interface ConvertedCelebrationModalProps {
 }
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(2)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 interface Particle {

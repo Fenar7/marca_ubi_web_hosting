@@ -251,7 +251,7 @@ export function FilterActionBar({
                   handleClearSearch();
                 }
               }}
-              placeholder={`Search ${itemTypeLabel}, company, rep...`}
+              placeholder={`Search ${itemTypeLabel}, name or company...`}
               className={styles.searchInput}
               aria-label={`Search commercial ${itemTypeLabel}`}
             />

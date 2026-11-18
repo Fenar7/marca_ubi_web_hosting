@@ -1,15 +1,14 @@
 /**
  * @file kpiFormatters.ts
  * @description High-precision currency conversion, metric normalization, and numeral formatters
- *              for the Marca Ubi Executive KPI Ribbon. Supports dual-currency INR (Lakhs/Crores)
+ *              for the Marca Ubi Executive KPI Ribbon. Supports full-digit INR and USD
  *              and USD with a fixed institutional exchange rate of 1 USD = ₹83.50.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import type { PipelineRpcMetrics } from '@/types/crm';
-
-/** Institutional foreign exchange rate pegged for CRM reporting. */
-export const USD_TO_INR_RATE = 83.5;
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
+export { USD_TO_INR_RATE } from '@/app/admin/lib/currency';
 
 /** Normalized internal representation of pipeline metrics. */
 export interface NormalizedKpiMetrics {
@@ -74,45 +73,14 @@ export function extractKpiMetrics(raw?: PipelineRpcMetrics | null): NormalizedKp
 }
 
 /**
- * Formats a monetary figure into a compact, human-readable luxury currency representation.
- * Handles Indian numbering system (Lakhs, Crores) and international US Dollars.
+ * Formats a monetary figure with full localized digits in INR or USD.
  *
  * @param {number} amountInInr Base currency amount in Indian Rupees (₹).
  * @param {'INR' | 'USD'} currency Target presentation currency.
- * @returns {string} Formatted currency string (e.g. "₹ 48.5L", "₹ 1.25 Cr", "$ 35K").
+ * @returns {string} Full localized currency string (e.g. "₹ 48,50,000", "$ 58,084").
  */
 export function formatKpiCurrency(amountInInr: number, currency: 'INR' | 'USD'): string {
-  const numericAmount = Number(amountInInr) || 0;
-
-  if (numericAmount <= 0) {
-    return currency === 'INR' ? '₹ 0' : '$ 0';
-  }
-
-  if (currency === 'INR') {
-    if (numericAmount >= 10000000) {
-      const crVal = parseFloat((numericAmount / 10000000).toFixed(2));
-      return `₹ ${crVal} Cr`;
-    }
-    if (numericAmount >= 100000) {
-      const lVal = parseFloat((numericAmount / 100000).toFixed(1));
-      return `₹ ${lVal} L`;
-    }
-    return `₹ ${Math.round(numericAmount).toLocaleString('en-IN')}`;
-  }
-
-  // USD Conversion Branch
-  const usdAmount = numericAmount / USD_TO_INR_RATE;
-
-  if (usdAmount >= 1000000) {
-    const mVal = parseFloat((usdAmount / 1000000).toFixed(2));
-    return `$ ${mVal}M`;
-  }
-  if (usdAmount >= 1000) {
-    const kVal = parseFloat((usdAmount / 1000).toFixed(1));
-    return `$ ${kVal}K`;
-  }
-
-  return `$ ${Math.round(usdAmount).toLocaleString('en-US')}`;
+  return formatCrmCurrency(amountInInr, currency);
 }
 
 /**
@@ -124,14 +92,7 @@ export function formatKpiCurrency(amountInInr: number, currency: 'INR' | 'USD'):
  * @returns {string} Full localized currency string (e.g. "₹ 4,850,000", "$ 58,083").
  */
 export function formatFullCurrency(amountInInr: number, currency: 'INR' | 'USD'): string {
-  const numericAmount = Number(amountInInr) || 0;
-
-  if (currency === 'INR') {
-    return `₹ ${Math.round(numericAmount).toLocaleString('en-IN')}`;
-  }
-
-  const usdAmount = numericAmount / USD_TO_INR_RATE;
-  return `$ ${Math.round(usdAmount).toLocaleString('en-US')}`;
+  return formatCrmCurrency(amountInInr, currency);
 }
 
 /**

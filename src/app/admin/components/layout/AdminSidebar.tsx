@@ -1,22 +1,33 @@
-'use client';
+"use client";
 
 /**
  * @file AdminSidebar.tsx
- * @description Persistent Desktop Navigation Rail for the Marca Ubi CRM Workspace Shell.
- * @architecture Implements the Linear Fluid Card navigation paradigm with collapsible geometry (260px / 72px),
- *               active route matching, dynamic tab-level RBAC gating, live dynamic task counters,
- *               and authentic authenticated session telemetry.
+ * @description Master navigation rail for Marca Ubi Commercial Desk (/admin).
+ * @architecture
+ *  - Brand lockup: Monogram 'M.' in Circular XX with signature red dot, 'MARCA UBI' typography,
+ *    integrated ghost collapse trigger (⌘B).
+ *  - In-sidebar search launcher capsule: '🔍 Search or navigate... ⌘K' triggering Command Palette.
+ *  - Collapsible navigation groups with smooth micro-chevrons ('Work', 'Workspace').
+ *  - Active state: Velvety Warm Alabaster (#f5f5f3) rounded pill, dark typography (#111111, weight 600),
+ *    zero harsh left red border strip.
+ *  - Refined follow-up badge: Soft neutral capsule (#ebebea, text #454542) or subtle brand crimson (zero neon pink).
+ *  - Bottom identity: Integrated user profile card via UserProfileDropdown with avatar squircle and presence dot.
+ *  - Breakpoint: Hidden at <= 1024px in favor of AdminMobileDrawer; adheres to prefers-reduced-motion.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import type { CurrentUserSession } from './UserProfileDropdown';
-import { NAVIGATION_GROUPS, isTabAuthorized } from './navigationConfig';
-import styles from './AdminSidebar.module.scss';
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MarcaUbiLogo } from "@/app/components/ui/MarcaUbiLogo/MarcaUbiLogo";
+import {
+  UserProfileDropdown,
+  type CurrentUserSession,
+} from "./UserProfileDropdown";
+import { NAVIGATION_GROUPS, isTabAuthorized } from "./navigationConfig";
+import styles from "./AdminSidebar.module.scss";
 
-interface AdminSidebarProps {
+export interface AdminSidebarProps {
   currentUser: CurrentUserSession;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -29,54 +40,68 @@ export function AdminSidebar({
   onToggleCollapse,
   dueTasksCount,
 }: AdminSidebarProps): React.ReactElement {
-  const pathname = usePathname() || '/admin';
+  const pathname = usePathname() || "/admin";
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
-  const isRouteActive = (href: string): boolean => {
-    if (href === '/admin') {
-      return pathname === '/admin';
+  const toggleGroup = (groupTitle: string) => {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [groupTitle]: !prev[groupTitle],
+    }));
+  };
+
+  const handleLaunchSearch = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("open-command-palette"));
     }
-    return pathname.startsWith(href);
   };
-
-  const handleOpenNewLead = (): void => {
-    window.dispatchEvent(new CustomEvent('open-new-lead-drawer'));
-  };
-
-  // Human-readable operational role formatter
-  const formattedRole = currentUser.role
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
 
   return (
     <aside
-      className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}
-      aria-label="Administrative Navigation Rail"
+      className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
+      aria-label="Commercial Desk navigation"
     >
-      {/* Brand Header */}
-      <div className={styles.brandContainer}>
-        <Link href="/admin" className={styles.logoLink} title="Marca Ubi CRM Executive Overview">
-          <img
-            src="/hero/marca-ubi-logo.png"
-            alt="Marca Ubi."
-            className={styles.brandLogo}
-          />
+      {/* 1. Brand Lockup & Integrated Collapse Trigger (⌘B) */}
+      <div className={styles.brandRow}>
+        <Link
+          href="/admin"
+          className={styles.brandLockup}
+          aria-label="Marca Ubi Commercial Desk"
+        >
+          {isCollapsed ? (
+            <MarcaUbiLogo
+              variant="monogram"
+              width={26}
+              height={22}
+              color="#111111"
+              accentColor="#ea002a"
+            />
+          ) : (
+            <MarcaUbiLogo
+              variant="full"
+              width={128}
+              height={26}
+              color="#111111"
+              accentColor="#ea002a"
+            />
+          )}
         </Link>
+
         <button
           type="button"
+          className={styles.collapseButton}
           onClick={onToggleCollapse}
-          className={styles.collapseToggle}
-          title={isCollapsed ? 'Expand navigation rail (⌘B)' : 'Collapse navigation rail (⌘B)'}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-expanded={!isCollapsed}
+          aria-label={isCollapsed ? "Expand navigation (⌘B)" : "Collapse navigation (⌘B)"}
+          title={isCollapsed ? "Expand navigation (⌘B)" : "Collapse navigation (⌘B)"}
         >
           <svg
+            className={styles.collapseIcon}
             width="14"
             height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
@@ -87,103 +112,155 @@ export function AdminSidebar({
               <polyline points="15 18 9 12 15 6" />
             )}
           </svg>
+          <span className={styles.shortcutTag}>⌘B</span>
         </button>
       </div>
 
-      {/* Quick Action Button: Gated against viewers */}
-      {currentUser.role !== 'viewer' && (
-        <div className={styles.quickActionBox}>
+      {/* 2. In-Sidebar Search Capsule (AI Manager & Linear Standard) */}
+      <div className={styles.searchSection}>
+        {isCollapsed ? (
           <button
             type="button"
-            onClick={handleOpenNewLead}
-            className={styles.newLeadBtn}
-            title="Log new prospective engagement"
-            aria-label="New Lead"
+            className={styles.searchLauncherCollapsed}
+            onClick={handleLaunchSearch}
+            aria-label="Search workspace or navigate (⌘K)"
+            title="Search workspace or navigate (⌘K)"
           >
             <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.searchLauncher}
+            onClick={handleLaunchSearch}
+            aria-label="Search workspace or navigate (⌘K)"
+            title="Search workspace or navigate (⌘K)"
+          >
+            <svg
+              className={styles.searchIcon}
               width="14"
               height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.5"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <span className={styles.newLeadBtnText}>New Lead</span>
+            <span className={styles.searchText}>Search or navigate...</span>
+            <kbd className={styles.searchKbd}>⌘K</kbd>
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Navigation Groups with Dynamic Tab Authorization */}
-      <nav className={styles.navScrollArea}>
+      {/* 3. Collapsible Navigation Groups (Work, Workspace) */}
+      <nav className={styles.navigation} aria-label="Commercial Desk navigation sections">
         {NAVIGATION_GROUPS.map((group) => {
-          const authorizedItems = group.items.filter((item) =>
-            isTabAuthorized(item.key, currentUser)
+          const items = group.items.filter((item) =>
+            isTabAuthorized(item.key, currentUser),
           );
+          if (!items.length) return null;
 
-          if (authorizedItems.length === 0) return null;
+          const isGroupCollapsed = Boolean(collapsedGroups[group.groupTitle]);
 
           return (
-            <div key={group.groupTitle} className={styles.navGroup}>
-              <div className={styles.groupHeading}>{group.groupTitle}</div>
-              <ul className={styles.navList}>
-                {authorizedItems.map((item) => {
-                  const active = isRouteActive(item.href);
-                  const badgeInfo = item.getBadge?.({ dueTasksCount });
-                  const badgeVariantClass =
-                    badgeInfo?.variant === 'emerald'
-                      ? styles.badgeEmerald
-                      : badgeInfo?.variant === 'amber'
-                      ? styles.badgeAmber
-                      : styles.badgeOrange;
+            <section
+              key={group.groupTitle}
+              className={styles.group}
+              aria-label={group.groupTitle}
+            >
+              {!isCollapsed && (
+                <button
+                  type="button"
+                  className={styles.groupHeaderBtn}
+                  onClick={() => toggleGroup(group.groupTitle)}
+                  aria-expanded={!isGroupCollapsed}
+                  aria-label={`Toggle ${group.groupTitle} section`}
+                >
+                  <span className={styles.groupHeading}>{group.groupTitle}</span>
+                  <svg
+                    className={`${styles.groupChevron} ${isGroupCollapsed ? styles.groupChevronCollapsed : ""}`}
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              )}
 
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                        title={isCollapsed ? item.label : undefined}
-                        aria-current={active ? 'page' : undefined}
-                      >
-                        <div className={styles.iconWrapper}>
-                          {item.icon({ active })}
-                        </div>
-                        <div className={styles.itemContent}>
+              {(!isGroupCollapsed || isCollapsed) && (
+                <ul className={styles.itemList}>
+                  {items.map((item) => {
+                    const active =
+                      item.href === "/admin"
+                        ? pathname === item.href
+                        : pathname === item.href ||
+                          pathname.startsWith(`${item.href}/`);
+                    const badge = item.getBadge?.({ dueTasksCount });
+                    const isFollowUp = item.key === "tasks";
+
+                    return (
+                      <li key={item.key}>
+                        <Link
+                          href={item.href}
+                          className={`${styles.item} ${active ? styles.active : ""}`}
+                          aria-current={active ? "page" : undefined}
+                          title={isCollapsed ? item.label : undefined}
+                        >
+                          <span className={styles.itemIcon}>
+                            {item.icon({ active })}
+                          </span>
                           <span className={styles.itemLabel}>{item.label}</span>
-                          {badgeInfo && (
-                            <span className={`${styles.badge} ${badgeVariantClass}`}>
-                              {badgeInfo.text}
+                          {badge && (
+                            <span
+                              className={`${styles.counterBadge} ${isFollowUp ? styles.urgencyPill : ""}`}
+                              aria-label={`${badge.text} follow-ups due`}
+                            >
+                              {badge.text}
                             </span>
                           )}
-                        </div>
-                        {active && <span className={styles.activePill} />}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
           );
         })}
       </nav>
 
-      {/* Footer System Status: Real Authenticated Session Telemetry */}
-      <div className={styles.sidebarFooter}>
-        <div
-          className={styles.systemStatusBlock}
-          title={`Authenticated as ${currentUser.email} (${formattedRole})`}
-        >
-          <span className={styles.statusDot} aria-hidden="true" />
-          <div className={styles.statusText}>
-            <span className={styles.statusLabel}>{formattedRole}</span>
-            <span className={styles.statusSub}>{currentUser.email}</span>
-          </div>
-        </div>
+      {/* 4. Single User Profile Card */}
+      <div className={styles.accountCardWrapper}>
+        <UserProfileDropdown
+          currentUser={currentUser}
+          compact={isCollapsed}
+          placement="above"
+        />
       </div>
     </aside>
   );

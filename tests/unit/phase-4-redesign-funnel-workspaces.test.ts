@@ -99,10 +99,10 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
   });
 
   describe('2. Inbound Leads Workspace Architecture (/admin/leads)', () => {
-    it('verifies leads/page.tsx enforces Accordion editorial period: "Inbound Leads."', () => {
+    it('verifies the leads workspace uses the current concise page heading', () => {
       const content = fs.readFileSync(leadsPagePath, 'utf8');
-      assert.ok(content.includes('Inbound Leads.'));
-      assert.ok(content.includes('Stage 01: Inbound Discovery'));
+      assert.ok(content.includes('Inbound leads'));
+      assert.ok(content.includes('Review inquiries, assign owners'));
     });
 
     it('verifies leads/page.tsx passes userRole={role} to LeadsWorkspaceClient', () => {
@@ -177,10 +177,10 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
   });
 
   describe('3. Commercial Deals Pipeline Workspace Architecture (/admin/deals)', () => {
-    it('verifies deals/page.tsx enforces Accordion editorial period: "Commercial Deals."', () => {
+    it('verifies the deals workspace uses the current concise page heading', () => {
       const content = fs.readFileSync(dealsPagePath, 'utf8');
-      assert.ok(content.includes('Commercial Deals.'));
-      assert.ok(content.includes('Stage 02: Pipeline Negotiations'));
+      assert.ok(content.includes('>Deals</h1>'));
+      assert.ok(content.includes('Track opportunities, follow-ups'));
     });
 
     it('verifies deals/page.tsx sanitizes status_color fallback to #1f242f', () => {
@@ -197,10 +197,10 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.ok(scss.includes('.subheading'));
     });
 
-    it('verifies DealsWorkspaceClient.tsx guards handleMoveStage for viewers', () => {
+    it('verifies DealsWorkspaceClient.tsx guards handleMoveStage for viewers and in-flight writes', () => {
       const content = fs.readFileSync(dealsClientTsxPath, 'utf8');
-      assert.ok(content.includes("if (userRole === 'viewer') return;"));
-      assert.ok(content.includes('[sortedStages, userRole]'));
+      assert.ok(content.includes("if (userRole === 'viewer' || movingLeadId) return;"));
+      assert.ok(content.includes('[sortedStages, userRole, movingLeadId]'));
     });
 
     it('verifies DealsWorkspaceClient.tsx sanitizes columnStatusDot fallback to #1f242f', () => {
@@ -239,6 +239,26 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
   });
 
   describe('4. Complete Anti-AI-Slop Invariants (Rule R-12 Unicode & Token Hygiene)', () => {
+    it('keeps the deals view readable on mobile and preserves full INR values', () => {
+      const client = fs.readFileSync(dealsClientTsxPath, 'utf8');
+      const styles = fs.readFileSync(dealsClientScssPath, 'utf8');
+      const currency = fs.readFileSync(path.resolve(process.cwd(), 'src/app/admin/lib/currency.ts'), 'utf8');
+      assert.ok(client.includes("useState<'kanban' | 'table'>('table')"));
+      assert.ok(client.includes('if (!event.matches) setViewMode(\'table\')'));
+      assert.ok(styles.includes('@media (max-width: 1099px)'));
+      assert.ok(styles.includes('grid-template-columns: minmax(0, 1fr) auto'));
+      assert.ok(currency.includes("toLocaleString(currency === 'USD' ? 'en-US' : 'en-IN')"));
+      assert.ok(currency.includes('en-IN'));
+    });
+
+    it('keeps unavailable totals separate from lead and deal row query failures', () => {
+      const leads = fs.readFileSync(leadsPagePath, 'utf8');
+      const deals = fs.readFileSync(dealsPagePath, 'utf8');
+      assert.ok(leads.includes('leadsRes.error'));
+      assert.ok(deals.includes('dealsRes.error'));
+      assert.ok(leads.includes('totalCount={leadsRes.count}'));
+      assert.ok(deals.includes('totalCount={dealsRes.count}'));
+    });
     it('verifies 100% elimination of legacy #ff6100 across all Phase 4 component and style files', () => {
       const phase4Files = [
         leadsPagePath,

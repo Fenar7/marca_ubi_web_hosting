@@ -8,12 +8,14 @@
  */
 
 import React, { Suspense } from 'react';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import type { CrmUserRole, PipelineRpcMetrics } from '@/types/crm';
-import { MinimalistStatPods } from '@/app/admin/components/Dashboard';
+import { ROLE_DEFAULT_TABS, type CrmUserRole } from '@/types/crm';
+import { buildCommercialSearchFilter } from '@/app/admin/lib/commercialSearch';
 import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable';
+import { ResultPagination } from '@/app/admin/components/LeadsTable/ResultPagination';
 import { DealsWorkspaceClient, type HydratedDealItem } from './DealsWorkspaceClient';
 import styles from './deals.module.scss';
 
@@ -35,6 +37,9 @@ interface AdminDealsPageProps {
     source?: string;
     priority?: string;
     search?: string;
+    q?: string;
+    bucket?: string;
+    page?: string;
   }>;
 }
 
@@ -42,6 +47,9 @@ export default async function AdminDealsPage(
   props: AdminDealsPageProps
 ): Promise<React.ReactElement> {
   const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
+  const requestedPage = Number(resolvedSearchParams?.page ?? '1');
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 100000 ? requestedPage : 1;
+  const pageSize = 100;
   const targetDealId = resolvedSearchParams?.id || resolvedSearchParams?.dealId || resolvedSearchParams?.leadId;
   if (targetDealId) {
     redirect(`/admin/deals/${targetDealId}`);
@@ -62,88 +70,63 @@ export default async function AdminDealsPage(
     .eq('id', user.id)
     .maybeSingle();
 
-  const role = (profile?.role as CrmUserRole) || 'viewer';
-  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
-
-  const hasDealsAccess = Array.isArray(allowedTabs)
+  if (!profile || profile.status !== 'active') redirect('/admin/login?error=account_suspended');
+  const role = profile.role as CrmUserRole;
+  const allowedTabs = profile.allowed_tabs as string[] | undefined;
+  const hasDealsAccess = role === 'admin' || (Array.isArray(allowedTabs) && allowedTabs.length > 0
     ? allowedTabs.includes('deals')
-    : true;
+    : Boolean(ROLE_DEFAULT_TABS[role]?.deals));
 
   if (!hasDealsAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  // Parallel server query execution for instant pipeline rendering
-  const [rpcRes, sourcesRes, profilesRes, statusesRes, dealsRes] = await Promise.all([
-    supabase.rpc('get_pipeline_kpis'),
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const { bucket, stage, assigned_to: assignedTo, source, priority } = resolvedSearchParams ?? {};
+  const search = buildCommercialSearchFilter(resolvedSearchParams?.search ?? resolvedSearchParams?.q);
+  const invalidFilter = [stage, assignedTo, source].some((value) => value && !uuid.test(value))
+    || Boolean(priority && !['high', 'medium', 'low'].includes(priority.toLowerCase()))
+    || Boolean(bucket && !['all', 'open', 'potential', 'converted', 'lost'].includes(bucket));
+
+  let dealsQuery = supabase.from('leads').select(`
+        id, lead_id, name, company, phone, email, expected_value, priority,
+        next_follow_up, revisit_date, created_at, updated_at, assigned_to,
+        status_id, lead_source_id, brief_payload,
+        funnel_status:funnel_statuses!leads_status_id_fkey!inner(id, name, sort_order, bucket, color_code)
+      `, { count: 'exact' });
+  if (!invalidFilter) {
+    if (stage) dealsQuery = dealsQuery.eq('status_id', stage);
+    if (assignedTo) dealsQuery = dealsQuery.eq('assigned_to', assignedTo);
+    if (source) dealsQuery = dealsQuery.eq('lead_source_id', source);
+    if (priority) dealsQuery = dealsQuery.ilike('priority', priority);
+    if (bucket && bucket !== 'all') dealsQuery = dealsQuery.eq('funnel_status.bucket', bucket);
+    if (search.filter) dealsQuery = dealsQuery.or(search.filter);
+  }
+
+  const [sourcesRes, statusesRes, profilesRes, dealsRes] = await Promise.all([
     supabase.from('lead_sources').select('id, name').order('name'),
-    supabase.from('profiles').select('id, full_name, email, role, status').order('full_name'),
     supabase.from('funnel_statuses').select('id, name, sort_order, bucket, color_code').order('sort_order'),
-    supabase
-      .from('leads')
-      .select(`
-        id,
-        lead_id,
-        name,
-        company,
-        phone,
-        email,
-        expected_value,
-        priority,
-        next_follow_up,
-        revisit_date,
-        created_at,
-        updated_at,
-        assigned_to,
-        status_id,
-        lead_source_id,
-        brief_payload,
-        assigned_profile:profiles!leads_assigned_to_fkey (
-          id,
-          full_name,
-          email,
-          role
-        ),
-        funnel_status:funnel_statuses!leads_status_id_fkey (
-          id,
-          name,
-          sort_order,
-          bucket,
-          color_code
-        ),
-        lead_source:lead_sources!leads_lead_source_id_fkey (
-          id,
-          name
-        )
-      `)
+    supabase.from('crm_team_directory').select('id, full_name').order('full_name'),
+    dealsQuery
       .order('created_at', { ascending: false })
-      .limit(100),
+      .order('id', { ascending: false })
+      .range((page - 1) * pageSize, page * pageSize - 1),
   ]);
 
-  const rawKpi = rpcRes.data as PipelineRpcMetrics | null;
-  const initialKpis: PipelineRpcMetrics = rawKpi || {
-    total_leads_count: 0,
-    open_leads_count: 0,
-    potential_leads_count: 0,
-    potential_pipeline_value: 0,
-    stage_weighted_pipeline_value: 0,
-    converted_leads_count: 0,
-    converted_revenue_value: 0,
-    lost_leads_count: 0,
-    overdue_follow_ups_count: 0,
-    conversion_rate_percentage: 0,
-  };
+  if (dealsRes.error) console.error('[deals-workspace] Failed to load deals:', { code: dealsRes.error.code, message: dealsRes.error.message });
+  if (statusesRes.error) console.error('[deals-workspace] Failed to load stages:', { code: statusesRes.error.code, message: statusesRes.error.message });
+  if (sourcesRes.error) console.error('[deals-workspace] Lead source filters unavailable:', { code: sourcesRes.error.code, message: sourcesRes.error.message });
+  if (profilesRes.error) console.error('[deals-workspace] Owner directory unavailable:', { code: profilesRes.error.code, message: profilesRes.error.message });
 
   const sources = sourcesRes.data || [];
-  const profiles = (profilesRes.data || []).filter((p) => p.status === 'active');
   const statuses = statusesRes.data || [];
+  const ownerNameById = new Map((profilesRes.data || []).map((member) => [member.id, member.full_name]));
+  const sourceNameById = new Map((sourcesRes.data || []).map((source) => [source.id, source.name]));
 
   // Transform relational leads to typed deal records
   const deals: HydratedDealItem[] = ((dealsRes.data || []) as unknown[]).map((raw) => {
     const item = raw as Record<string, unknown>;
     const statusObj = item.funnel_status as { id: string; name: string; sort_order: number; bucket: string; color_code: string } | null;
-    const profileObj = item.assigned_profile as { id: string; full_name: string; email: string } | null;
-    const sourceObj = item.lead_source as { id: string; name: string } | null;
 
     return {
       id: item.id as string,
@@ -161,11 +144,15 @@ export default async function AdminDealsPage(
       assigned_to: (item.assigned_to as string) || null,
       status_id: (item.status_id as string) || '',
       lead_source_id: (item.lead_source_id as string) || '',
-      assigned_to_name: profileObj?.full_name || 'Unassigned',
+      assigned_to_name: item.assigned_to
+        ? ownerNameById.get(item.assigned_to as string) || (profilesRes.error ? 'Owner unavailable' : 'Inactive or unavailable owner')
+        : 'Unassigned',
       status_name: statusObj?.name || 'Open',
       status_bucket: (statusObj?.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open',
       status_color: statusObj?.color_code || '#1f242f',
-      source_name: sourceObj?.name || 'Direct Ingestion',
+      source_name: sourcesRes.error
+        ? 'Source unavailable'
+        : sourceNameById.get(item.lead_source_id as string) || 'Unknown source',
     };
   });
 
@@ -174,27 +161,29 @@ export default async function AdminDealsPage(
       {/* Dynamic KPI Header Strip */}
       <header className={styles.header}>
         <div className={styles.titleArea}>
-          <div className={styles.eyebrow}>Stage 02: Pipeline Negotiations</div>
-          <h1 className={styles.heading}>Commercial Deals.</h1>
+          <div className={styles.eyebrow}>Sales pipeline</div>
+          <h1 className={styles.heading}>Deals</h1>
           <p className={styles.subheading}>
-            Active commercial negotiations, proposal development, and high-ticket engagement staging.
+            Track opportunities, follow-ups and progress through each stage.
           </p>
         </div>
       </header>
 
-      <section className={styles.kpiContainer} aria-label="Pipeline Metrics">
-        <MinimalistStatPods metrics={initialKpis} />
-      </section>
-
       {/* Main Deals Grid with Filter Controls */}
       <Suspense fallback={<LeadsTableSkeleton />}>
-        <DealsWorkspaceClient
-          initialDeals={deals}
-          sources={sources}
-          profiles={profiles}
-          statuses={statuses}
-          userRole={role}
-        />
+        {invalidFilter || dealsRes.error || statusesRes.error ? (
+          <div className={styles.loadError} role="alert">
+            <span>{invalidFilter ? 'A filter in this link is invalid. Open the deals page without filters to try again.' : dealsRes.error ? `Deal records could not be loaded${dealsRes.error.code ? ` (${dealsRes.error.code})` : ''}.` : `Pipeline stages could not be loaded${statusesRes.error?.code ? ` (${statusesRes.error.code})` : ''}.`}</span>
+            <Link href="/admin/deals" className={styles.retryLink}>Reload deals</Link>
+            <span>If the problem continues, contact support and include the error code shown above.</span>
+          </div>
+        ) : (
+          <>
+            {(sourcesRes.error || profilesRes.error) && <div className={styles.loadWarning} role="status">Deal records are available, but {sourcesRes.error && profilesRes.error ? 'source filters and owner names' : sourcesRes.error ? 'source filters' : 'owner names'} could not be loaded. Refresh to retry those details.</div>}
+            {search.error ? <div className={styles.loadError} role="alert">{search.error}</div> : <ResultPagination page={page} pageSize={pageSize} loadedCount={deals.length} totalCount={dealsRes.count} />}
+            <DealsWorkspaceClient initialDeals={search.error ? [] : deals} sources={sources} statuses={statuses} userRole={role} />
+          </>
+        )}
       </Suspense>
     </div>
   );

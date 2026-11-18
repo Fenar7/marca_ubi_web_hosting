@@ -60,7 +60,7 @@ describe('Dev Performance, Cache Acceleration & Asset Invariants Suite', () => {
       );
       const content = fs.readFileSync(shellTsxPath, 'utf8');
       assert.ok(
-        content.includes("import styles from './admin-shell.module.scss';"),
+        /import styles from ["']\.\/admin-shell\.module\.scss["']/.test(content),
         'AdminWorkspaceShell must consume admin-shell.module.scss directly'
       );
     });

@@ -65,16 +65,7 @@ export interface LeadsWorkspaceClientProps {
   userRole?: string;
 }
 
-function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
+const VALID_BUCKETS: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
 
 /**
  * Evaluates whether a lead has an overdue follow-up timestamp.
@@ -128,8 +119,7 @@ function LeadsWorkspaceContent({
   // Deep-link query param resolution: supports both canonical ?id=<uuid> and legacy ?leadId=<uuid>
   const leadIdParam = searchParams.get('id') || searchParams.get('leadId');
 
-  const validBuckets: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
-  const initialBucket: BucketTabId = validBuckets.includes(bucketParam as BucketTabId)
+  const initialBucket: BucketTabId = VALID_BUCKETS.includes(bucketParam as BucketTabId)
     ? (bucketParam as BucketTabId)
     : 'all';
 
@@ -304,8 +294,8 @@ function LeadsWorkspaceContent({
         url.searchParams.delete('stage');
       }
 
-      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-      window.dispatchEvent(new Event('popstate'));
+      url.searchParams.delete('page');
+      router.replace(url.pathname + (url.search ? url.search : ''), { scroll: false });
     },
     [
       selectedBucket,
@@ -314,13 +304,14 @@ function LeadsWorkspaceContent({
       selectedAssigneeId,
       selectedPriority,
       selectedStageId,
+      router,
     ]
   );
 
   // Sync state if URL changes externally (e.g. browser back/forward or external deep links)
   useEffect(() => {
     const rawBucket = searchParams.get('bucket');
-    if (validBuckets.includes(rawBucket as BucketTabId)) {
+    if (VALID_BUCKETS.includes(rawBucket as BucketTabId)) {
       setSelectedBucket(rawBucket as BucketTabId);
     } else {
       setSelectedBucket('all');
@@ -622,8 +613,6 @@ function LeadsWorkspaceContent({
 
   // In-memory filtered leads with multi-dimensional criteria evaluation
   const filteredLeads = useMemo<HydratedLeadItem[]>(() => {
-    const q = searchQuery.toLowerCase().trim();
-
     return leads.filter((lead) => {
       // 1. Bucket condition
       if (selectedBucket === 'overdue') {
@@ -652,23 +641,11 @@ function LeadsWorkspaceContent({
         return false;
       }
 
-      // 6. Search query condition (multi-attribute match)
-      if (!q) return true;
-
-      return (
-        lead.lead_id.toLowerCase().includes(q) ||
-        lead.name.toLowerCase().includes(q) ||
-        (lead.company && lead.company.toLowerCase().includes(q)) ||
-        (lead.email && lead.email.toLowerCase().includes(q)) ||
-        (lead.phone && lead.phone.toLowerCase().includes(q)) ||
-        lead.service_category.toLowerCase().includes(q) ||
-        lead.assigned_to_name.toLowerCase().includes(q)
-      );
+      return true;
     });
   }, [
     leads,
     selectedBucket,
-    searchQuery,
     selectedSourceId,
     selectedAssigneeId,
     selectedPriority,
@@ -803,9 +780,37 @@ function LeadsWorkspaceContent({
   );
 
   return (
-    <>
-      {/* High-Performance Multi-Filter Action Bar */}
-      <FilterActionBar
+    <section className={styles.inboxWorkspace} aria-label="Lead inbox">
+      <div className={styles.inboxOverview}>
+        <div className={styles.inboxOverviewCopy}>
+          <span className={styles.inboxEyebrow}>Lead inbox</span>
+          <h2 className={styles.inboxTitle}>Triage the next conversation</h2>
+          <p className={styles.inboxDescription}>
+            Review the loaded records, narrow the queue, then open a dossier to continue the work.
+          </p>
+        </div>
+        <dl className={styles.inboxCounts} aria-label="Counts in the loaded lead set">
+          <div>
+            <dt>Loaded</dt>
+            <dd>{counts.all}</dd>
+          </div>
+          <div>
+            <dt>Open</dt>
+            <dd>{counts.open}</dd>
+          </div>
+          <div>
+            <dt>Overdue</dt>
+            <dd>{counts.overdue}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div className={styles.inboxControls}>
+        <div className={styles.inboxControlsHeading}>
+          <h3>Queue</h3>
+          <span>{filteredLeads.length} loaded records in this view</span>
+        </div>
+        <FilterActionBar
         scope="leads"
         counts={counts}
         selectedBucket={selectedBucket}
@@ -823,7 +828,8 @@ function LeadsWorkspaceContent({
         onPriorityChange={handlePriorityChange}
         onStageClear={handleStageClear}
         onClearAll={handleClearAll}
-      />
+        />
+      </div>
 
       {/* Overdue Stalled Pipeline Escalation Banner */}
       {selectedBucket === 'overdue' && counts.overdue > 0 && (
@@ -925,13 +931,22 @@ function LeadsWorkspaceContent({
       )}
 
       {/* Commercial Leads Virtualized Data Grid */}
-      <LeadsDataGrid
-        leads={filteredLeads}
-        availableStatuses={resolvedStatuses}
-        onStatusChange={handleInlineStatusChange}
-        onPriorityChange={handleInlinePriorityChange}
-        userRole={userRole}
-      />
+      <div className={styles.inboxRecords}>
+        <div className={styles.inboxRecordsHeading}>
+          <div>
+            <span className={styles.inboxEyebrow}>Current selection</span>
+            <h3>{selectedBucket === 'all' ? 'All leads' : `${selectedBucket[0].toUpperCase()}${selectedBucket.slice(1)} leads`}</h3>
+          </div>
+          <span className={styles.loadedRecordCount}>{filteredLeads.length} loaded</span>
+        </div>
+        <LeadsDataGrid
+          leads={filteredLeads}
+          availableStatuses={resolvedStatuses}
+          onStatusChange={handleInlineStatusChange}
+          onPriorityChange={handleInlinePriorityChange}
+          userRole={userRole}
+        />
+      </div>
 
       {/* Slide-over Client 360 Degree Dossier Drawer */}
       <ClientDossierDrawer
@@ -1010,7 +1025,7 @@ function LeadsWorkspaceContent({
           availableAssignees={availableAssignees}
           availableStatuses={resolvedStatuses}
           onClose={() => setConvertModalState({ isOpen: false, lead: null })}
-          onSuccess={(_convertedId) => {
+          onSuccess={() => {
             setConvertModalState({ isOpen: false, lead: null });
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new Event('popstate'));
@@ -1018,7 +1033,7 @@ function LeadsWorkspaceContent({
           }}
         />
       )}
-    </>
+    </section>
   );
 }
 

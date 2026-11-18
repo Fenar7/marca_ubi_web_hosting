@@ -64,10 +64,23 @@ export function createRedirectResponse(redirectUrl: URL, sourceResponse: NextRes
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
 
-  // Execute Supabase SSR session synchronization and cryptographic JWT validation
-  const { supabaseResponse, user } = await updateSession(request);
+  // Execute Supabase SSR session synchronization and cryptographic JWT validation.
+  // Defensively guarded to guarantee Edge Proxy never throws an unhandled exception to Next.js.
+  let supabaseResponse: NextResponse;
+  let user: Awaited<ReturnType<ReturnType<typeof import('@supabase/ssr').createServerClient>['auth']['getUser']>>['data']['user'] = null;
 
-  const isAuthRoute = pathname === '/admin/login';
+  try {
+    const sessionResult = await updateSession(request);
+    supabaseResponse = sessionResult.supabaseResponse;
+    user = sessionResult.user;
+  } catch (proxyError: unknown) {
+    const message = proxyError instanceof Error ? proxyError.message : String(proxyError);
+    console.error('[EDGE_PROXY_SESSION_RECOVERED] Unhandled error during updateSession; falling back to clean unauthenticated state:', message);
+    supabaseResponse = NextResponse.next({ request });
+    user = null;
+  }
+
+  const isAuthRoute = pathname === '/admin/login' || pathname === '/admin/signup';
   const isAdminRoute = (pathname === '/admin' || pathname.startsWith('/admin/')) && !isAuthRoute;
 
   // Scenario 1: Unauthenticated visitor attempting to access protected administrative enclaves
@@ -139,8 +152,13 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     const rawNext = request.nextUrl.searchParams.get('next');
     let safeNext = sanitizeRedirectUrl(rawNext, '/admin');
 
-    // Prevent circular redirection loop back to the authentication route itself
-    if (safeNext === '/admin/login' || safeNext.startsWith('/admin/login')) {
+    // Prevent circular redirection loop back to the authentication routes themselves
+    if (
+      safeNext === '/admin/login' ||
+      safeNext.startsWith('/admin/login') ||
+      safeNext === '/admin/signup' ||
+      safeNext.startsWith('/admin/signup')
+    ) {
       safeNext = '/admin';
     }
 

@@ -2,11 +2,10 @@
 
 /**
  * @file AdminBreadcrumbs.tsx
- * @description Executive Notion-Caliber 3-tier hierarchical breadcrumb engine with real-time
- *              dynamic label overrides and live status telemetry.
+ * @description Route-aware context trail with dynamic CRM record labels.
  * @architecture Resolves Next.js App Router paths into a structured 3-tier hierarchy:
  *               [🔥] Marca Ubi / Section / Leaf Node.
- *               Replaces disconnected pill capsules with an integrated spatial navigation trail.
+ *               The trail provides page context while the sidebar remains the primary navigation.
  *               Supports dynamic client-side label overrides (e.g. 'LD-10492' or 'DEAL-1004') dispatched via
  *               `admin-breadcrumb-label-update` window events.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -15,6 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { MarcaUbiLogo } from '@/app/components/ui/MarcaUbiLogo/MarcaUbiLogo';
 import styles from './AdminBreadcrumbs.module.scss';
 
 /**
@@ -31,24 +31,24 @@ export const LEAD_CODE_REGEX = /^(LD|DEAL)-\d+$/i;
  * Domain dictionary mapping primary route slugs to their high-level organizational sections.
  */
 const SECTION_MAP: Record<string, string> = {
-  admin: 'Executive OS',
-  leads: 'Commercial CRM',
-  deals: 'Commercial CRM',
-  works: 'Commercial CRM',
-  ingestion: 'Commercial CRM',
+  admin: 'Commercial Desk',
+  leads: 'Commercial',
+  deals: 'Commercial',
+  works: 'Delivery',
+  ingestion: 'Intelligence',
   team: 'Administration',
   users: 'Administration',
   'user-management': 'Administration',
   analytics: 'Intelligence',
   tasks: 'Operations',
-  settings: 'Configuration',
+  settings: 'Settings',
 };
 
 /**
  * High-value domain dictionary mapping URL path slugs to professional CRM titles.
  */
 const ROUTE_NAME_MAP: Record<string, string> = {
-  admin: 'Command Center',
+  admin: 'Overview',
   leads: 'Inbound Leads',
   deals: 'Pipeline Deals',
   works: 'Client Works',
@@ -129,17 +129,17 @@ export function AdminBreadcrumbs(): React.ReactElement {
     // Tier 2: Executive OS Section
     items.push({
       id: 'root-section',
-      label: 'Executive OS',
+      label: 'Commercial Desk',
       href: '/admin',
       isLeaf: false,
     });
 
-    // Tier 3: Active Command Center Leaf Node with Live Radar Pulse
+    // The current route is the final breadcrumb; no live system state is implied.
     items.push({
       id: 'root-leaf',
-      label: 'Command Center',
+      label: 'Overview',
       isLeaf: true,
-      hasRadarDot: true,
+      hasRadarDot: false,
     });
   } else if (segments.length === 2 && segments[0] === 'admin') {
     // 1-Level Sub-Route (e.g. /admin/leads)
@@ -219,23 +219,13 @@ export function AdminBreadcrumbs(): React.ReactElement {
               <li className={styles.breadcrumbItem}>
                 {item.isLeaf ? (
                   <span className={styles.currentSegment} aria-current="page">
-                    {item.hasRadarDot && (
-                      <span className={styles.radarDot} aria-hidden="true" title="Real-time live telemetry stream" />
-                    )}
+                    {item.hasRadarDot && <span className={styles.radarDot} aria-hidden="true" />}
                     <span>{item.label}</span>
                   </span>
                 ) : item.isRoot ? (
                   <Link href={item.href || '/admin'} className={styles.rootLink} title="Marca Ubi CRM Executive Overview">
                     <span className={styles.rootMonogram} aria-hidden="true">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        stroke="none"
-                        className={styles.flameIcon}
-                        aria-hidden="true"
-                      >
-                        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-                      </svg>
+                      <MarcaUbiLogo variant="monogram" width={14} height={12} color="#ffffff" accentColor="#ea002a" />
                     </span>
                     <span className={styles.rootText}>{item.label}</span>
                   </Link>

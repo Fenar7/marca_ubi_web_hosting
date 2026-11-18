@@ -7,24 +7,12 @@
  */
 
 /**
- * Formats numeric currency values into Indian Lakhs (L) and Crores (Cr) with tabular precision.
+ * Formats numeric INR values with full Indian digit grouping.
  * @param value Valuation amount
  */
 export function formatDossierCurrency(value: number): string {
-  if (!value || isNaN(value) || value <= 0) {
-    return '₹0.00';
-  }
-  if (value >= 10000000) {
-    return `₹${(value / 10000000).toFixed(2)} Cr`;
-  }
-  if (value >= 100000) {
-    return `₹${(value / 100000).toFixed(2)} L`;
-  }
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(value);
+  const amount = Number.isFinite(value) ? value : 0;
+  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }
 
 /**
