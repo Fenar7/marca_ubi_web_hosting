@@ -76,10 +76,6 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
         <span className={styles.balanceLabel}>Active Commercial Balance</span>
         <div className={styles.balanceRow}>
           <span className={styles.balanceAmount}>{displayBalance}</span>
-          <span className={styles.liveIndicator}>
-            <span className={styles.liveBeacon} />
-            LIVE
-          </span>
         </div>
       </div>
 

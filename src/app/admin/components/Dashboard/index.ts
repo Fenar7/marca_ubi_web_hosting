@@ -50,3 +50,9 @@ export { LuxuryVirtualCard, type LuxuryVirtualCardProps } from './LuxuryVirtualC
 export { LuxuryQuickDispatchPod, type LuxuryQuickDispatchPodProps } from './LuxuryQuickDispatchPod';
 export { LuxurySlaFeedCard, type LuxurySlaFeedCardProps } from './LuxurySlaFeedCard';
 export { CommercialDealsLedger, type CommercialDealsLedgerProps, type LedgerFilterTab } from './CommercialDealsLedger';
+
+// 1:1 Fundora Image Parity Modules
+export { EarningOverviewSplineCard, type EarningOverviewSplineCardProps, type SplineMonthPoint } from './EarningOverviewSplineCard';
+export { SpendingOverviewBarCard, type SpendingOverviewBarCardProps } from './SpendingOverviewBarCard';
+export { RecentTransactionsTable, type RecentTransactionsTableProps, type TransactionItem } from './RecentTransactionsTable';
+export { UpcomingSlaCard, type UpcomingSlaCardProps, type UpcomingSlaItem } from './UpcomingSlaCard';

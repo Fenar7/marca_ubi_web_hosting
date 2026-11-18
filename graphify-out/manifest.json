@@ -888,9 +888,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/index.ts": {
-    "mtime": 1794926840.1246333,
-    "seen": 1794927174.086485,
-    "ast_hash": "7909e703d584627d48e7f1c56ac50dba",
+    "mtime": 1794986186.0250614,
+    "seen": 1794986589.56971,
+    "ast_hash": "a99e7393d14541079cee20a20aeeee1d",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/types.ts": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794906751.5503337,
-    "seen": 1794906819.277591,
-    "ast_hash": "e2fcb8a7f531d085be08fda9b2b1f340",
+    "mtime": 1794980354.0180695,
+    "seen": 1794986589.5712862,
+    "ast_hash": "c5d4f6ea375e90d7c73274bd7aeba4a9",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794926529.101599,
-    "seen": 1794927174.086485,
-    "ast_hash": "842e2200de42374813866f6395e7121a",
+    "mtime": 1794986388.622166,
+    "seen": 1794986589.56971,
+    "ast_hash": "b160e2bfa7fea9a1767c27353f0b8e45",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -6210,9 +6210,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx": {
-    "mtime": 1794925746.0908835,
-    "seen": 1794927174.086485,
-    "ast_hash": "1bccaea6e5966a088e187c2ccba7fada",
+    "mtime": 1794985991.078301,
+    "seen": 1794986589.56971,
+    "ast_hash": "3ab8e2afea23be5e2be07df94b92f3ef",
     "semantic_hash": ""
   },
   "docs/LuxuryDashboard/LUXURY_DASHBOARD_GREENFIELD_PLAN.md": {
@@ -6225,6 +6225,54 @@
     "mtime": 1794923457.5074346,
     "seen": 1794927174.0876813,
     "ast_hash": "33e3b6bef9442b84e956a2b6d7e78b16",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/EarningOverviewSplineCard.tsx": {
+    "mtime": 1794986067.316462,
+    "seen": 1794986589.56971,
+    "ast_hash": "805f515f9fb81b7e8dbd90a9cacb0480",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/RecentTransactionsTable.tsx": {
+    "mtime": 1794986128.2456486,
+    "seen": 1794986589.56971,
+    "ast_hash": "9037d3b66973f7c4ee7daba11f2b06bb",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/SpendingOverviewBarCard.tsx": {
+    "mtime": 1794986098.1290638,
+    "seen": 1794986589.56971,
+    "ast_hash": "311c196a0d54bc9cc8d7a70fe0803bbf",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/UpcomingSlaCard.tsx": {
+    "mtime": 1794986167.4721687,
+    "seen": 1794986589.56971,
+    "ast_hash": "eaffbc487ccb8c8b3c8bc14db812b169",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-17_20-30-00.md": {
+    "mtime": 1794980336.5795767,
+    "seen": 1794986589.5712862,
+    "ast_hash": "a943edcb16d49edee8a746342dee069e",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/LUXURY_DASHBOARD_REFINEMENT_AND_DONUT_REDESIGN_PLAN.md": {
+    "mtime": 1794984801.8916292,
+    "seen": 1794986589.5712862,
+    "ast_hash": "7dbc981edaeb9b8adec099aabdc35509",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/MASTER_FUNDORA_IMAGE_PARITY_REDESIGN_PLAN.md": {
+    "mtime": 1794985372.121164,
+    "seen": 1794986589.5712862,
+    "ast_hash": "32a0658103b3ce1b0c0e30f4571097c4",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/FUNDORA_1TO1_DESIGN_SPECIFICATION.md": {
+    "mtime": 1794986250.8858345,
+    "seen": 1794986589.5712862,
+    "ast_hash": "e60509b2b46317c7e500a9921286fa27",
     "semantic_hash": ""
   },
   "package-lock.json": {
