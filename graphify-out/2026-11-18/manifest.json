@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794990229.5150392,
-    "seen": 1794990241.9117055,
-    "ast_hash": "d4b2ae69b67bd41ddc622a41d296c315",
+    "mtime": 1794992275.0975783,
+    "seen": 1794992314.0696216,
+    "ast_hash": "587f536324a926315fa528becd9ac20b",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794986388.622166,
-    "seen": 1794986589.56971,
-    "ast_hash": "b160e2bfa7fea9a1767c27353f0b8e45",
+    "mtime": 1794991902.1186922,
+    "seen": 1794992236.1764493,
+    "ast_hash": "4d639e877100384c9f1173630962cbdd",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -6024,9 +6024,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1794990050.8665254,
-    "seen": 1794990241.9106896,
-    "ast_hash": "8403686651f2ed90723534cc4457716e",
+    "mtime": 1794991806.6451912,
+    "seen": 1794992236.1764493,
+    "ast_hash": "a01f37fdc7c8030ad5499b5abd10fc22",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
@@ -6291,6 +6291,24 @@
     "mtime": 1794989826.4787493,
     "seen": 1794990241.9117055,
     "ast_hash": "674c6f9fc35978fd609a5e524b45b96d",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/COMMERCIAL_DEALS_CONCEPTUAL_REDESIGN_PLAN.md": {
+    "mtime": 1794991507.0008283,
+    "seen": 1794992236.1764493,
+    "ast_hash": "00125632316e0e9a06da834e25943799",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_cockpit_redesign/DEALS_OPPORTUNITIES_ARCHITECTURAL_REDESIGN_PLAN.md": {
+    "mtime": 1794991388.6135223,
+    "seen": 1794992236.1764493,
+    "ast_hash": "02da122d99e37d1ba36783ab57886d3a",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-18_14-30-00.md": {
+    "mtime": 1794992260.049513,
+    "seen": 1794992314.0696216,
+    "ast_hash": "030d68ffdbcbbbd63a866629538cbf24",
     "semantic_hash": ""
   },
   "package-lock.json": {
