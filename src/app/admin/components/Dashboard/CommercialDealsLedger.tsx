@@ -2,16 +2,16 @@
 
 /**
  * @file CommercialDealsLedger.tsx
- * @description Master Commercial Deals Ledger modeled 1:1 after the AI Manager Lead List archetype.
- *              Features 5-segment horizontal progress pip bars, SLA urgency indicators,
- *              instantaneous search, filter tabs, and direct stage advancement triggers.
+ * @description Master Commercial Deals & Opportunities Ledger implementing the Marca Ubi
+ *              Editorial Luxury standard. Features concurrent search filtering (useDeferredValue),
+ *              recessed segmented rail controls, continuous tactile milestone progress tracks,
+ *              Swiss Helvetica Neue 300 Light tabular numerals, and zero-CLS skeleton states.
  * @module admin/components/Dashboard/CommercialDealsLedger
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useDeferredValue } from "react";
 import Link from "next/link";
-import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./CommercialDealsLedger.module.scss";
 
@@ -25,6 +25,7 @@ export interface CommercialDealsLedgerProps {
   onOpenDossier?: (record: OverviewRecord) => void;
 }
 
+/** Extracts clean uppercase initials for squircle monograms */
 function getInitials(name: string): string {
   if (!name) return "CL";
   const parts = name.trim().split(/\s+/);
@@ -50,9 +51,9 @@ function getClientAvatarStyle(name: string): { bg: string; color: string; border
   return PALETTES[Math.abs(hash) % PALETTES.length];
 }
 
-/** Resolves the 5-segment pip fill level and percentage for a given stage */
+/** Resolves the milestone progression percentage and semantic tone for a given deal stage */
 function getStagePipProgress(stageName: string): { filled: number; percentage: number; color: string } {
-  const norm = stageName.trim().toLowerCase();
+  const norm = stageName ? stageName.trim().toLowerCase() : "";
   if (norm.includes("won") || norm.includes("converted")) {
     return { filled: 5, percentage: 100, color: "#059669" };
   }
@@ -71,14 +72,16 @@ function getStagePipProgress(stageName: string): { filled: number; percentage: n
   return { filled: 1, percentage: 20, color: "#111111" };
 }
 
-/** Determines SLA urgency intervals with calm, non-alarmist phrasing */
+/** Determines SLA urgency intervals with calendar-normalized cadence */
 function getUrgencyStatus(due: string | null): { text: string; isOverdue: boolean; isToday: boolean } {
   if (!due) return { text: "On track", isOverdue: false, isToday: false };
-  const time = new Date(due).getTime();
-  if (!Number.isFinite(time)) return { text: "On track", isOverdue: false, isToday: false };
+  const target = new Date(due);
+  if (!Number.isFinite(target.getTime())) return { text: "On track", isOverdue: false, isToday: false };
 
-  const now = Date.now();
-  const diffDays = Math.floor((time - now) / (1000 * 60 * 60 * 24));
+  const now = new Date();
+  const targetMidnight = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const diffDays = Math.round((targetMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
     return { text: `Follow-up ${Math.abs(diffDays)}d ago`, isOverdue: true, isToday: false };
@@ -98,6 +101,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<LedgerFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   // Tab counts
   const highValueCount = useMemo(
@@ -113,7 +117,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     [records]
   );
 
-  // Filtering pipeline
+  // Filtering pipeline using deferred query for 60fps typing velocity
   const filteredRecords = useMemo(() => {
     let list = records;
 
@@ -127,7 +131,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     }
 
     // Search query filter
-    const q = searchQuery.trim().toLowerCase();
+    const q = deferredSearchQuery.trim().toLowerCase();
     if (q) {
       list = list.filter((r) =>
         [r.name, r.company, r.leadId, r.serviceCategory, r.owner, r.stage].some(
@@ -137,7 +141,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     }
 
     return list;
-  }, [records, activeTab, searchQuery]);
+  }, [records, activeTab, deferredSearchQuery]);
 
   const displayedRecords = useMemo(() => {
     return filteredRecords.slice(0, 10);
@@ -190,46 +194,54 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
         </div>
       </header>
 
-      {/* Filter Tabs */}
+      {/* Recessed Segmented Filter Control Rail */}
       <div className={styles.filterToolbar}>
-        <div className={styles.tabsRow} role="tablist">
+        <div
+          className={styles.segmentedControl}
+          role="tablist"
+          aria-label="Filter opportunities by urgency or deal value"
+        >
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "all"}
-            className={`${styles.tabBtn} ${
-              activeTab === "all" ? styles.tabBtnActive : ""
+            className={`${styles.segmentBtn} ${
+              activeTab === "all" ? styles.segmentBtnActive : ""
             }`}
             onClick={() => setActiveTab("all")}
           >
             <span>All Deals</span>
-            <span className={styles.countBadge}>{records.length}</span>
+            <span className={styles.segmentCount}>{records.length}</span>
           </button>
 
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "high_value"}
-            className={`${styles.tabBtn} ${
-              activeTab === "high_value" ? styles.tabBtnActive : ""
+            className={`${styles.segmentBtn} ${
+              activeTab === "high_value" ? styles.segmentBtnActive : ""
             }`}
             onClick={() => setActiveTab("high_value")}
           >
             <span>High Value (&gt; ₹10L)</span>
-            <span className={styles.countBadge}>{highValueCount}</span>
+            <span className={styles.segmentCount}>{highValueCount}</span>
           </button>
 
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "overdue"}
-            className={`${styles.tabBtn} ${
-              activeTab === "overdue" ? styles.tabBtnActive : ""
+            className={`${styles.segmentBtn} ${
+              activeTab === "overdue" ? styles.segmentBtnActive : ""
             }`}
             onClick={() => setActiveTab("overdue")}
           >
             <span>Needs Follow-up</span>
-            <span className={`${styles.countBadge} ${overdueCount > 0 ? styles.countBadgeOverdue : ""}`}>
+            <span
+              className={`${styles.segmentCount} ${
+                overdueCount > 0 ? styles.segmentCountAlert : ""
+              }`}
+            >
               {overdueCount}
             </span>
           </button>
@@ -238,25 +250,26 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             type="button"
             role="tab"
             aria-selected={activeTab === "today"}
-            className={`${styles.tabBtn} ${
-              activeTab === "today" ? styles.tabBtnActive : ""
+            className={`${styles.segmentBtn} ${
+              activeTab === "today" ? styles.segmentBtnActive : ""
             }`}
             onClick={() => setActiveTab("today")}
           >
             <span>Scheduled Today</span>
-            <span className={styles.countBadge}>{todayCount}</span>
+            <span className={styles.segmentCount}>{todayCount}</span>
           </button>
         </div>
       </div>
 
-      <div className={styles.tableResponsiveWrapper}>
+      {/* Desktop View: Semantic High-Density Table (>= 840px) */}
+      <div className={styles.desktopTableWrapper}>
         <table className={styles.dealsTable}>
           <thead>
             <tr>
               <th scope="col">Deal / Client</th>
               <th scope="col">Service</th>
               <th scope="col">Stage &amp; Progress</th>
-              <th scope="col">Expected Value</th>
+              <th scope="col" style={{ textAlign: "right" }}>Expected Value</th>
               <th scope="col">Owner</th>
               <th scope="col" style={{ textAlign: "right", paddingRight: "1.4rem" }}>
                 Actions
@@ -265,11 +278,38 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
           </thead>
           <tbody>
             {!recordsReady ? (
-              <tr>
-                <td colSpan={6} className={styles.emptyState} role="status">
-                  Loading opportunities...
-                </td>
-              </tr>
+              // Zero-CLS Layout-Matched Skeleton Rows
+              [...Array(5)].map((_, i) => (
+                <tr key={`skeleton-${i}`} className={styles.skeletonRow} aria-hidden="true">
+                  <td>
+                    <div className={styles.clientCell}>
+                      <div className={styles.skeletonAvatar} />
+                      <div className={styles.skeletonMeta}>
+                        <div className={styles.skeletonLineLong} />
+                        <div className={styles.skeletonLineShort} />
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className={styles.skeletonPill} />
+                  </td>
+                  <td>
+                    <div className={styles.skeletonStageBlock}>
+                      <div className={styles.skeletonLineShort} />
+                      <div className={styles.skeletonTrack} />
+                    </div>
+                  </td>
+                  <td>
+                    <div className={styles.skeletonValue} />
+                  </td>
+                  <td>
+                    <div className={styles.skeletonOwner} />
+                  </td>
+                  <td>
+                    <div className={styles.skeletonActions} />
+                  </td>
+                </tr>
+              ))
             ) : displayedRecords.length === 0 ? (
               <tr>
                 <td colSpan={6} className={styles.emptyState} role="status">
@@ -280,8 +320,9 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
               displayedRecords.map((deal) => {
                 const pip = getStagePipProgress(deal.stage);
                 const urgency = getUrgencyStatus(deal.due);
-                const displayName = deal.company || deal.name;
+                const displayName = deal.company || deal.name || "Untitled Opportunity";
                 const avatarStyle = getClientAvatarStyle(displayName);
+                const digitsOnly = Math.round(deal.expectedValue ?? 0).toLocaleString("en-IN");
 
                 return (
                   <tr key={deal.id} className={styles.tableRow}>
@@ -289,7 +330,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                     <td>
                       <div className={styles.clientCell}>
                         <div
-                          className={styles.avatarPill}
+                          className={styles.avatarSquircle}
                           style={{
                             backgroundColor: avatarStyle.bg,
                             color: avatarStyle.color,
@@ -315,7 +356,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                           <div className={styles.dealMeta}>
                             <span className={styles.leadIdTag}>{deal.leadId}</span>
                             <span className={styles.dotDivider}>·</span>
-                            <span>{deal.serviceCategory || "Advisory"}</span>
+                            <span className={styles.serviceMetaText}>{deal.serviceCategory || "Advisory"}</span>
                           </div>
                         </Link>
                       </div>
@@ -323,58 +364,84 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
 
                     {/* Service Category */}
                     <td>
-                      <span className={styles.serviceTag}>
+                      <span className={styles.serviceText}>
                         {deal.serviceCategory || "Web & Digital"}
                       </span>
                     </td>
 
-                    {/* Stage & Multi-Segment Progress Pips */}
+                    {/* Stage & Continuous Milestone Progress Track */}
                     <td>
                       <div className={styles.stageProgressCell}>
                         <div className={styles.stageTokenRow}>
                           <span className={styles.stageName}>{deal.stage}</span>
+                          <span className={styles.stageSeparator}>·</span>
+                          <span className={styles.stagePercentage}>{pip.percentage}%</span>
+                        </div>
+
+                        {/* Continuous Milestone Track with 4 Hairline Stage Divider Ticks */}
+                        <div
+                          className={styles.milestoneTrack}
+                          role="progressbar"
+                          aria-valuenow={pip.percentage}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={`${deal.stage} progress: ${pip.percentage}%`}
+                        >
+                          <div
+                            className={styles.milestoneBar}
+                            style={{
+                              width: `${pip.percentage}%`,
+                              backgroundColor: pip.color,
+                            }}
+                          />
+                          <span className={styles.milestoneTick} style={{ left: "20%" }} aria-hidden="true" />
+                          <span className={styles.milestoneTick} style={{ left: "40%" }} aria-hidden="true" />
+                          <span className={styles.milestoneTick} style={{ left: "60%" }} aria-hidden="true" />
+                          <span className={styles.milestoneTick} style={{ left: "80%" }} aria-hidden="true" />
+                        </div>
+
+                        {/* SLA Cadence Text (Unboxed Editorial Typography) */}
+                        <div className={styles.cadenceRow}>
                           {urgency.isToday ? (
-                            <span className={styles.dueTodayTag}>{urgency.text}</span>
+                            <span className={styles.cadenceToday}>{urgency.text}</span>
                           ) : urgency.isOverdue ? (
-                            <span className={styles.overdueTag}>{urgency.text}</span>
+                            <span className={styles.cadenceOverdue}>{urgency.text}</span>
                           ) : (
                             <span className={styles.cadenceMuted}>{urgency.text}</span>
                           )}
                         </div>
-
-                        {/* 5-segment continuous pip bar */}
-                        <div className={styles.pipRow}>
-                          <div className={styles.pipTrack} aria-label={`${deal.stage} progress: ${pip.percentage}%`}>
-                            {[1, 2, 3, 4, 5].map((segmentIdx) => (
-                              <span
-                                key={segmentIdx}
-                                className={`${styles.pipSegment} ${
-                                  segmentIdx <= pip.filled ? styles.pipSegmentFilled : ""
-                                }`}
-                                style={segmentIdx <= pip.filled ? { backgroundColor: pip.color } : undefined}
-                              />
-                            ))}
-                          </div>
-                          <span className={styles.pipPercentage}>{pip.percentage}%</span>
-                        </div>
                       </div>
                     </td>
 
-                    {/* Value */}
-                    <td className={styles.amount}>
-                      {financials
-                        ? formatCrmCurrency(deal.expectedValue ?? 0)
-                        : "Confidential"}
+                    {/* Swiss Tabular Numeral Value */}
+                    <td className={styles.amountCell}>
+                      {financials ? (
+                        <div className={styles.currencyDisplay}>
+                          <span className={styles.currencyGlyph}>₹</span>
+                          <span className={styles.currencyDigits}>{digitsOnly}</span>
+                        </div>
+                      ) : (
+                        <span className={styles.confidentialText}>Confidential</span>
+                      )}
                     </td>
 
-                    {/* Owner */}
+                    {/* Executive Representative Indicator (Purging Owner Pill Badge) */}
                     <td>
-                      <span className={styles.ownerBadge}>
-                        {deal.owner || "Unassigned"}
-                      </span>
+                      <div className={styles.ownerCell}>
+                        {deal.owner ? (
+                          <>
+                            <div className={styles.ownerAvatar} aria-hidden="true">
+                              {getInitials(deal.owner)}
+                            </div>
+                            <span className={styles.ownerName}>{deal.owner}</span>
+                          </>
+                        ) : (
+                          <span className={styles.ownerUnassigned}>Unassigned</span>
+                        )}
+                      </div>
                     </td>
 
-                    {/* Actions */}
+                    {/* Tactile Actions Pair */}
                     <td>
                       <div className={styles.actionsCluster}>
                         <button
@@ -385,7 +452,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                               onAdvanceStage(deal);
                             }
                           }}
-                          aria-label={`Advance stage for ${deal.name}`}
+                          aria-label={`Advance stage for ${displayName}`}
                         >
                           <span>Advance</span>
                           <span aria-hidden="true">→</span>
@@ -394,8 +461,8 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                         <Link
                           href={deal.href || `/admin/leads?id=${encodeURIComponent(deal.id)}`}
                           className={styles.dossierBtn}
-                          title={`Open dossier for ${deal.name}`}
-                          aria-label={`Open dossier for ${deal.name}`}
+                          title={`Open dossier for ${displayName}`}
+                          aria-label={`Open dossier for ${displayName}`}
                           onClick={(e) => {
                             if (onOpenDossier) {
                               e.preventDefault();
@@ -426,6 +493,165 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Reflow Dual View: High-Density Editorial Cards (< 840px down to 320px) */}
+      <div className={styles.mobileCardsContainer}>
+        {!recordsReady ? (
+          [...Array(3)].map((_, i) => (
+            <div key={`m-skeleton-${i}`} className={styles.mobileCardSkeleton} aria-hidden="true">
+              <div className={styles.skeletonLineLong} />
+              <div className={styles.skeletonLineShort} />
+            </div>
+          ))
+        ) : displayedRecords.length === 0 ? (
+          <div className={styles.emptyState}>
+            No commercial opportunities match your filter.
+          </div>
+        ) : (
+          displayedRecords.map((deal) => {
+            const pip = getStagePipProgress(deal.stage);
+            const urgency = getUrgencyStatus(deal.due);
+            const displayName = deal.company || deal.name || "Untitled Opportunity";
+            const avatarStyle = getClientAvatarStyle(displayName);
+            const digitsOnly = Math.round(deal.expectedValue ?? 0).toLocaleString("en-IN");
+
+            return (
+              <article key={`mob-${deal.id}`} className={styles.mobileDealCard}>
+                <div className={styles.mobileTopRow}>
+                  <div className={styles.clientCell}>
+                    <div
+                      className={styles.avatarSquircle}
+                      style={{
+                        backgroundColor: avatarStyle.bg,
+                        color: avatarStyle.color,
+                        borderColor: avatarStyle.border,
+                      }}
+                      aria-hidden="true"
+                    >
+                      {getInitials(displayName)}
+                    </div>
+                    <div className={styles.mobileTitleBlock}>
+                      <strong className={styles.dealTitle}>{displayName}</strong>
+                      <div className={styles.dealMeta}>
+                        <span className={styles.leadIdTag}>{deal.leadId}</span>
+                        <span className={styles.dotDivider}>·</span>
+                        <span className={styles.serviceMetaText}>{deal.serviceCategory || "Advisory"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.mobileValueBlock}>
+                    {financials ? (
+                      <div className={styles.currencyDisplay}>
+                        <span className={styles.currencyGlyph}>₹</span>
+                        <span className={styles.currencyDigits}>{digitsOnly}</span>
+                      </div>
+                    ) : (
+                      <span className={styles.confidentialText}>Confidential</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.mobileMiddleRow}>
+                  <div className={styles.stageTokenRow}>
+                    <span className={styles.stageName}>{deal.stage}</span>
+                    <span className={styles.stageSeparator}>·</span>
+                    <span className={styles.stagePercentage}>{pip.percentage}%</span>
+                  </div>
+
+                  <div
+                    className={styles.milestoneTrack}
+                    role="progressbar"
+                    aria-valuenow={pip.percentage}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${deal.stage} progress: ${pip.percentage}%`}
+                  >
+                    <div
+                      className={styles.milestoneBar}
+                      style={{
+                        width: `${pip.percentage}%`,
+                        backgroundColor: pip.color,
+                      }}
+                    />
+                    <span className={styles.milestoneTick} style={{ left: "20%" }} aria-hidden="true" />
+                    <span className={styles.milestoneTick} style={{ left: "40%" }} aria-hidden="true" />
+                    <span className={styles.milestoneTick} style={{ left: "60%" }} aria-hidden="true" />
+                    <span className={styles.milestoneTick} style={{ left: "80%" }} aria-hidden="true" />
+                  </div>
+
+                  <div className={styles.mobileCadenceAndOwner}>
+                    {urgency.isToday ? (
+                      <span className={styles.cadenceToday}>{urgency.text}</span>
+                    ) : urgency.isOverdue ? (
+                      <span className={styles.cadenceOverdue}>{urgency.text}</span>
+                    ) : (
+                      <span className={styles.cadenceMuted}>{urgency.text}</span>
+                    )}
+
+                    <div className={styles.ownerCell}>
+                      {deal.owner ? (
+                        <>
+                          <div className={styles.ownerAvatar} aria-hidden="true">
+                            {getInitials(deal.owner)}
+                          </div>
+                          <span className={styles.ownerName}>{deal.owner}</span>
+                        </>
+                      ) : (
+                        <span className={styles.ownerUnassigned}>Unassigned</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.mobileActionsRow}>
+                  <button
+                    type="button"
+                    className={styles.advanceBtn}
+                    onClick={() => {
+                      if (onAdvanceStage) {
+                        onAdvanceStage(deal);
+                      }
+                    }}
+                    aria-label={`Advance stage for ${displayName}`}
+                  >
+                    <span>Advance Stage</span>
+                    <span aria-hidden="true">→</span>
+                  </button>
+
+                  <Link
+                    href={deal.href || `/admin/leads?id=${encodeURIComponent(deal.id)}`}
+                    className={styles.dossierBtn}
+                    title={`Open dossier for ${displayName}`}
+                    aria-label={`Open dossier for ${displayName}`}
+                    onClick={(e) => {
+                      if (onOpenDossier) {
+                        e.preventDefault();
+                        onOpenDossier(deal);
+                      }
+                    }}
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <line x1="7" y1="17" x2="17" y2="7" />
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
+                  </Link>
+                </div>
+              </article>
+            );
+          })
+        )}
       </div>
 
       <footer className={styles.tableFooter}>
