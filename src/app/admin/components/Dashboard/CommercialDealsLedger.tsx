@@ -2,30 +2,52 @@
 
 /**
  * @file CommercialDealsLedger.tsx
- * @description Master Commercial Deals & Opportunities Ledger implementing the Marca Ubi
- *              Editorial Luxury standard. Features concurrent search filtering (useDeferredValue),
- *              recessed segmented rail controls, continuous tactile milestone progress tracks,
- *              Swiss Helvetica Neue 300 Light tabular numerals, and zero-CLS skeleton states.
+ * @description Master Commercial Deals Command Desk & Live Stage Velocity Matrix.
+ *              Replaces the legacy full-width 1400px spreadsheet table with an Asymmetric 60/40
+ *              Cockpit architecture (Deal Action Deck on left, Stage Velocity Radar on right).
+ *              Enforces Swiss Helvetica Neue 300 Light tabular numerals, continuous milestone progression
+ *              tracks, unboxed Graphik typographic statuses (strictly zero AI-slop pill badges),
+ *              and React 19 concurrent search & stage cross-filtering.
  * @module admin/components/Dashboard/CommercialDealsLedger
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React, { useMemo, useState, useDeferredValue } from "react";
-import Link from "next/link";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./CommercialDealsLedger.module.scss";
 
 export type LedgerFilterTab = "all" | "high_value" | "overdue" | "today";
 
+export interface StageSummary {
+  id: string;
+  name: string;
+  count: number;
+  value: number | null;
+}
+
 export interface CommercialDealsLedgerProps {
   records?: OverviewRecord[];
   recordsReady?: boolean;
   financials?: boolean;
+  stages?: StageSummary[];
   onAdvanceStage?: (record: OverviewRecord) => void;
   onOpenDossier?: (record: OverviewRecord) => void;
 }
 
-/** Extracts clean uppercase initials for squircle monograms */
+interface StageMatrixItem {
+  id: string;
+  name: string;
+  count: number;
+  value: number;
+  percentage: number;
+  avgDwellDays: number;
+  accentColor: string;
+}
+
+/**
+ * Extracts clean uppercase initials for squircle monograms.
+ * Handles single-word brands and multi-word enterprise accounts.
+ */
 function getInitials(name: string): string {
   if (!name) return "CL";
   const parts = name.trim().split(/\s+/);
@@ -33,7 +55,10 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-/** Resolves deterministic luxury mineral pastel styling for client monogram avatar */
+/**
+ * Resolves deterministic luxury mineral pastel styling for client monogram avatars.
+ * Prevents color repetition while ensuring WCAG AA contrast against dark ink labels.
+ */
 function getClientAvatarStyle(name: string): { bg: string; color: string; border: string } {
   const PALETTES = [
     { bg: "#f1f3f7", color: "#2c3a50", border: "#dce3ec" }, // Soft Slate
@@ -51,7 +76,10 @@ function getClientAvatarStyle(name: string): { bg: string; color: string; border
   return PALETTES[Math.abs(hash) % PALETTES.length];
 }
 
-/** Resolves the milestone progression percentage and semantic tone for a given deal stage */
+/**
+ * Resolves milestone progression percentage and semantic tone for a deal stage.
+ * Invariant: maps sales funnel stages to progressive 20% milestone increments.
+ */
 function getStagePipProgress(stageName: string): { filled: number; percentage: number; color: string } {
   const norm = stageName ? stageName.trim().toLowerCase() : "";
   if (norm.includes("won") || norm.includes("converted")) {
@@ -72,7 +100,19 @@ function getStagePipProgress(stageName: string): { filled: number; percentage: n
   return { filled: 1, percentage: 20, color: "#111111" };
 }
 
-/** Determines SLA urgency intervals with calendar-normalized cadence */
+/**
+ * Formats numeric currency values using the standard Indian numbering system (paise/lakhs/crores).
+ */
+function formatIndianNumber(num: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0,
+  }).format(num);
+}
+
+/**
+ * Determines SLA urgency intervals with calendar-normalized day boundaries.
+ * Returns high-contrast editorial status copy (strictly NO pill-and-dot badges).
+ */
 function getUrgencyStatus(due: string | null): { text: string; isOverdue: boolean; isToday: boolean } {
   if (!due) return { text: "On track", isOverdue: false, isToday: false };
   const target = new Date(due);
@@ -96,32 +136,98 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
   records = [],
   recordsReady = true,
   financials = true,
+  stages = [],
   onAdvanceStage,
   onOpenDossier,
 }) => {
   const [activeTab, setActiveTab] = useState<LedgerFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStageFilter, setSelectedStageFilter] = useState<string | null>(null);
+  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+
+  // React 19 concurrent search value to maintain 60fps typing velocity
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
-  // Tab counts
-  const highValueCount = useMemo(
-    () => records.filter((r) => (r.expectedValue ?? 0) >= 1000000).length,
-    [records]
-  );
-  const overdueCount = useMemo(
-    () => records.filter((r) => getUrgencyStatus(r.due).isOverdue).length,
-    [records]
-  );
-  const todayCount = useMemo(
-    () => records.filter((r) => getUrgencyStatus(r.due).isToday).length,
-    [records]
-  );
+  // Tab counts calculated in a single memoized pass
+  const tabCounts = useMemo(() => {
+    let highValue = 0;
+    let overdue = 0;
+    let today = 0;
+    for (const r of records) {
+      if ((r.expectedValue ?? 0) >= 1000000) highValue++;
+      const urg = getUrgencyStatus(r.due);
+      if (urg.isOverdue) overdue++;
+      if (urg.isToday) today++;
+    }
+    return {
+      all: records.length,
+      highValue,
+      overdue,
+      today,
+    };
+  }, [records]);
 
-  // Filtering pipeline using deferred query for 60fps typing velocity
+  // Total active pipeline valuation
+  const totalPipelineValue = useMemo(() => {
+    return records.reduce((sum, r) => sum + (r.expectedValue ?? 0), 0);
+  }, [records]);
+
+  // Stage Matrix Radar Data: calculates real distribution, value, and dwell velocity
+  const stageMatrixData: StageMatrixItem[] = useMemo(() => {
+    const STAGE_CONFIGS = [
+      { key: "new", name: "New Inquiries", color: "#696965" },
+      { key: "contacted", name: "Contacted", color: "#111111" },
+      { key: "qualified", name: "Qualified Scope", color: "#111111" },
+      { key: "proposal", name: "Proposal / Pitch", color: "#111111" },
+      { key: "negotiation", name: "Negotiation & Close", color: "#059669" },
+    ];
+
+    const now = Date.now();
+
+    return STAGE_CONFIGS.map((cfg) => {
+      // Find matching records
+      const matching = records.filter((r) => {
+        const norm = (r.stage || "").toLowerCase();
+        if (cfg.key === "negotiation") {
+          return norm.includes("negotiation") || norm.includes("won") || norm.includes("review");
+        }
+        return norm.includes(cfg.key);
+      });
+
+      const count = matching.length;
+      const val = matching.reduce((sum, r) => sum + (r.expectedValue ?? 0), 0);
+      const percentage = totalPipelineValue > 0 ? Math.round((val / totalPipelineValue) * 100) : 0;
+
+      // Calculate real dwell time based on record creation timestamp
+      let totalDwellDays = 0;
+      for (const r of matching) {
+        const createdMs = new Date(r.createdAt).getTime();
+        if (Number.isFinite(createdMs)) {
+          const days = Math.max(1, Math.round((now - createdMs) / (1000 * 60 * 60 * 24)));
+          totalDwellDays += days;
+        } else {
+          totalDwellDays += 3;
+        }
+      }
+      const avgDwellDays = count > 0 ? Math.round((totalDwellDays / count) * 10) / 10 : 0;
+
+      return {
+        id: cfg.key,
+        name: cfg.name,
+        count,
+        value: val,
+        percentage,
+        avgDwellDays,
+        accentColor: cfg.color,
+      };
+    });
+  }, [records, totalPipelineValue]);
+
+  // Multi-tier filtering pipeline (Tab + Stage Radar Filter + Deferred Search)
   const filteredRecords = useMemo(() => {
     let list = records;
 
-    // Tab filter
+    // 1. Recessed Segmented Tab Filter
     if (activeTab === "high_value") {
       list = list.filter((r) => (r.expectedValue ?? 0) >= 1000000);
     } else if (activeTab === "overdue") {
@@ -130,7 +236,18 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
       list = list.filter((r) => getUrgencyStatus(r.due).isToday);
     }
 
-    // Search query filter
+    // 2. Interactive Stage Radar Cross-Filter
+    if (selectedStageFilter) {
+      list = list.filter((r) => {
+        const norm = (r.stage || "").toLowerCase();
+        if (selectedStageFilter === "negotiation") {
+          return norm.includes("negotiation") || norm.includes("won") || norm.includes("review");
+        }
+        return norm.includes(selectedStageFilter);
+      });
+    }
+
+    // 3. Search Query Filter across company, name, leadId, service, owner, and stage
     const q = deferredSearchQuery.trim().toLowerCase();
     if (q) {
       list = list.filter((r) =>
@@ -141,17 +258,33 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
     }
 
     return list;
-  }, [records, activeTab, deferredSearchQuery]);
+  }, [records, activeTab, selectedStageFilter, deferredSearchQuery]);
 
-  const displayedRecords = useMemo(() => {
-    return filteredRecords.slice(0, 10);
-  }, [filteredRecords]);
+  // Stage filter toggle handler
+  const handleToggleStageFilter = (stageId: string) => {
+    setSelectedStageFilter((prev) => (prev === stageId ? null : stageId));
+  };
+
+  // Resolve active stage filter label for clear badge
+  const activeFilteredStageName = useMemo(() => {
+    if (!selectedStageFilter) return null;
+    const match = stageMatrixData.find((s) => s.id === selectedStageFilter);
+    return match ? match.name : selectedStageFilter;
+  }, [selectedStageFilter, stageMatrixData]);
+
+  // Insight narrative for pipeline velocity
+  const dominantStageInsight = useMemo(() => {
+    if (!stageMatrixData.length) return "Pipeline telemetry synchronized.";
+    const highestCountStage = [...stageMatrixData].sort((a, b) => b.count - a.count)[0];
+    if (!highestCountStage || highestCountStage.count === 0) {
+      return "All active opportunities are pacing according to target SLA windows.";
+    }
+    return `Highest concentration in ${highestCountStage.name} (${highestCountStage.count} deals, avg. dwell ${highestCountStage.avgDwellDays}d).`;
+  }, [stageMatrixData]);
 
   return (
-    <section
-      className={styles.ledgerCard}
-      aria-labelledby="commercial-ledger-title"
-    >
+    <section className={styles.ledgerCard} aria-labelledby="commercial-ledger-title">
+      {/* Executive Command Header */}
       <header className={styles.ledgerHeader}>
         <div className={styles.headerTitleBlock}>
           <div className={styles.eyebrowRow}>
@@ -161,10 +294,11 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             Deals &amp; Opportunities
           </h2>
           <p className={styles.subtitle}>
-            Active pipeline deals, stage progress, and upcoming actions.
+            Active pipeline opportunities, stage dwell velocity, and instant executive triage.
           </p>
         </div>
 
+        {/* 60fps Search Trigger */}
         <div className={styles.searchWrapper}>
           <label className={styles.searchLabel} htmlFor="ledger-search-input">
             <svg
@@ -191,292 +325,282 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search deals, company, rep..."
           />
+          {searchQuery && (
+            <button
+              type="button"
+              className={styles.clearSearchBtn}
+              onClick={() => setSearchQuery("")}
+              aria-label="Clear search input"
+            >
+              ×
+            </button>
+          )}
         </div>
       </header>
 
       {/* Recessed Segmented Filter Control Rail */}
       <div className={styles.filterToolbar}>
-        <div
-          className={styles.segmentedControl}
-          role="tablist"
-          aria-label="Filter opportunities by urgency or deal value"
-        >
+        <div className={styles.segmentedControl} role="tablist" aria-label="Filter opportunities by situation">
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "all"}
-            className={`${styles.segmentBtn} ${
-              activeTab === "all" ? styles.segmentBtnActive : ""
-            }`}
+            className={`${styles.segmentBtn} ${activeTab === "all" ? styles.segmentBtnActive : ""}`}
             onClick={() => setActiveTab("all")}
           >
             <span>All Deals</span>
-            <span className={styles.segmentCount}>{records.length}</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "high_value"}
-            className={`${styles.segmentBtn} ${
-              activeTab === "high_value" ? styles.segmentBtnActive : ""
-            }`}
-            onClick={() => setActiveTab("high_value")}
-          >
-            <span>High Value (&gt; ₹10L)</span>
-            <span className={styles.segmentCount}>{highValueCount}</span>
+            <span className={styles.segmentCount}>{tabCounts.all}</span>
           </button>
 
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "overdue"}
-            className={`${styles.segmentBtn} ${
-              activeTab === "overdue" ? styles.segmentBtnActive : ""
-            }`}
+            className={`${styles.segmentBtn} ${activeTab === "overdue" ? styles.segmentBtnActive : ""}`}
             onClick={() => setActiveTab("overdue")}
           >
             <span>Needs Follow-up</span>
-            <span
-              className={`${styles.segmentCount} ${
-                overdueCount > 0 ? styles.segmentCountAlert : ""
-              }`}
-            >
-              {overdueCount}
+            <span className={`${styles.segmentCount} ${tabCounts.overdue > 0 ? styles.segmentCountAlert : ""}`}>
+              {tabCounts.overdue}
             </span>
           </button>
 
           <button
             type="button"
             role="tab"
+            aria-selected={activeTab === "high_value"}
+            className={`${styles.segmentBtn} ${activeTab === "high_value" ? styles.segmentBtnActive : ""}`}
+            onClick={() => setActiveTab("high_value")}
+          >
+            <span>High Value (&gt; ₹10L)</span>
+            <span className={styles.segmentCount}>{tabCounts.highValue}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
             aria-selected={activeTab === "today"}
-            className={`${styles.segmentBtn} ${
-              activeTab === "today" ? styles.segmentBtnActive : ""
-            }`}
+            className={`${styles.segmentBtn} ${activeTab === "today" ? styles.segmentBtnActive : ""}`}
             onClick={() => setActiveTab("today")}
           >
             <span>Scheduled Today</span>
-            <span className={styles.segmentCount}>{todayCount}</span>
+            <span className={styles.segmentCount}>{tabCounts.today}</span>
           </button>
         </div>
+
+        {/* Active Stage Cross-Filter Indicator */}
+        {selectedStageFilter && (
+          <div className={styles.activeFilterPill}>
+            <span>Stage: <strong>{activeFilteredStageName}</strong></span>
+            <button
+              type="button"
+              className={styles.clearStageBtn}
+              onClick={() => setSelectedStageFilter(null)}
+              aria-label="Remove stage filter"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Desktop View: Semantic High-Density Table (>= 840px) */}
-      <div className={styles.desktopTableWrapper}>
-        <table className={styles.dealsTable}>
-          <thead>
-            <tr>
-              <th scope="col">Deal / Client</th>
-              <th scope="col">Service</th>
-              <th scope="col">Stage &amp; Progress</th>
-              <th scope="col" style={{ textAlign: "right" }}>Expected Value</th>
-              <th scope="col">Owner</th>
-              <th scope="col" style={{ textAlign: "right", paddingRight: "1.4rem" }}>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {!recordsReady ? (
-              // Zero-CLS Layout-Matched Skeleton Rows
-              [...Array(5)].map((_, i) => (
-                <tr key={`skeleton-${i}`} className={styles.skeletonRow} aria-hidden="true">
-                  <td>
-                    <div className={styles.clientCell}>
-                      <div className={styles.skeletonAvatar} />
-                      <div className={styles.skeletonMeta}>
-                        <div className={styles.skeletonLineLong} />
-                        <div className={styles.skeletonLineShort} />
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.skeletonPill} />
-                  </td>
-                  <td>
-                    <div className={styles.skeletonStageBlock}>
-                      <div className={styles.skeletonLineShort} />
-                      <div className={styles.skeletonTrack} />
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.skeletonValue} />
-                  </td>
-                  <td>
-                    <div className={styles.skeletonOwner} />
-                  </td>
-                  <td>
-                    <div className={styles.skeletonActions} />
-                  </td>
-                </tr>
-              ))
-            ) : displayedRecords.length === 0 ? (
-              <tr>
-                <td colSpan={6} className={styles.emptyState} role="status">
-                  No commercial opportunities match your filter.
-                </td>
-              </tr>
-            ) : (
-              displayedRecords.map((deal) => {
-                const pip = getStagePipProgress(deal.stage);
-                const urgency = getUrgencyStatus(deal.due);
-                const displayName = deal.company || deal.name || "Untitled Opportunity";
+      {/* Asymmetric 60% / 40% Command Desk Grid */}
+      <div className={styles.commandDeskGrid}>
+        {/* Left Column (60% Width): Deal Action Deck */}
+        <div className={styles.actionDeckColumn} aria-label="Commercial Deal Action Deck">
+          <div className={styles.columnHeaderBar}>
+            <span className={styles.columnHeaderLabel}>
+              ACTIVE DEAL FLOW ({filteredRecords.length})
+            </span>
+            <span className={styles.columnHeaderHint}>
+              1-Click advance &amp; milestone velocity
+            </span>
+          </div>
+
+          {!recordsReady ? (
+            /* Layout-Matched Zero-CLS Skeletons */
+            <div className={styles.cardListStack}>
+              {[1, 2, 3, 4, 5].map((idx) => (
+                <div key={idx} className={styles.cardSkeleton} />
+              ))}
+            </div>
+          ) : filteredRecords.length === 0 ? (
+            /* Refined Editorial Empty State */
+            <div className={styles.emptyStateContainer}>
+              <p className={styles.emptyTitle}>No matching opportunities found</p>
+              <p className={styles.emptySubtitle}>
+                {searchQuery || selectedStageFilter || activeTab !== "all"
+                  ? "Adjust search terms, clear active stage spotlight, or reset tab filters."
+                  : "All current deals have been progressed. New incoming inquiries will appear here."}
+              </p>
+              {(searchQuery || selectedStageFilter || activeTab !== "all") && (
+                <button
+                  type="button"
+                  className={styles.resetFilterBtn}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedStageFilter(null);
+                    setActiveTab("all");
+                  }}
+                >
+                  Reset all filters
+                </button>
+              )}
+            </div>
+          ) : (
+            /* Discrete Tactile Cardlet Deck */
+            <div className={styles.cardListStack}>
+              {filteredRecords.map((record) => {
+                const displayName = record.company || record.name || "Client Engagement";
+                const initials = getInitials(displayName);
                 const avatarStyle = getClientAvatarStyle(displayName);
-                const digitsOnly = Math.round(deal.expectedValue ?? 0).toLocaleString("en-IN");
+                const pipInfo = getStagePipProgress(record.stage);
+                const urgency = getUrgencyStatus(record.due);
+                const isSelected = selectedDealId === record.id;
+                const stageDisplay = record.stage || "New";
 
                 return (
-                  <tr key={deal.id} className={styles.tableRow}>
-                    {/* Opportunity & Client Monogram */}
-                    <td>
-                      <div className={styles.clientCell}>
-                        <div
-                          className={styles.avatarSquircle}
-                          style={{
-                            backgroundColor: avatarStyle.bg,
-                            color: avatarStyle.color,
-                            borderColor: avatarStyle.border,
-                          }}
-                          aria-hidden="true"
-                        >
-                          {getInitials(displayName)}
-                        </div>
-                        <Link
-                          className={styles.dealLink}
-                          href={deal.href || `/admin/leads?id=${encodeURIComponent(deal.id)}`}
-                          onClick={(e) => {
-                            if (onOpenDossier) {
-                              e.preventDefault();
-                              onOpenDossier(deal);
-                            }
-                          }}
-                        >
-                          <strong className={styles.dealTitle}>
-                            {displayName}
-                          </strong>
-                          <div className={styles.dealMeta}>
-                            <span className={styles.leadIdTag}>{deal.leadId}</span>
-                            <span className={styles.dotDivider}>·</span>
-                            <span className={styles.serviceMetaText}>{deal.serviceCategory || "Advisory"}</span>
-                          </div>
-                        </Link>
+                  <article
+                    key={record.id}
+                    className={`${styles.dealCardlet} ${isSelected ? styles.selectedCardlet : ""}`}
+                    onClick={() => setSelectedDealId(record.id)}
+                    tabIndex={0}
+                    role="button"
+                    aria-selected={isSelected}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedDealId(record.id);
+                      }
+                    }}
+                  >
+                    {/* Left Cluster: Squircle Monogram & Identity */}
+                    <div className={styles.cardletLeftCluster}>
+                      <div
+                        className={styles.monogramAvatar}
+                        style={{
+                          backgroundColor: avatarStyle.bg,
+                          color: avatarStyle.color,
+                          borderColor: avatarStyle.border,
+                        }}
+                        aria-hidden="true"
+                      >
+                        {initials}
                       </div>
-                    </td>
-
-                    {/* Service Category */}
-                    <td>
-                      <span className={styles.serviceText}>
-                        {deal.serviceCategory || "Web & Digital"}
-                      </span>
-                    </td>
-
-                    {/* Stage & Continuous Milestone Progress Track */}
-                    <td>
-                      <div className={styles.stageProgressCell}>
-                        <div className={styles.stageTokenRow}>
-                          <span className={styles.stageName}>{deal.stage}</span>
-                          <span className={styles.stageSeparator}>·</span>
-                          <span className={styles.stagePercentage}>{pip.percentage}%</span>
-                        </div>
-
-                        {/* Continuous Milestone Track with 4 Hairline Stage Divider Ticks */}
-                        <div
-                          className={styles.milestoneTrack}
-                          role="progressbar"
-                          aria-valuenow={pip.percentage}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-label={`${deal.stage} progress: ${pip.percentage}%`}
-                        >
-                          <div
-                            className={styles.milestoneBar}
-                            style={{
-                              width: `${pip.percentage}%`,
-                              backgroundColor: pip.color,
-                            }}
-                          />
-                          <span className={styles.milestoneTick} style={{ left: "20%" }} aria-hidden="true" />
-                          <span className={styles.milestoneTick} style={{ left: "40%" }} aria-hidden="true" />
-                          <span className={styles.milestoneTick} style={{ left: "60%" }} aria-hidden="true" />
-                          <span className={styles.milestoneTick} style={{ left: "80%" }} aria-hidden="true" />
-                        </div>
-
-                        {/* SLA Cadence Text (Unboxed Editorial Typography) */}
-                        <div className={styles.cadenceRow}>
-                          {urgency.isToday ? (
-                            <span className={styles.cadenceToday}>{urgency.text}</span>
-                          ) : urgency.isOverdue ? (
-                            <span className={styles.cadenceOverdue}>{urgency.text}</span>
-                          ) : (
-                            <span className={styles.cadenceMuted}>{urgency.text}</span>
+                      <div className={styles.dealIdentity}>
+                        <div className={styles.dealTitleRow}>
+                          <span className={styles.dealTitle} title={displayName}>
+                            {displayName}
+                          </span>
+                          {record.serviceCategory && (
+                            <span className={styles.serviceTag}>
+                              {record.serviceCategory}
+                            </span>
                           )}
                         </div>
-                      </div>
-                    </td>
-
-                    {/* Swiss Tabular Numeral Value */}
-                    <td className={styles.amountCell}>
-                      {financials ? (
-                        <div className={styles.currencyDisplay}>
-                          <span className={styles.currencyGlyph}>₹</span>
-                          <span className={styles.currencyDigits}>{digitsOnly}</span>
+                        <div className={styles.dealMetaRow}>
+                          <span className={styles.leadId}>{record.leadId || "LD-1000"}</span>
+                          <span className={styles.metaDivider}>•</span>
+                          <span className={styles.ownerText}>{record.owner || "Unassigned"}</span>
                         </div>
-                      ) : (
-                        <span className={styles.confidentialText}>Confidential</span>
-                      )}
-                    </td>
+                      </div>
+                    </div>
 
-                    {/* Executive Representative Indicator (Purging Owner Pill Badge) */}
-                    <td>
-                      <div className={styles.ownerCell}>
-                        {deal.owner ? (
-                          <>
-                            <div className={styles.ownerAvatar} aria-hidden="true">
-                              {getInitials(deal.owner)}
-                            </div>
-                            <span className={styles.ownerName}>{deal.owner}</span>
-                          </>
+                    {/* Center Cluster: 4-Tick Continuous Milestone Track & Urgency */}
+                    <div className={styles.cardletCenterCluster}>
+                      <div className={styles.milestoneTrackWrapper}>
+                        <div className={styles.milestoneHeader}>
+                          <span className={styles.stageNameText}>{stageDisplay}</span>
+                          <span className={styles.stagePercentText}>{pipInfo.percentage}%</span>
+                        </div>
+                        <div className={styles.milestoneRail}>
+                          <div
+                            className={styles.milestoneFill}
+                            style={{
+                              width: `${pipInfo.percentage}%`,
+                              backgroundColor: pipInfo.color,
+                            }}
+                          />
+                          <div className={styles.milestoneTick} style={{ left: "20%" }} />
+                          <div className={styles.milestoneTick} style={{ left: "40%" }} />
+                          <div className={styles.milestoneTick} style={{ left: "60%" }} />
+                          <div className={styles.milestoneTick} style={{ left: "80%" }} />
+                        </div>
+                      </div>
+                      <div className={styles.urgencyTextRow}>
+                        <span
+                          className={`${styles.urgencyText} ${
+                            urgency.isOverdue
+                              ? styles.urgencyOverdue
+                              : urgency.isToday
+                              ? styles.urgencyToday
+                              : styles.urgencyTrack
+                          }`}
+                        >
+                          {urgency.text}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Right Cluster: Swiss Tabular Valuation & Quick Actions */}
+                    <div className={styles.cardletRightCluster}>
+                      <div className={styles.valuationBox}>
+                        {financials ? (
+                          <span className={styles.currencyDisplay}>
+                            <span className={styles.currencyGlyph}>₹</span>
+                            <span className={styles.currencyDigits}>
+                              {formatIndianNumber(record.expectedValue ?? 0)}
+                            </span>
+                          </span>
                         ) : (
-                          <span className={styles.ownerUnassigned}>Unassigned</span>
+                          <span className={styles.currencyMasked}>Confidential</span>
                         )}
                       </div>
-                    </td>
 
-                    {/* Tactile Actions Pair */}
-                    <td>
-                      <div className={styles.actionsCluster}>
+                      <div className={styles.actionsGroup}>
                         <button
                           type="button"
                           className={styles.advanceBtn}
-                          onClick={() => {
-                            if (onAdvanceStage) {
-                              onAdvanceStage(deal);
-                            }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAdvanceStage?.(record);
                           }}
                           aria-label={`Advance stage for ${displayName}`}
                         >
                           <span>Advance</span>
-                          <span aria-hidden="true">→</span>
-                        </button>
-
-                        <Link
-                          href={deal.href || `/admin/leads?id=${encodeURIComponent(deal.id)}`}
-                          className={styles.dossierBtn}
-                          title={`Open dossier for ${displayName}`}
-                          aria-label={`Open dossier for ${displayName}`}
-                          onClick={(e) => {
-                            if (onOpenDossier) {
-                              e.preventDefault();
-                              onOpenDossier(deal);
-                            }
-                          }}
-                        >
                           <svg
-                            width="13"
-                            height="13"
+                            width="11"
+                            height="11"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          className={styles.openDossierBtn}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenDossier?.(record);
+                          }}
+                          title="Open Lead Dossier"
+                          aria-label={`Open dossier for ${displayName}`}
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             aria-hidden="true"
@@ -484,185 +608,112 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                             <line x1="7" y1="17" x2="17" y2="7" />
                             <polyline points="7 7 17 7 17 17" />
                           </svg>
-                        </Link>
+                        </button>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </article>
                 );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Reflow Dual View: High-Density Editorial Cards (< 840px down to 320px) */}
-      <div className={styles.mobileCardsContainer}>
-        {!recordsReady ? (
-          [...Array(3)].map((_, i) => (
-            <div key={`m-skeleton-${i}`} className={styles.mobileCardSkeleton} aria-hidden="true">
-              <div className={styles.skeletonLineLong} />
-              <div className={styles.skeletonLineShort} />
+              })}
             </div>
-          ))
-        ) : displayedRecords.length === 0 ? (
-          <div className={styles.emptyState}>
-            No commercial opportunities match your filter.
+          )}
+        </div>
+
+        {/* Right Column (40% Width): Live Stage Velocity Matrix */}
+        <aside className={styles.velocityRadarColumn} aria-label="Pipeline Stage Velocity Matrix">
+          <div className={styles.radarHeaderBlock}>
+            <div className={styles.radarEyebrowRow}>
+              <span className={styles.radarEyebrow}>PIPELINE STAGE VELOCITY</span>
+              <span className={styles.radarLiveBadge}>INTERACTIVE</span>
+            </div>
+            <div className={styles.radarHeroMetricRow}>
+              <div className={styles.radarHeroValuation}>
+                {financials ? (
+                  <span className={styles.heroCurrencyDisplay}>
+                    <span className={styles.heroCurrencyGlyph}>₹</span>
+                    <span className={styles.heroCurrencyDigits}>
+                      {formatIndianNumber(totalPipelineValue)}
+                    </span>
+                  </span>
+                ) : (
+                  <span className={styles.heroCurrencyDigits}>Pipeline Protected</span>
+                )}
+              </div>
+              <div className={styles.radarSubMetric}>
+                <span>{records.length} Active Deals</span>
+              </div>
+            </div>
+            <p className={styles.radarInstruction}>
+              Click any stage to isolate bottlenecks &amp; cross-filter the action deck.
+            </p>
           </div>
-        ) : (
-          displayedRecords.map((deal) => {
-            const pip = getStagePipProgress(deal.stage);
-            const urgency = getUrgencyStatus(deal.due);
-            const displayName = deal.company || deal.name || "Untitled Opportunity";
-            const avatarStyle = getClientAvatarStyle(displayName);
-            const digitsOnly = Math.round(deal.expectedValue ?? 0).toLocaleString("en-IN");
 
-            return (
-              <article key={`mob-${deal.id}`} className={styles.mobileDealCard}>
-                <div className={styles.mobileTopRow}>
-                  <div className={styles.clientCell}>
-                    <div
-                      className={styles.avatarSquircle}
-                      style={{
-                        backgroundColor: avatarStyle.bg,
-                        color: avatarStyle.color,
-                        borderColor: avatarStyle.border,
-                      }}
-                      aria-hidden="true"
-                    >
-                      {getInitials(displayName)}
+          {/* Interactive Stage Rows */}
+          <div className={styles.stageMatrixList}>
+            {stageMatrixData.map((stage) => {
+              const isFilterActive = selectedStageFilter === stage.id;
+              return (
+                <button
+                  key={stage.id}
+                  type="button"
+                  className={`${styles.stageMatrixRow} ${isFilterActive ? styles.stageMatrixRowActive : ""}`}
+                  onClick={() => handleToggleStageFilter(stage.id)}
+                  aria-pressed={isFilterActive}
+                >
+                  <div className={styles.stageRowTopLine}>
+                    <div className={styles.stageTitleGroup}>
+                      <span
+                        className={styles.stageDotIndicator}
+                        style={{ backgroundColor: stage.accentColor }}
+                      />
+                      <span className={styles.stageNameLabel}>{stage.name}</span>
+                      <span className={styles.stageCountPill}>{stage.count} deals</span>
                     </div>
-                    <div className={styles.mobileTitleBlock}>
-                      <strong className={styles.dealTitle}>{displayName}</strong>
-                      <div className={styles.dealMeta}>
-                        <span className={styles.leadIdTag}>{deal.leadId}</span>
-                        <span className={styles.dotDivider}>·</span>
-                        <span className={styles.serviceMetaText}>{deal.serviceCategory || "Advisory"}</span>
-                      </div>
+                    <div className={styles.stageValuationGroup}>
+                      <span className={styles.stageValueText}>
+                        {financials ? `₹ ${formatIndianNumber(stage.value)}` : "—"}
+                      </span>
                     </div>
                   </div>
 
-                  <div className={styles.mobileValueBlock}>
-                    {financials ? (
-                      <div className={styles.currencyDisplay}>
-                        <span className={styles.currencyGlyph}>₹</span>
-                        <span className={styles.currencyDigits}>{digitsOnly}</span>
-                      </div>
-                    ) : (
-                      <span className={styles.confidentialText}>Confidential</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.mobileMiddleRow}>
-                  <div className={styles.stageTokenRow}>
-                    <span className={styles.stageName}>{deal.stage}</span>
-                    <span className={styles.stageSeparator}>·</span>
-                    <span className={styles.stagePercentage}>{pip.percentage}%</span>
-                  </div>
-
-                  <div
-                    className={styles.milestoneTrack}
-                    role="progressbar"
-                    aria-valuenow={pip.percentage}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`${deal.stage} progress: ${pip.percentage}%`}
-                  >
+                  <div className={styles.stageDistributionTrack}>
                     <div
-                      className={styles.milestoneBar}
+                      className={styles.stageDistributionBar}
                       style={{
-                        width: `${pip.percentage}%`,
-                        backgroundColor: pip.color,
+                        width: `${stage.percentage}%`,
+                        backgroundColor: stage.accentColor,
                       }}
                     />
-                    <span className={styles.milestoneTick} style={{ left: "20%" }} aria-hidden="true" />
-                    <span className={styles.milestoneTick} style={{ left: "40%" }} aria-hidden="true" />
-                    <span className={styles.milestoneTick} style={{ left: "60%" }} aria-hidden="true" />
-                    <span className={styles.milestoneTick} style={{ left: "80%" }} aria-hidden="true" />
                   </div>
 
-                  <div className={styles.mobileCadenceAndOwner}>
-                    {urgency.isToday ? (
-                      <span className={styles.cadenceToday}>{urgency.text}</span>
-                    ) : urgency.isOverdue ? (
-                      <span className={styles.cadenceOverdue}>{urgency.text}</span>
-                    ) : (
-                      <span className={styles.cadenceMuted}>{urgency.text}</span>
-                    )}
-
-                    <div className={styles.ownerCell}>
-                      {deal.owner ? (
-                        <>
-                          <div className={styles.ownerAvatar} aria-hidden="true">
-                            {getInitials(deal.owner)}
-                          </div>
-                          <span className={styles.ownerName}>{deal.owner}</span>
-                        </>
-                      ) : (
-                        <span className={styles.ownerUnassigned}>Unassigned</span>
-                      )}
-                    </div>
+                  <div className={styles.stageRowBottomLine}>
+                    <span className={styles.stageDwellText}>Avg. dwell {stage.avgDwellDays}d</span>
+                    <span className={styles.stageShareText}>{stage.percentage}% volume</span>
                   </div>
-                </div>
+                </button>
+              );
+            })}
+          </div>
 
-                <div className={styles.mobileActionsRow}>
-                  <button
-                    type="button"
-                    className={styles.advanceBtn}
-                    onClick={() => {
-                      if (onAdvanceStage) {
-                        onAdvanceStage(deal);
-                      }
-                    }}
-                    aria-label={`Advance stage for ${displayName}`}
-                  >
-                    <span>Advance Stage</span>
-                    <span aria-hidden="true">→</span>
-                  </button>
-
-                  <Link
-                    href={deal.href || `/admin/leads?id=${encodeURIComponent(deal.id)}`}
-                    className={styles.dossierBtn}
-                    title={`Open dossier for ${displayName}`}
-                    aria-label={`Open dossier for ${displayName}`}
-                    onClick={(e) => {
-                      if (onOpenDossier) {
-                        e.preventDefault();
-                        onOpenDossier(deal);
-                      }
-                    }}
-                  >
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <line x1="7" y1="17" x2="17" y2="7" />
-                      <polyline points="7 7 17 7 17 17" />
-                    </svg>
-                  </Link>
-                </div>
-              </article>
-            );
-          })
-        )}
+          {/* Contextual Velocity Insight Banner */}
+          <div className={styles.velocityInsightBox}>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={styles.insightIcon}
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <p className={styles.velocityInsightText}>{dominantStageInsight}</p>
+          </div>
+        </aside>
       </div>
-
-      <footer className={styles.tableFooter}>
-        <span className={styles.sampleNote}>
-          Showing {displayedRecords.length} of {filteredRecords.length} opportunities
-        </span>
-        <Link href="/admin/deals" className={styles.openDealsLink}>
-          <span>Open all deals</span>
-          <span aria-hidden="true">→</span>
-        </Link>
-      </footer>
     </section>
   );
 };

@@ -245,6 +245,7 @@ export function OverviewWorkspace({
           records={data.records}
           recordsReady={data.recordsReady}
           financials={data.financials}
+          stages={data.stages}
           onAdvanceStage={handleAdvanceStage}
           onOpenDossier={handleOpenDossier}
         />

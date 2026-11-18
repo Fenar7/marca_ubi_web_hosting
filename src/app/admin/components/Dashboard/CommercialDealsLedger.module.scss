@@ -1,10 +1,11 @@
 /**
  * @file CommercialDealsLedger.module.scss
- * @description Luxury Styling for Master Commercial Deals & Opportunities Ledger.
+ * @description Luxury Styling for Master Commercial Deals Command Desk & Live Stage Velocity Matrix.
  *              Strict adherence to Marca Ubi Editorial Luxury Standard (Circular XX, Graphik,
  *              Swiss Helvetica Neue 300 Light tabular numerals).
- *              Features recessed segmented controls, continuous milestone progression tracks,
- *              luxury mineral squircle monograms, and mobile card reflow duality.
+ *              Features 60/40 Asymmetric Cockpit Grid, discrete floating cardlets with hover elevation,
+ *              continuous 4-tick milestone progression tracks, interactive stage cross-filtering radar,
+ *              and unboxed high-contrast typographic status (strictly ZERO AI-slop pill badges).
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -12,16 +13,20 @@
   min-width: 0;
   width: 100%;
   background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border: 1px solid var(--admin-border-subtle, #ebebe8);
   border-radius: var(--admin-radius-card, 16px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    border-color: var(--admin-border-default, #d8d8d4);
+    border-color: var(--admin-border-default, #dcdcd8);
   }
 }
+
+/* ==========================================================================
+   Header & Search Bar
+   ========================================================================== */
 
 .ledgerHeader {
   display: flex;
@@ -99,83 +104,101 @@
 }
 
 .searchIcon {
-  color: #888884;
+  color: #696965;
 }
 
 .searchInput {
   width: 100%;
   height: 36px;
-  padding: 0 12px 0 34px;
-  background: var(--admin-canvas-bg, #f5f5f3);
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  padding: 0 28px 0 32px;
+  border: 1px solid var(--admin-border-subtle, #ebebe8);
   border-radius: var(--admin-radius-control, 8px);
-  color: var(--admin-text-primary, #111111);
-  font: inherit;
-  font-size: 0.78rem;
+  background: #fafaf8;
+  color: #111111;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.81rem;
   transition: all 0.15s ease;
 
-  &:hover {
-    background: #eaeae6;
-  }
-
   &::placeholder {
-    color: #888884;
+    color: #8c8c88;
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--admin-accent-brand, #ea002a);
-    outline-offset: 1px;
+  &:focus {
+    outline: none;
     background: #ffffff;
-    border-color: var(--admin-border-default, #d8d8d4);
+    border-color: #111111;
+    box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.06);
   }
 }
 
-/* Recessed Segmented Filter Toolbar Rail */
+.clearSearchBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: #e7e7e4;
+  border-radius: 50%;
+  color: #454542;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #111111;
+    color: #ffffff;
+  }
+}
+
+/* ==========================================================================
+   Recessed Segmented Filter Toolbar
+   ========================================================================== */
+
 .filterToolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 0 1.6rem 1rem;
-  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+  gap: 1rem;
+  padding: 0 1.6rem 1.1rem;
   flex-wrap: wrap;
 }
 
 .segmentedControl {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
   background: #f1f3f5;
+  border: 1px solid #ebebe8;
+  border-radius: 8px;
   padding: 3px;
-  border-radius: 9px;
-  border: 1px solid #e5e7eb;
-  overflow-x: auto;
+  gap: 2px;
   max-width: 100%;
+  overflow-x: auto;
 }
 
 .segmentBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
-  border-radius: 7px;
+  height: 30px;
+  padding: 0 12px;
   border: none;
   background: transparent;
+  border-radius: 6px;
+  color: #696965;
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  color: #4b5563;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s ease;
 
   &:hover {
     color: #111111;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--admin-accent-brand, #ea002a);
-    outline-offset: 1px;
   }
 }
 
@@ -183,194 +206,282 @@
   background: #ffffff;
   color: #111111;
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 1px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .segmentCount {
   display: inline-block;
-  font-size: 0.70rem;
-  font-weight: 600;
-  color: #6b7280;
+  font-size: 0.72rem;
+  color: #8c8c88;
   font-variant-numeric: tabular-nums;
-  opacity: 0.85;
+  font-family: var(--font-helvetica-neue), sans-serif;
+  font-weight: 500;
 }
 
 .segmentCountAlert {
-  color: #dc2626;
+  color: #ea002a;
   font-weight: 700;
 }
 
-/* Desktop Semantic Table Wrapper */
-.desktopTableWrapper {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
+.activeFilterPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f4f4f2;
+  border: 1px solid #e2e2df;
+  border-radius: 6px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.76rem;
+  color: #111111;
+
+  strong {
+    color: #111111;
+    font-weight: 600;
+  }
 }
 
-.dealsTable {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.8rem;
+.clearStageBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: #e2e2df;
+  border-radius: 50%;
+  font-size: 11px;
+  color: #111111;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #111111;
+    color: #ffffff;
+  }
 }
 
-.dealsTable th {
-  padding: 0.85rem 1.25rem;
-  background: #fafaf9;
-  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
-  color: #64748b;
+/* ==========================================================================
+   Asymmetric 60% / 40% Command Desk Grid
+   ========================================================================== */
+
+.commandDeskGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr);
+  gap: 1.5rem;
+  padding: 0 1.6rem 1.6rem;
+  align-items: start;
+}
+
+/* ==========================================================================
+   Left 60%: Deal Action Deck
+   ========================================================================== */
+
+.actionDeckColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.columnHeaderBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 0.65rem;
+  border-bottom: 1px solid #ebebe8;
+  margin-bottom: 0.85rem;
+}
+
+.columnHeaderLabel {
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  color: #696965;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
-.dealsTable th:first-child,
-.dealsTable td:first-child {
-  padding-left: 1.6rem;
+.columnHeaderHint {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  color: #8c8c88;
 }
 
-.tableRow {
-  border-bottom: 1px solid var(--admin-border-subtle, #f0f0ed);
-  transition: background-color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+.cardListStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* Discrete Floating Deal Cardlet */
+.dealCardlet {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.3fr) minmax(140px, 1fr) minmax(160px, auto);
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem 1.1rem;
+  background: #ffffff;
+  border: 1px solid #ebebe8;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.02);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background: #fafaf8;
-  }
-
-  &:last-child {
-    border-bottom: 0;
-  }
-}
-
-.dealsTable td {
-  padding: 1rem 1.25rem;
-  color: var(--admin-text-secondary, #454542);
-  vertical-align: middle;
-}
-
-.clientCell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatarSquircle {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
-  place-items: center;
-  border-radius: 9px;
-  font-family: var(--font-circular), sans-serif;
-  font-size: 0.76rem;
-  font-weight: 700;
-  border: 1px solid;
-  transition: transform 0.15s ease;
-}
-
-.dealLink {
-  display: grid;
-  gap: 2px;
-  text-decoration: none;
-  color: inherit;
-
-  &:hover .dealTitle {
-    color: var(--admin-accent-brand, #ea002a);
+    transform: translateY(-2px);
+    border-color: #111111;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--admin-accent-brand, #ea002a);
-    outline-offset: 2px;
+    outline: none;
+    border-color: #111111;
+    box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.1);
   }
 }
 
-.dealTitle {
-  color: var(--admin-text-primary, #111111);
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: color 0.14s ease;
+.selectedCardlet {
+  background: #fafaf8;
+  border-color: #111111;
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.05);
+  border-left: 3px solid #ea002a;
 }
 
-.dealMeta {
+/* Left Cluster: Monogram & Identity */
+.cardletLeftCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.monogramAvatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-family: var(--font-circular), sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.dealIdentity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.dealTitleRow {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #64748b;
-  font-size: 0.72rem;
+  min-width: 0;
 }
 
-.leadIdTag {
-  font-family: var(--font-admin-code, monospace);
-  font-weight: 550;
-  color: #64748b;
-}
-
-.dotDivider {
-  color: #cbd5e1;
-}
-
-.serviceMetaText {
-  color: #64748b;
-}
-
-.serviceText {
+.dealTitle {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #111111;
+  letter-spacing: -0.015em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Stage & Continuous Milestone Progress Track */
-.stageProgressCell {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+.serviceTag {
+  display: inline-block;
+  padding: 1px 6px;
+  background: #f1f3f5;
+  border-radius: 4px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.68rem;
+  color: #454542;
+  font-weight: 500;
+  flex-shrink: 0;
 }
 
-.stageTokenRow {
+.dealMetaRow {
   display: flex;
   align-items: center;
   gap: 5px;
+  font-size: 0.72rem;
+  color: #696965;
 }
 
-.stageName {
+.leadId {
+  font-family: var(--font-admin-mono, ui-monospace), monospace;
+  font-size: 0.7rem;
+  color: #696965;
+  font-weight: 500;
+}
+
+.metaDivider {
+  color: #b0b0ac;
+  font-size: 0.65rem;
+}
+
+.ownerText {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--admin-text-primary, #111111);
+  color: #696965;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.stageSeparator {
-  color: #cbd5e1;
+/* Center Cluster: Continuous Milestone Track */
+.cardletCenterCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.milestoneTrackWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.milestoneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+}
+
+.stageNameText {
+  color: #454542;
+  font-weight: 500;
+}
+
+.stagePercentText {
+  color: #8c8c88;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-helvetica-neue), sans-serif;
+  font-weight: 400;
   font-size: 0.7rem;
 }
 
-.stagePercentage {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.70rem;
-  font-weight: 550;
-  color: #64748b;
-  font-variant-numeric: tabular-nums;
-}
-
-.milestoneTrack {
+.milestoneRail {
   position: relative;
-  width: 84px;
+  width: 100%;
   height: 4px;
-  background: #eaeae6;
+  background: #ebebe8;
   border-radius: 2px;
   overflow: hidden;
 }
 
-.milestoneBar {
+.milestoneFill {
   height: 100%;
   border-radius: 2px;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.3s ease;
 }
 
 .milestoneTick {
@@ -380,416 +491,482 @@
   width: 1px;
   background: #ffffff;
   opacity: 0.8;
+  pointer-events: none;
 }
 
-.cadenceRow {
+.urgencyTextRow {
   display: flex;
   align-items: center;
-  min-height: 16px;
 }
 
-.cadenceMuted {
+.urgencyText {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  color: #64748b;
+  line-height: 1;
 }
 
-.cadenceToday {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.68rem;
+.urgencyTrack {
+  color: #059669;
+}
+
+.urgencyOverdue {
+  color: #ea002a;
   font-weight: 600;
+}
+
+.urgencyToday {
   color: #b45309;
-}
-
-.cadenceOverdue {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.68rem;
   font-weight: 600;
-  color: #dc2626;
 }
 
-/* Swiss Tabular Numeral Value */
-.amountCell {
+/* Right Cluster: Swiss Tabular Valuation & Actions */
+.cardletRightCluster {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  flex-shrink: 0;
+}
+
+.valuationBox {
   text-align: right;
-  white-space: nowrap;
+  min-width: 80px;
 }
 
 .currencyDisplay {
   display: inline-flex;
   align-items: baseline;
-  justify-content: flex-end;
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", var(--font-circular), sans-serif;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
   font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: "tnum" 1, "cv05" 1;
 }
 
 .currencyGlyph {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   color: #888884;
-  margin-right: 3px;
+  margin-right: 2px;
   font-weight: 400;
 }
 
 .currencyDigits {
-  font-size: 0.92rem;
-  font-weight: 450;
+  font-size: 0.95rem;
   color: #111111;
+  font-weight: 300;
   letter-spacing: -0.025em;
 }
 
-.confidentialText {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  color: #94a3b8;
-  font-style: italic;
-}
-
-/* Executive Representative Indicator (Purging Owner Pill Badge) */
-.ownerCell {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #334155;
+.currencyMasked {
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.76rem;
-  font-weight: 500;
+  color: #8c8c88;
 }
 
-.ownerAvatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  color: #475569;
-  font-family: var(--font-circular), sans-serif;
-  font-size: 0.62rem;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-
-.ownerName {
-  color: #334155;
-  white-space: nowrap;
-}
-
-.ownerUnassigned {
-  color: #94a3b8;
-  font-style: italic;
-  font-size: 0.74rem;
-}
-
-/* Tactile Actions Pair */
-.actionsCluster {
+.actionsGroup {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-right: 1.4rem;
+  gap: 5px;
 }
 
 .advanceBtn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 7px;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid #dcdcd8;
   background: #ffffff;
-  border: 1px solid #d1d5db;
+  border-radius: 6px;
   color: #111111;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.74rem;
-  font-weight: 550;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s ease;
 
   &:hover {
     background: #111111;
     color: #ffffff;
     border-color: #111111;
   }
-
-  &:active {
-    transform: scale(0.97);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--admin-accent-brand, #ea002a);
-    outline-offset: 2px;
-  }
 }
 
-.dossierBtn {
-  display: inline-grid;
-  width: 30px;
-  height: 30px;
+.openDossierBtn {
+  display: grid;
   place-items: center;
-  border-radius: 7px;
-  background: #f8fafc;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-  text-decoration: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #dcdcd8;
+  background: #ffffff;
+  border-radius: 6px;
+  color: #454542;
+  cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #ffffff;
-    border-color: var(--admin-accent-brand, #ea002a);
-    color: var(--admin-accent-brand, #ea002a);
-    box-shadow: 0 1px 3px rgba(234, 0, 42, 0.15);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--admin-accent-brand, #ea002a);
-    outline-offset: 2px;
+    background: #111111;
+    color: #ffffff;
+    border-color: #111111;
   }
 }
 
-/* Zero-CLS Skeleton Shimmer Rows */
-.skeletonRow td {
-  padding: 1rem 1.25rem;
+/* ==========================================================================
+   Right 40%: Live Stage Velocity Radar
+   ========================================================================== */
+
+.velocityRadarColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  background: #fafaf8;
+  border: 1px solid #ebebe8;
+  border-radius: 12px;
 }
 
-.skeletonAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: #f1f3f5;
-  animation: shimmer 1.5s infinite ease-in-out;
+.radarHeaderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #e7e7e4;
 }
 
-.skeletonMeta {
+.radarEyebrowRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.radarEyebrow {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #696965;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.radarLiveBadge {
+  font-family: var(--font-admin-mono, ui-monospace), monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #059669;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  background: #eef4f0;
+  border-radius: 4px;
+}
+
+.radarHeroMetricRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.radarHeroValuation {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.heroCurrencyDisplay {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.heroCurrencyGlyph {
+  font-size: 1rem;
+  color: #888884;
+  margin-right: 3px;
+  font-weight: 300;
+}
+
+.heroCurrencyDigits {
+  font-size: 1.45rem;
+  color: #111111;
+  font-weight: 300;
+  letter-spacing: -0.035em;
+}
+
+.radarSubMetric {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78rem;
+  color: #696965;
+  font-weight: 500;
+}
+
+.radarInstruction {
+  margin: 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  color: #8c8c88;
+  line-height: 1.35;
+}
+
+/* Interactive Stage Rows */
+.stageMatrixList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stageMatrixRow {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 140px;
+  padding: 0.75rem 0.85rem;
+  background: #ffffff;
+  border: 1px solid #e7e7e4;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: #111111;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
 }
 
-.skeletonLineLong {
+.stageMatrixRowActive {
+  background: #ffffff;
+  border-color: #111111;
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.08);
+  border-left: 3px solid #111111;
+}
+
+.stageRowTopLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stageTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stageDotIndicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stageNameLabel {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #111111;
+}
+
+.stageCountPill {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.68rem;
+  color: #696965;
+  padding: 1px 5px;
+  background: #f1f3f5;
+  border-radius: 4px;
+}
+
+.stageValuationGroup {
+  text-align: right;
+}
+
+.stageValueText {
+  font-family: var(--font-helvetica-neue), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: #111111;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+}
+
+.stageDistributionTrack {
   width: 100%;
-  height: 12px;
-  border-radius: 4px;
-  background: #f1f3f5;
-  animation: shimmer 1.5s infinite ease-in-out;
+  height: 3px;
+  background: #f0f0ed;
+  border-radius: 1.5px;
+  overflow: hidden;
 }
 
-.skeletonLineShort {
-  width: 60%;
-  height: 10px;
-  border-radius: 4px;
-  background: #f1f3f5;
-  animation: shimmer 1.5s infinite ease-in-out;
+.stageDistributionBar {
+  height: 100%;
+  border-radius: 1.5px;
+  transition: width 0.3s ease;
 }
 
-.skeletonPill {
-  width: 70px;
-  height: 14px;
-  border-radius: 4px;
-  background: #f1f3f5;
-  animation: shimmer 1.5s infinite ease-in-out;
+.stageRowBottomLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.68rem;
+  color: #8c8c88;
 }
 
-.skeletonStageBlock {
+.stageDwellText {
+  color: #696965;
+}
+
+.stageShareText {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Insight Box */
+.velocityInsightBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 0.85rem;
+  background: #ffffff;
+  border: 1px solid #ebebe8;
+  border-radius: 8px;
+}
+
+.insightIcon {
+  color: #696965;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.velocityInsightText {
+  margin: 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.73rem;
+  color: #454542;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Empty & Skeleton States
+   ========================================================================== */
+
+.emptyStateContainer {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 90px;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: #fafaf8;
+  border: 1px dashed #dcdcd8;
+  border-radius: 10px;
 }
 
-.skeletonTrack {
-  width: 84px;
-  height: 4px;
-  border-radius: 2px;
-  background: #f1f3f5;
-  animation: shimmer 1.5s infinite ease-in-out;
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111111;
 }
 
-.skeletonValue {
-  width: 80px;
-  height: 14px;
-  border-radius: 4px;
-  background: #f1f3f5;
-  margin-left: auto;
-  animation: shimmer 1.5s infinite ease-in-out;
+.emptySubtitle {
+  margin: 0.35rem 0 0.85rem;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.76rem;
+  color: #696965;
+  max-width: 380px;
+  line-height: 1.4;
 }
 
-.skeletonOwner {
-  width: 90px;
-  height: 14px;
-  border-radius: 4px;
-  background: #f1f3f5;
-  animation: shimmer 1.5s infinite ease-in-out;
+.resetFilterBtn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid #111111;
+  background: #111111;
+  color: #ffffff;
+  border-radius: 6px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
 }
 
-.skeletonActions {
-  width: 80px;
-  height: 30px;
-  border-radius: 7px;
-  background: #f1f3f5;
-  margin-left: auto;
-  animation: shimmer 1.5s infinite ease-in-out;
+.cardSkeleton {
+  height: 68px;
+  background: linear-gradient(90deg, #f4f4f2 0%, #ebebe8 50%, #f4f4f2 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 10px;
 }
 
 @keyframes shimmer {
   0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
+    background-position: 200% 0;
   }
   100% {
-    opacity: 0.6;
+    background-position: -200% 0;
   }
 }
 
-.emptyState {
-  padding: 3rem 1rem !important;
-  color: #64748b !important;
-  text-align: center;
-  font-size: 0.82rem;
-  font-family: var(--font-graphik), sans-serif;
-}
+/* ==========================================================================
+   Responsive Reflow (Tablet & Mobile Breakpoints)
+   ========================================================================== */
 
-.tableFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0.9rem 1.6rem;
-  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
-  background: var(--admin-canvas-bg, #fafaf9);
-}
-
-.sampleNote {
-  color: #64748b;
-  font-size: 0.74rem;
-  font-family: var(--font-graphik), sans-serif;
-}
-
-.openDealsLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--admin-accent-brand, #ea002a);
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: #c40023;
+@media (max-width: 1179px) {
+  .commandDeskGrid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--admin-accent-brand, #ea002a);
-    outline-offset: 2px;
+  .velocityRadarColumn {
+    order: 2;
   }
-}
 
-/* Mobile Reflow Dual View (< 840px) */
-.mobileCardsContainer {
-  display: none;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px 16px 16px;
+  .actionDeckColumn {
+    order: 1;
+  }
 }
 
 @media (max-width: 839px) {
-  .desktopTableWrapper {
-    display: none;
-  }
-
-  .mobileCardsContainer {
-    display: flex;
+  .ledgerHeader {
+    padding: 1.25rem 1.1rem 0.85rem;
   }
 
   .filterToolbar {
-    padding: 0 1rem 0.85rem;
+    padding: 0 1.1rem 0.85rem;
   }
 
-  .ledgerHeader {
-    padding: 1.25rem 1rem 1rem;
+  .commandDeskGrid {
+    padding: 0 1.1rem 1.1rem;
   }
 
-  .tableFooter {
-    padding: 0.85rem 1rem;
+  .dealCardlet {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0.95rem 1rem;
   }
-}
 
-.mobileDealCard {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px;
-  background: #ffffff;
-  border: 1px solid #e7e7e4;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
+  .cardletRightCluster {
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f1f3f5;
+  }
 
-.mobileTopRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.mobileTitleBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.mobileValueBlock {
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.mobileMiddleRow {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 0;
-  border-top: 1px solid #f1f5f9;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.mobileCadenceAndOwner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.mobileActionsRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  .actionsGroup {
+    flex: 1;
+    justify-content: flex-end;
+  }
 
   .advanceBtn {
-    flex-grow: 1;
-    justify-content: center;
-    height: 38px;
-    font-size: 0.80rem;
+    height: 32px;
+    padding: 0 14px;
+    font-size: 0.78rem;
   }
 
-  .dossierBtn {
-    width: 38px;
-    height: 38px;
-    flex-shrink: 0;
+  .openDossierBtn {
+    width: 32px;
+    height: 32px;
   }
-}
-
-.mobileCardSkeleton {
-  padding: 16px;
-  border-radius: 12px;
-  background: #f8fafc;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }

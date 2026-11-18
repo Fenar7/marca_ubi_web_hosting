@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794989071.667531,
-    "seen": 1794989081.9695292,
-    "ast_hash": "f7bfe58254ba36641a0e3ccf986fe7ff",
+    "mtime": 1794990229.5150392,
+    "seen": 1794990241.9117055,
+    "ast_hash": "d4b2ae69b67bd41ddc622a41d296c315",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -6024,9 +6024,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1794816180.7614002,
-    "seen": 1794906819.2760882,
-    "ast_hash": "7798788c16dd7dbabaa1889df95971bf",
+    "mtime": 1794990050.8665254,
+    "seen": 1794990241.9106896,
+    "ast_hash": "8403686651f2ed90723534cc4457716e",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
@@ -6285,6 +6285,12 @@
     "mtime": 1794987623.6253269,
     "seen": 1794989081.9695292,
     "ast_hash": "00d9a1f6f5d3971d3e9da647f2ad233a",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/COMMERCIAL_DEALS_LEDGER_REMEDIATION_PLAN.md": {
+    "mtime": 1794989826.4787493,
+    "seen": 1794990241.9117055,
+    "ast_hash": "674c6f9fc35978fd609a5e524b45b96d",
     "semantic_hash": ""
   },
   "package-lock.json": {
