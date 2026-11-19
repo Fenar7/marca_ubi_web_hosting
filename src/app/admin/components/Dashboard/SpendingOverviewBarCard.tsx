@@ -26,20 +26,20 @@ const DEFAULT_CATEGORIES = [
   {
     name: "Web & Digital",
     value: 2400000,
-    color: "#1e293b",
-    gradient: "linear-gradient(90deg, #1e293b 0%, #334155 100%)",
+    color: "#2563eb",
+    gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
   },
   {
     name: "Full-Suite",
     value: 1610000,
-    color: "#92691f",
-    gradient: "linear-gradient(90deg, #c5a059 0%, #aa7c11 100%)",
+    color: "#60a5fa",
+    gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
   },
   {
     name: "Others",
     value: 810000,
-    color: "#64748b",
-    gradient: "linear-gradient(90deg, #94a3b8 0%, #cbd5e1 100%)",
+    color: "#cbd5e1",
+    gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
   },
 ];
 
@@ -53,38 +53,38 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
   const displayTotal =
     financials && totalValue !== null ? formatCrmCurrency(totalValue) : "Confidential";
 
-  // Build resolved category list with Metallic Alloy palette
+  // Build resolved category list with clean Electric Blue palette
   const resolvedList = React.useMemo(() => {
     if (!categories || categories.length === 0) {
       return DEFAULT_CATEGORIES;
     }
 
-    const METALLIC_PALETTE = [
+    const BLUE_PALETTE = [
       {
-        color: "#1e293b",
-        gradient: "linear-gradient(90deg, #1e293b 0%, #334155 100%)",
+        color: "#2563eb",
+        gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
       },
       {
-        color: "#92691f",
-        gradient: "linear-gradient(90deg, #c5a059 0%, #aa7c11 100%)",
+        color: "#60a5fa",
+        gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
       },
     ];
 
     const topItems = categories.slice(0, 2).map((cat, idx) => ({
       name: cat.name,
       value: cat.value,
-      color: METALLIC_PALETTE[idx]?.color ?? "#64748b",
+      color: BLUE_PALETTE[idx]?.color ?? "#cbd5e1",
       gradient:
-        METALLIC_PALETTE[idx]?.gradient ??
-        "linear-gradient(90deg, #94a3b8 0%, #cbd5e1 100%)",
+        BLUE_PALETTE[idx]?.gradient ??
+        "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
     }));
 
     const othersSum = categories.slice(2).reduce((sum, c) => sum + c.value, 0);
     const resolvedOthers = {
       name: "Others",
       value: othersSum > 0 ? othersSum : 810000,
-      color: "#64748b",
-      gradient: "linear-gradient(90deg, #94a3b8 0%, #cbd5e1 100%)",
+      color: "#cbd5e1",
+      gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
     };
 
     return [...topItems, resolvedOthers];

@@ -16,49 +16,6 @@
   margin-inline: auto;
   min-width: 0;
 
-  /* 7-Tone Harmonic Metallic Alloy Tokens (WCAG AAA >= 7:1 contrast on white canvas) */
-  --metallic-gunmetal-core: #16181d;
-  --metallic-gunmetal-highlight: #2d323b;
-  --metallic-gunmetal-grad: linear-gradient(135deg, #1c1f26 0%, #121418 100%);
-  --metallic-gunmetal-tint: #f4f5f7;
-  --metallic-gunmetal-border: rgba(22, 24, 29, 0.12);
-
-  --metallic-champagne-core: #92691f;
-  --metallic-champagne-highlight: #c5a059;
-  --metallic-champagne-grad: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
-  --metallic-champagne-tint: #fdfbf6;
-  --metallic-champagne-border: rgba(197, 160, 89, 0.28);
-
-  --metallic-platinum-core: #475569;
-  --metallic-platinum-highlight: #94a3b8;
-  --metallic-platinum-grad: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
-  --metallic-platinum-tint: #f8fafc;
-  --metallic-platinum-border: rgba(148, 163, 184, 0.24);
-
-  --metallic-rosegold-core: #a44b28;
-  --metallic-rosegold-highlight: #d97d54;
-  --metallic-rosegold-grad: linear-gradient(135deg, #e08358 0%, #b8542c 100%);
-  --metallic-rosegold-tint: #fdf7f4;
-  --metallic-rosegold-border: rgba(217, 125, 84, 0.28);
-
-  --metallic-cadmium-core: #046c4e;
-  --metallic-cadmium-highlight: #10b981;
-  --metallic-cadmium-grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --metallic-cadmium-tint: #f0fdf7;
-  --metallic-cadmium-border: rgba(16, 185, 129, 0.26);
-
-  --metallic-cobalt-core: #1e293b;
-  --metallic-cobalt-highlight: #3b5998;
-  --metallic-cobalt-grad: linear-gradient(135deg, #334155 0%, #1e293b 100%);
-  --metallic-cobalt-tint: #f1f5f9;
-  --metallic-cobalt-border: rgba(51, 65, 85, 0.22);
-
-  --metallic-ruby-core: #ea002a;
-  --metallic-ruby-highlight: #ff2a4d;
-  --metallic-ruby-grad: linear-gradient(135deg, #ea002a 0%, #b3001f 100%);
-  --metallic-ruby-tint: #fff1f2;
-  --metallic-ruby-border: rgba(234, 0, 42, 0.25);
-
   h1, h2, h3, p {
     margin: 0;
   }

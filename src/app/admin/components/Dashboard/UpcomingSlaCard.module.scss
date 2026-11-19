@@ -15,9 +15,8 @@
   min-height: 0;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  border-top: 2px solid #92691f;
   border-radius: 20px;
-  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02);
   padding: 22px 24px;
   display: flex;
   flex-direction: column;
@@ -25,7 +24,7 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    border-color: rgba(197, 160, 89, 0.35);
+    border-color: rgba(0, 0, 0, 0.12);
   }
 }
 
@@ -141,27 +140,27 @@
 }
 
 .avatarRed {
-  background: #fff1f2;
-  color: #a6001c;
-  border: 1px solid rgba(234, 0, 42, 0.25);
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
 }
 
 .avatarGreen {
-  background: #f0fdf7;
-  color: #035e43;
-  border: 1px solid rgba(16, 185, 129, 0.26);
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
 }
 
 .avatarCoral {
-  background: #fdf7f4;
-  color: #873919;
-  border: 1px solid rgba(217, 125, 84, 0.28);
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
 }
 
 .avatarBlue {
-  background: #f1f5f9;
-  color: #1e293b;
-  border: 1px solid rgba(51, 65, 85, 0.22);
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
 }
 
 .itemMeta {

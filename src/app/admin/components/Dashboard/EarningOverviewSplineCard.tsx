@@ -153,17 +153,12 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
         >
           <defs>
             <linearGradient id={`earning-gradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#c5a059" stopOpacity="0.18" />
-              <stop offset="50%" stopColor="#94a3b8" stopOpacity="0.05" />
-              <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.00" />
-            </linearGradient>
-            <linearGradient id={`metallic-stroke-${gradientId}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#1e293b" />
-              <stop offset="60%" stopColor="#334155" />
-              <stop offset="100%" stopColor="#92691f" />
+              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.20" />
+              <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.06" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
             </linearGradient>
             <filter id={`beacon-glow-${gradientId}`} x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#c5a059" floodOpacity="0.45" />
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.4" />
             </filter>
           </defs>
 
@@ -174,7 +169,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
           <path
             d={linePath}
             fill="none"
-            stroke={`url(#metallic-stroke-${gradientId})`}
+            stroke="#2563eb"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -186,7 +181,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
             y1={activeCoord.y}
             x2={activeCoord.x}
             y2={baselineY}
-            stroke="rgba(197, 160, 89, 0.45)"
+            stroke="#93c5fd"
             strokeWidth="1.5"
             strokeDasharray="3 3"
           />
@@ -196,15 +191,15 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
             cx={activeCoord.x}
             cy={activeCoord.y}
             r="8"
-            fill="#c5a059"
-            fillOpacity="0.22"
+            fill="#2563eb"
+            fillOpacity="0.18"
           />
           <circle
             cx={activeCoord.x}
             cy={activeCoord.y}
             r="4.5"
-            fill="#16181d"
-            stroke="#c5a059"
+            fill="#ffffff"
+            stroke="#2563eb"
             strokeWidth="2.5"
             filter={`url(#beacon-glow-${gradientId})`}
           />

@@ -36,7 +36,7 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
       className={styles.virtualCard}
       aria-label="Executive Commercial Desk Virtual Balance Card"
     >
-      {/* Subtle Concentric Luxury Vector Watermark with Champagne Titanium Alloy Stroke */}
+      {/* Subtle Concentric Luxury Vector Watermark */}
       <svg
         className={styles.watermarkSvg}
         viewBox="0 0 320 200"
@@ -45,9 +45,9 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
         aria-hidden="true"
       >
         <circle cx="280" cy="40" r="140" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="1.5" />
-        <circle cx="280" cy="40" r="100" stroke="rgba(197, 160, 89, 0.08)" strokeWidth="1.5" />
-        <circle cx="280" cy="40" r="60" stroke="rgba(197, 160, 89, 0.16)" strokeWidth="1.5" />
-        <circle cx="280" cy="40" r="24" fill="rgba(197, 160, 89, 0.08)" />
+        <circle cx="280" cy="40" r="100" stroke="rgba(255, 255, 255, 0.04)" strokeWidth="1.5" />
+        <circle cx="280" cy="40" r="60" stroke="rgba(234, 0, 42, 0.12)" strokeWidth="1.5" />
+        <circle cx="280" cy="40" r="24" fill="rgba(234, 0, 42, 0.08)" />
       </svg>
 
       {/* Top Header: Moniker Only (Toggle Removed) */}

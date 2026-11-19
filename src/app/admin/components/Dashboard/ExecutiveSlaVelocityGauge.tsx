@@ -225,12 +225,12 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
         >
           <defs>
             <linearGradient id={`sla-metallic-${gradientId}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#c5a059" />
-              <stop offset="60%" stopColor="#10b981" />
-              <stop offset="100%" stopColor="#046c4e" />
+              <stop offset="0%" stopColor="#2563eb" />
+              <stop offset="50%" stopColor="#06b6d4" />
+              <stop offset="100%" stopColor="#10b981" />
             </linearGradient>
             <filter id={`sla-glow-${gradientId}`} x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#10b981" floodOpacity="0.25" />
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.25" />
             </filter>
           </defs>
 
