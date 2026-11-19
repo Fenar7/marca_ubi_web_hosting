@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1795076845.4840872,
-    "seen": 1795076957.7495866,
-    "ast_hash": "fc9b367b166fde21f38b4582522ad7c8",
+    "mtime": 1795103266.399928,
+    "seen": 1795103327.7427454,
+    "ast_hash": "c0a58394156589a7cf16d37e54c5de0e",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -6330,9 +6330,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveSlaVelocityGauge.tsx": {
-    "mtime": 1795075063.5301542,
-    "seen": 1795076377.9222496,
-    "ast_hash": "1e7e4099f87b3c02ef14ac05a615180f",
+    "mtime": 1795102895.2493887,
+    "seen": 1795103327.7412415,
+    "ast_hash": "dfdd611558d799f65299756b81721eb7",
     "semantic_hash": ""
   },
   "docs/sales_funnel/metallic_editorial_palette/EDITORIAL_METALLIC_LUXURY_PLAN.md": {
@@ -6345,6 +6345,24 @@
     "mtime": 1795076833.929917,
     "seen": 1795076957.7495866,
     "ast_hash": "c0fd7b206c77cbd5165cab90f416d645",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-19_21-15-00.md": {
+    "mtime": 1795103254.6718824,
+    "seen": 1795103327.7427454,
+    "ast_hash": "3be77f7fc46e4d6613e3cc043a7529b9",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/EXECUTIVE_SLA_VELOCITY_GAUGE_REDESIGN_PLAN.md": {
+    "mtime": 1795099567.1430364,
+    "seen": 1795103327.7427454,
+    "ast_hash": "f61865dbbf43fd3f0f90fa98bd80e37f",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/EXECUTIVE_SLA_VELOCITY_GAUGE_ENGINEERING_AUDIT.md": {
+    "mtime": 1795099488.358178,
+    "seen": 1795103327.7427454,
+    "ast_hash": "aacd60e72d37e8fab3540dcb6e381694",
     "semantic_hash": ""
   },
   "package-lock.json": {
