@@ -30,6 +30,7 @@ import { SpendingOverviewBarCard } from "./SpendingOverviewBarCard";
 import { CommercialVelocityBarChart } from "./CommercialVelocityBarChart";
 import { RecentTransactionsTable } from "./RecentTransactionsTable";
 import { UpcomingSlaCard } from "./UpcomingSlaCard";
+import { ExecutiveSlaVelocityGauge } from "./ExecutiveSlaVelocityGauge";
 import { CommercialDealsLedger } from "./CommercialDealsLedger";
 import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
 import styles from "./OverviewWorkspace.module.scss";
@@ -226,9 +227,14 @@ export function OverviewWorkspace({
           />
         </div>
 
-        {/* Right 35%: Tall Upcoming Milestones & SLA Card */}
+        {/* Right 36%: 2-Card Stack (Upcoming Milestones + Executive SLA Velocity Gauge) */}
         <div className={styles.cockpitRightColumn}>
           <UpcomingSlaCard
+            records={data.records}
+            financials={data.financials}
+            onOpenRecord={handleOpenDossier}
+          />
+          <ExecutiveSlaVelocityGauge
             records={data.records}
             financials={data.financials}
             onOpenRecord={handleOpenDossier}

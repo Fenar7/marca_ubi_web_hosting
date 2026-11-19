@@ -15,7 +15,7 @@
   background: var(--admin-card-bg, #ffffff);
   border: 1px solid var(--admin-border-subtle, #ebebe8);
   border-radius: var(--admin-radius-card, 16px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 12px 32px -4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 12px 32px -4px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 

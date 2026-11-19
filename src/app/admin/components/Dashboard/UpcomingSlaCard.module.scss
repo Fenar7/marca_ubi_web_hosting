@@ -11,19 +11,21 @@
 .cardContainer {
   min-width: 0;
   width: 100%;
-  height: 100%;
+  height: auto;
+  min-height: 0;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 2px solid #92691f;
   border-radius: 20px;
-  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02);
-  padding: 24px 26px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 22px 24px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    border-color: rgba(0, 0, 0, 0.12);
+    border-color: rgba(197, 160, 89, 0.35);
   }
 }
 
@@ -89,16 +91,15 @@
 .itemsList {
   display: flex;
   flex-direction: column;
-  gap: 11px;
-  margin-bottom: 16px;
-  flex-grow: 1;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .itemCard {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 14px;
+  padding: 11px 13px;
   background: #ffffff;
   border: 1px solid #f1f5f9;
   border-radius: 12px;
@@ -106,7 +107,7 @@
   cursor: pointer;
 
   &:hover {
-    border-color: rgba(0, 0, 0, 0.12);
+    border-color: rgba(197, 160, 89, 0.35);
     box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.05);
     transform: translateY(-1px);
   }
@@ -140,27 +141,27 @@
 }
 
 .avatarRed {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fee2e2;
+  background: #fff1f2;
+  color: #a6001c;
+  border: 1px solid rgba(234, 0, 42, 0.25);
 }
 
 .avatarGreen {
-  background: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #dcfce7;
+  background: #f0fdf7;
+  color: #035e43;
+  border: 1px solid rgba(16, 185, 129, 0.26);
 }
 
 .avatarCoral {
-  background: #fff7ed;
-  color: #ea580c;
-  border: 1px solid #ffedd5;
+  background: #fdf7f4;
+  color: #873919;
+  border: 1px solid rgba(217, 125, 84, 0.28);
 }
 
 .avatarBlue {
-  background: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #dbeafe;
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1px solid rgba(51, 65, 85, 0.22);
 }
 
 .itemMeta {
@@ -221,33 +222,34 @@
   border-radius: 9999px;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.7rem;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .badgeScheduled {
   background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #475569;
 }
 
 .badgeToday {
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
-  color: #b45309;
+  background: #fdfbf6;
+  border: 1px solid rgba(197, 160, 89, 0.28);
+  color: #6e4c10;
 }
 
 .badgeOverdue {
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
-  color: #dc2626;
+  background: #fff1f2;
+  border: 1px solid rgba(234, 0, 42, 0.25);
+  color: #a6001c;
 }
 
 /* Full Width View All Button */
 .viewAllButton {
-  margin-top: auto;
+  margin-top: 4px;
   width: 100%;
-  height: 42px;
+  height: 44px;
+  min-height: 44px;
   border-radius: 10px;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.12);

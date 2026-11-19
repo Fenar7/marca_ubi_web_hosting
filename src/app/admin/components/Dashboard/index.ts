@@ -56,3 +56,4 @@ export { EarningOverviewSplineCard, type EarningOverviewSplineCardProps, type Sp
 export { SpendingOverviewBarCard, type SpendingOverviewBarCardProps } from './SpendingOverviewBarCard';
 export { RecentTransactionsTable, type RecentTransactionsTableProps, type TransactionItem } from './RecentTransactionsTable';
 export { UpcomingSlaCard, type UpcomingSlaCardProps, type UpcomingSlaItem } from './UpcomingSlaCard';
+export { ExecutiveSlaVelocityGauge, type ExecutiveSlaVelocityGaugeProps } from './ExecutiveSlaVelocityGauge';

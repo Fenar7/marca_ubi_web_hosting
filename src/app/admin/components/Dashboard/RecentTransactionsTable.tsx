@@ -19,7 +19,7 @@ export interface TransactionItem {
   title: string;
   category: string;
   monogram: string;
-  theme: "blue" | "rose" | "purple";
+  theme: "cobalt" | "bronze" | "rosegold";
   date: string;
   amount: number;
   status: string;
@@ -37,7 +37,7 @@ const DEFAULT_TRANSACTIONS: TransactionItem[] = [
     title: "Mobile App Platform",
     category: "Web & Digital",
     monogram: "M",
-    theme: "blue",
+    theme: "cobalt",
     date: "Wed 10:29 AM",
     amount: 2550000,
     status: "Success",
@@ -47,7 +47,7 @@ const DEFAULT_TRANSACTIONS: TransactionItem[] = [
     title: "Strategic Architecture",
     category: "Full-Suite Advisory",
     monogram: "S",
-    theme: "rose",
+    theme: "bronze",
     date: "Wed 10:29 AM",
     amount: 1850000,
     status: "Success",
@@ -57,7 +57,7 @@ const DEFAULT_TRANSACTIONS: TransactionItem[] = [
     title: "Brand Identity System",
     category: "UI/UX & Branding",
     monogram: "B",
-    theme: "purple",
+    theme: "rosegold",
     date: "Tue 03:45 PM",
     amount: 1200000,
     status: "Success",
@@ -76,7 +76,7 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
     }
 
     return records.slice(0, 3).map((rec, idx) => {
-      const themes: ("blue" | "rose" | "purple")[] = ["blue", "rose", "purple"];
+      const themes: ("cobalt" | "bronze" | "rosegold")[] = ["cobalt", "bronze", "rosegold"];
       const d = new Date(rec.createdAt);
       const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const dayStr = days[d.getDay()] || "Wed";
@@ -131,11 +131,11 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
           <tbody>
             {displayItems.map((item, index) => {
               const themeClass =
-                item.theme === "rose"
-                  ? styles.iconRose
-                  : item.theme === "purple"
-                  ? styles.iconPurple
-                  : styles.iconBlue;
+                item.theme === "bronze"
+                  ? styles.iconBronze
+                  : item.theme === "rosegold"
+                  ? styles.iconRoseGold
+                  : styles.iconCobalt;
 
               const matchedRecord = records?.find((r) => r.id === item.id);
 
