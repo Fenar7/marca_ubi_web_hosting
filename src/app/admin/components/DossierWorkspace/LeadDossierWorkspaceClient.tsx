@@ -37,6 +37,7 @@ import {
   formatRelativeTime,
   formatCallDuration,
   parseMentionsAndTags,
+  formatAuditDeltaNarrative,
 } from '../DossierDrawer/dossierUtils';
 import { updateLeadStatusInlineAction } from '@/app/actions/leadInlineActions';
 import { updateLeadAssignee } from '@/app/actions/leads';
@@ -161,6 +162,14 @@ function renderTimelineGlyph(type: LeadActivityType): React.ReactElement {
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
       );
+    case 'system_event':
+    case 'field_update':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      );
     case 'note_added':
     default:
       return (
@@ -172,6 +181,39 @@ function renderTimelineGlyph(type: LeadActivityType): React.ReactElement {
         </svg>
       );
   }
+}
+
+interface SingleTimelineItem {
+  kind: 'single';
+  activity: LeadActivityWithActor;
+  narrative: string;
+  isSystemInternal: boolean;
+  deltaPills: string[];
+}
+
+interface GroupedSystemCluster {
+  kind: 'system_group';
+  id: string;
+  title: string;
+  subtitle: string;
+  dateLabel: string;
+  created_at: string;
+  events: Array<{
+    activity: LeadActivityWithActor;
+    narrative: string;
+    deltaPills: string[];
+  }>;
+}
+
+type TimelineDisplayItem = SingleTimelineItem | GroupedSystemCluster;
+
+function isAutomatedSystemEvent(act: LeadActivityWithActor): boolean {
+  if (act.activity_type === 'system_event') return true;
+  if (act.description === 'Automated system update' || act.description === 'System telemetry cadence verified') return true;
+  if (!act.actor_id && (act.activity_type === 'field_update' || act.actor_name?.toLowerCase().includes('system'))) {
+    return true;
+  }
+  return false;
 }
 
 export function LeadDossierWorkspaceClient({
@@ -239,6 +281,102 @@ export function LeadDossierWorkspaceClient({
   }, [funnelStatuses, currentLead.status_id, currentLead.status_name, currentLead.bucket, currentLead.status_color, currentLead.created_at]);
 
   const isConverted = currentLead.bucket === 'converted' || Boolean(currentLead.converted_at);
+
+  // Expanded state map for consecutive automated system event drawers
+  const [expandedGroupIds, setExpandedGroupIds] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = useCallback((groupId: string) => {
+    setExpandedGroupIds((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  }, []);
+
+  // Living Delta Decoder & System Event Grouping Engine
+  const timelineItems: TimelineDisplayItem[] = useMemo(() => {
+    const result: TimelineDisplayItem[] = [];
+    let currentSystemCluster: LeadActivityWithActor[] = [];
+
+    const flushCluster = () => {
+      if (currentSystemCluster.length === 0) return;
+
+      if (currentSystemCluster.length === 1) {
+        const act = currentSystemCluster[0];
+        const decoded = formatAuditDeltaNarrative(
+          act.description,
+          act.metadata as { changes?: Record<string, { old: unknown; new: unknown }> },
+          funnelStatuses,
+          teamAssignees
+        );
+        result.push({
+          kind: 'single',
+          activity: act,
+          narrative: decoded.narrative,
+          isSystemInternal: decoded.isSystemInternal,
+          deltaPills: decoded.deltaPills,
+        });
+      } else {
+        const count = currentSystemCluster.length;
+        const latestEvent = currentSystemCluster[0];
+        const eventDate = new Date(latestEvent.created_at);
+        const dateLabel = isNaN(eventDate.getTime())
+          ? 'Recent'
+          : eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        const decodedEvents = currentSystemCluster.map((act) => {
+          const decoded = formatAuditDeltaNarrative(
+            act.description,
+            act.metadata as { changes?: Record<string, { old: unknown; new: unknown }> },
+            funnelStatuses,
+            teamAssignees
+          );
+          return {
+            activity: act,
+            narrative: decoded.narrative,
+            deltaPills: decoded.deltaPills,
+          };
+        });
+
+        const uniquePills = Array.from(new Set(decodedEvents.flatMap((e) => e.deltaPills)));
+        const subtitle =
+          uniquePills.length > 0
+            ? `Fields: ${uniquePills.slice(0, 3).join(', ')}${uniquePills.length > 3 ? ` +${uniquePills.length - 3} more` : ''}`
+            : 'Automated background audit trace';
+
+        result.push({
+          kind: 'system_group',
+          id: `sys-group-${latestEvent.id}`,
+          title: `${count} automated field updates on ${dateLabel}`,
+          subtitle,
+          dateLabel,
+          created_at: latestEvent.created_at,
+          events: decodedEvents,
+        });
+      }
+      currentSystemCluster = [];
+    };
+
+    for (const act of activities) {
+      if (isAutomatedSystemEvent(act)) {
+        currentSystemCluster.push(act);
+      } else {
+        flushCluster();
+        const decoded = formatAuditDeltaNarrative(
+          act.description,
+          act.metadata as { changes?: Record<string, { old: unknown; new: unknown }> },
+          funnelStatuses,
+          teamAssignees
+        );
+        result.push({
+          kind: 'single',
+          activity: act,
+          narrative: decoded.narrative,
+          isSystemInternal: decoded.isSystemInternal,
+          deltaPills: decoded.deltaPills,
+        });
+      }
+    }
+
+    flushCluster();
+    return result;
+  }, [activities, funnelStatuses, teamAssignees]);
 
   // Handlers: Activity Logging & Optimistic State Updates
 
@@ -465,7 +603,7 @@ export function LeadDossierWorkspaceClient({
                   <path d="M9 22v-4h6v4" />
                   <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
                 </svg>
-                <span>Organization & Client Intelligence.</span>
+                <span>Organization & Client Intelligence</span>
               </h2>
               <span className={styles.badgePill}>{currentLead.industry || 'Commercial / Luxury'}</span>
             </div>
@@ -583,7 +721,7 @@ export function LeadDossierWorkspaceClient({
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
-                <span>Executive Deal Notes.</span>
+                <span>Executive Deal Notes</span>
               </h2>
               <button
                 type="button"
@@ -619,7 +757,7 @@ export function LeadDossierWorkspaceClient({
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <span>Omnichannel Activity Ledger.</span>
+                <span>Omnichannel Activity Ledger</span>
               </h2>
               <span className={styles.badgePill}>{activities.length} Recorded Touchpoints</span>
             </div>
@@ -631,77 +769,163 @@ export function LeadDossierWorkspaceClient({
               </div>
             ) : (
               <div className={styles.timelineContainer} role="feed" aria-label="Lead Activity Ledger">
-                {activities.map((act) => {
-                  const metadata = (act.metadata as Record<string, unknown>) || {};
-                  const parsed = parseMentionsAndTags(act.description);
+                {timelineItems.map((item) => {
+                  if (item.kind === 'single') {
+                    const act = item.activity;
+                    const metadata = (act.metadata as Record<string, unknown>) || {};
+                    const isSystemActor = !act.actor_name || act.actor_name === 'System Staff';
+                    const displayActorName = isSystemActor ? 'System Cadence Engine' : act.actor_name;
+                    const displayActorInitials = isSystemActor ? 'SC' : getDossierInitials(act.actor_name);
+                    const narrativeToParse = item.narrative || act.description;
+                    const parsed = parseMentionsAndTags(narrativeToParse);
 
-                  return (
-                    <article key={act.id} className={styles.timelineItem}>
-                      <div className={styles.timelineGlyphDot} aria-hidden="true">
-                        {renderTimelineGlyph(act.activity_type)}
-                      </div>
+                    return (
+                      <article key={act.id} className={styles.timelineItem}>
+                        <div className={styles.timelineGlyphDot} aria-hidden="true">
+                          {renderTimelineGlyph(act.activity_type)}
+                        </div>
 
-                      <div className={styles.timelineCard}>
-                        <div className={styles.timelineHeader}>
-                          <div className={styles.timelineAuthorMeta}>
-                            <span className={styles.avatarInitials}>
-                              {getDossierInitials(act.actor_name)}
-                            </span>
-                            <span className={styles.timelineActorName}>{act.actor_name}</span>
-                            <span className={styles.timelineEventTag}>
-                              • {act.activity_type.replace(/_/g, ' ')}
-                            </span>
+                        <div className={styles.timelineCard}>
+                          <div className={styles.timelineHeader}>
+                            <div className={styles.timelineAuthorMeta}>
+                              <span className={styles.avatarInitials}>
+                                {displayActorInitials}
+                              </span>
+                              <span className={styles.timelineActorName}>{displayActorName}</span>
+                              <span className={styles.timelineEventTag}>
+                                • {act.activity_type.replace(/_/g, ' ')}
+                              </span>
+                            </div>
+
+                            <time className={styles.timelineTimestamp} dateTime={act.created_at}>
+                              {formatRelativeTime(act.created_at)}
+                            </time>
                           </div>
 
-                          <time className={styles.timelineTimestamp} dateTime={act.created_at}>
-                            {formatRelativeTime(act.created_at)}
-                          </time>
-                        </div>
+                          <div className={styles.timelineBodyText}>
+                            {parsed.map((part, pIdx) => {
+                              if (part.type === 'mention') {
+                                return (
+                                  <span key={pIdx} className={styles.mentionHighlight}>
+                                    {part.value}
+                                  </span>
+                                );
+                              }
+                              if (part.type === 'tag') {
+                                return (
+                                  <span key={pIdx} className={styles.tagHighlight}>
+                                    {part.value}
+                                  </span>
+                                );
+                              }
+                              return <React.Fragment key={pIdx}>{part.value}</React.Fragment>;
+                            })}
+                          </div>
 
-                        <div className={styles.timelineBodyText}>
-                          {parsed.map((part, pIdx) => {
-                            if (part.type === 'mention') {
-                              return (
-                                <span key={pIdx} className={styles.mentionHighlight}>
-                                  {part.value}
+                          {/* Metadata & Audit Delta Pills */}
+                          {(Boolean(metadata.duration_seconds) ||
+                            Boolean(metadata.outcome) ||
+                            Boolean(metadata.meeting_type) ||
+                            Boolean(metadata.message_category) ||
+                            item.deltaPills.length > 0) && (
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                              {item.deltaPills.map((pill, pillIdx) => (
+                                <span key={`delta-${pillIdx}`} className={styles.badgePill}>
+                                  {pill}
                                 </span>
-                              );
-                            }
-                            if (part.type === 'tag') {
-                              return (
-                                <span key={pIdx} className={styles.tagHighlight}>
-                                  {part.value}
+                              ))}
+                              {typeof metadata.duration_seconds === 'number' && (
+                                <span className={styles.badgePill}>
+                                  Duration: {formatCallDuration(metadata.duration_seconds)}
                                 </span>
-                              );
-                            }
-                            return <React.Fragment key={pIdx}>{part.value}</React.Fragment>;
-                          })}
+                              )}
+                              {typeof metadata.outcome === 'string' && (
+                                <span className={styles.badgePill}>{metadata.outcome}</span>
+                              )}
+                              {typeof metadata.meeting_type === 'string' && (
+                                <span className={styles.badgePill}>{metadata.meeting_type}</span>
+                              )}
+                              {typeof metadata.message_category === 'string' && (
+                                <span className={styles.badgePill}>{metadata.message_category}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
+                      </article>
+                    );
+                  }
 
-                        {/* Metadata Pills */}
-                        {(Boolean(metadata.duration_seconds) ||
-                          Boolean(metadata.outcome) ||
-                          Boolean(metadata.meeting_type) ||
-                          Boolean(metadata.message_category)) && (
-                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-                            {typeof metadata.duration_seconds === 'number' && (
-                              <span className={styles.badgePill}>
-                                Duration: {formatCallDuration(metadata.duration_seconds)}
-                              </span>
-                            )}
-                            {typeof metadata.outcome === 'string' && (
-                              <span className={styles.badgePill}>{metadata.outcome}</span>
-                            )}
-                            {typeof metadata.meeting_type === 'string' && (
-                              <span className={styles.badgePill}>{metadata.meeting_type}</span>
-                            )}
-                            {typeof metadata.message_category === 'string' && (
-                              <span className={styles.badgePill}>{metadata.message_category}</span>
-                            )}
+                  // Grouped System Cluster / Expandable Summary Drawer
+                  const isExpanded = Boolean(expandedGroupIds[item.id]);
+                  return (
+                    <div key={item.id} className={styles.timelineItem}>
+                      <div className={styles.timelineGlyphDot} aria-hidden="true">
+                        {renderTimelineGlyph('system_event')}
+                      </div>
+
+                      <div className={styles.systemGroupCard}>
+                        <button
+                          type="button"
+                          className={styles.systemGroupHeader}
+                          onClick={() => toggleGroup(item.id)}
+                          aria-expanded={isExpanded}
+                          aria-controls={`drawer-${item.id}`}
+                        >
+                          <div className={styles.systemGroupLeft}>
+                            <div className={styles.systemGroupGlyph} aria-hidden="true">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                              </svg>
+                            </div>
+                            <div className={styles.systemGroupTitleBlock}>
+                              <span className={styles.systemGroupTitle}>{item.title}</span>
+                              <span className={styles.systemGroupSubtitle}>{item.subtitle}</span>
+                            </div>
+                          </div>
+
+                          <div className={styles.systemGroupRight}>
+                            <span className={styles.systemGroupCountBadge}>{item.events.length} events</span>
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              className={`${styles.systemGroupChevron} ${
+                                isExpanded ? styles.chevronOpen : ''
+                              }`}
+                              aria-hidden="true"
+                            >
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div id={`drawer-${item.id}`} className={styles.systemGroupBody}>
+                            {item.events.map((ev) => (
+                              <div key={ev.activity.id} className={styles.systemDeltaRow}>
+                                <div className={styles.systemDeltaNarrative}>
+                                  <div>{ev.narrative}</div>
+                                  {ev.deltaPills.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 3 }}>
+                                      {ev.deltaPills.map((pill, pIdx) => (
+                                        <span key={pIdx} className={styles.deltaFieldPill}>
+                                          {pill}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                                <time className={styles.systemDeltaTime} dateTime={ev.activity.created_at}>
+                                  {formatRelativeTime(ev.activity.created_at)}
+                                </time>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
-                    </article>
+                    </div>
                   );
                 })}
               </div>
@@ -726,7 +950,7 @@ export function LeadDossierWorkspaceClient({
                   <circle cx="8.5" cy="7" r="4" />
                   <polyline points="17 11 19 13 23 9" />
                 </svg>
-                <span>Personnel & Routing.</span>
+                <span>Personnel & Routing</span>
               </h2>
             </div>
 
@@ -785,7 +1009,7 @@ export function LeadDossierWorkspaceClient({
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <span>Follow-Up Commitment.</span>
+                <span>Follow-Up Commitment</span>
               </h2>
             </div>
 

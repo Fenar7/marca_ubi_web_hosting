@@ -103,8 +103,8 @@ export function DossierHeaderBar({
     }
   }, [leadIdCode]);
 
-  // Formatted heading with architectural trailing period (e.g. 'Morar Group 8500.')
-  const entityTitle = (companyName?.trim() || contactName.trim() || 'Private Client') + '.';
+  // Formatted editorial heading with pure typography (no trailing periods per Marca Ubi standard)
+  const entityTitle = companyName?.trim() || contactName.trim() || 'Private Client';
   const backTarget = workspaceMode === 'deals' ? '/admin/deals' : '/admin/leads';
   const backLabel = workspaceMode === 'deals' ? 'Back to Deals' : 'Back to Leads';
 

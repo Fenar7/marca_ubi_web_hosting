@@ -16,7 +16,7 @@
 import React, { useMemo } from 'react';
 import type { LeadPriority, FunnelBucket } from '@/types/crm';
 import { formatDossierCurrency } from '../DossierDrawer/dossierUtils';
-import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
+import { reconcileBudgetBracket } from '@/app/admin/lib/currency';
 import styles from './LeadDossierWorkspace.module.scss';
 
 export interface CommercialKpiRibbonProps {
@@ -115,6 +115,11 @@ export function CommercialKpiRibbon({
 
   const slaDetails = useMemo(() => getPrioritySlaDetails(priority), [priority]);
 
+  const reconciledTier = useMemo(
+    () => reconcileBudgetBracket(budgetBracket),
+    [budgetBracket]
+  );
+
   const formattedValuation = useMemo(
     () => formatDossierCurrency(expectedValue),
     [expectedValue]
@@ -128,7 +133,7 @@ export function CommercialKpiRibbon({
           <div className={styles.scorecardLabelGroup}>
             <span className={styles.scorecardLabel}>Expected Valuation</span>
             <span className={styles.scorecardPill}>
-              {budgetBracket ? formatBudgetTierLabel(budgetBracket) : 'Calculated Scope'}
+              {budgetBracket ? reconciledTier.displayBadge : 'Calculated Scope'}
             </span>
           </div>
           <div
@@ -146,7 +151,7 @@ export function CommercialKpiRibbon({
         </div>
 
         <div className={styles.scorecardMetaRow}>
-          <span>Indian Rupee Tabular Numerals</span>
+          <span>Scope Basis: Initial Scoping Estimate · Institutional FX Peg: 1 USD = 83.50 INR</span>
           <span>{inquiryCount > 1 ? `${inquiryCount} Inbound Touchpoints` : 'Calculated Scope'}</span>
         </div>
       </div>

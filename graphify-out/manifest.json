@@ -654,15 +654,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/components/TaskCard.tsx": {
-    "mtime": 1793950725.696066,
-    "seen": 1793950755.4680746,
-    "ast_hash": "c8ea1cc9499c3afbbb96cea81d88cc34",
+    "mtime": 1795166438.28124,
+    "seen": 1795167376.1348324,
+    "ast_hash": "b479144deb2f2f0f95f4ba01eb7b8ed3",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/page.tsx": {
-    "mtime": 1794905582.6383643,
-    "seen": 1794906819.2750888,
-    "ast_hash": "31c0a64e74916dec4b97a5da217ec7d3",
+    "mtime": 1795166559.3413537,
+    "seen": 1795167376.1348324,
+    "ast_hash": "462ce74b64c272612d6badebdd381867",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/team/[id]/components/CommercialVelocityScorecards.tsx": {
@@ -930,9 +930,9 @@
     "semantic_hash": "920852ff7e23cf4cdfdbacc7e4ca9261"
   },
   "src/app/admin/components/DossierDrawer/dossierUtils.ts": {
-    "mtime": 1793937317.5325806,
-    "seen": 1793937826.854044,
-    "ast_hash": "70f5b3e20b37ab47e5b77f943ab2916d",
+    "mtime": 1795166442.930679,
+    "seen": 1795167376.1348324,
+    "ast_hash": "9cb13130f15c0edfdcd60336551d4127",
     "semantic_hash": ""
   },
   "src/app/admin/components/DossierDrawer/index.ts": {
@@ -942,34 +942,34 @@
     "semantic_hash": "40eb706860dee0547c29ddcafa62a973"
   },
   "src/app/admin/components/DossierWorkspace/CommercialKpiRibbon.tsx": {
-    "mtime": 1793937706.6570284,
-    "seen": 1793937826.854044,
-    "ast_hash": "6f39fdf55a8486e793bf7560d3bbcfa2",
+    "mtime": 1795166953.0564516,
+    "seen": 1795167376.1348324,
+    "ast_hash": "4e3f0609e02759ff8cff38bca1048474",
     "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/DossierHeaderBar.tsx": {
-    "mtime": 1793001800.320856,
-    "seen": 1793862052.6845307,
-    "ast_hash": "33ed73989fd3bbb88306acf8a62d7400",
-    "semantic_hash": "33ed73989fd3bbb88306acf8a62d7400"
+    "mtime": 1795166262.0547118,
+    "seen": 1795167376.1348324,
+    "ast_hash": "243e77c3c477cd1c3244549f98b999d8",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/IngestionBriefMatrix.tsx": {
-    "mtime": 1793001800.4031043,
-    "seen": 1793862052.6845307,
-    "ast_hash": "cfb50637bc5f314e97eaf46804c4c765",
-    "semantic_hash": "cfb50637bc5f314e97eaf46804c4c765"
+    "mtime": 1795166409.840093,
+    "seen": 1795167376.1348324,
+    "ast_hash": "2d6d5aa9bc90840ceccd0eea5428a5f7",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/LeadDossierWorkspaceClient.tsx": {
-    "mtime": 1793001800.5507984,
-    "seen": 1793862052.6845307,
-    "ast_hash": "c0bf2cda4a5121cefca0c9125b2d1331",
-    "semantic_hash": "c0bf2cda4a5121cefca0c9125b2d1331"
+    "mtime": 1795166725.996355,
+    "seen": 1795167376.1348324,
+    "ast_hash": "afeeac3c6b8eb2f9feffbb8f23197c89",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/RapidTouchpointComposer.tsx": {
-    "mtime": 1793001800.5682585,
-    "seen": 1793862052.6845307,
-    "ast_hash": "0c61106e0ede1ea0279a960f52471b6b",
-    "semantic_hash": "0c61106e0ede1ea0279a960f52471b6b"
+    "mtime": 1795166266.0939884,
+    "seen": 1795167376.1348324,
+    "ast_hash": "c662f898a282a901a826593f3235a086",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/index.ts": {
     "mtime": 1793001800.6458235,
@@ -5358,9 +5358,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/currency.ts": {
-    "mtime": 1794418547.7219505,
-    "seen": 1794418732.2819185,
-    "ast_hash": "2814559b985b560265ed57504b7c2d02",
+    "mtime": 1795167065.5093057,
+    "seen": 1795167376.1348324,
+    "ast_hash": "1a272c2a01abd7836610b268955eb7ab",
     "semantic_hash": ""
   },
   "supabase/migrations/20261105000001_preserve_activity_attribution_and_history.sql": {
@@ -5418,9 +5418,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/loading.tsx": {
-    "mtime": 1793950127.133446,
-    "seen": 1793950560.1511924,
-    "ast_hash": "4658dcc92739653083b1cda74419a9a9",
+    "mtime": 1795166504.3933697,
+    "seen": 1795167376.1348324,
+    "ast_hash": "21707eb497390ab356f340814b286cad",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/AttentionQueue.tsx": {
@@ -6363,6 +6363,66 @@
     "mtime": 1795099488.358178,
     "seen": 1795103327.7427454,
     "ast_hash": "aacd60e72d37e8fab3540dcb6e381694",
+    "semantic_hash": ""
+  },
+  "tests/unit/currency-reconciliation.test.ts": {
+    "mtime": 1795166352.2963479,
+    "seen": 1795167376.135338,
+    "ast_hash": "09de5671984a6a44f8ded0de0b48e00c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/FOLLOW_UPS_AND_LEAD_360_REDESIGN_PLAN.md": {
+    "mtime": 1795165568.9092796,
+    "seen": 1795167376.136418,
+    "ast_hash": "dbd9be92f29b181838fef8aeacbcf848",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/FORENSIC_DESIGN_AUDIT_AND_REDESIGN_SPEC.md": {
+    "mtime": 1795165236.0315032,
+    "seen": 1795167376.136418,
+    "ast_hash": "a43db6e94b1f6e545f021bc52e4c855c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/TECHNICAL_DATA_FLOW_AND_COMPONENT_ARCHITECTURE_AUDIT.md": {
+    "mtime": 1795165402.9819472,
+    "seen": 1795167376.136418,
+    "ast_hash": "8469bf946aac187571dedaf6cb04ffaa",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/followup_queue_page.png": {
+    "mtime": 1795164314.505853,
+    "seen": 1795167376.136418,
+    "ast_hash": "80d133793df595acca818df468523f5b",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/lead_detail_hero.png": {
+    "mtime": 1795164365.0113375,
+    "seen": 1795167376.136418,
+    "ast_hash": "92ac51901a6b3fbef3a7408229b66023",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/lead_detail_notes_routing.png": {
+    "mtime": 1795164376.0093234,
+    "seen": 1795167376.136418,
+    "ast_hash": "2d73642f4f834afcfb2f7788afaa6cc0",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/omnichannel_activity_ledger_slop.png": {
+    "mtime": 1795164382.878145,
+    "seen": 1795167376.136418,
+    "ast_hash": "80a4ea230c1020a852cbf9e656f8d410",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/usd_inr_mismatch_badge.png": {
+    "mtime": 1795164389.994115,
+    "seen": 1795167376.136418,
+    "ast_hash": "cb5eaadf7a42c19d00229fde91a6fbe9",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/valuation_card_contradiction.png": {
+    "mtime": 1795164393.491888,
+    "seen": 1795167376.136418,
+    "ast_hash": "b993afabfd57ac2e2084f0edb867fdfb",
     "semantic_hash": ""
   },
   "package-lock.json": {
