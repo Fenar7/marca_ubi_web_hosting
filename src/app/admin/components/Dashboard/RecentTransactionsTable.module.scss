@@ -1,0 +1,244 @@
+/**
+ * @file RecentTransactionsTable.module.scss
+ * @description Swiss Editorial Monospace Recent Transactions Table.
+ *              Strict 1:1 parity with Fundora benchmark archetype.
+ *              Pristine canvas, activity monogram avatars, tabular numerals,
+ *              monospace timestamp layout, and green success pills.
+ * @module admin/components/Dashboard/RecentTransactionsTable
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.cardContainer {
+  min-width: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  color: var(--admin-text-primary, #111111);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.filterButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  color: #374151;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.18);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 2px;
+  }
+}
+
+.filterIcon {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Scrollable Table Container */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.transactionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tableHeadRow {
+  background: #f8fafc;
+  border-radius: 8px;
+
+  th {
+    padding: 10px 14px;
+    font-family: var(--font-graphik), sans-serif;
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: #64748b;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid #f1f5f9;
+
+    &:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+      text-align: right;
+    }
+  }
+}
+
+.tableBodyRow {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f8fafc;
+
+  &:hover {
+    background-color: #f8fafc;
+  }
+
+  td {
+    padding: 14px;
+    vertical-align: middle;
+  }
+}
+
+.activityCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activityIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-circular), sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.iconBlue {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
+
+.iconRose {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #ffe4e6;
+}
+
+.iconPurple {
+  background: #faf5ff;
+  color: #9333ea;
+  border: 1px solid #f3e8ff;
+}
+
+.activityInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activityTitle {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.activitySubtitle {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.dateCell {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 0.78rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.amountCell {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+
+.positivePrefix {
+  color: #059669;
+  margin-right: 2px;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #059669;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.actionCell {
+  text-align: right;
+}
+
+.actionMenuButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+}

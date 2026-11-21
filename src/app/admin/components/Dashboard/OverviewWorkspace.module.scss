@@ -41,13 +41,35 @@
   }
 }
 
-/* Tier 2: 68% / 32% Visual Intelligence Cockpit (Finexy Dual-Bar + Donut Ring) */
-.visualCockpitGrid {
+/* Tier 2: Row 1 - Two Equal 50% / 50% Cards (Earning Area Spline + Spending Continuous Gradient Bar) */
+.visualCockpitGrid,
+.fundoraRowOneGrid {
   display: grid;
-  grid-template-columns: minmax(0, 68fr) minmax(330px, 32fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   align-items: stretch;
   margin-bottom: 20px;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+.rowOneColumn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Tier 3: Row 2 & 3 - Asymmetric 64% / 36% Cockpit Grid */
+.fundoraAsymmetricCockpitGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 64fr) minmax(340px, 36fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 24px;
 
   @media (max-width: 1180px) {
     grid-template-columns: minmax(0, 1fr);
@@ -55,37 +77,18 @@
   }
 }
 
-.chartColumn {
+.cockpitLeftStack {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
-}
-
-.donutColumn {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-/* Tier 3: 50% / 50% Reference Action & Urgency Widgets */
-.actionWidgetsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  align-items: stretch;
-  margin-bottom: 20px;
-
-  @media (max-width: 960px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
-.widgetColumn {
+.cockpitRightColumn {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 16px;
   height: 100%;
 }
 

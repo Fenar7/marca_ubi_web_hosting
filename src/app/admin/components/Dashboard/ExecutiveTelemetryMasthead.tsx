@@ -92,9 +92,9 @@ export function ExecutiveTelemetryMasthead({
   const revenueDeltaStr =
     revenueDelta !== null
       ? revenueDelta === 0
-        ? "0.0% —"
+        ? "0.0% (flat)"
         : `${revenueDelta > 0 ? "↗ +" : "↘ "}${revenueDelta}%`
-      : "0.0% —";
+      : "0.0% (flat)";
 
   const trendClass =
     resolveTrendSemanticType(revenueDeltaStr) === "positive"
@@ -226,7 +226,7 @@ export function ExecutiveTelemetryMasthead({
         />
 
         {/* Card 2: Converted Contract Value */}
-        <article className={styles.scorecard}>
+        <article className={`${styles.scorecard} ${styles.cardClosedRevenue}`}>
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>CLOSED REVENUE</span>
@@ -265,7 +265,7 @@ export function ExecutiveTelemetryMasthead({
         </article>
 
         {/* Card 3: Weighted Pipeline Potential */}
-        <article className={styles.scorecard}>
+        <article className={`${styles.scorecard} ${styles.cardWeightedValue}`}>
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>WEIGHTED VALUE</span>
@@ -292,7 +292,7 @@ export function ExecutiveTelemetryMasthead({
         </article>
 
         {/* Card 4: Commercial Velocity */}
-        <article className={styles.scorecard}>
+        <article className={`${styles.scorecard} ${styles.cardSalesCycle}`}>
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>AVG. SALES CYCLE</span>
