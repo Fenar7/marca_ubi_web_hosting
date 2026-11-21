@@ -174,13 +174,8 @@ export function CommercialKpiRibbon({
           </div>
         </div>
 
-        <div className={styles.scorecardValue} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span
-            className={styles.radarDot}
-            style={{ backgroundColor: slaDetails.dotColorCss }}
-            aria-hidden="true"
-          />
-          <span>{priority} Priority</span>
+        <div className={styles.scorecardValue}>
+          <span className={styles.priorityText}>{priority} Priority</span>
         </div>
 
         <div className={styles.scorecardMetaRow}>
