@@ -160,11 +160,11 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.ok(priorityScss.includes('min-height: 44px;'));
     });
 
-    it('verifies LeadMobileCard.module.scss enforces uppercase tracking on drawerBtn and flex-wrap on inlineSelectorsRow', () => {
+    it('keeps mobile selectors wrapping and dossier actions readable at narrow widths', () => {
       const scss = fs.readFileSync(mobileCardScssPath, 'utf8');
-      assert.ok(scss.includes('text-transform: uppercase;'));
-      assert.ok(scss.includes('letter-spacing: 0.06em;'));
-      assert.ok(scss.includes('flex-wrap: wrap;'));
+      assert.match(scss, /\.inlineSelectorsRow\s*\{[^}]*flex-wrap: wrap;/);
+      assert.match(scss, /\.actionBtn\s*\{[^}]*min-height: 44px;/);
+      assert.match(scss, /@media \(max-width: 360px\)[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
     });
 
     it('verifies OverdueBadge.module.scss uses WCAG AAA/AA light tokens and zero generic red', () => {

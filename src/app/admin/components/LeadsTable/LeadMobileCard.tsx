@@ -93,15 +93,6 @@ export function LeadMobileCard({
   return (
     <article
       className={`${styles.cardWrapper} ${className || ''}`}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCardClick();
-        }
-      }}
       aria-label={`Lead ${lead.lead_id}: ${lead.name} from ${lead.company || 'Private Client'}`}
     >
       {/* 1. Header: Lead ID, Timestamp, and Expected Valuation */}
@@ -186,8 +177,9 @@ export function LeadMobileCard({
           disabled={userRole === 'viewer'}
         />
 
-        <div className={styles.repInfo} title={`Assigned to ${lead.assigned_to_name}`}>
-          <div className={styles.repAvatar}>{repInitials}</div>
+        <div className={styles.repInfo} title={lead.assigned_to_name || 'Unassigned'}>
+          {lead.assigned_to && <div className={styles.repAvatar} aria-hidden="true">{repInitials}</div>}
+          <span>{lead.assigned_to_name || 'Unassigned'}</span>
         </div>
       </div>
 

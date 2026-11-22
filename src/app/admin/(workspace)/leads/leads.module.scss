@@ -694,7 +694,6 @@
   min-width: 0;
 }
 
-.inboxControlsHeading,
 .inboxRecordsHeading {
   display: flex;
   align-items: end;
@@ -702,15 +701,14 @@
   gap: 1rem;
 }
 
-.inboxControlsHeading h3,
 .inboxRecordsHeading h3 {
   margin: 0;
   color: var(--admin-text-primary, #111);
-  font-size: 1rem;
-  font-weight: 650;
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.45rem;
+  font-weight: 500;
 }
 
-.inboxControlsHeading span,
 .loadedRecordCount {
   color: var(--admin-text-secondary, #444);
   font-size: 0.76rem;
@@ -727,10 +725,7 @@
 .inboxRecordsHeading {
   align-items: center;
   padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--admin-border-default, #dedede);
 }
-
-.inboxRecordsHeading .inboxEyebrow { margin-bottom: 0.2rem; }
 
 @media (max-width: 760px) {
   .inboxOverview { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
@@ -740,6 +735,5 @@
 }
 
 @media (max-width: 480px) {
-  .inboxControlsHeading,
-  .inboxRecordsHeading { align-items: flex-start; flex-direction: column; gap: 0.3rem; }
+    .inboxRecordsHeading { align-items: flex-start; flex-direction: column; gap: 0.3rem; }
 }

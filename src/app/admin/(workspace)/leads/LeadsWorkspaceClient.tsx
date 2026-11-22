@@ -806,10 +806,6 @@ function LeadsWorkspaceContent({
       </div>
 
       <div className={styles.inboxControls}>
-        <div className={styles.inboxControlsHeading}>
-          <h3>Queue</h3>
-          <span>{filteredLeads.length} loaded records in this view</span>
-        </div>
         <FilterActionBar
         scope="leads"
         counts={counts}
@@ -933,11 +929,10 @@ function LeadsWorkspaceContent({
       {/* Commercial Leads Virtualized Data Grid */}
       <div className={styles.inboxRecords}>
         <div className={styles.inboxRecordsHeading}>
-          <div>
-            <span className={styles.inboxEyebrow}>Current selection</span>
-            <h3>{selectedBucket === 'all' ? 'All leads' : `${selectedBucket[0].toUpperCase()}${selectedBucket.slice(1)} leads`}</h3>
-          </div>
-          <span className={styles.loadedRecordCount}>{filteredLeads.length} loaded</span>
+          <h3>Lead queue</h3>
+          <span className={styles.loadedRecordCount} role="status">
+            {filteredLeads.length.toLocaleString('en-IN')} of {counts.all.toLocaleString('en-IN')} loaded
+          </span>
         </div>
         <LeadsDataGrid
           leads={filteredLeads}
