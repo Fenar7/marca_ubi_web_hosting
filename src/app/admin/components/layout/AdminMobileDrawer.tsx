@@ -113,7 +113,6 @@ export function AdminMobileDrawer({
       <aside
         ref={drawerRef}
         className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}
-        id="commercial-navigation"
         aria-label="Commercial Desk navigation"
         aria-hidden={!isOpen}
         aria-modal={isOpen ? true : undefined}

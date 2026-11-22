@@ -34,9 +34,9 @@ describe('CRM list query resilience and overview hierarchy', () => {
   });
 
   it('prioritizes executive telemetry and commercial action queue with responsive layout', () => {
-    const masthead = overview.indexOf('<ExecutiveTelemetryMasthead');
-    const cockpit = overview.indexOf('styles.workingGrid');
-    const ledger = overview.indexOf('<CommercialDealsLedger');
+    const masthead = overview.indexOf('ExecutiveTelemetryMasthead');
+    const cockpit = overview.indexOf('visualCockpitGrid');
+    const ledger = overview.indexOf('ledgerSection');
     assert.ok(masthead >= 0 && cockpit > masthead && ledger > cockpit);
   });
 

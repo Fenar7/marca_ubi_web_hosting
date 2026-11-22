@@ -50,7 +50,7 @@ export function ConvertedCelebrationModal({
   leadId,
   dealIdCode,
   dealName,
-  currentExpectedValue = 0,
+  currentExpectedValue = 500000,
   onSuccess,
 }: ConvertedCelebrationModalProps): React.ReactElement | null {
   const { shouldRender, isClosing, handleAnimationEnd } = useModalAnimation({
@@ -59,7 +59,7 @@ export function ConvertedCelebrationModal({
   });
 
   const [isPending, startTransition] = useTransition();
-  const [finalRevenue, setFinalRevenue] = useState<number | ''>(currentExpectedValue || '');
+  const [finalRevenue, setFinalRevenue] = useState<number | ''>(currentExpectedValue || 500000);
   const [signedContractDate, setSignedContractDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
@@ -76,7 +76,7 @@ export function ConvertedCelebrationModal({
   // Reset form upon opening
   useEffect(() => {
     if (isOpen) {
-      setFinalRevenue(currentExpectedValue > 0 ? currentExpectedValue : '');
+      setFinalRevenue(currentExpectedValue > 0 ? currentExpectedValue : 500000);
       setSignedContractDate(new Date().toISOString().split('T')[0]);
       setPaymentTerms('50% upfront, 50% upon milestone completion');
       setNotes('');
@@ -372,7 +372,7 @@ export function ConvertedCelebrationModal({
                     const val = e.target.value;
                     setFinalRevenue(val === '' ? '' : Number(val));
                   }}
-                  placeholder="Enter final value"
+                  placeholder="500000"
                   className={`${styles.textInput} ${styles.hasPrefix} ${
                     numericRev <= 0 ? styles.hasError : ''
                   }`}

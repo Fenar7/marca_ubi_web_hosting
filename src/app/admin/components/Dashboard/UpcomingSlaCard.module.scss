@@ -1,106 +1,274 @@
-﻿.panel {
+/**
+ * @file UpcomingSlaCard.module.scss
+ * @description Swiss Editorial Tall Card for Upcoming Milestones & SLA.
+ *              Strict 1:1 parity with Fundora benchmark archetype.
+ *              Pristine canvas, client monogram avatars, urgency badges,
+ *              tabular amounts, and full-width outline button.
+ * @module admin/components/Dashboard/UpcomingSlaCard
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.cardContainer {
   min-width: 0;
-  padding: clamp(16px, 2vw, 28px);
-  color: #171715;
-  background: white;
-  border: 1px solid #e5e5df;
-  border-radius: 12px;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.titleCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--admin-text-primary, #111111);
   font-family: var(--font-graphik), sans-serif;
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 4px 12px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  color: #64748b;
+  letter-spacing: -0.01em;
+}
+
+.addButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  color: #374151;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.18);
   }
-  header a {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    gap: 6px;
-    color: #454542;
-    font-size: 13px;
-    text-underline-offset: 3px;
-  }
-  a:focus-visible {
-    outline: 2px solid #9c001e;
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
     outline-offset: 2px;
   }
-  h2 {
-    margin: 0;
-    font:
-      400 clamp(20px, 1.75vw, 26px)/1.2 var(--font-circular),
-      sans-serif;
-    letter-spacing: -0.025em;
-  }
-  h3 {
-    margin: 18px 0 8px;
-    font:
-      500 14px/1.5 var(--font-graphik),
-      sans-serif;
-  }
-  h3 small {
-    font-weight: 400;
-    color: #54544e;
-  }
-  p {
-    font-size: 14px;
-    color: #55554f;
-  }
 }
-.totals {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr));
-  gap: 12px;
-  margin: 14px 0;
-}
-.totals div {
+
+/* Items List */
+.itemsList {
   display: flex;
-  flex-direction: column-reverse;
-  justify-content: end;
-  padding-block: 8px;
-  border-block: 1px solid #dfdfd7;
-}
-.totals dt {
-  font-size: 12px;
-  line-height: 1.4;
-  color: #52524c;
-}
-.totals dd {
-  margin: 0 0 2px;
-  font:
-    400 clamp(18px, 1.8vw, 26px)/1.2 var(--font-circular),
-    sans-serif;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-.totals [data-urgency="overdue"] dd {
-  color: #9d1935;
-}
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.list li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
-  padding-block: 8px;
-  border-top: 1px solid #e7e7e2;
+  margin-bottom: 14px;
 }
-.when {
-  display: grid;
-  gap: 3px;
-  justify-items: end;
-  color: #52524d;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
+
+.itemCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 13px;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba(197, 160, 89, 0.35);
+    box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+  }
 }
-.when [data-timing="Overdue"] {
-  color: #9d1935;
+
+.itemTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-.when [data-timing="Due today"] {
-  color: #805006;
+
+.avatarGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-circular), sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.avatarRed {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
+}
+
+.avatarGreen {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+
+.avatarCoral {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
+}
+
+.avatarBlue {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
+
+.itemMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemDate {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.chevronIcon {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.itemCard:hover .chevronIcon {
+  color: #0f172a;
+  transform: translateX(2px);
+}
+
+.itemBottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 2px;
+}
+
+.amount {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.96rem;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.urgencyBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badgeScheduled {
+  background: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #475569;
+}
+
+.badgeToday {
+  background: #fdfbf6;
+  border: 1px solid rgba(197, 160, 89, 0.28);
+  color: #6e4c10;
+}
+
+.badgeOverdue {
+  background: #fff1f2;
+  border: 1px solid rgba(234, 0, 42, 0.25);
+  color: #a6001c;
+}
+
+/* Full Width View All Button */
+.viewAllButton {
+  margin-top: 4px;
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.16s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.24);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 2px;
+  }
 }

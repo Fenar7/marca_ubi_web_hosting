@@ -57,6 +57,12 @@
   }
 }
 
+.overviewHeader {
+  min-height: 48px;
+}
+.overviewViewport {
+  min-width: 0;
+}
 .skipLink {
   position: fixed;
   top: 8px;

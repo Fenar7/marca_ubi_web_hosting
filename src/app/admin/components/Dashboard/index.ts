@@ -54,6 +54,6 @@ export { CommercialDealsLedger, type CommercialDealsLedgerProps, type LedgerFilt
 // 1:1 Fundora Image Parity Modules
 export { EarningOverviewSplineCard, type EarningOverviewSplineCardProps, type SplineMonthPoint } from './EarningOverviewSplineCard';
 export { SpendingOverviewBarCard, type SpendingOverviewBarCardProps } from './SpendingOverviewBarCard';
-export { RecentTransactionsTable, type RecentTransactionsTableProps } from './RecentTransactionsTable';
-export { UpcomingSlaCard, type UpcomingSlaCardProps } from './UpcomingSlaCard';
+export { RecentTransactionsTable, type RecentTransactionsTableProps, type TransactionItem } from './RecentTransactionsTable';
+export { UpcomingSlaCard, type UpcomingSlaCardProps, type UpcomingSlaItem } from './UpcomingSlaCard';
 export { ExecutiveSlaVelocityGauge, type ExecutiveSlaVelocityGaugeProps } from './ExecutiveSlaVelocityGauge';

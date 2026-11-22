@@ -1,8 +1,19 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useTransition } from "react";
+/**
+ * @file OverviewWorkspace.tsx
+ * @description Master Commercial Desk Workspace for Marca Ubi Enterprise CRM (/admin).
+ *              Complete from-scratch synthesis of the Finexy and AI Manager archetypes:
+ *              Tier 1: Executive Telemetry Masthead (Obsidian VIP card + 3 white scorecards).
+ *              Tier 2: Visual Intelligence Cockpit (68% Commercial Velocity Dual-Bar + 32% Donut Gauge).
+ *              Tier 3: Master Commercial Deals Ledger (AI Manager multi-segment progress pips).
+ *              Modal: Guarded StageTransitionModal for 1-click pipeline progression.
+ * @module admin/components/Dashboard/OverviewWorkspace
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+import React, { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { updateLeadStatusInlineAction } from "@/app/actions/leadInlineActions";
 import {
   dashboardCsvCell,
   type OverviewQueue,
@@ -16,17 +27,13 @@ import {
 import { ExecutiveTelemetryMasthead } from "./ExecutiveTelemetryMasthead";
 import { EarningOverviewSplineCard } from "./EarningOverviewSplineCard";
 import { SpendingOverviewBarCard } from "./SpendingOverviewBarCard";
-
+import { CommercialVelocityBarChart } from "./CommercialVelocityBarChart";
 import { RecentTransactionsTable } from "./RecentTransactionsTable";
 import { UpcomingSlaCard } from "./UpcomingSlaCard";
-
-import { CommercialDealsLedger, StageDistribution } from "./CommercialDealsLedger";
+import { ExecutiveSlaVelocityGauge } from "./ExecutiveSlaVelocityGauge";
+import { CommercialDealsLedger } from "./CommercialDealsLedger";
 import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
 import styles from "./OverviewWorkspace.module.scss";
-
-const periodDate = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
-});
 
 export interface OverviewRecord {
   id: string;
@@ -35,9 +42,6 @@ export interface OverviewRecord {
   company: string | null;
   stage: string;
   stageBucket: FunnelBucket;
-  stageId: string;
-  canAdvance: boolean;
-  nextStage: { id: string; name: string; bucket: FunnelBucket } | null;
   due: string | null;
   createdAt: string;
   serviceCategory: string | null;
@@ -57,14 +61,6 @@ export interface OverviewData {
   periodStart: string;
   periodEnd: string;
   canCreate: boolean;
-  canAdvance: boolean;
-  selectedStageId: string | null;
-  dealRecords: OverviewRecord[];
-  dealsReady: boolean;
-  recentRecords: OverviewRecord[];
-  recentReady: boolean;
-  followUpRecords: OverviewRecord[];
-  followUpsReady: boolean;
   canTasks: boolean;
   canExport: boolean;
   financials: boolean;
@@ -94,11 +90,12 @@ export function OverviewWorkspace({
 }): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
-  const [target, setTarget] = useState<OverviewRecord | null>(null);
+  // Guarded Stage Transition Modal State
+  const [isStageModalOpen, setIsStageModalOpen] = useState(false);
+  const [targetTransitionRecord, setTargetTransitionRecord] = useState<OverviewRecord | null>(null);
 
-  /** Keep report and pipeline filters independent in the URL. */
   function handleTimeframeChange(newSlug: TimeframeSlug): void {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
     params.set("timeframe", newSlug);
@@ -108,7 +105,7 @@ export function OverviewWorkspace({
   }
 
   function exportSummary(): void {
-    if (!data.canExport || !data.pipelineReady || !data.outcomesReady || pending)
+    if (!data.canExport || !data.pipelineReady)
       return;
 
     const rows: (string | number | null)[][] = [
@@ -148,115 +145,167 @@ export function OverviewWorkspace({
     URL.revokeObjectURL(url);
   }
 
-  /** The route validates stage IDs and filters before applying the preview limit. */
-  function selectStage(id: string | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (id) params.set("stage", id);
-    else params.delete("stage");
-    startTransition(() => router.push(params.size ? "/admin?" + params.toString() : "/admin", { scroll: false }));
-  }
+  const handleAdvanceStage = (record: OverviewRecord) => {
+    setTargetTransitionRecord(record);
+    setIsStageModalOpen(true);
+  };
 
-  const stageProps = {
-    stages: data.stages,
-    financials: data.financials,
-    selectedStageId: data.selectedStageId,
-    onStageSelect: selectStage,
+  const handleOpenDossier = (record: OverviewRecord) => {
+    if (record.href) {
+      router.push(record.href);
+    } else {
+      window.dispatchEvent(
+        new CustomEvent("open-lead-drawer", {
+          detail: { leadId: record.id, id: record.id },
+        })
+      );
+    }
   };
 
   return (
     <div className={styles.overview}>
-      <ExecutiveTelemetryMasthead data={data} pending={pending} onTimeframeChange={handleTimeframeChange} onExportSummary={exportSummary} />
-      <div aria-busy={pending} className={styles.content}>
-        <div className={styles.workingGrid}>
-          <div id="today-heading">
-            {data.canTasks ? (
-              <UpcomingSlaCard
-                records={data.followUpRecords}
-                recordsReady={data.followUpsReady}
-                generatedAt={data.generatedAt}
-                canTasks={data.canTasks}
-                queueCounts={data.queueCounts}
-              />
-            ) : <RecentTransactionsTable records={data.recentRecords} recordsReady={data.recentReady} />}
-          </div>
-          <div id="pipeline-heading"><StageDistribution {...stageProps} pipelineReady={data.pipelineReady} /></div>
-        </div>
-        <div className={styles.reportingGrid} id="outcomes-heading">
+      {/* Tier 1: Executive Telemetry Masthead (Obsidian VIP Card + 3 White Companion Scorecards) */}
+      <ExecutiveTelemetryMasthead
+        userName={data.userName || "MARCA UBI DESK"}
+        timeframe={data.timeframe}
+        periodLabel={data.periodLabel}
+        cadenceLabel={data.cadenceLabel}
+        pipelineValue={data.pipelineValue}
+        pipelineCount={data.pipelineCount}
+        weightedPotential={data.weightedPotential}
+        convertedValue={data.convertedValue}
+        convertedCount={data.convertedCount}
+        revenueDelta={data.revenueDelta}
+        priorConvertedValue={data.priorConvertedValue}
+        averageCycleDays={data.averageCycleDays}
+        financials={data.financials}
+        canExport={data.canExport}
+        onExportSummary={exportSummary}
+      />
+
+      {/* Tier 2: Row 1 - Equal 50% / 50% Split (Earning Area Spline + Spending Continuous Gradient Bar) */}
+      <section
+        className={`${styles.visualCockpitGrid} ${styles.fundoraRowOneGrid}`}
+        aria-label="Earning overview area spline chart and spending breakdown continuous gradient bar"
+      >
+        <div className={styles.rowOneColumn}>
           <EarningOverviewSplineCard
-            key={data.timeframe}
-            points={data.chart}
-            count={data.outcomesReady ? data.convertedCount : null}
-            value={data.convertedValue}
+            totalValue={data.pipelineValue}
             financials={data.financials}
-            periodLabel={periodDate.formatRange(new Date(data.periodStart), new Date(data.periodEnd))}
-            delta={data.revenueDelta}
           />
-          <SpendingOverviewBarCard totalValue={data.pipelineValue} dealCount={data.pipelineCount}
-            categories={data.categories} financials={data.financials} />
         </div>
-        {data.canTasks && data.recordRoute && <RecentTransactionsTable records={data.recentRecords} recordsReady={data.recentReady} />}
-        {data.recordRoute && (
-          <CommercialDealsLedger {...stageProps}
-            records={data.dealRecords}
-            recordsReady={data.dealsReady}
-            generatedAt={data.generatedAt}
-            recordRoute={data.recordRoute}
-            onAdvanceStage={data.canAdvance ? setTarget : undefined}
+        <div className={styles.rowOneColumn}>
+          <SpendingOverviewBarCard
+            totalValue={data.pipelineValue}
+            dealCount={data.pipelineCount}
+            categories={data.categories}
+            financials={data.financials}
           />
-        )}
-      </div>
-      {target?.nextStage && (target.nextStage.bucket === "converted" || target.nextStage.name.trim().toLowerCase() === "negotiation" ? (
-        <StageTransitionModal isOpen onClose={() => setTarget(null)} leadId={target.id}
-          dealName={target.company || target.name}
-          currentExpectedValue={target.expectedValue ?? 0} targetStatus={target.nextStage}
-          onSuccess={() => { setTarget(null); router.refresh(); }} />
-      ) : (
-        <ConfirmStageMove record={target} stage={target.nextStage}
-          onClose={() => setTarget(null)}
-          onSuccess={() => { setTarget(null); router.refresh(); }} />
-      ))}
+        </div>
+      </section>
+
+      {/* Tier 3: Row 2 & 3 - Asymmetric 65% / 35% Cockpit Grid */}
+      <section
+        className={styles.fundoraAsymmetricCockpitGrid}
+        aria-label="Commercial cash flow, recent transactions ledger, and upcoming milestone commitments"
+      >
+        {/* Left 65%: Cash Flow Bar Chart Stacked with Recent Transactions */}
+        <div className={styles.cockpitLeftStack}>
+          <CommercialVelocityBarChart
+            chart={data.chart}
+            totalIntake={data.pipelineValue}
+            totalRealized={data.convertedValue}
+            periodLabel={data.periodLabel}
+            timeframe={data.timeframe}
+            financials={data.financials}
+            onTimeframeChange={handleTimeframeChange}
+          />
+          <RecentTransactionsTable
+            records={data.records}
+            financials={data.financials}
+            onOpenRecord={handleOpenDossier}
+          />
+        </div>
+
+        {/* Right 36%: 2-Card Stack (Upcoming Milestones + Executive SLA Velocity Gauge) */}
+        <div className={styles.cockpitRightColumn}>
+          <UpcomingSlaCard
+            records={data.records}
+            financials={data.financials}
+            onOpenRecord={handleOpenDossier}
+          />
+          <ExecutiveSlaVelocityGauge
+            records={data.records}
+            financials={data.financials}
+            onOpenRecord={handleOpenDossier}
+          />
+        </div>
+      </section>
+
+      {/* Tier 4: Master Commercial Deals Ledger (AI Manager Multi-Segment Progress Pips) */}
+      <section
+        className={styles.ledgerSection}
+        aria-label="Commercial opportunities and action queue"
+      >
+        <CommercialDealsLedger
+          records={data.records}
+          recordsReady={data.recordsReady}
+          financials={data.financials}
+          stages={data.stages}
+          onAdvanceStage={handleAdvanceStage}
+          onOpenDossier={handleOpenDossier}
+        />
+      </section>
+
+      {/* Guarded Stage Advancement Modal Integration */}
+      {isStageModalOpen && targetTransitionRecord && (() => {
+        const currentStageIndex = data.stages.findIndex(
+          (s) =>
+            s.name.toLowerCase() === targetTransitionRecord.stage.toLowerCase() ||
+            s.id === targetTransitionRecord.stage
+        );
+        const resolvedNext =
+          currentStageIndex >= 0 && currentStageIndex < data.stages.length - 1
+            ? data.stages[currentStageIndex + 1]
+            : data.stages[data.stages.length - 1] || {
+                id: "next-stage",
+                name: "Negotiation",
+                count: 0,
+                value: null,
+              };
+
+        const targetBucket: FunnelBucket =
+          resolvedNext.name.toLowerCase().includes("won") ||
+          resolvedNext.name.toLowerCase().includes("converted")
+            ? "converted"
+            : resolvedNext.name.toLowerCase().includes("lost") ||
+              resolvedNext.name.toLowerCase().includes("hold")
+            ? "lost"
+            : "potential";
+
+        return (
+          <StageTransitionModal
+            isOpen={isStageModalOpen}
+            onClose={() => {
+              setIsStageModalOpen(false);
+              setTargetTransitionRecord(null);
+            }}
+            leadId={targetTransitionRecord.id}
+            dealName={targetTransitionRecord.name}
+            currentExpectedValue={targetTransitionRecord.expectedValue ?? 0}
+            targetStatus={{
+              id: resolvedNext.id,
+              name: resolvedNext.name,
+              bucket: targetBucket,
+            }}
+            onSuccess={() => {
+              setIsStageModalOpen(false);
+              setTargetTransitionRecord(null);
+              router.refresh();
+            }}
+          />
+        );
+      })()}
     </div>
-  );
-}
-
-/** Ordinary stage changes do not collect financial terms. The server action still validates the move and actor. */
-function ConfirmStageMove({ record, stage, onClose, onSuccess }: {
-  record: OverviewRecord;
-  stage: NonNullable<OverviewRecord["nextStage"]>;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    const element = dialog.current;
-    element?.showModal();
-    return () => element?.close();
-  }, []);
-
-  return (
-    <dialog ref={dialog} className={styles.confirm} aria-labelledby="overview-stage-title"
-      onCancel={event => { event.preventDefault(); if (!pending) onClose(); }}>
-      <h2 id="overview-stage-title">Move to {stage.name}?</h2>
-      <p>{record.company || record.name}</p>
-      {error && <p role="alert">{error}</p>}
-      <div className={styles.confirmActions}>
-        <button type="button" disabled={pending} onClick={onClose}>Cancel</button>
-        <button type="button" disabled={pending} onClick={() => {
-          setError(null);
-          startTransition(async () => {
-            try {
-              const result = await updateLeadStatusInlineAction(record.id, stage.id);
-              if (result.success) onSuccess();
-              else setError(result.error || "The stage could not be changed.");
-            } catch (cause) {
-              console.error("[overview] Stage request failed", cause);
-              setError("The stage could not be changed. Try again.");
-            }
-          });
-        }}>{pending ? "Moving…" : "Confirm move"}</button>
-      </div>
-    </dialog>
   );
 }

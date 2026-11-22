@@ -15,7 +15,6 @@ export interface TimeframeBounds {
   currentStart: Date;
   currentEnd: Date;
   priorStart: Date;
-  /** Exclusive upper boundary for the previous comparison window. */
   priorEnd: Date;
   intervalType: 'daily' | 'weekly' | 'monthly';
 }
@@ -50,10 +49,10 @@ export const TIMEFRAME_SLUG_LABELS: Record<TimeframeSlug, { label: string; caden
 export function timeframeToSlug(input?: string | null): TimeframeSlug {
   if (!input) return '30d';
   const clean = input.trim().toLowerCase();
-  if (clean === '7d' || clean === 'last 7 days') return '7d';
-  if (clean === '90d' || clean === 'last 90 days') return '90d';
-  if (['quarter', 'this quarter', 'qtr'].includes(clean)) return 'quarter';
-  if (['year', 'this year', 'ytd', '12m'].includes(clean)) return 'year';
+  if (clean === '7d' || clean.includes('7')) return '7d';
+  if (clean === '90d' || clean.includes('90')) return '90d';
+  if (clean === 'quarter' || clean.includes('quarter') || clean === 'qtr') return 'quarter';
+  if (clean === 'year' || clean.includes('year') || clean === 'ytd' || clean === '12m') return 'year';
   return '30d';
 }
 
@@ -74,9 +73,9 @@ export function resolveTimeframeBounds(inputSlug?: string | null, referenceDate:
     case '30d':
     case '90d': {
       const days = slug === '7d' ? 7 : slug === '30d' ? 30 : 90;
-      currentStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), currentEnd.getUTCMonth(), currentEnd.getUTCDate() - days + 1));
-      priorStart = new Date(currentStart.getTime() - days * 86400000);
-      priorEnd = comparisonEnd(priorStart, currentStart, currentEnd);
+      currentStart = new Date(currentEnd.getTime() - days * 86400000);
+      priorEnd = new Date(currentStart);
+      priorStart = new Date(priorEnd.getTime() - days * 86400000);
       intervalType = slug === '7d' ? 'daily' : slug === '30d' ? 'weekly' : 'monthly';
       break;
     }
@@ -84,25 +83,19 @@ export function resolveTimeframeBounds(inputSlug?: string | null, referenceDate:
       const month = Math.floor(currentEnd.getUTCMonth() / 3) * 3;
       currentStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), month, 1));
       priorStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), month - 3, 1));
-      priorEnd = comparisonEnd(priorStart, currentStart, currentEnd);
+      priorEnd = new Date(currentStart.getTime() - 1);
       intervalType = 'monthly';
       break;
     }
     case 'year': {
       currentStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), 0, 1));
       priorStart = new Date(Date.UTC(currentEnd.getUTCFullYear() - 1, 0, 1));
-      priorEnd = comparisonEnd(priorStart, currentStart, currentEnd);
+      priorEnd = new Date(currentStart.getTime() - 1);
       intervalType = 'monthly';
       break;
     }
   }
   return { slug, label: TIMEFRAME_SLUG_LABELS[slug].label, cadenceLabel: TIMEFRAME_SLUG_LABELS[slug].cadence, currentStart, currentEnd, priorStart, priorEnd, intervalType };
-}
-
-/** Compare the elapsed part of a calendar period and cap shorter previous quarters/years at their boundary. */
-function comparisonEnd(previous: Date, start: Date, asOf: Date): Date {
-  const elapsed = asOf.getTime() - start.getTime();
-  return new Date(Math.min(start.getTime(), previous.getTime() + elapsed + 1));
 }
 
 /** A zero prior baseline has no meaningful percentage change and remains unavailable. */
@@ -120,7 +113,8 @@ export function aggregateTimeframeRevenue(
 ): DynamicRevenueSplinePoint[] {
   const start = bounds.currentStart.getTime();
   const end = bounds.currentEnd.getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return [];
+  const span = end - start;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || span <= 0) return [];
   const intervals = getRevenueIntervals(slug, bounds.currentStart, bounds.currentEnd);
   const totals = intervals.map(() => 0);
   const intakeTotals = intervals.map(() => 0);
@@ -128,23 +122,23 @@ export function aggregateTimeframeRevenue(
   for (const event of events) {
     const timestamp = Date.parse(event.convertedAt);
     if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end || !Number.isFinite(event.amount)) continue;
-    const index = intervals.findIndex(interval => timestamp < interval.endExclusive);
-    totals[index] += Math.round(event.amount * 100);
+    const index = Math.min(intervals.length - 1, Math.floor(((timestamp - start) / span) * intervals.length));
+    totals[index] += event.amount;
   }
 
   if (intakeEvents && intakeEvents.length > 0) {
     for (const event of intakeEvents) {
       const timestamp = Date.parse(event.createdAt);
       if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end || !Number.isFinite(event.amount)) continue;
-      const index = intervals.findIndex(interval => timestamp < interval.endExclusive);
-      intakeTotals[index] += Math.round(event.amount * 100);
+      const index = Math.min(intervals.length - 1, Math.floor(((timestamp - start) / span) * intervals.length));
+      intakeTotals[index] += event.amount;
     }
   }
 
   const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
   return intervals.map((interval, index) => {
-    const amount = totals[index] / 100;
-    const intakeAmount = intakeTotals[index] / 100;
+    const amount = Math.round(totals[index] * 100) / 100;
+    const intakeAmount = Math.round(intakeTotals[index] * 100) / 100;
     return {
       month: interval.label,
       fullPeriod: interval.fullLabel,
@@ -155,20 +149,14 @@ export function aggregateTimeframeRevenue(
   });
 }
 
-/** End partial periods at the snapshot instant so tooltip dates and underlying events agree. */
-function getRevenueIntervals(slug: TimeframeSlug, start: Date, end: Date) {
-  const intervals = [];
+function getRevenueIntervals(slug: TimeframeSlug, start: Date, end: Date): { label: string; fullLabel: string }[] {
+  const count = slug === '7d' ? 7 : slug === '30d' ? 8 : slug === '90d' ? 8 : slug === 'quarter' ? 6 : slug === 'year' ? 12 : 8;
+  const startMs = start.getTime();
+  const span = end.getTime() - startMs;
   const format = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-  for (let cursor = start.getTime(); cursor <= end.getTime();) {
-    const date = new Date(cursor);
-    const boundary = slug === '7d' || slug === '30d'
-      ? Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + (slug === '7d' ? 1 : 7))
-      : Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1);
-    const endExclusive = Math.min(boundary, end.getTime() + 1);
-    const label = format.format(cursor);
-    const last = format.format(endExclusive - 1);
-    intervals.push({ label, fullLabel: label === last ? label : label + ' – ' + last, endExclusive });
-    cursor = endExclusive;
-  }
-  return intervals;
+  return Array.from({ length: count }, (_, index) => {
+    const intervalStart = new Date(startMs + (span * index) / count);
+    const intervalEnd = new Date(startMs + (span * (index + 1)) / count);
+    return { label: format.format(intervalStart), fullLabel: format.format(intervalStart) + ' – ' + format.format(intervalEnd) };
+  });
 }

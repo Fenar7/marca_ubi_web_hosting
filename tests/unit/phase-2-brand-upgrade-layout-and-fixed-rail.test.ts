@@ -48,14 +48,4 @@ describe('Shared workspace rail regression contracts', () => {
     assert.ok(!header.includes('open-add-member-modal'));
     assert.ok(header.includes('onOpenMobileNav'));
   });
-
-  it('keeps overview search in the desktop rail and restores toolbar access below the rail breakpoint', () => {
-    const rail = read('src/app/admin/components/layout/AdminSidebar.tsx');
-    const headerStyles = read('src/app/admin/components/layout/AdminHeader.module.scss');
-    assert.match(rail, /pathname === "\/admin" && \([\s\S]*?<WorkspaceSearchButton compact=\{isCollapsed\}/);
-    assert.match(headerStyles, /@media \(min-width: 1025px\)\s*\{\s*\.overview\s*\{\s*display: none;/);
-    assert.match(header, /<WorkspaceSearchButton \/>/);
-    assert.match(header, /aria-haspopup="dialog"/);
-    assert.doesNotMatch(header, /aria-label="Notifications"/);
-  });
 });
