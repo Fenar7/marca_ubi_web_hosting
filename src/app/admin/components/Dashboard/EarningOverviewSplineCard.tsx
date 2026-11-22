@@ -1,240 +1,39 @@
-"use client";
-
-/**
- * @file EarningOverviewSplineCard.tsx
- * @description Master Earning Overview Card modeled 1:1 after the Fundora benchmark archetype.
- *              Features Swiss Helvetica Neue 300 Light numerals, emerald trend badge,
- *              interactive cubic bezier SVG spline curve, linear gradient area wash,
- *              apex beacon target ring, dashed vertical guide stem, and floating tooltip card.
- * @module admin/components/Dashboard/EarningOverviewSplineCard
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-import React, { useState, useId } from "react";
+import { useState } from "react";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
+import type { DynamicRevenueSplinePoint } from "@/app/admin/lib/timeframeUtils";
 import styles from "./EarningOverviewSplineCard.module.scss";
 
-export interface SplineMonthPoint {
-  month: string;
-  year: number;
-  value: number;
-}
-
+export type SplineMonthPoint = DynamicRevenueSplinePoint;
 export interface EarningOverviewSplineCardProps {
-  totalValue?: number | null;
-  growthPercentage?: number;
-  timeframeLabel?: string;
-  points?: SplineMonthPoint[];
-  financials?: boolean;
+  points: SplineMonthPoint[];
+  count: number | null;
+  value: number | null;
+  financials: boolean;
+  periodLabel: string;
+  delta: number | null;
 }
 
-const DEFAULT_POINTS: SplineMonthPoint[] = [
-  { month: "Jan", year: 2025, value: 320000 },
-  { month: "Feb", year: 2025, value: 580000 },
-  { month: "Mar", year: 2025, value: 460000 },
-  { month: "Apr", year: 2025, value: 720000 },
-  { month: "May", year: 2025, value: 868920 },
-  { month: "Jun", year: 2025, value: 540000 },
-];
-
-export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps> = ({
-  totalValue = 6540000,
-  growthPercentage = 1.5,
-  timeframeLabel = "This Month",
-  points = DEFAULT_POINTS,
-  financials = true,
-}) => {
-  const gradientId = useId();
-  // Active selected point defaults to index 4 ("May" in default set to match Image 1 benchmark)
-  const [activeIndex, setActiveIndex] = useState<number>(4);
-
-  const displayTotal =
-    financials && totalValue !== null ? formatCrmCurrency(totalValue) : "Confidential";
-
-  // Chart coordinates mapping (ViewBox: 500w x 140h, padding left/right 30, baseline y=130)
-  const width = 500;
-  const height = 140;
-  const paddingX = 35;
-  const baselineY = 130;
-  const chartHeight = 95;
-
-  const maxValue = Math.max(...points.map((p) => p.value), 1);
-  const minValue = Math.min(...points.map((p) => p.value), 0);
-  const range = maxValue - minValue || 1;
-
-  // Calculate coordinates for each data point
-  const coords = points.map((p, idx) => {
-    const x = paddingX + (idx / (points.length - 1)) * (width - paddingX * 2);
-    // Inverted Y: higher value = smaller Y (near top)
-    const normalized = (p.value - minValue) / range;
-    const y = baselineY - normalized * chartHeight;
-    return { x, y, point: p };
-  });
-
-  // Build cubic bezier path string
-  function buildSplinePath(): string {
-    if (coords.length < 2) return "";
-    let path = `M ${coords[0].x} ${coords[0].y}`;
-    for (let i = 0; i < coords.length - 1; i++) {
-      const current = coords[i];
-      const next = coords[i + 1];
-      const controlX1 = current.x + (next.x - current.x) / 2;
-      const controlY1 = current.y;
-      const controlX2 = current.x + (next.x - current.x) / 2;
-      const controlY2 = next.y;
-      path += ` C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${next.x} ${next.y}`;
-    }
-    return path;
-  }
-
-  const linePath = buildSplinePath();
-  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`;
-
-  const activeCoord = coords[activeIndex] || coords[coords.length - 1];
-  const activeTooltipPercent = (activeCoord.x / width) * 100;
-
-  return (
-    <article
-      className={styles.cardContainer}
-      aria-label="Earning Overview Area Spline Performance Card"
-    >
-      {/* Header: Title with info tooltip and Timeframe dropdown */}
-      <header className={styles.cardHeader}>
-        <div className={styles.titleRow}>
-          <h2 className={styles.title}>Earning Overview</h2>
-          <span
-            className={styles.infoIcon}
-            title="Consolidated pipeline earnings across active advisory cadences"
-            aria-label="Information regarding earning overview"
-          >
-            ⓘ
-          </span>
+/** A plotted zero represents a complete measured interval. Missing valuations suppress the monetary series. */
+export function EarningOverviewSplineCard({ points, count, value, financials, periodLabel, delta }: EarningOverviewSplineCardProps) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const active = selected === null ? null : points[selected];
+  const max = Math.max(0, ...points.map(point => point.cashVal));
+  const available = count !== null && (!financials || value !== null);
+  const unit = financials ? "Won deal value" : "Deals won";
+  const label = (n: number) => financials ? formatCrmCurrency(n) : `${n} ${n === 1 ? "deal" : "deals"}`;
+  return <section className={styles.panel} aria-label="Won deals over time">
+    <header><div><h2>Won deals over time</h2><p>{periodLabel} · UTC</p></div>
+      {financials && delta !== null && <span className={styles.delta}>{delta > 0 ? "+" : ""}{delta}% vs previous period</span>}
+    </header>
+    {!available ? <p className={styles.empty}>{unit} unavailable for this period.</p>
+      : count === 0 ? <p className={styles.empty}>No deals were won in this period.</p>
+      : <><div className={styles.readout} aria-live="polite"><strong>{label(active?.cashVal ?? (financials ? value! : count!))}</strong><span>{active?.fullPeriod ?? periodLabel}</span></div>
+        <div className={styles.chart} aria-label={unit + " by interval"}>
+          {points.map((point, i) => <button key={point.fullPeriod} type="button" aria-pressed={selected === i} aria-label={point.fullPeriod + ", " + label(point.cashVal)} onClick={() => setSelected(selected === i ? null : i)} title={point.fullPeriod + " · " + label(point.cashVal)}>
+            <span className={styles.track}><span className={styles.bar} style={{height: (max ? 100 * point.cashVal / max : 0) + "%"}} /></span>
+            <span className={styles.tick}>{point.month}</span></button>)}
         </div>
-
-        <button
-          type="button"
-          className={styles.dropdownButton}
-          aria-haspopup="listbox"
-          aria-label={`Timeframe filter currently set to ${timeframeLabel}`}
-        >
-          <span>{timeframeLabel}</span>
-          <span className={styles.dropdownArrow} aria-hidden="true">
-            ⌄
-          </span>
-        </button>
-      </header>
-
-      {/* Hero Metric & Emerald Growth Pill */}
-      <div className={styles.heroRow}>
-        <span className={styles.heroValuation}>{displayTotal}</span>
-        <span className={styles.trendBadge} aria-label={`${growthPercentage}% increase this period`}>
-          +{growthPercentage}% ↑
-        </span>
-      </div>
-
-      {/* Interactive Spline Chart */}
-      <div className={styles.chartContainer}>
-        {/* Floating Tooltip Card */}
-        <div
-          className={styles.floatingTooltip}
-          style={{ left: `${activeTooltipPercent}%` }}
-          aria-live="polite"
-        >
-          <span className={styles.tooltipText}>
-            {activeCoord.point.month} {activeCoord.point.year} : {formatCrmCurrency(activeCoord.point.value)}
-          </span>
-        </div>
-
-        <svg
-          className={styles.splineSvg}
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id={`earning-gradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.20" />
-              <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.06" />
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
-            </linearGradient>
-            <filter id={`beacon-glow-${gradientId}`} x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.4" />
-            </filter>
-          </defs>
-
-          {/* Area Fill */}
-          <path d={areaPath} fill={`url(#earning-gradient-${gradientId})`} />
-
-          {/* Spline Curve Stroke */}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="#2563eb"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* Vertical Dashed Stem connecting apex to baseline */}
-          <line
-            x1={activeCoord.x}
-            y1={activeCoord.y}
-            x2={activeCoord.x}
-            y2={baselineY}
-            stroke="#93c5fd"
-            strokeWidth="1.5"
-            strokeDasharray="3 3"
-          />
-
-          {/* Active Apex Beacon Halo & Dot */}
-          <circle
-            cx={activeCoord.x}
-            cy={activeCoord.y}
-            r="8"
-            fill="#2563eb"
-            fillOpacity="0.18"
-          />
-          <circle
-            cx={activeCoord.x}
-            cy={activeCoord.y}
-            r="4.5"
-            fill="#ffffff"
-            stroke="#2563eb"
-            strokeWidth="2.5"
-            filter={`url(#beacon-glow-${gradientId})`}
-          />
-
-          {/* Invisible interactive hover hit areas for each point */}
-          {coords.map((coord, idx) => (
-            <rect
-              key={coord.point.month}
-              x={coord.x - (width / coords.length) / 2}
-              y={0}
-              width={width / coords.length}
-              height={height}
-              fill="transparent"
-              style={{ cursor: "pointer" }}
-              onMouseEnter={() => setActiveIndex(idx)}
-              onClick={() => setActiveIndex(idx)}
-            />
-          ))}
-        </svg>
-
-        {/* X-Axis Month Legend */}
-        <div className={styles.monthLabelsRow}>
-          {points.map((pt, idx) => (
-            <button
-              key={pt.month}
-              type="button"
-              className={`${styles.monthLabel} ${idx === activeIndex ? styles.monthLabelActive : ""}`}
-              onClick={() => setActiveIndex(idx)}
-              onMouseEnter={() => setActiveIndex(idx)}
-            >
-              {pt.month}
-            </button>
-          ))}
-        </div>
-      </div>
-    </article>
-  );
-};
+        {max === 0 && <p>All recorded won deal values are zero.</p>}
+      </>}
+  </section>;
+}

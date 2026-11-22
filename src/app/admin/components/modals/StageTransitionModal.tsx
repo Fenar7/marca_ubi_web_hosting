@@ -144,7 +144,7 @@ function NegotiationModalInner({
 
   const [isPending, startTransition] = useTransition();
   const [expectedValue, setExpectedValue] = useState<number | ''>(
-    currentExpectedValue > 0 ? currentExpectedValue : 500000
+    currentExpectedValue > 0 ? currentExpectedValue : ''
   );
 
   // Default close date to 14 days from today
@@ -160,7 +160,7 @@ function NegotiationModalInner({
 
   useEffect(() => {
     if (isOpen) {
-      setExpectedValue(currentExpectedValue > 0 ? currentExpectedValue : 500000);
+      setExpectedValue(currentExpectedValue > 0 ? currentExpectedValue : '');
       setAnticipatedCloseDate(defaultCloseDate);
       setNotes('');
       setErrorMessage(null);
@@ -366,7 +366,7 @@ function NegotiationModalInner({
                     const val = e.target.value;
                     setExpectedValue(val === '' ? '' : Number(val));
                   }}
-                  placeholder="500000"
+                  placeholder="Enter expected value"
                   className={`${styles.textInput} ${styles.hasPrefix} ${
                     numVal <= 0 ? styles.hasError : ''
                   }`}

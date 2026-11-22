@@ -1,0 +1,31 @@
+﻿.identity {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.name {
+  color: #171715;
+  font:
+    400 15px/1.35 var(--font-circular),
+    sans-serif;
+}
+a.name {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  text-decoration: underline;
+  text-decoration-color: #c3c2ba;
+  text-underline-offset: 3px;
+}
+a.name:hover {
+  text-decoration-color: currentColor;
+}
+a.name:focus-visible {
+  outline: 2px solid #9c001e;
+  outline-offset: 2px;
+}
+.secondary {
+  display: block;
+  color: #595952;
+  font-size: 12px;
+  line-height: 1.45;
+}

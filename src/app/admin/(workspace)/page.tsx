@@ -35,6 +35,7 @@ interface Stage {
   id: string;
   name: string;
   bucket: FunnelBucket;
+  is_active: boolean;
 }
 interface PipelineRow {
   id: string;
@@ -75,7 +76,7 @@ const SYNTHETIC_EXCLUSION =
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ timeframe?: string; queue?: string }>;
+  searchParams?: Promise<{ timeframe?: string | string[]; queue?: string | string[]; stage?: string | string[] }>;
 }): Promise<React.ReactElement> {
   const supabase = await createClient();
   const {
@@ -91,7 +92,7 @@ export default async function AdminDashboardPage({
   const userName =
     profile.full_name?.trim() ||
     user.email?.split("@")[0] ||
-    "Marca Ubi Root Admin";
+    "Marca Ubi";
   const role = profile.role as CrmUserRole;
   if (!dashboardTab(role, profile.allowed_tabs, "command_center")) notFound();
   const canFinancial = dashboardFeature(
@@ -116,12 +117,12 @@ export default async function AdminDashboardPage({
   const now = new Date();
   const window = getUtcDayWindow(now);
   const bounds = resolveTimeframeBounds(
-    timeframeToSlug(params?.timeframe),
+    timeframeToSlug(typeof params?.timeframe === "string" ? params.timeframe : undefined),
     now,
   );
   const { data: rawStages, error: stageError } = await supabase
     .from("funnel_statuses")
-    .select("id, name, bucket")
+    .select("id, name, bucket, is_active")
     .order("sort_order", { ascending: true });
   if (stageError)
     console.error("[dashboard] Stage lookup failed", stageError.message);
@@ -146,7 +147,6 @@ export default async function AdminDashboardPage({
           valid: true,
           stages: new Map<string, { count: number; value: number }>(),
           categories: new Map<string, { count: number; value: number }>(),
-          intakeEvents: [] as { createdAt: string; amount: number }[],
         })
       : foldPages<
           PipelineRow,
@@ -156,7 +156,6 @@ export default async function AdminDashboardPage({
             valid: boolean;
             stages: Map<string, { count: number; value: number }>;
             categories: Map<string, { count: number; value: number }>;
-            intakeEvents: { createdAt: string; amount: number }[];
           }
         >(
           async (from, to) => {
@@ -178,7 +177,6 @@ export default async function AdminDashboardPage({
             valid: true,
             stages: new Map(),
             categories: new Map(),
-            intakeEvents: [],
           },
           (summary, row) => {
             const amount = canFinancial
@@ -196,7 +194,7 @@ export default async function AdminDashboardPage({
             summary.stages.set(row.status_id, stage);
 
             const catName =
-              row.service_category?.trim() || "Full-Suite Advisory";
+              row.service_category?.trim() || "Unspecified service";
             const cat = summary.categories.get(catName) ?? {
               count: 0,
               value: 0,
@@ -205,12 +203,6 @@ export default async function AdminDashboardPage({
             cat.value += amount ?? 0;
             summary.categories.set(catName, cat);
 
-            if (row.created_at) {
-              summary.intakeEvents.push({
-                createdAt: row.created_at,
-                amount: amount ?? 0,
-              });
-            }
           },
         );
 
@@ -273,11 +265,7 @@ export default async function AdminDashboardPage({
             }
             if (amount === null) summary.valid = false;
             summary.value += amount ?? 0;
-            if (canFinancial)
-              summary.events.push({
-                convertedAt: row.converted_at,
-                amount: amount ?? 0,
-              });
+            summary.events.push({ convertedAt: row.converted_at, amount: canFinancial ? amount ?? 0 : 1 });
           },
         );
 
@@ -303,7 +291,7 @@ export default async function AdminDashboardPage({
               .select(dashboardSelect(canFinancial, "conversion"))
               .in("status_id", convertedIds)
               .gte("converted_at", bounds.priorStart.toISOString())
-              .lte("converted_at", bounds.priorEnd.toISOString())
+              .lt("converted_at", bounds.priorEnd.toISOString())
               .or(SYNTHETIC_EXCLUSION)
               .order("id")
               .range(from, to);
@@ -383,7 +371,7 @@ export default async function AdminDashboardPage({
       .lte("next_follow_up", window.end);
   };
   const queueNames: OverviewQueue[] = ["overdue", "today", "unassigned"];
-  const counts = await Promise.all(
+  const countsPromise = Promise.all(
     queueNames.map(async (queue) => {
       if (!canTasks || stagesUnavailable) return null;
       if (!activeIds.length) return 0;
@@ -397,37 +385,46 @@ export default async function AdminDashboardPage({
       return result.error ? null : result.count;
     }),
   );
-  const selectedQueue: OverviewQueue | null = params?.queue
-    ? overviewQueue(params.queue, counts[0])
-    : null;
-  const previewResult = stagesUnavailable
+  const selectedQueue = canTasks && typeof params?.queue === "string"
+    ? overviewQueue(params.queue, null) : null;
+  const selectedStageId = typeof params?.stage === "string" && activeIds.includes(params.stage)
+    ? params.stage : null;
+  const emptyPreview = stagesUnavailable
     ? { data: null, error: stageError ?? { message: "Stages unavailable" } }
-    : activeIds.length === 0 || (!canTasks && !recordRoute)
-      ? { data: [], error: null }
-      : selectedQueue && canTasks
-        ? await queueQuery(selectedQueue)
-            .order(
-              selectedQueue === "unassigned" ? "created_at" : "next_follow_up",
-              { ascending: true },
-            )
-            .order("id")
-            .limit(25)
-        : await supabase
-            .from("leads")
-            .select(dashboardPreviewSelect(canFinancial))
-            .in("status_id", activeIds)
-            .or(SYNTHETIC_EXCLUSION)
-            .order("created_at", { ascending: false })
-            .order("id")
-            .limit(25);
+    : { data: [], error: null };
+  /** Stage filtering precedes the preview limit so older matching opportunities stay reachable. */
+  const latestDeals = (stageId: string | null, limit: number) => supabase
+    .from("leads")
+    .select(dashboardPreviewSelect(canFinancial))
+    .in("status_id", stageId ? [stageId] : activeIds)
+    .or(SYNTHETIC_EXCLUSION)
+    .order("created_at", { ascending: false })
+    .order("id")
+    .limit(limit);
+  const canPreview = !stagesUnavailable && activeIds.length > 0;
+  const dealPreview = canPreview && recordRoute ? latestDeals(selectedStageId, 25) : emptyPreview;
+  const queuePreview = !canPreview || !canTasks ? emptyPreview : selectedQueue
+    ? queueQuery(selectedQueue).order(selectedQueue === "unassigned" ? "created_at" : "next_follow_up").order("id").limit(6)
+    : queueBase(false).not("next_follow_up", "is", null).order("next_follow_up").order("id").limit(5);
+  const [counts, dealResult, followUpResult, latestResult] = await Promise.all([
+    countsPromise, dealPreview, queuePreview,
+    canPreview && recordRoute && selectedStageId ? latestDeals(null, 4) : null,
+  ]);
+  const previewResult = selectedQueue ? followUpResult : dealResult;
   if (previewResult.error)
     console.error("[dashboard] Preview failed", previewResult.error.message);
   else if (!previewResult.data)
     console.error("[dashboard] Preview returned no payload");
   const preview = (previewResult.data ?? []) as unknown as PreviewRow[];
+  const deals = (dealResult.data ?? []) as unknown as PreviewRow[];
+  const followUps = (followUpResult.data ?? []) as unknown as PreviewRow[];
+  const latest = ((latestResult ?? dealResult).data ?? []) as unknown as PreviewRow[];
+  for (const [section, result] of [["deals", dealResult], ["follow-ups", followUpResult], ["recent opportunities", latestResult]] as const) {
+    if (result && (result.error || !result.data)) console.error(`[dashboard] ${section} unavailable`, result.error?.message ?? "Missing payload");
+  }
   const ownerIds = [
     ...new Set(
-      preview.flatMap((row) => (row.assigned_to ? [row.assigned_to] : [])),
+      [...deals, ...followUps, ...latest].flatMap((row) => (row.assigned_to ? [row.assigned_to] : [])),
     ),
   ];
   let directory: DirectoryRow[] = [];
@@ -460,15 +457,26 @@ export default async function AdminDashboardPage({
     }
   }
   const ownerById = new Map(directory.map((row) => [row.id, row.full_name]));
-  const records: OverviewRecord[] = preview.map((row) => ({
+  const progression = stages.filter(stage => stage.is_active && stage.bucket !== "lost" && stage.name.trim().toLowerCase() !== "on hold");
+  const canAdvance = Boolean(recordRoute) && ["admin", "sales_manager", "sales_executive"].includes(role);
+  /** The action rechecks the session and ownership; this also hides unavailable row commands. */
+  const toRecord = (row: PreviewRow): OverviewRecord => {
+    const stageIndex = progression.findIndex(stage => stage.id === row.status_id);
+    const next = stageIndex < 0 ? undefined : progression[stageIndex + 1];
+    const needsFinance = next?.bucket === "converted" || next?.name.toLowerCase().includes("negotiation");
+    const mayAdvance = canAdvance && (role !== "sales_executive" || row.assigned_to === user.id) && (!needsFinance || canFinancial);
+    return {
     id: row.id,
     leadId: row.lead_id,
     name: row.name,
     company: row.company,
     stage: stageById.get(row.status_id)?.name ?? "Unknown stage",
+    stageId: row.status_id,
+    canAdvance: Boolean(next && mayAdvance),
+    nextStage: next && mayAdvance ? { id: next.id, name: next.name, bucket: next.bucket } : null,
     stageBucket: stageById.get(row.status_id)?.bucket ?? "open",
     due: row.next_follow_up,
-    createdAt: row.created_at ?? now.toISOString(),
+    createdAt: row.created_at ?? "",
     serviceCategory: row.service_category ?? null,
     expectedValue: canFinancial ? dashboardAmount(row.expected_value) : null,
     owner: !row.assigned_to
@@ -476,7 +484,8 @@ export default async function AdminDashboardPage({
       : (ownerById.get(row.assigned_to) ??
         (directoryFailed ? "Owner unavailable" : "Name unavailable")),
     href: recordRoute ? `${recordRoute}/${encodeURIComponent(row.id)}` : null,
-  }));
+    };
+  };
   const [pipeline, outcome, priorOutcome, cohort] = await Promise.all([
     pipelinePromise,
     outcomePromise,
@@ -521,6 +530,7 @@ export default async function AdminDashboardPage({
     periodStart: bounds.currentStart.toISOString(),
     periodEnd: bounds.currentEnd.toISOString(),
     canCreate,
+    canAdvance,
     canTasks,
     canExport,
     recordRoute,
@@ -550,18 +560,24 @@ export default async function AdminDashboardPage({
       today: counts[1],
       unassigned: counts[2],
     },
-    records,
+    records: preview.map(toRecord),
     recordsReady: Boolean(previewResult.data && !previewResult.error),
+    selectedStageId,
+    dealRecords: deals.map(toRecord),
+    dealsReady: Boolean(dealResult.data && !dealResult.error),
+    recentRecords: latest.map(toRecord),
+    recentReady: Boolean((latestResult ?? dealResult).data && !(latestResult ?? dealResult).error),
+    followUpRecords: followUps.map(toRecord),
+    followUpsReady: Boolean(followUpResult.data && !followUpResult.error),
     outcomesReady: outcome !== null,
     convertedCount: outcome?.count ?? null,
     convertedValue: canFinancial && outcome?.valid ? outcome.value : null,
     chart:
-      canFinancial && outcome?.valid
+      outcome?.valid
         ? aggregateTimeframeRevenue(
             bounds.slug,
             bounds,
             outcome.events,
-            pipeline?.intakeEvents,
           )
         : [],
     categories:

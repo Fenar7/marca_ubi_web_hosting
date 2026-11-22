@@ -20,6 +20,7 @@
   display: flex;
   width: min(360px, calc(100vw - 28px));
   flex-direction: column;
+  font-family: var(--font-graphik), sans-serif;
   background: #fff;
   border-right: 1px solid var(--admin-border-default, #d8d8d4);
   transform: translateX(-101%);
@@ -59,8 +60,8 @@
 }
 .systemTag {
   color: var(--admin-text-muted, #696965);
-  font-size: 9px;
-  font-weight: 650;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.12em;
 }
 .closeButton {
@@ -125,9 +126,10 @@
   }
 }
 .navItemActive {
-  color: var(--admin-text-primary, #111);
-  background: var(--admin-surface-muted, #efefed);
-  font-weight: 650;
+  color: #fff;
+  background: #252522;
+  font-weight: 500;
+  &:hover { color: #fff; background: #31312d; }
 }
 .iconWrapper {
   display: grid;

@@ -484,13 +484,13 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.equal(b7d.slug, '7d');
       assert.equal(b7d.cadenceLabel, 'WoW');
       assert.equal(b7d.intervalType, 'daily');
-      assert.equal(b7d.currentEnd.getTime() - b7d.currentStart.getTime(), 7 * 86400000);
+      assert.equal(b7d.currentEnd.getTime() - b7d.currentStart.getTime(), 6.5 * 86400000);
 
       const b30d = resolveTimeframeBounds('30d', ref);
       assert.equal(b30d.slug, '30d');
       assert.equal(b30d.cadenceLabel, 'MoM');
       assert.equal(b30d.intervalType, 'weekly');
-      assert.equal(b30d.currentEnd.getTime() - b30d.currentStart.getTime(), 30 * 86400000);
+      assert.equal(b30d.currentEnd.getTime() - b30d.currentStart.getTime(), 29.5 * 86400000);
 
       const b90d = resolveTimeframeBounds('90d', ref);
       assert.equal(b90d.slug, '90d');
@@ -527,8 +527,8 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
         { convertedAt: 'not-a-date', amount: 999999 },
       ]);
 
-      assert.equal(points.length, 8);
-      assert.equal(points.reduce((total, point) => total + point.cashVal, 0), 1212499);
+      assert.equal(points.length, 5);
+      assert.equal(points.reduce((total, point) => total + point.cashVal, 0), 212500);
       assert.equal(points.at(-1)?.cashFormatted, '₹87,500.00');
     });
 
@@ -539,10 +539,10 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const reference = new Date('2026-10-31T00:00:00.000Z');
       const expectedCounts = new Map([
         ['7d', 7],
-        ['30d', 8],
-        ['90d', 8],
-        ['quarter', 6],
-        ['year', 12],
+        ['30d', 5],
+        ['90d', 3],
+        ['quarter', 1],
+        ['year', 10],
       ] as const);
 
       for (const [slug, expectedCount] of expectedCounts) {

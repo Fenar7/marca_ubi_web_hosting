@@ -1,1003 +1,245 @@
-/**
- * @file CommercialDealsLedger.module.scss
- * @description Luxury Styling for Master Commercial Deals Command Desk & Live Stage Velocity Matrix.
- *              Strict adherence to Marca Ubi Editorial Luxury Standard (Circular XX, Graphik,
- *              Swiss Helvetica Neue 300 Light tabular numerals).
- *              Features 60/40 Asymmetric Cockpit Grid, multi-hue chromatic stage telemetry,
- *              tactile 3-tier card elevation, Fundora-style macro distribution ribbons,
- *              luminous gradient milestone progression tracks, and mineral domain badges.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-.ledgerCard {
+﻿.ledger,
+.stagePanel {
   min-width: 0;
-  width: 100%;
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-subtle, #ebebe8);
-  border-radius: var(--admin-radius-card, 16px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 12px 32px -4px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    border-color: var(--admin-border-default, #dcdcd8);
-  }
-}
-
-/* ==========================================================================
-   Header & Search Bar
-   ========================================================================== */
-
-.ledgerHeader {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1.25rem;
-  padding: 1.5rem 1.6rem 1.1rem;
-  flex-wrap: wrap;
-}
-
-.headerTitleBlock {
-  min-width: 0;
-}
-
-.eyebrowRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 0.25rem;
-}
-
-.eyebrow {
-  margin: 0;
-  color: #696965;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: uppercase;
-}
-
-.title {
-  margin: 0;
-  color: var(--admin-text-primary, #111111);
-  font-family: var(--font-circular), sans-serif;
-  font-size: 1.25rem;
-  font-weight: 650;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-}
-
-.subtitle {
-  margin: 0.3rem 0 0;
-  color: var(--admin-text-secondary, #454542);
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-
-.searchWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: min(290px, 100%);
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.searchLabel {
-  position: absolute;
-  left: 11px;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-
-.searchIcon {
-  color: #696965;
-}
-
-.searchInput {
-  width: 100%;
-  height: 36px;
-  padding: 0 28px 0 32px;
-  border: 1px solid var(--admin-border-subtle, #ebebe8);
-  border-radius: var(--admin-radius-control, 8px);
-  background: #fafaf8;
-  color: #111111;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.81rem;
-  transition: all 0.15s ease;
-
-  &::placeholder {
-    color: #8c8c88;
-  }
-
-  &:focus {
-    outline: none;
-    background: #ffffff;
-    border-color: #111111;
-    box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.06);
-  }
-}
-
-.clearSearchBtn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border: none;
-  background: #e7e7e4;
-  border-radius: 50%;
-  color: #454542;
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: #111111;
-    color: #ffffff;
-  }
-}
-
-/* ==========================================================================
-   Recessed Segmented Filter Toolbar
-   ========================================================================== */
-
-.filterToolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 1.6rem 1.1rem;
-  flex-wrap: wrap;
-}
-
-.segmentedControl {
-  display: inline-flex;
-  align-items: center;
-  background: #f1f3f5;
-  border: 1px solid #ebebe8;
-  border-radius: 8px;
-  padding: 3px;
-  gap: 2px;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-.segmentBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 12px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  color: #696965;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.78rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-
-  &:hover {
-    color: #111111;
-  }
-}
-
-.segmentBtnActive {
-  background: #ffffff;
-  color: #111111;
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.segmentCount {
-  display: inline-block;
-  font-size: 0.72rem;
-  color: #8c8c88;
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-helvetica-neue), sans-serif;
-  font-weight: 500;
-}
-
-.segmentCountAlert {
-  color: #ea002a;
-  font-weight: 700;
-}
-
-.activeFilterPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid;
-  border-radius: 6px;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.76rem;
-  transition: all 0.15s ease;
-
-  strong {
-    font-weight: 600;
-  }
-}
-
-.activeFilterDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.clearStageBtn {
-  display: inline-grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  border: none;
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 50%;
-  font-size: 11px;
-  color: inherit;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.2);
-  }
-}
-
-/* ==========================================================================
-   Asymmetric 60% / 40% Command Desk Grid
-   ========================================================================== */
-
-.commandDeskGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr);
-  gap: 1.5rem;
-  padding: 0 1.6rem 1.6rem;
-  align-items: start;
-}
-
-/* ==========================================================================
-   Left 60%: Deal Action Deck (Channel Architecture)
-   ========================================================================== */
-
-.actionDeckColumn {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  background: #fafaf8;
-  border: 1px solid #ebebe8;
+  padding: clamp(16px, 2vw, 28px);
+  border: 1px solid #e5e5df;
   border-radius: 12px;
-  padding: 1.1rem 1.2rem;
-}
-
-.columnHeaderBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2px 0.65rem;
-  border-bottom: 1px solid #ebebe8;
-  margin-bottom: 0.85rem;
-}
-
-.columnHeaderLabel {
+  background: #fff;
+  color: #181815;
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #696965;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.columnHeaderHint {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-  color: #8c8c88;
-}
-
-.cardListStack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-/* Discrete Floating Deal Cardlet with Tactile Elevation */
-.dealCardlet {
-  display: grid;
-  grid-template-columns: minmax(200px, 1.3fr) minmax(140px, 1fr) minmax(160px, auto);
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.85rem 1.1rem;
-  background: linear-gradient(180deg, #ffffff 0%, #fafaf8 100%);
-  border: 1px solid #ebebe8;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
-  cursor: pointer;
-  text-align: left;
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.18s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    border-color: var(--stage-primary, #111111);
-    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--stage-border, #dcdcd8);
-  }
-
-  &:focus-visible {
-    outline: none;
-    border-color: var(--stage-primary, #111111);
-    box-shadow: 0 0 0 2px var(--stage-glow, rgba(17, 17, 17, 0.1));
+  :is(a, button, input, select):focus-visible {
+    outline: 2px solid #9c001e;
+    outline-offset: 2px;
   }
 }
-
-.selectedCardlet {
-  background: linear-gradient(180deg, #ffffff 0%, var(--stage-bg, #fafaf8) 100%);
-  border-color: #111111;
-  box-shadow: 0 6px 20px -2px var(--stage-glow, rgba(0, 0, 0, 0.06)),
-              0 1px 4px rgba(0, 0, 0, 0.04);
-}
-
-/* Left Cluster: Monogram & Identity */
-.cardletLeftCluster {
+.heading {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.monogramAvatar {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid;
-  font-family: var(--font-circular), sans-serif;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.dealIdentity {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 2px;
-}
-
-.dealTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.dealTitle {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: #111111;
-  letter-spacing: -0.015em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.serviceTag {
-  display: inline-block;
-  padding: 1.5px 7px;
-  border: 1px solid;
-  border-radius: 4px;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.68rem;
-  font-weight: 600;
-  flex-shrink: 0;
-  letter-spacing: -0.01em;
-}
-
-.dealMetaRow {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.72rem;
-  color: #696965;
-}
-
-.leadId {
-  font-family: var(--font-admin-mono, ui-monospace), monospace;
-  font-size: 0.7rem;
-  color: #696965;
-  font-weight: 500;
-}
-
-.metaDivider {
-  color: #b0b0ac;
-  font-size: 0.65rem;
-}
-
-.ownerText {
-  font-family: var(--font-graphik), sans-serif;
-  color: #696965;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Center Cluster: 5px Luminous Milestone Progress Rail */
-.cardletCenterCluster {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-}
-
-.milestoneTrackWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.milestoneHeader {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-}
-
-.stageNameText {
-  font-weight: 600;
-}
-
-.stagePercentText {
-  color: #8c8c88;
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-helvetica-neue), sans-serif;
-  font-weight: 400;
-  font-size: 0.7rem;
-}
-
-.milestoneRail {
-  position: relative;
-  width: 100%;
-  height: 5px;
-  background: #f0f0ed;
-  border-radius: 3px;
-  overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
-.milestoneFill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.milestoneTick {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1.5px;
-  background: #ffffff;
-  opacity: 0.9;
-  pointer-events: none;
-}
-
-.urgencyTextRow {
-  display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 16px;
 }
-
-.urgencyText {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.urgencyTrack {
-  color: #059669;
-}
-
-.urgencyOverdue {
-  color: #ea002a;
-  font-weight: 600;
-}
-
-.urgencyToday {
-  color: #b45309;
-  font-weight: 600;
-}
-
-/* Right Cluster: Swiss Tabular Valuation & Actions */
-.cardletRightCluster {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.85rem;
-  flex-shrink: 0;
-}
-
-.valuationBox {
-  text-align: right;
-  min-width: 80px;
-}
-
-.currencyDisplay {
-  display: inline-flex;
-  align-items: baseline;
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-.currencyGlyph {
-  font-size: 0.75rem;
-  color: #888884;
-  margin-right: 2px;
-  font-weight: 400;
-}
-
-.currencyDigits {
-  font-size: 0.95rem;
-  color: #111111;
-  font-weight: 300;
+.heading h2 {
+  margin: 0;
+  font:
+    400 clamp(20px, 1.75vw, 26px)/1.2 var(--font-circular),
+    sans-serif;
   letter-spacing: -0.025em;
 }
-
-.currencyMasked {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.76rem;
-  color: #8c8c88;
+.scope,
+.state {
+  margin: 8px 0 0;
+  color: #53534e;
+  font-size: 13px;
+  line-height: 1.6;
 }
-
-.actionsGroup {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.state {
+  padding-block: 12px;
 }
-
-.advanceBtn {
+.directory,
+.textAction {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 28px;
-  padding: 0 10px;
-  border: 1px solid #dcdcd8;
-  background: #ffffff;
-  border-radius: 6px;
-  color: #111111;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: #111111;
-    color: #ffffff;
-    border-color: #111111;
-  }
-}
-
-.openDossierBtn {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #dcdcd8;
-  background: #ffffff;
-  border-radius: 6px;
-  color: #454542;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: #111111;
-    color: #ffffff;
-    border-color: #111111;
-  }
-}
-
-/* ==========================================================================
-   Right 40%: Live Stage Velocity Radar
-   ========================================================================== */
-
-.velocityRadarColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.25rem 1.35rem;
-  background: #fafaf8;
-  border: 1px solid #ebebe8;
-  border-radius: 12px;
-}
-
-.radarHeaderBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid #e7e7e4;
-}
-
-.radarEyebrowRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.radarEyebrow {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #696965;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.radarLiveBadge {
-  font-family: var(--font-admin-mono, ui-monospace), monospace;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #059669;
-  letter-spacing: 0.04em;
-  padding: 1px 6px;
-  background: #eef4f0;
-  border-radius: 4px;
-}
-
-.radarHeroMetricRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.radarHeroValuation {
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-.heroCurrencyDisplay {
-  display: inline-flex;
-  align-items: baseline;
-}
-
-.heroCurrencyGlyph {
-  font-size: 1rem;
-  color: #888884;
-  margin-right: 3px;
-  font-weight: 300;
-}
-
-.heroCurrencyDigits {
-  font-size: 1.45rem;
-  color: #111111;
-  font-weight: 300;
-  letter-spacing: -0.035em;
-}
-
-.radarSubMetric {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.78rem;
-  color: #696965;
-  font-weight: 500;
-}
-
-/* Fundora-Style Macro Pipeline Distribution Ribbon Bar */
-.macroRibbonTrack {
-  height: 8px;
-  border-radius: 4px;
-  display: flex;
-  overflow: hidden;
-  background: #f0f0ed;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-  margin: 0.5rem 0 0.4rem;
-}
-
-.macroRibbonSegment {
-  height: 100%;
-  transition: width 0.3s ease;
-}
-
-.radarInstruction {
-  margin: 0;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-  color: #8c8c88;
-  line-height: 1.35;
-}
-
-/* Interactive Luminous Stage Rows */
-.stageMatrixList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.stageMatrixRow {
-  display: flex;
-  flex-direction: column;
   gap: 6px;
-  padding: 0.75rem 0.85rem;
-  background: #ffffff;
-  border: 1px solid #e7e7e4;
-  border-radius: 8px;
+  min-height: 44px;
+  font:
+    400 13px/1.4 var(--font-graphik),
+    sans-serif;
+  color: #43433d;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.textAction {
   cursor: pointer;
-  text-align: left;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover {
-    transform: translateX(2px);
-    border-color: var(--stage-border, #111111);
-    background: linear-gradient(90deg, var(--stage-bg, #fafaf8) 0%, #ffffff 100%);
-    box-shadow: 0 4px 14px var(--stage-glow, rgba(0, 0, 0, 0.06));
-  }
+  border: 0;
+  background: transparent;
 }
-
-.stageMatrixRowActive {
-  background: linear-gradient(90deg, var(--stage-bg, #fafaf8) 0%, #ffffff 100%);
-  border-color: var(--stage-primary, #111111);
-  box-shadow: 0 4px 18px var(--stage-glow, rgba(17, 17, 17, 0.08));
+.stages {
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
 }
-
-.stageRowTopLine {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.stageTitleGroup {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.stageDotIndicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.stageNameLabel {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #111111;
-}
-
-.stageCountPill {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 1.5px 6px;
-  border: 1px solid;
-  border-radius: 4px;
-}
-
-.stageValuationGroup {
-  text-align: right;
-}
-
-.stageValueText {
-  font-family: var(--font-helvetica-neue), sans-serif;
-  font-size: 0.82rem;
-  font-weight: 400;
-  color: #111111;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.015em;
-}
-
-/* 5px Rounded Luminous Gradient Distribution Rail */
-.stageDistributionTrack {
+.stageButton {
   width: 100%;
-  height: 5px;
-  background: #f0f0ed;
-  border-radius: 3px;
-  overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.stageDistributionBar {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.stageRowBottomLine {
-  display: flex;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  gap: 5px 16px;
+  padding: 11px 6px;
+  border: 0;
+  border-block-start: 1px solid #e5e5df;
+  background: transparent;
+  color: #282823;
+  text-align: left;
+  font:
+    400 14px/1.5 var(--font-graphik),
+    sans-serif;
+}
+button.stageButton { cursor: pointer; }
+button.stageButton:hover,
+.stageButton[aria-pressed="true"] {
+  background: #f4f4ee;
+}
+.stageButton[aria-pressed="true"] {
+  box-shadow: inset 3px 0 #34352f;
+  padding-inline-start: 10px;
+}
+.stageLine {
+  display: flex;
   justify-content: space-between;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.68rem;
-  color: #8c8c88;
+  gap: 8px;
+  grid-column: 1 / -1;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
-
-.stageDwellText {
-  color: #696965;
+.track {
+  display: block;
+  align-self: center;
+  height: 4px;
+  background: #e8e8e2;
+  border-radius: 2px;
+  overflow: hidden;
 }
-
-.stageShareText {
+.track span {
+  display: block;
+  height: 100%;
+  background: #386d75;
+}
+.stages li:nth-child(5n + 2) .track span {
+  background: #635488;
+}
+.stages li:nth-child(5n + 3) .track span {
+  background: #9a6629;
+}
+.stages li:nth-child(5n + 4) .track span {
+  background: #34705d;
+}
+.stages li:nth-child(5n + 5) .track span {
+  background: #995674;
+}
+.stageValue {
+  font-size: 12px;
+  color: #51514b;
   font-variant-numeric: tabular-nums;
 }
-
-/* Insight Box */
-.velocityInsightBox {
+.controls {
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.75rem 0.85rem;
-  background: #ffffff;
-  border: 1px solid #ebebe8;
-  border-radius: 8px;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-block: 18px;
 }
-
-.insightIcon {
-  color: #696965;
-  margin-top: 1px;
-  flex-shrink: 0;
+.controls label {
+  display: grid;
+  gap: 5px;
+  color: #494942;
+  font-size: 12px;
+  min-width: 0;
 }
-
-.velocityInsightText {
-  margin: 0;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.73rem;
-  color: #454542;
-  line-height: 1.4;
-}
-
-/* ==========================================================================
-   Empty & Skeleton States
-   ========================================================================== */
-
-.emptyStateContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1.5rem;
-  text-align: center;
-  background: #ffffff;
-  border: 1px dashed #dcdcd8;
-  border-radius: 10px;
-}
-
-.emptyTitle {
-  margin: 0;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #111111;
-}
-
-.emptySubtitle {
-  margin: 0.35rem 0 0.85rem;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.76rem;
-  color: #696965;
-  max-width: 380px;
-  line-height: 1.4;
-}
-
-.resetFilterBtn {
-  height: 28px;
-  padding: 0 12px;
-  border: 1px solid #111111;
-  background: #111111;
-  color: #ffffff;
+.controls input,
+.controls select {
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 14px;
+  background: white;
+  color: #292924;
+  border: 1px solid #85857c;
   border-radius: 6px;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  font-weight: 500;
+}
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.table :is(th, td) {
+  padding: 11px 8px;
+  text-align: start;
+  vertical-align: middle;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.table thead th {
+  color: #54544e;
+  font-size: 12px;
+}
+.table tbody tr {
+  border-top: 1px solid #e4e4dd;
+}
+.table th:first-child {
+  padding-inline-start: 0;
+}
+.table .amount {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.deadline {
+  display: block;
+  color: #805006;
+}
+.deadline[data-timing="Overdue"] {
+  color: #9d1935;
+}
+.advance {
   cursor: pointer;
-  transition: opacity 0.15s ease;
-
-  &:hover {
-    opacity: 0.85;
+  background: #f3f4ef;
+  color: #292923;
+  padding: 6px 10px;
+  line-height: 1.35;
+  min-height: 44px;
+  border: 1px solid #cecec4;
+  border-radius: 6px;
+  font-family: inherit;
+}
+.advance:hover {
+  background: #e9eae3;
+}
+@media (max-width: 1050px) {
+  .table,
+  .table tbody,
+  .table tr,
+  .table tbody th {
+    display: block;
+  }
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+  }
+  .table tbody tr {
+    padding-block: 10px;
+  }
+  .table tbody th {
+    padding: 0 0 6px;
+  }
+  .table td {
+    display: grid;
+    grid-template-columns: minmax(92px, 0.4fr) minmax(0, 1fr);
+    padding: 4px 0;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .table td::before {
+    content: attr(data-label);
+    color: #595952;
+    font-size: 12px;
+  }
+  .table .amount {
+    text-align: start;
+  }
+  .advance {
+    justify-self: start;
   }
 }
-
-.cardSkeleton {
-  height: 68px;
-  background: linear-gradient(90deg, #f4f4f2 0%, #ebebe8 50%, #f4f4f2 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 10px;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* ==========================================================================
-   Responsive Reflow (Tablet & Mobile Breakpoints)
-   ========================================================================== */
-
-@media (max-width: 1179px) {
-  .commandDeskGrid {
+@media (max-width: 520px) {
+  .controls {
+    display: grid;
     grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-
-  .velocityRadarColumn {
-    order: 2;
-  }
-
-  .actionDeckColumn {
-    order: 1;
-  }
-}
-
-@media (max-width: 839px) {
-  .ledgerHeader {
-    padding: 1.25rem 1.1rem 0.85rem;
-  }
-
-  .filterToolbar {
-    padding: 0 1.1rem 0.85rem;
-  }
-
-  .commandDeskGrid {
-    padding: 0 1.1rem 1.1rem;
-  }
-
-  .dealCardlet {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    padding: 0.95rem 1rem;
-  }
-
-  .cardletRightCluster {
-    justify-content: space-between;
-    width: 100%;
-    padding-top: 0.5rem;
-    border-top: 1px solid #f1f3f5;
-  }
-
-  .actionsGroup {
-    flex: 1;
-    justify-content: flex-end;
-  }
-
-  .advanceBtn {
-    height: 32px;
-    padding: 0 14px;
-    font-size: 0.78rem;
-  }
-
-  .openDossierBtn {
-    width: 32px;
-    height: 32px;
   }
 }
