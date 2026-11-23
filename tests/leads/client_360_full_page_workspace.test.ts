@@ -67,7 +67,7 @@ describe('Phase 8.2: Client 360° Full-Page Dedicated Workspace Architecture', (
       const content = fs.readFileSync(pagePath, 'utf-8');
 
       assert.ok(content.includes('targetDealId'), 'must resolve targetDealId from searchParams');
-      assert.ok(content.includes('redirect(`/admin/deals/${targetDealId}`)'), 'must redirect to /admin/deals/${targetDealId}');
+      assert.ok(content.includes('redirect(`/admin/deals/${encodeURIComponent(targetDealId)}`)'), 'must redirect with the deal ID as a single path segment');
     });
 
     it('verifies AdminWorkspaceShell routes open-lead-drawer events via router.push', () => {

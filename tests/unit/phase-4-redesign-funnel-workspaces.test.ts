@@ -180,7 +180,7 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
     it('verifies the deals workspace uses the current concise page heading', () => {
       const content = fs.readFileSync(dealsPagePath, 'utf8');
       assert.ok(content.includes('>Deals</h1>'));
-      assert.ok(content.includes('Track opportunities, follow-ups'));
+      assert.ok(content.includes('pagination={!search.error && <ResultPagination'));
     });
 
     it('verifies deals/page.tsx sanitizes status_color fallback to #1f242f', () => {
@@ -192,21 +192,20 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
     it('verifies deals.module.scss purges #ff6100 and uses light theme typography', () => {
       const scss = fs.readFileSync(dealsScssPath, 'utf8');
       assert.strictEqual(scss.includes('#ff6100'), false);
-      assert.ok(scss.includes('.eyebrow'));
       assert.ok(scss.includes('.heading'));
-      assert.ok(scss.includes('.subheading'));
+      assert.ok(scss.includes('var(--font-circular)'));
     });
 
     it('verifies DealsWorkspaceClient.tsx guards handleMoveStage for viewers and in-flight writes', () => {
       const content = fs.readFileSync(dealsClientTsxPath, 'utf8');
-      assert.ok(content.includes("if (userRole === 'viewer' || movingLeadId) return;"));
-      assert.ok(content.includes('[sortedStages, userRole, movingLeadId]'));
+      assert.match(content, /userRole === 'viewer' \|\| moveLock\.current \|\| stageModalState\.isOpen/);
+      assert.ok(content.includes('target.is_active === false'));
+      assert.ok(content.includes('onMove={handleMoveStage}'));
     });
 
-    it('verifies DealsWorkspaceClient.tsx sanitizes columnStatusDot fallback to #1f242f', () => {
-      const content = fs.readFileSync(dealsClientTsxPath, 'utf8');
-      assert.strictEqual(content.includes("color_code || '#ff6100'"), false);
-      assert.ok(content.includes("color_code || '#1f242f'"));
+    it('uses a neutral marker for invalid stage colors', () => {
+      const board = fs.readFileSync(path.resolve(process.cwd(), 'src/app/admin/(workspace)/deals/DealsKanbanBoard.tsx'), 'utf8');
+      assert.match(board, /test\(stage\.color_code\) \? stage\.color_code : '#686863'/);
     });
 
     it('verifies DealsWorkspaceClient.module.scss purges legacy obsidian tokens and #ff6100', () => {
@@ -223,7 +222,6 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.ok(scss.includes('.searchInput'));
       assert.ok(scss.includes('.viewModeBtn'));
       assert.ok(scss.includes('.filterPill'));
-      assert.ok(scss.includes('.stageMoveBtn'));
       assert.ok(scss.includes('.sortableHeaderCol'));
       assert.ok(scss.includes('.inspectButton'));
       assert.ok(scss.includes('.clearFilterBtn'));
@@ -243,8 +241,8 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       const client = fs.readFileSync(dealsClientTsxPath, 'utf8');
       const styles = fs.readFileSync(dealsClientScssPath, 'utf8');
       const currency = fs.readFileSync(path.resolve(process.cwd(), 'src/app/admin/lib/currency.ts'), 'utf8');
-      assert.ok(client.includes("useState<'kanban' | 'table'>('table')"));
-      assert.ok(client.includes('if (!event.matches) setViewMode(\'table\')'));
+      assert.ok(client.includes("searchParams.get('view') === 'table' ? 'table' : 'kanban'"));
+      assert.ok(client.includes("if (key !== 'view') params.delete('page')"));
       assert.ok(styles.includes('@media (max-width: 1099px)'));
       assert.ok(styles.includes('grid-template-columns: minmax(0, 1fr) auto'));
       assert.ok(currency.includes("toLocaleString(currency === 'USD' ? 'en-US' : 'en-IN')"));

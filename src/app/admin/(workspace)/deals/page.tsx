@@ -14,7 +14,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { ROLE_DEFAULT_TABS, type CrmUserRole } from '@/types/crm';
 import { buildCommercialSearchFilter } from '@/app/admin/lib/commercialSearch';
-import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable';
+import { LeadsTableSkeleton } from '@/app/admin/components/LeadsTable/LeadsTableSkeleton';
 import { ResultPagination } from '@/app/admin/components/LeadsTable/ResultPagination';
 import { DealsWorkspaceClient, type HydratedDealItem } from './DealsWorkspaceClient';
 import styles from './deals.module.scss';
@@ -43,6 +43,17 @@ interface AdminDealsPageProps {
   }>;
 }
 
+/** Keep the fallback inside the caller's profile RLS when the directory view is unavailable. */
+async function loadDealOwners(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const directory = await supabase.from('crm_team_directory').select('id, full_name').order('full_name');
+  if (!directory.error) return { rows: directory.data ?? [], incomplete: false };
+
+  console.warn('[deals-workspace] Owner directory unavailable:', { code: directory.error.code });
+  const profiles = await supabase.from('profiles').select('id, full_name').eq('status', 'active').order('full_name');
+  if (profiles.error) console.error('[deals-workspace] Owner fallback unavailable:', { code: profiles.error.code });
+  return { rows: profiles.data ?? [], incomplete: true, error: profiles.error };
+}
+
 export default async function AdminDealsPage(
   props: AdminDealsPageProps
 ): Promise<React.ReactElement> {
@@ -52,7 +63,7 @@ export default async function AdminDealsPage(
   const pageSize = 100;
   const targetDealId = resolvedSearchParams?.id || resolvedSearchParams?.dealId || resolvedSearchParams?.leadId;
   if (targetDealId) {
-    redirect(`/admin/deals/${targetDealId}`);
+    redirect(`/admin/deals/${encodeURIComponent(targetDealId)}`);
   }
   const supabase = await createClient();
 
@@ -83,15 +94,19 @@ export default async function AdminDealsPage(
 
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const { bucket, stage, assigned_to: assignedTo, source, priority } = resolvedSearchParams ?? {};
-  const search = buildCommercialSearchFilter(resolvedSearchParams?.search ?? resolvedSearchParams?.q);
-  const invalidFilter = [stage, assignedTo, source].some((value) => value && !uuid.test(value))
+  const searchTerm = resolvedSearchParams?.search ?? resolvedSearchParams?.q;
+  const search = buildCommercialSearchFilter(typeof searchTerm === 'string' ? searchTerm : undefined);
+  // Next may supply arrays for repeated parameters. Reject them before parsing filters.
+  const invalidFilter = [bucket, stage, assignedTo, source, priority, searchTerm].some(
+    (value) => value !== undefined && typeof value !== 'string',
+  ) || [stage, assignedTo, source].some((value) => value && !uuid.test(value))
     || Boolean(priority && !['high', 'medium', 'low'].includes(priority.toLowerCase()))
     || Boolean(bucket && !['all', 'open', 'potential', 'converted', 'lost'].includes(bucket));
 
   let dealsQuery = supabase.from('leads').select(`
         id, lead_id, name, company, phone, email, expected_value, priority,
         next_follow_up, revisit_date, created_at, updated_at, assigned_to,
-        status_id, lead_source_id, brief_payload,
+        status_id, lead_source_id,
         funnel_status:funnel_statuses!leads_status_id_fkey!inner(id, name, sort_order, bucket, color_code)
       `, { count: 'exact' });
   if (!invalidFilter) {
@@ -103,10 +118,10 @@ export default async function AdminDealsPage(
     if (search.filter) dealsQuery = dealsQuery.or(search.filter);
   }
 
-  const [sourcesRes, statusesRes, profilesRes, dealsRes] = await Promise.all([
+  const [sourcesRes, statusesRes, owners, dealsRes] = await Promise.all([
     supabase.from('lead_sources').select('id, name').order('name'),
-    supabase.from('funnel_statuses').select('id, name, sort_order, bucket, color_code').order('sort_order'),
-    supabase.from('crm_team_directory').select('id, full_name').order('full_name'),
+    supabase.from('funnel_statuses').select('id, name, sort_order, bucket, color_code, is_active').order('sort_order'),
+    loadDealOwners(supabase),
     dealsQuery
       .order('created_at', { ascending: false })
       .order('id', { ascending: false })
@@ -116,11 +131,10 @@ export default async function AdminDealsPage(
   if (dealsRes.error) console.error('[deals-workspace] Failed to load deals:', { code: dealsRes.error.code, message: dealsRes.error.message });
   if (statusesRes.error) console.error('[deals-workspace] Failed to load stages:', { code: statusesRes.error.code, message: statusesRes.error.message });
   if (sourcesRes.error) console.error('[deals-workspace] Lead source filters unavailable:', { code: sourcesRes.error.code, message: sourcesRes.error.message });
-  if (profilesRes.error) console.error('[deals-workspace] Owner directory unavailable:', { code: profilesRes.error.code, message: profilesRes.error.message });
 
   const sources = sourcesRes.data || [];
   const statuses = statusesRes.data || [];
-  const ownerNameById = new Map((profilesRes.data || []).map((member) => [member.id, member.full_name]));
+  const ownerNameById = new Map(owners.rows.map((member) => [member.id, member.full_name]));
   const sourceNameById = new Map((sourcesRes.data || []).map((source) => [source.id, source.name]));
 
   // Transform relational leads to typed deal records
@@ -139,13 +153,13 @@ export default async function AdminDealsPage(
       priority: (item.priority as 'High' | 'Medium' | 'Low') || 'Medium',
       next_follow_up: (item.next_follow_up as string) || null,
       revisit_date: (item.revisit_date as string) || null,
-      created_at: (item.created_at as string) || new Date().toISOString(),
-      updated_at: (item.updated_at as string) || new Date().toISOString(),
+      created_at: (item.created_at as string) || '',
+      updated_at: (item.updated_at as string) || '',
       assigned_to: (item.assigned_to as string) || null,
       status_id: (item.status_id as string) || '',
       lead_source_id: (item.lead_source_id as string) || '',
       assigned_to_name: item.assigned_to
-        ? ownerNameById.get(item.assigned_to as string) || (profilesRes.error ? 'Owner unavailable' : 'Inactive or unavailable owner')
+        ? ownerNameById.get(item.assigned_to as string) || 'Owner unavailable'
         : 'Unassigned',
       status_name: statusObj?.name || 'Open',
       status_bucket: (statusObj?.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open',
@@ -156,32 +170,41 @@ export default async function AdminDealsPage(
     };
   });
 
+  const missingOwnerDetails = owners.error || (owners.incomplete && deals.some(
+    (deal) => deal.assigned_to && !ownerNameById.has(deal.assigned_to),
+  ));
+  const unavailableDetails = [sourcesRes.error && 'Sources', missingOwnerDetails && 'Owner names'].filter(Boolean);
+  const lookupNotice = unavailableDetails.length ? `${unavailableDetails.join(' and ')} unavailable.` : undefined;
+
   return (
     <div className={styles.dealsWorkspace}>
-      {/* Dynamic KPI Header Strip */}
-      <header className={styles.header}>
-        <div className={styles.titleArea}>
-          <div className={styles.eyebrow}>Sales pipeline</div>
-          <h1 className={styles.heading}>Deals</h1>
-          <p className={styles.subheading}>
-            Track opportunities, follow-ups and progress through each stage.
-          </p>
-        </div>
+      <header>
+        <h1 className={styles.heading}>Deals</h1>
       </header>
 
-      {/* Main Deals Grid with Filter Controls */}
       <Suspense fallback={<LeadsTableSkeleton />}>
         {invalidFilter || dealsRes.error || statusesRes.error ? (
           <div className={styles.loadError} role="alert">
             <span>{invalidFilter ? 'A filter in this link is invalid. Open the deals page without filters to try again.' : dealsRes.error ? `Deal records could not be loaded${dealsRes.error.code ? ` (${dealsRes.error.code})` : ''}.` : `Pipeline stages could not be loaded${statusesRes.error?.code ? ` (${statusesRes.error.code})` : ''}.`}</span>
-            <Link href="/admin/deals" className={styles.retryLink}>Reload deals</Link>
-            <span>If the problem continues, contact support and include the error code shown above.</span>
+            <Link href="/admin/deals" className={styles.retryLink}>{invalidFilter ? 'Clear filters' : 'Reload deals'}</Link>
           </div>
         ) : (
           <>
-            {(sourcesRes.error || profilesRes.error) && <div className={styles.loadWarning} role="status">Deal records are available, but {sourcesRes.error && profilesRes.error ? 'source filters and owner names' : sourcesRes.error ? 'source filters' : 'owner names'} could not be loaded. Refresh to retry those details.</div>}
-            {search.error ? <div className={styles.loadError} role="alert">{search.error}</div> : <ResultPagination page={page} pageSize={pageSize} loadedCount={deals.length} totalCount={dealsRes.count} />}
-            <DealsWorkspaceClient initialDeals={search.error ? [] : deals} sources={sources} statuses={statuses} userRole={role} />
+            {search.error && <p className={styles.loadError} role="alert">{search.error}</p>}
+            <DealsWorkspaceClient
+              initialDeals={search.error ? [] : deals}
+              sources={sources}
+              statuses={statuses}
+              userRole={role}
+              lookupNotice={lookupNotice}
+              pagination={!search.error && <ResultPagination
+                page={page}
+                pageSize={pageSize}
+                loadedCount={deals.length}
+                totalCount={dealsRes.count}
+                scopeDescription="Stage totals apply to the deals on this page."
+              />}
+            />
           </>
         )}
       </Suspense>

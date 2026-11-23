@@ -1,15 +1,5 @@
 'use client';
 
-/**
- * @file DealsWorkspaceClient.tsx
- * @description Interactive Client Component for the Pipeline Deals Workspace (/admin/deals).
- *              Features a switchable Interactive Kanban Board (grouped by funnel stages with column
- *              pipeline valuation sums and 1-click stage advancement) alongside an interactive,
- *              sortable Data Grid. Integrated with Client 360° Dossier Drawer and guarded StageTransitionModal.
- * @module app/admin/(workspace)/deals/DealsWorkspaceClient
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
@@ -19,6 +9,7 @@ import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
 import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
+import { DealsKanbanBoard } from './DealsKanbanBoard';
 import styles from './DealsWorkspaceClient.module.scss';
 
 export interface HydratedDealItem {
@@ -50,10 +41,13 @@ export interface FunnelStatusItem {
   sort_order: number;
   bucket: string;
   color_code: string;
+  is_active?: boolean;
 }
 
 interface DealsWorkspaceClientProps {
   initialDeals: HydratedDealItem[];
+  pagination?: React.ReactNode;
+  lookupNotice?: string;
   sources?: Array<{ id: string; name: string }>;
   statuses?: FunnelStatusItem[];
   userRole?: string;
@@ -61,23 +55,6 @@ interface DealsWorkspaceClientProps {
 
 function formatDealValue(amount: number): string {
   return formatCrmCurrency(amount);
-}
-
-/**
- * Formats stage age velocity into concise, human-legible time deltas.
- */
-function formatStageAge(updatedAt: string): string {
-  if (!updatedAt) return 'Active recently';
-  const time = new Date(updatedAt).getTime();
-  if (Number.isNaN(time)) return 'Active recently';
-  const diffMs = Math.max(0, Date.now() - time);
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffMins < 60) return diffMins <= 1 ? 'Updated just now' : `Updated ${diffMins}m ago`;
-  if (diffHours < 24) return `Updated ${diffHours}h ago`;
-  if (diffDays === 1) return 'Updated 1d ago';
-  return `Updated ${diffDays}d ago`;
 }
 
 type SortField =
@@ -91,6 +68,8 @@ type SortField =
 
 export function DealsWorkspaceClient({
   initialDeals,
+  pagination,
+  lookupNotice,
   statuses = [],
   userRole,
 }: DealsWorkspaceClientProps): React.ReactElement {
@@ -106,41 +85,23 @@ export function DealsWorkspaceClient({
       : 'all';
 
   const [deals, setDeals] = useState<HydratedDealItem[]>(initialDeals);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const moveLock = useRef(false);
   const [movingLeadId, setMovingLeadId] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
-
-  const handleCopyDealId = (dealIdStr: string, e: React.MouseEvent): void => {
-    e.stopPropagation();
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(dealIdStr);
-      setCopiedId(dealIdStr);
-      setTimeout(() => setCopiedId(null), 2000);
-    }
-  };
+  const [moveNotice, setMoveNotice] = useState('');
 
   // Synchronize state when server hydration updates
   useEffect(() => {
     setDeals(initialDeals);
   }, [initialDeals]);
 
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('table');
+  const viewMode = searchParams.get('view') === 'table' ? 'table' : 'kanban';
   const [searchTerm, setSearchTerm] = useState(searchParam);
   const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted' | 'lost'>(initialBucket);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assignedToParam);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sortField, setSortField] = useState<SortField>('expected_value');
   const [sortAscending, setSortAscending] = useState(false);
-
-  useEffect(() => {
-    const desktopBoard = window.matchMedia('(min-width: 1100px)');
-    if (desktopBoard.matches) setViewMode('kanban');
-    const handleViewportChange = (event: MediaQueryListEvent): void => {
-      if (!event.matches) setViewMode('table');
-    };
-    desktopBoard.addEventListener('change', handleViewportChange);
-    return () => desktopBoard.removeEventListener('change', handleViewportChange);
-  }, []);
 
   // Synchronize with URL search parameters on route navigation
   useEffect(() => {
@@ -156,7 +117,7 @@ export function DealsWorkspaceClient({
     const params = new URLSearchParams(searchParams.toString());
     if (value && value !== 'all') params.set(key, value);
     else params.delete(key);
-    params.delete('page');
+    if (key !== 'view') params.delete('page');
     const query = params.toString();
     router.replace(query ? `/admin/deals?${query}` : '/admin/deals', { scroll: false });
   };
@@ -207,15 +168,6 @@ export function DealsWorkspaceClient({
       return matchesBucket && matchesAssignee;
     });
   }, [deals, selectedBucket, selectedAssigneeId]);
-
-  const loadedPipelineValue = useMemo(
-    () => filteredDeals.reduce((total, deal) => total + (Number.isFinite(deal.expected_value) ? deal.expected_value : 0), 0),
-    [filteredDeals]
-  );
-  const scheduledFollowUpCount = useMemo(
-    () => filteredDeals.filter((deal) => Boolean(deal.next_follow_up)).length,
-    [filteredDeals]
-  );
 
   // Sorted deals for Table view
   const sortedTableDeals = useMemo(() => {
@@ -293,82 +245,50 @@ export function DealsWorkspaceClient({
     return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
   }, [handleInspectDeal]);
 
-  /**
-   * Evaluates if advancing to a target status triggers guarded requirements.
-   */
-  const isGuardedStatus = (statusName: string, bucket: string): boolean => {
-    const norm = statusName.toLowerCase();
-    return (
-      bucket === 'converted' ||
-      bucket === 'lost' ||
-      norm.includes('negotiation') ||
-      norm.includes('converted') ||
-      norm.includes('lost') ||
-      norm.includes('hold')
-    );
-  };
+  /** Board drops and the Move control share the same authorized workflow. Commit a card position only after the server confirms it. */
+  async function handleMoveStage(deal: HydratedDealItem, destination: FunnelStatusItem): Promise<void> {
+    if (userRole === 'viewer' || moveLock.current || stageModalState.isOpen) return;
+    const target = sortedStages.find((stage) => stage.id === destination.id);
+    const current = deals.find((item) => item.id === deal.id);
+    if (!target || target.is_active === false || !current || current.status_id === target.id) return;
 
-  /**
-   * 1-Click stage progression from Kanban card controls.
-   */
-  const handleMoveStage = useCallback(
-    async (deal: HydratedDealItem, direction: 'prev' | 'next'): Promise<void> => {
-      if (userRole === 'viewer' || movingLeadId) return;
+    setMoveError(null);
+    setMoveNotice('');
+    const targetName = target.name.trim().toLowerCase();
+    if (target.bucket === 'converted' || target.bucket === 'lost' ||
+        targetName === 'negotiation' || targetName === 'on hold') {
+      setStageModalState({
+        isOpen: true,
+        leadId: current.id,
+        targetStatus: { id: target.id, name: target.name, bucket: target.bucket as FunnelBucket },
+      });
+      return;
+    }
 
-      const currentIndex = sortedStages.findIndex((s) => s.id === deal.status_id);
-      if (currentIndex === -1) return;
-
-      const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-      if (targetIndex < 0 || targetIndex >= sortedStages.length) return;
-
-      const targetStage = sortedStages[targetIndex];
-
-      // Check if guarded transition
-      if (isGuardedStatus(targetStage.name, targetStage.bucket)) {
-        setStageModalState({
-          isOpen: true,
-          leadId: deal.id,
-          targetStatus: {
-            id: targetStage.id,
-            name: targetStage.name,
-            bucket: targetStage.bucket as FunnelBucket,
-          },
-        });
-        return;
-      }
-
-      setMoveError(null);
-      setMovingLeadId(deal.id);
-      // Keep a copy for rollback if the server rejects the transition.
-      setDeals((prev) =>
-        prev.map((d) =>
-          d.id === deal.id
-            ? {
-                ...d,
-                status_id: targetStage.id,
-                status_name: targetStage.name,
-                status_bucket: targetStage.bucket as HydratedDealItem['status_bucket'],
-                status_color: targetStage.color_code,
-              }
-            : d
-        )
-      );
-
-      // Perform server mutation
-      try {
-        const res = await updateLeadStatusInlineAction(deal.id, targetStage.id);
-        if (!res.success) throw new Error(res.error || 'The stage change could not be saved.');
-      } catch (error) {
-        setDeals((prev) => prev.map((d) => (d.id === deal.id ? deal : d)));
-        const message = error instanceof Error ? error.message : 'The stage change could not be saved.';
-        console.error('[DealsWorkspaceClient] Stage transition failed:', message);
-        setMoveError(message);
-      } finally {
-        setMovingLeadId(null);
-      }
-    },
-    [sortedStages, userRole, movingLeadId]
-  );
+    moveLock.current = true;
+    setMovingLeadId(current.id);
+    try {
+      const result = await updateLeadStatusInlineAction(current.id, target.id);
+      if (!result.success) throw new Error(result.error || 'The stage change could not be saved.');
+      const confirmed = result.data?.statusDetails;
+      setDeals((previous) => previous.map((item) => item.id === current.id ? {
+        ...item,
+        status_id: confirmed?.id ?? target.id,
+        status_name: confirmed?.name ?? target.name,
+        status_bucket: (confirmed?.bucket ?? target.bucket) as FunnelBucket,
+        status_color: confirmed?.color_code ?? target.color_code,
+        updated_at: result.data?.updatedAt ?? item.updated_at,
+      } : item));
+      setMoveNotice(`${current.name} moved to ${confirmed?.name ?? target.name}.`);
+      router.refresh();
+    } catch (error) {
+      console.error('[deals] Stage change failed', error);
+      setMoveError('Could not confirm the stage change. Refresh before trying again.');
+    } finally {
+      moveLock.current = false;
+      setMovingLeadId(null);
+    }
+  }
 
   const handleStageTransitionSuccess = (payload: GuardedTransitionResultPayload): void => {
     const matchingStage = sortedStages.find((s) => s.id === payload.newStatusId);
@@ -383,37 +303,20 @@ export function DealsWorkspaceClient({
               status_color: matchingStage?.color_code || d.status_color,
               expected_value:
                 payload.expectedValue !== undefined ? payload.expectedValue : d.expected_value,
-              updated_at: payload.updatedAt || new Date().toISOString(),
+              updated_at: payload.updatedAt || d.updated_at,
+              next_follow_up: payload.nextFollowUp === undefined ? d.next_follow_up : payload.nextFollowUp,
+              revisit_date: payload.revisitDate === undefined ? d.revisit_date : payload.revisitDate,
             }
           : d
       )
     );
+    setMoveNotice(`Moved to ${payload.newStatusName}.`);
+    router.refresh();
   };
 
   return (
     <div className={styles.clientContainer}>
       {moveError && <p className={styles.moveError} role="alert">{moveError}</p>}
-      <section className={styles.pipelineSummary} aria-label="Loaded deal summary">
-        <div className={styles.pipelineSummaryIntro}>
-          <span className={styles.pipelineEyebrow}>Pipeline snapshot</span>
-          <p>Figures reflect the records currently loaded for this view.</p>
-        </div>
-        <dl className={styles.pipelineSummaryMetrics}>
-          <div>
-            <dt>Loaded deals</dt>
-            <dd>{filteredDeals.length}</dd>
-          </div>
-          <div>
-            <dt>Loaded value</dt>
-            <dd>{formatDealValue(loadedPipelineValue)}</dd>
-          </div>
-          <div>
-            <dt>With follow-up</dt>
-            <dd>{scheduledFollowUpCount}</dd>
-          </div>
-        </dl>
-      </section>
-      {/* Search & Operational Controls Toolbar */}
       <div className={styles.topControlBar}>
         <div className={styles.searchWrapper}>
           <svg
@@ -447,19 +350,19 @@ export function DealsWorkspaceClient({
             <button
               type="button"
               className={`${styles.viewModeBtn} ${viewMode === 'kanban' ? styles.viewModeBtnActive : ''}`}
-              onClick={() => setViewMode('kanban')}
+              onClick={() => updateServerFilter('view', null)}
               aria-pressed={viewMode === 'kanban'}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="18" rx="1" />
                 <rect x="14" y="3" width="7" height="11" rx="1" />
               </svg>
-              Kanban Board
+              Board
             </button>
             <button
               type="button"
               className={`${styles.viewModeBtn} ${viewMode === 'table' ? styles.viewModeBtnActive : ''}`}
-              onClick={() => setViewMode('table')}
+              onClick={() => updateServerFilter('view', 'table')}
               aria-pressed={viewMode === 'table'}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -470,7 +373,7 @@ export function DealsWorkspaceClient({
                 <line x1="3" y1="12" x2="3.01" y2="12" />
                 <line x1="3" y1="18" x2="3.01" y2="18" />
               </svg>
-              Data Grid
+              Table
             </button>
           </div>
 
@@ -482,7 +385,7 @@ export function DealsWorkspaceClient({
               onClick={() => { setSelectedBucket('all'); updateServerFilter('bucket', null); }}
               aria-pressed={selectedBucket === 'all'}
             >
-              All ({deals.length})
+              All stages
             </button>
             <button
               type="button"
@@ -536,246 +439,19 @@ export function DealsWorkspaceClient({
         </div>
       )}
 
-      {/* KANBAN BOARD VIEW */}
-      {viewMode === 'kanban' && (
-        <div className={styles.kanbanBoardContainer} aria-label="Interactive Deals Kanban Board">
-          {sortedStages.map((stage, stageIdx) => {
-            const stageDeals = filteredDeals.filter((d) => d.status_id === stage.id);
-            const totalStageValuation = stageDeals.reduce((sum, d) => sum + (d.expected_value || 0), 0);
-
-            return (
-              <section key={stage.id} className={styles.kanbanColumn} aria-label={`Stage ${stage.name}`}>
-                {/* Column Header Strip */}
-                <div className={styles.columnHeader}>
-                  <div className={styles.columnTitleRow}>
-                    <div className={styles.columnIdentity}>
-                      <span
-                        className={styles.columnStatusDot}
-                        style={{ backgroundColor: stage.color_code || '#1f242f' }}
-                        aria-hidden="true"
-                      />
-                      <h2 className={styles.columnTitle}>{stage.name}</h2>
-                    </div>
-                    <span className={styles.columnCountBadge}>{stageDeals.length}</span>
-                  </div>
-
-                  <div className={styles.columnValuationRow}>
-                    <span className={styles.columnValuationLabel}>Pipeline Value</span>
-                    <span className={styles.columnValuationSum}>
-                      {formatDealValue(totalStageValuation)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Column Card List */}
-                <div className={styles.columnCardList}>
-                  {stageDeals.length === 0 ? (
-                    <div className={styles.emptyColumnState}>No deals in this stage</div>
-                  ) : (
-                    stageDeals.map((deal) => {
-                      const priorityClass =
-                        deal.priority === 'High'
-                          ? styles.priorityHigh
-                          : deal.priority === 'Medium'
-                          ? styles.priorityMedium
-                          : styles.priorityLow;
-
-                      const initials = (deal.assigned_to_name || 'MU')
-                        .split(' ')
-                        .filter(Boolean)
-                        .map((n) => n[0])
-                        .join('')
-                        .substring(0, 2)
-                        .toUpperCase();
-
-                      const isCopied = copiedId === deal.lead_id;
-                      const cleanPhone = (deal.phone || '').replace(/[^\d+]/g, '');
-                      const hasPhone = cleanPhone.length >= 7;
-                      const digitsOnly = (deal.phone || '').replace(/\D/g, '');
-                      const whatsAppUrl = digitsOnly.length >= 7
-                        ? `https://wa.me/${digitsOnly}?text=${encodeURIComponent(
-                            `Hello ${deal.name}, this is regarding your deal with Marca Ubi (Ref: ${deal.lead_id}).`
-                          )}`
-                        : null;
-
-                      return (
-                        <article
-                          key={deal.id}
-                          className={styles.kanbanCard}
-                          onClick={() => handleInspectDeal(deal.id)}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              handleInspectDeal(deal.id);
-                            }
-                          }}
-                          aria-label={`Deal ${deal.lead_id}: ${deal.name} from ${deal.company || 'Private Account'}`}
-                        >
-                          <div className={styles.cardTopRow}>
-                            <button
-                              type="button"
-                              className={styles.cardIdBadge}
-                              onClick={(e) => handleCopyDealId(deal.lead_id, e)}
-                              onKeyDown={(e) => {
-                                e.stopPropagation();
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  handleCopyDealId(deal.lead_id, e as unknown as React.MouseEvent);
-                                }
-                              }}
-                              title="Click to copy Deal Ref"
-                              aria-label={`Copy Deal Reference ${deal.lead_id}`}
-                            >
-                              {isCopied ? (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <polyline points="20 6 9 17 4 12" />
-                                  </svg>
-                                  Copied
-                                </span>
-                              ) : (
-                                <span>{deal.lead_id}</span>
-                              )}
-                            </button>
-
-                            <div className={styles.cardMetaPills}>
-                              <span
-                                className={styles.velocityBadge}
-                                title={`Last updated ${new Date(deal.updated_at).toLocaleString()}`}
-                              >
-                                {formatStageAge(deal.updated_at)}
-                              </span>
-                              <span className={`${styles.priorityBadge} ${priorityClass}`}>
-                                {deal.priority}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className={styles.cardClientBlock}>
-                            <h3 className={styles.cardClientName}>{deal.name}</h3>
-                            <span className={styles.cardCompanyName}>
-                              {deal.company || 'Private Account'}
-                            </span>
-                          </div>
-
-                          <div className={styles.cardValueRow}>
-                            <div className={styles.valuationInfo}>
-                              <span className={styles.cardValueLabel}>Valuation</span>
-                              <span className={styles.cardValueAmount}>
-                                {formatDealValue(deal.expected_value)}
-                              </span>
-                            </div>
-
-                            {deal.next_follow_up && (
-                              <div
-                                className={styles.cardSlaBlock}
-                                onClick={(e) => e.stopPropagation()}
-                                onKeyDown={(e) => e.stopPropagation()}
-                              >
-                                <span className={styles.cardSlaDate}>
-                                  {new Date(deal.next_follow_up).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  })}
-                                </span>
-                                <OverdueBadge
-                                  nextFollowUp={deal.next_follow_up}
-                                  statusName={deal.status_name}
-                                  revisitDate={deal.revisit_date}
-                                  bucket={deal.status_bucket}
-                                  variant="short"
-                                />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className={styles.cardFooter}>
-                            <div className={styles.cardOwnerInfo} title={`Assigned to ${deal.assigned_to_name}`}>
-                              <div className={styles.avatarMonogram}>{initials || 'MU'}</div>
-                              <span className={styles.cardOwnerName}>{deal.assigned_to_name}</span>
-                            </div>
-
-                            <div
-                              className={styles.cardQuickActions}
-                              onClick={(e) => e.stopPropagation()}
-                              onKeyDown={(e) => e.stopPropagation()}
-                            >
-                              {hasPhone && (
-                                <a
-                                  href={`tel:${cleanPhone}`}
-                                  className={styles.cardOmniBtn}
-                                  onClick={(e) => e.stopPropagation()}
-                                  title={`Direct Phone Call: ${deal.phone}`}
-                                  aria-label={`Call ${deal.name} at ${deal.phone}`}
-                                >
-                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                  </svg>
-                                </a>
-                              )}
-                              {whatsAppUrl && (
-                                <a
-                                  href={whatsAppUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={styles.cardOmniBtn}
-                                  onClick={(e) => e.stopPropagation()}
-                                  title={`Message ${deal.name} on WhatsApp`}
-                                  aria-label={`WhatsApp ${deal.name}`}
-                                >
-                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                                  </svg>
-                                </a>
-                              )}
-
-                              <button
-                                type="button"
-                                className={styles.stageMoveBtn}
-                                title={userRole === 'viewer' ? 'Read-only access' : 'Move to previous stage'}
-                                disabled={stageIdx === 0 || userRole === 'viewer' || movingLeadId !== null}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleMoveStage(deal, 'prev');
-                                }}
-                                onKeyDown={(e) => e.stopPropagation()}
-                                aria-label={`Move ${deal.lead_id} to previous stage`}
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <polyline points="15 18 9 12 15 6" />
-                                </svg>
-                              </button>
-                              <button
-                                type="button"
-                                className={styles.stageMoveBtn}
-                                title={userRole === 'viewer' ? 'Read-only access' : 'Advance to next stage'}
-                                disabled={stageIdx === sortedStages.length - 1 || userRole === 'viewer' || movingLeadId !== null}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleMoveStage(deal, 'next');
-                                }}
-                                onKeyDown={(e) => e.stopPropagation()}
-                                aria-label={`Advance ${deal.lead_id} to next stage`}
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <polyline points="9 18 15 12 9 6" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })
-                  )}
-                </div>
-              </section>
-            );
-          })}
+      {lookupNotice && (
+        <div className={styles.lookupNotice}>
+          <span role="status">{lookupNotice}</span>
+          <button type="button" onClick={() => router.refresh()}>Retry</button>
         </div>
       )}
+      {moveNotice && <p className={styles.moveNotice} role="status">{moveNotice}</p>}
 
-      {/* SORTABLE DATA GRID (TABLE) VIEW */}
+      {viewMode === 'kanban' && (
+        <DealsKanbanBoard stages={sortedStages} deals={filteredDeals}
+          userRole={userRole} movingDealId={movingLeadId} onMove={handleMoveStage} />
+      )}
+
       {viewMode === 'table' && (
         <div className={styles.gridCard}>
           <div className={styles.tableHeader}>
@@ -900,15 +576,6 @@ export function DealsWorkspaceClient({
                   <div
                     key={deal.id}
                     className={styles.dealRow}
-                    onClick={() => handleInspectDeal(deal.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleInspectDeal(deal.id);
-                      }
-                    }}
                   >
                     <span className={styles.colId}>
                       <code className={styles.monoId}>{deal.lead_id}</code>
@@ -927,7 +594,6 @@ export function DealsWorkspaceClient({
                         style={{
                           backgroundColor: `${deal.status_color}18`,
                           borderColor: `${deal.status_color}40`,
-                          color: deal.status_color,
                         }}
                       >
                         {deal.status_name}
@@ -950,11 +616,7 @@ export function DealsWorkspaceClient({
                       <span className={styles.ownerText}>{deal.assigned_to_name}</span>
                     </span>
 
-                    <div
-                      className={styles.colSla}
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => e.stopPropagation()}
-                    >
+                    <div className={styles.colSla}>
                       <span className={styles.slaDateText}>
                         {deal.next_follow_up
                           ? new Date(deal.next_follow_up).toLocaleDateString('en-US', {
@@ -976,10 +638,7 @@ export function DealsWorkspaceClient({
                       <button
                         type="button"
                         className={styles.inspectButton}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInspectDeal(deal.id);
-                        }}
+                        onClick={() => handleInspectDeal(deal.id)}
                         title="Inspect Client 360 Dossier"
                         aria-label={`Inspect dossier for ${deal.lead_id}`}
                       >
@@ -996,6 +655,8 @@ export function DealsWorkspaceClient({
           )}
         </div>
       )}
+
+      {pagination}
 
       {/* Client 360° Slide-over Dossier Drawer */}
       <ClientDossierDrawer

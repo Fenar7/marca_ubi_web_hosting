@@ -1,5 +1,7 @@
 # Current Engineering Context
 
+**Deals board update:** [Current hand-off](./2026-11-23_15-45-00.md) for the Deals redesign in PR #126.
+
 **Leads reliability update:** [Current hand-off](./2026-11-23_15-06-59.md) for the directory migration and dossier performance work.
 
 **Inbound Leads update:** [Current hand-off](./2026-11-23_14-53-55.md) for the full page redesign in PR #126.

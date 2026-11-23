@@ -31,7 +31,8 @@ describe('CRM list query resilience and overview hierarchy', () => {
     assert.ok(!deals.includes('lead_sources!leads_lead_source_id_fkey'));
     assert.ok(deals.includes("sourceNameById.get(item.lead_source_id as string)"));
     assert.ok(deals.includes('invalidFilter || dealsRes.error || statusesRes.error'));
-    assert.ok(deals.includes('Deal records are available'));
+    assert.match(deals, /from\('profiles'\)\.select\('id, full_name'\)\.eq\('status', 'active'\)/);
+    assert.ok(deals.includes('lookupNotice={lookupNotice}'));
   });
 
   it('prioritizes executive telemetry and commercial action queue with responsive layout', () => {

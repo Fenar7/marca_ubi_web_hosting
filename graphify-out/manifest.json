@@ -552,9 +552,9 @@
     "semantic_hash": "47d47d763c059d79fd1f2c981119eb38"
   },
   "src/app/admin/(workspace)/deals/DealsWorkspaceClient.tsx": {
-    "mtime": 1794042380.8484828,
-    "seen": 1794044531.3041291,
-    "ast_hash": "1e1f9f33f8d8f2f82606b7a3f5106109",
+    "mtime": 1795428171.439184,
+    "seen": 1795428556.8826842,
+    "ast_hash": "4a7ba03d36514345528fc6955b54cd0a",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/[id]/loading.tsx": {
@@ -576,9 +576,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/page.tsx": {
-    "mtime": 1794042318.548475,
-    "seen": 1794044531.3041291,
-    "ast_hash": "23a0fda5ec29647490edffcc65db430e",
+    "mtime": 1795428175.370469,
+    "seen": 1795428556.8842878,
+    "ast_hash": "38fb8ae43dabd7e89ab7e8ee4da533b8",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient.tsx": {
@@ -2706,9 +2706,9 @@
     "semantic_hash": "bee5d688136b6cc167b685c9fcaf7f7f"
   },
   "tests/leads/client_360_full_page_workspace.test.ts": {
-    "mtime": 1793951651.8203762,
-    "seen": 1793952511.2031763,
-    "ast_hash": "65ff68d35ee155115ae65f85c7544280",
+    "mtime": 1795428089.5811913,
+    "seen": 1795428557.1368456,
+    "ast_hash": "15cffc1dbda77183d5309844c3ee892b",
     "semantic_hash": ""
   },
   "tests/leads/client_360_light_luxury_redesign.test.ts": {
@@ -3000,9 +3000,9 @@
     "semantic_hash": "45b3f958607c72599073e28b609015d8"
   },
   "tests/unit/phase-4-redesign-funnel-workspaces.test.ts": {
-    "mtime": 1795425725.283739,
-    "seen": 1795425849.7854147,
-    "ast_hash": "3b0935a2e1c4f76d316a27d40dad3469",
+    "mtime": 1795428202.0819373,
+    "seen": 1795428557.1533613,
+    "ast_hash": "690cc9542f7b8816aaecd2c3d7b02b17",
     "semantic_hash": ""
   },
   "tests/unit/phase-5-brand-upgrade-deals-and-dossier.test.ts": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1795425835.647653,
-    "seen": 1795425849.7854147,
-    "ast_hash": "dbecdc7af45d94d9730ea61ec8d42c27",
+    "mtime": 1795428476.9036036,
+    "seen": 1795428557.2075686,
+    "ast_hash": "063246a519a64e24f62907f8db4467c3",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5472,9 +5472,9 @@
     "semantic_hash": ""
   },
   "tests/unit/crm-workspace-resilience.test.ts": {
-    "mtime": 1795425725.2674985,
-    "seen": 1795425849.7854147,
-    "ast_hash": "5692b72e096e749f62aeba1b96f6c236",
+    "mtime": 1795428089.5811913,
+    "seen": 1795428557.146077,
+    "ast_hash": "3020f535697305ceecd5b98a748264a5",
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/REDESIGN_RECOVERY_PLAN_2026-11-07.md": {
@@ -6471,6 +6471,36 @@
     "mtime": 1795425835.6065333,
     "seen": 1795425957.6549516,
     "ast_hash": "646d531ee3f7269ea0abea4ecbf50514",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_15-06-59.md": {
+    "mtime": 1795426619.4459946,
+    "seen": 1795426720.5382855,
+    "ast_hash": "11244cef1e8f19a3bcab17ff270ecb45",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/lead_queue_redesign/DIRECTORY_AND_DOSSIER_DIAGNOSIS.md": {
+    "mtime": 1795426676.1303198,
+    "seen": 1795426720.577938,
+    "ast_hash": "884cc97bb628ddd73c9cc1ad9dedd39d",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsKanbanBoard.tsx": {
+    "mtime": 1795428235.727146,
+    "seen": 1795428556.8826842,
+    "ast_hash": "f1ff981461731b32c1c803c2acfe8701",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_15-45-00.md": {
+    "mtime": 1795428476.9026024,
+    "seen": 1795428557.2075686,
+    "ast_hash": "f327ad39427c6d813da74aa5ada1a03d",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_kanban_redesign/DELIVERY.md": {
+    "mtime": 1795428399.5012798,
+    "seen": 1795428557.2468054,
+    "ast_hash": "62fe61b2e4dcfe9a3589eb6db3aded7a",
     "semantic_hash": ""
   },
   "package-lock.json": {
