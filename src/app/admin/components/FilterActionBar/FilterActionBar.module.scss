@@ -489,11 +489,16 @@
 
 .filterActionBar[data-scope='leads'] {
   padding: .75rem 1rem;
-  border-radius: 14px;
-  background: #fff;
+  border: 0;
+  border-radius: 16px 16px 0 0;
 
   .controlsRow {
     gap: .75rem 1.25rem;
+  }
+
+  .controlsRight {
+    flex: 1 0 min(100%, 550px);
+    justify-content: flex-end;
   }
 
   .bucketTabs {
@@ -544,6 +549,7 @@
   .searchBox {
     flex: 1 1 205px;
     min-width: 0;
+    max-width: 320px;
     padding-block: 0;
     background: #f7f8fa;
     border-radius: 8px;
@@ -565,10 +571,12 @@
   @media (max-width: 640px) {
     padding: .65rem;
 
-    .searchBox { flex-basis: 100%; }
+    .searchBox { flex-basis: 100%; max-width: none; }
     .controlsRight {
       position: relative;
       align-items: stretch;
+      justify-content: flex-start;
+      flex-basis: auto;
     }
 
     .filterDropdownContainer { position: static; }

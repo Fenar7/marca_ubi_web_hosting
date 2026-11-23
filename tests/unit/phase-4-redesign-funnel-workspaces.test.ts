@@ -101,8 +101,8 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
   describe('2. Inbound Leads Workspace Architecture (/admin/leads)', () => {
     it('verifies the leads workspace uses the current concise page heading', () => {
       const content = fs.readFileSync(leadsPagePath, 'utf8');
-      assert.ok(content.includes('Inbound leads'));
-      assert.ok(content.includes('Review inquiries, assign owners'));
+      assert.match(content, /<h1 className=\{styles\.pageTitle\}>Inbound leads<\/h1>/);
+      assert.ok(content.includes('pagination={!search.error && <ResultPagination'));
     });
 
     it('verifies leads/page.tsx passes userRole={role} to LeadsWorkspaceClient', () => {

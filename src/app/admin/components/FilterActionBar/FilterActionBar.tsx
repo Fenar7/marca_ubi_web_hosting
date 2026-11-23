@@ -248,7 +248,7 @@ export function FilterActionBar({
                   handleClearSearch();
                 }
               }}
-              placeholder="Name or company"
+              placeholder="Name, company or reference"
               className={styles.searchInput}
               aria-label={`Search commercial ${itemTypeLabel}`}
             />

@@ -1,6 +1,6 @@
 # Current Engineering Context
 
-**Lead queue update (November 23):** See the [Lead queue hand-off](./2026-11-23_01-26-00.md) for the scoped queue redesign in PR #126.
+**Inbound Leads update:** [Current hand-off](./2026-11-23_14-53-55.md) for the full page redesign in PR #126.
 
 **Latest work (2026-11-22 21:45):** Swiss 300 Light Editorial Luxury Transformation across Follow-Up Queue (`/admin/tasks`), Client 360° Lead Dossier (`/admin/leads/[id]`), and Executive SLA Velocity Gauge (`src/app/admin/components/Dashboard/ExecutiveSlaVelocityGauge.*`). Purged AI-slop relics (`.titaniumDot`, `.radarDot`, circular bento chips), demolished nested bento-box inception (`.queueOverview`, `.stripeScorecard`, `.sectionCard`) into borderless hairline editorial telemetry horizons, bound all master headings, entity names, and tabular numbers to `var(--font-helvetica-neue)` with `font-weight: 300` and `tabular-nums lining-nums`, and calibrated `.loadingRow` skeleton to 118px for strict CLS = 0.000. Landed in commit `6ae5b61`. PR #126 strictly OPEN awaiting manual human review. Read [2026-11-22_21-45-00.md](./2026-11-22_21-45-00.md) first.
 

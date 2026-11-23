@@ -20,7 +20,8 @@ describe('CRM list query resilience and overview hierarchy', () => {
     assert.ok(!leads.includes('lead_sources(id, name, color_code)'));
     assert.ok(leads.includes('sourceById.get(l.lead_source_id)'));
     assert.ok(leads.includes('invalidFilter || leadsRes.error || statusesRes.error'));
-    assert.ok(leads.includes('Lead records are available'));
+    assert.match(leads, /profilesRes\.error\s*\? await supabase\.from\('profiles'\)[^\n]*\.eq\('status', 'active'\)/);
+    assert.ok(leads.includes('lookupNotice={lookupNotice}'));
   });
 
   it('keeps deal rows available when optional directory or source lookups fail', () => {

@@ -171,6 +171,7 @@ $grid-min-width: 1200px;
 // Columns Specific Styling
 .leadIdToken {
   position: relative;
+  white-space: nowrap;
   font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.72rem;
   font-weight: 600;
@@ -534,9 +535,10 @@ $grid-min-width: 1200px;
 
 .virtualScrollContainer {
   min-height: 280px;
-  max-height: clamp(320px, calc(100dvh - 270px), 780px);
-  border-color: var(--admin-border-subtle, #e7e7e4);
-  border-radius: var(--admin-radius-card, 12px);
+  max-height: clamp(320px, calc(100dvh - 245px), 780px);
+  border-color: var(--lead-grid-border, var(--admin-border-subtle, #e7e7e4));
+  border-width: var(--lead-grid-border-width, 1px);
+  border-radius: var(--lead-grid-radius, var(--admin-radius-card, 12px));
   background: var(--admin-card-bg, #fff);
 }
 .tableHeader { background: #f5f6f8; }

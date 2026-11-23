@@ -138,6 +138,12 @@ export default async function AdminLeadsPage(
   if (sourcesRes.error) console.error('[leads-workspace] Lead source filters unavailable:', { code: sourcesRes.error.code, message: sourcesRes.error.message });
   if (profilesRes.error) console.error('[leads-workspace] Owner directory unavailable:', { code: profilesRes.error.code, message: profilesRes.error.message });
 
+  // Keep the lookup inside the caller's RLS scope when the directory view is unavailable.
+  const owners = profilesRes.error
+    ? await supabase.from('profiles').select('id, full_name, role').eq('status', 'active').order('full_name')
+    : profilesRes;
+  if (owners.error) console.error('[leads-workspace] Owner fallback unavailable:', { code: owners.error.code, message: owners.error.message });
+
   // Transform lookup catalog options for filter dropdown menus
   const availableSources: FilterDropdownOption[] = (sourcesRes.data || []).map((s) => ({
     id: s.id,
@@ -145,7 +151,7 @@ export default async function AdminLeadsPage(
     colorCode: s.color_code,
   }));
 
-  const availableAssignees: FilterDropdownOption[] = (profilesRes.data || []).map((p) => {
+  const availableAssignees: FilterDropdownOption[] = (owners.data || []).map((p) => {
     const initials = p.full_name
       ? p.full_name
           .split(' ')
@@ -171,7 +177,7 @@ export default async function AdminLeadsPage(
     sort_order: s.sort_order,
   }));
 
-  const ownerNameById = new Map((profilesRes.data || []).map((member) => [member.id, member.full_name]));
+  const ownerNameById = new Map((owners.data || []).map((member) => [member.id, member.full_name]));
   const sourceById = new Map((sourcesRes.data || []).map((source) => [source.id, source]));
 
   // Hydrate client model with relational properties
@@ -203,7 +209,7 @@ export default async function AdminLeadsPage(
       bucket: statusData?.bucket || 'open',
       assigned_to: l.assigned_to,
       assigned_to_name: l.assigned_to
-        ? ownerNameById.get(l.assigned_to) || (profilesRes.error ? 'Owner unavailable' : 'Inactive or unavailable owner')
+        ? ownerNameById.get(l.assigned_to) || 'Owner unavailable'
         : 'Unassigned',
       lead_source_id: l.lead_source_id,
       lead_source_name: sourceData?.name || null,
@@ -214,20 +220,18 @@ export default async function AdminLeadsPage(
     };
   });
 
+  const missingOwnerDetails = owners.error || (profilesRes.error && leads.some(
+    (lead) => lead.assigned_to && !ownerNameById.has(lead.assigned_to),
+  ));
+  const unavailableDetails = [sourcesRes.error && 'Sources', missingOwnerDetails && 'Owner names'].filter(Boolean);
+  const lookupNotice = unavailableDetails.length ? `${unavailableDetails.join(' and ')} unavailable.` : undefined;
+
   return (
     <div className={styles.container}>
       {/* Workspace Header & Operational Context */}
       <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Sales pipeline</span>
-          <h1 className={styles.pageTitle}>Inbound leads</h1>
-          <p className={styles.pageSubtitle}>
-            Review inquiries, assign owners and keep follow-ups moving.
-          </p>
-        </div>
-        <div className={styles.headerRight}>
-          <NewLeadHeaderButton userRole={role} />
-        </div>
+        <h1 className={styles.pageTitle}>Inbound leads</h1>
+        <NewLeadHeaderButton userRole={role} />
       </header>
 
       {/* React 19 Streaming Suspense Boundary: Zero-CLS Skeleton Fallback */}
@@ -235,14 +239,26 @@ export default async function AdminLeadsPage(
         {invalidFilter || leadsRes.error || statusesRes.error ? (
           <div className={styles.loadError} role="alert">
             <span>{invalidFilter ? 'A filter in this link is invalid. Open the leads page without filters to try again.' : leadsRes.error ? `Lead records could not be loaded${leadsRes.error.code ? ` (${leadsRes.error.code})` : ''}.` : `Pipeline stages could not be loaded${statusesRes.error?.code ? ` (${statusesRes.error.code})` : ''}.`}</span>
-            <Link href="/admin/leads" className={styles.retryLink}>Reload leads</Link>
-            <span>If the problem continues, contact support and include the error code shown above.</span>
+            <Link href="/admin/leads" className={styles.retryLink}>{invalidFilter ? 'Clear filters' : 'Reload leads'}</Link>
           </div>
         ) : (
           <>
-            {(sourcesRes.error || profilesRes.error) && <div className={styles.loadWarning} role="status">Lead records are available, but {sourcesRes.error && profilesRes.error ? 'source filters and owner names' : sourcesRes.error ? 'source filters' : 'owner names'} could not be loaded. Refresh to retry those details.</div>}
-            {search.error ? <div className={styles.loadError} role="alert">{search.error}</div> : <ResultPagination page={page} pageSize={pageSize} loadedCount={leads.length} totalCount={leadsRes.count} />}
-            <LeadsWorkspaceClient initialLeads={search.error ? [] : leads} availableSources={availableSources} availableAssignees={availableAssignees} availableStatuses={availableStatuses} userRole={role} />
+            {search.error && <p className={styles.loadError} role="alert">{search.error}</p>}
+            <LeadsWorkspaceClient
+              initialLeads={search.error ? [] : leads}
+              availableSources={availableSources}
+              availableAssignees={availableAssignees}
+              availableStatuses={availableStatuses}
+              userRole={role}
+              lookupNotice={lookupNotice}
+              pagination={!search.error && <ResultPagination
+                page={page}
+                pageSize={pageSize}
+                loadedCount={leads.length}
+                totalCount={leadsRes.count}
+                scopeDescription="Bucket counts and overdue filtering apply to this page."
+              />}
+            />
           </>
         )}
       </Suspense>
