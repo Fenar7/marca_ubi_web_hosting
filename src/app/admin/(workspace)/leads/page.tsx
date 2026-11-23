@@ -98,10 +98,10 @@ export default async function AdminLeadsPage(
     || Boolean(bucket && !['all', 'open', 'potential', 'converted', 'lost', 'overdue'].includes(bucket));
 
   let leadsQuery = supabase.from('leads').select(`
-        id, lead_id, name, company, company_website, industry, phone, email,
+        id, lead_id, name, company, phone, email,
         preferred_channel, service_category, expected_value, priority, status_id,
-        assigned_to, lead_source_id, notes, brief_payload, next_follow_up,
-        revisit_date, created_at, updated_at,
+        assigned_to, lead_source_id, next_follow_up,
+        revisit_date, created_at,
         funnel_statuses!inner(id, name, bucket, color_code, sort_order)
       `, { count: 'exact' });
   if (!invalidFilter) {
