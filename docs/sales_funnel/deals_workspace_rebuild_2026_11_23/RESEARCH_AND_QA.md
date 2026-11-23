@@ -8,7 +8,7 @@ Browser verification uses an isolated loopback harness with actual production De
 
 ## Recorded browser result
 
-`verify-browser.cjs` completed with exit0,16/16 checks passed. `verify-edge-browser.cjs` completed with exit0,7/7 checks passed. Machine-readable evidence is in `browser-results.json` and `edge-browser-results.json`.
+`verify-browser.cjs` passed 16 checks and `verify-edge-browser.cjs` passed eight checks. Machine-readable evidence is in `browser-results.json` and `edge-browser-results.json`.
 
 | Journey | Observed fixture outcome |
 | --- | --- |
@@ -20,6 +20,7 @@ Browser verification uses an isolated loopback harness with actual production De
 | Menu dismissal | Escape restores focus to the originating card's action trigger |
 | Table | Semantic table and column headers render; view switch preserves search |
 | Filters | Explicit application preserves view/search and adds owner filter; Escape closes filter dialog |
+| Overlapping filter requests | With 650 ms fixture navigation latency, the final URL keeps the requested Table view, Open bucket and debounced search |
 | Read-only/restricted | Viewer action menu contains no move; restricted fixture emits no rupee amounts |
 | Empty | Explicit no-deals presentation |
 | Responsive | No document overflow at320,375,768,1024,1440,1920 CSS pixels |

@@ -576,9 +576,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/page.tsx": {
-    "mtime": 1795443650.080319,
-    "seen": 1795444283.171107,
-    "ast_hash": "2a7e64144e916c1c05c3b2e839f54c1f",
+    "mtime": 1795444399.8523355,
+    "seen": 1795444446.1665535,
+    "ast_hash": "15ed680dc3f3efd3f5379aa7e23b544b",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient.tsx": {
@@ -6522,9 +6522,9 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/visual-harness.cjs": {
-    "mtime": 1795443774.0926127,
-    "seen": 1795444283.171107,
-    "ast_hash": "d393e3b7764cb8eb8f3a2147899ea42e",
+    "mtime": 1795444477.0944424,
+    "seen": 1795444526.22481,
+    "ast_hash": "24f6d48cfcf083237cc9a6a0a66d42de",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/DealActionsMenu.tsx": {
@@ -6678,15 +6678,15 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/edge-browser-results.json": {
-    "mtime": 1795443709.7795174,
-    "seen": 1795444283.171107,
-    "ast_hash": "974ffc2cf5e7686bedb33b3a65a75e78",
+    "mtime": 1795444508.4258518,
+    "seen": 1795444526.22481,
+    "ast_hash": "ff627617234f911c54b769ba73a4751a",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/verify-edge-browser.cjs": {
-    "mtime": 1795443774.4652305,
-    "seen": 1795444283.171107,
-    "ast_hash": "c5ca3f09c5749f15514c3440bc80746f",
+    "mtime": 1795444477.0944424,
+    "seen": 1795444526.22481,
+    "ast_hash": "8d935f8db13d286e914611ce31c6dd75",
     "semantic_hash": ""
   },
   "docs/context/2026-11-23_19-54-00.md": {

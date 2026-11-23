@@ -94,6 +94,18 @@ const fs = require("fs"),
     new URL(p.url()).searchParams.get("view") === "table" &&
       new URL(p.url()).searchParams.get("search") === "Alserkal",
   );
+  await open("?fixture_delay=1");
+  await p.getByRole("searchbox", { name: "Search deals" }).fill("Alserkal");
+  await p.getByRole("button", { name: "Table", exact: true }).click();
+  await p.getByRole("button", { name: "Open", exact: true }).click();
+  const overlappingChanges = await p.waitForURL((url) =>
+    url.searchParams.get("search") === "Alserkal",
+  ).then(() => new URL(p.url()).searchParams);
+  check(
+    "Overlapping delayed navigation keeps view, bucket and debounced search",
+    overlappingChanges.get("view") === "table" &&
+      overlappingChanges.get("bucket") === "open",
+  );
   await b.close();
   fs.writeFileSync(
     path.join(__dirname, "edge-browser-results.json"),

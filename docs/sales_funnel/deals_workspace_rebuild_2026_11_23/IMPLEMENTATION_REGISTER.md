@@ -24,4 +24,4 @@ Current workspace includes expected graph manifest changes and dated graph outpu
 
 Record actual viewport, fixture/live scope, action, observed result and limitations. Screenshots must render actual production components with fixtures clearly identified. Fixture simulations do not establish live RLS, stage RPC transactions or complete authenticated destination behavior. Do not report those as passing without evidence.
 
-Pending completion: source integration, visual proof, browser interaction matrix, source/security audit, focused lint/type checks, final suite/build, graph refresh, four-block delivery report, context pointer/dated register and PR #126 update.
+The [delivery record](./DELIVERY.md) documents the final evidence and remaining authenticated verification.

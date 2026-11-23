@@ -1,9 +1,9 @@
 # Graph Report - marca_ubi_web_hosting  (2026-11-23)
 
 ## Corpus Check
-- 967 files · ~1,003,903 words
+- 967 files · ~1,004,084 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 220 file(s) not represented in the graph (top: .scss 150, .ttf 42, .log 10)
+- Unclassified: 214 file(s) not represented in the graph (top: .scss 150, .ttf 42, .otf 10)
 
 ## Summary
 - 8137 nodes · 13371 edges · 504 communities (473 shown, 31 thin omitted)
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `718ed0c2`
+- Built from commit: `72535613`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -534,16 +534,16 @@
 10. `FunnelBucket` - 33 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `5. Independent audit round (A1-A10, second fix pass)` --references--> `PostSummary`  [INFERRED]
-  docs/blog_redesign/detail-fixes-plan.md → src/sanity/types/blog.ts
-- `Current uncommitted implementation` --references--> `CrmTabKey`  [INFERRED]
-  docs/context/2026-11-07_15-00-00.md → src/types/crm.ts
 - `2.3 Type Safety & Engineering Standards` --references--> `AdminSidebarProps`  [INFERRED]
   docs/sales_funnel/dashboard_redesign_2026_11/MARCA_UBI_REDESIGN_INDEPENDENT_AUDIT.md → src/app/admin/components/layout/AdminSidebar.tsx
 - `3.2 Extended `OverviewRecord` Interface` --references--> `OverviewRecord`  [INFERRED]
   docs/crm_conyest_redesign/MARCA_UBI_AUTHENTIC_CRM_REMEDIATION_PLAN.md → src/app/admin/components/Dashboard/OverviewWorkspace.tsx
 - `Block 3: Anti-AI-Slop & Design Token Audit` --references--> `OverviewRecord`  [INFERRED]
   docs/sales_funnel/dashboard_redesign_2026_11/SENIOR_CTO_PR_122_AUDIT_REPORT.md → src/app/admin/components/Dashboard/OverviewWorkspace.tsx
+- `Current uncommitted implementation` --references--> `CrmTabKey`  [INFERRED]
+  docs/context/2026-11-07_15-00-00.md → src/types/crm.ts
+- `5. Independent audit round (A1-A10, second fix pass)` --references--> `PostSummary`  [INFERRED]
+  docs/blog_redesign/detail-fixes-plan.md → src/sanity/types/blog.ts
 
 ## Import Cycles
 - 4-file cycle: `src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx -> src/app/admin/components/modals/index.ts -> src/app/admin/components/modals/LeadDetailModal.tsx -> src/app/admin/components/DossierDrawer/index.ts -> src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx`
@@ -2451,16 +2451,16 @@ Nodes (10): Deals workspace rebuild hand-off, Deals workspace delivery, Four-blo
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `react` connect `react` to `ClientHomeExperience.tsx`, `stageTransitionActions.ts`, `next`, `contact/page.tsx`, `ChatPod.tsx`, `currency.ts`, `Dashboard/types.ts`, `RevenueDynamicsCard`, `TeamWorkspaceClient.tsx`, `LeadDossierWorkspaceClient.tsx`, `LeadsWorkspaceClient.tsx`, `content.ts`, `WorksSectionClient.tsx`, `ConvertLeadToDealModal.tsx`, `react`, `Editorial & Blog Architecture`, `chartGeometry.ts`, `Badges/index.ts`, `ExecutiveSlaVelocityGauge.tsx`, `tasks/page.tsx`, `WorksWorkspaceClient.tsx`, `DealsWorkspaceClient.tsx`, `blog/[slug]/page.tsx`, `career-queries.ts`, `ExecutiveTelemetryMasthead.tsx`, `collect.ts`, `StatementCurtain`, `Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons`, `useIntakeFlow.ts`, `dossierUtils.ts`, `avatarActions.ts`, `dependencies`, `ProjectForm.tsx`, `CommercialVelocityBarChart`, `react`, `collect.ts`, `Chat Pod — Delivery Gate and verification record`, `CommercialDealsLedger.tsx`, `ClientHeader`, `deals/[id]/page.tsx`, `admin/layout.tsx`, `leads/[id]/page.tsx`, `CrmUserRole`, `LeadsWorkspaceClient.tsx`, `overlayScrollLock.ts`, `leads.ts`, `DealsTable.tsx`, `FilterActionBar.tsx`, `kpi/KpiRibbon.tsx`, `schedulerActions.ts`, `AdminAuthShell.tsx`, `PersonnelProfileWorkspaceClient.tsx`, `app/layout.tsx`, `DossierDrawer/index.ts`, `dealPresentation.ts`, `CompanyProfileModal.tsx`, `createClient`, `dashboard-server-assembly.test.ts`, `shouldUseMobileMotion`, `AttentionQueue.tsx`, `Subsystem 95: src_app_components_initialloader_initialloader`, `chatpod-ingest-payload-parity.test.ts`, `SlotId`, `zod`, `OverviewWorkspace.tsx`, `Dashboard/index.ts`, `AddTeamMemberModal.tsx`?**
-  _High betweenness centrality (0.181) - this node is a cross-community bridge._
+  _High betweenness centrality (0.207) - this node is a cross-community bridge._
 - **What connects `FIGMA_PERSONAL_ACCESS_TOKEN`, `npx`, `@smithery/figma-mcp` to the rest of the system?**
   _20 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `⚡ UI UX Pro Max — Design Intelligence & Reference Engine` be split into smaller, more focused modules?**
   _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
 - **Why does `next` connect `next` to `ClientHomeExperience.tsx`, `stageTransitionActions.ts`, `contact/page.tsx`, `admin.ts`, `ChatPod.tsx`, `Dashboard/types.ts`, `TeamWorkspaceClient.tsx`, `ingest/route.ts`, `LeadDossierWorkspaceClient.tsx`, `LeadsWorkspaceClient.tsx`, `content.ts`, `WorksSectionClient.tsx`, `react`, `Editorial & Blog Architecture`, `blog/[slug]/page.tsx`, `Badges/index.ts`, `WorksWorkspaceClient.tsx`, `tasks/page.tsx`, `career-queries.ts`, `auth.ts`, `crm.ts`, `DealsWorkspaceClient.tsx`, `ExecutiveTelemetryMasthead.tsx`, `collect.ts`, `Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons`, `avatarActions.ts`, `dependencies`, `ProjectForm.tsx`, `react`, `leadInlineActions.ts`, `Chat Pod — Delivery Gate and verification record`, `ClientHeader`, `deals/[id]/page.tsx`, `createClient`, `admin/layout.tsx`, `leads/[id]/page.tsx`, `CrmUserRole`, `submit-application/route.ts`, `LeadsWorkspaceClient.tsx`, `overlayScrollLock.ts`, `leads.ts`, `DealsTable.tsx`, `kpi/KpiRibbon.tsx`, `schedulerActions.ts`, `AdminAuthShell.tsx`, `PersonnelProfileWorkspaceClient.tsx`, `app/layout.tsx`, `dealPresentation.ts`, `CompanyProfileModal.tsx`, `createClient`, `shouldUseMobileMotion`, `AttentionQueue.tsx`, `chatpod-ingest-payload-parity.test.ts`, `SlotId`, `team.ts`, `zod`, `OverviewWorkspace.tsx`, `Dashboard/index.ts`?**
-  _High betweenness centrality (0.109) - this node is a cross-community bridge._
+  _High betweenness centrality (0.127) - this node is a cross-community bridge._
 - **Should `ClientHomeExperience.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.046620046620046623 - nodes in this community are weakly interconnected._
 - **Why does `CompanyProfileModal()` connect `CompanyProfileModal` to `overlayScrollLock.ts`, `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform`, `CompanyProfileModal.tsx`, `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform`, `shouldUseMobileMotion`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+  _High betweenness centrality (0.058) - this node is a cross-community bridge._
 - **Should `stageTransitionActions.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.09176470588235294 - nodes in this community are weakly interconnected._

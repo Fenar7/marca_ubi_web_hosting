@@ -35,6 +35,11 @@
       "name": "Applied owner filter preserves view/search",
       "passed": true,
       "detail": ""
+    },
+    {
+      "name": "Overlapping delayed navigation keeps view, bucket and debounced search",
+      "passed": true,
+      "detail": ""
     }
   ]
 }

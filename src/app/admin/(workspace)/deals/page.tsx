@@ -227,10 +227,9 @@ export default async function AdminDealsPage(
     (sourcesRes.data || []).map((source) => [source.id, source.name]),
   );
 
-  // Transform relational leads to typed deal records
-  const deals: HydratedDealItem[] = (
-    dealsAvailable ? (dealsRes.data ?? []) : []
-  ).map((raw) => {
+  // The financial select is dynamic, so PostgREST can't infer one shared row type.
+  const dealRows: unknown[] = dealsAvailable ? (dealsRes.data ?? []) : [];
+  const deals: HydratedDealItem[] = dealRows.map((raw) => {
     const item = raw as Record<string, unknown>;
     const statusObj = item.funnel_status as {
       id: string;

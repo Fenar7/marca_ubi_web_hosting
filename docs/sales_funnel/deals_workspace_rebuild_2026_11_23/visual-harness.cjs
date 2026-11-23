@@ -10,8 +10,37 @@ const root = process.cwd(),
 fs.mkdirSync(output, { recursive: true });
 const shim = `import React from 'react';
 export function usePathname(){return '/admin/deals'}
-export function useSearchParams(){const[v,s]=React.useState(location.search);React.useEffect(()=>{const f=()=>s(location.search);addEventListener('popstate',f);return()=>removeEventListener('popstate',f)},[]);return React.useMemo(()=>new URLSearchParams(v),[v])}
-export function useRouter(){return{push:u=>{history.pushState({},'',u);dispatchEvent(new PopStateEvent('popstate'))},replace:u=>{history.replaceState({},'',u);dispatchEvent(new PopStateEvent('popstate'))},refresh:()=>{}}}
+export function useSearchParams() {
+  const [search, setSearch] = React.useState(location.search);
+  React.useEffect(() => {
+    const sync = () => setSearch(location.search);
+    addEventListener('popstate', sync);
+    addEventListener('fixture:navigate', sync);
+    return () => {
+      removeEventListener('popstate', sync);
+      removeEventListener('fixture:navigate', sync);
+    };
+  }, []);
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
+function navigate(url, method) {
+  const commit = () => {
+    history[method]({}, '', url);
+    dispatchEvent(new Event('fixture:navigate'));
+  };
+  if (new URLSearchParams(location.search).has('fixture_delay')) {
+    setTimeout(commit, 650);
+  } else {
+    commit();
+  }
+}
+export function useRouter() {
+  return {
+    push: (url) => navigate(url, 'pushState'),
+    replace: (url) => navigate(url, 'replaceState'),
+    refresh: () => {},
+  };
+}
 export function Link({href,children,prefetch,...p}){return <a href={href} {...p}>{children}</a>}
 export function Image({priority,unoptimized,...p}){return <img {...p}/>}
 export function ClientDossierDrawer(){return null}
