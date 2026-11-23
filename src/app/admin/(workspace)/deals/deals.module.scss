@@ -1,14 +1,10 @@
 .dealsWorkspace {
   display: grid;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
 }
-
-.heading {
-  margin: 0;
-  color: #111;
-  font: 500 clamp(1.65rem, 2vw, 2.1rem)/1.15 var(--font-circular), sans-serif;
-  letter-spacing: -.035em;
+.dealsWorkspace > .loadError:not(:last-child) {
+  margin-bottom: 18px;
 }
 
 .loadError {
@@ -23,7 +19,9 @@
   border-radius: 8px;
   background: #fff3f5;
   color: #85132a;
-  font: 400 .875rem/1.5 var(--font-graphik), sans-serif;
+  font:
+    400 0.875rem/1.5 var(--font-graphik),
+    sans-serif;
 }
 
 .retryLink {
@@ -32,5 +30,8 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 
-  &:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
 }

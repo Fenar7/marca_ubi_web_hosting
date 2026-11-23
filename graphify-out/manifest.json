@@ -552,9 +552,9 @@
     "semantic_hash": "47d47d763c059d79fd1f2c981119eb38"
   },
   "src/app/admin/(workspace)/deals/DealsWorkspaceClient.tsx": {
-    "mtime": 1795428171.439184,
-    "seen": 1795428556.8826842,
-    "ast_hash": "4a7ba03d36514345528fc6955b54cd0a",
+    "mtime": 1795443449.0256498,
+    "seen": 1795443614.353287,
+    "ast_hash": "daf576535bb4688d2d4aaeb39db78aeb",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/[id]/loading.tsx": {
@@ -576,9 +576,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/page.tsx": {
-    "mtime": 1795428175.370469,
-    "seen": 1795428556.8842878,
-    "ast_hash": "38fb8ae43dabd7e89ab7e8ee4da533b8",
+    "mtime": 1795443650.080319,
+    "seen": 1795444283.171107,
+    "ast_hash": "2a7e64144e916c1c05c3b2e839f54c1f",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient.tsx": {
@@ -2706,9 +2706,9 @@
     "semantic_hash": "bee5d688136b6cc167b685c9fcaf7f7f"
   },
   "tests/leads/client_360_full_page_workspace.test.ts": {
-    "mtime": 1795428089.5811913,
-    "seen": 1795428557.1368456,
-    "ast_hash": "15cffc1dbda77183d5309844c3ee892b",
+    "mtime": 1795443625.5898757,
+    "seen": 1795444283.1721716,
+    "ast_hash": "7293febe917be78dc4420256d6172839",
     "semantic_hash": ""
   },
   "tests/leads/client_360_light_luxury_redesign.test.ts": {
@@ -2946,9 +2946,9 @@
     "semantic_hash": "f2c1f4df9be03fe358f34d37a7bb4769"
   },
   "tests/unit/phase-1-redesign-tokens-and-shell.test.ts": {
-    "mtime": 1794348976.2359352,
-    "seen": 1794356196.5108132,
-    "ast_hash": "0a9a8de850b128f3f15bb744faf78db1",
+    "mtime": 1795442284.4399786,
+    "seen": 1795443614.353287,
+    "ast_hash": "a2c7dae92733aaada9c106f66a766b80",
     "semantic_hash": ""
   },
   "tests/unit/phase-2-brand-upgrade-layout-and-fixed-rail.test.ts": {
@@ -2976,9 +2976,9 @@
     "semantic_hash": ""
   },
   "tests/unit/phase-3-redesign-executive-overview.test.ts": {
-    "mtime": 1794348976.2575064,
-    "seen": 1794356196.5108132,
-    "ast_hash": "1acfb644f2f720d4165d838c40508ccd",
+    "mtime": 1795442284.7370167,
+    "seen": 1795443614.353287,
+    "ast_hash": "94d0b16a65102df1fc6241a5e2b43589",
     "semantic_hash": ""
   },
   "tests/unit/phase-3-user-management-and-permissions.test.ts": {
@@ -3000,15 +3000,15 @@
     "semantic_hash": "45b3f958607c72599073e28b609015d8"
   },
   "tests/unit/phase-4-redesign-funnel-workspaces.test.ts": {
-    "mtime": 1795428202.0819373,
-    "seen": 1795428557.1533613,
-    "ast_hash": "690cc9542f7b8816aaecd2c3d7b02b17",
+    "mtime": 1795443655.0726683,
+    "seen": 1795444283.1721716,
+    "ast_hash": "77588fafc85d675f53b68db2be15e399",
     "semantic_hash": ""
   },
   "tests/unit/phase-5-brand-upgrade-deals-and-dossier.test.ts": {
-    "mtime": 1793951004.14247,
-    "seen": 1793951105.7957585,
-    "ast_hash": "68ad5d349bbd3380ea0796e6a5df183c",
+    "mtime": 1795442672.8084693,
+    "seen": 1795443614.353287,
+    "ast_hash": "c08f5f18ee32037cf23d51996b534bb8",
     "semantic_hash": ""
   },
   "tests/unit/phase-5-command-center-and-interactions.test.ts": {
@@ -3042,9 +3042,9 @@
     "semantic_hash": "a91af9c040bf9a0599df6282be46dbf4"
   },
   "tests/unit/phase-7-logip-executive-dashboard.test.ts": {
-    "mtime": 1794348976.2585118,
-    "seen": 1794356196.5108132,
-    "ast_hash": "49afcf9d3f56262e4d4f0197952519d0",
+    "mtime": 1795442285.6926782,
+    "seen": 1795443614.353287,
+    "ast_hash": "9644a12675c5f7b63ed2479285ef73ef",
     "semantic_hash": ""
   },
   "tests/unit/phase-8-inbound-leads-and-dossier-remediation.test.ts": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1795428476.9036036,
-    "seen": 1795428557.2075686,
-    "ast_hash": "063246a519a64e24f62907f8db4467c3",
+    "mtime": 1795443869.4515173,
+    "seen": 1795444283.1726956,
+    "ast_hash": "824213ea4ecae7f6ca88b294a1ee204d",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5472,9 +5472,9 @@
     "semantic_hash": ""
   },
   "tests/unit/crm-workspace-resilience.test.ts": {
-    "mtime": 1795428089.5811913,
-    "seen": 1795428557.146077,
-    "ast_hash": "3020f535697305ceecd5b98a748264a5",
+    "mtime": 1795443689.1637325,
+    "seen": 1795444283.1721716,
+    "ast_hash": "ef73ee0bf96393b1b175b646f9616e6b",
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/REDESIGN_RECOVERY_PLAN_2026-11-07.md": {
@@ -5664,9 +5664,9 @@
     "semantic_hash": ""
   },
   "tests/unit/dashboard-server-assembly.test.ts": {
-    "mtime": 1794348976.2032735,
-    "seen": 1794356196.5108132,
-    "ast_hash": "35db9326588e2d1428d6059a35d903c5",
+    "mtime": 1795442283.8056495,
+    "seen": 1795443614.353287,
+    "ast_hash": "1c33583eb16791b71b2092a9f982a7aa",
     "semantic_hash": ""
   },
   "tests/unit/dashboard-workspace-contracts.test.ts": {
@@ -6486,9 +6486,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/DealsKanbanBoard.tsx": {
-    "mtime": 1795428235.727146,
-    "seen": 1795428556.8826842,
-    "ast_hash": "f1ff981461731b32c1c803c2acfe8701",
+    "mtime": 1795443649.6288366,
+    "seen": 1795444283.171107,
+    "ast_hash": "d4106bfb7adfe103f113b38e33b0ebc3",
     "semantic_hash": ""
   },
   "docs/context/2026-11-23_15-45-00.md": {
@@ -6501,6 +6501,204 @@
     "mtime": 1795428399.5012798,
     "seen": 1795428557.2468054,
     "ast_hash": "62fe61b2e4dcfe9a3589eb6db3aded7a",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20261123000001_restore_crm_team_directory.sql": {
+    "mtime": 1795426560.5716918,
+    "seen": 1795428623.5789459,
+    "ast_hash": "56e2af04edfa93699cd7fcf3f61cdf14",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/browser-results.json": {
+    "mtime": 1795443709.7760003,
+    "seen": 1795444283.171107,
+    "ast_hash": "f9b5836654e7202af57dcd3122b70363",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/verify-browser.cjs": {
+    "mtime": 1795443774.2593286,
+    "seen": 1795444283.171107,
+    "ast_hash": "a97e712cf88d251cb83bafc45294daa0",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/visual-harness.cjs": {
+    "mtime": 1795443774.0926127,
+    "seen": 1795444283.171107,
+    "ast_hash": "d393e3b7764cb8eb8f3a2147899ea42e",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealActionsMenu.tsx": {
+    "mtime": 1795443649.3051536,
+    "seen": 1795444283.171107,
+    "ast_hash": "1d0faa9181720ed31b09b177423d9fe1",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealCard.tsx": {
+    "mtime": 1795443649.3505123,
+    "seen": 1795444283.171107,
+    "ast_hash": "47bdbce5253e16f8681e958590f88cec",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealIcon.tsx": {
+    "mtime": 1795442627.03506,
+    "seen": 1795443614.353287,
+    "ast_hash": "970e8f60dd8f87ddee6f98c6e4e41151",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsLoading.tsx": {
+    "mtime": 1795442621.2439969,
+    "seen": 1795443614.353287,
+    "ast_hash": "9eb8e5fc7e1ff06ad4d32f58f2d63cbd",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsTable.tsx": {
+    "mtime": 1795442450.1276138,
+    "seen": 1795443614.353287,
+    "ast_hash": "23c1ee61d3156dba7227d60eacec9a74",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsToolbar.tsx": {
+    "mtime": 1795442621.1557639,
+    "seen": 1795443614.353287,
+    "ast_hash": "3df6c3a85f086fc842560314af1059da",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/dealPresentation.ts": {
+    "mtime": 1795442397.0123496,
+    "seen": 1795443614.353287,
+    "ast_hash": "0440d2b0f46932d1036542ba5f556ad1",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/dealsWorkspaceModel.ts": {
+    "mtime": 1795443449.0256498,
+    "seen": 1795443614.353287,
+    "ast_hash": "7c2f9cc68b65e19a856e21debcc5afdf",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/loading.tsx": {
+    "mtime": 1795442621.2523952,
+    "seen": 1795443614.353287,
+    "ast_hash": "9dc69728e697339b2ea5ce73c7b7d62c",
+    "semantic_hash": ""
+  },
+  "tests/unit/deals-board-presentation.test.ts": {
+    "mtime": 1795442490.9736135,
+    "seen": 1795443614.353287,
+    "ast_hash": "31e6311ff6bd94071277ca23a507927d",
+    "semantic_hash": ""
+  },
+  "tests/unit/deals-server-assembly.test.ts": {
+    "mtime": 1795443041.1587121,
+    "seen": 1795443614.353287,
+    "ast_hash": "1d08ba64aaa44357fbe53ae95c93d881",
+    "semantic_hash": ""
+  },
+  "tests/unit/deals-workspace-rebuild.test.ts": {
+    "mtime": 1795443547.9080284,
+    "seen": 1795443614.353287,
+    "ast_hash": "ca17b400a060411b5844fd319c856e28",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/IMPLEMENTATION_REGISTER.md": {
+    "mtime": 1795442414.069989,
+    "seen": 1795443614.353287,
+    "ast_hash": "3b8f3d0b2529fbf42e8d625207b071a8",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/INDEPENDENT_REVIEW.md": {
+    "mtime": 1795444239.060194,
+    "seen": 1795444283.1726956,
+    "ast_hash": "b54de4fee60a3bd1246e191d7038fc26",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/REDESIGN_PLAN.md": {
+    "mtime": 1795441401.733946,
+    "seen": 1795443614.353287,
+    "ast_hash": "e88838556380fd9bf28d1c9e906fc821",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/RESEARCH_AND_QA.md": {
+    "mtime": 1795443738.8588881,
+    "seen": 1795444283.1726956,
+    "ast_hash": "dd80ef4153d10687a866c0dc11eb2ca8",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/board-desktop.png": {
+    "mtime": 1795443695.0643303,
+    "seen": 1795444283.1732397,
+    "ast_hash": "f8e4d87979ee4bfb42e2355b1e71ec0a",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/board-mobile.png": {
+    "mtime": 1795443698.1864953,
+    "seen": 1795444283.1732397,
+    "ast_hash": "c7a876076841e393d9ffc1d67d6c388a",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/empty-desktop.png": {
+    "mtime": 1795443703.230809,
+    "seen": 1795444283.1732397,
+    "ast_hash": "d70ab5fcc4e61417d7a9e8ab7717c1a7",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/filters-desktop.png": {
+    "mtime": 1795443697.3897517,
+    "seen": 1795444283.1732397,
+    "ast_hash": "429ec858d4580169a42f4134ee9eb35e",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/move-popover.png": {
+    "mtime": 1795443695.8786862,
+    "seen": 1795444283.1732397,
+    "ast_hash": "bcba54b666eec06106da62d97c858691",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/restricted-desktop.png": {
+    "mtime": 1795443702.9466004,
+    "seen": 1795444283.1732397,
+    "ast_hash": "c391d3e6afefe82ecf6867f05dfa2a05",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/table-desktop.png": {
+    "mtime": 1795443697.2151809,
+    "seen": 1795444283.1732397,
+    "ast_hash": "05ea35173b922c97002b0a80cbce6347",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/table-mobile.png": {
+    "mtime": 1795443698.5070891,
+    "seen": 1795444283.1732397,
+    "ast_hash": "f865edbe6c88a9f082f2e62799e10bca",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/zoom-200-css.png": {
+    "mtime": 1795443708.219015,
+    "seen": 1795444283.1732397,
+    "ast_hash": "46dcf8864539def81551d5e259f902e4",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/edge-browser-results.json": {
+    "mtime": 1795443709.7795174,
+    "seen": 1795444283.171107,
+    "ast_hash": "974ffc2cf5e7686bedb33b3a65a75e78",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/verify-edge-browser.cjs": {
+    "mtime": 1795443774.4652305,
+    "seen": 1795444283.171107,
+    "ast_hash": "c5ca3f09c5749f15514c3440bc80746f",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_19-54-00.md": {
+    "mtime": 1795443869.456081,
+    "seen": 1795444283.1726956,
+    "ast_hash": "8dfb56522e915479c0cb0c437f40565c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/DELIVERY.md": {
+    "mtime": 1795444239.0637257,
+    "seen": 1795444283.1726956,
+    "ast_hash": "0487abd251accb71dd8ee6d569006aea",
     "semantic_hash": ""
   },
   "package-lock.json": {

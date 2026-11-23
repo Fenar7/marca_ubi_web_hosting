@@ -1,0 +1,40 @@
+{
+  "environment": "Actual components; isolated stubbed mutations; drag dispatched through DOM events",
+  "results": [
+    {
+      "name": "Failed ordinary move remains in source lane",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Failed move destination retained on retry",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Escape restores action trigger focus",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Guarded cancellation leaves source stage",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Drag uses same confirmed transition handler",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "View toggle preserves search",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Applied owner filter preserves view/search",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

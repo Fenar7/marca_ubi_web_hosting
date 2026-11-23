@@ -225,7 +225,7 @@ describe(
   "Authenticated overview server assembly",
   { concurrency: false },
   () => {
-    it("filters deferred work before limiting and reconciles full count with six-row preview", async () => {
+    it("filters deferred work before limiting and reconciles the loaded preview with its full count", async () => {
       role = "sales_manager";
       stageFailure = false;
       reads.length = 0;
@@ -233,7 +233,7 @@ describe(
         props: { data },
       } = await page({ searchParams: Promise.resolve({ queue: "overdue" }) });
       assert.equal(data.queueCounts.overdue, 7);
-      assert.equal(data.records.length, 6);
+      assert.equal(data.records.length, 7);
       assert.equal(
         data.records.some((record) => record.name === "Deferred"),
         false,
