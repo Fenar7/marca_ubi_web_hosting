@@ -37,6 +37,8 @@ export interface InquiryRow {
   state: InquiryState;
   assigned_to: string | null;
   is_historical: boolean;
+  test_batch?: string | null;
+  summary?: string | null;
 }
 
 export interface InquiryDetail extends InquiryRow {
@@ -92,6 +94,7 @@ const filterKeys = [
   'from',
   'to',
   'window',
+  'live',
   'sort',
   'before',
   'after',
@@ -186,6 +189,7 @@ export function readInboxFilters(query: InboxQuery) {
     from,
     to,
     window,
+    live: getValue(query, 'live') === '1' ? '1' : '',
     sort,
     before: parseCursor(getValue(query, 'before')),
     after: parseCursor(getValue(query, 'after')),

@@ -233,6 +233,7 @@
   align-items: end;
 }
 .filters {
+  grid-template-columns: minmax(0, 1fr) auto auto;
   padding: 14px;
   border-bottom: 1px solid var(--line);
 }
@@ -240,7 +241,67 @@
   width: 100%;
 }
 .searchLabel {
-  grid-column: span 2;
+  grid-column: auto;
+}
+.advancedFilters {
+  position: relative;
+
+  summary {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid #8f8e86;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  summary:focus-visible {
+    outline: 2px solid #9c001e;
+    outline-offset: 2px;
+  }
+}
+.filterPanel {
+  position: absolute;
+  z-index: 2;
+  inset-inline-end: 0;
+  width: min(420px, calc(100vw - 72px));
+  margin-top: 6px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 6px 18px #0002;
+}
+.rowPreview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.activeChips {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+
+  span {
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: #f1f0ec;
+    overflow-wrap: anywhere;
+  }
+}
+.testBadge {
+  display: inline-block;
+  margin-inline-start: 8px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #f7eddb;
+  color: #69431a;
+  font-size: 0.73rem;
 }
 .workspace :where(.filters, .entryForm, .triageForm) label {
   min-width: 0;
@@ -536,7 +597,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .filters > button {
-    grid-column: span 2;
+    grid-column: auto;
+  }
+  .filters .searchLabel {
+    grid-column: 1 / -1;
   }
   .metrics a {
     padding: 5px 6px;

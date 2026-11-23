@@ -10,7 +10,6 @@ import {
   inquiryCursor,
   readInboxFilters,
   type InboxQuery,
-  type InquiryDetail,
   type InquiryRow,
 } from './inquiryView';
 
@@ -21,10 +20,7 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 25;
 const ROW_FIELDS =
-  'id,inquiry_ref,origin,received_at,name,company,service_category,state,assigned_to,is_historical';
-const DETAIL_FIELDS =
-  'id,inquiry_ref,origin,received_at,name,company,service_category,state,assigned_to,is_historical,original_channel,email,phone,summary,lead_id,updated_at,close_reason,timeline:brief->>timeline,budget:brief->>budget';
-
+  'id,inquiry_ref,origin,received_at,name,company,service_category,state,assigned_to,is_historical,test_batch,summary';
 export interface InquiryHistory {
   id: string;
   event_type: 'received' | 'linked' | 'triaged' | 'backfilled';
@@ -71,6 +67,14 @@ export default async function AdminIngestionPage({
 
   const canWrite = role === 'admin' || role === 'sales_manager';
   const filters = readInboxFilters(query);
+  if (filters.inquiry) {
+    redirect(
+      '/admin/ingestion/' +
+        encodeURIComponent(filters.inquiry) +
+        '?returnTo=' +
+        encodeURIComponent(inboxHref(filters, { inquiry: null })),
+    );
+  }
   const sourceOrigins = filters.origin
     ? [filters.origin]
     : filters.channel === 'website'
@@ -83,11 +87,13 @@ export default async function AdminIngestionPage({
   const countInquiries = () => {
     const count = supabase
       .from('inquiries')
-      .select('id', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true })
+      .is('test_batch', null);
     return sourceOrigins ? count.in('origin', sourceOrigins) : count;
   };
 
   let list = supabase.from('inquiries').select(ROW_FIELDS);
+  if (filters.live) list = list.is('test_batch', null);
   if (sourceOrigins) list = list.in('origin', sourceOrigins);
   if (filters.state === 'open') list = list.neq('state', 'closed');
   else if (filters.state) list = list.eq('state', filters.state);
@@ -138,8 +144,6 @@ export default async function AdminIngestionPage({
     received,
     directory,
     ownerEligibility,
-    detailResult,
-    historyResult,
   ] = await Promise.all([
     list
       .order('received_at', { ascending: ascending !== backwards })
@@ -163,22 +167,6 @@ export default async function AdminIngestionPage({
           .eq('status', 'active')
           .in('role', ['admin', 'sales_manager', 'sales_executive'])
       : null,
-    filters.inquiry
-      ? supabase
-          .from('inquiries')
-          .select(DETAIL_FIELDS)
-          .eq('id', filters.inquiry)
-          .maybeSingle()
-      : null,
-    filters.inquiry
-      ? supabase
-          .from('inquiry_activity')
-          .select('id,event_type,created_at')
-          .eq('inquiry_id', filters.inquiry)
-          .order('created_at', { ascending: false })
-          .order('id', { ascending: false })
-          .limit(15)
-      : null,
   ]);
 
   for (const [area, error] of [
@@ -186,8 +174,6 @@ export default async function AdminIngestionPage({
     ['needs review', needsReview.error],
     ['unassigned', unassigned.error],
     ['received', received.error],
-    ['detail', detailResult?.error],
-    ['history', historyResult?.error],
     ['assignment eligibility', ownerEligibility?.error],
   ] as const) {
     if (error)
@@ -218,7 +204,6 @@ export default async function AdminIngestionPage({
           before: null,
         })
       : null;
-  const detail = (detailResult?.data ?? null) as InquiryDetail | null;
   const owners = directory.map(({ id, full_name }) => ({
     id,
     name: full_name,
@@ -231,60 +216,25 @@ export default async function AdminIngestionPage({
       .map(({ id, role }) => [id, role]),
   );
 
-  let leadLink: { id: string; ref: string } | null = null;
-  let linkedLeadOwner: string | null = null;
-  if (detail?.lead_id && hasTab('leads')) {
-    const { data: lead, error } = await supabase
-      .from('leads')
-      .select('id,lead_id,assigned_to')
-      .eq('id', detail.lead_id)
-      .maybeSingle();
-    if (error)
-      console.error('[inquiries] Linked lead lookup failed', error.code);
-    if (lead) {
-      leadLink = { id: lead.id, ref: lead.lead_id };
-      linkedLeadOwner = lead.assigned_to;
-    }
-  }
-
+  const listUnavailable = Boolean(rowsResult.error) || rowsResult.data === null;
   return (
-    <IngestionWorkspaceClient
-      canWrite={canWrite}
-      canResolve={canWrite && hasTab('leads')}
-      filters={filters}
-      rows={rows}
-      listUnavailable={Boolean(rowsResult.error) || rowsResult.data === null}
-      metrics={{
-        needsReview: needsReview.error ? null : needsReview.count,
-        unassigned: unassigned.error ? null : unassigned.count,
-        received: received.error ? null : received.count,
-      }}
-      owners={owners}
-      assignmentOwners={owners.filter(({ id }) => eligibleOwnerRoles.has(id))}
-      triageOwners={owners.filter(({ id }) => {
-        const ownerRole = eligibleOwnerRoles.get(id);
-        return (
-          ownerRole &&
-          (!detail?.lead_id ||
-            ownerRole !== 'sales_executive' ||
-            id === linkedLeadOwner)
-        );
-      })}
-      selected={
-        detail
-          ? {
-              ...detail,
-              has_link: Boolean(detail.lead_id),
-              lead_id: leadLink?.id ?? null,
-            }
-          : null
-      }
-      linkedLead={leadLink}
-      selectionUnavailable={Boolean(detailResult?.error)}
-      history={(historyResult?.data ?? []) as InquiryHistory[]}
-      historyUnavailable={Boolean(historyResult?.error)}
-      previous={previous}
-      next={next}
-    />
+    <>
+      <IngestionWorkspaceClient
+        canWrite={canWrite}
+        canResolve={canWrite && hasTab('leads')}
+        filters={filters}
+        rows={rows}
+        listUnavailable={listUnavailable}
+        metrics={{
+          needsReview: needsReview.error ? null : needsReview.count,
+          unassigned: unassigned.error ? null : unassigned.count,
+          received: received.error ? null : received.count,
+        }}
+        owners={owners}
+        assignmentOwners={owners.filter(({ id }) => eligibleOwnerRoles.has(id))}
+        previous={previous}
+        next={next}
+      />
+    </>
   );
 }

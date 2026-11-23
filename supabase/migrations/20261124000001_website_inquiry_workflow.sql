@@ -283,6 +283,8 @@ BEGIN
         v_stage, p_inquiry.assigned_to,
         p_inquiry.brief
             || jsonb_build_object('inquiry_ref', p_inquiry.inquiry_ref, 'inquiry_origin', p_inquiry.origin)
+            || CASE WHEN to_jsonb(p_inquiry)->>'test_batch' IS NULL THEN '{}'::jsonb
+                ELSE jsonb_build_object('inquiry_test_batch', to_jsonb(p_inquiry)->>'test_batch', 'synthetic_benchmark', true) END
             || CASE WHEN p_previous_ref IS NULL THEN '{}'::jsonb ELSE jsonb_build_object('previous_lead_id', p_previous_ref) END
     )
     -- Legacy CRM keeps one lead per normalized email. The caller can still retain the inquiry for review.
@@ -672,7 +674,8 @@ WITH identified AS (
             || jsonb_strip_nulls(jsonb_build_object('budget', COALESCE(
                 nullif(btrim(lead.brief_payload->>'budget'), ''),
                 nullif(btrim(lead.brief_payload->>'budget_amount'), ''),
-                nullif(btrim(lead.budget_bracket), '')
+                CASE WHEN lead.source_detail IS DISTINCT FROM 'Start Project Brief Wizard (Multi-Service)'
+                    THEN nullif(btrim(lead.budget_bracket), '') END
             ))) AS historical_brief,
         CASE
             WHEN lead.brief_payload->>'source' = 'Contact Page Direct Inquiry'

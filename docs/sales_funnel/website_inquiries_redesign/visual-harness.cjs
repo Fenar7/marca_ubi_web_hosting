@@ -5,7 +5,7 @@ const esbuild = require('esbuild');
 const sass = require('sass');
 
 const root = path.resolve(__dirname, '../../..');
-const port = 3027;
+const port = Number(process.env.INQUIRIES_FIXTURE_PORT || 3027);
 const dir = path.join(root, 'src/app/admin/(workspace)/ingestion');
 const componentPath = JSON.stringify(
   path.join(dir, 'components/IngestionWorkspaceClient'),

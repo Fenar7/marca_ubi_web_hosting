@@ -2,10 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import type { InquiryHistory } from '../page';
+import { useState } from 'react';
 import {
-  CHANNEL_LABELS,
   INQUIRY_PATH,
   ORIGIN_LABELS,
   STATE_LABELS,
@@ -13,11 +11,10 @@ import {
   ownerLabel,
   receivedLabel,
   type InboxFilters,
-  type InquiryDetail,
   type InquiryRow,
   type OwnerOption,
 } from '../inquiryView';
-import { AddInquiry, InquiryTriage, ResolveInquiry } from './InquiryActions';
+import { AddInquiry } from './InquiryActions';
 import styles from './IngestionWorkspaceClient.module.scss';
 
 interface InboxProps {
@@ -33,12 +30,6 @@ interface InboxProps {
   };
   owners: OwnerOption[];
   assignmentOwners: OwnerOption[];
-  triageOwners: OwnerOption[];
-  selected: InquiryDetail | null;
-  linkedLead: { id: string; ref: string } | null;
-  selectionUnavailable: boolean;
-  history: InquiryHistory[];
-  historyUnavailable: boolean;
   previous: string | null;
   next: string | null;
 }
@@ -48,34 +39,12 @@ const CHANNELS = [
   ['website', 'Website'],
   ['manual', 'Manual'],
 ] as const;
-const HISTORY_LABELS: Record<InquiryHistory['event_type'], string> = {
-  received: 'Inquiry received',
-  linked: 'Lead linked',
-  triaged: 'Triage updated',
-  backfilled: 'Imported from CRM history',
-};
-
 function RowStatus({ state }: { state: InquiryRow['state'] }) {
   return (
     <span className={styles.stateBadge} data-state={state}>
       {STATE_LABELS[state]}
     </span>
   );
-}
-
-function BriefField({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return children ? (
-    <div>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  ) : null;
 }
 
 /** List changes are URL-owned so sorting, paging, search, and the selected inquiry survive navigation. */
@@ -88,22 +57,14 @@ export function IngestionWorkspaceClient({
   metrics,
   owners,
   assignmentOwners,
-  triageOwners,
-  selected,
-  linkedLead,
-  selectionUnavailable,
-  history,
-  historyUnavailable,
   previous,
   next,
 }: InboxProps) {
   const router = useRouter();
   const [notice, setNotice] = useState('');
-  const detailHeading = useRef<HTMLHeadingElement>(null);
-  const queueHeading = useRef<HTMLHeadingElement>(null);
-  const closedSelection = useRef('');
-  const attemptedSelection = filters.inquiry;
   const resetHref = inboxHref(filters, {
+    live: null,
+    sort: null,
     state: null,
     owner: null,
     q: null,
@@ -122,33 +83,30 @@ export function IngestionWorkspaceClient({
     filters.q ||
     filters.from ||
     filters.to ||
-    filters.window,
+    filters.window || filters.live || filters.sort === 'oldest',
   );
   const scopeLabel =
     CHANNELS.find(([value]) => value === filters.channel)?.[1] ??
     'All inquiries';
+  const appliedLabels = [
+    filters.q && 'Search: ' + filters.q,
+    filters.origin && ORIGIN_LABELS[filters.origin],
+    filters.state === 'open' ? 'Open' : filters.state && STATE_LABELS[filters.state],
+    filters.owner === 'unassigned'
+      ? 'Unassigned'
+      : filters.owner && ownerLabel(filters.owner, owners),
+    filters.from && 'From ' + filters.from,
+    filters.to && 'To ' + filters.to,
+    filters.window && 'Last 24 hours',
+    filters.live && 'Live records',
+    filters.sort === 'oldest' && 'Oldest first',
+  ].filter(Boolean);
   const createHref = (id: string) =>
-    inboxHref(filters, { inquiry: id }) + '#inquiry-detail-heading';
-
-  useEffect(() => {
-    if (
-      !attemptedSelection ||
-      window.location.hash !== '#inquiry-detail-heading'
-    )
-      return;
-    const frame = requestAnimationFrame(() =>
-      detailHeading.current?.focus({ preventScroll: true }),
-    );
-    return () => cancelAnimationFrame(frame);
-  }, [attemptedSelection]);
-
-  useEffect(() => {
-    if (attemptedSelection || !closedSelection.current) return;
-    const id = closedSelection.current;
-    closedSelection.current = '';
-    const row = document.getElementById('inquiry-open-' + id);
-    (row ?? queueHeading.current)?.focus();
-  }, [attemptedSelection]);
+    INQUIRY_PATH +
+    '/' +
+    encodeURIComponent(id) +
+    '?returnTo=' +
+    encodeURIComponent(inboxHref(filters, { inquiry: null }));
 
   const filterHref = (
     state: string | null,
@@ -156,6 +114,7 @@ export function IngestionWorkspaceClient({
     window: string | null,
   ) =>
     inboxHref(filters, {
+      live: '1',
       state,
       owner,
       window,
@@ -166,11 +125,6 @@ export function IngestionWorkspaceClient({
       before: null,
       after: null,
     });
-
-  function closeDetail() {
-    closedSelection.current = attemptedSelection;
-    router.push(inboxHref(filters, { inquiry: null }), { scroll: false });
-  }
 
   return (
     <div className={styles.workspace}>
@@ -227,13 +181,10 @@ export function IngestionWorkspaceClient({
         </ul>
       </section>
 
-      <div
-        className={styles.inboxLayout}
-        data-detail={Boolean(attemptedSelection)}
-      >
+      <div className={styles.inboxLayout}>
         <section className={styles.queue} aria-labelledby="inquiry-queue">
           <header className={styles.queueHeader}>
-            <h2 id="inquiry-queue" ref={queueHeading} tabIndex={-1}>
+            <h2 id="inquiry-queue" tabIndex={-1}>
               Inbox
             </h2>
             <nav className={styles.channels} aria-label="Inquiry channels">
@@ -275,6 +226,7 @@ export function IngestionWorkspaceClient({
             {filters.channel !== 'all' && (
               <input type="hidden" name="channel" value={filters.channel} />
             )}
+            {filters.live && <input type="hidden" name="live" value={filters.live} />}
             {filters.window && (
               <input type="hidden" name="window" value={filters.window} />
             )}
@@ -288,70 +240,79 @@ export function IngestionWorkspaceClient({
                 placeholder="Name, company, or reference"
               />
             </label>
-            <label>
-              Source
-              <select name="origin" defaultValue={filters.origin}>
-                <option value="">Any source</option>
-                {Object.entries(ORIGIN_LABELS)
-                  .filter(
-                    ([origin]) =>
-                      filters.channel === 'all' ||
-                      (filters.channel === 'manual') === (origin === 'manual'),
-                  )
-                  .map(([value, label]) => (
-                    <option value={value} key={value}>
-                      {label}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label>
-              Status
-              <select name="state" defaultValue={filters.state}>
-                <option value="">Any status</option>
-                <option value="open">Open</option>
-                {Object.entries(STATE_LABELS).map(([value, label]) => (
-                  <option value={value} key={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Owner
-              <select name="owner" defaultValue={filters.owner}>
-                <option value="">Any owner</option>
-                <option value="unassigned">Unassigned</option>
-                {filters.owner &&
-                  filters.owner !== 'unassigned' &&
-                  !owners.some(({ id }) => id === filters.owner) && (
-                    <option value={filters.owner}>Selected owner</option>
-                  )}
-                {owners.map((owner) => (
-                  <option key={owner.id} value={owner.id}>
-                    {owner.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Order
-              <select name="sort" defaultValue={filters.sort}>
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-              </select>
-            </label>
-            <label>
-              From <small>UTC</small>
-              <input type="date" name="from" defaultValue={filters.from} />
-            </label>
-            <label>
-              To <small>UTC</small>
-              <input type="date" name="to" defaultValue={filters.to} />
-            </label>
             <button type="submit" className={styles.secondary}>
-              Apply filters
+              Search
             </button>
+            <details className={styles.advancedFilters}>
+              <summary>Filters</summary>
+              <div className={styles.filterPanel}>
+                <label>
+                  Source
+                  <select name="origin" defaultValue={filters.origin}>
+                    <option value="">Any source</option>
+                    {Object.entries(ORIGIN_LABELS)
+                      .filter(
+                        ([origin]) =>
+                          filters.channel === 'all' ||
+                          (filters.channel === 'manual') ===
+                            (origin === 'manual'),
+                      )
+                      .map(([value, label]) => (
+                        <option value={value} key={value}>
+                          {label}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <label>
+                  Status
+                  <select name="state" defaultValue={filters.state}>
+                    <option value="">Any status</option>
+                    <option value="open">Open</option>
+                    {Object.entries(STATE_LABELS).map(([value, label]) => (
+                      <option value={value} key={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Owner
+                  <select name="owner" defaultValue={filters.owner}>
+                    <option value="">Any owner</option>
+                    <option value="unassigned">Unassigned</option>
+                    {filters.owner &&
+                      filters.owner !== 'unassigned' &&
+                      !owners.some(({ id }) => id === filters.owner) && (
+                        <option value={filters.owner}>Selected owner</option>
+                      )}
+                    {owners.map((owner) => (
+                      <option key={owner.id} value={owner.id}>
+                        {owner.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Order
+                  <select name="sort" defaultValue={filters.sort}>
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                  </select>
+                </label>
+                <label>
+                  From <small>UTC</small>
+                  <input type="date" name="from" defaultValue={filters.from} />
+                </label>
+                <label>
+                  To <small>UTC</small>
+                  <input type="date" name="to" defaultValue={filters.to} />
+                </label>
+                <button type="submit" className={styles.secondary}>
+                  Apply filters
+                </button>
+              </div>
+            </details>
           </form>
           {(activeFilters || (!listUnavailable && rows.length > 0)) && (
             <div className={styles.listSummary}>
@@ -363,7 +324,14 @@ export function IngestionWorkspaceClient({
                   this page{filters.window && ' · Last 24 hours'}
                 </span>
               )}
-              {activeFilters && <Link href={resetHref}>Clear filters</Link>}
+              {activeFilters && (
+                <div className={styles.activeChips} aria-label="Applied filters">
+                  {appliedLabels.map((label, index) => (
+                    <span key={index}>{label}</span>
+                  ))}
+                  <Link href={resetHref}>Clear filters</Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -428,20 +396,23 @@ export function IngestionWorkspaceClient({
                 </thead>
                 <tbody role="rowgroup">
                   {rows.map((row) => (
-                    <tr
-                      role="row"
-                      key={row.id}
-                      data-selected={row.id === attemptedSelection}
-                    >
+                    <tr role="row" key={row.id}>
                       <th role="rowheader" scope="row">
                         <Link
                           href={createHref(row.id)}
                           id={'inquiry-open-' + row.id}
-                          aria-current={
-                            row.id === attemptedSelection ? 'true' : undefined
-                          }
                         >
-                          <strong>{row.name}</strong>
+                          <strong>
+                            {row.name}
+                            {row.test_batch && (
+                              <small className={styles.testBadge}>Test</small>
+                            )}
+                          </strong>
+                          {row.summary && (
+                            <span className={styles.rowPreview}>
+                              {row.summary}
+                            </span>
+                          )}
                           <small>
                             {[
                               row.inquiry_ref,
@@ -480,151 +451,6 @@ export function IngestionWorkspaceClient({
             </>
           )}
         </section>
-
-        {attemptedSelection && (
-          <aside
-            id="inquiry-detail"
-            className={styles.detail}
-            aria-labelledby="inquiry-detail-heading"
-          >
-            <header className={styles.detailHeader}>
-              <div>
-                {selected && (
-                  <p>
-                    {selected.inquiry_ref} · {ORIGIN_LABELS[selected.origin]}
-                  </p>
-                )}
-                <h2
-                  id="inquiry-detail-heading"
-                  ref={detailHeading}
-                  tabIndex={-1}
-                >
-                  {selected?.name ?? 'Inquiry detail'}
-                </h2>
-              </div>
-              <button
-                type="button"
-                className={styles.close}
-                aria-label="Close inquiry details"
-                onClick={closeDetail}
-              >
-                ×
-              </button>
-            </header>
-            {selected ? (
-              <div className={styles.detailBody}>
-                <RowStatus state={selected.state} />
-                <dl className={styles.brief}>
-                  <BriefField label="Company">{selected.company}</BriefField>
-                  <BriefField label="Received">
-                    <time dateTime={selected.received_at}>
-                      {receivedLabel(selected.received_at)}
-                    </time>
-                  </BriefField>
-                  <BriefField label="Owner">
-                    {ownerLabel(selected.assigned_to, owners)}
-                  </BriefField>
-                  <BriefField label="Received via">
-                    {selected.original_channel &&
-                      (CHANNEL_LABELS[
-                        selected.original_channel as keyof typeof CHANNEL_LABELS
-                      ] ??
-                        selected.original_channel)}
-                  </BriefField>
-                  <BriefField label="Email">{selected.email}</BriefField>
-                  <BriefField label="Phone">{selected.phone}</BriefField>
-                  <BriefField label="Service">
-                    {selected.service_category}
-                  </BriefField>
-                  <BriefField label="Timeline">{selected.timeline}</BriefField>
-                  <BriefField label="Budget">{selected.budget}</BriefField>
-                  <BriefField label="Closure reason">
-                    {selected.close_reason}
-                  </BriefField>
-                </dl>
-                {selected.summary && (
-                  <section className={styles.summary}>
-                    <h3>Inquiry brief</h3>
-                    <p>{selected.summary}</p>
-                  </section>
-                )}
-                {selected.is_historical && (
-                  <p className={styles.historical}>
-                    Imported from CRM history. This reflects the available
-                    historical record.
-                  </p>
-                )}
-                {linkedLead ? (
-                  <Link
-                    className={styles.secondary}
-                    href={'/admin/leads/' + encodeURIComponent(linkedLead.id)}
-                  >
-                    Open lead {linkedLead.ref}
-                  </Link>
-                ) : selected.has_link ? (
-                  <p className={styles.historical}>
-                    A lead is linked to this inquiry.
-                  </p>
-                ) : canResolve ? (
-                  <ResolveInquiry
-                    key={selected.id + selected.updated_at}
-                    detail={selected}
-                  />
-                ) : null}
-                {canWrite && (
-                  <InquiryTriage
-                    key={selected.id + selected.updated_at}
-                    detail={selected}
-                    owners={triageOwners}
-                    onSaved={() => {
-                      setNotice('Inquiry updated.');
-                      detailHeading.current?.focus({ preventScroll: true });
-                    }}
-                  />
-                )}
-                <section className={styles.activity}>
-                  <h3>Recent history</h3>
-                  {historyUnavailable ? (
-                    <p>History is unavailable.</p>
-                  ) : history.length ? (
-                    <ul>
-                      {history.map((item) => (
-                        <li key={item.id}>
-                          <strong>
-                            {HISTORY_LABELS[item.event_type] ??
-                              'Inquiry updated'}
-                          </strong>
-                          <time dateTime={item.created_at}>
-                            {receivedLabel(item.created_at)}
-                          </time>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No history recorded.</p>
-                  )}
-                </section>
-              </div>
-            ) : (
-              <div className={styles.empty} role="status">
-                <p>
-                  {selectionUnavailable
-                    ? 'Could not load this inquiry.'
-                    : 'This inquiry is unavailable.'}
-                </p>
-                {selectionUnavailable && (
-                  <button
-                    type="button"
-                    className={styles.secondary}
-                    onClick={() => router.refresh()}
-                  >
-                    Retry
-                  </button>
-                )}
-              </div>
-            )}
-          </aside>
-        )}
       </div>
     </div>
   );

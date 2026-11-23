@@ -204,7 +204,7 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient.tsx'),
         'utf8'
       );
-      assert.match(pageContent, /listUnavailable=\{Boolean\(rowsResult\.error\) \|\| rowsResult\.data === null\}/);
+      assert.match(pageContent, /const listUnavailable\s*=\s*Boolean\(rowsResult\.error\) \|\| rowsResult\.data === null/);
       assert.match(pageContent, /needsReview: needsReview\.error \? null : needsReview\.count/);
       assert.match(clientContent, /Could not load the inbox/);
       assert.doesNotMatch(clientContent, /Endpoint Health|Simulate Inbound Brief|Inspect JSON/);

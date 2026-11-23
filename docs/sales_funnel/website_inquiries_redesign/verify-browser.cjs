@@ -3,7 +3,7 @@ const AxeBuilder = require('@axe-core/playwright').default;
 const fs = require('node:fs');
 const path = require('node:path');
 
-const base = 'http://127.0.0.1:3027/admin/ingestion';
+const base = 'http://127.0.0.1:' + (process.env.INQUIRIES_FIXTURE_PORT || 3027) + '/admin/ingestion';
 const dir = path.join(__dirname, 'screenshots');
 fs.mkdirSync(dir, { recursive: true });
 
@@ -37,7 +37,9 @@ async function verify() {
   }
   const row = (name) =>
     page.getByRole('rowheader').getByRole('link', { name: new RegExp(name) });
-  const detail = () => page.getByRole('complementary', { name: 'Asha Mehta' });
+  const detail = () => page.locator('main');
+  const detailId = '10000000-0000-0000-0000-000000000001';
+  const openDetail = (query = '') => page.goto(base + '/' + detailId + query);
   const write = () => page.evaluate(() => globalThis.fixtureWrites?.at(-1));
   const shot = (name) =>
     page.screenshot({ path: path.join(dir, name), fullPage: true });
@@ -65,7 +67,7 @@ async function verify() {
       async () => {
         await open();
         await page.getByRole('searchbox', { name: 'Search' }).fill('missing');
-        await page.getByRole('button', { name: 'Apply filters' }).click();
+        await page.getByRole('button', { name: 'Search', exact: true }).click();
         await expect(
           page.getByRole('heading', { name: 'No matching inquiries' }),
         ).toBeVisible();
@@ -83,14 +85,10 @@ async function verify() {
       await expect(
         detail().getByText('Inquiry received', { exact: true }),
       ).toBeVisible();
-      await expect(
-        detail().getByRole('heading', { name: 'Asha Mehta' }),
-      ).toBeFocused();
+      await expect(page).toHaveURL(new RegExp('/admin/ingestion/' + detailId));
       await shot('inquiries-detail.png');
-      await detail()
-        .getByRole('button', { name: 'Close inquiry details' })
-        .click();
-      await expect(detail()).toHaveCount(0);
+      await detail().getByRole('link', { name: /Back to inquiries/ }).click();
+      await expect(row('Asha Mehta')).toBeVisible();
     });
 
     await check(
@@ -140,21 +138,21 @@ async function verify() {
     await check(
       'Read access and lead-resolution permission are distinct',
       async () => {
-        const id = '10000000-0000-0000-0000-000000000001';
-        await open('?viewer=1&inquiry=' + id);
+        await openDetail('?viewer=1');
         await expect(
           page.getByRole('button', { name: 'Add inquiry' }),
         ).toHaveCount(0);
         await expect(
           detail().getByRole('button', { name: 'Save triage' }),
         ).toHaveCount(0);
-        await open('?no_leads=1&inquiry=' + id);
+        await openDetail('?no_leads=1');
         await expect(
           detail().getByRole('button', { name: 'Create lead' }),
         ).toHaveCount(0);
         await expect(
           detail().getByRole('button', { name: 'Save triage' }),
         ).toBeVisible();
+        await open('?no_leads=1');
         await page.getByRole('button', { name: 'Add inquiry' }).click();
         await expect(
           page.getByRole('dialog').getByLabel('Lead handling'),
@@ -165,7 +163,7 @@ async function verify() {
     await check(
       'Triage sends the exact snapshot and explicit closure reason',
       async () => {
-        await open('?inquiry=10000000-0000-0000-0000-000000000001');
+        await openDetail();
         await detail().getByLabel('Status').selectOption('closed');
         await detail()
           .getByLabel('Reason for closing')
@@ -189,8 +187,9 @@ async function verify() {
       'Assignment excludes directory contacts without inquiry access',
       async () => {
         await open(
-          '?owner=21000000-0000-0000-0000-000000000099&inquiry=10000000-0000-0000-0000-000000000001',
+          '?owner=21000000-0000-0000-0000-000000000099',
         );
+        await page.getByText('Filters', { exact: true }).click();
         const filter = page.getByRole('search', { name: 'Filter inquiries' });
         await expect(filter.getByLabel('Owner')).toHaveValue(
           '21000000-0000-0000-0000-000000000099',
@@ -198,9 +197,7 @@ async function verify() {
         await expect(
           filter.getByRole('option', { name: 'Directory Only' }),
         ).toHaveCount(1);
-        await expect(
-          detail().getByRole('option', { name: 'Directory Only' }),
-        ).toHaveCount(0);
+
         await page.getByRole('button', { name: 'Add inquiry' }).click();
         const dialog = page.getByRole('dialog', { name: 'Add inquiry' });
         await expect(
@@ -229,7 +226,7 @@ async function verify() {
     await check('Mobile and desktop avoid document overflow', async () => {
       for (const width of [320, 375, 768, 1024, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 });
-        await open('?inquiry=10000000-0000-0000-0000-000000000001');
+        await openDetail();
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBeLessThanOrEqual(width);
@@ -241,7 +238,7 @@ async function verify() {
       'No serious or critical accessibility issues or browser errors',
       async () => {
         await page.setViewportSize({ width: 1440, height: 1000 });
-        await open('?inquiry=10000000-0000-0000-0000-000000000001');
+        await openDetail();
         const findings = await new AxeBuilder({ page }).analyze();
         expect(
           findings.violations
