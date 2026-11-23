@@ -32,6 +32,8 @@ interface InboxProps {
     received: number | null;
   };
   owners: OwnerOption[];
+  assignmentOwners: OwnerOption[];
+  triageOwners: OwnerOption[];
   selected: InquiryDetail | null;
   linkedLead: { id: string; ref: string } | null;
   selectionUnavailable: boolean;
@@ -85,6 +87,8 @@ export function IngestionWorkspaceClient({
   listUnavailable,
   metrics,
   owners,
+  assignmentOwners,
+  triageOwners,
   selected,
   linkedLead,
   selectionUnavailable,
@@ -97,6 +101,7 @@ export function IngestionWorkspaceClient({
   const [notice, setNotice] = useState('');
   const detailHeading = useRef<HTMLHeadingElement>(null);
   const queueHeading = useRef<HTMLHeadingElement>(null);
+  const closedSelection = useRef('');
   const attemptedSelection = filters.inquiry;
   const resetHref = inboxHref(filters, {
     state: null,
@@ -137,6 +142,14 @@ export function IngestionWorkspaceClient({
     return () => cancelAnimationFrame(frame);
   }, [attemptedSelection]);
 
+  useEffect(() => {
+    if (attemptedSelection || !closedSelection.current) return;
+    const id = closedSelection.current;
+    closedSelection.current = '';
+    const row = document.getElementById('inquiry-open-' + id);
+    (row ?? queueHeading.current)?.focus();
+  }, [attemptedSelection]);
+
   const filterHref = (
     state: string | null,
     owner: string | null,
@@ -155,11 +168,8 @@ export function IngestionWorkspaceClient({
     });
 
   function closeDetail() {
+    closedSelection.current = attemptedSelection;
     router.push(inboxHref(filters, { inquiry: null }), { scroll: false });
-    requestAnimationFrame(() => {
-      const row = document.getElementById('inquiry-open-' + attemptedSelection);
-      (row ?? queueHeading.current)?.focus();
-    });
   }
 
   return (
@@ -171,7 +181,7 @@ export function IngestionWorkspaceClient({
         </div>
         {canWrite && (
           <AddInquiry
-            owners={owners}
+            owners={assignmentOwners}
             canResolve={canResolve}
             onSaved={(id) => {
               setNotice('Inquiry saved.');
@@ -312,6 +322,11 @@ export function IngestionWorkspaceClient({
               <select name="owner" defaultValue={filters.owner}>
                 <option value="">Any owner</option>
                 <option value="unassigned">Unassigned</option>
+                {filters.owner &&
+                  filters.owner !== 'unassigned' &&
+                  !owners.some(({ id }) => id === filters.owner) && (
+                    <option value={filters.owner}>Selected owner</option>
+                  )}
                 {owners.map((owner) => (
                   <option key={owner.id} value={owner.id}>
                     {owner.name}
@@ -560,7 +575,11 @@ export function IngestionWorkspaceClient({
                   <InquiryTriage
                     key={selected.id + selected.updated_at}
                     detail={selected}
-                    owners={owners}
+                    owners={triageOwners}
+                    onSaved={() => {
+                      setNotice('Inquiry updated.');
+                      detailHeading.current?.focus({ preventScroll: true });
+                    }}
                   />
                 )}
                 <section className={styles.activity}>

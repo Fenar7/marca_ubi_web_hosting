@@ -19,6 +19,15 @@ INSERT INTO public.profiles (id, email, full_name, role, status, allowed_tabs) V
 CREATE TEMP TABLE inquiry_fixture_result (fixture text PRIMARY KEY, result jsonb NOT NULL);
 GRANT SELECT, INSERT ON inquiry_fixture_result TO authenticated, service_role;
 
+-- Some old simulator rows only carry the simulated marker. Public retries must ignore them.
+INSERT INTO public.leads (name, email, lead_source_id, status_id, brief_payload)
+VALUES ('Simulated fixture', 'fixture-simulated@example.invalid',
+        'a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001',
+        '{"simulated":true}');
+INSERT INTO public.leads (name, email, lead_source_id, status_id, converted_at)
+VALUES ('Completed fixture', 'fixture-converted@example.invalid',
+        'a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', now());
+
 SET LOCAL ROLE service_role;
 SELECT set_config('request.jwt.claim.role', 'service_role', true), set_config('request.jwt.claim.sub', '', true);
 SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
@@ -26,12 +35,13 @@ SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
 DO $$
 DECLARE
     v_payload jsonb := '{
-        "origin":"contact", "idempotency_key":"fixture-contact-1", "name":"Fixture Contact",
+        "origin":"contact", "idempotency_key":"fixture-contact-1", "name":"Q",
         "email":"  FIXTURE-contact@example.invalid ", "summary":"First project inquiry",
-        "brief":{"ip":"127.0.0.1","raw_message":"A real question","services":["Design"]}
+        "budget_bracket":"10000", "brief":{"ip":"127.0.0.1","raw_message":"A real question","services":["Design"],"timeline":"Next quarter"}
     }';
     v_first jsonb;
     v_repeat jsonb;
+    v_held jsonb;
 BEGIN
     v_first := public.record_inquiry(v_payload);
     ASSERT v_first->>'outcome' = 'created';
@@ -54,6 +64,18 @@ BEGIN
     ASSERT v_repeat->>'id' <> v_first->>'id';
     INSERT INTO inquiry_fixture_result VALUES ('first', v_first), ('repeat', v_repeat);
 
+    v_held := public.record_inquiry(v_payload || '{
+        "idempotency_key":"fixture-simulated-block", "email":"fixture-simulated@example.invalid"
+    }'::jsonb);
+    ASSERT v_held->>'outcome' = 'needs_review' AND v_held->>'lead_id' IS NULL;
+    INSERT INTO inquiry_fixture_result VALUES ('held', v_held);
+
+    v_held := public.record_inquiry(v_payload || '{
+        "idempotency_key":"fixture-converted-return", "email":"fixture-converted@example.invalid"
+    }'::jsonb);
+    ASSERT v_held->>'outcome' = 'needs_review' AND v_held->>'lead_id' IS NULL;
+    INSERT INTO inquiry_fixture_result VALUES ('converted', v_held);
+
     BEGIN
         PERFORM public.record_inquiry(v_payload || '{
             "origin":"manual", "idempotency_key":"fixture-false-manual", "original_channel":"phone"
@@ -75,7 +97,14 @@ BEGIN
     ASSERT (SELECT count(*) FROM public.inquiries WHERE lead_id = v_lead) = 2;
     ASSERT (SELECT inquiry_count = 2 AND priority = 'High' FROM public.leads WHERE id = v_lead);
     ASSERT (SELECT NOT (brief ? 'ip') AND brief->>'raw_message' = 'A real question'
+            AND brief->>'budget' = '10000' AND brief->>'timeline' = 'Next quarter'
         FROM public.inquiries WHERE id = v_id);
+    ASSERT (SELECT budget_bracket = '10000' AND name = 'Q' FROM public.leads WHERE id = v_lead);
+    ASSERT (SELECT inquiry_count = 1 FROM public.leads
+        WHERE email = 'fixture-simulated@example.invalid' AND brief_payload->>'simulated' = 'true');
+    ASSERT (SELECT state = 'new' AND lead_id IS NULL FROM public.inquiries
+        WHERE id = (SELECT (result->>'id')::uuid FROM inquiry_fixture_result WHERE fixture = 'held'));
+    ASSERT (SELECT count(*) FROM public.leads WHERE email = 'fixture-converted@example.invalid') = 1;
     ASSERT (SELECT count(*) FROM public.inquiry_activity WHERE inquiry_id = v_id) = 1;
 END;
 $$;
@@ -88,6 +117,7 @@ SELECT set_config('request.jwt.claims', '{"sub":"f3000000-0000-4000-8000-0000000
 DO $$
 BEGIN
     ASSERT (SELECT count(*) FROM public.find_inquiry_matches('  FIXTURE-CONTACT@example.invalid  ', NULL)) = 1;
+    ASSERT NOT EXISTS (SELECT 1 FROM public.find_inquiry_matches('fixture-simulated@example.invalid', NULL));
     ASSERT NOT EXISTS (SELECT 1 FROM public.find_inquiry_matches(NULL, NULL));
 END;
 $$;
@@ -97,12 +127,29 @@ DECLARE
     v_payload jsonb := '{
         "origin":"manual", "idempotency_key":"fixture-manual-1", "name":"Fixture Manual",
         "email":"fixture-manual@example.invalid", "summary":"Third inquiry", "original_channel":"phone",
+        "brief":{"timeline":"Next quarter"},
         "link_mode":"review", "assigned_to":"f3000000-0000-4000-8000-000000000003"
     }';
     v_result jsonb;
     v_inquiry public.inquiries;
     v_updated jsonb;
 BEGIN
+    -- An authorized operator can explicitly link the held renewal without reopening the old lead.
+    SELECT * INTO v_inquiry FROM public.inquiries
+    WHERE id = (SELECT (result->>'id')::uuid FROM inquiry_fixture_result WHERE fixture = 'converted');
+    BEGIN
+        PERFORM public.link_inquiry(v_inquiry.id, v_inquiry.updated_at, 'create', NULL);
+        RAISE EXCEPTION 'An existing email was incorrectly reused for a new lead';
+    EXCEPTION WHEN invalid_parameter_value THEN NULL;
+    END;
+    v_result := public.link_inquiry(
+        v_inquiry.id, v_inquiry.updated_at, 'link',
+        (SELECT id FROM public.leads WHERE email = 'fixture-converted@example.invalid')
+    );
+    ASSERT v_result->>'outcome' = 'linked';
+    ASSERT (SELECT inquiry_count = 1 AND converted_at IS NOT NULL AND status_id = 'b0000000-0000-0000-0000-000000000001'
+        FROM public.leads WHERE id = (v_result->>'lead_id')::uuid);
+
     v_result := public.record_inquiry(v_payload);
     ASSERT v_result->>'outcome' = 'needs_review';
     SELECT * INTO v_inquiry FROM public.inquiries WHERE id = (v_result->>'id')::uuid;
@@ -142,6 +189,7 @@ BEGIN
 
     v_result := public.link_inquiry(v_inquiry.id, (v_updated->>'updated_at')::timestamptz, 'create', NULL);
     ASSERT v_result->>'outcome' = 'created';
+    ASSERT (SELECT budget_bracket IS NULL FROM public.leads WHERE id = (v_result->>'lead_id')::uuid);
     ASSERT public.record_inquiry(v_payload)->>'outcome' = 'needs_review';
     ASSERT (SELECT count(*) FROM public.inquiry_activity WHERE inquiry_id = v_inquiry.id) = 3;
     INSERT INTO inquiry_fixture_result VALUES ('owned', v_result);

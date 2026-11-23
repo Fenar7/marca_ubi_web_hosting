@@ -47,6 +47,7 @@ export default function ProjectForm() {
   const goToStep = (step: number) => setCurrentStep(step);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -98,6 +99,11 @@ export default function ProjectForm() {
         }
 
         const data = await response.json().catch(() => ({}));
+        if (response.status >= 400 && response.status < 500 && response.status !== 408) {
+          setSubmitError(typeof data.error === "string" ? data.error : "Check your inquiry and try again.");
+          setIsSubmitting(false);
+          return;
+        }
         if (attempt === maxAttempts) {
           throw new Error(data.error || `Server responded with status ${response.status}`);
         }

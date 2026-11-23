@@ -1,5 +1,7 @@
 # Current Engineering Context
 
+**Website Inquiries:** [Current hand-off](./2026-11-24_00-45-00.md) for the inquiry inbox, manual intake, and public capture in PR #126.
+
 **Deals workspace rebuild:** [Current hand-off](./2026-11-23_19-54-00.md) for the Board, Table, filters and stage movement in PR #126. [Earlier board hand-off](./2026-11-23_15-45-00.md).
 
 **Leads reliability update:** [Current hand-off](./2026-11-23_15-06-59.md) for the directory migration and dossier performance work.

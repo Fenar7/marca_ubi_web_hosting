@@ -179,6 +179,36 @@ async function verify() {
           '2026-11-23T13:45:07.123456+00:00',
         );
         expect(result.data.closeReason).toBe('Resolved without an opportunity');
+        await expect(
+          detail().getByRole('button', { name: 'Reload inquiry' }),
+        ).toBeVisible();
+      },
+    );
+
+    await check(
+      'Assignment excludes directory contacts without inquiry access',
+      async () => {
+        await open(
+          '?owner=21000000-0000-0000-0000-000000000099&inquiry=10000000-0000-0000-0000-000000000001',
+        );
+        const filter = page.getByRole('search', { name: 'Filter inquiries' });
+        await expect(filter.getByLabel('Owner')).toHaveValue(
+          '21000000-0000-0000-0000-000000000099',
+        );
+        await expect(
+          filter.getByRole('option', { name: 'Directory Only' }),
+        ).toHaveCount(1);
+        await expect(
+          detail().getByRole('option', { name: 'Directory Only' }),
+        ).toHaveCount(0);
+        await page.getByRole('button', { name: 'Add inquiry' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Add inquiry' });
+        await expect(
+          dialog.getByRole('option', { name: 'Sample Owner' }),
+        ).toHaveCount(1);
+        await expect(
+          dialog.getByRole('option', { name: 'Directory Only' }),
+        ).toHaveCount(0);
       },
     );
 

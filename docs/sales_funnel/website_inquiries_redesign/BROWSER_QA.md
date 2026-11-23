@@ -7,7 +7,8 @@ The loopback harness renders the production inquiry inbox components and styles 
 | Scoped queue | Website and Manual scopes show their corresponding rows. Search updates the URL and Clear filters restores the queue. |
 | Detail | Opening a row focuses the detail heading and shows a structured brief and recent history. Closing returns to the queue. |
 | Manual entry | The native dialog returns focus on Escape. A rejected save preserves the form and reuses its idempotency key. Choosing a matching lead is explicit. |
-| Triage and permissions | The update sends an exact timestamp with microsecond precision and a closure reason. Viewers see read controls only. Operators without Leads access can triage but cannot link or create a lead from the inbox. |
+| Triage and permissions | The update sends an exact timestamp with microsecond precision and a closure reason. A rejected update offers Reload inquiry. Viewers see read controls only. Operators without Leads access can triage but cannot link or create a lead from the inbox. |
+| Assignment | Directory members without inquiry access are absent from Add inquiry and Triage. A bookmarked owner filter is preserved when its owner is missing from the directory. |
 | Availability | Empty and failed reads have distinct states. One unavailable count does not suppress other metrics. |
 | Responsive and accessible | No page overflow at 320, 375, 768, 1024, 1440 or 1920 CSS pixels. No serious or critical axe findings and no browser runtime errors. |
 

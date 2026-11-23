@@ -256,6 +256,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
     const nextErrors = validateCompanyProfileSubmission(formData);
 
@@ -334,6 +335,11 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
         if (!response.ok) {
           const errData = (await response.json().catch(() => ({}))) as { error?: string };
+          if (response.status >= 400 && response.status < 500 && response.status !== 408) {
+            setSubmitError(errData.error || "Check your details and try again.");
+            setIsSubmitting(false);
+            return;
+          }
           throw new Error(errData.error || `Server responded with status ${response.status}`);
         }
 

@@ -53,6 +53,7 @@ const FIELD_TO_SLOT: Record<string, SlotId> = {
 type Wait = (ms: number) => Promise<void>;
 
 const defaultWait: Wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const uncertainDelivery = "Stopped waiting. The studio may already have received your inquiry.";
 
 /**
  * The route returns the first problem it finds as a `details` map of field to messages. The pod can
@@ -107,7 +108,12 @@ export async function submitBrief(payload: IngestPayload, options: SubmitOptions
 
   for (let attempt = 1; attempt <= MAX_NETWORK_ATTEMPTS; attempt += 1) {
     if (options.signal?.aborted) {
-      return { ok: false, status: 0, message: "Stopped. Nothing was sent.", retryable: true };
+      return {
+        ok: false,
+        status: 0,
+        message: attempt === 1 ? "Stopped before sending." : uncertainDelivery,
+        retryable: true,
+      };
     }
 
     try {
@@ -161,13 +167,27 @@ export async function submitBrief(payload: IngestPayload, options: SubmitOptions
         };
       }
 
+      if (lastStatus === 409) {
+        return {
+          ok: false,
+          status: 409,
+          message: "This submission reference was already used. Review the brief before sending it again.",
+          retryable: false,
+        };
+      }
+
       lastMessage =
         lastStatus >= 500
           ? "The studio's service did not answer. I will keep your answers and you can send it again."
           : `Our system responded with status ${lastStatus}. Nothing was recorded twice.`;
     } catch (error) {
       if (options.signal?.aborted) {
-        return { ok: false, status: 0, message: "Stopped. Nothing was sent.", retryable: true };
+        return {
+          ok: false,
+          status: 0,
+          message: uncertainDelivery,
+          retryable: true,
+        };
       }
       // A rejected `fetch` carries no status, and its message is a browser string the visitor cannot
       // act on. The cause is logged; the copy stays about what they can do next.

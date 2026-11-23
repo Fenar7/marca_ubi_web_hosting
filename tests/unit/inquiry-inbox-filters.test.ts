@@ -1,10 +1,20 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 import {
+  canAssignInquiryOwner,
   inboxHref,
   parseCursor,
   readInboxFilters,
 } from '../../src/app/admin/(workspace)/ingestion/inquiryView';
+
+test('assignee choices mirror active inquiry role and tab rules', () => {
+  assert.equal(canAssignInquiryOwner('admin', ['leads']), true);
+  assert.equal(canAssignInquiryOwner('sales_manager', []), true);
+  assert.equal(canAssignInquiryOwner('sales_manager', ['leads']), false);
+  assert.equal(canAssignInquiryOwner('sales_executive', []), false);
+  assert.equal(canAssignInquiryOwner('sales_executive', ['ingestion']), true);
+  assert.equal(canAssignInquiryOwner('viewer', ['ingestion']), false);
+});
 
 describe('Inquiry inbox URL contracts', () => {
   it('normalizes filters before they reach PostgREST', () => {

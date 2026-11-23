@@ -57,6 +57,18 @@ export interface OwnerOption {
   name: string;
 }
 
+/** Mirror inquiry_staff_role for the picker; the database authorizes every assignment. */
+export function canAssignInquiryOwner(
+  role: string,
+  allowedTabs: unknown,
+): boolean {
+  if (role === 'admin') return true;
+  if (role !== 'sales_manager' && role !== 'sales_executive') return false;
+  return Array.isArray(allowedTabs) && allowedTabs.length > 0
+    ? allowedTabs.includes('ingestion')
+    : role === 'sales_manager';
+}
+
 export interface LeadMatch {
   id: string;
   lead_ref: string;

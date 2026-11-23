@@ -5,6 +5,7 @@ import { getCrmDirectoryList } from '@/app/admin/lib/crmDirectory';
 import { ROLE_DEFAULT_TABS, type CrmUserRole } from '@/types/crm';
 import { IngestionWorkspaceClient } from './components/IngestionWorkspaceClient';
 import {
+  canAssignInquiryOwner,
   inboxHref,
   inquiryCursor,
   readInboxFilters,
@@ -136,6 +137,7 @@ export default async function AdminIngestionPage({
     unassigned,
     received,
     directory,
+    ownerEligibility,
     detailResult,
     historyResult,
   ] = await Promise.all([
@@ -154,6 +156,13 @@ export default async function AdminIngestionPage({
       'sales_manager',
       'sales_executive',
     ]),
+    canWrite
+      ? supabase
+          .from('profiles')
+          .select('id,role,allowed_tabs')
+          .eq('status', 'active')
+          .in('role', ['admin', 'sales_manager', 'sales_executive'])
+      : null,
     filters.inquiry
       ? supabase
           .from('inquiries')
@@ -179,6 +188,7 @@ export default async function AdminIngestionPage({
     ['received', received.error],
     ['detail', detailResult?.error],
     ['history', historyResult?.error],
+    ['assignment eligibility', ownerEligibility?.error],
   ] as const) {
     if (error)
       console.error('[inquiries] Query failed', { area, code: error.code });
@@ -209,17 +219,32 @@ export default async function AdminIngestionPage({
         })
       : null;
   const detail = (detailResult?.data ?? null) as InquiryDetail | null;
+  const owners = directory.map(({ id, full_name }) => ({
+    id,
+    name: full_name,
+  }));
+  const eligibleOwnerRoles = new Map(
+    (ownerEligibility?.data ?? [])
+      .filter(({ role, allowed_tabs }) =>
+        canAssignInquiryOwner(role, allowed_tabs),
+      )
+      .map(({ id, role }) => [id, role]),
+  );
 
   let leadLink: { id: string; ref: string } | null = null;
+  let linkedLeadOwner: string | null = null;
   if (detail?.lead_id && hasTab('leads')) {
     const { data: lead, error } = await supabase
       .from('leads')
-      .select('id,lead_id')
+      .select('id,lead_id,assigned_to')
       .eq('id', detail.lead_id)
       .maybeSingle();
     if (error)
       console.error('[inquiries] Linked lead lookup failed', error.code);
-    if (lead) leadLink = { id: lead.id, ref: lead.lead_id };
+    if (lead) {
+      leadLink = { id: lead.id, ref: lead.lead_id };
+      linkedLeadOwner = lead.assigned_to;
+    }
   }
 
   return (
@@ -234,7 +259,17 @@ export default async function AdminIngestionPage({
         unassigned: unassigned.error ? null : unassigned.count,
         received: received.error ? null : received.count,
       }}
-      owners={directory.map(({ id, full_name }) => ({ id, name: full_name }))}
+      owners={owners}
+      assignmentOwners={owners.filter(({ id }) => eligibleOwnerRoles.has(id))}
+      triageOwners={owners.filter(({ id }) => {
+        const ownerRole = eligibleOwnerRoles.get(id);
+        return (
+          ownerRole &&
+          (!detail?.lead_id ||
+            ownerRole !== 'sales_executive' ||
+            id === linkedLeadOwner)
+        );
+      })}
       selected={
         detail
           ? {

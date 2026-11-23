@@ -5,7 +5,7 @@ CREATE TABLE public.inquiries (
     origin text NOT NULL CHECK (origin IN ('contact', 'start_project', 'chat_pod', 'website', 'manual')),
     original_channel text CHECK (length(original_channel) BETWEEN 1 AND 80),
     received_at timestamptz NOT NULL DEFAULT now(),
-    name text NOT NULL CHECK (length(name) BETWEEN 2 AND 120),
+    name text NOT NULL CHECK (length(name) BETWEEN 1 AND 120),
     email text CHECK (length(email) BETWEEN 1 AND 255),
     phone text CHECK (length(phone) BETWEEN 1 AND 50),
     company text CHECK (length(company) BETWEEN 1 AND 200),
@@ -209,6 +209,7 @@ LANGUAGE sql STABLE SET search_path = pg_catalog AS $$
                     OR nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') = p_phone) AS compatible
         FROM public.leads AS lead
         WHERE lead.brief_payload->>'synthetic_benchmark' IS DISTINCT FROM 'true'
+          AND lead.brief_payload->>'simulated' IS DISTINCT FROM 'true'
           AND (
               lower(btrim(lead.email)) = p_email OR
               (lead.phone IS NOT NULL AND nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') = p_phone)
@@ -284,6 +285,8 @@ BEGIN
             || jsonb_build_object('inquiry_ref', p_inquiry.inquiry_ref, 'inquiry_origin', p_inquiry.origin)
             || CASE WHEN p_previous_ref IS NULL THEN '{}'::jsonb ELSE jsonb_build_object('previous_lead_id', p_previous_ref) END
     )
+    -- Legacy CRM keeps one lead per normalized email. The caller can still retain the inquiry for review.
+    ON CONFLICT (lower(btrim(email))) WHERE email IS NOT NULL DO NOTHING
     RETURNING * INTO v_lead;
 
     RETURN v_lead;
@@ -327,7 +330,7 @@ BEGIN
     IF jsonb_typeof(p_input) IS DISTINCT FROM 'object'
         OR v_origin IS NULL OR v_origin NOT IN ('contact', 'start_project', 'chat_pod', 'website', 'manual')
         OR v_key IS NULL OR v_key !~ '^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$'
-        OR v_name IS NULL OR length(v_name) NOT BETWEEN 2 AND 120
+        OR v_name IS NULL OR length(v_name) NOT BETWEEN 1 AND 120
         OR v_summary IS NULL OR length(v_summary) NOT BETWEEN 1 AND 12000
         OR length(v_company) > 200 OR length(v_email) > 255 OR length(v_phone) > 50
         OR v_name ~ '[[:cntrl:]]' OR v_company ~ '[[:cntrl:]]'
@@ -339,7 +342,7 @@ BEGIN
         OR ((v_mode = 'link') IS DISTINCT FROM (v_explicit_id IS NOT NULL))
         OR (v_email IS NULL AND (v_digits IS NULL OR length(v_digits) < 7))
         OR (v_email IS NOT NULL AND v_email !~ '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+$')
-        OR (v_phone IS NOT NULL AND (v_digits IS NULL OR length(v_digits) NOT BETWEEN 7 AND 20))
+        OR (v_phone IS NOT NULL AND (v_digits IS NULL OR length(v_digits) NOT BETWEEN 7 AND 15))
         OR jsonb_typeof(COALESCE(p_input->'brief', '{}'::jsonb)) <> 'object'
         OR octet_length(p_input::text) > 131072 THEN
         RAISE EXCEPTION 'Invalid inquiry' USING ERRCODE = '22023';
@@ -401,6 +404,7 @@ BEGIN
         IF NOT v_conflict AND v_matched_id IS NOT NULL AND v_mode <> 'create' THEN
             SELECT lead.* INTO v_existing FROM public.leads AS lead
             WHERE lead.id = v_matched_id AND lead.brief_payload->>'synthetic_benchmark' IS DISTINCT FROM 'true'
+              AND lead.brief_payload->>'simulated' IS DISTINCT FROM 'true'
               AND (lower(btrim(lead.email)) = v_email OR nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') = v_digits)
               AND (v_email IS NULL OR nullif(btrim(lead.email), '') IS NULL OR lower(btrim(lead.email)) = v_email)
               AND (v_digits IS NULL OR nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') IS NULL OR nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') = v_digits)
@@ -424,7 +428,9 @@ BEGIN
         v_origin, v_channel, v_received,
         v_name, v_email, v_phone, v_company,
         p_input->>'service_category', v_summary,
-        public.project_inquiry_brief(COALESCE(p_input->'brief', '{}'::jsonb)), v_owner, v_actor
+        public.project_inquiry_brief(COALESCE(p_input->'brief', '{}'::jsonb))
+            || jsonb_strip_nulls(jsonb_build_object('budget', nullif(btrim(p_input->>'budget_bracket'), ''))),
+        v_owner, v_actor
     )
     RETURNING * INTO v_inquiry;
 
@@ -434,8 +440,12 @@ BEGIN
             OR (v_bucket = 'lost' AND v_existing.updated_at < v_received - interval '90 days')
         )) THEN
             v_lead := public.create_inquiry_lead(v_inquiry, p_input, v_existing.lead_id);
-            v_action := CASE WHEN v_existing.id IS NULL THEN 'NEW_LEAD' ELSE 'CREATE_NEW_REENGAGEMENT' END;
-            v_outcome := 'created';
+            IF v_lead.id IS NOT NULL THEN
+                v_action := CASE WHEN v_existing.id IS NULL THEN 'NEW_LEAD' ELSE 'CREATE_NEW_REENGAGEMENT' END;
+                v_outcome := 'created';
+            ELSIF v_manual AND v_mode = 'create' THEN
+                RAISE EXCEPTION 'A separate lead is unavailable for this inquiry' USING ERRCODE = '22023';
+            END IF;
         ELSE
             v_lead := v_existing;
             v_outcome := 'linked';
@@ -600,6 +610,7 @@ BEGIN
         END IF;
         SELECT lead.* INTO v_lead FROM public.leads AS lead
         WHERE lead.id = v_match AND lead.brief_payload->>'synthetic_benchmark' IS DISTINCT FROM 'true'
+          AND lead.brief_payload->>'simulated' IS DISTINCT FROM 'true'
           AND (lower(btrim(lead.email)) = v_inquiry.email OR nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') = v_digits)
           AND (v_inquiry.email IS NULL OR nullif(btrim(lead.email), '') IS NULL OR lower(btrim(lead.email)) = v_inquiry.email)
           AND (v_digits IS NULL OR nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') IS NULL OR nullif(regexp_replace(lead.phone, '[^0-9]', '', 'g'), '') = v_digits)
@@ -617,8 +628,11 @@ BEGIN
         v_lead := public.create_inquiry_lead(v_inquiry, jsonb_build_object(
             'company_website', COALESCE(v_inquiry.brief->>'companyWebsite', v_inquiry.brief->>'website'),
             'industry', v_inquiry.brief->>'industry',
-            'budget_bracket', COALESCE(v_inquiry.brief->>'budget', v_inquiry.brief->>'budget_amount', v_inquiry.brief->>'timeline')
+            'budget_bracket', COALESCE(v_inquiry.brief->>'budget', v_inquiry.brief->>'budget_amount')
         ));
+        IF v_lead.id IS NULL THEN
+            RAISE EXCEPTION 'A separate lead is unavailable for this inquiry' USING ERRCODE = '22023';
+        END IF;
         v_outcome := 'created';
         v_action := 'NEW_LEAD';
     END IF;
@@ -654,6 +668,12 @@ GRANT EXECUTE ON FUNCTION public.link_inquiry(uuid, timestamptz, text, uuid) TO 
 -- the only historical timestamp available here. It is never used to infer later submissions.
 WITH identified AS (
     SELECT lead.*,
+        public.project_inquiry_brief(lead.brief_payload)
+            || jsonb_strip_nulls(jsonb_build_object('budget', COALESCE(
+                nullif(btrim(lead.brief_payload->>'budget'), ''),
+                nullif(btrim(lead.brief_payload->>'budget_amount'), ''),
+                nullif(btrim(lead.budget_bracket), '')
+            ))) AS historical_brief,
         CASE
             WHEN lead.brief_payload->>'source' = 'Contact Page Direct Inquiry'
                 AND lead.brief_payload->>'receipt_id' LIKE 'MUBI-%' THEN 'contact'
@@ -667,7 +687,7 @@ WITH identified AS (
     WHERE lead.brief_payload->>'synthetic_benchmark' IS DISTINCT FROM 'true'
       AND lead.brief_payload->>'simulated' IS DISTINCT FROM 'true'
       AND NOT (lead.brief_payload ? 'inquiry_origin')
-      AND length(btrim(lead.name)) BETWEEN 2 AND 120
+      AND length(btrim(lead.name)) BETWEEN 1 AND 120
       AND (length(btrim(lead.email)) BETWEEN 1 AND 255 OR length(btrim(lead.phone)) BETWEEN 1 AND 50)
 ), backfilled AS (
     INSERT INTO public.inquiries (
@@ -685,8 +705,8 @@ WITH identified AS (
             'Original message unavailable in imported history.'
         ), 12000),
         CASE
-            WHEN octet_length(public.project_inquiry_brief(lead.brief_payload)::text) <= 32768
-                THEN public.project_inquiry_brief(lead.brief_payload)
+            WHEN octet_length(lead.historical_brief::text) <= 32768
+                THEN lead.historical_brief
             ELSE '{}'::jsonb
         END,
         lead.id, 'linked', true

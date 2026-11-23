@@ -26,6 +26,10 @@
       "passed": true
     },
     {
+      "name": "Assignment excludes directory contacts without inquiry access",
+      "passed": true
+    },
+    {
       "name": "Empty and failed reads are distinct",
       "passed": true
     },

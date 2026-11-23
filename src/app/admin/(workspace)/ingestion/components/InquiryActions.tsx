@@ -294,11 +294,11 @@ function AddInquiryForm({
         <div className={styles.formGrid}>
           <label>
             Name
-            <input name="name" autoComplete="name" required maxLength={160} />
+            <input name="name" autoComplete="name" required maxLength={100} />
           </label>
           <label>
             Company
-            <input name="company" autoComplete="organization" maxLength={200} />
+            <input name="company" autoComplete="organization" maxLength={120} />
           </label>
           <label>
             Email
@@ -306,7 +306,7 @@ function AddInquiryForm({
               type="email"
               name="email"
               autoComplete="email"
-              maxLength={254}
+              maxLength={255}
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
@@ -320,7 +320,7 @@ function AddInquiryForm({
               type="tel"
               name="phone"
               autoComplete="tel"
-              maxLength={40}
+              maxLength={50}
               value={phone}
               onChange={(event) => {
                 setPhone(event.target.value);
@@ -342,7 +342,7 @@ function AddInquiryForm({
             </select>
           </label>
           <label>
-            Received at <small>Optional, defaults to now</small>
+            Received at <small>Local time, defaults to now</small>
             <input type="datetime-local" name="receivedAt" />
           </label>
           <label>
@@ -432,14 +432,14 @@ function AddInquiryForm({
 interface TriageProps {
   detail: InquiryDetail;
   owners: OwnerOption[];
+  onSaved: () => void;
 }
 
-export function InquiryTriage({ detail, owners }: TriageProps) {
+export function InquiryTriage({ detail, owners, onSaved }: TriageProps) {
   const [state, setState] = useState<InquiryState>(detail.state);
   const router = useRouter();
   const lock = useRef(false);
   const [pending, setPending] = useState(false);
-  const [resultText, setResultText] = useState('');
   const [error, setError] = useState('');
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -449,7 +449,6 @@ export function InquiryTriage({ detail, owners }: TriageProps) {
     lock.current = true;
     setPending(true);
     setError('');
-    setResultText('');
     try {
       const response = await updateInquiryAction({
         inquiryId: detail.id,
@@ -462,7 +461,7 @@ export function InquiryTriage({ detail, owners }: TriageProps) {
             : null,
       });
       if (response.success) {
-        setResultText('Inquiry updated.');
+        onSaved();
         router.refresh();
       } else setError(response.error);
     } catch (error) {
@@ -533,7 +532,15 @@ export function InquiryTriage({ detail, owners }: TriageProps) {
           {error}
         </p>
       )}
-      {resultText && <p role="status">{resultText}</p>}
+      {error && (
+        <button
+          type="button"
+          className={styles.secondary}
+          onClick={() => router.refresh()}
+        >
+          Reload inquiry
+        </button>
+      )}
       <button type="submit" className={styles.secondary} disabled={pending}>
         {pending ? 'Saving…' : 'Save triage'}
       </button>
