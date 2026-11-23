@@ -1,535 +1,612 @@
 'use client';
 
-/**
- * @file IngestionWorkspaceClient.tsx
- * @description Interactive Client Component for Website Inquiries & Webhook Capture (/admin/ingestion).
- *              Renders live database-driven telemetry, expandable Raw Webhook Payload Inspector,
- *              and an interactive "Simulate Inbound Brief" Testing Console.
- * @module app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-import React, { useState, useTransition, useEffect, useRef, useCallback } from 'react';
-import { simulateInboundBriefAction } from '@/app/actions/settings';
-import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import type { InquiryHistory } from '../page';
+import {
+  CHANNEL_LABELS,
+  INQUIRY_PATH,
+  ORIGIN_LABELS,
+  STATE_LABELS,
+  inboxHref,
+  ownerLabel,
+  receivedLabel,
+  type InboxFilters,
+  type InquiryDetail,
+  type InquiryRow,
+  type OwnerOption,
+} from '../inquiryView';
+import { AddInquiry, InquiryTriage, ResolveInquiry } from './InquiryActions';
 import styles from './IngestionWorkspaceClient.module.scss';
 
-export interface IngestionTelemetryData {
-  inboundCount24h: number | null;
-  dedupMerges24h: number | null;
-  dedupWindowHours: number | null;
-  botRateLimit: number | null;
-  endpointHealth: string;
+interface InboxProps {
+  canWrite: boolean;
+  canResolve: boolean;
+  filters: InboxFilters;
+  rows: InquiryRow[];
+  listUnavailable: boolean;
+  metrics: {
+    needsReview: number | null;
+    unassigned: number | null;
+    received: number | null;
+  };
+  owners: OwnerOption[];
+  selected: InquiryDetail | null;
+  linkedLead: { id: string; ref: string } | null;
+  selectionUnavailable: boolean;
+  history: InquiryHistory[];
+  historyUnavailable: boolean;
+  previous: string | null;
+  next: string | null;
 }
 
-export interface InboundSubmissionItem {
-  id: string;
-  lead_id: string;
-  name: string;
-  company: string | null;
-  email: string | null;
-  phone: string | null;
-  service_category: string;
-  expected_value: number;
-  created_at: string;
-  brief_payload: Record<string, unknown> | null;
+const CHANNELS = [
+  ['all', 'All inquiries'],
+  ['website', 'Website'],
+  ['manual', 'Manual'],
+] as const;
+const HISTORY_LABELS: Record<InquiryHistory['event_type'], string> = {
+  received: 'Inquiry received',
+  linked: 'Lead linked',
+  triaged: 'Triage updated',
+  backfilled: 'Imported from CRM history',
+};
+
+function RowStatus({ state }: { state: InquiryRow['state'] }) {
+  return (
+    <span className={styles.stateBadge} data-state={state}>
+      {STATE_LABELS[state]}
+    </span>
+  );
 }
 
-export interface IngestionActivityItem {
-  id: string;
-  activity_type: string;
-  description: string;
-  created_at: string;
+function BriefField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return children ? (
+    <div>
+      <dt>{label}</dt>
+      <dd>{children}</dd>
+    </div>
+  ) : null;
 }
 
-interface IngestionWorkspaceClientProps {
-  telemetry: IngestionTelemetryData;
-  recentSubmissions: InboundSubmissionItem[];
-  recentActivities: IngestionActivityItem[];
-  submissionsUnavailable: boolean;
-  activitiesUnavailable: boolean;
-  canSimulate: boolean;
-}
-
+/** List changes are URL-owned so sorting, paging, search, and the selected inquiry survive navigation. */
 export function IngestionWorkspaceClient({
-  telemetry,
-  recentSubmissions,
-  recentActivities,
-  submissionsUnavailable,
-  activitiesUnavailable,
-  canSimulate,
-}: IngestionWorkspaceClientProps): React.ReactElement {
-  const [isSimulateModalOpen, setIsSimulateModalOpen] = useState<boolean>(false);
-  const [expandedPayloadId, setExpandedPayloadId] = useState<string | null>(null);
-  const [copiedPayloadId, setCopiedPayloadId] = useState<string | null>(null);
-  const [copyError, setCopyError] = useState<string | null>(null);
-
-  // Simulation form state
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    serviceCategory: 'Web & Digital',
-    budgetBracket: '',
-    message: '',
+  canWrite,
+  canResolve,
+  filters,
+  rows,
+  listUnavailable,
+  metrics,
+  owners,
+  selected,
+  linkedLead,
+  selectionUnavailable,
+  history,
+  historyUnavailable,
+  previous,
+  next,
+}: InboxProps) {
+  const router = useRouter();
+  const [notice, setNotice] = useState('');
+  const detailHeading = useRef<HTMLHeadingElement>(null);
+  const queueHeading = useRef<HTMLHeadingElement>(null);
+  const attemptedSelection = filters.inquiry;
+  const resetHref = inboxHref(filters, {
+    state: null,
+    owner: null,
+    q: null,
+    origin: null,
+    from: null,
+    to: null,
+    window: null,
+    inquiry: null,
+    before: null,
+    after: null,
   });
+  const activeFilters = Boolean(
+    filters.origin ||
+    filters.state ||
+    filters.owner ||
+    filters.q ||
+    filters.from ||
+    filters.to ||
+    filters.window,
+  );
+  const scopeLabel =
+    CHANNELS.find(([value]) => value === filters.channel)?.[1] ??
+    'All inquiries';
+  const createHref = (id: string) =>
+    inboxHref(filters, { inquiry: id }) + '#inquiry-detail-heading';
 
-  const [isPending, startTransition] = useTransition();
-  const [simulationResult, setSimulationResult] = useState<{
-    success: boolean;
-    leadId?: string;
-    isDuplicate?: boolean;
-    message?: string;
-    error?: string;
-  } | null>(null);
-
-  const modalRef = useRef<HTMLDivElement>(null);
-  const triggerBtnRef = useRef<HTMLButtonElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-
-  const handleCloseModal = useCallback(() => {
-    setIsSimulateModalOpen(false);
-    triggerBtnRef.current?.focus();
-  }, []);
-
-  // Focus management and keyboard accessibility for modal
   useEffect(() => {
-    if (isSimulateModalOpen) {
-      setTimeout(() => {
-        nameInputRef.current?.focus();
-      }, 50);
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          handleCloseModal();
-          return;
-        }
-
-        if (e.key === 'Tab' && modalRef.current) {
-          const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-          );
-          if (focusable.length === 0) return;
-
-          const first = focusable[0];
-          const last = focusable[focusable.length - 1];
-
-          if (e.shiftKey) {
-            if (document.activeElement === first) {
-              e.preventDefault();
-              last.focus();
-            }
-          } else {
-            if (document.activeElement === last) {
-              e.preventDefault();
-              first.focus();
-            }
-          }
-        }
-      };
-
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isSimulateModalOpen, handleCloseModal]);
-
-  const handleTogglePayload = (id: string) => {
-    setExpandedPayloadId((prev) => (prev === id ? null : id));
-  };
-
-  const handleCopyPayload = (id: string, payload: Record<string, unknown> | null) => {
-    if (!payload) return;
-    if (typeof navigator === 'undefined' || !navigator.clipboard) {
-      setCopyError('Clipboard access is unavailable in this browser. Select and copy the payload manually.');
+    if (
+      !attemptedSelection ||
+      window.location.hash !== '#inquiry-detail-heading'
+    )
       return;
-    }
-    setCopyError(null);
-    navigator.clipboard
-      .writeText(JSON.stringify(payload, null, 2))
-      .then(() => {
-        setCopiedPayloadId(id);
-        setTimeout(() => setCopiedPayloadId(null), 2000);
-      })
-      .catch((error: unknown) => {
-        console.error('[ingestion] Payload copy failed:', error);
-        setCopyError('Clipboard access was denied. Select and copy the payload manually.');
-      });
-  };
+    const frame = requestAnimationFrame(() =>
+      detailHeading.current?.focus({ preventScroll: true }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [attemptedSelection]);
 
-  const handleSimulateSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSimulate || isPending) return;
-
-    startTransition(async () => {
-      const result = await simulateInboundBriefAction(formData);
-      setSimulationResult(result);
+  const filterHref = (
+    state: string | null,
+    owner: string | null,
+    window: string | null,
+  ) =>
+    inboxHref(filters, {
+      state,
+      owner,
+      window,
+      from: null,
+      to: null,
+      q: null,
+      inquiry: null,
+      before: null,
+      after: null,
     });
-  };
 
-  const handleOpenLeadDrawer = (leadId: string) => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', { detail: { leadId } })
-      );
-    }
-  };
+  function closeDetail() {
+    router.push(inboxHref(filters, { inquiry: null }), { scroll: false });
+    requestAnimationFrame(() => {
+      const row = document.getElementById('inquiry-open-' + attemptedSelection);
+      (row ?? queueHeading.current)?.focus();
+    });
+  }
 
   return (
-    <div className={styles.workspaceRoot}>
-      {/* Action Bar */}
-      <div className={styles.topBar}>
+    <div className={styles.workspace}>
+      <header className={styles.pageHeader}>
         <div>
-          <span className={styles.codeBadge}>POST /api/sales-funnel/ingest</span>
+          <h1>Inquiries</h1>
+          <p>Review website submissions and inquiries logged by your team.</p>
         </div>
-        {canSimulate && (
-          <button
-            ref={triggerBtnRef}
-            type="button"
-            className={styles.simulateTriggerBtn}
-            onClick={() => {
-              setSimulationResult(null);
-              setIsSimulateModalOpen(true);
+        {canWrite && (
+          <AddInquiry
+            owners={owners}
+            canResolve={canResolve}
+            onSaved={(id) => {
+              setNotice('Inquiry saved.');
+              router.push(createHref(id));
             }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-            <span>Simulate Inbound Brief</span>
-          </button>
+          />
         )}
+      </header>
+
+      <div className={styles.notice} role="status">
+        {notice}
       </div>
-      {copyError && <p className={styles.emptyState} role="alert">{copyError}</p>}
-
-      {/* Live Database-Driven Telemetry Ribbon */}
-      <section className={styles.telemetryGrid} aria-label="Ingestion Health Metrics">
-        <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>Endpoint Health</span>
-          <div className={styles.telemetryVal}>
-            <span>{telemetry.endpointHealth}</span>
-          </div>
-          <span className={styles.telemetrySub}>
-            Endpoint health is not measured here.
-          </span>
-        </div>
-
-        <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>New leads (24 hours)</span>
-          <div className={styles.telemetryVal}>{telemetry.inboundCount24h ?? 'Unavailable'}</div>
-          <span className={styles.telemetrySub}>
-            All sources; synthetic benchmark records excluded.
-          </span>
-        </div>
-
-        <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>Smart Merges (24H)</span>
-          <div className={styles.telemetryVal}>{telemetry.dedupMerges24h ?? 'Unavailable'}</div>
-          <span className={styles.telemetrySub}>
-            {telemetry.dedupWindowHours === null ? 'Configuration unavailable' : `Configured window: ${telemetry.dedupWindowHours} hours`}
-          </span>
-        </div>
-
-        <div className={styles.telemetryCard}>
-          <span className={styles.telemetryKey}>Bot Shield Guard</span>
-          <div className={styles.telemetryVal}>{telemetry.botRateLimit === null ? 'Unavailable' : `${telemetry.botRateLimit} req/m`}</div>
-          <span className={styles.telemetrySub}>
-            Configured request limit
-          </span>
-        </div>
+      <section className={styles.overview} aria-label="Inquiry workload">
+        <p className={styles.scope}>
+          {scopeLabel}
+          {filters.origin && <> · {ORIGIN_LABELS[filters.origin]}</>}
+        </p>
+        <ul className={styles.metrics}>
+          {[
+            [
+              'Needs review',
+              metrics.needsReview,
+              filterHref('new', null, null),
+            ],
+            [
+              'Unassigned',
+              metrics.unassigned,
+              filterHref('open', 'unassigned', null),
+            ],
+            [
+              'Received in the last 24 hours',
+              metrics.received,
+              filterHref(null, null, 'day'),
+            ],
+          ].map(([label, number, href]) => (
+            <li key={String(label)}>
+              <Link href={String(href)}>
+                <strong>{number === null ? 'Unavailable' : number}</strong>
+                <span>{label}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Recent Inbound Submissions & Raw Payload Inspector */}
-      <section className={styles.sectionCard} aria-label="Recent Inbound Submissions">
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Recent leads</h2>
-          <span className={styles.countTag}>Latest {recentSubmissions.length}</span>
-        </div>
+      <div
+        className={styles.inboxLayout}
+        data-detail={Boolean(attemptedSelection)}
+      >
+        <section className={styles.queue} aria-labelledby="inquiry-queue">
+          <header className={styles.queueHeader}>
+            <h2 id="inquiry-queue" ref={queueHeading} tabIndex={-1}>
+              Inbox
+            </h2>
+            <nav className={styles.channels} aria-label="Inquiry channels">
+              {CHANNELS.map(([value, label]) => (
+                <Link
+                  href={inboxHref(filters, {
+                    channel: value === 'all' ? null : value,
+                    origin: null,
+                    inquiry: null,
+                    before: null,
+                    after: null,
+                  })}
+                  aria-current={filters.channel === value ? 'page' : undefined}
+                  key={value}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </header>
+          <form
+            key={
+              resetHref +
+              JSON.stringify([
+                filters.q,
+                filters.origin,
+                filters.state,
+                filters.owner,
+                filters.sort,
+                filters.from,
+                filters.to,
+              ])
+            }
+            action={INQUIRY_PATH}
+            className={styles.filters}
+            role="search"
+            aria-label="Filter inquiries"
+          >
+            {filters.channel !== 'all' && (
+              <input type="hidden" name="channel" value={filters.channel} />
+            )}
+            {filters.window && (
+              <input type="hidden" name="window" value={filters.window} />
+            )}
+            <label className={styles.searchLabel}>
+              Search
+              <input
+                type="search"
+                name="q"
+                defaultValue={filters.q}
+                maxLength={100}
+                placeholder="Name, company, or reference"
+              />
+            </label>
+            <label>
+              Source
+              <select name="origin" defaultValue={filters.origin}>
+                <option value="">Any source</option>
+                {Object.entries(ORIGIN_LABELS)
+                  .filter(
+                    ([origin]) =>
+                      filters.channel === 'all' ||
+                      (filters.channel === 'manual') === (origin === 'manual'),
+                  )
+                  .map(([value, label]) => (
+                    <option value={value} key={value}>
+                      {label}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label>
+              Status
+              <select name="state" defaultValue={filters.state}>
+                <option value="">Any status</option>
+                <option value="open">Open</option>
+                {Object.entries(STATE_LABELS).map(([value, label]) => (
+                  <option value={value} key={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Owner
+              <select name="owner" defaultValue={filters.owner}>
+                <option value="">Any owner</option>
+                <option value="unassigned">Unassigned</option>
+                {owners.map((owner) => (
+                  <option key={owner.id} value={owner.id}>
+                    {owner.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Order
+              <select name="sort" defaultValue={filters.sort}>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+            </label>
+            <label>
+              From <small>UTC</small>
+              <input type="date" name="from" defaultValue={filters.from} />
+            </label>
+            <label>
+              To <small>UTC</small>
+              <input type="date" name="to" defaultValue={filters.to} />
+            </label>
+            <button type="submit" className={styles.secondary}>
+              Apply filters
+            </button>
+          </form>
+          {(activeFilters || (!listUnavailable && rows.length > 0)) && (
+            <div className={styles.listSummary}>
+              {listUnavailable ? (
+                <span>Results unavailable</span>
+              ) : (
+                <span>
+                  {rows.length} {rows.length === 1 ? 'inquiry' : 'inquiries'} on
+                  this page{filters.window && ' · Last 24 hours'}
+                </span>
+              )}
+              {activeFilters && <Link href={resetHref}>Clear filters</Link>}
+            </div>
+          )}
 
-        {submissionsUnavailable ? <div className={styles.emptyState} role="status">Recent leads could not be loaded. Refresh to try again.</div> : recentSubmissions.length === 0 ? (
-          <div className={styles.emptyState}>
-            <span>No recent leads found.</span>
-          </div>
-        ) : (
-          <div className={styles.submissionsList}>
-            {recentSubmissions.map((sub) => {
-              const isExpanded = expandedPayloadId === sub.id;
-              const hasPayload = sub.brief_payload && Object.keys(sub.brief_payload).length > 0;
-
-              return (
-                <div key={sub.id} className={styles.submissionCard}>
-                  <div className={styles.submissionSummary}>
-                    <div className={styles.submissionLeft}>
-                      <button
-                        type="button"
-                        className={styles.dealIdToken}
-                        onClick={() => handleOpenLeadDrawer(sub.id)}
-                        title="View deal in Client 360 Dossier"
-                        aria-label={`Open Client 360 Dossier for ${sub.lead_id}`}
-                      >
-                        {sub.lead_id}
-                      </button>
-                      <div>
-                        <span className={styles.clientName}>{sub.name}</span>
-                        {sub.company && <span className={styles.clientCompany}> · {sub.company}</span>}
-                      </div>
-                      <span className={styles.clientContact}>
-                        {sub.email || sub.phone || 'No contact provided'}
-                      </span>
-                    </div>
-
-                    <div className={styles.submissionRight}>
-                      <span className={styles.categoryTag}>{sub.service_category}</span>
-                      <time className={styles.timestamp}>
-                        {new Date(sub.created_at).toLocaleTimeString('en-IN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </time>
-                      {hasPayload && (
-                        <button
-                          type="button"
-                          className={styles.inspectBtn}
-                          onClick={() => handleTogglePayload(sub.id)}
-                          aria-expanded={isExpanded}
-                          aria-controls={`payload-viewer-${sub.id}`}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                            <polyline points={isExpanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
-                          </svg>
-                          <span>{isExpanded ? 'Hide Payload' : 'Inspect JSON'}</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {isExpanded && hasPayload && (
-                    <div id={`payload-viewer-${sub.id}`} className={styles.payloadViewer}>
-                      <div className={styles.payloadHeader}>
-                        <span className={styles.payloadTitle}>Raw Webhook Brief Payload (JSON).</span>
-                        <button
-                          type="button"
-                          className={styles.copyPayloadBtn}
-                          onClick={() => handleCopyPayload(sub.id, sub.brief_payload)}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                          </svg>
-                          <span>{copiedPayloadId === sub.id ? 'Copied!' : 'Copy JSON'}</span>
-                        </button>
-                      </div>
-                      <pre className={styles.jsonBox}>
-                        {JSON.stringify(sub.brief_payload, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Ingestion & Smart Merge Activity Feed */}
-      <section className={styles.sectionCard} aria-label="Ingestion Event Activity Feed">
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Recent lead activity</h2>
-          <span className={styles.countTag}>{recentActivities.length} Events</span>
-        </div>
-
-        {activitiesUnavailable ? <div className={styles.emptyState} role="status">Activity could not be loaded. Refresh to try again.</div> : recentActivities.length === 0 ? (
-          <div className={styles.emptyState}>
-            <span>No recent activity found.</span>
-          </div>
-        ) : (
-          <div className={styles.activityList}>
-            {recentActivities.map((act) => {
-              let badgeClass = styles.default;
-              if (act.activity_type === 'duplicate_inquiry') badgeClass = styles.duplicate;
-              if (act.activity_type === 'system_event') badgeClass = styles.system;
-
-              return (
-                <div key={act.id} className={styles.activityRow}>
-                  <div className={styles.activityLeft}>
-                    <span className={`${styles.activityBadge} ${badgeClass}`}>
-                      {act.activity_type.replace(/_/g, ' ')}
-                    </span>
-                    <span className={styles.activityDesc}>{act.description}</span>
-                  </div>
-                  <time className={styles.activityTime}>
-                    {new Date(act.created_at).toLocaleString('en-IN', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </time>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Interactive Simulate Inbound Brief Modal */}
-      {isSimulateModalOpen && (
-        <div
-          className={styles.modalOverlay}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) handleCloseModal();
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="simulate-modal-title"
-        >
-          <div ref={modalRef} className={styles.modalContent}>
-            <header className={styles.modalHeader}>
-              <h3 id="simulate-modal-title" className={styles.modalTitle}>
-                Simulate Inbound Website Brief.
-              </h3>
+          {listUnavailable ? (
+            <div className={styles.empty} role="status">
+              <h3>Could not load the inbox</h3>
+              <p>Retry to fetch the current results.</p>
               <button
                 type="button"
-                className={styles.modalCloseBtn}
-                onClick={handleCloseModal}
-                aria-label="Close modal"
+                className={styles.secondary}
+                onClick={() => router.refresh()}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                Retry
+              </button>
+            </div>
+          ) : rows.length === 0 ? (
+            <div className={styles.empty}>
+              <h3>
+                {activeFilters
+                  ? 'No matching inquiries'
+                  : 'No inquiries in this view'}
+              </h3>
+              <p>
+                {activeFilters
+                  ? 'Clear the filters to check for other inquiries.'
+                  : 'New submissions appear after they are saved.'}
+              </p>
+              {activeFilters && <Link href={resetHref}>Clear filters</Link>}
+              {(filters.before || filters.after) && (
+                <Link href={inboxHref(filters, { before: null, after: null })}>
+                  Return to first page
+                </Link>
+              )}
+            </div>
+          ) : (
+            <>
+              <table className={styles.table} role="table">
+                <thead role="rowgroup">
+                  <tr role="row">
+                    <th role="columnheader" scope="col">
+                      Inquiry
+                    </th>
+                    <th role="columnheader" scope="col">
+                      Source
+                    </th>
+                    <th
+                      role="columnheader"
+                      scope="col"
+                      aria-sort={
+                        filters.sort === 'oldest' ? 'ascending' : 'descending'
+                      }
+                    >
+                      Received
+                    </th>
+                    <th role="columnheader" scope="col">
+                      Status
+                    </th>
+                    <th role="columnheader" scope="col">
+                      Owner
+                    </th>
+                  </tr>
+                </thead>
+                <tbody role="rowgroup">
+                  {rows.map((row) => (
+                    <tr
+                      role="row"
+                      key={row.id}
+                      data-selected={row.id === attemptedSelection}
+                    >
+                      <th role="rowheader" scope="row">
+                        <Link
+                          href={createHref(row.id)}
+                          id={'inquiry-open-' + row.id}
+                          aria-current={
+                            row.id === attemptedSelection ? 'true' : undefined
+                          }
+                        >
+                          <strong>{row.name}</strong>
+                          <small>
+                            {[
+                              row.inquiry_ref,
+                              row.company,
+                              row.service_category,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </small>
+                        </Link>
+                      </th>
+                      <td role="cell" data-col="Source">
+                        {ORIGIN_LABELS[row.origin]}
+                      </td>
+                      <td role="cell" data-col="Received">
+                        <time dateTime={row.received_at}>
+                          {receivedLabel(row.received_at)}
+                        </time>
+                      </td>
+                      <td role="cell" data-col="Status">
+                        <RowStatus state={row.state} />
+                      </td>
+                      <td role="cell" data-col="Owner">
+                        {ownerLabel(row.assigned_to, owners)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {(previous || next) && (
+                <nav className={styles.paging} aria-label="Inbox pages">
+                  {previous && <Link href={previous}>Previous page</Link>}
+                  {next && <Link href={next}>Next page</Link>}
+                </nav>
+              )}
+            </>
+          )}
+        </section>
+
+        {attemptedSelection && (
+          <aside
+            id="inquiry-detail"
+            className={styles.detail}
+            aria-labelledby="inquiry-detail-heading"
+          >
+            <header className={styles.detailHeader}>
+              <div>
+                {selected && (
+                  <p>
+                    {selected.inquiry_ref} · {ORIGIN_LABELS[selected.origin]}
+                  </p>
+                )}
+                <h2
+                  id="inquiry-detail-heading"
+                  ref={detailHeading}
+                  tabIndex={-1}
+                >
+                  {selected?.name ?? 'Inquiry detail'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className={styles.close}
+                aria-label="Close inquiry details"
+                onClick={closeDetail}
+              >
+                ×
               </button>
             </header>
-
-            <form onSubmit={handleSimulateSubmit}>
-              <div className={styles.modalBody}>
-                <p className={styles.emptyState}>Simulation records are clearly marked and excluded from reporting. A contact match against a live lead is blocked.</p>
-                {simulationResult && (
-                  <div
-                    className={
-                      simulationResult.success
-                        ? simulationResult.isDuplicate
-                          ? styles.resultDuplicate
-                          : styles.resultSuccess
-                        : styles.resultError
-                    }
-                  >
-                    <strong>{simulationResult.isDuplicate ? 'Smart Merge Triggered: ' : simulationResult.success ? 'Success: ' : 'Error: '}</strong>
-                    <span>{simulationResult.message || simulationResult.error}</span>
-                  </div>
+            {selected ? (
+              <div className={styles.detailBody}>
+                <RowStatus state={selected.state} />
+                <dl className={styles.brief}>
+                  <BriefField label="Company">{selected.company}</BriefField>
+                  <BriefField label="Received">
+                    <time dateTime={selected.received_at}>
+                      {receivedLabel(selected.received_at)}
+                    </time>
+                  </BriefField>
+                  <BriefField label="Owner">
+                    {ownerLabel(selected.assigned_to, owners)}
+                  </BriefField>
+                  <BriefField label="Received via">
+                    {selected.original_channel &&
+                      (CHANNEL_LABELS[
+                        selected.original_channel as keyof typeof CHANNEL_LABELS
+                      ] ??
+                        selected.original_channel)}
+                  </BriefField>
+                  <BriefField label="Email">{selected.email}</BriefField>
+                  <BriefField label="Phone">{selected.phone}</BriefField>
+                  <BriefField label="Service">
+                    {selected.service_category}
+                  </BriefField>
+                  <BriefField label="Timeline">{selected.timeline}</BriefField>
+                  <BriefField label="Budget">{selected.budget}</BriefField>
+                  <BriefField label="Closure reason">
+                    {selected.close_reason}
+                  </BriefField>
+                </dl>
+                {selected.summary && (
+                  <section className={styles.summary}>
+                    <h3>Inquiry brief</h3>
+                    <p>{selected.summary}</p>
+                  </section>
                 )}
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="sim-name" className={styles.fieldLabel}>Client Name *</label>
-                  <input
-                    ref={nameInputRef}
-                    id="sim-name"
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className={styles.fieldInput}
-                  />
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="sim-company" className={styles.fieldLabel}>Company Name</label>
-                  <input
-                    id="sim-company"
-                    type="text"
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className={styles.fieldInput}
-                  />
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="sim-email" className={styles.fieldLabel}>Email Address *</label>
-                  <input
-                    id="sim-email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={styles.fieldInput}
-                  />
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="sim-phone" className={styles.fieldLabel}>Phone Number *</label>
-                  <input
-                    id="sim-phone"
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className={styles.fieldInput}
-                  />
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="sim-service" className={styles.fieldLabel}>Service Category</label>
-                  <select
-                    id="sim-service"
-                    value={formData.serviceCategory}
-                    onChange={(e) => setFormData({ ...formData, serviceCategory: e.target.value })}
-                    className={styles.fieldSelect}
+                {selected.is_historical && (
+                  <p className={styles.historical}>
+                    Imported from CRM history. This reflects the available
+                    historical record.
+                  </p>
+                )}
+                {linkedLead ? (
+                  <Link
+                    className={styles.secondary}
+                    href={'/admin/leads/' + encodeURIComponent(linkedLead.id)}
                   >
-                    <option value={'\u20b95L - \u20b910L'}>{formatBudgetTierLabel('\u20b95L - \u20b910L')}</option>
-                    <option value={'\u20b910L - \u20b915L'}>{formatBudgetTierLabel('\u20b910L - \u20b915L')}</option>
-                    <option value={'\u20b915L - \u20b925L'}>{formatBudgetTierLabel('\u20b915L - \u20b925L')}</option>
-                    <option value={'\u20b925L+'}>{formatBudgetTierLabel('\u20b925L+')}</option>
-                    <option value="Full-Suite Advisory">Full-Suite Advisory</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="sim-budget" className={styles.fieldLabel}>Budget Bracket</label>
-                  <select
-                    id="sim-budget"
-                    value={formData.budgetBracket}
-                    onChange={(e) => setFormData({ ...formData, budgetBracket: e.target.value })}
-                    className={styles.fieldSelect}
-                  >
-                    <option value="₹5L - ₹10L">{formatBudgetTierLabel('₹5L - ₹10L')}</option>
-                    <option value="₹10L - ₹15L">{formatBudgetTierLabel('₹10L - ₹15L')}</option>
-                    <option value="₹15L - ₹25L">{formatBudgetTierLabel('₹15L - ₹25L')}</option>
-                    <option value="₹25L+">{formatBudgetTierLabel('₹25L+')}</option>
-                  </select>
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="sim-msg" className={styles.fieldLabel}>Project Brief / Notes</label>
-                  <textarea
-                    id="sim-msg"
-                    rows={3}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className={styles.fieldTextarea}
+                    Open lead {linkedLead.ref}
+                  </Link>
+                ) : selected.has_link ? (
+                  <p className={styles.historical}>
+                    A lead is linked to this inquiry.
+                  </p>
+                ) : canResolve ? (
+                  <ResolveInquiry
+                    key={selected.id + selected.updated_at}
+                    detail={selected}
                   />
-                </div>
+                ) : null}
+                {canWrite && (
+                  <InquiryTriage
+                    key={selected.id + selected.updated_at}
+                    detail={selected}
+                    owners={owners}
+                  />
+                )}
+                <section className={styles.activity}>
+                  <h3>Recent history</h3>
+                  {historyUnavailable ? (
+                    <p>History is unavailable.</p>
+                  ) : history.length ? (
+                    <ul>
+                      {history.map((item) => (
+                        <li key={item.id}>
+                          <strong>
+                            {HISTORY_LABELS[item.event_type] ??
+                              'Inquiry updated'}
+                          </strong>
+                          <time dateTime={item.created_at}>
+                            {receivedLabel(item.created_at)}
+                          </time>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No history recorded.</p>
+                  )}
+                </section>
               </div>
-
-              <footer className={styles.modalFooter}>
-                <button
-                  type="button"
-                  className={styles.cancelBtn}
-                  onClick={handleCloseModal}
-                >
-                  Close
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className={styles.submitBtn}
-                >
-                  {isPending ? 'Simulating Intake...' : 'Submit Inbound Brief'}
-                </button>
-              </footer>
-            </form>
-          </div>
-        </div>
-      )}
+            ) : (
+              <div className={styles.empty} role="status">
+                <p>
+                  {selectionUnavailable
+                    ? 'Could not load this inquiry.'
+                    : 'This inquiry is unavailable.'}
+                </p>
+                {selectionUnavailable && (
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    onClick={() => router.refresh()}
+                  >
+                    Retry
+                  </button>
+                )}
+              </div>
+            )}
+          </aside>
+        )}
+      </div>
     </div>
   );
 }
