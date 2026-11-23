@@ -11,7 +11,7 @@
 
 | Block | Evidence |
 | --- | --- |
-| Hard gate | Fixture browser runs passed 24 checks. No document overflow at 320, 375, 768, 1024, 1440 and 1920 CSS px. Axe reported zero serious or critical violations and the page reported zero runtime errors. R-35 evidence and limits follow below. |
+| Hard gate | Fixture browser runs passed 26 checks. No document overflow at 320, 375, 768, 1024, 1440 and 1920 CSS px. Axe reported zero serious or critical violations and the page reported zero runtime errors. R-35 evidence and limits follow below. |
 | Purpose gate | Stage navigation chevrons move between lanes, calendar glyphs identify follow-up, and the ellipsis opens record actions. Card geometry follows record grouping. Circular XX establishes identity and Graphik carries controls and metadata. |
 | Liveliness | Design Read was ENERGY 2 / RHYTHM 2 / MOTION 2. Identity leads each card, spacing distinguishes lanes from records, and Marca Ubi red identifies selected controls and important statuses. Motion is limited to interaction feedback and respects reduced-motion preferences. |
 | Craftsmanship and quality locks | Shared data and action presentation keeps Board, Table and mobile records aligned. Documented checks cover keyboard dismissal, visible focus, empty, restricted, failed and pending paths. The native zoom and live verification limits below apply. |
@@ -20,7 +20,7 @@
 
 The [browser report](./RESEARCH_AND_QA.md) records each verified journey. The [primary results](./browser-results.json) and [edge results](./edge-browser-results.json) capture observed outcomes. [Desktop Board](./screenshots/board-desktop.png), [mobile Board](./screenshots/board-mobile.png), [desktop Table](./screenshots/table-desktop.png) and [stage movement](./screenshots/move-popover.png) use the production components with labeled fixtures.
 
-Fixture checks included ordinary movement, failed move and retry, Escape and focus restoration, guarded cancellation, a DOM-dispatched drag, filters, view switching and read-only restrictions. The delayed navigation fixture verified that overlapping view, bucket and search changes persist together. The harness stubs Next navigation and writes. Authenticated CRM operations, database RLS, guarded form submission, external contact launch, hardware drag and native browser zoom require separate end-to-end evidence.
+Fixture checks included ordinary movement, failed move and retry, Escape and focus restoration, guarded cancellation, Chromium mouse drags from the card surface, filters, view switching and read-only restrictions. The delayed navigation fixture verified that overlapping view, bucket and search changes persist together. The harness stubs Next navigation and writes. Authenticated CRM operations, database RLS, guarded form submission, external contact launch, physical-device input and native browser zoom require separate end-to-end evidence.
 
 ## Repository verification
 

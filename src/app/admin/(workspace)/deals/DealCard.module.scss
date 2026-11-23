@@ -140,16 +140,19 @@
   }
 }
 .grip {
-  display: inline-flex;
-  color: #62625d;
-  cursor: grab;
-  opacity: 0;
-  .card:hover &,
-  .card:focus-within & {
-    opacity: 1;
+  display: none;
+}
+@media (min-width: 851px) and (any-pointer: fine) {
+  .card[draggable="true"] {
+    cursor: grab;
+    &:active {
+      cursor: grabbing;
+    }
   }
-  &:active {
-    cursor: grabbing;
+  .grip {
+    display: inline-flex;
+    flex: none;
+    color: #62625d;
   }
 }
 .feedback,
@@ -172,9 +175,6 @@
 @media (max-width: 850px) {
   .reference {
     min-height: 44px;
-  }
-  .grip {
-    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

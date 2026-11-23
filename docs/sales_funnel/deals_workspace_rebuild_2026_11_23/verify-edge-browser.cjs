@@ -62,16 +62,42 @@ const fs = require("fs"),
       .count()) === 3,
   );
   await open();
-  const dt = await p.evaluateHandle(() => new DataTransfer());
-  const handle = p.locator("[draggable=true]").first();
-  await handle.dispatchEvent("dragstart", { dataTransfer: dt });
+  const source = p
+    .getByRole("region", { name: "New", exact: true })
+    .getByRole("article")
+    .first();
   const lane = p.getByRole("region", { name: "Contacted", exact: true });
-  await lane.dispatchEvent("dragover", { dataTransfer: dt });
-  await lane.dispatchEvent("drop", { dataTransfer: dt });
-  await p.getByRole("status").filter({ hasText: /moved/i }).waitFor();
+  await source.dragTo(lane, {
+    sourcePosition: { x: 20, y: 105 },
+    targetPosition: { x: 100, y: 30 },
+  });
+  await p
+    .getByRole("status")
+    .filter({ hasText: /moved/i })
+    .waitFor({ timeout: 3000 });
   check(
-    "Drag uses same confirmed transition handler",
+    "Mouse drag from the card body confirms the stage change",
     (await lane.getByRole("article").count()) === 4,
+  );
+  await open();
+  const onHold = p.getByRole("region", { name: "On Hold", exact: true });
+  await source.dragTo(onHold, {
+    sourcePosition: { x: 20, y: 105 },
+    targetPosition: { x: 100, y: 30 },
+  });
+  await p.getByRole("dialog", { name: "Fixture guarded transition" }).waitFor();
+  await p.getByRole("button", { name: "Cancel transition" }).click();
+  check(
+    "Mouse drag to a guarded stage requires its form and cancellation keeps the card",
+    (await p
+      .getByRole("region", { name: "New", exact: true })
+      .getByRole("article")
+      .count()) === 3,
+  );
+  await open("?role=viewer");
+  check(
+    "Viewer cards are not draggable",
+    (await p.locator('article[draggable="true"]').count()) === 0,
   );
   await open();
   await p.getByRole("searchbox", { name: "Search deals" }).fill("Alserkal");
@@ -96,15 +122,28 @@ const fs = require("fs"),
   );
   await open("?fixture_delay=1");
   await p.getByRole("searchbox", { name: "Search deals" }).fill("Alserkal");
-  await p.getByRole("button", { name: "Table", exact: true }).click();
-  await p.getByRole("button", { name: "Open", exact: true }).click();
-  const overlappingChanges = await p.waitForURL((url) =>
-    url.searchParams.get("search") === "Alserkal",
-  ).then(() => new URL(p.url()).searchParams);
+  await p.evaluate(() => {
+    const buttons = Array.from(document.querySelectorAll("button"));
+    for (const name of ["Table", "Open"]) {
+      const button = buttons.find((item) => item.textContent.trim() === name);
+      if (!button) throw new Error(`Missing fixture control ${name}`);
+      button.click();
+    }
+  });
   check(
     "Overlapping delayed navigation keeps view, bucket and debounced search",
-    overlappingChanges.get("view") === "table" &&
-      overlappingChanges.get("bucket") === "open",
+    await p
+      .waitForURL(
+        (url) =>
+          url.searchParams.get("search") === "Alserkal" &&
+          url.searchParams.get("view") === "table" &&
+          url.searchParams.get("bucket") === "open",
+        { timeout: 5000 },
+      )
+      .then(
+        () => true,
+        () => false,
+      ),
   );
   await b.close();
   fs.writeFileSync(
@@ -112,7 +151,7 @@ const fs = require("fs"),
     JSON.stringify(
       {
         environment:
-          "Actual components; isolated stubbed mutations; drag dispatched through DOM events",
+          "Actual components; isolated stubbed mutations; drag performed through browser mouse input",
         results: r,
       },
       null,

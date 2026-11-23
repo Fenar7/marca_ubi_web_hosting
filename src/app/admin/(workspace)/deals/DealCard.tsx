@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type DragEvent } from "react";
+import { useRef, useState, type DragEvent } from "react";
 import Link from "next/link";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import { DealActionsMenu } from "./DealActionsMenu";
@@ -25,7 +25,7 @@ interface DealCardProps {
   nowMs: number | null;
   canViewFinancials: boolean;
   onMove: (deal: HydratedDealItem, stage: FunnelStatusItem) => void;
-  onDragStart?: (event: DragEvent<HTMLSpanElement>) => void;
+  onDragStart?: (event: DragEvent<HTMLElement>) => void;
   onDragEnd?: () => void;
 }
 
@@ -46,6 +46,7 @@ export function DealCard({
   const owner = ownerIdentity(deal);
   const due = followUpPresentation(deal, nowMs);
   const [feedback, setFeedback] = useState("");
+  const interactiveOrigin = useRef(false);
   const classification = deal.service_category || deal.source_name;
 
   async function copyReference() {
@@ -66,8 +67,38 @@ export function DealCard({
       className={styles.card}
       aria-label={`${identity.title}, ${deal.lead_id}`}
       aria-busy={moving}
+      draggable={canMove && !movePending}
+      onPointerDownCapture={(event) => {
+        interactiveOrigin.current =
+          event.target instanceof Element &&
+          Boolean(event.target.closest("button, input, select, textarea"));
+      }}
+      onDragStart={(event) => {
+        // Native dragstart targets the card even when the pointer started on a nested control.
+        if (
+          !canMove ||
+          movePending ||
+          interactiveOrigin.current ||
+          !window.matchMedia("(min-width: 851px) and (any-pointer: fine)")
+            .matches
+        ) {
+          event.preventDefault();
+          return;
+        }
+        onDragStart?.(event);
+      }}
+      onDragEnd={onDragEnd}
     >
       <div className={styles.top}>
+        {canMove && !movePending && (
+          <span
+            className={styles.grip}
+            title="Drag to another stage"
+            aria-hidden="true"
+          >
+            <DealIcon name="grip" />
+          </span>
+        )}
         {classification && (
           <span className={styles.classification}>{classification}</span>
         )}
@@ -90,6 +121,7 @@ export function DealCard({
         <Link
           href={`/admin/deals/${encodeURIComponent(deal.id)}`}
           prefetch={false}
+          draggable={false}
         >
           {identity.title}
         </Link>
@@ -127,18 +159,6 @@ export function DealCard({
         >
           {deal.lead_id}
         </button>
-        {canMove && (
-          <span
-            className={styles.grip}
-            draggable={!movePending}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-            title="Drag to another stage"
-            aria-hidden="true"
-          >
-            <DealIcon name="grip" />
-          </span>
-        )}
       </div>
       {feedback && (
         <p role="status" className={styles.feedback}>

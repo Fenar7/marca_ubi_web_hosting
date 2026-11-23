@@ -1,5 +1,5 @@
 {
-  "environment": "Actual components; isolated stubbed mutations; drag dispatched through DOM events",
+  "environment": "Actual components; isolated stubbed mutations; drag performed through browser mouse input",
   "results": [
     {
       "name": "Failed ordinary move remains in source lane",
@@ -22,7 +22,17 @@
       "detail": ""
     },
     {
-      "name": "Drag uses same confirmed transition handler",
+      "name": "Mouse drag from the card body confirms the stage change",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Mouse drag to a guarded stage requires its form and cancellation keeps the card",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Viewer cards are not draggable",
       "passed": true,
       "detail": ""
     },

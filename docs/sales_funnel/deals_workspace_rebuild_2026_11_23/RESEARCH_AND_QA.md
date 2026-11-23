@@ -8,7 +8,7 @@ Browser verification uses an isolated loopback harness with actual production De
 
 ## Recorded browser result
 
-`verify-browser.cjs` passed 16 checks and `verify-edge-browser.cjs` passed eight checks. Machine-readable evidence is in `browser-results.json` and `edge-browser-results.json`.
+`verify-browser.cjs` passed 16 checks and `verify-edge-browser.cjs` passed ten checks. Machine-readable evidence is in `browser-results.json` and `edge-browser-results.json`.
 
 | Journey | Observed fixture outcome |
 | --- | --- |
@@ -16,7 +16,7 @@ Browser verification uses an isolated loopback harness with actual production De
 | Explicit stage move | Selecting Contacted then explicit Move calls the fixture action and commits the record to destination |
 | Failed move and retry | Source lane retained; selected destination retained when reopening; no false success |
 | Guarded transition | Negotiation enters guarded fixture dialog; cancellation leaves record unchanged |
-| Drag | DOM-dispatched drag events invoke the same confirmed transition handler and update destination count |
+| Drag | Real Chromium mouse input from the card body timed out before the fix. After the fix, dropping moves the card and updates the count. A guarded drop opens its form and cancellation keeps the card. Viewer cards are not draggable. |
 | Menu dismissal | Escape restores focus to the originating card's action trigger |
 | Table | Semantic table and column headers render; view switch preserves search |
 | Filters | Explicit application preserves view/search and adds owner filter; Escape closes filter dialog |
@@ -39,4 +39,4 @@ The first screenshots contained a duplicate fixture heading; final images remove
 
 Start `node docs/sales_funnel/deals_workspace_rebuild_2026_11_23/visual-harness.cjs`, then run the two verification scripts in the same directory. Harness binds loopback3021 and writes its bundle into the OS temp folder; it adds no production route. On a memory-constrained machine, set `GOMAXPROCS=2` for esbuild before starting.
 
-Next navigation is represented by history transitions and fixture filtering. Ordinary/guarded mutation responses are stubbed. Real database/RLS enforcement, real contact launching, authentic guarded-modal form validation, authenticated save success and native-browser200% zoom remain outside this fixture evidence. The drag check dispatches DOM events rather than certifying hardware pointer ergonomics. No live data was changed and no credentials were printed.
+Next navigation is represented by history transitions and fixture filtering. Ordinary and guarded mutation responses are stubbed. Real database/RLS enforcement, contact launching, guarded form validation, authenticated save success, native browser zoom and physical-device input remain outside this fixture evidence. No live data was changed.

@@ -6486,9 +6486,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/DealsKanbanBoard.tsx": {
-    "mtime": 1795443649.6288366,
-    "seen": 1795444283.171107,
-    "ast_hash": "d4106bfb7adfe103f113b38e33b0ebc3",
+    "mtime": 1795445784.3783627,
+    "seen": 1795445853.483499,
+    "ast_hash": "323845853b8c3aecaea6e97a421b8e12",
     "semantic_hash": ""
   },
   "docs/context/2026-11-23_15-45-00.md": {
@@ -6510,8 +6510,8 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/browser-results.json": {
-    "mtime": 1795443709.7760003,
-    "seen": 1795444283.171107,
+    "mtime": 1795444556.7096457,
+    "seen": 1795444623.402907,
     "ast_hash": "f9b5836654e7202af57dcd3122b70363",
     "semantic_hash": ""
   },
@@ -6522,9 +6522,9 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/visual-harness.cjs": {
-    "mtime": 1795443774.0926127,
-    "seen": 1795444283.171107,
-    "ast_hash": "d393e3b7764cb8eb8f3a2147899ea42e",
+    "mtime": 1795444477.0944424,
+    "seen": 1795444526.22481,
+    "ast_hash": "24f6d48cfcf083237cc9a6a0a66d42de",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/DealActionsMenu.tsx": {
@@ -6534,9 +6534,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/DealCard.tsx": {
-    "mtime": 1795443649.3505123,
-    "seen": 1795444283.171107,
-    "ast_hash": "47bdbce5253e16f8681e958590f88cec",
+    "mtime": 1795445784.020085,
+    "seen": 1795445853.483499,
+    "ast_hash": "712ed60f327575332209b7c1cdc8c328",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/DealIcon.tsx": {
@@ -6600,9 +6600,9 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/IMPLEMENTATION_REGISTER.md": {
-    "mtime": 1795442414.069989,
-    "seen": 1795443614.353287,
-    "ast_hash": "3b8f3d0b2529fbf42e8d625207b071a8",
+    "mtime": 1795444533.1444702,
+    "seen": 1795444623.4039621,
+    "ast_hash": "a29ea3a6dbbd7f520aaa1955b4b169ee",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/INDEPENDENT_REVIEW.md": {
@@ -6618,75 +6618,75 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/RESEARCH_AND_QA.md": {
-    "mtime": 1795443738.8588881,
-    "seen": 1795444283.1726956,
-    "ast_hash": "dd80ef4153d10687a866c0dc11eb2ca8",
+    "mtime": 1795444533.143963,
+    "seen": 1795444623.4039621,
+    "ast_hash": "258e0a85d832e13802690fc9a775bb38",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/board-desktop.png": {
-    "mtime": 1795443695.0643303,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444547.1113164,
+    "seen": 1795444623.4039621,
     "ast_hash": "f8e4d87979ee4bfb42e2355b1e71ec0a",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/board-mobile.png": {
-    "mtime": 1795443698.1864953,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444549.6179435,
+    "seen": 1795444623.4039621,
     "ast_hash": "c7a876076841e393d9ffc1d67d6c388a",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/empty-desktop.png": {
-    "mtime": 1795443703.230809,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444552.1690698,
+    "seen": 1795444623.4039621,
     "ast_hash": "d70ab5fcc4e61417d7a9e8ab7717c1a7",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/filters-desktop.png": {
-    "mtime": 1795443697.3897517,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444548.8697352,
+    "seen": 1795444623.4039621,
     "ast_hash": "429ec858d4580169a42f4134ee9eb35e",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/move-popover.png": {
-    "mtime": 1795443695.8786862,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444547.4184425,
+    "seen": 1795444623.4039621,
     "ast_hash": "bcba54b666eec06106da62d97c858691",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/restricted-desktop.png": {
-    "mtime": 1795443702.9466004,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444551.900204,
+    "seen": 1795444623.4039621,
     "ast_hash": "c391d3e6afefe82ecf6867f05dfa2a05",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/table-desktop.png": {
-    "mtime": 1795443697.2151809,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444548.6976905,
+    "seen": 1795444623.4039621,
     "ast_hash": "05ea35173b922c97002b0a80cbce6347",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/table-mobile.png": {
-    "mtime": 1795443698.5070891,
-    "seen": 1795444283.1732397,
-    "ast_hash": "f865edbe6c88a9f082f2e62799e10bca",
+    "mtime": 1795444549.9731555,
+    "seen": 1795444623.4039621,
+    "ast_hash": "3b78f1cc6555c249c8012285f6fe11ea",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/zoom-200-css.png": {
-    "mtime": 1795443708.219015,
-    "seen": 1795444283.1732397,
+    "mtime": 1795444555.7030842,
+    "seen": 1795444623.4039621,
     "ast_hash": "46dcf8864539def81551d5e259f902e4",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/edge-browser-results.json": {
-    "mtime": 1795443709.7795174,
-    "seen": 1795444283.171107,
-    "ast_hash": "974ffc2cf5e7686bedb33b3a65a75e78",
+    "mtime": 1795445819.352981,
+    "seen": 1795445853.483499,
+    "ast_hash": "e42de080895fb91736d78e2ca9f42f88",
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/verify-edge-browser.cjs": {
-    "mtime": 1795443774.4652305,
-    "seen": 1795444283.171107,
-    "ast_hash": "c5ca3f09c5749f15514c3440bc80746f",
+    "mtime": 1795445784.519481,
+    "seen": 1795445853.483499,
+    "ast_hash": "33e486367e65c28eec68672cd53bebbd",
     "semantic_hash": ""
   },
   "docs/context/2026-11-23_19-54-00.md": {
@@ -6696,9 +6696,9 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/DELIVERY.md": {
-    "mtime": 1795444239.0637257,
-    "seen": 1795444283.1726956,
-    "ast_hash": "0487abd251accb71dd8ee6d569006aea",
+    "mtime": 1795444533.1428003,
+    "seen": 1795444623.4039621,
+    "ast_hash": "3a65188e197312fb48c7135662280c4f",
     "semantic_hash": ""
   },
   "package-lock.json": {

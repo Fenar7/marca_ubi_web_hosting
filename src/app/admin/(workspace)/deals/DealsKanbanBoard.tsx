@@ -243,7 +243,10 @@ export function DealsKanbanBoard({
                     onDragStart={(event) => {
                       dragId.current = deal.id;
                       event.dataTransfer.effectAllowed = "move";
-                      event.dataTransfer.setData("text/plain", deal.lead_id);
+                      event.dataTransfer.setData(
+                        "application/x-marca-deal",
+                        "move",
+                      );
                     }}
                     onDragEnd={() => {
                       dragId.current = null;
