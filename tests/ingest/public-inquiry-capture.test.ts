@@ -245,4 +245,24 @@ describe("public inquiry adapters against a bounded RPC fixture", () => {
       "contact-test-id",
     );
   });
+  it("preserves a Start Project timeline without storing it as budget", async () => {
+    state.responses.push({ data: receipt, error: null });
+    const response = await fixture.request(
+      websiteRequest(
+        JSON.stringify({
+          name: "Fixture Person",
+          email: "fixture@example.test",
+          source_name: "Website Form",
+          source_detail: "Start Project Brief Wizard (Multi-Service)",
+          budget_bracket: "Six weeks",
+          brief_payload: { timeline: "Six weeks" },
+        }),
+      ),
+    );
+    assert.equal(response.status, 201);
+    const input = state.calls.at(-1)?.p_input;
+    assert.equal(input?.origin, "start_project");
+    assert.equal(input?.budget_bracket, null);
+    assert.deepEqual(input?.brief, { timeline: "Six weeks" });
+  });
 });
