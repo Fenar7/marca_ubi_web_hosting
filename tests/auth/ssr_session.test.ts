@@ -72,6 +72,26 @@ describe('Marca Ubi CRM — Supabase SSR Authentication & Session Engine (Sprint
     assert.strictEqual(typeof browserClient.from, 'function');
   });
 
+  it('isolates optional service-role configuration from password session configuration', () => {
+    const env = {
+      NEXT_PUBLIC_SUPABASE_URL: 'https://test-project.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'mock-valid-key-with-sufficient-length',
+    };
+    for (const secret of [undefined, '', 'short-service-key']) {
+      assert.deepStrictEqual(validateEnv({ ...env, SUPABASE_SERVICE_ROLE_KEY: secret }), validateEnv(env));
+    }
+  });
+
+  it('rejects whitespace-only anonymous keys before constructing a client', () => {
+    assert.throws(
+      () => validateEnv({
+        NEXT_PUBLIC_SUPABASE_URL: 'https://test-project.supabase.co',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ' '.repeat(30),
+      }),
+      /NEXT_PUBLIC_SUPABASE_ANON_KEY/,
+    );
+  });
+
   it('verifies Edge middleware session adapter structure and unauthenticated user handling', async () => {
     const dummyReq = new NextRequest(new URL('https://marcaubi.com/admin/team'), {
       headers: new Headers({

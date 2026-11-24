@@ -6,6 +6,12 @@
  */
 
 import type { NextConfig } from "next";
+import { validateEnv } from "./src/app/lib/env";
+
+// Stop a Vercel production build before it can publish a login page with missing public configuration.
+if (process.env.VERCEL_ENV === "production") {
+  validateEnv();
+}
 
 /**
  * Enterprise Defense-in-Depth Security Headers.

@@ -1,7 +1,7 @@
 /**
  * @file env.ts
  * @description Centralized runtime environment variable validation and typed configuration access.
- *              Validates Supabase public endpoints, anonymous API keys, and optional privileged service keys
+ *              Validates Supabase public endpoints and anonymous API keys
  *              at application boot time using Zod to eliminate silent failures and misconfiguration crashes.
  * @module lib/env
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
@@ -25,12 +25,8 @@ const envSchema = z.object({
     .string({
       message: 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required to authenticate public client operations.',
     })
+    .trim()
     .min(20, 'NEXT_PUBLIC_SUPABASE_ANON_KEY must be a valid non-empty JWT key string'),
-
-  SUPABASE_SERVICE_ROLE_KEY: z
-    .string()
-    .min(20, 'SUPABASE_SERVICE_ROLE_KEY must be a valid high-entropy key string')
-    .optional(),
 
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
@@ -51,15 +47,16 @@ export function validateEnv(customEnv?: Record<string, string | undefined>): Env
   const isBuildPhase =
     process.env.NEXT_PHASE === 'phase-production-build' ||
     process.env.npm_lifecycle_event === 'build';
+  // A production release must use real project configuration. Local and preview builds can still prerender without it.
+  const allowBuildPlaceholders = isBuildPhase && process.env.VERCEL_ENV !== 'production';
 
   const envToValidate = customEnv || {
     NEXT_PUBLIC_SUPABASE_URL:
       process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      (isBuildPhase ? 'https://placeholder-build-phase.supabase.co' : undefined),
+      (allowBuildPlaceholders ? 'https://placeholder-build-phase.supabase.co' : undefined),
     NEXT_PUBLIC_SUPABASE_ANON_KEY:
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-      (isBuildPhase ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.build_phase_placeholder_key_marca_ubi_crm_enterprise' : undefined),
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      (allowBuildPlaceholders ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.build_phase_placeholder_key_marca_ubi_crm_enterprise' : undefined),
     NODE_ENV: process.env.NODE_ENV,
   };
 
