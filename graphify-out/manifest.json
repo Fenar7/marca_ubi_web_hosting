@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1794024507.2672324,
-    "seen": 1794024624.7407427,
-    "ast_hash": "8297d4ff7271bae881c36e9d1cf78e36",
+    "mtime": 1795547960.3333087,
+    "seen": 1795548171.0352895,
+    "ast_hash": "7ed3598a1fa7c45ff1f746d82fbed15e",
     "semantic_hash": ""
   },
   "playwright.config.ts": {
@@ -1410,10 +1410,10 @@
     "semantic_hash": "b6409aa07976161c5ee914dc500bacfb"
   },
   "src/app/chat-pod/ChatPodBoundary.tsx": {
-    "mtime": 1793550524.4149737,
-    "seen": 1793862052.6850302,
-    "ast_hash": "d5964fdb2c10aa759afddf3d79eb7a26",
-    "semantic_hash": "d5964fdb2c10aa759afddf3d79eb7a26"
+    "mtime": 1795547974.8516393,
+    "seen": 1795548171.0352895,
+    "ast_hash": "b8d8e3cbc555109490489c8d14950c18",
+    "semantic_hash": ""
   },
   "src/app/chat-pod/ChatPodShell.tsx": {
     "mtime": 1793550510.022587,
@@ -7191,6 +7191,12 @@
     "mtime": 1795546703.3065033,
     "seen": 1795546813.8275898,
     "ast_hash": "317caeb27aa67f9183aa718116fe9e17",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20261124220000_analytics_and_leads_telemetry_engine.sql": {
+    "mtime": 1795540561.8737028,
+    "seen": 1795546862.9854631,
+    "ast_hash": "534942613e582115c903dd8f2a8828ad",
     "semantic_hash": ""
   },
   "package-lock.json": {

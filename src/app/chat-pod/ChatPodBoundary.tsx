@@ -12,11 +12,22 @@
  * @author Fenar Khan <86710532+Fenar7@users.noreply.github.com>
  */
 
+import { headers } from "next/headers";
 import { getKnowledgeBase } from "./knowledge/collect";
 import ChatPodShell from "./ChatPodShell";
 import type { KnowledgeBase } from "./types";
 
 export default async function ChatPodBoundary() {
+  const headerList = await headers();
+  const requestPath =
+    headerList.get("x-invoke-path") ||
+    headerList.get("x-matched-path") ||
+    headerList.get("next-url") ||
+    "";
+  if (requestPath.startsWith("/admin")) {
+    return null;
+  }
+
   let knowledge: KnowledgeBase | null = null;
   try {
     knowledge = await getKnowledgeBase();
