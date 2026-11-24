@@ -1,6 +1,8 @@
 # Current Engineering Context
 
-**Read first (2026-11-24 20:30 IST):** Dashboard Interactivity & Real-Data Engine redesign on branch `redesign/crm-dashboard-interactivity-and-drilldown`. Grounded 100% in real Supabase database telemetry (zero mock HTML), bidirectional interactive drilldowns across all 8 dashboard widgets, in-context `ClientDossierDrawer` integration without page unloads, and dynamic Practice Allocation breakdown. Read [dashboard_interactivity_drilldown_architecture.md](../sales_funnel/dashboard_interactivity_drilldown_architecture.md).
+**Read first (2026-11-24 22:30 IST):** Commercial Analytics (`/admin/analytics`) and Inbound Leads (`/admin/leads`) complete editorial luxury redesign on branch `redesign/crm-dashboard-interactivity-and-drilldown`. Grounded 100% in real Supabase database telemetry (zero mock HTML), bidirectional interactive drilldowns across all dashboard widgets, in-context `ClientDossierDrawer` integration without page unloads, floating batch action bar, and zero-CLS skeleton boundaries. Read [2026-11-24_22-30-00.md](./2026-11-24_22-30-00.md) and [REDESIGN_DELIVERY_REPORT.md](../sales_funnel/analytics_and_leads_redesign/REDESIGN_DELIVERY_REPORT.md).
+
+**Prior CRM handoff (2026-11-24 20:30 IST):** Dashboard Interactivity & Real-Data Engine redesign on branch `redesign/crm-dashboard-interactivity-and-drilldown`. Read [dashboard_interactivity_drilldown_architecture.md](../sales_funnel/dashboard_interactivity_drilldown_architecture.md).
 
 **Prior CRM handoff (2026-11-24 16:10 IST):** [Current CRM handoff](./2026-11-24_16-10-00.md) records PR #129, and the Overview charts telemetry and timeframe redesign. [Earlier handoff](./2026-11-24_15-31-26.md).
 

@@ -1,12 +1,3 @@
-/**
- * @file LeadsTableSkeleton.tsx
- * @description Zero Cumulative Layout Shift (CLS < 0.01) loading skeleton for the Commercial Deals Table.
- *              Guarantees identical spatial rhythm with 72px fixed row heights and hairline dark shimmers
- *              while React 19 Server Components stream commercial pipeline records.
- * @module app/admin/components/LeadsTable
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
 import React from 'react';
 import styles from './LeadsTableSkeleton.module.scss';
 
@@ -30,67 +21,78 @@ export function LeadsTableSkeleton({
       aria-label="Loading commercial pipeline deals"
       aria-busy="true"
     >
-      {/* Table Head Skeleton (9 Dedicated Columns) */}
+      {/* Table Head Skeleton (10 Dedicated Columns) */}
       <div className={styles.tableHeadSkeleton} aria-hidden="true">
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '50px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '110px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '75px' }} />
+        <div className={`${styles.shimmerBox} ${styles.checkboxSkeleton}`} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '45px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '100px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '80px' }} />
         <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '75px' }} />
         <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '80px' }} />
         <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '85px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '60px' }} />
-        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '65px' }} />
         <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '55px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '60px' }} />
+        <div className={`${styles.shimmerBox} ${styles.headLabelSkeleton}`} style={{ width: '50px' }} />
       </div>
 
-      {/* Row Shimmer Skeletons (Fixed 72px Height across 9 Columns) */}
+      {/* Row Shimmer Skeletons (Fixed 72px Height across 10 Columns) */}
       {rows.map((idx) => (
         <div key={idx} className={styles.skeletonRow} aria-hidden="true">
-          {/* Column 1: Deal / Lead ID Pill */}
+          {/* Col 0: Checkbox */}
+          <div>
+            <div className={`${styles.shimmerBox} ${styles.checkboxSkeleton}`} />
+          </div>
+
+          {/* Col 1: Lead ID Pill */}
           <div>
             <div className={`${styles.shimmerBox} ${styles.dealIdPill}`} />
           </div>
 
-          {/* Column 2: Client & Organization */}
+          {/* Col 2: Client Monogram Avatar + Org Text */}
           <div className={styles.clientMetaCol}>
-            <div className={`${styles.shimmerBox} ${styles.clientNameBar}`} />
-            <div className={`${styles.shimmerBox} ${styles.companyTitleBar}`} />
+            <div className={`${styles.shimmerBox} ${styles.avatarSkeleton}`} />
+            <div className={styles.clientTextCol}>
+              <div className={`${styles.shimmerBox} ${styles.clientNameBar}`} />
+              <div className={`${styles.shimmerBox} ${styles.companyTitleBar}`} />
+            </div>
           </div>
 
-          {/* Column 3: Service Category */}
+          {/* Col 3: Service Category */}
           <div>
-            <div className={`${styles.shimmerBox} ${styles.serviceBar}`} />
+            <div className={`${styles.shimmerBox} ${styles.scopePill}`} />
           </div>
 
-          {/* Column 4: Funnel Stage Pill */}
+          {/* Col 4: Funnel Status Dropdown */}
           <div>
-            <div className={`${styles.shimmerBox} ${styles.statusPill}`} />
+            <div className={`${styles.shimmerBox} ${styles.stageSelectPill}`} />
           </div>
 
-          {/* Column 5: Valuation Numerals */}
+          {/* Col 5: Valuation Numerals */}
           <div>
-            <div className={`${styles.shimmerBox} ${styles.dealValueBar}`} />
+            <div className={`${styles.shimmerBox} ${styles.valueBar}`} />
           </div>
 
-          {/* Column 6: Assigned Representative */}
-          <div className={styles.repBadge}>
-            <div className={`${styles.shimmerBox} ${styles.repAvatarCircle}`} />
+          {/* Col 6: Representative Pill */}
+          <div className={styles.repCol}>
+            <div className={`${styles.shimmerBox} ${styles.repAvatarSkeleton}`} />
             <div className={`${styles.shimmerBox} ${styles.repNameBar}`} />
           </div>
 
-          {/* Column 7: Priority Tier */}
+          {/* Col 7: Priority Badge */}
           <div>
-            <div className={`${styles.shimmerBox} ${styles.priorityPill}`} />
+            <div className={`${styles.shimmerBox} ${styles.priorityBadgeSkeleton}`} />
           </div>
 
-          {/* Column 8: Next SLA Touchpoint */}
-          <div>
+          {/* Col 8: Next SLA */}
+          <div className={styles.slaColSkeleton}>
             <div className={`${styles.shimmerBox} ${styles.touchpointBar}`} />
+            <div className={`${styles.shimmerBox} ${styles.overdueTagSkeleton}`} />
           </div>
 
-          {/* Column 9: Action Controls Strip */}
-          <div>
-            <div className={`${styles.shimmerBox} ${styles.actionButtonSkeleton}`} />
+          {/* Col 9: Actions Controls Strip */}
+          <div className={styles.actionsSkeleton}>
+            <div className={`${styles.shimmerBox} ${styles.inspectBtnSkeleton}`} />
+            <div className={`${styles.shimmerBox} ${styles.directLinkSkeleton}`} />
           </div>
         </div>
       ))}

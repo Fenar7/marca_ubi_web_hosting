@@ -1,0 +1,89 @@
+{
+  "environment": "Loopback harness, actual Client Works component and fixture records, stubbed mutations",
+  "results": [
+    {
+      "name": "Loaded sample projects and actual project details",
+      "passed": true
+    },
+    {
+      "name": "Sample and viewer projects expose no editing affordances",
+      "passed": true
+    },
+    {
+      "name": "Assigned director can edit their project only",
+      "passed": true
+    },
+    {
+      "name": "Search and health filter work together",
+      "passed": true
+    },
+    {
+      "name": "Stage filter selects the matching project",
+      "passed": true
+    },
+    {
+      "name": "Attention shortcut clears filters, opens the project and focuses it",
+      "passed": true
+    },
+    {
+      "name": "Milestone becomes completed and issues one write",
+      "passed": true
+    },
+    {
+      "name": "A rejected milestone write restores the original state",
+      "passed": true
+    },
+    {
+      "name": "Director dialog supports Escape and returns focus",
+      "passed": true
+    },
+    {
+      "name": "Director assignment submits a stub write and updates the project",
+      "passed": true
+    },
+    {
+      "name": "Stage and health changes use the Works write handlers",
+      "passed": true
+    },
+    {
+      "name": "Empty workspace has a genuine empty state",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 320px",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 375px",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 768px",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 1024px",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 1440px",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 1920px",
+      "passed": true
+    },
+    {
+      "name": "Expanded project reflows on a 320px screen",
+      "passed": true
+    },
+    {
+      "name": "No serious or critical axe violations",
+      "passed": true
+    },
+    {
+      "name": "No browser runtime errors",
+      "passed": true
+    }
+  ]
+}

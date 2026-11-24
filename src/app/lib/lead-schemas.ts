@@ -409,3 +409,66 @@ export const updateLeadDetailsSchema = z.object({
 });
 
 export type UpdateLeadDetailsInput = z.infer<typeof updateLeadDetailsSchema>;
+
+/**
+ * Zod validation schema for batch updating pipeline status across multiple deals.
+ */
+export const batchUpdateLeadStatusSchema = z.object({
+  leadIds: z
+    .array(z.string().regex(UUID_REGEX, { message: 'Invalid lead UUID' }))
+    .min(1, { message: 'At least one deal must be selected' })
+    .max(100, { message: 'Batch limit exceeded: maximum 100 deals per mutation' }),
+  statusId: z
+    .string({ message: 'Target status identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid target status UUID' }),
+  lostReason: z
+    .string()
+    .trim()
+    .max(500, { message: 'Lost reason must not exceed 500 characters' })
+    .optional()
+    .nullable(),
+  note: z
+    .string()
+    .trim()
+    .max(2000, { message: 'Audit note must not exceed 2000 characters' })
+    .optional()
+    .nullable(),
+});
+
+export type BatchUpdateLeadStatusInput = z.infer<typeof batchUpdateLeadStatusSchema>;
+
+/**
+ * Zod validation schema for batch reassigning representative portfolio ownership.
+ */
+export const batchReassignLeadsSchema = z.object({
+  leadIds: z
+    .array(z.string().regex(UUID_REGEX, { message: 'Invalid lead UUID' }))
+    .min(1, { message: 'At least one deal must be selected' })
+    .max(100, { message: 'Batch limit exceeded: maximum 100 deals per reassignment' }),
+  assigneeId: z
+    .string({ message: 'Destination representative identifier is required' })
+    .regex(UUID_REGEX, { message: 'Invalid representative UUID' }),
+  transferReason: z
+    .string({ message: 'Transfer reason is required' })
+    .trim()
+    .min(3, { message: 'Transfer reason must be at least 3 characters' })
+    .max(1000, { message: 'Transfer reason must not exceed 1000 characters' }),
+});
+
+export type BatchReassignLeadsInput = z.infer<typeof batchReassignLeadsSchema>;
+
+/**
+ * Zod validation schema for spreadsheet CSV export parameters.
+ */
+export const exportLeadsCsvSchema = z.object({
+  leadIds: z.array(z.string().regex(UUID_REGEX)).optional(),
+  stage: z.string().regex(UUID_REGEX).optional().nullable(),
+  assignedTo: z.string().regex(UUID_REGEX).optional().nullable(),
+  source: z.string().regex(UUID_REGEX).optional().nullable(),
+  priority: z.enum(['high', 'medium', 'low', 'High', 'Medium', 'Low']).optional().nullable(),
+  bucket: z.string().optional().nullable(),
+  search: z.string().max(200).optional().nullable(),
+});
+
+export type ExportLeadsCsvFilters = z.infer<typeof exportLeadsCsvSchema>;
+

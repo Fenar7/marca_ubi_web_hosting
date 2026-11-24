@@ -1,0 +1,129 @@
+.matrixContainer {
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.matrixHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.matrixTitle {
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--admin-text-primary, #111111);
+  margin: 0 0 4px 0;
+}
+
+.matrixSubtitle {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted, #696965);
+  margin: 0;
+}
+
+.segmentedBar {
+  display: flex;
+  height: 10px;
+  width: 100%;
+  border-radius: var(--admin-radius-pill, 9999px);
+  overflow: hidden;
+  gap: 1px;
+  background-color: var(--admin-card-quiet, #efefed);
+}
+
+.segment {
+  height: 100%;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.categoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background-color: var(--admin-surface-hover, #f7f7f5);
+
+    .chevron {
+      color: var(--admin-brand-primary, #ea002a);
+      transform: translateX(2px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+  }
+}
+
+.catLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.catDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.catName {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--admin-text-primary, #111111);
+}
+
+.catRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.catShare {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.75rem;
+  color: var(--admin-text-muted, #696965);
+}
+
+.catVal {
+  font-family: var(--font-helvetica-neue), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--admin-text-primary, #111111);
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+  text-align: right;
+}
+
+.chevron {
+  font-size: 0.75rem;
+  color: #a8a8a4;
+  transition: all 0.12s ease;
+}

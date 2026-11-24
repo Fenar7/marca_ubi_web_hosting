@@ -1,0 +1,305 @@
+/**
+ * @file BatchStageModal.module.scss
+ * @description Editorial luxury styling for batch stage advancement modal.
+ *              Enforces Marca Ubi editorial design tokens, specular hairline borders,
+ *              refined form controls, and accessible focus states.
+ * @module admin/components/modals/BatchStageModal
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(17, 17, 17, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 16px;
+  animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @media (max-width: 767px) {
+    padding: 0;
+    align-items: flex-end;
+  }
+}
+
+.modalCard {
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e0;
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.12);
+  overflow: hidden;
+  animation: scaleUpCard 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @media (max-width: 767px) {
+    max-height: 94vh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e5e5e0;
+  background-color: #ffffff;
+}
+
+.headerTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modalTitle {
+  font-family: var(--font-circular, 'Circular XX', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111111;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.modalSubtitle {
+  font-size: 0.8125rem;
+  color: #666666;
+  margin: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: #f5f5f3;
+    color: #111111;
+  }
+}
+
+.modalBody {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.selectionBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background-color: #f5f5f3;
+  border: 1px solid #e5e5e0;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: #111111;
+
+  .countBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    background-color: #111111;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .requiredMark {
+    color: #ea002a;
+  }
+}
+
+.stageGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stageCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    border-color: #111111;
+    background-color: #fbfbfa;
+  }
+
+  &.stageSelected {
+    border-color: #111111;
+    background-color: #f5f5f3;
+    box-shadow: 0 0 0 1px #111111;
+  }
+}
+
+.stageDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stageName {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #111111;
+  flex: 1;
+}
+
+.stageBucket {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888888;
+}
+
+.textInput,
+.textArea {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  color: #111111;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e0;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.08);
+  }
+
+  &::placeholder {
+    color: #888888;
+  }
+}
+
+.textArea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.errorBanner {
+  padding: 10px 14px;
+  background-color: rgba(234, 0, 42, 0.08);
+  border: 1px solid rgba(234, 0, 42, 0.2);
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: #ea002a;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e5e0;
+  background-color: #fbfbfa;
+}
+
+.cancelBtn {
+  padding: 9px 16px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #111111;
+  background: transparent;
+  border: 1px solid #e5e5e0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: #f5f5f3;
+  }
+}
+
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #111111;
+  border: 1px solid #111111;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #222222;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUpCard {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

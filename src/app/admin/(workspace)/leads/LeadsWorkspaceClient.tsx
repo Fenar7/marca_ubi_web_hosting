@@ -3,8 +3,9 @@
 /**
  * @file LeadsWorkspaceClient.tsx
  * @description Interactive Client Component for the Deals & Inquiries Workspace (/admin/leads).
- *              Integrates the Multi-Filter Action Bar, pipeline bucket segmented tabs, debounced search,
- *              instantaneous client-side filtering, sub-16ms URL state synchronization, and drawer triggers.
+ *              Integrates the QuickMetricsRibbon telemetry summary, FilterActionBar, virtualized
+ *              LeadsDataGrid with TanStack Virtual, FloatingBatchActionBar, in-context Client 360 Drawer,
+ *              batch status transition dialog, batch reassignment wizard, and keyboard hotkeys (J/K/X/Enter/Esc).
  * @module app/admin/(workspace)/leads/LeadsWorkspaceClient
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -20,13 +21,21 @@ import {
 } from '@/app/admin/components/FilterActionBar';
 import {
   LeadsDataGrid,
+  FloatingBatchActionBar,
   type InlineStatusOption,
 } from '@/app/admin/components/LeadsTable';
+import { QuickMetricsRibbon } from './components/QuickMetricsRibbon/QuickMetricsRibbon';
 import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
-import { BatchReassignModal, ConvertLeadToDealModal, type LeadForConversion } from '@/app/admin/components/modals';
+import {
+  BatchReassignModal,
+  BatchStageModal,
+  ConvertLeadToDealModal,
+  type LeadForConversion,
+} from '@/app/admin/components/modals';
 import { FollowUpScheduler } from '@/app/admin/components/Scheduler';
 import { calculateOverdueTier } from '@/app/admin/components/Badges';
+import { exportLeadsCsvAction } from '@/app/actions/batchLeads';
 import type { OverdueLeadSummary } from '@/app/lib/workload-schemas';
 import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
 import type { LeadPriority } from '@/types/crm';
@@ -65,6 +74,12 @@ export interface LeadsWorkspaceClientProps {
   availableAssignees?: FilterDropdownOption[];
   availableStatuses?: InlineStatusOption[];
   userRole?: string;
+  telemetryMetrics?: {
+    totalInquiries: number;
+    activeTriageCount: number;
+    overdueCount: number;
+    totalPipelineValue: number;
+  };
 }
 
 const VALID_BUCKETS: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
@@ -92,6 +107,7 @@ function LeadsWorkspaceContent({
   availableAssignees: initialAssignees,
   availableStatuses: initialStatuses,
   userRole,
+  telemetryMetrics,
 }: LeadsWorkspaceClientProps): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -137,6 +153,12 @@ function LeadsWorkspaceContent({
   // Client 360 Slide-over Drawer State: hydrated from URL search parameter upon deep-link navigation
   const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(leadIdParam);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(Boolean(leadIdParam));
+
+  // Multi-select batch operations state
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1);
+  const [isBatchStageModalOpen, setIsBatchStageModalOpen] = useState<boolean>(false);
+  const [isExportingCsv, setIsExportingCsv] = useState<boolean>(false);
 
   // Guarded Stage Transition Modal State (Negotiation, Lost, Converted)
   const [stageModalState, setStageModalState] = useState<{
@@ -233,7 +255,6 @@ function LeadsWorkspaceContent({
   /**
    * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
    * without triggering a Next.js server component re-render or layout jitter.
-   * Dispatches a native popstate event so KpiRibbon remains reactively synchronized.
    */
   const updateUrlParams = useCallback(
     (updates: {
@@ -248,7 +269,6 @@ function LeadsWorkspaceContent({
 
       const url = new URL(window.location.href);
 
-      // Determine updated parameter values
       const nextBucket = updates.bucket !== undefined ? updates.bucket : selectedBucket;
       const nextSearch = updates.search !== undefined ? updates.search : searchQuery;
       const nextSource = updates.source !== undefined ? updates.source : selectedSourceId;
@@ -312,7 +332,7 @@ function LeadsWorkspaceContent({
     ]
   );
 
-  // Sync state if URL changes externally (e.g. browser back/forward or external deep links)
+  // Sync state if URL changes externally
   useEffect(() => {
     const rawBucket = searchParams.get('bucket');
     if (VALID_BUCKETS.includes(rawBucket as BucketTabId)) {
@@ -329,7 +349,6 @@ function LeadsWorkspaceContent({
     setSelectedPriority(searchParams.get('priority') || null);
     setSelectedStageId(searchParams.get('stage') || null);
 
-    // Reactive synchronization for drawer state upon browser back/forward or deep-link parameter changes
     const currentParamId = searchParams.get('id') || searchParams.get('leadId');
     if (currentParamId && currentParamId !== activeDrawerLeadId) {
       setActiveDrawerLeadId(currentParamId);
@@ -337,7 +356,7 @@ function LeadsWorkspaceContent({
     }
   }, [searchParams, activeDrawerLeadId]);
 
-  // Derive catalog dropdown options dynamically if not passed directly from server props
+  // Available sources list
   const availableSources = useMemo<FilterDropdownOption[]>(() => {
     if (initialSources && initialSources.length > 0) {
       return initialSources;
@@ -348,13 +367,14 @@ function LeadsWorkspaceContent({
         map.set(lead.lead_source_id, {
           id: lead.lead_source_id,
           label: lead.lead_source_name,
-          colorCode: lead.lead_source_color || '#1f242f',
+          colorCode: lead.lead_source_color || '#111111',
         });
       }
     }
     return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
   }, [leads, initialSources]);
 
+  // Available assignees list
   const availableAssignees = useMemo<FilterDropdownOption[]>(() => {
     if (initialAssignees && initialAssignees.length > 0) {
       return initialAssignees;
@@ -391,7 +411,7 @@ function LeadsWorkspaceContent({
           id: lead.status_id,
           name: lead.status_name,
           bucket: lead.bucket,
-          color_code: lead.status_color || '#1f242f',
+          color_code: lead.status_color || '#111111',
         });
       }
     }
@@ -438,7 +458,7 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('open-stage-modal', handleOpenStageModal);
   }, [resolvedStatuses]);
 
-  // Listener for programmatic open-scheduler-modal events
+  // Programmatic open-scheduler-modal listener
   useEffect(() => {
     const handleOpenSchedulerModal = (e: Event): void => {
       const customEvt = e as CustomEvent<{
@@ -464,7 +484,7 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('open-scheduler-modal', handleOpenSchedulerModal);
   }, [leads]);
 
-  // Listener for lead-updated custom events to synchronize workspace data grid
+  // Lead-updated custom events listener
   useEffect(() => {
     const handleLeadUpdatedEvent = (e: Event): void => {
       const customEvt = e as CustomEvent<{
@@ -500,7 +520,7 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('lead-updated', handleLeadUpdatedEvent);
   }, []);
 
-  // Listener for programmatic open-batch-reassign events
+  // Programmatic open-batch-reassign listener
   useEffect(() => {
     const handleOpenBatchReassignModal = (): void => {
       setIsBatchReassignOpen(true);
@@ -510,7 +530,7 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('open-batch-reassign', handleOpenBatchReassignModal);
   }, []);
 
-  // Listener for programmatic open-convert-lead-modal events
+  // Programmatic open-convert-lead-modal listener
   useEffect(() => {
     const handleOpenConvertModal = (e: Event): void => {
       const customEvt = e as CustomEvent<string | { leadId?: string; lead?: LeadForConversion }>;
@@ -542,7 +562,6 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('open-convert-lead-modal', handleOpenConvertModal);
   }, [leads]);
 
-
   // Memoized overdue lead summaries for batch reassign modal
   const overdueSummaries = useMemo<OverdueLeadSummary[]>(() => {
     return leads
@@ -569,6 +588,36 @@ function LeadsWorkspaceContent({
         };
       });
   }, [leads]);
+
+  // Candidate summaries for batch reassignment: prioritizes user selections, falling back to overdue queue
+  const selectedOrOverdueSummaries = useMemo<OverdueLeadSummary[]>(() => {
+    if (selectedLeadIds.size > 0) {
+      return leads
+        .filter((l) => selectedLeadIds.has(l.id))
+        .map((l) => {
+          const tierCalc = calculateOverdueTier(l.next_follow_up, {
+            bucket: l.bucket,
+            statusName: l.status_name,
+            revisitDate: l.revisit_date,
+          });
+          return {
+            id: l.id,
+            leadId: l.lead_id,
+            name: l.name,
+            company: l.company || 'Private Client',
+            expectedValue: l.expected_value,
+            priority: l.priority,
+            nextFollowUp: l.next_follow_up || '',
+            statusName: l.status_name,
+            currentAssigneeId: l.assigned_to || null,
+            currentAssigneeName: l.assigned_to_name || 'Unassigned',
+            tier: tierCalc.tier,
+            overdueLabel: tierCalc.label,
+          };
+        });
+    }
+    return overdueSummaries;
+  }, [leads, selectedLeadIds, overdueSummaries]);
 
   // Memoized representative list for destination selection in batch reassignment
   const availableRepsForModal = useMemo(() => {
@@ -598,6 +647,7 @@ function LeadsWorkspaceContent({
         )
       );
     }
+    setSelectedLeadIds(new Set());
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('popstate'));
     }
@@ -615,32 +665,45 @@ function LeadsWorkspaceContent({
     };
   }, [leads]);
 
+  // Quick Telemetry KPIs for the header ribbon
+  const quickTelemetry = useMemo(() => {
+    if (telemetryMetrics) return telemetryMetrics;
+    const activeTriageCount = leads.filter(
+      (l) => l.bucket === 'open' || l.bucket === 'potential'
+    ).length;
+    const overdueCount = leads.filter(isLeadOverdue).length;
+    const totalPipelineValue = leads
+      .filter((l) => l.bucket === 'open' || l.bucket === 'potential')
+      .reduce((sum, l) => sum + (l.expected_value || 0), 0);
+    return {
+      totalInquiries: leads.length,
+      activeTriageCount,
+      overdueCount,
+      totalPipelineValue,
+    };
+  }, [telemetryMetrics, leads]);
+
   // In-memory filtered leads with multi-dimensional criteria evaluation
   const filteredLeads = useMemo<HydratedLeadItem[]>(() => {
     return leads.filter((lead) => {
-      // 1. Bucket condition
       if (selectedBucket === 'overdue') {
         if (!isLeadOverdue(lead)) return false;
       } else if (selectedBucket !== 'all') {
         if (lead.bucket !== selectedBucket) return false;
       }
 
-      // 2. Stage filter condition (from deep link or KPI ribbon drilldown)
       if (selectedStageId && lead.status_id !== selectedStageId) {
         return false;
       }
 
-      // 3. Lead Source filter condition
       if (selectedSourceId && lead.lead_source_id !== selectedSourceId) {
         return false;
       }
 
-      // 4. Assigned Representative filter condition
       if (selectedAssigneeId && lead.assigned_to !== selectedAssigneeId) {
         return false;
       }
 
-      // 5. Priority tier filter condition
       if (selectedPriority && lead.priority.toLowerCase() !== selectedPriority.toLowerCase()) {
         return false;
       }
@@ -654,6 +717,143 @@ function LeadsWorkspaceContent({
     selectedAssigneeId,
     selectedPriority,
     selectedStageId,
+  ]);
+
+  // Batch Selection Callbacks
+  const handleToggleSelect = useCallback((leadId: string): void => {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(leadId)) {
+        next.delete(leadId);
+      } else {
+        next.add(leadId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback((): void => {
+    setSelectedLeadIds((prev) => {
+      if (prev.size === filteredLeads.length) {
+        return new Set();
+      }
+      return new Set(filteredLeads.map((l) => l.id));
+    });
+  }, [filteredLeads]);
+
+  const handleClearSelection = useCallback((): void => {
+    setSelectedLeadIds(new Set());
+  }, []);
+
+  // Batch Stage Advancement Callback
+  const handleBatchStageSuccess = useCallback(
+    (_affectedCount: number, targetStatusName: string, statusId: string): void => {
+      const targetOption = resolvedStatuses.find((s) => s.id === statusId);
+      setLeads((prev) =>
+        prev.map((l) => {
+          if (!selectedLeadIds.has(l.id)) return l;
+          return {
+            ...l,
+            status_id: statusId,
+            status_name: targetStatusName,
+            status_color: targetOption?.color_code || l.status_color,
+            bucket: targetOption?.bucket || l.bucket,
+            updated_at: new Date().toISOString(),
+          };
+        })
+      );
+      setSelectedLeadIds(new Set());
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('popstate'));
+      }
+    },
+    [resolvedStatuses, selectedLeadIds]
+  );
+
+  // Batch CSV Export Callback
+  const handleBatchExportCsv = useCallback(async (): Promise<void> => {
+    if (selectedLeadIds.size === 0) return;
+    setIsExportingCsv(true);
+    try {
+      const result = await exportLeadsCsvAction({
+        leadIds: Array.from(selectedLeadIds),
+      });
+
+      if (result.success && result.data) {
+        const blob = new Blob([result.data.csvData], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', result.data.filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        alert(result.error || 'Failed to export selected leads.');
+      }
+    } catch (err: unknown) {
+      console.error('[leads-workspace] CSV export error:', err);
+    } finally {
+      setIsExportingCsv(false);
+    }
+  }, [selectedLeadIds]);
+
+  // Keyboard navigation shortcuts: J/K to traverse rows, X to select, Enter to open drawer, Esc to clear
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedRowIndex((prev) => Math.min(prev + 1, filteredLeads.length - 1));
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedRowIndex((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === 'x' || e.key === ' ') {
+        if (focusedRowIndex >= 0 && focusedRowIndex < filteredLeads.length) {
+          e.preventDefault();
+          handleToggleSelect(filteredLeads[focusedRowIndex].id);
+        }
+      } else if (e.key === '/') {
+        e.preventDefault();
+        const searchInput = document.querySelector<HTMLInputElement>(
+          'input[type="search"], input[placeholder*="Search"], input[placeholder*="search"]'
+        );
+        if (searchInput) {
+          searchInput.focus();
+        }
+      } else if (e.key === 'Enter') {
+        if (focusedRowIndex >= 0 && focusedRowIndex < filteredLeads.length) {
+          e.preventDefault();
+          handleOpenDrawer(filteredLeads[focusedRowIndex].id);
+        }
+      } else if (e.key === 'Escape') {
+        if (selectedLeadIds.size > 0) {
+          e.preventDefault();
+          handleClearSelection();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    filteredLeads,
+    focusedRowIndex,
+    handleToggleSelect,
+    handleOpenDrawer,
+    selectedLeadIds.size,
+    handleClearSelection,
   ]);
 
   // Action handlers updating local state and URL parameters
@@ -783,12 +983,21 @@ function LeadsWorkspaceContent({
     []
   );
 
-  const conversionCandidate = selectedBucket === 'open' && userRole !== 'viewer'
-    ? filteredLeads.find((lead) => lead.bucket === 'open')
-    : undefined;
+  const conversionCandidate =
+    selectedBucket === 'open' && userRole !== 'viewer'
+      ? filteredLeads.find((lead) => lead.bucket === 'open')
+      : undefined;
 
   return (
     <section className={styles.inboxWorkspace} aria-label="Lead inbox">
+      {/* Editorial Luxury Quick Telemetry Ribbon */}
+      <QuickMetricsRibbon
+        totalInquiries={quickTelemetry.totalInquiries}
+        activeTriageCount={quickTelemetry.activeTriageCount}
+        overdueCount={quickTelemetry.overdueCount}
+        totalPipelineValue={quickTelemetry.totalPipelineValue}
+      />
+
       <div className={styles.inboxControls}>
         <FilterActionBar
           scope="leads"
@@ -814,19 +1023,25 @@ function LeadsWorkspaceContent({
       {lookupNotice && (
         <div className={styles.lookupNotice}>
           <span role="status">{lookupNotice}</span>
-          <button type="button" onClick={() => router.refresh()}>Retry</button>
+          <button type="button" onClick={() => router.refresh()}>
+            Retry
+          </button>
         </div>
       )}
 
       {selectedBucket === 'overdue' && counts.overdue > 0 && userRole !== 'viewer' && (
         <div className={styles.queueAction}>
           <span>Batch actions apply to overdue leads on this page.</span>
-          <button type="button" className={styles.batchReassignTriggerBtn}
-            onClick={() => setIsBatchReassignOpen(true)}>
+          <button
+            type="button"
+            className={styles.batchReassignTriggerBtn}
+            onClick={() => setIsBatchReassignOpen(true)}
+          >
             Reassign overdue leads
           </button>
         </div>
       )}
+
       {conversionCandidate && (
         <div className={styles.queueAction}>
           <span>{conversionCandidate.name}</span>
@@ -851,6 +1066,10 @@ function LeadsWorkspaceContent({
           className={styles.queueGrid}
           leads={filteredLeads}
           availableStatuses={resolvedStatuses}
+          selectedLeadIds={selectedLeadIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+          focusedRowIndex={focusedRowIndex}
           onStatusChange={handleInlineStatusChange}
           onPriorityChange={handleInlinePriorityChange}
           userRole={userRole}
@@ -859,12 +1078,31 @@ function LeadsWorkspaceContent({
 
       {pagination && <div className={styles.queueFooter}>{pagination}</div>}
 
+      {/* Fixed Floating Batch Operations Dock */}
+      <FloatingBatchActionBar
+        selectedCount={selectedLeadIds.size}
+        onTransitionStage={() => setIsBatchStageModalOpen(true)}
+        onReassign={() => setIsBatchReassignOpen(true)}
+        onExportCsv={handleBatchExportCsv}
+        onClear={handleClearSelection}
+        isExporting={isExportingCsv}
+      />
+
+      {/* Batch Stage Advancement Modal */}
+      <BatchStageModal
+        isOpen={isBatchStageModalOpen}
+        selectedLeadIds={Array.from(selectedLeadIds)}
+        availableStatuses={resolvedStatuses}
+        onClose={() => setIsBatchStageModalOpen(false)}
+        onSuccess={handleBatchStageSuccess}
+      />
+
       {/* Slide-over Client 360 Degree Dossier Drawer */}
       <ClientDossierDrawer
         leadId={activeDrawerLeadId}
         isOpen={isDrawerOpen}
-          onClose={handleCloseDrawer}
-          onLeadUpdated={() => {
+        onClose={handleCloseDrawer}
+        onLeadUpdated={() => {
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new Event('popstate'));
           }
@@ -921,7 +1159,7 @@ function LeadsWorkspaceContent({
       {isBatchReassignOpen && (
         <BatchReassignModal
           isOpen={isBatchReassignOpen}
-          overdueLeads={overdueSummaries}
+          overdueLeads={selectedOrOverdueSummaries}
           availableReps={availableRepsForModal}
           onClose={() => setIsBatchReassignOpen(false)}
           onSuccess={handleBatchReassignSuccess}

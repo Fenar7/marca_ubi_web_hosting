@@ -19,3 +19,7 @@ export type { InlinePrioritySelectProps } from './InlinePrioritySelect';
 
 export { LeadMobileCard } from './LeadMobileCard';
 export type { LeadMobileCardProps } from './LeadMobileCard';
+
+export { FloatingBatchActionBar } from './FloatingBatchActionBar';
+export type { FloatingBatchActionBarProps } from './FloatingBatchActionBar';
+

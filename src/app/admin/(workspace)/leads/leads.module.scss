@@ -1,8 +1,17 @@
+/**
+ * @file leads.module.scss
+ * @description Editorial luxury styling for Inbound Leads Workspace (/admin/leads).
+ *              Enforces pure Marca Ubi tokens (#ffffff, #f5f5f3, #111111, #ea002a),
+ *              high-contrast typography, and 44px minimum touch targets.
+ * @module app/admin/(workspace)/leads/leads.module.scss
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
 .container {
   display: grid;
-  gap: 18px;
+  gap: 20px;
   min-width: 0;
-  font-family: var(--font-graphik), sans-serif;
+  font-family: var(--font-graphik, -apple-system, BlinkMacSystemFont, sans-serif);
 }
 
 .header {
@@ -10,14 +19,14 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 20px;
+  gap: 16px 24px;
 }
 
 .pageTitle {
   margin: 0;
-  color: #111;
-  font: 500 clamp(1.65rem, 2vw, 2.1rem)/1.15 var(--font-circular), sans-serif;
-  letter-spacing: -.035em;
+  color: #111111;
+  font: 500 clamp(1.65rem, 2vw, 2.1rem)/1.15 var(--font-circular, 'Circular XX', sans-serif);
+  letter-spacing: -0.035em;
 }
 
 .newLeadHeaderBtn,
@@ -30,93 +39,122 @@
   gap: 8px;
   min-width: 44px;
   min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid #d5d7dc;
+  padding: 0 16px;
+  border: 1px solid var(--admin-border-subtle, #e5e5e0);
   border-radius: 8px;
-  background: #fff;
-  color: #252b35;
-  font: 500 .8125rem/1.25 var(--font-graphik), sans-serif;
+  background: #ffffff;
+  color: #111111;
+  font: 500 0.8125rem/1.25 var(--font-graphik, sans-serif);
   cursor: pointer;
+  transition: all 0.15s ease;
 
-  &:hover { background: #edf0f5; }
+  &:hover {
+    background: #f5f5f3;
+    border-color: #111111;
+  }
+
   &:focus-visible {
-    outline: 2px solid #9c001e;
+    outline: 2px solid #ea002a;
     outline-offset: 2px;
   }
 }
 
 .newLeadHeaderBtn {
-  background: #171b24;
-  border-color: #171b24;
-  color: #fff;
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
 
-  &:hover { background: #303949; }
+  &:hover {
+    background: #222222;
+    border-color: #222222;
+  }
 }
 
 .leadShortcutBadge {
-  padding: 3px 5px;
-  border: 1px solid #626b7a;
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
-  font: 400 .625rem var(--font-admin-mono), monospace;
-  color: #f5f6f8;
+  font: 400 0.625rem var(--font-admin-mono, monospace);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .inboxWorkspace {
   min-width: 0;
-  display: grid;
-  align-items: start;
-  border: 1px solid var(--admin-border-default, #dedede);
-  border-radius: 16px;
-  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.inboxControls, .inboxRecords { min-width: 0; }
+.inboxControls,
+.inboxRecords {
+  min-width: 0;
+}
+
+.inboxRecords {
+  background: #ffffff;
+  border: 1px solid var(--admin-border-subtle, #e5e5e0);
+  border-radius: 12px;
+  overflow: hidden;
+}
 
 .inboxRecordsHeading {
-  padding: 8px 16px;
-  color: #4b5361;
-  font-size: .8125rem;
+  padding: 10px 16px;
+  color: #666663;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--admin-border-subtle, #e5e5e0);
+  background: #fbfbfa;
 }
 
-.inboxRecords > div:last-child { min-width: 0; }
+.inboxRecords > div:last-child {
+  min-width: 0;
+}
+
 .queueGrid {
-  --lead-grid-border: #e1e4e9;
+  --lead-grid-border: #e5e5e0;
   --lead-grid-border-width: 1px 0 0;
   --lead-grid-radius: 0;
 }
-.queueFooter { padding-inline: 16px; }
 
-.lookupNotice, .queueAction, .loadError {
+.queueFooter {
+  padding-inline: 16px;
+}
+
+.lookupNotice,
+.queueAction,
+.loadError {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 6px 12px;
-  padding: 6px 16px;
-  font-size: .8125rem;
+  gap: 8px 16px;
+  padding: 10px 16px;
+  font-size: 0.8125rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
+  border-radius: 8px;
 }
 
 .lookupNotice {
-  background: #fff7e7;
-  color: #6d410b;
+  background: #fffbeb;
+  color: #78350f;
+  border: 1px solid #fef3c7;
 }
 
 .queueAction {
-  border-top: 1px solid #e1e4e9;
-  background: #fafbfc;
-  color: #4b5361;
+  border: 1px solid var(--admin-border-subtle, #e5e5e0);
+  background: #f5f5f3;
+  color: #111111;
 }
 
 .loadError {
   margin: 0;
   padding-block: 14px;
-  border: 1px solid #ecc2c9;
+  border: 1px solid rgba(234, 0, 42, 0.2);
   border-radius: 8px;
-  background: #fff3f5;
-  color: #85132a;
+  background: #fff0f2;
+  color: #9c001e;
 }
 
 .retryLink {
@@ -125,15 +163,8 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 
-  &:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-}
-
-@media (max-width: 768px) {
-  .inboxRecords { padding: 0 10px 10px; }
-  .inboxRecordsHeading { padding-inline: 4px; }
-  .queueFooter { padding-inline: 12px; }
-}
-
-@media (max-width: 380px) {
-  .leadShortcutBadge { display: none; }
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
 }

@@ -226,6 +226,29 @@ export default async function AdminLeadsPage(
   const unavailableDetails = [sourcesRes.error && 'Sources', missingOwnerDetails && 'Owner names'].filter(Boolean);
   const lookupNotice = unavailableDetails.length ? `${unavailableDetails.join(' and ')} unavailable.` : undefined;
 
+  const totalInquiries = leadsRes.count || leads.length;
+  const activeTriageCount = leads.filter(
+    (l) => l.bucket === 'open' || l.bucket === 'potential'
+  ).length;
+  const overdueCount = leads.filter((l) => {
+    return (
+      l.next_follow_up &&
+      new Date(l.next_follow_up).getTime() < Date.now() &&
+      l.bucket !== 'converted' &&
+      l.bucket !== 'lost'
+    );
+  }).length;
+  const totalPipelineValue = leads
+    .filter((l) => l.bucket === 'open' || l.bucket === 'potential')
+    .reduce((sum, l) => sum + (l.expected_value || 0), 0);
+
+  const telemetryMetrics = {
+    totalInquiries,
+    activeTriageCount,
+    overdueCount,
+    totalPipelineValue,
+  };
+
   return (
     <div className={styles.container}>
       {/* Workspace Header & Operational Context */}
@@ -250,6 +273,7 @@ export default async function AdminLeadsPage(
               availableAssignees={availableAssignees}
               availableStatuses={availableStatuses}
               userRole={role}
+              telemetryMetrics={telemetryMetrics}
               lookupNotice={lookupNotice}
               pagination={!search.error && <ResultPagination
                 page={page}

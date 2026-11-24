@@ -1,0 +1,113 @@
+.floatingDock {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 14px 8px 18px;
+  background-color: var(--admin-surface-inverse, #111111);
+  color: #ffffff;
+  border-radius: var(--admin-radius-pill, 9999px);
+  box-shadow: 0 16px 40px rgba(17, 17, 17, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  animation: slideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translate(-50%, 20px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.dockCount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding-right: 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.countBadge {
+  background-color: var(--admin-brand-primary, #ea002a);
+  color: #ffffff;
+  font-family: var(--font-helvetica-neue), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dockActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dockBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: #ffffff;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+}
+
+.clearBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: #a8a8a4;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  margin-left: 2px;
+
+  &:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+}
