@@ -33,7 +33,7 @@ export function EarningOverviewSplineCard({
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
 
   const available = financials && totalValue !== null;
-  const visiblePoints = available && points.some(({ value }) => value > 0) ? points : [];
+  const visiblePoints = available ? points : [];
   const selected = visiblePoints.findIndex((point) => point.period === selectedPeriod);
   const activeIndex = selected >= 0 ? selected : visiblePoints.length - 1;
   const scaleMax = Math.max(...visiblePoints.map(({ value }) => value), 0) || 1;

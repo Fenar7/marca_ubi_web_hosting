@@ -57,7 +57,8 @@ function CashFlowPlot({
   const ceiling = Math.max(0, ...points.map(({ amount }) => amount));
   const floor = Math.min(0, ...points.map(({ amount }) => amount));
   const spread = ceiling - floor || 1;
-  const zeroOffset = (ceiling / spread) * 100;
+  // A zero-only series has no scale. Anchor its baseline at the bottom of the plot.
+  const zeroOffset = ceiling === floor ? 100 : (ceiling / spread) * 100;
   const compactStride = Math.max(1, Math.ceil((points.length - 1) / 2));
   const columns = { "--bucket-count": points.length, "--zero-offset": `${zeroOffset}%` } as CSSProperties;
 
@@ -81,7 +82,7 @@ function CashFlowPlot({
       </div>
       <div className={styles.plot} style={columns}>
         <div className={styles.axis} aria-hidden="true">
-          <span className={styles.axisTop}>{formatCrmCurrency(ceiling / 100)}</span>
+          <span className={styles.axisTop}>{ceiling !== floor && formatCrmCurrency(ceiling / 100)}</span>
           <span className={styles.axisBottom}>{formatCrmCurrency(floor / 100)}</span>
         </div>
         <div className={styles.bucketGrid} role="group" aria-label="Reporting intervals">
@@ -137,7 +138,6 @@ export function CommercialVelocityBarChart({
   const buckets = points.filter((bucket): bucket is Bucket => bucket.amount !== null);
   const total = buckets.reduce((amount, bucket) => amount + bucket.amount, 0);
   const ready = sourceReady && buckets.length > 0 && buckets.length === points.length && Number.isSafeInteger(total);
-  const hasActivity = ready && buckets.some(({ amount }) => amount !== 0);
 
   return (
     <article className={styles.cardContainer} aria-labelledby={titleId}>
@@ -167,11 +167,11 @@ export function CommercialVelocityBarChart({
             ))}
           </div>
           {perspective === "net" && <p className={styles.measureNote}>Active pipeline added minus converted value</p>}
-          {hasActivity ? (
+          {ready ? (
             <CashFlowPlot key={`${periodLabel}-${perspective}`} points={buckets} />
           ) : (
             <p className={styles.emptyState}>
-              {ready ? "No value recorded for this measure in the selected period." : "Reporting data is unavailable for the selected measure."}
+              Reporting data is unavailable for the selected measure.
             </p>
           )}
         </>
