@@ -110,10 +110,13 @@
   .compactPicker {
     display: block;
     min-width: 0;
+    margin-top: 6px;
+  }
+
+  .compactPicker select {
     width: 100%;
     box-sizing: border-box;
     min-height: 44px;
-    margin-top: 6px;
     padding-inline: 8px;
     border: 1px solid var(--admin-border-subtle, #e7e7e4);
     border-radius: 6px;
