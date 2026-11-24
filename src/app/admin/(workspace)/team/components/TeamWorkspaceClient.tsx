@@ -2,15 +2,16 @@
 
 /**
  * @file TeamWorkspaceClient.tsx
- * @description PrimeStay-inspired interactive client orchestrator for the Commercial Personnel workspace.
- *              Coordinates state between CategoryUnderlineTabs, FilterControlToolbar, PersonnelCardGrid,
- *              CommercialDirectoryTable, and administrative governance modals (Avatar, Permissions, Reassignment, Suspend).
+ * @description Single-source interactive coordinator for the /admin/team workspace.
+ *              Unifies CategoryUnderlineTabs, FilterControlToolbar, CommercialDirectoryTable,
+ *              PersonnelCardGrid, MemberGovernanceDrawer (?member=<id> sync),
+ *              and shared governance modals without duplicate dialog mounts.
  * @module app/admin/team/components/TeamWorkspaceClient
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect, useMemo, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useMemo, useTransition, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type {
   TeamMemberRosterItem,
   CrmUserRole,
@@ -23,8 +24,10 @@ import { CategoryUnderlineTabs, type TeamTabCategory, type TabCounts } from './C
 import { FilterControlToolbar, type ViewMode } from './FilterControlToolbar';
 import { PersonnelCardGrid } from './PersonnelCardGrid';
 import { CommercialDirectoryTable } from './CommercialDirectoryTable';
+import { MemberGovernanceDrawer } from './MemberGovernanceDrawer';
 import { AvatarUploadModal, type TargetMemberAvatarContext } from './AvatarUploadModal';
 import { EditUserPermissionsModal } from './EditUserPermissionsModal';
+import { ModifyRoleModal } from './ModifyRoleModal';
 import { LeadReassignmentWizardModal } from './LeadReassignmentWizardModal';
 import { SuspendUserModal } from './SuspendUserModal';
 import styles from '../team.module.scss';
@@ -33,47 +36,54 @@ interface TeamWorkspaceClientProps {
   initialRoster: TeamMemberRosterItem[];
   currentUserRole: CrmUserRole;
   currentUserId: string;
+  canViewFinancials?: boolean;
 }
 
 export function TeamWorkspaceClient({
   initialRoster,
   currentUserRole,
   currentUserId,
+  canViewFinancials = true,
 }: TeamWorkspaceClientProps): React.ReactElement {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
-  // Primary roster state
   const [roster, setRoster] = useState<TeamMemberRosterItem[]>(initialRoster);
-
-  // Filter and view states
   const [activeTab, setActiveTab] = useState<TeamTabCategory>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<CrmUserRole | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<ProfileAccountStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('table');
 
-  // Governance Modals state
+  // Unified single-source drawer and modal targets
+  const [inspectedMemberId, setInspectedMemberId] = useState<string | null>(() =>
+    searchParams.get('member')
+  );
   const [avatarTarget, setAvatarTarget] = useState<TargetMemberAvatarContext | null>(null);
   const [memberForPermissions, setMemberForPermissions] = useState<TeamMemberRosterItem | null>(null);
+  const [memberForRole, setMemberForRole] = useState<TeamMemberRosterItem | null>(null);
   const [memberForReassignment, setMemberForReassignment] = useState<TeamMemberRosterItem | null>(null);
   const [memberForSuspend, setMemberForSuspend] = useState<TeamMemberRosterItem | null>(null);
   const [toastNotice, setToastNotice] = useState<string | null>(null);
 
   const isAdmin = currentUserRole === 'admin';
 
-  // Synchronize internal state on external initialRoster updates
   useEffect(() => {
     setRoster(initialRoster);
   }, [initialRoster]);
 
-  // Synchronize real-time avatar mutations across workspace
+  useEffect(() => {
+    const memberParam = searchParams.get('member');
+    setInspectedMemberId(memberParam);
+  }, [searchParams]);
+
+  // Synchronize real-time avatar mutations
   useEffect(() => {
     const handleAvatarUpdated = (event: Event): void => {
       const customEvent = event as CustomEvent<{ userId: string; avatarUrl: string | null }>;
       if (!customEvent.detail) return;
       const { userId, avatarUrl } = customEvent.detail;
-
       setRoster((prev) =>
         prev.map((member) => (member.id === userId ? { ...member, avatar_url: avatarUrl } : member))
       );
@@ -83,10 +93,9 @@ export function TeamWorkspaceClient({
     return () => window.removeEventListener('user-avatar-updated', handleAvatarUpdated);
   }, []);
 
-  // Listen for team member creation events
+  // Synchronize newly provisioned team members
   useEffect(() => {
     const handleMemberCreated = (): void => {
-      // Refresh from the server rather than creating a temporary identity with guessed permissions.
       startTransition(() => {
         router.refresh();
       });
@@ -96,15 +105,35 @@ export function TeamWorkspaceClient({
     return () => window.removeEventListener('team-member-created', handleMemberCreated);
   }, [router]);
 
-  // Toast notice auto-dismiss
   useEffect(() => {
-    if (toastNotice) {
-      const timer = setTimeout(() => setToastNotice(null), 4000);
-      return () => clearTimeout(timer);
-    }
+    if (!toastNotice) return;
+    const timer = setTimeout(() => setToastNotice(null), 4000);
+    return () => clearTimeout(timer);
   }, [toastNotice]);
 
-  // Compute live counts for category underline tabs
+  const handleOpenInspector = useCallback((member: TeamMemberRosterItem): void => {
+    setInspectedMemberId(member.id);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('member', member.id);
+      window.history.replaceState(null, '', url.toString());
+    }
+  }, []);
+
+  const handleCloseInspector = useCallback((): void => {
+    setInspectedMemberId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('member');
+      window.history.replaceState(null, '', url.toString());
+    }
+  }, []);
+
+  const inspectedMember = useMemo(
+    () => (inspectedMemberId ? roster.find((m) => m.id === inspectedMemberId) || null : null),
+    [roster, inspectedMemberId]
+  );
+
   const tabCounts: TabCounts = useMemo(() => {
     return {
       all: roster.length,
@@ -114,21 +143,14 @@ export function TeamWorkspaceClient({
     };
   }, [roster]);
 
-  // Filter roster items based on category tab, search query, role, and status
   const filteredRoster = useMemo(() => {
     return roster.filter((member) => {
-      // 1. Underlined Category Tab Filter
       if (activeTab === 'leadership' && member.role !== 'admin' && member.role !== 'sales_manager') return false;
       if (activeTab === 'sales' && member.role !== 'sales_executive') return false;
       if (activeTab === 'suspended' && member.status !== 'suspended') return false;
-
-      // 2. Role Dropdown Filter
       if (selectedRole !== 'all' && member.role !== selectedRole) return false;
-
-      // 3. Status Dropdown Filter
       if (selectedStatus !== 'all' && member.status !== selectedStatus) return false;
 
-      // 4. Case-insensitive Search Query Filter
       if (searchQuery.trim().length > 0) {
         const query = searchQuery.toLowerCase().trim();
         const nameMatch = member.full_name.toLowerCase().includes(query);
@@ -136,10 +158,15 @@ export function TeamWorkspaceClient({
         const titleMatch = (member.job_title || '').toLowerCase().includes(query);
         if (!nameMatch && !emailMatch && !titleMatch) return false;
       }
-
       return true;
     });
   }, [roster, activeTab, selectedRole, selectedStatus, searchQuery]);
+
+  const hasActiveFilters =
+    activeTab !== 'all' ||
+    searchQuery.trim().length > 0 ||
+    selectedRole !== 'all' ||
+    selectedStatus !== 'all';
 
   const handleResetFilters = (): void => {
     setActiveTab('all');
@@ -148,7 +175,6 @@ export function TeamWorkspaceClient({
     setSelectedStatus('all');
   };
 
-  // Avatar Modal Handlers
   const handleOpenAvatarModal = (member: TeamMemberRosterItem): void => {
     setAvatarTarget({
       id: member.id,
@@ -162,22 +188,31 @@ export function TeamWorkspaceClient({
     setRoster((prev) =>
       prev.map((m) => (m.id === avatarTarget.id ? { ...m, avatar_url: newAvatarUrl } : m))
     );
-    setToastNotice('Profile photo updated successfully.');
+    setToastNotice('Profile photo updated.');
   };
 
-  // Permissions Updated Handler
-  const handlePermissionsUpdated = (userId: string, newTabs: string[]): void => {
+  const handleRoleUpdated = (userId: string, newRole: CrmUserRole): void => {
     setRoster((prev) =>
-      prev.map((m) => (m.id === userId ? { ...m, allowed_tabs: newTabs } : m))
+      prev.map((m) => (m.id === userId ? { ...m, role: newRole } : m))
     );
-    setMemberForPermissions(null);
-    setToastNotice('Tab access permissions updated.');
+    setMemberForRole(null);
+    setToastNotice('Governance role updated.');
     startTransition(() => {
       router.refresh();
     });
   };
 
-  // Lead Reassignment Success Handler
+  const handlePermissionsUpdated = (userId: string, newTabs: string[]): void => {
+    setRoster((prev) =>
+      prev.map((m) => (m.id === userId ? { ...m, allowed_tabs: newTabs } : m))
+    );
+    setMemberForPermissions(null);
+    setToastNotice('Workspace tab permissions updated.');
+    startTransition(() => {
+      router.refresh();
+    });
+  };
+
   const handleReassignmentSuccess = (
     result: AtomicReassignmentResult,
     sourceMemberId: string,
@@ -202,25 +237,23 @@ export function TeamWorkspaceClient({
       })
     );
     setMemberForReassignment(null);
-    setToastNotice(`Successfully transferred ${reassignedCount} leads.`);
+    setToastNotice(`Transferred ${reassignedCount} active deals.`);
     startTransition(() => {
       router.refresh();
     });
   };
 
-  // Suspend Success Handler
   const handleSuspendSuccess = (_updatedProfile: Profile, suspendedUserId: string): void => {
     setRoster((prev) =>
       prev.map((m) => (m.id === suspendedUserId ? { ...m, status: 'suspended' } : m))
     );
     setMemberForSuspend(null);
-    setToastNotice('Account suspended.');
+    setToastNotice('Account suspended and active sessions revoked.');
     startTransition(() => {
       router.refresh();
     });
   };
 
-  // Reactivate User Handler
   const handleReactivateUser = async (member: TeamMemberRosterItem): Promise<void> => {
     try {
       const res = await setTeamUserStatus(member.id, 'active');
@@ -228,7 +261,7 @@ export function TeamWorkspaceClient({
         setRoster((prev) =>
           prev.map((m) => (m.id === member.id ? { ...m, status: 'active' } : m))
         );
-        setToastNotice(`Account for ${member.full_name} reactivated.`);
+        setToastNotice(`Reactivated account for ${member.full_name}.`);
         startTransition(() => {
           router.refresh();
         });
@@ -242,48 +275,16 @@ export function TeamWorkspaceClient({
   };
 
   return (
-    <section className={styles.directoryWorkspace} aria-label="Team directory">
-      <div className={styles.directoryControls}>
-        <div className={styles.directoryControlsTop}>
-          <div>
-            <span className={styles.directoryEyebrow}>People and access</span>
-            <h2 className={styles.directoryTitle}>Directory</h2>
-          </div>
-          {isAdmin && (
-            <button
-              type="button"
-              className={styles.primaryActionButton}
-              onClick={() => window.dispatchEvent(new CustomEvent('open-add-member-drawer'))}
-              aria-label="Open add team member drawer"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>Add Member</span>
-            </button>
-          )}
-        </div>
-
-        <div className={styles.directoryTabs}>
+    <section className={styles.directorySurface} aria-label="Team directory">
+      <div className={styles.directoryTabsRow}>
         <CategoryUnderlineTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
           counts={tabCounts}
         />
-        </div>
       </div>
 
-      {/* Filter and View Mode Toolbar */}
-      <div className={styles.directoryFilterRegion}>
-        <div className={styles.directoryResultsHeading}>
-          <div>
-            <h3>{activeTab === 'all' ? 'All team members' : activeTab === 'leadership' ? 'Leadership' : activeTab === 'sales' ? 'Sales team' : 'Suspended accounts'}</h3>
-            <p>Search the directory, narrow by access or status, then open a profile to review its permissions and activity.</p>
-          </div>
-          <span>{filteredRoster.length} of {roster.length} shown</span>
-        </div>
-        <FilterControlToolbar
+      <FilterControlToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedRole={selectedRole}
@@ -292,44 +293,83 @@ export function TeamWorkspaceClient({
         onStatusChange={setSelectedStatus}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        />
-      </div>
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleResetFilters}
+        visibleCount={filteredRoster.length}
+        totalCount={roster.length}
+      />
 
-      {/* Toast Notification Banner */}
       {toastNotice && (
-        <div
-          role="status"
-          aria-live="polite"
-          className={styles.notice}
-        >
+        <div role="status" aria-live="polite" className={styles.noticeBanner}>
           <span>{toastNotice}</span>
+          <button
+            type="button"
+            className={styles.noticeDismiss}
+            onClick={() => setToastNotice(null)}
+            aria-label="Dismiss notification"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
       )}
 
-      {/* Main Roster Enclave: 4-Column Card Grid vs. Compact Table */}
-      <div className={styles.directoryRecords}>
       {viewMode === 'grid' ? (
-        <PersonnelCardGrid
-          members={filteredRoster}
-          currentUserId={currentUserId}
-          currentUserRole={currentUserRole}
-          onResetFilters={handleResetFilters}
-          onOpenAvatarModal={handleOpenAvatarModal}
-          onOpenPermissionsModal={setMemberForPermissions}
-          onOpenReassignmentModal={setMemberForReassignment}
-          onOpenSuspendModal={setMemberForSuspend}
-          onReactivateUser={handleReactivateUser}
-        />
+        <div className={styles.gridWrap}>
+          <PersonnelCardGrid
+            members={filteredRoster}
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
+            onResetFilters={handleResetFilters}
+            onOpenAvatarModal={handleOpenAvatarModal}
+            onOpenPermissionsModal={setMemberForPermissions}
+            onOpenReassignmentModal={setMemberForReassignment}
+            onOpenSuspendModal={setMemberForSuspend}
+            onReactivateUser={handleReactivateUser}
+          />
+        </div>
       ) : (
         <CommercialDirectoryTable
           initialRoster={filteredRoster}
           currentUserRole={currentUserRole}
           currentUserId={currentUserId}
+          canViewFinancials={canViewFinancials}
+          onInspectMember={isAdmin ? handleOpenInspector : undefined}
+          onOpenAvatarModal={handleOpenAvatarModal}
+          onOpenPermissionsModal={setMemberForPermissions}
+          onOpenRoleModal={setMemberForRole}
+          onOpenReassignmentModal={setMemberForReassignment}
+          onOpenSuspendModal={setMemberForSuspend}
+          onReactivateUser={handleReactivateUser}
+          onResetFilters={hasActiveFilters ? handleResetFilters : undefined}
         />
       )}
-      </div>
 
-      {/* Modal 1: Profile Photo Upload, Crop & Delete Modal */}
+      {/* In-Context Governance Slide-Over Inspector (?member=<id>) */}
+      <MemberGovernanceDrawer
+        member={inspectedMember}
+        currentUserId={currentUserId}
+        canManageTeam={isAdmin}
+        canViewFinancials={canViewFinancials}
+        suppressEscape={Boolean(
+          avatarTarget ||
+            memberForPermissions ||
+            memberForRole ||
+            memberForReassignment ||
+            memberForSuspend
+        )}
+        onClose={handleCloseInspector}
+        onRoleUpdated={handleRoleUpdated}
+        onPermissionsUpdated={handlePermissionsUpdated}
+        onOpenAvatarModal={handleOpenAvatarModal}
+        onOpenReassignmentModal={setMemberForReassignment}
+        onOpenSuspendModal={setMemberForSuspend}
+        onReactivateUser={handleReactivateUser}
+      />
+
+      {/* Shared Governance Modals */}
       {avatarTarget && (
         <AvatarUploadModal
           isOpen={Boolean(avatarTarget)}
@@ -339,7 +379,6 @@ export function TeamWorkspaceClient({
         />
       )}
 
-      {/* Modal 2: Granular Tab Permissions Modal */}
       {memberForPermissions && (
         <EditUserPermissionsModal
           isOpen={Boolean(memberForPermissions)}
@@ -350,18 +389,28 @@ export function TeamWorkspaceClient({
         />
       )}
 
-      {/* Modal 3: Lead Reassignment Wizard */}
+      {memberForRole && (
+        <ModifyRoleModal
+          isOpen={Boolean(memberForRole)}
+          targetMember={memberForRole}
+          currentUserId={currentUserId}
+          onClose={() => setMemberForRole(null)}
+          onRoleUpdated={handleRoleUpdated}
+        />
+      )}
+
       {memberForReassignment && (
         <LeadReassignmentWizardModal
           isOpen={Boolean(memberForReassignment)}
           sourceMember={memberForReassignment}
-          activeRoster={roster.filter((m) => m.id !== memberForReassignment.id && m.status === 'active')}
+          activeRoster={roster.filter(
+            (m) => m.id !== memberForReassignment.id && m.status === 'active'
+          )}
           onClose={() => setMemberForReassignment(null)}
           onSuccess={handleReassignmentSuccess}
         />
       )}
 
-      {/* Modal 4: Account Suspension Modal */}
       {memberForSuspend && (
         <SuspendUserModal
           isOpen={Boolean(memberForSuspend)}

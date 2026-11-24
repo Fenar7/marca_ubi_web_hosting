@@ -4,8 +4,6 @@
  * @file PersonnelAuditTimeline.tsx
  * @description Chronological audit timeline displaying compliance and security records
  *              associated with the personnel profile from public.team_audit_logs.
- * @module app/admin/team/[id]/components/PersonnelAuditTimeline
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React from 'react';
@@ -49,7 +47,7 @@ export function PersonnelAuditTimeline({
   return (
     <div className={styles.timelineCard}>
       <div className={styles.headerRow}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         </svg>
@@ -61,27 +59,27 @@ export function PersonnelAuditTimeline({
           No compliance audit events recorded for this user yet.
         </div>
       ) : (
-        <div className={styles.timelineList}>
+        <ol className={styles.timelineList}>
           {auditLogs.map((log) => (
-            <div
+            <li
               key={log.id}
               className={`${styles.timelineItem} ${getItemStyleClass(log.action)}`}
             >
               <div className={styles.itemHeader}>
                 <span className={styles.actionTitle}>{formatActionTitle(log.action)}</span>
-                <span className={styles.itemTime}>
+                <time className={styles.itemTime} dateTime={log.created_at}>
                   {new Date(log.created_at).toLocaleDateString('en-IN', {
                     month: 'short',
                     day: 'numeric',
                   })}
-                </span>
+                </time>
               </div>
               <p className={styles.itemActor}>
                 Initiated by {log.actor_name || 'System'}
               </p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       )}
     </div>
   );

@@ -2,10 +2,8 @@
 
 /**
  * @file CommercialVelocityScorecards.tsx
- * @description Stripe Scorecard KPI cards displaying Won Revenue, Active Pipeline,
+ * @description Commercial KPI strip displaying Won Revenue, Active Pipeline,
  *              Win Rate %, and Rep Workload Capacity Meter against SALES_REP_CAPACITY_LIMIT.
- * @module app/admin/team/[id]/components/CommercialVelocityScorecards
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React from 'react';
@@ -15,31 +13,32 @@ import styles from './CommercialVelocityScorecards.module.scss';
 
 interface CommercialVelocityScorecardsProps {
   kpis: PersonnelPerformanceKpis;
+  canViewFinancials?: boolean;
 }
 
 export function CommercialVelocityScorecards({
   kpis,
+  canViewFinancials = true,
 }: CommercialVelocityScorecardsProps): React.ReactElement {
-  const capacityPct = Math.min(100, Math.round((kpis.activeDealsCount / kpis.capacityLimit) * 100));
+  const safeLimit = Math.max(1, kpis.capacityLimit || 1);
+  const capacityPct = Math.min(100, Math.round((kpis.activeDealsCount / safeLimit) * 100));
   const isAtCapacity = kpis.activeDealsCount >= kpis.capacityLimit;
 
-  // Capacity color calculation: emerald below 75%, amber between 75-99%, red at 100%+
   const getCapacityColor = (): string => {
-    if (capacityPct >= 100) return '#ef4444';
-    if (capacityPct >= 75) return '#f59e0b';
-    return '#10b981';
+    if (capacityPct >= 100) return '#9c001e';
+    if (capacityPct >= 75) return '#b45309';
+    return '#065f46';
   };
 
   return (
     <section className={styles.scorecardsGrid} aria-label="Commercial Performance Scorecards">
-      {/* 1. Won Revenue */}
       <div className={styles.scorecard}>
         <div className={styles.headerRow}>
           <span className={styles.cardLabel}>Won Revenue</span>
         </div>
         <div>
           <div className={`${styles.metricValue} ${styles.wonMetric}`}>
-            {formatRupees(kpis.wonRevenue)}
+            {canViewFinancials ? formatRupees(kpis.wonRevenue) : 'Restricted'}
           </div>
           <p className={styles.metaSubtitle}>
             {formatNumber(kpis.wonDealsCount)} deals converted
@@ -47,14 +46,13 @@ export function CommercialVelocityScorecards({
         </div>
       </div>
 
-      {/* 2. Active Pipeline */}
       <div className={styles.scorecard}>
         <div className={styles.headerRow}>
           <span className={styles.cardLabel}>Active Pipeline</span>
         </div>
         <div>
           <div className={styles.metricValue}>
-            {formatRupees(kpis.activePipelineValue)}
+            {canViewFinancials ? formatRupees(kpis.activePipelineValue) : 'Restricted'}
           </div>
           <p className={styles.metaSubtitle}>
             {formatNumber(kpis.activeDealsCount)} active pipeline deals
@@ -62,7 +60,6 @@ export function CommercialVelocityScorecards({
         </div>
       </div>
 
-      {/* 3. Win Rate */}
       <div className={styles.scorecard}>
         <div className={styles.headerRow}>
           <span className={styles.cardLabel}>Win Rate</span>
@@ -77,7 +74,6 @@ export function CommercialVelocityScorecards({
         </div>
       </div>
 
-      {/* 4. Capacity Meter */}
       <div className={styles.scorecard}>
         <div className={styles.headerRow}>
           <span className={styles.cardLabel}>Rep Workload</span>
@@ -90,11 +86,18 @@ export function CommercialVelocityScorecards({
         <div>
           <div className={styles.metricValue}>
             {kpis.activeDealsCount}
-            <span style={{ fontSize: '0.95rem', fontWeight: 500, color: '#64748b' }}>
+            <span className={styles.capacityDenominator}>
               {' '}/ {kpis.capacityLimit}
             </span>
           </div>
-          <div className={styles.progressBarTrack}>
+          <div
+            className={styles.progressBarTrack}
+            role="progressbar"
+            aria-valuenow={capacityPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Representative workload capacity"
+          >
             <div
               className={styles.progressBarFill}
               style={{ width: `${capacityPct}%`, backgroundColor: getCapacityColor() }}

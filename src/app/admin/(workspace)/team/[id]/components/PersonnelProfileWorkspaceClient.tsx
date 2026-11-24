@@ -114,9 +114,15 @@ export function PersonnelProfileWorkspaceClient({
             onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
           />
 
-          <CommercialVelocityScorecards kpis={kpis} />
+          <CommercialVelocityScorecards
+            kpis={kpis}
+            canViewFinancials={initialPayload.canViewFinancials ?? true}
+          />
 
-          <RepresentativeDealLedger userId={profile.id} />
+          <RepresentativeDealLedger
+            userId={profile.id}
+            canViewFinancials={initialPayload.canViewFinancials ?? true}
+          />
         </div>
 
         {/* Right Column (4 units): Security Enclave, Tab Permissions, Audit Timeline */}

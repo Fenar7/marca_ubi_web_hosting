@@ -2,10 +2,9 @@
 
 /**
  * @file PersonnelCard.tsx
- * @description PrimeStay-inspired luxury personnel fluid card.
- *              Displays circular photography avatar, online indicator, Raycast monospace role badge,
- *              deal telemetry scorecard, capacity meter, top-right action menu, and symmetrical
- *              dual-button bottom controls.
+ * @description Marca Ubi Editorial Luxury personnel roster card for grid view mode (/admin/team).
+ *              Renders square-rounded 48px avatar tile, explicit status label, Helvetica Neue 300
+ *              portfolio telemetry, accessible capacity meter, and View Profile link.
  * @module app/admin/team/components/PersonnelCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -33,15 +32,15 @@ interface PersonnelCardProps {
 function formatRoleName(role: string): string {
   switch (role) {
     case 'admin':
-      return 'ADMIN';
+      return 'Admin';
     case 'sales_executive':
-      return 'SALES EXEC';
+      return 'Sales Executive';
     case 'sales_manager':
-      return 'SALES MGR';
+      return 'Sales Manager';
     case 'viewer':
-      return 'VIEWER';
+      return 'Viewer';
     default:
-      return role.toUpperCase();
+      return role;
   }
 }
 
@@ -61,14 +60,17 @@ export function PersonnelCard({
   const canEditAvatar = isSelf || isAdmin;
   const isSuspended = member.status === 'suspended';
 
-  // Capacity calculations for sales representatives
   const capacityPct = Math.min(
     100,
     Math.round(((member.active_deals_count || 0) / SALES_REP_CAPACITY_LIMIT) * 100)
   );
 
   const capacityColor =
-    capacityPct >= 90 ? 'var(--admin-status-rose-dot, #ef4444)' : capacityPct >= 70 ? 'var(--admin-status-amber-dot, #f59e0b)' : 'var(--admin-status-emerald-dot, #10b981)';
+    capacityPct >= 90
+      ? 'var(--admin-status-rose-dot, #ea002a)'
+      : capacityPct >= 70
+      ? 'var(--admin-status-amber-dot, #d97706)'
+      : 'var(--admin-status-emerald-dot, #10b981)';
 
   const roleClass =
     member.role === 'admin'
@@ -78,12 +80,10 @@ export function PersonnelCard({
       : '';
 
   return (
-    <div
+    <article
       className={`${styles.card} ${isSuspended ? styles.cardSuspended : ''}`}
-      tabIndex={0}
       aria-label={`Personnel card for ${member.full_name}`}
     >
-      {/* PrimeStay Top-Right Action Menu */}
       <div className={styles.cardTopMenu}>
         <PersonnelActionMenu
           member={member}
@@ -98,16 +98,15 @@ export function PersonnelCard({
         />
       </div>
 
-      {/* Card Header: Avatar & Identity */}
       <div className={styles.cardHeader}>
         <div className={styles.avatarWrapper}>
           {member.avatar_url && !imageError ? (
             <Image
               src={member.avatar_url}
-              alt={`${member.full_name}'s profile avatar`}
+              alt={member.full_name}
               className={styles.avatarImage}
-              width={52}
-              height={52}
+              width={48}
+              height={48}
               onError={() => setImageError(true)}
               unoptimized
             />
@@ -117,7 +116,6 @@ export function PersonnelCard({
             </div>
           )}
 
-          {/* Hover Camera Overlay for Avatar Upload */}
           {canEditAvatar && (
             <button
               type="button"
@@ -126,21 +124,12 @@ export function PersonnelCard({
               aria-label={`Change profile photo for ${member.full_name}`}
               title="Change profile photo"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </button>
           )}
-
-          {/* Online / Active Status Pip */}
-          <span
-            className={`${styles.statusIndicator} ${
-              isSuspended ? styles.statusSuspended : styles.statusActive
-            }`}
-            title={isSuspended ? 'Account Suspended' : 'Active Account'}
-            aria-hidden="true"
-          />
         </div>
 
         <div className={styles.identityInfo}>
@@ -159,47 +148,47 @@ export function PersonnelCard({
             <span className={`${styles.roleBadge} ${roleClass}`}>
               {formatRoleName(member.role)}
             </span>
+            <span
+              className={`${styles.statusBadge} ${
+                isSuspended ? styles.statusBadgeSuspended : styles.statusBadgeActive
+              }`}
+            >
+              <span className={styles.statusDot} aria-hidden="true" />
+              <span>{isSuspended ? 'Suspended' : 'Active'}</span>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Email Identification Row */}
-      <div className={styles.emailRow}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-          <polyline points="22,6 12,13 2,6" />
-        </svg>
-        <span className={styles.emailText} title={member.email}>
-          {member.email}
-        </span>
-      </div>
+      <p className={styles.emailRow} title={member.email}>
+        {member.email}
+      </p>
 
-      {/* Telemetry Metrics Scorecard (Canonical en-IN currency and numbers) */}
       <div className={styles.metricsGrid}>
         <div className={styles.metricItem}>
           <span className={styles.metricLabel}>Active Deals</span>
-          <span className={styles.metricValue}>
-            {formatNumber(member.active_deals_count ?? 0)}
-          </span>
+          <span className={styles.metricValue}>{formatNumber(member.active_deals_count || 0)}</span>
         </div>
         <div className={styles.metricItem}>
-          <span className={styles.metricLabel}>Portfolio</span>
-          <span className={styles.metricValue}>
-            {formatRupees(member.total_deal_value ?? 0)}
-          </span>
+          <span className={styles.metricLabel}>Pipeline Value</span>
+          <span className={styles.metricValue}>{formatRupees(member.total_deal_value || 0)}</span>
         </div>
       </div>
 
-      {/* Linear Fluid Capacity Progress Bar (for Sales Executives) */}
       {member.role === 'sales_executive' && (
         <div className={styles.capacityBar}>
           <div className={styles.capacityHeader}>
-            <span>Workload Capacity</span>
-            <span>
-              {formatNumber(member.active_deals_count ?? 0)}/{SALES_REP_CAPACITY_LIMIT} ({capacityPct}%)
-            </span>
+            <span>Portfolio load</span>
+            <span>{capacityPct}%</span>
           </div>
-          <div className={styles.progressBarTrack}>
+          <div
+            className={styles.progressBarTrack}
+            role="progressbar"
+            aria-valuenow={capacityPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Portfolio load for ${member.full_name}: ${capacityPct}%`}
+          >
             <div
               className={styles.progressBarFill}
               style={{ width: `${capacityPct}%`, backgroundColor: capacityColor }}
@@ -208,43 +197,20 @@ export function PersonnelCard({
         </div>
       )}
 
-      {/* PrimeStay Symmetrical Dual-Button Footer (50% / 50% Grid) */}
       <div className={styles.cardFooter}>
-        {isAdmin && member.role === 'sales_executive' ? (
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={() => onOpenReassignmentModal(member)}
-          >
-            Reassign Deals
-          </button>
-        ) : isAdmin ? (
+        {isAdmin && (
           <button
             type="button"
             className={styles.primaryButton}
             onClick={() => onOpenPermissionsModal(member)}
           >
-            Manage Access
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={() => onOpenAvatarModal(member)}
-            disabled={!canEditAvatar}
-          >
-            {member.avatar_url ? 'Change Photo' : 'Set Photo'}
+            Access
           </button>
         )}
-
-        <Link
-          href={`/admin/team/${member.id}`}
-          className={styles.secondaryButton}
-          title="View full personnel profile workspace"
-        >
+        <Link href={`/admin/team/${member.id}`} className={styles.secondaryButton}>
           View Profile
         </Link>
       </div>
-    </div>
+    </article>
   );
 }

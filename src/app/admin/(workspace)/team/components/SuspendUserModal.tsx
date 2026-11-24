@@ -2,11 +2,8 @@
 
 /**
  * @file SuspendUserModal.tsx
- * @description Dedicated dark luxury confirmation dialog for employee offboarding,
+ * @description Marca Ubi Editorial Luxury confirmation dialog for employee offboarding,
  *              session revocation, and account suspension (/admin/team).
- *              Displays commercial impact metrics (active deals count & pipeline valuation),
- *              prompts for administrative offboarding rationale, and executes
- *              the suspendTeamUser Server Action with instant token revocation.
  * @module app/admin/team/components/SuspendUserModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -34,32 +31,42 @@ export function SuspendUserModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Reset state when modal opens for a new member
   useEffect(() => {
     if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement | null;
       setReason('');
       setErrorMessage(null);
       setIsSubmitting(false);
+      document.body.style.overflow = 'hidden';
+
+      requestAnimationFrame(() => {
+        const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
+          'button:not([disabled]), textarea:not([disabled])'
+        );
+        firstFocusable?.focus();
+      });
     }
+
+    return () => {
+      requestAnimationFrame(() => {
+        if (!document.querySelector('[aria-modal="true"]')) {
+          document.body.style.overflow = '';
+        }
+      });
+      if (isOpen && previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
+    };
   }, [isOpen, member?.id]);
 
-  // Lock body scroll while open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isSubmitting) {
+        e.preventDefault();
         onClose();
         return;
       }
@@ -119,34 +126,42 @@ export function SuspendUserModal({
       aria-modal="true"
       aria-labelledby="suspend-modal-title"
       aria-describedby="suspend-modal-desc"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) {
+          onClose();
+        }
+      }}
     >
       <div ref={modalRef} className={styles.modalCard} style={{ maxWidth: '480px' }}>
-        {/* Error notification banner */}
-        {errorMessage && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--admin-status-rose-bg, #fef2f2)',
-              border: '1px solid var(--admin-status-rose-border, #fecaca)',
-              borderRadius: '6px',
-              color: 'var(--admin-status-rose-text, #991b1b)',
-              fontSize: '0.8rem',
-              fontWeight: 500,
-              marginBottom: '1rem',
-              lineHeight: 1.4,
-            }}
-            role="alert"
+        <div className={styles.modalHeaderRow}>
+          <h3 id="suspend-modal-title" className={styles.modalHeading}>
+            Confirm Account Offboarding & Suspension.
+          </h3>
+          <button
+            type="button"
+            className={styles.drawerCloseButton}
+            onClick={onClose}
+            disabled={isSubmitting}
+            aria-label="Close suspension dialog (Esc)"
           >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {errorMessage && (
+          <div className={styles.modalErrorBanner} role="alert">
             {errorMessage}
           </div>
         )}
 
-        {/* Warning Alert Banner */}
         <div className={styles.suspendAlertBanner}>
           <svg
             className={styles.suspendAlertIcon}
-            width="22"
-            height="22"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -159,50 +174,22 @@ export function SuspendUserModal({
             <line x1="12" y1="9" x2="12" y2="13" />
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
-          <div>
-            <h3 id="suspend-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}>
-              Confirm Account Offboarding & Suspension.
-            </h3>
-            <p id="suspend-modal-desc" className={styles.modalAlertText}>
-              Suspending <strong>{member.full_name}</strong> will terminate all active authentication sessions immediately across all devices and block database permissions via Row Level Security.
-            </p>
-          </div>
+          <p id="suspend-modal-desc" className={styles.modalAlertText}>
+            Suspending <strong>{member.full_name}</strong> terminates all active sessions immediately and revokes workspace access via Row Level Security.
+          </p>
         </div>
 
-        {/* Target Identity Overview */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.85rem',
-            padding: '0.75rem 1rem',
-            background: 'var(--admin-surface-muted, #f0f2f5)',
-            border: '1px solid var(--admin-border-subtle, #e2e5ea)',
-            borderRadius: '6px',
-            marginBottom: '1rem',
-          }}
-        >
-          <div className={styles.avatar}>
-            {getInitials(member.full_name)}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--admin-text-primary, #1f242f)' }}>
-              {member.full_name}
-            </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary, #525965)' }}>
-              {member.email} · {member.job_title}
-            </span>
-          </div>
-        </div>
-
-        {/* Deal Impact Breakdown Card */}
         <div className={styles.suspendImpactCard}>
+          <div className={styles.suspendImpactRow}>
+            <span className={styles.suspendImpactKey}>Target Member</span>
+            <span className={styles.suspendImpactVal}>{member.email}</span>
+          </div>
           <div className={styles.suspendImpactRow}>
             <span className={styles.suspendImpactKey}>Active Deals Managed</span>
             <span className={styles.suspendImpactVal}>{member.active_deals_count} deals</span>
           </div>
           <div className={styles.suspendImpactRow}>
-            <span className={styles.suspendImpactKey}>Cumulative Pipeline Value</span>
+            <span className={styles.suspendImpactKey}>Pipeline Valuation</span>
             <span className={styles.suspendImpactVal}>
               {member.total_deal_value > 0 ? formatDealValuation(member.total_deal_value) : '₹0'}
             </span>
@@ -210,17 +197,11 @@ export function SuspendUserModal({
 
           {hasActiveDeals && (
             <div className={styles.suspendImpactDealsAlert}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}>
-                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-              <strong>Action Required:</strong> This representative currently manages {member.active_deals_count} active deal{member.active_deals_count > 1 ? 's' : ''}. Suspending this account will flag these deals for reassignment to prevent orphaned pipeline accounts.
+              <strong>Action Required:</strong> This representative manages {member.active_deals_count} active deal{member.active_deals_count > 1 ? 's' : ''}. Reassign active accounts so opportunities are not stranded.
             </div>
           )}
         </div>
 
-        {/* Administrative Offboarding Reason Input */}
         <div className={styles.suspendReasonField}>
           <label htmlFor="suspension-reason" className={styles.suspendReasonLabel}>
             Offboarding Justification (Optional)
@@ -228,16 +209,14 @@ export function SuspendUserModal({
           <textarea
             id="suspension-reason"
             className={styles.suspendReasonInput}
-            placeholder="e.g. Departed agency, restructuring, temporary administrative leave..."
+            placeholder="e.g. Departed agency, role transition, administrative hold..."
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             maxLength={500}
             disabled={isSubmitting}
-            aria-label="Reason for account suspension"
           />
         </div>
 
-        {/* Modal Action Controls */}
         <div className={styles.modalActions}>
           <button
             type="button"
@@ -254,11 +233,7 @@ export function SuspendUserModal({
             disabled={isSubmitting}
             aria-busy={isSubmitting}
           >
-            {isSubmitting ? (
-              <span>Revoking Sessions...</span>
-            ) : (
-              <span>Suspend & Revoke Access</span>
-            )}
+            {isSubmitting ? 'Revoking Sessions...' : 'Suspend & Revoke Access'}
           </button>
         </div>
       </div>

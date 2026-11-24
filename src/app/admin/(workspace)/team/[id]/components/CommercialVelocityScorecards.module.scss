@@ -1,111 +1,114 @@
-/**
- * @file CommercialVelocityScorecards.module.scss
- * @description Stripe Scorecard archetype styles for representative commercial KPIs.
- *              Enforces tabular-nums, zero drop shadows, and high-contrast color tokens.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
 .scorecardsGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 1200px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 540px) {
+  @media (max-width: 640px) {
     grid-template-columns: 1fr;
   }
 }
 
 .scorecard {
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 12px;
   padding: 1.25rem;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 116px;
+  gap: 0.75rem;
   transition: border-color 0.15s ease;
 
   &:hover {
-    border-color: #cbd5e1;
+    border-color: var(--admin-border-strong, #8e8e88);
   }
 }
 
 .headerRow {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: 0.5rem;
 }
 
 .cardLabel {
-  font-size: 0.76rem;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.71875rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--admin-text-secondary, #64748b);
-  margin: 0;
-}
-
-.capacityBadge {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-  text-transform: uppercase;
-
-  &.normal {
-    background: rgba(16, 185, 129, 0.1);
-    color: #065f46;
-    border: 1px solid rgba(16, 185, 129, 0.25);
-  }
-
-  &.warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #92400e;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted, #575753);
 }
 
 .metricValue {
-  margin: 0.5rem 0 0.2rem;
-  font-size: 1.55rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #0f172a);
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-helvetica-neue), var(--font-graphik), sans-serif;
+  font-size: 1.65rem;
+  font-weight: 300;
+  color: var(--admin-text-primary, #111111);
   letter-spacing: -0.03em;
-  line-height: 1.2;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1.1;
 
   &.wonMetric {
-    color: #065f46;
+    color: var(--admin-status-emerald-text, #065f46);
   }
 }
 
+.capacityDenominator {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--admin-text-muted, #575753);
+}
+
 .metaSubtitle {
-  margin: 0;
-  font-size: 0.74rem;
-  font-weight: 500;
-  color: var(--admin-text-secondary, #64748b);
-  font-variant-numeric: tabular-nums;
+  margin: 0.25rem 0 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.75rem;
+  color: var(--admin-text-muted, #575753);
 }
 
 .progressBarTrack {
   width: 100%;
   height: 6px;
-  background: #f1f5f9;
-  border-radius: 3px;
+  background: var(--admin-bg-subtle, #efefed);
+  border-radius: 9999px;
   overflow: hidden;
-  margin-top: 0.6rem;
+  margin-top: 0.35rem;
 }
 
 .progressBarFill {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.capacityBadge {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+
+  &.normal {
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--admin-status-emerald-text, #065f46);
+    border: 1px solid rgba(6, 95, 70, 0.22);
+  }
+
+  &.warning {
+    background: rgba(234, 0, 42, 0.08);
+    color: var(--admin-status-red-text, #9c001e);
+    border: 1px solid rgba(156, 0, 30, 0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scorecard,
+  .progressBarFill {
+    transition: none;
+  }
 }

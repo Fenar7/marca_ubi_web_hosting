@@ -23,13 +23,11 @@ export function generateHighEntropyPassword(): string {
   const allChars = uppers + lowers + digits + symbols;
   const array = new Uint32Array(16);
 
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(array);
-  } else {
-    for (let i = 0; i < 16; i++) {
-      array[i] = Math.floor(Math.random() * 1000000000);
-    }
+  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
+    throw new Error('Cryptographic PRNG unavailable: cannot safely generate high-entropy password.');
   }
+
+  crypto.getRandomValues(array);
 
   // Guarantee at least 2 characters from each category
   const guaranteed = [

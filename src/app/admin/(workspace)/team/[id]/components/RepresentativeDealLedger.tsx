@@ -8,7 +8,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition, useEffect, useCallback } from 'react';
+import React, { useState, useTransition, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import type { LeadWithRelations } from '@/types/crm';
 import { getPersonnelDeals } from '@/app/actions/team';
@@ -18,6 +18,7 @@ import styles from './RepresentativeDealLedger.module.scss';
 interface RepresentativeDealLedgerProps {
   userId: string;
   initialDeals?: LeadWithRelations[];
+  canViewFinancials?: boolean;
 }
 
 type BucketFilter = 'all' | 'open' | 'potential' | 'converted' | 'lost';
@@ -25,19 +26,30 @@ type BucketFilter = 'all' | 'open' | 'potential' | 'converted' | 'lost';
 export function RepresentativeDealLedger({
   userId,
   initialDeals = [],
+  canViewFinancials = true,
 }: RepresentativeDealLedgerProps): React.ReactElement {
   const [deals, setDeals] = useState<LeadWithRelations[]>(initialDeals);
   const [bucketFilter, setBucketFilter] = useState<BucketFilter>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [debouncedQuery, setDebouncedQuery] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(initialDeals.length);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isPending, startTransition] = useTransition();
+  const requestSeqRef = useRef(0);
 
   const pageSize = 8;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchDeals = useCallback(
     (targetBucket: BucketFilter, query: string, targetPage: number) => {
+      const seq = ++requestSeqRef.current;
       startTransition(async () => {
         const res = await getPersonnelDeals(userId, {
           statusBucket: targetBucket,
@@ -47,6 +59,7 @@ export function RepresentativeDealLedger({
           pageSize,
         });
 
+        if (seq !== requestSeqRef.current) return;
         if (res.success && res.data) {
           setDeals(res.data.deals);
           setTotalCount(res.data.totalCount);
@@ -58,35 +71,32 @@ export function RepresentativeDealLedger({
     [userId, pageSize]
   );
 
-  // Initial load if no initial deals provided
+  // Fetch deals when filter, debounced search, or page state transitions
   useEffect(() => {
-    fetchDeals(bucketFilter, searchQuery, page);
-  }, [fetchDeals, bucketFilter, searchQuery, page]);
+    fetchDeals(bucketFilter, debouncedQuery, page);
+  }, [fetchDeals, bucketFilter, debouncedQuery, page]);
 
   const handleTabChange = (newBucket: BucketFilter): void => {
     setBucketFilter(newBucket);
     setPage(1);
-    fetchDeals(newBucket, searchQuery, 1);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const query = e.target.value;
-    setSearchQuery(query);
+    setSearchQuery(e.target.value);
     setPage(1);
-    fetchDeals(bucketFilter, query, 1);
   };
 
   const getStatusBadgeStyle = (status?: { name: string; bucket: string; color_code?: string }) => {
-    if (!status) return { bg: '#f1f5f9', color: '#334155', dot: '#94a3b8' };
+    if (!status) return { bg: '#efefed', color: '#454542', dot: '#8e8e88' };
     switch (status.bucket) {
       case 'converted':
-        return { bg: 'rgba(16, 185, 129, 0.1)', color: '#065f46', dot: '#10b981' };
+        return { bg: 'rgba(16, 185, 129, 0.08)', color: '#065f46', dot: '#10b981' };
       case 'lost':
-        return { bg: 'rgba(239, 68, 68, 0.1)', color: '#991b1b', dot: '#ef4444' };
+        return { bg: 'rgba(234, 0, 42, 0.08)', color: '#9c001e', dot: '#ea002a' };
       case 'potential':
-        return { bg: 'rgba(245, 158, 11, 0.1)', color: '#92400e', dot: '#f59e0b' };
+        return { bg: 'rgba(245, 158, 11, 0.08)', color: '#92400e', dot: '#d97706' };
       default:
-        return { bg: '#f8fafc', color: '#1e293b', dot: '#64748b' };
+        return { bg: '#fbfbfa', color: '#111111', dot: '#575753' };
     }
   };
 
@@ -147,7 +157,7 @@ export function RepresentativeDealLedger({
           </div>
 
           <div className={styles.searchBox}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -218,10 +228,10 @@ export function RepresentativeDealLedger({
                     </td>
                     <td>
                       <span className={styles.valuationText}>
-                        {formatRupees(deal.expected_value || 0)}
+                        {canViewFinancials ? formatRupees(deal.expected_value || 0) : 'Restricted'}
                       </span>
                     </td>
-                    <td style={{ color: '#64748b', fontSize: '0.78rem' }}>
+                    <td className={styles.updatedCell}>
                       {new Date(deal.updated_at || deal.created_at).toLocaleDateString('en-IN', {
                         month: 'short',
                         day: 'numeric',
@@ -235,7 +245,7 @@ export function RepresentativeDealLedger({
                         title={`Inspect deal ${deal.lead_id}`}
                       >
                         <span>Dossier</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </Link>

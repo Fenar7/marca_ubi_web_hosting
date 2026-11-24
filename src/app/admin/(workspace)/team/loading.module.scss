@@ -1,0 +1,208 @@
+.skeletonWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.skeletonHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.skeletonTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonTitle {
+  width: 140px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--admin-surface-muted, #f5f5f3);
+}
+
+.skeletonSubtitle {
+  width: 320px;
+  max-width: 100%;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f5f5f3);
+}
+
+.skeletonPrimaryBtn {
+  width: 132px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--admin-surface-muted, #f5f5f3);
+}
+
+.skeletonSummaryStrip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skeletonSummaryCell {
+  height: 80px;
+  border-right: 1px solid var(--admin-border-subtle, #e7e7e4);
+  background: linear-gradient(90deg, #ffffff 0%, #f5f5f3 50%, #ffffff 100%);
+  background-size: 200% 100%;
+  animation: teamSkeletonShimmer 1.6s ease-in-out infinite;
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  @media (max-width: 900px) {
+    border-right: 0;
+    border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+.skeletonDirectoryCard {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  overflow: hidden;
+}
+
+.skeletonTabsRow {
+  display: flex;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+}
+
+.skeletonTabItem {
+  width: 96px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f5f5f3);
+}
+
+.skeletonToolbar {
+  display: flex;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--admin-border-hairline, rgba(0, 0, 0, 0.07));
+  background: var(--admin-canvas-bg, #fbfbfa);
+}
+
+.skeletonSearch {
+  flex: 1;
+  max-width: 340px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--admin-surface-muted, #f5f5f3);
+}
+
+.skeletonSelect {
+  width: 140px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--admin-surface-muted, #f5f5f3);
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.skeletonRow {
+  display: grid;
+  grid-template-columns: 40px minmax(160px, 1.8fr) 140px 120px 110px;
+  align-items: center;
+  gap: 16px;
+  height: 68px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--admin-border-hairline, rgba(0, 0, 0, 0.06));
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 40px 1fr 90px;
+  }
+}
+
+.skeletonAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--admin-surface-muted, #f5f5f3);
+}
+
+.skeletonLines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeletonLinePrimary {
+  width: 140px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f5f5f3);
+}
+
+.skeletonLineSecondary {
+  width: 190px;
+  max-width: 100%;
+  height: 11px;
+  border-radius: 4px;
+  background: #efefed;
+}
+
+.skeletonColChip,
+.skeletonColMetric,
+.skeletonColAction {
+  height: 24px;
+  border-radius: 6px;
+  background: var(--admin-surface-muted, #f5f5f3);
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.skeletonColAction {
+  display: block;
+}
+
+@keyframes teamSkeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonSummaryCell {
+    animation: none;
+    background: #ffffff;
+  }
+}

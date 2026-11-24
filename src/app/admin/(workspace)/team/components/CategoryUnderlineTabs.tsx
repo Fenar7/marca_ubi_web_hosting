@@ -2,8 +2,8 @@
 
 /**
  * @file CategoryUnderlineTabs.tsx
- * @description PrimeStay-inspired luxury category underline tabs for personnel roster segmentation.
- *              Enforces accessible ARIA tablist semantics and real-time live count displays.
+ * @description Editorial underline tabs for personnel roster segmentation (/admin/team).
+ *              Enforces accessible toggle semantics, keyboard focus rings, and tabular counters.
  * @module app/admin/team/components/CategoryUnderlineTabs
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -35,7 +35,7 @@ const TAB_DEFINITIONS: TabDefinition[] = [
   { key: 'all', label: 'All Personnel' },
   { key: 'leadership', label: 'Leadership & Admins' },
   { key: 'sales', label: 'Sales Executives' },
-  { key: 'suspended', label: 'Suspended / Inactive' },
+  { key: 'suspended', label: 'Suspended' },
 ];
 
 export function CategoryUnderlineTabs({

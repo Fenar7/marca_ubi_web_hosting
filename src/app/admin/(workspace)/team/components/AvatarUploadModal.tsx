@@ -2,8 +2,9 @@
 
 /**
  * @file AvatarUploadModal.tsx
- * @description Interactive photo upload, square center-cropping, and deletion modal.
- *              Enforces magic-byte client processing and dispatches enterprise avatar actions.
+ * @description Marca Ubi Editorial Luxury modal for profile photo upload, 512px center-cropping,
+ *              and photo removal. Enforces focus trapping, focus restoration, Escape dismissal,
+ *              scroll locking, and 44px accessible touch targets.
  * @module app/admin/team/components/AvatarUploadModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -41,32 +42,67 @@ export function AvatarUploadModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Reset state on open or target change
   useEffect(() => {
     if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement | null;
       setProcessedResult(null);
       setErrorMessage(null);
       setIsSaving(false);
       setIsProcessing(false);
-    }
-  }, [isOpen, targetMember.id]);
+      document.body.style.overflow = 'hidden';
 
-  // Keyboard navigation: Escape key closes modal
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape' && !isSaving && !isProcessing) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      requestAnimationFrame(() => {
+        const firstBtn = modalContentRef.current?.querySelector<HTMLElement>(
+          'button:not([disabled]), [tabindex="0"]'
+        );
+        firstBtn?.focus();
+      });
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      requestAnimationFrame(() => {
+        if (!document.querySelector('[aria-modal="true"]')) {
+          document.body.style.overflow = '';
+        }
+      });
+      if (isOpen && previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
     };
+  }, [isOpen, targetMember.id]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape' && !isSaving && !isProcessing) {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalContentRef.current) {
+        const focusable = modalContentRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isSaving, isProcessing, onClose]);
 
   if (!isOpen) return null;
@@ -130,7 +166,6 @@ export function AvatarUploadModal({
         return;
       }
 
-      // Notify parent component and cross-workspace listeners
       onAvatarSaved(res.avatarUrl);
       window.dispatchEvent(
         new CustomEvent('user-avatar-updated', {
@@ -173,20 +208,30 @@ export function AvatarUploadModal({
   const displayAvatar = processedResult?.previewUrl || targetMember.avatarUrl;
 
   return (
-    <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="avatar-modal-title">
+    <div
+      className={styles.modalOverlay}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="avatar-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSaving && !isProcessing) {
+          onClose();
+        }
+      }}
+    >
       <div className={styles.modalContent} ref={modalContentRef}>
         <div className={styles.modalHeader}>
           <h3 id="avatar-modal-title" className={styles.modalTitle}>
-            Profile Photo • {targetMember.name}
+            Profile Photo · {targetMember.name}
           </h3>
           <button
             type="button"
             className={styles.closeButton}
             onClick={onClose}
             disabled={isSaving || isProcessing}
-            aria-label="Close dialog"
+            aria-label="Close photo dialog (Esc)"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -196,7 +241,7 @@ export function AvatarUploadModal({
         <div className={styles.modalBody}>
           {errorMessage && (
             <div className={styles.errorBanner} role="alert">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -219,7 +264,7 @@ export function AvatarUploadModal({
 
               {processedResult && (
                 <div className={styles.telemetryBadge}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                   <span>
@@ -246,22 +291,25 @@ export function AvatarUploadModal({
               onClick={() => fileInputRef.current?.click()}
               role="button"
               tabIndex={0}
+              aria-label="Upload profile photo"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
                   fileInputRef.current?.click();
                 }
               }}
             >
               <svg
                 className={styles.uploadIcon}
-                width="36"
-                height="36"
+                width="34"
+                height="34"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
@@ -282,6 +330,7 @@ export function AvatarUploadModal({
             accept="image/jpeg,image/png,image/webp"
             style={{ display: 'none' }}
             onChange={handleFileInputChange}
+            aria-label="Choose profile photo file"
           />
         </div>
 
@@ -293,7 +342,7 @@ export function AvatarUploadModal({
               onClick={handleDeletePhoto}
               disabled={isSaving || isProcessing}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
               </svg>
@@ -310,17 +359,14 @@ export function AvatarUploadModal({
             >
               Cancel
             </button>
-
-            {processedResult && (
-              <button
-                type="button"
-                className={styles.saveButton}
-                onClick={handleSaveUpload}
-                disabled={isSaving || isProcessing}
-              >
-                {isSaving ? 'Saving Photo...' : 'Save & Set Photo'}
-              </button>
-            )}
+            <button
+              type="button"
+              className={styles.saveButton}
+              onClick={handleSaveUpload}
+              disabled={!processedResult || isSaving || isProcessing}
+            >
+              {isSaving ? 'Saving...' : 'Save Photo'}
+            </button>
           </div>
         </div>
       </div>

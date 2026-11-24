@@ -5,8 +5,8 @@
  * @description Granular Tab Permissions Governance Modal dialog (620px).
  *              Allows administrators to fine-tune each staff member's accessible tabs
  *              across the 3 canonical functional enclaves.
- *              Enforces defensive admin self-lockout invariants, accessible touch targets,
- *              avatar photography support, and Signature Accordion Lemon Yellow Action button standards.
+ *              Enforces defensive admin self-lockout invariants, 44px accessible touch targets,
+ *              avatar photography support, and Marca Ubi Editorial Light Luxury action tokens.
  * @module app/admin/team/components/EditUserPermissionsModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -71,11 +71,62 @@ export function EditUserPermissionsModal({
     onClose();
   }, [onClose]);
 
-  // Handle Escape key to dismiss
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+  const previousFocusRef = React.useRef<HTMLElement | null>(null);
+
   useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement | null;
+      document.body.style.overflow = 'hidden';
+      const timer = setTimeout(() => {
+        const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
+          'button:not([disabled]), [tabindex]:not([tabindex="-1"]), input:not([disabled])'
+        );
+        firstFocusable?.focus();
+      }, 40);
+      return () => {
+        clearTimeout(timer);
+        requestAnimationFrame(() => {
+          if (!document.querySelector('[aria-modal="true"]')) {
+            document.body.style.overflow = '';
+          }
+        });
+      };
+    }
+
+    if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
+    return undefined;
+  }, [isOpen]);
+
+  // Handle Escape key dismissal and cyclical Tab focus trapping
+  useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
         requestClose();
+        return;
+      }
+
+      if (event.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
 
@@ -170,6 +221,7 @@ export function EditUserPermissionsModal({
       aria-labelledby="edit-permissions-modal-title"
     >
       <div
+        ref={dialogRef}
         className={`${styles.modalDialog} ${isClosing ? styles.dialogClosing : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >
@@ -337,7 +389,7 @@ export function EditUserPermissionsModal({
             })}
           </div>
 
-          {/* Modal Footer with Standardized 38px Buttons */}
+          {/* Modal Footer with 44px Accessible Buttons */}
           <div className={styles.modalFooter}>
             <div className={styles.footerLeft}>
               <button

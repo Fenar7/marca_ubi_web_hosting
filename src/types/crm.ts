@@ -158,6 +158,7 @@ export interface PersonnelProfilePayload {
   auditLogs: PersonnelAuditLogEntry[];
   canEdit: boolean;
   isSelf: boolean;
+  canViewFinancials?: boolean;
 }
 
 /**
