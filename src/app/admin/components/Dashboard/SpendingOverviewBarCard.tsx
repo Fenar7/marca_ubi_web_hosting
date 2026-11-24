@@ -86,21 +86,30 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
 
     // If custom non-empty categories were provided by props for default view, preserve their names
     if (categories && categories.length > 0 && selectedTimeframe === "this_month") {
+      const BLUE_PALETTE = [
+        {
+          color: "#2563eb",
+          gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
+        },
+        {
+          color: "#60a5fa",
+          gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
+        },
+      ];
       const topItems: SpendingCategoryData[] = categories.slice(0, 2).map((cat, idx) => ({
         name: cat.name,
         value: cat.value,
-        color: idx === 0 ? "#111111" : "#71717a",
+        color: BLUE_PALETTE[idx]?.color ?? "#2563eb",
         gradient:
-          idx === 0
-            ? "linear-gradient(90deg, #111111 0%, #27272a 100%)"
-            : "linear-gradient(90deg, #52525b 0%, #a1a1aa 100%)",
+          BLUE_PALETTE[idx]?.gradient ??
+          "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
       }));
       const othersSum = categories.slice(2).reduce((sum, c) => sum + c.value, 0);
       const othersItem: SpendingCategoryData = {
         name: "Others",
         value: othersSum > 0 ? othersSum : Math.max(0, rawTotal - topItems.reduce((s, i) => s + i.value, 0)),
-        color: "#d4d4d8",
-        gradient: "linear-gradient(90deg, #e4e4e7 0%, #f4f4f5 100%)",
+        color: "#cbd5e1",
+        gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
       };
       return {
         activeTotal: rawTotal,

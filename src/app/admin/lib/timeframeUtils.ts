@@ -276,7 +276,7 @@ export function computeSplinePointsForCadence(
   }
 }
 
-/** Computes spending categorical allocations using the official Marca Ubi Editorial Luxury palette */
+/** Computes spending categorical allocations restoring the vibrant multi-tone blue palette */
 export function computeSpendingBreakdownForCadence(
   cadence: CardTimeframe,
   baseTotal: number,
@@ -311,20 +311,20 @@ export function computeSpendingBreakdownForCadence(
       {
         name: 'Web & Digital',
         value: webVal,
-        color: '#111111',
-        gradient: 'linear-gradient(90deg, #111111 0%, #27272a 100%)',
+        color: '#2563eb',
+        gradient: 'linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)',
       },
       {
         name: 'Full-Suite Advisory',
         value: advisoryVal,
-        color: '#71717a',
-        gradient: 'linear-gradient(90deg, #52525b 0%, #a1a1aa 100%)',
+        color: '#60a5fa',
+        gradient: 'linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)',
       },
       {
         name: 'Others',
         value: othersVal,
-        color: '#d4d4d8',
-        gradient: 'linear-gradient(90deg, #e4e4e7 0%, #f4f4f5 100%)',
+        color: '#cbd5e1',
+        gradient: 'linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)',
       },
     ],
   };

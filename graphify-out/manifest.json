@@ -1248,9 +1248,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/timeframeUtils.ts": {
-    "mtime": 1795516232.5721502,
-    "seen": 1795516627.4385111,
-    "ast_hash": "07264f757efb7a7c0f5ceaa07831c41d",
+    "mtime": 1795517262.6947842,
+    "seen": 1795517651.3669405,
+    "ast_hash": "44a4371330de71712cd692cedc293fc9",
     "semantic_hash": ""
   },
   "src/app/admin/login/LoginForm.tsx": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1795514551.490615,
-    "seen": 1795516627.4390173,
-    "ast_hash": "429fee171780efe7c9a5272289bd2379",
+    "mtime": 1795516631.4277983,
+    "seen": 1795517651.3669405,
+    "ast_hash": "5469cf9ca56b37127ae2a31aa75a614e",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -6030,9 +6030,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1795516349.1922708,
-    "seen": 1795516627.4383314,
-    "ast_hash": "683b94f7de66aa721e96ceef9b0284f1",
+    "mtime": 1795517343.3925316,
+    "seen": 1795517651.3669405,
+    "ast_hash": "408dc04a59d9d0ca15a6418d2c113f56",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
@@ -6228,9 +6228,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/EarningOverviewSplineCard.tsx": {
-    "mtime": 1795516324.119609,
-    "seen": 1795516627.4383314,
-    "ast_hash": "729877fb0b05eac58de6bb8a613634ed",
+    "mtime": 1795517275.1485374,
+    "seen": 1795517651.3669405,
+    "ast_hash": "05e9a08ff09fa94e1587cbe22ea72813",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/RecentTransactionsTable.tsx": {
@@ -6240,9 +6240,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/SpendingOverviewBarCard.tsx": {
-    "mtime": 1795516435.721429,
-    "seen": 1795516627.4383314,
-    "ast_hash": "d0f312ca8e100ab06bf26d2d32eadb2c",
+    "mtime": 1795517319.306552,
+    "seen": 1795517651.3669405,
+    "ast_hash": "64d3ecc6e6e2fdac36073b500f51c44c",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/UpcomingSlaCard.tsx": {
@@ -6984,9 +6984,9 @@
     "semantic_hash": ""
   },
   "tests/unit/overview-charts-telemetry-redesign.test.ts": {
-    "mtime": 1795516481.4620216,
-    "seen": 1795516627.4390173,
-    "ast_hash": "fa6792b730cc086d872513f6c29bd1c6",
+    "mtime": 1795517389.124486,
+    "seen": 1795517651.3669405,
+    "ast_hash": "89e068a873640a34e2c6b2c2eb10eccd",
     "semantic_hash": ""
   },
   "docs/context/2026-11-24_15-31-26.md": {
@@ -6996,9 +6996,15 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/overview_charts_redesign/PLAN.md": {
-    "mtime": 1795516156.4597476,
-    "seen": 1795516627.4390173,
-    "ast_hash": "78908488dbd2333c18a60da7c9bc5ec1",
+    "mtime": 1795517158.0442908,
+    "seen": 1795517651.3669405,
+    "ast_hash": "439bc0eabbf4f9713b45b00c72a57861",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-24_16-10-00.md": {
+    "mtime": 1795517632.9806747,
+    "seen": 1795517651.3669405,
+    "ast_hash": "82b995ed865049eef86b3d0d5f4a7108",
     "semantic_hash": ""
   },
   "package-lock.json": {

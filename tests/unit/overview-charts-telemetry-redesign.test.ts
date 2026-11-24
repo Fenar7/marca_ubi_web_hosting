@@ -25,14 +25,11 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
   const velocitySource = fs.readFileSync(velocityChartPath, 'utf8');
   const velocityStyles = fs.readFileSync(velocityChartStylesPath, 'utf8');
 
-  it('Gate 1: EarningOverviewSplineCard - Anti-slop brand token purge and exact coordinate alignment', () => {
-    // Zero generic blue tokens
-    assert.ok(!splineSource.includes('#2563eb'), 'Source must not contain #2563eb');
-    assert.ok(!splineSource.includes('#3b82f6'), 'Source must not contain #3b82f6');
-    assert.ok(!splineStyles.includes('rgba(37, 99, 235'), 'Styles must not contain rgba(37, 99, 235)');
-
-    // Marca Ubi Brand crimson tokens present
-    assert.ok(splineSource.includes('#ea002a'), 'Must use Marca Ubi red #ea002a');
+  it('Gate 1: EarningOverviewSplineCard - Restored electric blue palette and exact coordinate alignment', () => {
+    // Restored electric blue tokens
+    assert.ok(splineSource.includes('#2563eb'), 'Source must use electric blue #2563eb');
+    assert.ok(splineSource.includes('#3b82f6'), 'Source must use blue gradient stop #3b82f6');
+    assert.ok(splineStyles.includes('rgba(37, 99, 235'), 'Styles must use rgba(37, 99, 235) tooltip border');
 
     // Exact coordinate stem alignment (35/500 = 7.0%)
     assert.ok(
@@ -63,15 +60,11 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
     assert.ok(splineStyles.includes('.dropdownMenu'));
   });
 
-  it('Gate 3: SpendingOverviewBarCard - Anti-slop palette and dynamic continuous gradient bar', () => {
-    // Zero generic blue tokens
-    assert.ok(!spendingSource.includes('#2563eb'), 'Source must not contain #2563eb');
-    assert.ok(!spendingSource.includes('#60a5fa'), 'Source must not contain #60a5fa');
-    assert.ok(!spendingSource.includes('#93c5fd'), 'Source must not contain #93c5fd');
-
-    // Brand luxury palette present
-    assert.ok(spendingSource.includes('#111111'), 'Must use Brand Obsidian #111111');
-    assert.ok(spendingSource.includes('#71717a'), 'Must use Warm Slate #71717a');
+  it('Gate 3: SpendingOverviewBarCard - Restored vibrant blue palette and dynamic continuous gradient bar', () => {
+    // Restored multi-tone blue tokens
+    assert.ok(spendingSource.includes('#2563eb'), 'Source must use vibrant blue #2563eb');
+    assert.ok(spendingSource.includes('#60a5fa'), 'Source must use sky blue #60a5fa');
+    assert.ok(spendingSource.includes('#cbd5e1'), 'Source must use light blue/neutral #cbd5e1');
 
     // Accessible dropdown listbox
     assert.ok(spendingSource.includes('role="listbox"'));
@@ -85,15 +78,15 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
     assert.ok(spendingStyles.includes('transition: width 0.35s'));
   });
 
-  it('Gate 4: CommercialVelocityBarChart - Height scaling, snug layout, and zero-baseline preservation', () => {
-    // Scaled SVG viewBox (svgHeight = 300, chartHeight = 230)
-    assert.ok(velocitySource.includes('const svgHeight = 300;'), 'svgHeight must be scaled to 300');
-    assert.ok(velocitySource.includes('const chartHeight = svgHeight - paddingTop - paddingBottom; // 230'));
+  it('Gate 4: CommercialVelocityBarChart - Height scaling to 400px, snug layout, and zero-baseline preservation', () => {
+    // Scaled SVG viewBox (svgHeight = 400, chartHeight = 326)
+    assert.ok(velocitySource.includes('const svgHeight = 400;'), 'svgHeight must be scaled to 400');
+    assert.ok(velocitySource.includes('const chartHeight = svgHeight - paddingTop - paddingBottom; // 326'));
     assert.ok(velocitySource.includes('viewBox={`0 0 ${svgWidth} ${svgHeight}`}'));
 
     // Snug alignment eliminating dead space canyon
     assert.ok(velocityStyles.includes('padding: 24px 26px 20px;'));
-    assert.ok(velocityStyles.includes('min-height: 280px;'));
+    assert.ok(velocityStyles.includes('min-height: 320px;'));
     assert.ok(velocityStyles.includes('align-items: stretch;'));
 
     // Preservation of core visual archetypes & zero pedestals

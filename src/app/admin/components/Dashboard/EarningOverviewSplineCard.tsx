@@ -252,43 +252,42 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
             aria-hidden="true"
           >
             <defs>
-              {/* Brand Crimson Luxury Linear Area Fill */}
+              {/* Restored Electric Blue Gradient Area Fill */}
               <linearGradient id={`earning-gradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ea002a" stopOpacity="0.12" />
-                <stop offset="65%" stopColor="#ea002a" stopOpacity="0.03" />
-                <stop offset="100%" stopColor="#ea002a" stopOpacity="0.00" />
+                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.20" />
+                <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
               </linearGradient>
               <filter id={`beacon-glow-${gradientId}`} x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#ea002a" floodOpacity="0.35" />
+                <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.4" />
               </filter>
             </defs>
 
             {/* Area Fill */}
             {areaPath && <path d={areaPath} fill={`url(#earning-gradient-${gradientId})`} />}
 
-            {/* Spline Curve Stroke - Brand Near-Black Ink */}
+            {/* Spline Curve Stroke - Restored Electric Blue */}
             {linePath && (
               <path
                 d={linePath}
                 fill="none"
-                stroke="#111111"
-                strokeWidth="2.2"
+                stroke="#2563eb"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             )}
 
-            {/* Vertical Dashed Stem connecting apex to baseline in Brand Crimson */}
+            {/* Vertical Dashed Stem connecting apex to baseline in Sky Blue */}
             {activeCoord && (
               <line
                 x1={activeCoord.x}
                 y1={activeCoord.y}
                 x2={activeCoord.x}
                 y2={baselineY}
-                stroke="#ea002a"
-                strokeWidth="1.25"
+                stroke="#93c5fd"
+                strokeWidth="1.5"
                 strokeDasharray="3 3"
-                opacity="0.65"
               />
             )}
 
@@ -298,17 +297,17 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
                 <circle
                   cx={activeCoord.x}
                   cy={activeCoord.y}
-                  r="7"
-                  fill="#ea002a"
-                  fillOpacity="0.16"
+                  r="8"
+                  fill="#2563eb"
+                  fillOpacity="0.18"
                 />
                 <circle
                   cx={activeCoord.x}
                   cy={activeCoord.y}
-                  r="4"
+                  r="4.5"
                   fill="#ffffff"
-                  stroke="#ea002a"
-                  strokeWidth="2.2"
+                  stroke="#2563eb"
+                  strokeWidth="2.5"
                   filter={`url(#beacon-glow-${gradientId})`}
                 />
               </>
