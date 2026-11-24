@@ -21,7 +21,7 @@ const ROUTE_NAME_MAP: Record<string, string> = {
   deals: 'Pipeline Deals',
   works: 'Client Works',
   tasks: 'Follow-up Tasks',
-  team: 'User Management',
+  team: 'Team',
   users: 'User Management',
   'user-management': 'User Management',
   analytics: 'Executive Analytics',

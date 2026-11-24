@@ -76,6 +76,51 @@
   line-height: 1.4;
 }
 
+.headerRightActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.viewAllDealsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--admin-radius-control, 8px);
+  background: #ffffff;
+  border: 1px solid var(--admin-border-subtle, #ebebe8);
+  color: var(--admin-text-primary, #111111);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: #111111;
+    color: #ffffff;
+    border-color: #111111;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 2px;
+  }
+}
+
+.linkArrow {
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+}
+
+.viewAllDealsLink:hover .linkArrow {
+  transform: translate(1px, -1px);
+}
+
 .searchWrapper {
   position: relative;
   display: flex;

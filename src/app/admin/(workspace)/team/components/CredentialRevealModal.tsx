@@ -3,8 +3,8 @@
 /**
  * @file CredentialRevealModal.tsx
  * @description High-security One-Time Credential Reveal Modal for newly provisioned personnel.
- *              Displays generated temporary credentials in a high-contrast Raycast Monospace token container,
- *              implements single-click clipboard copying, and activates a strict 60-second clipboard auto-purge timer.
+ *              Maintains strict React hooks order, cyclical focus trapping, focus restoration,
+ *              60-second clipboard auto-purge timer, and WCAG aria-live announcements.
  * @module app/admin/team/components/CredentialRevealModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -37,8 +37,8 @@ export function CredentialRevealModal({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const modalCardRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Auto-purge clipboard memory after 60 seconds
   const purgeClipboard = useCallback(() => {
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
       navigator.clipboard.writeText('').catch(() => {});
@@ -54,7 +54,7 @@ export function CredentialRevealModal({
         document.execCommand('copy');
         document.body.removeChild(textArea);
       } catch {
-        // Suppress non-secure context fallback exceptions
+        // Non-secure context clipboard cleanup ignored
       }
     }
   }, []);
@@ -70,20 +70,82 @@ export function CredentialRevealModal({
     }
   }, []);
 
+  const handleDone = useCallback(() => {
+    if (copied) {
+      purgeClipboard();
+    }
+    clearTimers();
+    onClose();
+  }, [copied, purgeClipboard, clearTimers, onClose]);
+
+  const copiedRef = useRef(false);
+
   useEffect(() => {
-    // Reset state whenever modal is opened with new credentials
+    copiedRef.current = copied;
+  }, [copied]);
+
+  useEffect(() => {
     if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement | null;
+      document.body.style.overflow = 'hidden';
       setCopied(false);
       setSecondsRemaining(60);
       clearTimers();
-    } else {
-      clearTimers();
+
+      requestAnimationFrame(() => {
+        const copyBtn = modalCardRef.current?.querySelector<HTMLElement>('button:not([disabled])');
+        copyBtn?.focus();
+      });
+
+      return () => {
+        clearTimers();
+        if (copiedRef.current) {
+          purgeClipboard();
+        }
+        requestAnimationFrame(() => {
+          if (!document.querySelector('[aria-modal="true"]')) {
+            document.body.style.overflow = '';
+          }
+        });
+        if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+          previousFocusRef.current.focus();
+          previousFocusRef.current = null;
+        }
+      };
     }
 
-    return () => {
-      clearTimers();
+    clearTimers();
+    return undefined;
+  }, [isOpen, clearTimers, purgeClipboard]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        e.preventDefault();
+        handleDone();
+        return;
+      }
+
+      if (e.key === 'Tab' && isOpen && modalCardRef.current) {
+        const focusable = modalCardRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
-  }, [isOpen, clearTimers]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleDone]);
 
   if (!isOpen || !credentials) {
     return null;
@@ -111,7 +173,6 @@ export function CredentialRevealModal({
       if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(formattedPayload);
       } else if (typeof document !== 'undefined') {
-        // Fallback execution for non-secure HTTP contexts (local IP testing)
         const textArea = document.createElement('textarea');
         textArea.value = formattedPayload;
         textArea.style.position = 'fixed';
@@ -125,7 +186,6 @@ export function CredentialRevealModal({
       setCopied(true);
       setSecondsRemaining(60);
 
-      // Decrement countdown each second
       countdownIntervalRef.current = setInterval(() => {
         setSecondsRemaining((prev) => {
           if (prev <= 1) {
@@ -137,7 +197,6 @@ export function CredentialRevealModal({
         });
       }, 1000);
 
-      // Hard purge timeout at exactly 60,000ms
       timerRef.current = setTimeout(() => {
         purgeClipboard();
         clearTimers();
@@ -146,57 +205,6 @@ export function CredentialRevealModal({
       console.error('[CLIPBOARD_ERROR] Failed to write credentials to system clipboard:', err);
     }
   };
-
-  const handleDone = useCallback(() => {
-    // Purge clipboard on modal dismissal for defense in depth
-    if (copied) {
-      purgeClipboard();
-    }
-    clearTimers();
-    onClose();
-  }, [copied, purgeClipboard, clearTimers, onClose]);
-
-  // Body scroll lock on open and unmount clipboard purge
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-      if (copied) {
-        purgeClipboard();
-      }
-    };
-  }, [isOpen, copied, purgeClipboard]);
-
-  // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        handleDone();
-        return;
-      }
-
-      if (e.key === 'Tab' && isOpen && modalCardRef.current) {
-        const focusable = modalCardRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleDone]);
 
   return (
     <div
@@ -229,17 +237,15 @@ export function CredentialRevealModal({
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
           <div>
-            <h3 id="credential-modal-title" style={{ margin: '0 0 0.25rem 0', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}>
+            <h3 id="credential-modal-title" className={styles.modalHeading}>
               One-Time Credential Reveal.
             </h3>
             <p className={styles.modalAlertText}>
-              These temporary credentials are displayed strictly once. They are never stored in plain text or
-              re-displayed. Distribute them to the team member through a verified secure channel.
+              These temporary credentials are displayed strictly once. Distribute them to the team member through a verified secure channel.
             </p>
           </div>
         </div>
 
-        {/* Credentials Display Token Container */}
         <div className={styles.credentialTokenContainer}>
           <div className={styles.credentialRow}>
             <span className={styles.credentialKey}>Personnel</span>
@@ -267,7 +273,6 @@ export function CredentialRevealModal({
           </div>
         </div>
 
-        {/* Action Controls */}
         <div className={styles.modalActions}>
           <button
             type="button"
@@ -292,17 +297,13 @@ export function CredentialRevealModal({
             <span>{copied ? 'Credentials Copied' : 'Copy Credentials'}</span>
           </button>
 
-          <button
-            type="button"
-            className={styles.doneButton}
-            onClick={handleDone}
-          >
+          <button type="button" className={styles.doneButton} onClick={handleDone}>
             Done
           </button>
         </div>
 
         {copied && (
-          <div className={styles.clipboardCountdown}>
+          <div className={styles.clipboardCountdown} role="status" aria-live="polite">
             <svg
               width="12"
               height="12"

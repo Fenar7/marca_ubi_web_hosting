@@ -2,16 +2,14 @@
 
 /**
  * @file LeadReassignmentWizardModal.tsx
- * @description Interactive Lead Reassignment Wizard modal component (/admin/team).
- *              Performs real-time deal inventory scans for departing or offboarded personnel,
- *              presents portfolio impact metrics (Stripe Scorecards & stage breakdown),
- *              validates active destination team members, prompts for mandatory transfer justification,
- *              and executes the atomic batch reassignment Server Action with ACID transaction guarantees.
+ * @description Marca Ubi Editorial Luxury Lead Reassignment Wizard modal (/admin/team).
+ *              Scans live active deal inventory, validates active destination representatives,
+ *              enforces WCAG AA contrast, cyclical focus trapping, and atomic ACID transfers.
  * @module app/admin/team/components/LeadReassignmentWizardModal
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { TeamMemberRosterItem, RepDealInventory, AtomicReassignmentResult } from '@/types/crm';
 import { getRepDealInventory, executeLeadReassignment } from '@/app/actions/reassignment';
 import { formatDealValuation, getInitials } from '@/app/lib/team-utils';
@@ -38,8 +36,9 @@ export function LeadReassignmentWizardModal({
   const [inventory, setInventory] = useState<RepDealInventory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Eligible destination candidates: active accounts holding commercial roles, excluding the source representative
   const destinationCandidates = React.useMemo(() => {
     if (!sourceMember) return [];
     return activeRoster.filter(
@@ -50,15 +49,17 @@ export function LeadReassignmentWizardModal({
     );
   }, [activeRoster, sourceMember]);
 
-  // Load live deal inventory whenever wizard opens for a representative
   useEffect(() => {
     if (!isOpen || !sourceMember) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = 'hidden';
 
     let isMounted = true;
     setIsLoadingInventory(true);
     setErrorMessage(null);
     setDestinationUserId('');
-    setTransferReason(`Full commercial pipeline transfer due to offboarding of ${sourceMember.full_name}.`);
+    setTransferReason(`Full commercial pipeline transfer from ${sourceMember.full_name}.`);
 
     getRepDealInventory(sourceMember.id)
       .then((res) => {
@@ -71,34 +72,61 @@ export function LeadReassignmentWizardModal({
       })
       .catch((err: unknown) => {
         if (!isMounted) return;
-        const msg = err instanceof Error ? err.message : 'Failed to query representative inventory.';
-        setErrorMessage(msg);
+        setErrorMessage(err instanceof Error ? err.message : 'Failed to query representative inventory.');
       })
       .finally(() => {
-        if (isMounted) {
-          setIsLoadingInventory(false);
-        }
+        if (isMounted) setIsLoadingInventory(false);
       });
+
+    requestAnimationFrame(() => {
+      const firstFocusable = modalRef.current?.querySelector<HTMLElement>('button:not([disabled])');
+      firstFocusable?.focus();
+    });
 
     return () => {
       isMounted = false;
+      requestAnimationFrame(() => {
+        if (!document.querySelector('[aria-modal="true"]')) {
+          document.body.style.overflow = '';
+        }
+      });
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
     };
   }, [isOpen, sourceMember]);
 
-  // Set default destination rep once candidates are available
   useEffect(() => {
     if (destinationCandidates.length > 0 && !destinationUserId) {
       setDestinationUserId(destinationCandidates[0].id);
     }
   }, [destinationCandidates, destinationUserId]);
 
-  // Handle Escape key to dismiss safely
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isSubmitting) {
+        e.preventDefault();
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
 
@@ -113,9 +141,8 @@ export function LeadReassignmentWizardModal({
       setErrorMessage('Please select an active destination team member to receive deals.');
       return;
     }
-
     if (!transferReason.trim() || transferReason.trim().length < 5) {
-      setErrorMessage('A transfer reason of at least 5 characters is required for regulatory audit trails.');
+      setErrorMessage('A transfer reason of at least 5 characters is required for audit trails.');
       return;
     }
 
@@ -138,8 +165,7 @@ export function LeadReassignmentWizardModal({
       onSuccess(result.data, sourceMember.id, destinationUserId);
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'An unexpected network error occurred.';
-      setErrorMessage(msg);
+      setErrorMessage(err instanceof Error ? err.message : 'An unexpected network error occurred.');
       setIsSubmitting(false);
     }
   };
@@ -155,97 +181,41 @@ export function LeadReassignmentWizardModal({
       aria-modal="true"
       aria-labelledby="reassign-wizard-title"
       aria-describedby="reassign-wizard-desc"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) {
+          onClose();
+        }
+      }}
     >
-      <div className={styles.modalCard} style={{ maxWidth: '560px' }}>
-        {/* Error notification banner */}
-        {errorMessage && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
-              borderRadius: '6px',
-              color: '#ef4444',
-              fontSize: '0.8rem',
-              marginBottom: '1rem',
-              lineHeight: 1.4,
-            }}
-            role="alert"
+      <div ref={modalRef} className={styles.modalCard} style={{ maxWidth: '560px' }}>
+        <div className={styles.modalHeaderRow}>
+          <h3 id="reassign-wizard-title" className={styles.modalHeading}>
+            Pipeline Lead Reassignment Wizard.
+          </h3>
+          <button
+            type="button"
+            className={styles.drawerCloseButton}
+            onClick={onClose}
+            disabled={isSubmitting}
+            aria-label="Close reassignment wizard (Esc)"
           >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <p id="reassign-wizard-desc" className={styles.modalSubtitle}>
+          Transferring active commercial deals from <strong>{sourceMember.full_name}</strong> ({sourceMember.email}) to an active representative.
+        </p>
+
+        {errorMessage && (
+          <div className={styles.modalErrorBanner} role="alert">
             {errorMessage}
           </div>
         )}
 
-        {/* Wizard Header Banner */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '0.85rem',
-            padding: '0.85rem 1rem',
-            borderRadius: '6px',
-            background: 'var(--admin-surface-muted, #f0f2f5)',
-            border: '1px solid var(--admin-border-default, #e2e5ea)',
-            marginBottom: '1.25rem',
-          }}
-        >
-          <svg
-            style={{ color: 'var(--admin-text-primary, #1f242f)', flexShrink: 0, marginTop: '0.15rem' }}
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="17 1 21 5 17 9" />
-            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-            <polyline points="7 23 3 19 7 15" />
-            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-          </svg>
-          <div>
-            <h3
-              id="reassign-wizard-title"
-              style={{ margin: '0 0 0.25rem 0', fontSize: '0.96rem', fontWeight: 700, color: 'var(--admin-text-primary, #1f242f)' }}
-            >
-              Pipeline Lead Reassignment Wizard.
-            </h3>
-            <p id="reassign-wizard-desc" className={styles.modalAlertText} style={{ color: 'var(--admin-text-secondary, #525965)' }}>
-              Transferring active commercial portfolio from <strong>{sourceMember.full_name}</strong> to a designated active representative.
-            </p>
-          </div>
-        </div>
-
-        {/* Source Representative Identity Overview */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.85rem',
-            padding: '0.75rem 1rem',
-            background: 'var(--admin-surface-muted, #f0f2f5)',
-            border: '1px solid var(--admin-border-default, #e2e5ea)',
-            borderRadius: '6px',
-            marginBottom: '1.25rem',
-          }}
-        >
-          <div className={styles.avatar}>
-            {getInitials(sourceMember.full_name)}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--admin-text-primary, #1f242f)' }}>
-              {sourceMember.full_name}
-            </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary, #525965)' }}>
-              {sourceMember.email} · {sourceMember.job_title}
-            </span>
-          </div>
-        </div>
-
-        {/* Portfolio Impact Assessment Scorecards */}
         <div className={styles.wizardImpactGrid}>
           <div className={styles.wizardStatBox}>
             <span className={styles.wizardStatLabel}>Active Deals</span>
@@ -263,14 +233,13 @@ export function LeadReassignmentWizardModal({
             <span className={styles.wizardStatLabel}>Overdue Touches</span>
             <span
               className={styles.wizardStatValue}
-              style={{ color: overdueCount > 0 ? '#ef4444' : '#22c55e' }}
+              style={{ color: overdueCount > 0 ? '#9c001e' : '#065f46' }}
             >
               {isLoadingInventory ? '...' : `${overdueCount} leads`}
             </span>
           </div>
         </div>
 
-        {/* Stage Distribution Breakdown (PRD Section 3.2.1) */}
         {inventory && inventory.stage_breakdown.length > 0 && (
           <div className={styles.wizardBreakdownSection}>
             <h4 className={styles.wizardBreakdownTitle}>Funnel Stage Breakdown</h4>
@@ -280,7 +249,7 @@ export function LeadReassignmentWizardModal({
                   <div className={styles.wizardStageLeft}>
                     <span
                       className={styles.wizardStageDot}
-                      style={{ backgroundColor: stage.color_code || '#1f242f' }}
+                      style={{ backgroundColor: stage.color_code || '#111111' }}
                     />
                     <span className={styles.wizardStageName}>{stage.status_name}</span>
                   </div>
@@ -298,43 +267,19 @@ export function LeadReassignmentWizardModal({
           </div>
         )}
 
-        {/* Zero Deals Safeguard Notice */}
         {!isLoadingInventory && activeCount === 0 && (
-          <div
-            style={{
-              padding: '0.85rem 1.15rem',
-              background: 'var(--admin-status-emerald-bg, #ecfdf5)',
-              border: '1px solid var(--admin-status-emerald-border, #a7f3d0)',
-              borderRadius: '8px',
-              color: 'var(--admin-status-emerald-text, #065f46)',
-              fontSize: '0.84rem',
-              marginBottom: '1.25rem',
-              lineHeight: 1.5,
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '0.55rem',
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: '0.15rem' }}>
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+          <div className={styles.modalAlertBanner}>
             <span>
-              <strong>Zero Active Deals:</strong> This representative has no active commercial deals requiring reassignment. Converted and lost accounts remain untouched to preserve historical ownership records.
+              <strong>Zero Active Deals:</strong> This representative has no active commercial deals requiring reassignment.
             </span>
           </div>
         )}
 
-        {/* Destination Selection & Justification (only if active deals exist) */}
         {activeCount > 0 && (
           <>
-            {/* Destination Selection Dropdown */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label
-                htmlFor="destination-member-select"
-                className={styles.drawerLabel}
-                style={{ marginBottom: '0.4rem', display: 'block' }}
-              >
-                Select Destination Team Member (Active Only)
+            <div className={styles.drawerFormGroup}>
+              <label htmlFor="destination-member-select" className={styles.drawerLabel}>
+                Destination Representative (Active Only)
               </label>
               <select
                 id="destination-member-select"
@@ -348,42 +293,35 @@ export function LeadReassignmentWizardModal({
                 ) : (
                   destinationCandidates.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.full_name} ({c.job_title || c.role}) - Managing {c.active_deals_count} active deal(s)
+                      {c.full_name} ({c.job_title || c.role}) - {c.active_deals_count} active deal(s)
                     </option>
                   ))
                 )}
               </select>
             </div>
 
-            {/* Mandatory Transfer Reason Textarea */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <label
-                  htmlFor="reassignment-reason"
-                  className={styles.drawerLabel}
-                  style={{ margin: 0 }}
-                >
-                  Transfer Reason (Required for Audit Logging)
+            <div className={styles.suspendReasonField}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label htmlFor="reassignment-reason" className={styles.suspendReasonLabel}>
+                  Transfer Reason (Required)
                 </label>
-                <span style={{ fontSize: '0.72rem', color: '#666666' }}>
+                <span style={{ fontSize: '0.72rem', color: '#575753' }}>
                   {transferReason.length}/500
                 </span>
               </div>
               <textarea
                 id="reassignment-reason"
                 className={styles.suspendReasonInput}
-                placeholder="e.g. Full offboarding transfer due to departure on Oct 15, 2026..."
+                placeholder="e.g. Portfolio rebalance or representative offboarding..."
                 value={transferReason}
                 onChange={(e) => setTransferReason(e.target.value)}
                 maxLength={500}
                 disabled={isSubmitting}
-                aria-label="Reason for batch lead reassignment"
               />
             </div>
           </>
         )}
 
-        {/* Modal Action Controls */}
         <div className={styles.modalActions}>
           <button
             type="button"
@@ -408,11 +346,7 @@ export function LeadReassignmentWizardModal({
               }
               aria-busy={isSubmitting}
             >
-              {isSubmitting ? (
-                <span>Executing Reassignment...</span>
-              ) : (
-                <span>Execute Atomic Reassignment</span>
-              )}
+              {isSubmitting ? 'Executing Reassignment...' : 'Execute Atomic Reassignment'}
             </button>
           )}
         </div>

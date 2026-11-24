@@ -1,0 +1,64 @@
+.ribbonContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 4px;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiPod {
+  background-color: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(17, 17, 17, 0.05);
+  }
+}
+
+.overdueActivePod {
+  background-color: #fff9fa;
+  border-color: #f5b7c0;
+}
+
+.kpiLabel {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted, #696965);
+}
+
+.kpiValue {
+  font-family: var(--font-helvetica-neue), sans-serif;
+  font-size: 1.75rem;
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  color: var(--admin-text-primary, #111111);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.overdueText {
+  color: var(--admin-brand-primary, #ea002a) !important;
+}
+
+.kpiSub {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary, #454542);
+}

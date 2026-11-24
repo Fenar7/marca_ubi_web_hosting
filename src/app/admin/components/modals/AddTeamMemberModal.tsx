@@ -122,13 +122,35 @@ export function AddTeamMemberModal({
     }
   }, [isDirty, onClose]);
 
+  const previousFocusRef = React.useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement | null;
+      const timer = setTimeout(() => {
+        const firstInput = modalRef.current?.querySelector<HTMLElement>(
+          'input:not([disabled]), select:not([disabled]), button:not([disabled])'
+        );
+        firstInput?.focus();
+      }, 40);
+      return () => {
+        clearTimeout(timer);
+        if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+          previousFocusRef.current.focus();
+          previousFocusRef.current = null;
+        }
+      };
+    }
+    return undefined;
+  }, [isOpen]);
+
   // Keyboard accessibility: Escape key dismissal and Tab focus trapping loop (WCAG 2.1 AA)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
         if (showDiscardPrompt) {
           setShowDiscardPrompt(false);
-        } else {
+        } else if (!isPending) {
           requestClose();
         }
         return;
@@ -166,7 +188,7 @@ export function AddTeamMemberModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, showDiscardPrompt, requestClose]);
+  }, [isOpen, isPending, showDiscardPrompt, requestClose]);
 
   if (!shouldRender) {
     return null;
@@ -579,6 +601,7 @@ export function AddTeamMemberModal({
             className={styles.promptModal}
             onClick={(e) => e.stopPropagation()}
             role="alertdialog"
+            aria-modal="true"
             aria-labelledby="discard-title"
             aria-describedby="discard-message"
           >

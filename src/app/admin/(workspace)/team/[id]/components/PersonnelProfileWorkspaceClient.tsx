@@ -94,35 +94,38 @@ export function PersonnelProfileWorkspaceClient({
             profile.status === 'active' ? styles.active : styles.suspended
           }`}
         >
-          <span
-            className={`${styles.statusDot} ${
-              profile.status === 'active' ? styles.dotActive : styles.dotSuspended
-            }`}
-          />
           <span>{profile.status === 'active' ? 'Operational' : 'Suspended'}</span>
         </div>
       </div>
 
       {/* 8:4 Asymmetric Operational Layout */}
       <div className={styles.asymmetricGrid}>
-        {/* Left Column (8 units): Identity, Scorecards, Deal Ledger */}
+        {/* Left Column (8 units): Identity, Commercial Matrix, Deal Ledger */}
         <div className={styles.mainColumn}>
           <ExecutiveMasthead
             profile={profile}
             invitedByName={initialPayload.invited_by_name}
+            lastLoginAt={initialPayload.loginSummary?.lastLoginAt ?? profile.last_login_at}
             canEditAvatar={initialPayload.canEdit || initialPayload.isSelf}
             onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
           />
 
-          <CommercialVelocityScorecards kpis={kpis} />
+          <CommercialVelocityScorecards
+            kpis={kpis}
+            canViewFinancials={initialPayload.canViewFinancials ?? true}
+          />
 
-          <RepresentativeDealLedger userId={profile.id} />
+          <RepresentativeDealLedger
+            userId={profile.id}
+            canViewFinancials={initialPayload.canViewFinancials ?? true}
+          />
         </div>
 
-        {/* Right Column (4 units): Security Enclave, Tab Permissions, Audit Timeline */}
+        {/* Right Column (4 units): Login & Session Telemetry, Tab Permissions, Audit Timeline */}
         <div className={styles.sideColumn}>
           <PersonnelSecurityEnclave
             profile={profile}
+            loginSummary={initialPayload.loginSummary}
             canEdit={initialPayload.canEdit}
             isSelf={initialPayload.isSelf}
           />

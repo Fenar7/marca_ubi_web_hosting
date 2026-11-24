@@ -221,9 +221,16 @@
 
 .actionCell {
   text-align: right;
+  position: relative;
+}
+
+.actionMenuWrapper {
+  position: relative;
+  display: inline-block;
 }
 
 .actionMenuButton {
+  position: relative;
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -237,8 +244,116 @@
   font-size: 1rem;
   transition: all 0.15s ease;
 
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+  }
+
   &:hover {
     background: #f1f5f9;
     color: #0f172a;
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 1px;
+  }
+}
+
+.actionPopover {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 140px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: popoverFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.popoverItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 5px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: #f8fafc;
+    color: #111111;
+  }
+}
+
+.tableFooter {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.viewAllTransactionsBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #0f172a;
+    background: #f8fafc;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 1px;
+  }
+}
+
+.btnArrow {
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+}
+
+.viewAllTransactionsBtn:hover .btnArrow {
+  transform: translate(1px, -1px);
 }

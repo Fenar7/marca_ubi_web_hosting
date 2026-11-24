@@ -1,0 +1,253 @@
+.funnelSection {
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionHeader {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--admin-text-primary, #111111);
+}
+
+.sectionSubtitle {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted, #575753);
+}
+
+.intakeReadout {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted, #575753);
+  font-variant-numeric: tabular-nums;
+  padding: 0.4rem 0.85rem;
+  background: var(--admin-bg-canvas, #fbfbfa);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 9999px;
+
+  strong {
+    color: var(--admin-text-primary, #111111);
+    font-weight: 600;
+  }
+}
+
+.emptyFunnel {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.875rem;
+  color: var(--admin-text-muted, #575753);
+}
+
+.funnelList {
+  display: flex;
+  flex-direction: column;
+}
+
+.listHeaderRow {
+  display: grid;
+  grid-template-columns: 1.3fr 1.8fr 0.7fr 0.7fr 0.75fr 1fr;
+  gap: 1rem;
+  padding: 0.65rem 1.5rem;
+  background: var(--admin-bg-canvas, #fbfbfa);
+  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted, #575753);
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.stageRow {
+  display: grid;
+  grid-template-columns: 1.3fr 1.8fr 0.7fr 0.7fr 0.75fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  min-height: 54px;
+  padding: 0.8rem 1.5rem;
+  border-bottom: 1px solid var(--admin-bg-subtle, #efefed);
+  border-left: 3px solid #4338ca;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.12s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--admin-bg-canvas, #fbfbfa);
+
+    .rowChevron {
+      color: var(--admin-text-primary, #111111);
+      transform: translateX(2px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: -2px;
+  }
+
+  &.wonStageRow {
+    background: rgba(16, 185, 129, 0.03);
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 1rem;
+    padding: 0.95rem 1.25rem;
+  }
+}
+
+.stageNameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+
+  @media (max-width: 900px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.stageName {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+}
+
+.wonTag {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+  border: 1px solid rgba(6, 95, 70, 0.25);
+}
+
+.barCell {
+  min-width: 0;
+
+  @media (max-width: 900px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.barTrack {
+  width: 100%;
+  height: 7px;
+  background: var(--admin-bg-subtle, #efefed);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.25s ease;
+}
+
+.metricCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+
+  @media (max-width: 900px) {
+    justify-content: space-between;
+  }
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.mobileMetricLabel {
+  display: none;
+  font-size: 0.72rem;
+  color: var(--admin-text-muted, #575753);
+
+  @media (max-width: 900px) {
+    display: inline;
+  }
+}
+
+.metricVal {
+  font-family: var(--font-helvetica-neue), var(--font-graphik), sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--admin-text-primary, #111111);
+}
+
+.metricSubVal {
+  color: var(--admin-text-secondary, #454542);
+}
+
+.rateValue {
+  font-weight: 600;
+  color: var(--admin-text-secondary, #454542);
+
+  &.highRate {
+    color: #065f46;
+  }
+}
+
+.dropOffCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.dropOffWarn {
+  font-weight: 600;
+  color: #9c001e;
+}
+
+.dropOffNeutral {
+  color: var(--admin-text-muted, #575753);
+}
+
+.rowChevron {
+  color: var(--admin-text-muted, #575753);
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageRow,
+  .barFill,
+  .rowChevron {
+    transition: none;
+  }
+}

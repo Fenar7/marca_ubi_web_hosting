@@ -11,8 +11,19 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import type { ClientWorkItem, ClientWorkDeliveryStage, ClientWorkHealthStatus } from '@/types/crm';
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
+import Link from 'next/link';
+import type {
+  ClientWorkItem,
+  ClientWorkDeliveryStage,
+  ClientWorkHealthStatus,
+} from '@/types/crm';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import {
   updateClientWorkMilestoneAction,
@@ -25,35 +36,117 @@ import styles from './WorksWorkspaceClient.module.scss';
 interface WorksWorkspaceClientProps {
   initialWorks: ClientWorkItem[];
   userRole?: string;
-  profiles?: Array<{ id: string; full_name: string; email?: string; role?: string }>;
+  profiles?: Array<{
+    id: string;
+    full_name: string;
+    email?: string;
+    role?: string;
+  }>;
   directoryAvailable?: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  return formatCrmCurrency(amount);
+  userId?: string;
+  sample?: boolean;
+  canOpenDeals?: boolean;
 }
 
 const STAGE_OPTIONS: Array<{ key: ClientWorkDeliveryStage; label: string }> = [
-  { key: 'kickoff', label: '1. Kickoff & Alignment' },
-  { key: 'strategy', label: '2. Brand Strategy' },
-  { key: 'design_ui_ux', label: '3. UI/UX Design' },
-  { key: 'development', label: '4. Production Build' },
-  { key: 'review_qa', label: '5. Client QA & Review' },
-  { key: 'delivered', label: '6. Delivered & Complete' },
+  { key: 'kickoff', label: 'Kickoff' },
+  { key: 'strategy', label: 'Strategy' },
+  { key: 'design_ui_ux', label: 'Design' },
+  { key: 'development', label: 'Development' },
+  { key: 'review_qa', label: 'QA and review' },
+  { key: 'delivered', label: 'Delivered' },
 ];
 
-const HEALTH_LABELS: Record<ClientWorkHealthStatus, { label: string; className: string }> = {
-  on_track: { label: 'On Track', className: styles.healthOnTrack },
-  at_risk: { label: 'At Risk', className: styles.healthAtRisk },
-  blocked: { label: 'Blocked', className: styles.healthBlocked },
-  completed: { label: 'Delivered', className: styles.healthCompleted },
+const HEALTH_LABELS: Record<ClientWorkHealthStatus, string> = {
+  on_track: 'On track',
+  at_risk: 'At risk',
+  blocked: 'Blocked',
+  completed: 'Completed',
 };
+const HEALTH_OPTIONS = Object.entries(HEALTH_LABELS);
+const dateFormat = new Intl.DateTimeFormat('en-IN', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+const iconPath = {
+  arrow: 'M5 12h14m-5-5 5 5-5 5',
+  calendar: 'M4 5h16v15H4zM4 10h16M8 3v4m8-4v4',
+  chevron: 'm6 9 6 6 6-6',
+  alert: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5v5m0 4h.01',
+  folder:
+    'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2M3 7v11a1 1 0 0 0 1 1h14l4-8H6l-3 7',
+  search: 'M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm4.5 11 5 5',
+  close: 'm6 6 12 12M6 18 18 6',
+};
+
+function WorksIcon({
+  name,
+  size,
+  className,
+}: {
+  name: keyof typeof iconPath;
+  size: number;
+  className?: string;
+}): React.ReactElement {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={iconPath[name]} />
+    </svg>
+  );
+}
+
+/** Date-only delivery commitments use UTC so the displayed day survives hydration and timezone changes. */
+function projectDate(value: string | null, fallback: string): React.ReactNode {
+  const date = new Date(value ?? '');
+  return Number.isFinite(date.getTime()) ? (
+    <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time>
+  ) : (
+    fallback
+  );
+}
+
+/** Mirrors the server's role and portfolio gate for UI affordances. Server actions still authorize every write. */
+function canEditProject(
+  work: ClientWorkItem,
+  role?: string,
+  userId?: string,
+  sample = false,
+): boolean {
+  return (
+    !sample &&
+    !!role &&
+    role !== 'viewer' &&
+    (role === 'admin' ||
+      role === 'sales_manager' ||
+      Boolean(
+        userId &&
+        (work.creative_lead_id === userId || work.tech_lead_id === userId),
+      ))
+  );
+}
 
 export function WorksWorkspaceClient({
   initialWorks,
   userRole,
   profiles = [],
   directoryAvailable = true,
+  userId,
+  sample = false,
+  canOpenDeals = false,
 }: WorksWorkspaceClientProps): React.ReactElement {
   const [works, setWorks] = useState<ClientWorkItem[]>(initialWorks);
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +155,9 @@ export function WorksWorkspaceClient({
   const [expandedWorkId, setExpandedWorkId] = useState<string | null>(null);
 
   // Directorial Assignment Dialog State
-  const [assigningWork, setAssigningWork] = useState<ClientWorkItem | null>(null);
+  const [assigningWork, setAssigningWork] = useState<ClientWorkItem | null>(
+    null,
+  );
   const [selectedCreativeLead, setSelectedCreativeLead] = useState<string>('');
   const [selectedTechLead, setSelectedTechLead] = useState<string>('');
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
@@ -89,20 +184,22 @@ export function WorksWorkspaceClient({
     setWorks(initialWorks);
   }, [initialWorks]);
 
-  // Handle Escape key dismissal for directorial assignment modal
+  const directorDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    if (!assigningWork) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setAssigningWork(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const dialog = directorDialog.current;
+    if (assigningWork && dialog && !dialog.open) dialog.showModal();
   }, [assigningWork]);
-
-  const isViewer = userRole === 'viewer';
-  const canAssignDirectors = directoryAvailable && (userRole === 'admin' || userRole === 'sales_manager');
+  const canAssignDirectors =
+    !sample &&
+    directoryAvailable &&
+    (userRole === 'admin' || userRole === 'sales_manager');
+  const hasFilters = Boolean(
+    searchTerm.trim() || selectedHealth !== 'all' || selectedStage !== 'all',
+  );
+  const attention = [
+    ...works.filter((work) => work.health_status === 'blocked'),
+    ...works.filter((work) => work.health_status === 'at_risk'),
+  ];
 
   const filteredWorks = useMemo(() => {
     return works.filter((work) => {
@@ -114,28 +211,40 @@ export function WorksWorkspaceClient({
         (work.company && work.company.toLowerCase().includes(q)) ||
         work.service_scope.toLowerCase().includes(q);
 
-      const matchesHealth = selectedHealth === 'all' || work.health_status === selectedHealth;
-      const matchesStage = selectedStage === 'all' || work.delivery_stage === selectedStage;
+      const matchesHealth =
+        selectedHealth === 'all' || work.health_status === selectedHealth;
+      const matchesStage =
+        selectedStage === 'all' || work.delivery_stage === selectedStage;
 
       return matchesSearch && matchesHealth && matchesStage;
     });
   }, [works, searchTerm, selectedHealth, selectedStage]);
 
-  const deliverySummary = useMemo(() => ({
-    loaded: works.length,
-    attention: works.filter((work) => work.health_status === 'at_risk' || work.health_status === 'blocked').length,
-    delivered: works.filter((work) => work.health_status === 'completed').length,
-  }), [works]);
+  const deliverySummary = useMemo(
+    () => ({
+      loaded: works.length,
+      delivered: works.filter((work) => work.health_status === 'completed')
+        .length,
+    }),
+    [works],
+  );
 
   /**
    * Toggles milestone status between pending and completed with single-item rollback.
    */
   const handleToggleMilestone = useCallback(
-    async (workId: string, milestoneId: string, currentStatus: string): Promise<void> => {
-      if (isViewer) return;
-
+    async (
+      workId: string,
+      milestoneId: string,
+      currentStatus: string,
+    ): Promise<void> => {
       const currentItem = works.find((w) => w.id === workId);
-      if (!currentItem || !beginUpdate(workId)) return;
+      if (
+        !currentItem ||
+        !canEditProject(currentItem, userRole, userId, sample) ||
+        !beginUpdate(workId)
+      )
+        return;
       const previousMilestones = currentItem.milestones;
 
       const nextStatus: 'pending' | 'completed' =
@@ -150,15 +259,18 @@ export function WorksWorkspaceClient({
               ? {
                   ...m,
                   status: nextStatus,
-                  completed_at: nextStatus === 'completed' ? new Date().toISOString() : null,
+                  completed_at:
+                    nextStatus === 'completed'
+                      ? new Date().toISOString()
+                      : null,
                 }
-              : m
+              : m,
           );
           return {
             ...item,
             milestones: updatedMilestones,
           };
-        })
+        }),
       );
 
       const result = await updateClientWorkMilestoneAction({
@@ -167,33 +279,49 @@ export function WorksWorkspaceClient({
         status: nextStatus,
       }).catch((error: unknown) => {
         console.error('[works] Milestone update failed:', error);
-        return { success: false, error: 'Unable to update this milestone. Please try again.' };
+        return {
+          success: false,
+          error: 'Unable to update this milestone. Please try again.',
+        };
       });
 
       if (!result.success) {
         // Targeted rollback for this project only
         setWorks((prev) =>
           prev.map((item) =>
-            item.id === workId ? { ...item, milestones: previousMilestones } : item
-          )
+            item.id === workId
+              ? { ...item, milestones: previousMilestones }
+              : item,
+          ),
         );
-        console.error('[WorksWorkspaceClient] Milestone update failed:', result.error);
-        setWorkError(result.error || 'Unable to update this milestone. Please try again.');
+        console.error(
+          '[WorksWorkspaceClient] Milestone update failed:',
+          result.error,
+        );
+        setWorkError(
+          result.error || 'Unable to update this milestone. Please try again.',
+        );
       }
       endUpdate(workId);
     },
-    [works, isViewer, beginUpdate, endUpdate]
+    [works, userRole, userId, sample, beginUpdate, endUpdate],
   );
 
   /**
    * Updates delivery stage for a client work with single-item rollback.
    */
   const handleChangeStage = useCallback(
-    async (workId: string, newStage: ClientWorkDeliveryStage): Promise<void> => {
-      if (isViewer) return;
-
+    async (
+      workId: string,
+      newStage: ClientWorkDeliveryStage,
+    ): Promise<void> => {
       const currentItem = works.find((w) => w.id === workId);
-      if (!currentItem || !beginUpdate(workId)) return;
+      if (
+        !currentItem ||
+        !canEditProject(currentItem, userRole, userId, sample) ||
+        !beginUpdate(workId)
+      )
+        return;
       const previousStage = currentItem.delivery_stage;
       const previousHealth = currentItem.health_status;
 
@@ -204,9 +332,10 @@ export function WorksWorkspaceClient({
           return {
             ...item,
             delivery_stage: newStage,
-            health_status: newStage === 'delivered' ? 'completed' : item.health_status,
+            health_status:
+              newStage === 'delivered' ? 'completed' : item.health_status,
           };
-        })
+        }),
       );
 
       const result = await updateClientWorkStageAction({
@@ -214,7 +343,10 @@ export function WorksWorkspaceClient({
         stage: newStage,
       }).catch((error: unknown) => {
         console.error('[works] Stage update failed:', error);
-        return { success: false, error: 'Unable to update the project stage. Please try again.' };
+        return {
+          success: false,
+          error: 'Unable to update the project stage. Please try again.',
+        };
       });
 
       if (!result.success) {
@@ -222,27 +354,43 @@ export function WorksWorkspaceClient({
         setWorks((prev) =>
           prev.map((item) =>
             item.id === workId
-              ? { ...item, delivery_stage: previousStage, health_status: previousHealth }
-              : item
-          )
+              ? {
+                  ...item,
+                  delivery_stage: previousStage,
+                  health_status: previousHealth,
+                }
+              : item,
+          ),
         );
-        console.error('[WorksWorkspaceClient] Stage transition failed:', result.error);
-        setWorkError(result.error || 'Unable to update the project stage. Please try again.');
+        console.error(
+          '[WorksWorkspaceClient] Stage transition failed:',
+          result.error,
+        );
+        setWorkError(
+          result.error ||
+            'Unable to update the project stage. Please try again.',
+        );
       }
       endUpdate(workId);
     },
-    [works, isViewer, beginUpdate, endUpdate]
+    [works, userRole, userId, sample, beginUpdate, endUpdate],
   );
 
   /**
    * Updates operational health status for a client work with single-item rollback.
    */
   const handleChangeHealth = useCallback(
-    async (workId: string, newHealth: ClientWorkHealthStatus): Promise<void> => {
-      if (isViewer) return;
-
+    async (
+      workId: string,
+      newHealth: ClientWorkHealthStatus,
+    ): Promise<void> => {
       const currentItem = works.find((w) => w.id === workId);
-      if (!currentItem || !beginUpdate(workId)) return;
+      if (
+        !currentItem ||
+        !canEditProject(currentItem, userRole, userId, sample) ||
+        !beginUpdate(workId)
+      )
+        return;
       const previousHealth = currentItem.health_status;
 
       // Targeted optimistic update
@@ -253,7 +401,7 @@ export function WorksWorkspaceClient({
             ...item,
             health_status: newHealth,
           };
-        })
+        }),
       );
 
       const result = await updateClientWorkHealthAction({
@@ -261,25 +409,36 @@ export function WorksWorkspaceClient({
         healthStatus: newHealth,
       }).catch((error: unknown) => {
         console.error('[works] Health update failed:', error);
-        return { success: false, error: 'Unable to update project health. Please try again.' };
+        return {
+          success: false,
+          error: 'Unable to update project health. Please try again.',
+        };
       });
 
       if (!result.success) {
         // Targeted rollback
         setWorks((prev) =>
           prev.map((item) =>
-            item.id === workId ? { ...item, health_status: previousHealth } : item
-          )
+            item.id === workId
+              ? { ...item, health_status: previousHealth }
+              : item,
+          ),
         );
-        console.error('[WorksWorkspaceClient] Health status update failed:', result.error);
-        setWorkError(result.error || 'Unable to update project health. Please try again.');
+        console.error(
+          '[WorksWorkspaceClient] Health status update failed:',
+          result.error,
+        );
+        setWorkError(
+          result.error || 'Unable to update project health. Please try again.',
+        );
       }
       endUpdate(workId);
     },
-    [works, isViewer, beginUpdate, endUpdate]
+    [works, userRole, userId, sample, beginUpdate, endUpdate],
   );
 
   const handleOpenDirectorModal = (work: ClientWorkItem): void => {
+    if (!canAssignDirectors) return;
     setAssigningWork(work);
     setSelectedCreativeLead(work.creative_lead_id || '');
     setSelectedTechLead(work.tech_lead_id || '');
@@ -288,7 +447,8 @@ export function WorksWorkspaceClient({
 
   const handleSaveDirectors = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!assigningWork) return;
+    if (!assigningWork || !canAssignDirectors || !beginUpdate(assigningWork.id))
+      return;
 
     setIsAssigning(true);
     setAssignError(null);
@@ -302,10 +462,14 @@ export function WorksWorkspaceClient({
       techLeadId: tLeadId,
     }).catch((error: unknown) => {
       console.error('[works] Director assignment failed:', error);
-      return { success: false, error: 'Unable to assign directors. Please try again.' };
+      return {
+        success: false,
+        error: 'Unable to assign directors. Please try again.',
+      };
     });
 
     setIsAssigning(false);
+    endUpdate(assigningWork.id);
 
     if (!res.success) {
       setAssignError(res.error || 'Failed to assign project directors.');
@@ -323,457 +487,539 @@ export function WorksWorkspaceClient({
                 creative_lead: cLead ? { full_name: cLead.full_name } : null,
                 tech_lead: tLead ? { full_name: tLead.full_name } : null,
               }
-            : item
-        )
+            : item,
+        ),
       );
-      setAssigningWork(null);
+      directorDialog.current?.close();
     }
   };
 
+  /** Clear every list control in one operation so the filtered-empty state has a predictable recovery. */
+  function resetFilters(): void {
+    setSearchTerm('');
+    setSelectedHealth('all');
+    setSelectedStage('all');
+  }
+
   return (
     <div className={styles.clientContainer}>
-      {workError && <p className={styles.actionError} role="alert">{workError}</p>}
-      <section className={styles.deliverySummary} aria-label="Loaded delivery portfolio">
-        <div className={styles.deliverySummaryIntro}>
-          <span>Delivery portfolio</span>
-          <p>Counts reflect the project records loaded for your access.</p>
+      {sample && (
+        <div className={styles.sampleBanner}>
+          <span>
+            <strong>Sample portfolio</strong> · Fictional projects, read-only
+          </span>
+          <Link href="/admin/works?sample=0">
+            Back to live projects{' '}
+            <WorksIcon name="arrow" size={14} aria-hidden="true" />
+          </Link>
         </div>
-        <dl className={styles.deliverySummaryMetrics}>
-          <div><dt>Loaded projects</dt><dd>{deliverySummary.loaded.toLocaleString('en-IN')}</dd></div>
-          <div><dt>At risk or blocked</dt><dd>{deliverySummary.attention.toLocaleString('en-IN')}</dd></div>
-          <div><dt>Delivered</dt><dd>{deliverySummary.delivered.toLocaleString('en-IN')}</dd></div>
-        </dl>
-      </section>
-      {/* Search & Filter Toolbar */}
-      <div className={styles.toolbar}>
-        <div className={styles.searchWrapper}>
-          <svg
-            className={styles.searchIcon}
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+      )}
+      {workError && (
+        <p className={styles.actionError} role="alert">
+          {workError}
+        </p>
+      )}
+      {works.length > 0 && (
+        <section className={styles.overview} aria-label="Delivery overview">
+          <div className={styles.pipeline}>
+            <header>
+              <h2>Delivery pipeline</h2>
+              <span>
+                {deliverySummary.loaded} loaded · {deliverySummary.delivered}{' '}
+                completed
+              </span>
+            </header>
+            <div className={styles.stageRail}>
+              {STAGE_OPTIONS.map(({ key, label }) => {
+                const count = works.filter(
+                  (work) => work.delivery_stage === key,
+                ).length;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={selectedStage === key}
+                    onClick={() =>
+                      setSelectedStage(selectedStage === key ? 'all' : key)
+                    }
+                  >
+                    <strong>{count}</strong>
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <aside
+            className={styles.attention}
+            aria-labelledby="delivery-attention"
           >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Search projects by client, project code (PRJ-1001), or scope..."
-            aria-label="Search projects by client, project code, or service"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <div className={styles.filterPills}>
-          <button
-            type="button"
-            className={`${styles.filterPill} ${selectedHealth === 'all' ? styles.filterPillActive : ''}`}
-            onClick={() => setSelectedHealth('all')}
-            aria-pressed={selectedHealth === 'all'}
-          >
-            All Projects ({works.length})
-          </button>
-          <button
-            type="button"
-            className={`${styles.filterPill} ${selectedHealth === 'on_track' ? styles.filterPillActive : ''}`}
-            onClick={() => setSelectedHealth('on_track')}
-            aria-pressed={selectedHealth === 'on_track'}
-          >
-            On Track
-          </button>
-          <button
-            type="button"
-            className={`${styles.filterPill} ${selectedHealth === 'at_risk' ? styles.filterPillActive : ''}`}
-            onClick={() => setSelectedHealth('at_risk')}
-            aria-pressed={selectedHealth === 'at_risk'}
-          >
-            At Risk
-          </button>
-          <button
-            type="button"
-            className={`${styles.filterPill} ${selectedHealth === 'blocked' ? styles.filterPillActive : ''}`}
-            onClick={() => setSelectedHealth('blocked')}
-            aria-pressed={selectedHealth === 'blocked'}
-          >
-            Blocked
-          </button>
-          <button
-            type="button"
-            className={`${styles.filterPill} ${selectedHealth === 'completed' ? styles.filterPillActive : ''}`}
-            onClick={() => setSelectedHealth('completed')}
-            aria-pressed={selectedHealth === 'completed'}
-          >
-            Delivered
-          </button>
-        </div>
-
-        <div className={styles.stageFilterGroup}>
-          <span className={styles.filterLabel}>Stage:</span>
-          {[
-            { key: 'all', label: 'All' },
-            { key: 'kickoff', label: 'Kickoff' },
-            { key: 'strategy', label: 'Strategy' },
-            { key: 'design_ui_ux', label: 'UI/UX' },
-            { key: 'development', label: 'Development' },
-            { key: 'review_qa', label: 'QA' },
-            { key: 'delivered', label: 'Delivered' },
-          ].map((stg) => (
-            <button
-              key={stg.key}
-              type="button"
-              className={`${styles.stagePillBtn} ${selectedStage === stg.key ? styles.stagePillBtnActive : ''}`}
-              onClick={() => setSelectedStage(stg.key)}
-              aria-pressed={selectedStage === stg.key}
-            >
-              {stg.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.resultsHeading}>
-        <h2>Projects</h2>
-        <span>{filteredWorks.length.toLocaleString('en-IN')} shown</span>
-      </div>
-
-      {/* Project rows keep stage, health, ownership, and milestone actions together. */}
-      {filteredWorks.length === 0 ? (
-        <div className={styles.emptyCard}>
-          <p className={styles.emptyTitle}>No matching client engagements</p>
-          <p className={styles.emptySub}>
-            Adjust your search query or stage filters to review active delivery contracts.
-          </p>
-        </div>
-      ) : (
-        <div className={styles.worksGrid}>
-          {filteredWorks.map((work) => {
-            const healthConfig = HEALTH_LABELS[work.health_status] || HEALTH_LABELS.on_track;
-            const completedMilestones = work.milestones.filter((m) => m.status === 'completed').length;
-            const totalMilestones = work.milestones.length;
-            const progressPercent = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
-            const isMilestoneExpanded = expandedWorkId === work.id;
-
-            return (
-              <article key={work.id} className={styles.workCard}>
-                {/* Top Card Identity Bar */}
-                <div className={styles.cardHeader}>
-                  <div className={styles.projectIdentity}>
-                    <span className={styles.projectCode}>{work.project_code}</span>
-                    <span className={styles.contractValue}>{formatCurrency(work.contract_value)}</span>
-                  </div>
-
-                  <div className={styles.healthSelectWrapper}>
-                    {isViewer ? (
-                      <span className={`${styles.healthBadge} ${healthConfig.className}`}>
-                        <span className={styles.statusDot} />
-                        {healthConfig.label}
-                      </span>
-                    ) : (
-                      <select
-                        className={`${styles.healthSelect} ${healthConfig.className}`}
-                        value={work.health_status}
-                        disabled={pendingWorks.has(work.id)}
-                        onChange={(e) => handleChangeHealth(work.id, e.target.value as ClientWorkHealthStatus)}
-                        aria-label={`Update operational health for ${work.project_code}`}
-                      >
-                        <option value="on_track">On Track</option>
-                        <option value="at_risk">At Risk</option>
-                        <option value="blocked">Blocked</option>
-                        <option value="completed">Delivered</option>
-                      </select>
-                    )}
-                  </div>
-                </div>
-
-                {/* Client & Scope Description */}
-                <div className={styles.clientDetails}>
-                  <h3 className={styles.clientTitle}>{work.client_name}</h3>
-                  <span className={styles.companyName}>{work.company || 'Private Account'}</span>
-                  <span className={styles.serviceScope}>{work.service_scope}</span>
-                </div>
-
-                {/* Production Stage Selector & Progress Bar */}
-                <div className={styles.stageBlock}>
-                  <div className={styles.stageHeaderRow}>
-                    <div className={styles.stageLabelArea}>
-                      <span className={styles.stageCaption}>Production Stage</span>
-                    </div>
-
-                    {isViewer ? (
-                      <span className={styles.stageReadout}>
-                        {STAGE_OPTIONS.find((s) => s.key === work.delivery_stage)?.label || work.delivery_stage}
-                      </span>
-                    ) : (
-                      <select
-                        className={styles.stageSelect}
-                        value={work.delivery_stage}
-                        disabled={pendingWorks.has(work.id)}
-                        onChange={(e) => handleChangeStage(work.id, e.target.value as ClientWorkDeliveryStage)}
-                        aria-label={`Advance production delivery stage for ${work.project_code}`}
-                      >
-                        {STAGE_OPTIONS.map((opt) => (
-                          <option key={opt.key} value={opt.key}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-
-                  {/* Milestone Progress Meter */}
-                  <div className={styles.meterContainer}>
-                    <div className={styles.meterTrack}>
-                      <div
-                        className={styles.meterFill}
-                        style={{ width: `${progressPercent}%` }}
-                        aria-valuenow={progressPercent}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label="Milestone completion progress"
-                        role="progressbar"
-                      />
-                    </div>
-                    <span className={styles.meterText}>
-                      {completedMilestones}/{totalMilestones} Milestones ({progressPercent}%)
-                    </span>
-                  </div>
-                </div>
-
-                {/* Interactive Milestone Completion Checklist */}
-                <div className={styles.milestonesContainer}>
-                  <div className={styles.milestonesHeader}>
-                    <span className={styles.milestonesSectionTitle}>Milestone Deliverables</span>
+            <h2 id="delivery-attention">
+              <WorksIcon name="alert" size={17} aria-hidden="true" /> Needs
+              attention <span>{attention.length}</span>
+            </h2>
+            {attention.length ? (
+              <ul>
+                {attention.slice(0, 3).map((work) => (
+                  <li key={work.id}>
                     <button
                       type="button"
-                      className={styles.stagePillBtn}
-                      onClick={() => setExpandedWorkId(isMilestoneExpanded ? null : work.id)}
-                      aria-expanded={isMilestoneExpanded}
+                      onClick={() => {
+                        resetFilters();
+                        setExpandedWorkId(work.id);
+                        window.requestAnimationFrame(() => {
+                          const trigger = document.getElementById(
+                            'project-toggle-' + work.id,
+                          );
+                          trigger?.scrollIntoView({ block: 'nearest' });
+                          trigger?.focus({ preventScroll: true });
+                        });
+                      }}
                     >
-                      {isMilestoneExpanded ? 'Hide Checklist' : `Checklist (${completedMilestones}/${totalMilestones})`}
-                    </button>
-                  </div>
-
-                  {isMilestoneExpanded && (
-                    <div className={styles.milestonesList} role="group" aria-label="Milestone checklist">
-                      {work.milestones.map((m) => {
-                        const isCompleted = m.status === 'completed';
-                        const isInProgress = m.status === 'in_progress';
-
-                        return (
-                          <button
-                            key={m.id}
-                            type="button"
-                            className={`${styles.milestoneItem} ${isCompleted ? styles.milestoneItemCompleted : ''}`}
-                            onClick={() => handleToggleMilestone(work.id, m.id, m.status)}
-                            role="checkbox"
-                            aria-checked={isCompleted}
-                            disabled={isViewer || pendingWorks.has(work.id)}
-                          >
-                            <span
-                              className={`${styles.milestoneCheckbox} ${
-                                isCompleted
-                                  ? styles.milestoneCheckboxChecked
-                                  : isInProgress
-                                  ? styles.milestoneCheckboxInProgress
-                                  : ''
-                              }`}
-                              aria-hidden="true"
-                            >
-                              {isCompleted ? (
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width="12"
-                                  height="12"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="3"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                              ) : isInProgress ? (
-                                <svg viewBox="0 0 24 24" width="8" height="8" fill="currentColor">
-                                  <circle cx="12" cy="12" r="5" />
-                                </svg>
-                              ) : null}
-                            </span>
-                            <span
-                              className={`${styles.milestoneTitle} ${
-                                isCompleted ? styles.milestoneTitleCompleted : ''
-                              }`}
-                            >
-                              {m.title}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Director Ownership Governance & Dates */}
-                <div className={styles.cardFooter}>
-                  <div className={styles.directorsArea}>
-                    {work.creative_lead && (
-                      <span className={styles.directorBadge} title="Creative Director">
-                        CD: {work.creative_lead.full_name}
-                      </span>
-                    )}
-                    {work.tech_lead && (
-                      <span className={styles.directorBadge} title="Technical Director">
-                        TD: {work.tech_lead.full_name}
-                      </span>
-                    )}
-                    {!work.creative_lead && !work.tech_lead && (
-                      <span className={styles.unassignedDirector}>Directors Pending</span>
-                    )}
-                    {canAssignDirectors && (
-                      <button
-                        type="button"
-                        className={styles.assignDirectorsBtn}
-                        onClick={() => handleOpenDirectorModal(work)}
-                        aria-label={`Assign directors for ${work.project_code}`}
+                      <span>{work.company || work.client_name}</span>
+                      <span
+                        className={styles.health}
+                        data-health={work.health_status}
                       >
-                        Assign
-                      </button>
-                    )}
-                  </div>
-
-                  <span className={styles.kickoffDate}>
-                    Kickoff: {new Date(work.kickoff_date).toLocaleDateString('en-IN', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Directorial Assignment Modal Dialog */}
-      {assigningWork && (
-        <div
-          className={styles.directorModalBackdrop}
-          onClick={() => setAssigningWork(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="assign-directors-title"
-        >
-          <div
-            className={styles.directorModalCard}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.directorModalHeader}>
-              <h3 id="assign-directors-title" className={styles.directorModalTitle}>
-                Assign Project Directors.
-              </h3>
-              <button
-                type="button"
-                className={styles.directorModalClose}
-                onClick={() => setAssigningWork(null)}
-                aria-label="Close dialog"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="14"
-                  height="14"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveDirectors} className={styles.directorModalBody}>
-              <p className={styles.directorModalSubtitle}>
-                {assigningWork.project_code} • {assigningWork.client_name} ({assigningWork.company || 'Private'})
-              </p>
-
-              {assignError && (
-                <div className={styles.directorModalError} role="alert">
-                  {assignError}
-                </div>
-              )}
-
-              <div className={styles.directorFormGroup}>
-                <label htmlFor="select-creative-director" className={styles.directorLabel}>
-                  Creative Director
-                </label>
-                <select
-                  id="select-creative-director"
-                  className={styles.directorSelect}
-                  value={selectedCreativeLead}
-                  onChange={(e) => setSelectedCreativeLead(e.target.value)}
-                  disabled={isAssigning}
-                >
-                  <option value="">Unassigned</option>
-                  {profiles.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.full_name} ({p.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.directorFormGroup}>
-                <label htmlFor="select-technical-director" className={styles.directorLabel}>
-                  Technical Director
-                </label>
-                <select
-                  id="select-technical-director"
-                  className={styles.directorSelect}
-                  value={selectedTechLead}
-                  onChange={(e) => setSelectedTechLead(e.target.value)}
-                  disabled={isAssigning}
-                >
-                  <option value="">Unassigned</option>
-                  {profiles.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.full_name} ({p.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.directorModalActions}>
+                        {HEALTH_LABELS[work.health_status]}
+                      </span>
+                      <WorksIcon name="arrow" size={15} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No blocked or at-risk projects.</p>
+            )}
+            {attention.length > 3 && (
+              <div className={styles.attentionFilters}>
                 <button
                   type="button"
-                  className={styles.directorCancelBtn}
-                  onClick={() => setAssigningWork(null)}
-                  disabled={isAssigning}
+                  onClick={() => {
+                    resetFilters();
+                    setSelectedHealth('blocked');
+                  }}
                 >
-                  Cancel
+                  View blocked
                 </button>
                 <button
-                  type="submit"
-                  className={styles.directorSubmitBtn}
-                  disabled={isAssigning}
+                  type="button"
+                  onClick={() => {
+                    resetFilters();
+                    setSelectedHealth('at_risk');
+                  }}
                 >
-                  {isAssigning ? 'Saving...' : 'Save Directors'}
+                  View at risk
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
+            )}
+          </aside>
+        </section>
       )}
+
+      <section className={styles.register} aria-labelledby="project-register">
+        <header className={styles.registerHeading}>
+          <h2 id="project-register">Projects</h2>
+          <span role="status">
+            {filteredWorks.length} of {works.length} shown
+          </span>
+        </header>
+        {works.length > 0 && (
+          <div className={styles.toolbar}>
+            <label className={styles.search}>
+              <WorksIcon name="search" size={17} aria-hidden="true" />
+              <span className={styles.srOnly}>Search projects</span>
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search client, project, or scope"
+              />
+            </label>
+            <div className={styles.filters}>
+              <label>
+                <span className={styles.srOnly}>Project health</span>
+                <select
+                  value={selectedHealth}
+                  onChange={(event) => setSelectedHealth(event.target.value)}
+                >
+                  <option value="all">Any health</option>
+                  {HEALTH_OPTIONS.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className={styles.srOnly}>Delivery stage</span>
+                <select
+                  value={selectedStage}
+                  onChange={(event) => setSelectedStage(event.target.value)}
+                >
+                  <option value="all">All stages</option>
+                  {STAGE_OPTIONS.map(({ key, label }) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {hasFilters && (
+                <button type="button" onClick={resetFilters}>
+                  Clear filters
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {filteredWorks.length === 0 ? (
+          <div className={styles.empty}>
+            <WorksIcon name="folder" size={24} aria-hidden="true" />
+            <h3>
+              {hasFilters ? 'No matching projects' : 'No client projects yet'}
+            </h3>
+            <p>
+              {hasFilters
+                ? 'Try a different search or clear the filters.'
+                : 'When a deal converts, its delivery project will appear here.'}
+            </p>
+            {hasFilters ? (
+              <button type="button" onClick={resetFilters}>
+                Clear filters
+              </button>
+            ) : (
+              canOpenDeals && (
+                <Link href="/admin/deals">
+                  Open Deals{' '}
+                  <WorksIcon name="arrow" size={16} aria-hidden="true" />
+                </Link>
+              )
+            )}
+          </div>
+        ) : (
+          <div className={styles.projectList}>
+            {filteredWorks.map((work) => {
+              const finished = work.milestones.filter(
+                (milestone) => milestone.status === 'completed',
+              ).length;
+              const total = work.milestones.length;
+              const stageLabel =
+                STAGE_OPTIONS.find(({ key }) => key === work.delivery_stage)
+                  ?.label ?? work.delivery_stage;
+              const expanded = expandedWorkId === work.id;
+              const editable = canEditProject(work, userRole, userId, sample);
+              const busy = pendingWorks.has(work.id);
+              const title = work.company || work.client_name;
+              return (
+                <article
+                  key={work.id}
+                  aria-label={title}
+                  aria-busy={busy}
+                  className={styles.project}
+                >
+                  <button
+                    type="button"
+                    id={'project-toggle-' + work.id}
+                    className={styles.projectRow}
+                    aria-expanded={expanded}
+                    aria-controls={'project-panel-' + work.id}
+                    onClick={() => setExpandedWorkId(expanded ? null : work.id)}
+                  >
+                    <span className={styles.projectIdentity}>
+                      <span className={styles.projectCode}>
+                        {work.project_code}
+                      </span>
+                      <strong>{title}</strong>
+                      <span>{work.service_scope}</span>
+                    </span>
+                    <span className={styles.rowItem}>
+                      <span>Stage</span>
+                      <strong>{stageLabel}</strong>
+                    </span>
+                    <span className={styles.rowItem}>
+                      <span>Health</span>
+                      <strong
+                        className={styles.health}
+                        data-health={work.health_status}
+                      >
+                        {HEALTH_LABELS[work.health_status] || 'Unknown'}
+                      </strong>
+                    </span>
+                    <span className={styles.rowItem}>
+                      <span>Milestones</span>
+                      <strong>
+                        {total
+                          ? finished + ' of ' + total + ' done'
+                          : 'No milestones'}
+                      </strong>
+                    </span>
+                    <span className={styles.rowItem}>
+                      <span>
+                        <WorksIcon
+                          name="calendar"
+                          size={14}
+                          aria-hidden="true"
+                        />{' '}
+                        Target delivery
+                      </span>
+                      <strong>
+                        {projectDate(work.target_delivery_date, 'Not set')}
+                      </strong>
+                    </span>
+                    <WorksIcon
+                      name="chevron"
+                      className={styles.disclosureIcon}
+                      size={18}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <div
+                    id={'project-panel-' + work.id}
+                    className={styles.projectPanel}
+                    hidden={!expanded}
+                  >
+                    {expanded && (
+                      <>
+                        <section
+                          className={styles.checklist}
+                          aria-label="Milestones"
+                        >
+                          <h3>Milestones</h3>
+                          {total ? (
+                            <>
+                              <progress
+                                aria-label="Milestone completion"
+                                max={total}
+                                value={finished}
+                              />
+                              <ul>
+                                {work.milestones.map((milestone) => (
+                                  <li key={milestone.id}>
+                                    {editable ? (
+                                      <label>
+                                        <input
+                                          type="checkbox"
+                                          checked={
+                                            milestone.status === 'completed'
+                                          }
+                                          disabled={busy}
+                                          onChange={() =>
+                                            void handleToggleMilestone(
+                                              work.id,
+                                              milestone.id,
+                                              milestone.status,
+                                            )
+                                          }
+                                        />
+                                        {milestone.title}
+                                      </label>
+                                    ) : (
+                                      <span>{milestone.title}</span>
+                                    )}
+                                    <span
+                                      className={styles.milestoneStatus}
+                                      data-status={milestone.status}
+                                    >
+                                      {milestone.status === 'completed'
+                                        ? 'Done'
+                                        : milestone.status === 'in_progress'
+                                          ? 'In progress'
+                                          : 'Pending'}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          ) : (
+                            <p>No milestones have been recorded.</p>
+                          )}
+                        </section>
+                        <section
+                          className={styles.projectMeta}
+                          aria-label="Project information"
+                        >
+                          <h3>Project information</h3>
+                          <dl>
+                            <div>
+                              <dt>Client contact</dt>
+                              <dd>{work.client_name}</dd>
+                            </div>
+                            <div>
+                              <dt>Creative director</dt>
+                              <dd>
+                                {work.creative_lead?.full_name ??
+                                  (work.creative_lead_id
+                                    ? 'Name unavailable'
+                                    : 'Unassigned')}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Technical director</dt>
+                              <dd>
+                                {work.tech_lead?.full_name ??
+                                  (work.tech_lead_id
+                                    ? 'Name unavailable'
+                                    : 'Unassigned')}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Kickoff</dt>
+                              <dd>
+                                {projectDate(work.kickoff_date, 'Not set')}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Contract value</dt>
+                              <dd>{formatCrmCurrency(work.contract_value)}</dd>
+                            </div>
+                          </dl>
+                          {editable && (
+                            <div className={styles.editControls}>
+                              <label>
+                                Delivery stage
+                                <select
+                                  value={work.delivery_stage}
+                                  disabled={busy}
+                                  onChange={(event) =>
+                                    void handleChangeStage(
+                                      work.id,
+                                      event.target
+                                        .value as ClientWorkDeliveryStage,
+                                    )
+                                  }
+                                >
+                                  {STAGE_OPTIONS.map(({ key, label }) => (
+                                    <option value={key} key={key}>
+                                      {label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              <label>
+                                Project health
+                                <select
+                                  value={work.health_status}
+                                  disabled={busy}
+                                  onChange={(event) =>
+                                    void handleChangeHealth(
+                                      work.id,
+                                      event.target
+                                        .value as ClientWorkHealthStatus,
+                                    )
+                                  }
+                                >
+                                  {HEALTH_OPTIONS.map(([value, label]) => (
+                                    <option key={value} value={value}>
+                                      {label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            </div>
+                          )}
+                          {canAssignDirectors && (
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => handleOpenDirectorModal(work)}
+                            >
+                              Assign directors
+                            </button>
+                          )}
+                        </section>
+                      </>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <dialog
+        ref={directorDialog}
+        className={styles.directorDialog}
+        aria-labelledby="assign-directors-title"
+        onCancel={(event) => {
+          if (isAssigning) event.preventDefault();
+        }}
+        onClose={() => setAssigningWork(null)}
+      >
+        {assigningWork && (
+          <form onSubmit={handleSaveDirectors}>
+            <header>
+              <div>
+                <h2 id="assign-directors-title">Assign directors</h2>
+                <p>{assigningWork.company || assigningWork.client_name}</p>
+              </div>
+              <button
+                type="button"
+                disabled={isAssigning}
+                onClick={() => directorDialog.current?.close()}
+                aria-label="Close dialog"
+              >
+                <WorksIcon name="close" size={18} aria-hidden="true" />
+              </button>
+            </header>
+            {assignError && (
+              <p className={styles.actionError} role="alert">
+                {assignError}
+              </p>
+            )}
+            <label>
+              Creative director
+              <select
+                value={selectedCreativeLead}
+                onChange={(event) =>
+                  setSelectedCreativeLead(event.target.value)
+                }
+                disabled={isAssigning}
+              >
+                <option value="">Unassigned</option>
+                {profiles.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.full_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Technical director
+              <select
+                value={selectedTechLead}
+                onChange={(event) => setSelectedTechLead(event.target.value)}
+                disabled={isAssigning}
+              >
+                <option value="">Unassigned</option>
+                {profiles.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.full_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <footer>
+              <button
+                type="button"
+                disabled={isAssigning}
+                onClick={() => directorDialog.current?.close()}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isAssigning}
+                className={styles.primary}
+              >
+                {isAssigning ? 'Saving…' : 'Save directors'}
+              </button>
+            </footer>
+          </form>
+        )}
+      </dialog>
     </div>
   );
 }

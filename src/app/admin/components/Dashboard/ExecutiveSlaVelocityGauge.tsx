@@ -23,6 +23,7 @@
  */
 
 import React, { useId, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./ExecutiveSlaVelocityGauge.module.scss";
@@ -165,6 +166,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
   financials = true,
   onOpenRecord,
 }) => {
+  const router = useRouter();
   const gradientId = useId();
 
   // Aggregate metrics calculation with business invariants and cold-start resilience
@@ -326,7 +328,13 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           </p>
         </div>
 
-        <span
+        <button
+          type="button"
+          onClick={() =>
+            router.push(
+              metrics.overdueCount > 0 ? "/admin/tasks?queue=overdue" : "/admin/tasks"
+            )
+          }
           className={
             metrics.overdueCount > 0
               ? styles.alertBadge
@@ -335,17 +343,30 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
               : styles.healthyBadge
           }
           title={metrics.overdueCount > 0 ? "Requires Executive Action" : "Commitments On Target"}
+          aria-label={metrics.overdueCount > 0 ? "View overdue tasks" : "View all tasks"}
         >
           {metrics.overdueCount > 0
             ? `${metrics.overdueCount} Critical Overdue`
             : metrics.onTimePercentage < 90
             ? "Cadence Caution"
             : "Cadence Optimal"}
-        </span>
+        </button>
       </header>
 
       {/* 220° Clockwise Radial Horology Instrument Gauge */}
-      <div className={styles.gaugeStage}>
+      <div
+        className={styles.gaugeStage}
+        role="button"
+        tabIndex={0}
+        onClick={() => router.push("/admin/analytics")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            router.push("/admin/analytics");
+          }
+        }}
+        title="View SLA Delivery Analytics"
+        aria-label="SLA delivery gauge, click to view analytics"
+      >
         <svg
           viewBox="0 0 200 120"
           className={styles.gaugeSvg}
@@ -481,10 +502,15 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
 
       {/* Borderless Tabular Telemetry Matrix (Commandment 1: Anti-Bento Inception) */}
       <div className={styles.metricsStrip}>
-        <div className={styles.metricCell}>
+        <button
+          type="button"
+          className={styles.metricCellBtn}
+          onClick={() => router.push("/admin/tasks")}
+          aria-label="View active scope in tasks"
+        >
           <span className={styles.cellLabel}>Active Scope</span>
           <span className={styles.cellVal}>{metrics.totalMilestones} Milestones</span>
-        </div>
+        </button>
         <div className={styles.metricDivider} aria-hidden="true" />
         <div className={styles.metricCell}>
           <span className={styles.cellLabel}>Committed Value</span>
@@ -493,47 +519,72 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           </span>
         </div>
         <div className={styles.metricDivider} aria-hidden="true" />
-        <div className={styles.metricCell}>
+        <button
+          type="button"
+          className={styles.metricCellBtn}
+          onClick={() => router.push("/admin/tasks?queue=overdue")}
+          aria-label="View critical overdue tasks"
+        >
           <span className={styles.cellLabel}>Critical Overdue</span>
           <span
             className={metrics.overdueCount > 0 ? styles.cellValAlert : styles.cellValHealthy}
           >
             {metrics.overdueCount} Items
           </span>
-        </div>
+        </button>
       </div>
 
       {/* Interactive Milestone Dispatch CTA */}
       <footer className={styles.footerRow}>
-        <button
-          type="button"
-          onClick={handleActionClick}
-          disabled={!metrics.nextCriticalRecord}
-          className={`${styles.dispatchBtn} ${
-            metrics.overdueCount > 0 && metrics.nextCriticalRecord ? styles.dispatchBtnUrgent : ""
-          }`.trim()}
-          aria-label={
-            metrics.nextCriticalRecord
-              ? `Review milestone: ${metrics.nextCriticalRecord.name}`
-              : "All active milestones within specification"
-          }
-        >
-          <span>{actionButtonText}</span>
-          <svg
-            className={styles.btnChevron}
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        {metrics.nextCriticalRecord ? (
+          <button
+            type="button"
+            onClick={handleActionClick}
+            className={`${styles.dispatchBtn} ${
+              metrics.overdueCount > 0 ? styles.dispatchBtnUrgent : ""
+            }`.trim()}
+            aria-label={`Review milestone: ${metrics.nextCriticalRecord.name}`}
           >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
+            <span>{actionButtonText}</span>
+            <svg
+              className={styles.btnChevron}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => router.push("/admin/analytics")}
+            className={styles.dispatchBtn}
+            aria-label="Review SLA Delivery Log in analytics"
+          >
+            <span>Review SLA Delivery Log ↗</span>
+            <svg
+              className={styles.btnChevron}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        )}
       </footer>
     </article>
   );

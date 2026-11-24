@@ -65,6 +65,36 @@
   }
 }
 
+.viewAnalyticsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--admin-canvas-bg, #f5f5f3);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  margin-left: 6px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #111111;
+    background: #ebebe8;
+    border-color: #dcdcd8;
+
+    svg {
+      transform: translateX(1px);
+    }
+  }
+
+  svg {
+    transition: transform 0.15s ease;
+  }
+}
+
 .dropdownContainer {
   position: relative;
 }

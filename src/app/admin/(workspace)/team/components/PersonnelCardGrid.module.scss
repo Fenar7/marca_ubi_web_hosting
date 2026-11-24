@@ -1,22 +1,20 @@
 /**
  * @file PersonnelCardGrid.module.scss
- * @description PrimeStay-inspired 4-column responsive grid container with light luxury empty state.
+ * @description Marca Ubi Editorial Luxury 4-column responsive personnel grid container.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .gridContainer {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
 
-  @media (max-width: 1440px) {
-    grid-template-columns: repeat(3, 1fr);
+  @media (max-width: 1439px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @media (max-width: 640px) {
@@ -29,47 +27,54 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 1.5rem;
+  padding: 3.5rem 1.5rem;
   background: var(--admin-card-bg, #ffffff);
-  border: 1px dashed var(--admin-border-default, #e2e5ea);
-  border-radius: 16px;
+  border: 1px dashed var(--admin-border-default, #d8d8d4);
+  border-radius: 12px;
   text-align: center;
-  margin-bottom: 2rem;
 }
 
 .emptyIcon {
-  color: var(--admin-text-muted, #94a3b8);
-  margin-bottom: 1rem;
+  color: #8e8e88;
+  margin-bottom: 0.75rem;
 }
 
 .emptyTitle {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #0f172a);
-  margin: 0 0 0.5rem 0;
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+  margin: 0 0 0.4rem 0;
 }
 
 .emptyText {
-  font-size: 0.85rem;
-  color: var(--admin-text-secondary, #64748b);
+  font-size: 0.84rem;
+  color: #575753;
   max-width: 380px;
   margin: 0 0 1.25rem 0;
   line-height: 1.5;
 }
 
 .resetButton {
-  padding: 0.55rem 1.25rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
   background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
-  color: var(--admin-text-primary, #0f172a);
+  border: 1px solid #8e8e88;
+  color: var(--admin-text-primary, #111111);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: #efefed;
+    border-color: var(--admin-text-primary, #111111);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: 2px;
   }
 }

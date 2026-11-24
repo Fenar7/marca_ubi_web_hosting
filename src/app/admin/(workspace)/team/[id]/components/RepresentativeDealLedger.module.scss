@@ -1,22 +1,15 @@
-/**
- * @file RepresentativeDealLedger.module.scss
- * @description Linear Fluid table archetype styles for representative assigned deals.
- *              Enforces 44px touch targets, zero generic blue, and responsive reflow.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
 .ledgerCard {
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 12px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .ledgerHeader {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -24,63 +17,72 @@
 
 .titleRow {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
   flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .title {
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #0f172a);
-  letter-spacing: -0.01em;
+  font-family: var(--font-circular), sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+  letter-spacing: -0.015em;
 }
 
 .controlsRow {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
   flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
 }
 
 .bucketTabs {
   display: flex;
-  align-items: center;
   gap: 0.35rem;
-  background: #f8fafc;
+  background: var(--admin-bg-subtle, #efefed);
   padding: 0.25rem;
   border-radius: 8px;
-  border: 1px solid var(--admin-border-default, #e2e5ea);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  flex-wrap: wrap;
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
 }
 
 .tabButton {
   height: 44px;
   min-height: 44px;
-  padding: 0 0.85rem;
+  padding: 0 0.75rem;
   border: 1px solid transparent;
   background: transparent;
   border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--admin-text-secondary, #64748b);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #454542);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    color: var(--admin-text-primary, #0f172a);
-  }
-
-  &.activeTab {
-    background: #ffffff;
-    color: var(--admin-text-primary, #0f172a);
-    border: 1px solid var(--admin-border-default, #cbd5e1);
+    color: var(--admin-text-primary, #111111);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: 2px;
+  }
+
+  &.activeTab {
+    background: var(--admin-bg-surface, #ffffff);
+    color: var(--admin-text-primary, #111111);
+    font-weight: 600;
+    border-color: var(--admin-border-subtle, #e7e7e4);
+    box-shadow: 0 1px 2px rgba(17, 17, 17, 0.05);
   }
 }
 
@@ -90,14 +92,27 @@
   gap: 0.5rem;
   height: 44px;
   min-height: 44px;
-  padding: 0 0.75rem;
-  background: #ffffff;
-  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-strong, #8e8e88);
   border-radius: 8px;
-  min-width: 220px;
+  padding: 0 0.85rem;
+  min-width: 240px;
+  flex: 1;
+  max-width: 320px;
+
+  @media (max-width: 640px) {
+    max-width: none;
+    width: 100%;
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: -1px;
+    border-color: var(--admin-focus-ring, #9c001e);
+  }
 
   svg {
-    color: #64748b;
+    color: var(--admin-text-muted, #575753);
     flex-shrink: 0;
   }
 
@@ -105,55 +120,58 @@
     border: none;
     outline: none;
     width: 100%;
-    font-size: 0.8rem;
-    font-family: inherit;
-    color: var(--admin-text-primary, #0f172a);
+    font-family: var(--font-graphik), sans-serif;
+    font-size: 0.8125rem;
+    color: var(--admin-text-primary, #111111);
+    background: transparent;
 
     &::placeholder {
-      color: #94a3b8;
+      color: var(--admin-text-muted, #575753);
     }
-  }
-
-  &:focus-within {
-    border-color: var(--admin-border-strong, #1f242f);
   }
 }
 
 .tableContainer {
   width: 100%;
   overflow-x: auto;
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: -2px;
+  }
 }
 
 .dealTable {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.82rem;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
 
   th {
     padding: 0.85rem 1.25rem;
-    font-size: 0.72rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--admin-text-secondary, #64748b);
-    background: #f8fafc;
-    border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
+    letter-spacing: 0.06em;
+    color: var(--admin-text-muted, #575753);
+    background: var(--admin-bg-canvas, #fbfbfa);
+    border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
     white-space: nowrap;
   }
 
   td {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 0.95rem 1.25rem;
+    border-bottom: 1px solid var(--admin-bg-subtle, #efefed);
     vertical-align: middle;
-    color: var(--admin-text-primary, #1e293b);
+    color: var(--admin-text-primary, #111111);
   }
 
   tbody tr {
     transition: background-color 0.1s ease;
 
     &:hover {
-      background-color: #f8fafc;
+      background-color: var(--admin-bg-canvas, #fbfbfa);
     }
 
     &:last-child td {
@@ -163,14 +181,15 @@
 }
 
 .codeChip {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.2rem 0.45rem;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  font-variant-numeric: tabular-nums;
+  padding: 0.2rem 0.5rem;
+  background: var(--admin-bg-subtle, #efefed);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 4px;
-  color: #1e293b;
+  color: var(--admin-text-primary, #111111);
   display: inline-block;
 }
 
@@ -181,12 +200,12 @@
 
   .clientName {
     font-weight: 600;
-    color: var(--admin-text-primary, #0f172a);
+    color: var(--admin-text-primary, #111111);
   }
 
   .companyName {
     font-size: 0.75rem;
-    color: var(--admin-text-secondary, #64748b);
+    color: var(--admin-text-muted, #575753);
   }
 }
 
@@ -196,7 +215,7 @@
   gap: 0.35rem;
   padding: 0.2rem 0.55rem;
   border-radius: 9999px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
 
@@ -208,9 +227,18 @@
 }
 
 .valuationText {
-  font-weight: 700;
+  font-family: var(--font-helvetica-neue), var(--font-graphik), sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--admin-text-primary, #111111);
+}
+
+.updatedCell {
+  font-size: 0.78125rem;
   font-variant-numeric: tabular-nums;
-  color: var(--admin-text-primary, #0f172a);
+  color: var(--admin-text-muted, #575753);
+  white-space: nowrap;
 }
 
 .inspectLink {
@@ -220,55 +248,58 @@
   height: 44px;
   min-height: 44px;
   padding: 0 0.85rem;
-  background: #ffffff;
-  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 6px;
-  font-size: 0.76rem;
+  font-size: 0.78125rem;
   font-weight: 600;
-  color: var(--admin-text-primary, #1e293b);
+  color: var(--admin-text-primary, #111111);
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 
   &:hover {
-    background: #f8fafc;
-    border-color: #64748b;
+    background: var(--admin-bg-subtle, #efefed);
+    border-color: var(--admin-border-strong, #8e8e88);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: 2px;
   }
 }
 
 .emptyState {
   padding: 3rem 1.5rem;
   text-align: center;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-muted, #575753);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
 
   svg {
-    color: #64748b;
+    color: var(--admin-text-muted, #575753);
   }
 
   p {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
   }
 }
 
 .paginationFooter {
   padding: 0.85rem 1.5rem;
-  border-top: 1px solid var(--admin-border-default, #e2e5ea);
+  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: #f8fafc;
-  font-size: 0.78rem;
-  color: var(--admin-text-secondary, #64748b);
+  flex-wrap: wrap;
+  background: var(--admin-bg-canvas, #fbfbfa);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78125rem;
+  color: var(--admin-text-muted, #575753);
   font-variant-numeric: tabular-nums;
 }
 
@@ -281,15 +312,16 @@
 .pageBtn {
   height: 44px;
   min-height: 44px;
-  padding: 0 0.85rem;
-  background: #ffffff;
-  border: 1px solid var(--admin-border-default, #e2e5ea);
+  padding: 0 0.9rem;
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 6px;
-  font-size: 0.76rem;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.78125rem;
   font-weight: 600;
-  color: var(--admin-text-primary, #1e293b);
+  color: var(--admin-text-primary, #111111);
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 
   &:disabled {
     opacity: 0.5;
@@ -297,6 +329,21 @@
   }
 
   &:not(:disabled):hover {
-    background: #f1f5f9;
+    background: var(--admin-bg-subtle, #efefed);
+    border-color: var(--admin-border-strong, #8e8e88);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabButton,
+  .dealTable tbody tr,
+  .inspectLink,
+  .pageBtn {
+    transition: none;
   }
 }

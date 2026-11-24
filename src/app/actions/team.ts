@@ -11,7 +11,7 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/app/lib/supabase/server';
+import { createClient, getCachedCallerProfile } from '@/app/lib/supabase/server';
 import { getAdminClient } from '@/app/lib/supabase/admin';
 import type {
   CrmUserRole,
@@ -40,6 +40,7 @@ import {
   type UpdatePersonnelCoordinatesFormData,
   type PersonnelDealsFilterInput,
 } from '@/app/lib/team-schemas';
+import { generateHighEntropyPassword } from '@/app/lib/team-utils';
 import { ROLE_DEFAULT_TABS, ROLE_DEFAULT_FEATURES, type CrmTabKey } from '@/types/crm';
 import { hasPersonnelDirectoryAccess } from '@/app/lib/team-permissions-config';
 
@@ -728,20 +729,13 @@ export async function setTeamUserStatus(
  * @returns {Promise<TeamActionResult<TeamMemberRosterItem[]>>} Directory roster records.
  */
 export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRosterItem[]>> {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { supabase, user, profile: callerProfile, error: callerError } = await getCachedCallerProfile();
 
-  if (authError || !user) {
+  if (!user) {
     return { success: false, error: 'Unauthorized: Session authentication required.' };
   }
 
-  const { data: callerProfile, error: callerProfileError } = await supabase
-    .from('profiles')
-    .select('role, status, allowed_tabs')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (callerProfileError || !callerProfile) {
+  if (callerError || !callerProfile) {
     return { success: false, error: 'Caller profile could not be verified.' };
   }
 
@@ -763,6 +757,11 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
     return { success: false, error: 'Access Denied: You do not have roster inspection privileges.' };
   }
 
+  const canViewFinancials =
+    callerProfile.role === 'admin' ||
+    callerProfile.role === 'sales_manager' ||
+    (callerProfile.feature_permissions as Record<string, unknown> | null)?.can_view_financials === true;
+
   // Fetch all profiles ordered by creation timestamp using caller's authenticated session under RLS
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
@@ -781,10 +780,11 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
 
   const terminalIds = new Set((terminalStatuses || []).map((s) => s.id));
 
-  // Fetch leads with status_id to compute active non-terminal deal metrics per representative
+  // Fetch leads with status_id to compute active non-terminal deal metrics per representative.
+  // Monetary expected_value is selected and summed only when the caller holds financial visibility.
   const { data: leads, error: leadsError } = await supabase
     .from('leads')
-    .select('assigned_to, expected_value, status_id')
+    .select(canViewFinancials ? 'assigned_to, expected_value, status_id' : 'assigned_to, status_id')
     .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true');
 
   if (leadsError) {
@@ -793,11 +793,13 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
 
   // Aggregate deal counts and pipeline value per user for active deals only
   const metricsMap = new Map<string, { count: number; totalValue: number }>();
-  (leads || []).forEach((lead) => {
+  ((leads || []) as unknown as Array<{ assigned_to: string | null; status_id: string; expected_value?: number | null }>).forEach((lead) => {
     if (lead.assigned_to && !terminalIds.has(lead.status_id)) {
       const current = metricsMap.get(lead.assigned_to) || { count: 0, totalValue: 0 };
       current.count += 1;
-      current.totalValue += Number(lead.expected_value || 0);
+      if (canViewFinancials) {
+        current.totalValue += Number(lead.expected_value || 0);
+      }
       metricsMap.set(lead.assigned_to, current);
     }
   });
@@ -885,13 +887,13 @@ export async function updateUserPermissions(
     };
   }
 
-  // 4. Admin Self-Lockout Prevention Guard:
-  // An administrator cannot revoke their own access to the 'users' or 'settings' tabs
-  if (targetUserId === caller.callerId) {
+  // 4. All-Admin Governance Immunity:
+  // Neither an administrator's own account nor a peer administrator may have 'users' or 'settings' revoked.
+  if (targetUserId === caller.callerId || targetProfile.role === 'admin') {
     if (!allowedTabs.includes('users') || !allowedTabs.includes('settings')) {
       return {
         success: false,
-        error: 'Self-Lockout Violation: Administrators cannot revoke their own access to the Users or Settings workspace tabs.',
+        error: 'Self-Lockout Violation: Administrators cannot revoke their own or peer admin access to the Users or Settings workspace tabs.',
       };
     }
   }
@@ -974,37 +976,6 @@ export async function updateUserPermissions(
 
 
 /**
- * Generates a high-entropy temporary password compliant with enterprise complexity rules.
- * Enforces >=16 characters with guaranteed presence of uppercase, lowercase, numbers, and symbols.
- */
-function generateSecureTemporaryPassword(): string {
-  const charsUpper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const charsLower = 'abcdefghijkmnopqrstuvwxyz';
-  const charsNumbers = '23456789';
-  const charsSymbols = '!@#$%^&*()-_=+';
-  const allChars = charsUpper + charsLower + charsNumbers + charsSymbols;
-
-  const getRandom = (set: string) => set[Math.floor(Math.random() * set.length)];
-  const result: string[] = [
-    getRandom(charsUpper),
-    getRandom(charsLower),
-    getRandom(charsNumbers),
-    getRandom(charsSymbols),
-  ];
-
-  for (let i = result.length; i < 16; i++) {
-    result.push(getRandom(allChars));
-  }
-
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-
-  return result.join('');
-}
-
-/**
  * Retrieves the complete hydrated personnel profile dossier including commercial KPIs
  * and tamper-proof administrative compliance audit logs (/admin/team/[id]).
  *
@@ -1024,18 +995,11 @@ export async function getPersonnelProfile(
       return { success: false, error: 'Invalid user ID format: UUID expected.' };
     }
 
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { supabase, user, profile: callerProfile, error: callerProfileError } = await getCachedCallerProfile();
 
-    if (authError || !user) {
+    if (!user) {
       return { success: false, error: 'Unauthorized: Session authentication required.' };
     }
-
-    const { data: callerProfile, error: callerProfileError } = await supabase
-      .from('profiles')
-      .select('id, role, status, allowed_tabs')
-      .eq('id', user.id)
-      .maybeSingle();
 
     if (callerProfileError || !callerProfile) {
       return { success: false, error: 'Caller profile could not be verified in the agency directory.' };
@@ -1055,6 +1019,11 @@ export async function getPersonnelProfile(
       return { success: false, error: 'Access Denied: You do not have permission to inspect this personnel dossier.' };
     }
 
+    const canViewFinancials =
+      callerProfile.role === 'admin' ||
+      callerProfile.role === 'sales_manager' ||
+      (callerProfile.feature_permissions as Record<string, unknown> | null)?.can_view_financials === true;
+
     // 1. Fetch domain profile using authenticated session under Supabase RLS
     const { data: targetProfile, error: targetError } = await supabase
       .from('profiles')
@@ -1066,62 +1035,171 @@ export async function getPersonnelProfile(
       return { success: false, error: 'Personnel record not found in agency directory.' };
     }
 
-    // 2. Fetch inviter full name if invited_by exists
-    let invitedByName: string | null = null;
-    if (targetProfile.invited_by) {
-      const { data: inviter } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('id', targetProfile.invited_by)
-        .maybeSingle();
-      invitedByName = inviter?.full_name || null;
+    const thirtyDaysAgoIso = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const nowMs = Date.now();
+    const leadColumns = canViewFinancials
+      ? 'id, expected_value, status_id, created_at, converted_at, next_follow_up'
+      : 'id, status_id, created_at, converted_at, next_follow_up';
+
+    const canInspectLogins = callerProfile.role === 'admin' || isSelf;
+
+    // 2. Fetch inviter, funnel statuses, assigned leads, touchpoints, client works, and login telemetry in parallel
+    const [
+      inviterRes,
+      statusesRes,
+      leadsRes,
+      touchpointsAllRes,
+      touchpoints30dRes,
+      clientWorksRes,
+      loginEventsRes,
+      login30dCountRes,
+      loginAllCountRes,
+    ] = await Promise.all([
+      targetProfile.invited_by
+        ? supabase.from('profiles').select('full_name').eq('id', targetProfile.invited_by).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      supabase.from('funnel_statuses').select('id, name, bucket, color_code, sort_order').order('sort_order', { ascending: true }),
+      supabase
+        .from('leads')
+        .select(leadColumns)
+        .eq('assigned_to', userId)
+        .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true'),
+      supabase.from('lead_activities').select('id', { count: 'exact', head: true }).eq('actor_id', userId),
+      supabase
+        .from('lead_activities')
+        .select('id', { count: 'exact', head: true })
+        .eq('actor_id', userId)
+        .gte('created_at', thirtyDaysAgoIso),
+      supabase
+        .from('client_works')
+        .select('id', { count: 'exact', head: true })
+        .or(`creative_lead_id.eq.${userId},tech_lead_id.eq.${userId}`),
+      canInspectLogins
+        ? supabase
+            .from('team_audit_logs')
+            .select('id, created_at, details')
+            .eq('action', 'user_login')
+            .or(`target_user_email.eq.${targetProfile.email},actor_id.eq.${userId}`)
+            .order('created_at', { ascending: false })
+            .limit(10)
+        : Promise.resolve({ data: null, error: null }),
+      canInspectLogins
+        ? supabase
+            .from('team_audit_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('action', 'user_login')
+            .or(`target_user_email.eq.${targetProfile.email},actor_id.eq.${userId}`)
+            .gte('created_at', thirtyDaysAgoIso)
+        : Promise.resolve({ count: 0, error: null }),
+      canInspectLogins
+        ? supabase
+            .from('team_audit_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('action', 'user_login')
+            .or(`target_user_email.eq.${targetProfile.email},actor_id.eq.${userId}`)
+        : Promise.resolve({ count: 0, error: null }),
+    ]);
+
+    const invitedByName = inviterRes.data?.full_name || null;
+
+    if (leadsRes.error) {
+      return { success: false, error: `Failed to aggregate commercial velocity KPIs: ${leadsRes.error.message}` };
     }
 
-    // 3. Fetch funnel status definitions to segment deals
-    const { data: statuses } = await supabase
-      .from('funnel_statuses')
-      .select('id, bucket');
+    const statusRows = (statusesRes.data || []) as Array<{
+      id: string;
+      name: string;
+      bucket: string;
+      color_code: string | null;
+      sort_order: number | null;
+    }>;
 
-    const statusBucketMap = new Map<string, string>();
-    (statuses || []).forEach((s) => statusBucketMap.set(s.id, s.bucket));
+    const statusMap = new Map<string, (typeof statusRows)[number]>();
+    const stageAccumulator = new Map<
+      string,
+      { status_id: string; status_name: string; bucket: 'open' | 'potential' | 'converted' | 'lost'; color_code: string; sort_order: number; deal_count: number; total_value: number }
+    >();
 
-    // 4. Fetch deals assigned to this user, excluding synthetic benchmark records
-    const { data: userLeads, error: leadsError } = await supabase
-      .from('leads')
-      .select('id, expected_value, status_id')
-      .eq('assigned_to', userId)
-      .or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true');
+    statusRows.forEach((s) => {
+      statusMap.set(s.id, s);
+      const bucket = (s.bucket as 'open' | 'potential' | 'converted' | 'lost') || 'open';
+      stageAccumulator.set(s.id, {
+        status_id: s.id,
+        status_name: s.name,
+        bucket,
+        color_code: s.color_code || '#575753',
+        sort_order: s.sort_order ?? 0,
+        deal_count: 0,
+        total_value: 0,
+      });
+    });
 
-    if (leadsError) {
-      return { success: false, error: `Failed to aggregate commercial velocity KPIs: ${leadsError.message}` };
-    }
+    const userLeads = (leadsRes.data || []) as unknown as Array<{
+      id: string;
+      status_id: string;
+      expected_value?: number | null;
+      created_at?: string | null;
+      converted_at?: string | null;
+      next_follow_up?: string | null;
+    }>;
 
     let wonRevenue = 0;
     let activePipelineValue = 0;
+    let lostPipelineValue = 0;
     let wonDealsCount = 0;
     let lostDealsCount = 0;
     let activeDealsCount = 0;
-    const totalDealsAssigned = userLeads ? userLeads.length : 0;
+    let overdueFollowUpsCount = 0;
+    let totalCycleDays = 0;
+    let cycleSamplesCount = 0;
+    const totalDealsAssigned = userLeads.length;
 
-    (userLeads || []).forEach((lead) => {
-      const bucket = statusBucketMap.get(lead.status_id) || 'open';
-      const val = Number(lead.expected_value || 0);
+    userLeads.forEach((lead) => {
+      const statusMeta = statusMap.get(lead.status_id);
+      const bucket = statusMeta?.bucket || 'open';
+      const val = canViewFinancials ? Number(lead.expected_value || 0) : 0;
+
+      const stageEntry = stageAccumulator.get(lead.status_id);
+      if (stageEntry) {
+        stageEntry.deal_count += 1;
+        stageEntry.total_value += val;
+      }
 
       if (bucket === 'converted') {
         wonRevenue += val;
         wonDealsCount += 1;
+        if (lead.created_at && lead.converted_at) {
+          const diffMs = new Date(lead.converted_at).getTime() - new Date(lead.created_at).getTime();
+          if (Number.isFinite(diffMs) && diffMs >= 0) {
+            totalCycleDays += diffMs / (1000 * 60 * 60 * 24);
+            cycleSamplesCount += 1;
+          }
+        }
       } else if (bucket === 'lost') {
         lostDealsCount += 1;
+        lostPipelineValue += val;
       } else {
         activeDealsCount += 1;
         activePipelineValue += val;
+        if (lead.next_follow_up) {
+          const followUpMs = new Date(lead.next_follow_up).getTime();
+          if (Number.isFinite(followUpMs) && followUpMs < nowMs) {
+            overdueFollowUpsCount += 1;
+          }
+        }
       }
     });
 
     const closedDealsCount = wonDealsCount + lostDealsCount;
     const winRatePercentage = closedDealsCount > 0 ? Math.round((wonDealsCount / closedDealsCount) * 100) : 0;
+    const avgWonDealValue = canViewFinancials && wonDealsCount > 0 ? Math.round(wonRevenue / wonDealsCount) : 0;
+    const avgSalesCycleDays = cycleSamplesCount > 0 ? Math.round(totalCycleDays / cycleSamplesCount) : null;
     const capacityUtilizationPercentage = Math.min(100, Math.round((activeDealsCount / SALES_REP_CAPACITY_LIMIT) * 100));
     const isAtCapacity = activeDealsCount >= SALES_REP_CAPACITY_LIMIT;
+
+    const stageBreakdown = Array.from(stageAccumulator.values())
+      .filter((s) => s.deal_count > 0)
+      .sort((a, b) => a.sort_order - b.sort_order);
 
     const kpis: PersonnelPerformanceKpis = {
       wonRevenue,
@@ -1129,6 +1207,15 @@ export async function getPersonnelProfile(
       winRatePercentage,
       closedDealsCount,
       wonDealsCount,
+      lostDealsCount,
+      lostPipelineValue,
+      avgWonDealValue,
+      avgSalesCycleDays,
+      overdueFollowUpsCount,
+      touchpoints30d: touchpoints30dRes.count || 0,
+      totalTouchpoints: touchpointsAllRes.count || 0,
+      clientWorksCount: clientWorksRes.count || 0,
+      stageBreakdown,
       activeDealsCount,
       capacityLimit: SALES_REP_CAPACITY_LIMIT,
       capacityUtilizationPercentage,
@@ -1136,13 +1223,35 @@ export async function getPersonnelProfile(
       totalDealsAssigned,
     };
 
-    // 5. Fetch audit logs if caller is administrator with localized fault tolerance
+    const loginSummary = canInspectLogins
+      ? {
+          lastLoginAt:
+            (targetProfile.last_login_at as string | null) ||
+            (loginEventsRes.data && loginEventsRes.data[0]?.created_at) ||
+            null,
+          totalLoginsCount: loginAllCountRes.count || 0,
+          logins30dCount: login30dCountRes.count || 0,
+          recentLogins: (loginEventsRes.data || []).map((ev) => {
+            const details = (ev.details || {}) as Record<string, unknown>;
+            return {
+              id: ev.id as string,
+              created_at: ev.created_at as string,
+              ip_address: typeof details.ip_address === 'string' ? details.ip_address : null,
+              user_agent: typeof details.user_agent === 'string' ? details.user_agent : null,
+              method: typeof details.method === 'string' ? details.method : 'password',
+            };
+          }),
+        }
+      : undefined;
+
+    // 3. Fetch governance audit logs (excluding routine login pings) if caller is administrator
     let auditLogs: PersonnelAuditLogEntry[] = [];
     if (callerProfile.role === 'admin') {
       try {
         const { data: rawLogs } = await supabase
           .from('team_audit_logs')
           .select('id, actor_id, action, target_user_email, details, created_at')
+          .neq('action', 'user_login')
           .or(`target_user_email.eq.${targetProfile.email},details->>target_user_id.eq.${userId}`)
           .order('created_at', { ascending: false })
           .limit(20);
@@ -1184,8 +1293,10 @@ export async function getPersonnelProfile(
         invited_by_name: invitedByName,
         kpis,
         auditLogs,
+        loginSummary,
         canEdit: callerProfile.role === 'admin',
         isSelf,
+        canViewFinancials,
       },
     };
   } catch (err: unknown) {
@@ -1221,7 +1332,7 @@ export async function getPersonnelDeals(
 
     const { data: callerProfile, error: callerProfileError } = await supabase
       .from('profiles')
-      .select('id, role, status, allowed_tabs')
+      .select('id, role, status, allowed_tabs, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -1242,6 +1353,11 @@ export async function getPersonnelDeals(
     if (!isSelf && !hasDirectoryPrivilege) {
       return { success: false, error: 'Access Denied: You do not have permission to view deals for this representative.' };
     }
+
+    const canViewFinancials =
+      callerProfile.role === 'admin' ||
+      callerProfile.role === 'sales_manager' ||
+      (callerProfile.feature_permissions as Record<string, unknown> | null)?.can_view_financials === true;
 
     const parsedFilters = personnelDealsFilterSchema.safeParse(filters || {});
     const validated = parsedFilters.success ? parsedFilters.data : personnelDealsFilterSchema.parse({});
@@ -1270,11 +1386,15 @@ export async function getPersonnelDeals(
       timeThreshold = thresholdDate.toISOString();
     }
 
-    // 3. Construct query with foreign key joins and synthetic benchmark exclusion under Supabase RLS
+    // 3. Construct query with foreign key joins, omitting expected_value when caller lacks financial visibility
+    const baseLeadProjection = canViewFinancials
+      ? '*'
+      : 'id, lead_id, name, company, company_website, industry, phone, email, preferred_channel, lead_source_id, source_detail, service_category, budget_bracket, priority, status_id, assigned_to, next_follow_up, lost_reason, revisit_date, notes, brief_payload, inquiry_count, created_at, converted_at, updated_at';
+
     let query = supabase
       .from('leads')
       .select(`
-        *,
+        ${baseLeadProjection},
         lead_source:lead_sources(id, name, color_code, is_active, created_at),
         status:funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at)
       `, { count: 'exact' })
@@ -1320,10 +1440,14 @@ export async function getPersonnelDeals(
     const totalCount = count || 0;
     const totalPages = Math.ceil(totalCount / validated.pageSize) || 1;
 
+    const normalizedDeals = ((deals || []) as unknown as LeadWithRelations[]).map((deal) =>
+      canViewFinancials ? deal : { ...deal, expected_value: 0 }
+    );
+
     return {
       success: true,
       data: {
-        deals: (deals || []) as LeadWithRelations[],
+        deals: normalizedDeals,
         totalCount,
         page: validated.page,
         pageSize: validated.pageSize,
@@ -1383,7 +1507,7 @@ export async function adminResetPersonnelPassword(
     return { success: false, error: 'Target user record not found in agency directory.' };
   }
 
-  const effectivePassword = parsed.data.tempPassword || generateSecureTemporaryPassword();
+  const effectivePassword = parsed.data.tempPassword || generateHighEntropyPassword();
 
   try {
     // 1. Update Supabase Auth password

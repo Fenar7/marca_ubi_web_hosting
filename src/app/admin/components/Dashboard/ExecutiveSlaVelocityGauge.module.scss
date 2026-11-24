@@ -69,6 +69,13 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #dcfce7;
+    transform: translateY(-0.5px);
+  }
 }
 
 .cautionBadge {
@@ -83,6 +90,13 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #fef3c7;
+    transform: translateY(-0.5px);
+  }
 }
 
 .alertBadge {
@@ -97,6 +111,13 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #ffe4e6;
+    transform: translateY(-0.5px);
+  }
 }
 
 /* Gauge Stage & Mathematics */
@@ -108,6 +129,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 4px;
+    border-radius: 12px;
+  }
 }
 
 .gaugeSvg {
@@ -204,6 +237,30 @@
   border-top: 1px solid rgba(17, 17, 17, 0.06);
   padding-top: 12px;
   margin-bottom: 10px;
+}
+
+.metricCellBtn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
+    transform: translateY(-0.5px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 1px;
+  }
 }
 
 .metricCell {

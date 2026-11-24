@@ -70,6 +70,50 @@
   }
 }
 
+.heroValuationBtn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0.35rem 0 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", var(--font-graphik), sans-serif;
+  font-size: clamp(2.1rem, 2.5vw, 2.55rem);
+  font-weight: 300;
+  color: var(--admin-text-primary, #111111);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+    transform: translateY(-0.5px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+}
+
+.drilldownHint {
+  font-size: 1.1rem;
+  color: #8c8c88;
+  font-weight: 400;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.heroValuationBtn:hover .drilldownHint {
+  color: #111111;
+  transform: translate(2px, -2px);
+}
+
 .heroValuation {
   font-family: var(--font-helvetica-neue), "Helvetica Neue", var(--font-graphik), sans-serif;
   font-size: clamp(2.1rem, 2.5vw, 2.55rem);
@@ -367,6 +411,47 @@
 }
 
 /* Fundora Pristine White Floating Tooltip Card */
+.floatingBadgeBtn {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: #ffffff;
+  color: #111111;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #e7e7e4;
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  z-index: 20;
+  white-space: nowrap;
+  animation: badgeFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    border-color: #111111;
+    box-shadow: 0 6px 22px -2px rgba(0, 0, 0, 0.12);
+    transform: translate(-50%, calc(-100% - 2px));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent-brand, #ea002a);
+    outline-offset: 2px;
+  }
+}
+
+.badgeArrow {
+  font-size: 0.75rem;
+  color: #8c8c88;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.floatingBadgeBtn:hover .badgeArrow {
+  color: #111111;
+  transform: translate(1px, -1px);
+}
+
 .floatingBadge {
   position: absolute;
   transform: translate(-50%, -100%);

@@ -260,6 +260,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   transition: all 0.16s ease;
 
   &:hover {
@@ -271,4 +272,15 @@
     outline: 2px solid #ea002a;
     outline-offset: 2px;
   }
+}
+
+.btnArrow {
+  font-size: 0.85rem;
+  color: #64748b;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.viewAllButton:hover .btnArrow {
+  color: #0f172a;
+  transform: translate(1px, -1px);
 }

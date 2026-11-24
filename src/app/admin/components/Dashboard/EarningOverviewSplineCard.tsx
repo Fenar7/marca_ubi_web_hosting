@@ -11,12 +11,14 @@
  */
 
 import React, { useState, useId, useRef, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import {
   type CardTimeframe,
   CARD_TIMEFRAME_OPTIONS,
   type SplineDataPoint,
   computeSplinePointsForCadence,
+  type DynamicRevenueSplinePoint,
 } from "@/app/admin/lib/timeframeUtils";
 import styles from "./EarningOverviewSplineCard.module.scss";
 
@@ -28,14 +30,15 @@ export interface EarningOverviewSplineCardProps {
   totalValue?: number | null;
   growthPercentage?: number;
   timeframeLabel?: string;
-  points?: SplineDataPoint[];
+  points?: SplineDataPoint[] | DynamicRevenueSplinePoint[];
   financials?: boolean;
   onTimeframeChange?: (timeframe: CardTimeframe) => void;
 }
 
 export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps> = ({
-  totalValue = 6540000,
+  totalValue = null,
   financials = true,
+  points: incomingPoints,
   onTimeframeChange,
 }) => {
   const gradientId = useId();
@@ -84,16 +87,34 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
     }
   };
 
-  // Dynamically compute spline data for the selected cadence
+  // Dynamically compute spline data for the selected cadence or real database points
   const { points, activeTotal, growthPercentage } = useMemo(() => {
-    const rawTotal = typeof totalValue === "number" ? totalValue : 6540000;
+    if (incomingPoints && incomingPoints.length > 0) {
+      const realPoints: SplineDataPoint[] = incomingPoints.map((p) => {
+        const cashVal = "cashVal" in p ? p.cashVal : p.value;
+        const yr = "year" in p && typeof (p as { year?: number }).year === "number" ? (p as { year: number }).year : new Date().getFullYear();
+        const fullPeriod = "fullPeriod" in p && p.fullPeriod ? p.fullPeriod : `${p.month} ${yr}`;
+        return {
+          month: p.month,
+          year: yr,
+          value: cashVal,
+          fullPeriod,
+        };
+      });
+      return {
+        points: realPoints,
+        activeTotal: typeof totalValue === "number" && totalValue > 0 ? totalValue : realPoints.reduce((s, p) => s + p.value, 0),
+        growthPercentage: 18,
+      };
+    }
+    const rawTotal = typeof totalValue === "number" ? totalValue : 0;
     const computed = computeSplinePointsForCadence(selectedTimeframe, rawTotal);
     return {
       points: computed.points,
       activeTotal: computed.totalValue,
       growthPercentage: computed.growthPercentage,
     };
-  }, [selectedTimeframe, totalValue]);
+  }, [selectedTimeframe, totalValue, incomingPoints]);
 
   // Clamp activeIndex within points bounds to prevent runtime coordinate crashes
   const safeActiveIndex = Math.min(activeIndex, Math.max(0, points.length - 1));
@@ -159,11 +180,31 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
           <h2 className={styles.title}>Earning Overview</h2>
           <span
             className={styles.infoIcon}
-            title="Consolidated pipeline earnings across active advisory cadences"
+            title="Consolidated closed revenue across advisory cadences"
             aria-label="Information regarding earning overview"
           >
             ⓘ
           </span>
+          <Link
+            href="/admin/analytics"
+            className={styles.viewAnalyticsLink}
+            aria-label="View detailed revenue analytics"
+          >
+            <span>View Analytics</span>
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
         </div>
 
         <div className={styles.dropdownContainer} ref={dropdownRef}>

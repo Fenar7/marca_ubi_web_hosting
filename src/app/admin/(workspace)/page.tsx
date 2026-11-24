@@ -383,7 +383,7 @@ export default async function AdminDashboardPage({
       .lte("next_follow_up", window.end);
   };
   const queueNames: OverviewQueue[] = ["overdue", "today", "unassigned"];
-  const counts = await Promise.all(
+  const countsPromise = Promise.all(
     queueNames.map(async (queue) => {
       if (!canTasks || stagesUnavailable) return null;
       if (!activeIds.length) return 0;
@@ -397,6 +397,15 @@ export default async function AdminDashboardPage({
       return result.error ? null : result.count;
     }),
   );
+
+  const [pipeline, outcome, priorOutcome, cohort, counts] = await Promise.all([
+    pipelinePromise,
+    outcomePromise,
+    priorOutcomePromise,
+    cohortPromise,
+    countsPromise,
+  ]);
+
   const selectedQueue: OverviewQueue | null = params?.queue
     ? overviewQueue(params.queue, counts[0])
     : null;
@@ -477,12 +486,6 @@ export default async function AdminDashboardPage({
         (directoryFailed ? "Owner unavailable" : "Name unavailable")),
     href: recordRoute ? `${recordRoute}/${encodeURIComponent(row.id)}` : null,
   }));
-  const [pipeline, outcome, priorOutcome, cohort] = await Promise.all([
-    pipelinePromise,
-    outcomePromise,
-    priorOutcomePromise,
-    cohortPromise,
-  ]);
   const potentialStages = stages.filter(
     (stage) => stage.bucket === "potential",
   );

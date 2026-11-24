@@ -172,19 +172,26 @@ function AdminWorkspaceShellState({
   // Listen to open-lead-modal and open-lead-drawer custom events dispatched across any workspace
   useEffect(() => {
     const handleOpenLeadEvent = (e: Event): void => {
-      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
+      const customEvt = e as CustomEvent<{ leadId?: string; fullPage?: boolean } | string>;
       const id =
         typeof customEvt.detail === "string"
           ? customEvt.detail
           : customEvt.detail?.leadId;
+      const fullPage =
+        typeof customEvt.detail === "object" && customEvt.detail?.fullPage;
       if (id) {
-        const isDeals =
-          typeof window !== "undefined" &&
-          window.location.pathname.startsWith("/admin/deals");
-        const targetRoute = isDeals
-          ? "/admin/deals/" + id
-          : "/admin/leads/" + id;
-        router.push(targetRoute);
+        if (fullPage) {
+          const isDeals =
+            typeof window !== "undefined" &&
+            window.location.pathname.startsWith("/admin/deals");
+          const targetRoute = isDeals
+            ? "/admin/deals/" + id
+            : "/admin/leads/" + id;
+          router.push(targetRoute);
+        } else {
+          // Open in-context ClientDossierDrawer on current workspace
+          handleOpenDrawer(id);
+        }
       }
     };
 

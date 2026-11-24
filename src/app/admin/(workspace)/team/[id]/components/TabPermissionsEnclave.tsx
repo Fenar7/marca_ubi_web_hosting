@@ -73,7 +73,7 @@ export function TabPermissionsEnclave({
     <div className={styles.enclaveCard}>
       <div className={styles.headerRow}>
         <div className={styles.titleArea}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
           <h3 className={styles.title}>Workspace Tab Access</h3>
@@ -103,9 +103,7 @@ export function TabPermissionsEnclave({
                     key={tab.key}
                     className={`${styles.tabChip} ${isGranted ? styles.granted : styles.denied}`}
                   >
-                    <span
-                      className={`${styles.dot} ${isGranted ? styles.dotGranted : styles.dotDenied}`}
-                    />
+                    <span className={styles.srOnly}>{isGranted ? 'Granted: ' : 'Denied: '}</span>
                     {tab.label}
                   </span>
                 );

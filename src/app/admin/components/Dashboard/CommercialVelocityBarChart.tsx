@@ -11,6 +11,7 @@
  */
 
 import React, { useMemo, useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { DynamicRevenueSplinePoint, TimeframeSlug } from "@/app/admin/lib/timeframeUtils";
 import styles from "./CommercialVelocityBarChart.module.scss";
@@ -88,6 +89,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
   financials = true,
   onTimeframeChange,
 }) => {
+  const router = useRouter();
   const [activeHoverIndex, setActiveHoverIndex] = useState<number | null>(null);
   const [perspective, setPerspective] = useState<CashFlowPerspective>("intake");
   const [isTimeframeOpen, setIsTimeframeOpen] = useState(false);
@@ -275,9 +277,16 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             </span>
           </div>
 
-          <div className={styles.heroValuation}>
-            {financials ? formatCrmCurrency(activePerspectiveTotal) : "Confidential"}
-          </div>
+          <button
+            type="button"
+            className={styles.heroValuationBtn}
+            onClick={() => router.push("/admin/analytics")}
+            title="Inspect cash flow analytics"
+            aria-label={`Total valuation ${financials ? formatCrmCurrency(activePerspectiveTotal) : "Confidential"}, view in analytics`}
+          >
+            <span>{financials ? formatCrmCurrency(activePerspectiveTotal) : "Confidential"}</span>
+            <span className={styles.drilldownHint} aria-hidden="true">↗</span>
+          </button>
 
           {/* Segmented Filter Pills (Fundora Archetype) */}
           <div className={styles.segmentedControls} role="tablist" aria-label="Perspective switch">
@@ -396,14 +405,19 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
       <div className={styles.svgWrapper}>
         {/* Floating Obsidian Milestone Badge directly crowned over the spotlighted column */}
         {spotlightItem && (
-          <div
-            className={styles.floatingBadge}
+          <button
+            type="button"
+            className={styles.floatingBadgeBtn}
             style={{
               left: `${Math.max(16, Math.min(84, (spotlightCenterX / svgWidth) * 100))}%`,
               top: `${Math.max(2, (spotlightTopY / svgHeight) * 100 - 11)}%`,
             }}
-            role="status"
-            aria-live="polite"
+            onClick={() =>
+              router.push(
+                `/admin/deals?bucket=${perspective === "realized" ? "converted" : "open"}`
+              )
+            }
+            aria-label={`Inspect ${spotlightItem.fullPeriod || spotlightItem.month} deals in pipeline`}
           >
             <span className={styles.badgeDate}>
               {spotlightItem.fullPeriod || spotlightItem.month} :
@@ -411,7 +425,8 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             <strong className={styles.badgeAmount}>
               {financials ? formatCrmCurrency(spotlightVal) : "Confidential"}
             </strong>
-          </div>
+            <span className={styles.badgeArrow} aria-hidden="true">↗</span>
+          </button>
         )}
 
         <svg
@@ -478,7 +493,15 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                 key={idx}
                 onMouseEnter={() => setActiveHoverIndex(idx)}
                 onMouseLeave={() => setActiveHoverIndex(null)}
+                onClick={() =>
+                  router.push(
+                    `/admin/deals?bucket=${perspective === "realized" ? "converted" : "open"}`
+                  )
+                }
                 className={styles.columnGroup}
+                role="button"
+                tabIndex={0}
+                aria-label={`Inspect deals for ${item.fullPeriod || item.month}`}
               >
                 {/* Transparent hit area for frictionless mouse hover */}
                 <rect

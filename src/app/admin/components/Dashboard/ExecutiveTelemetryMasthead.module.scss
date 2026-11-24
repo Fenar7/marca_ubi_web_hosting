@@ -151,13 +151,31 @@
   justify-content: space-between;
   min-height: 180px;
   position: relative;
+  cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 
   &:hover {
     border-color: rgba(0, 0, 0, 0.12);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.08);
+
+    .cardArrow {
+      opacity: 1;
+      transform: translate(2px, -2px);
+    }
   }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 2px;
+  }
+}
+
+.cardArrow {
+  font-size: 13px;
+  color: #ea002a;
+  opacity: 0.5;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .cardClosedRevenue,

@@ -36,6 +36,7 @@ export interface ExecutiveTelemetryMastheadProps {
   averageCycleDays: number | null;
   financials: boolean;
   canExport: boolean;
+  cohort?: { eligible: number; won: number } | null;
   onExportSummary?: () => void;
 }
 
@@ -54,6 +55,7 @@ export function ExecutiveTelemetryMasthead({
   averageCycleDays,
   financials,
   canExport,
+  cohort,
   onExportSummary,
 }: ExecutiveTelemetryMastheadProps): React.ReactElement {
   const router = useRouter();
@@ -222,15 +224,28 @@ export function ExecutiveTelemetryMasthead({
           balance={pipelineValue}
           dealCount={pipelineCount}
           winRate={84}
+          periodLabel={periodLabel}
+          cohort={cohort}
           financials={financials}
         />
 
         {/* Card 2: Converted Contract Value */}
-        <article className={`${styles.scorecard} ${styles.cardClosedRevenue}`}>
+        <article
+          className={`${styles.scorecard} ${styles.cardClosedRevenue}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push("/admin/deals?bucket=converted")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              router.push("/admin/deals?bucket=converted");
+            }
+          }}
+          aria-label={`Closed Revenue ${financials && convertedValue !== null ? formatCrmCurrency(convertedValue) : "Confidential"}. Click to inspect won contracts.`}
+        >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>CLOSED REVENUE</span>
-              <span className={styles.infoDot} title="Closed revenue in current window">ⓘ</span>
+              <span className={styles.cardArrow} aria-hidden="true">↗</span>
             </div>
             <span className={`${styles.trendPill} ${trendClass}`}>
               {revenueDeltaStr}
@@ -265,11 +280,22 @@ export function ExecutiveTelemetryMasthead({
         </article>
 
         {/* Card 3: Weighted Pipeline Potential */}
-        <article className={`${styles.scorecard} ${styles.cardWeightedValue}`}>
+        <article
+          className={`${styles.scorecard} ${styles.cardWeightedValue}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push("/admin/deals?bucket=potential")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              router.push("/admin/deals?bucket=potential");
+            }
+          }}
+          aria-label={`Weighted Value ${financials && weightedPotential !== null ? formatCrmCurrency(weightedPotential) : "Confidential"}. Click to inspect weighted pipeline.`}
+        >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>WEIGHTED VALUE</span>
-              <span className={styles.infoDot} title="Probability-weighted revenue potential">ⓘ</span>
+              <span className={styles.cardArrow} aria-hidden="true">↗</span>
             </div>
             <span className={styles.ratioPill}>
               {pipelineValue && weightedPotential && pipelineValue > 0
@@ -292,11 +318,22 @@ export function ExecutiveTelemetryMasthead({
         </article>
 
         {/* Card 4: Commercial Velocity */}
-        <article className={`${styles.scorecard} ${styles.cardSalesCycle}`}>
+        <article
+          className={`${styles.scorecard} ${styles.cardSalesCycle}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push("/admin/analytics")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              router.push("/admin/analytics");
+            }
+          }}
+          aria-label="Average Sales Cycle. Click to inspect velocity analytics."
+        >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>AVG. SALES CYCLE</span>
-              <span className={styles.infoDot} title="Average deal duration from lead to close">ⓘ</span>
+              <span className={styles.cardArrow} aria-hidden="true">↗</span>
             </div>
             <span className={styles.targetPill}>Target &lt; 21d</span>
           </div>
