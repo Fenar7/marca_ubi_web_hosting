@@ -10,6 +10,7 @@
  */
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import styles from "./LuxuryVirtualCard.module.scss";
 
@@ -18,6 +19,8 @@ export interface LuxuryVirtualCardProps {
   balance?: number | null;
   dealCount?: number | null;
   winRate?: number | null;
+  periodLabel?: string;
+  cohort?: { eligible: number; won: number } | null;
   financials?: boolean;
 }
 
@@ -26,10 +29,18 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   balance = null,
   dealCount = 39,
   winRate = 84,
+  periodLabel = "Q4 2026",
+  cohort,
   financials = true,
 }) => {
+  const router = useRouter();
   const displayBalance =
     financials && balance !== null ? formatCrmCurrency(balance) : "Confidential";
+
+  const resolvedWinRate =
+    cohort && cohort.eligible > 0
+      ? Math.round((cohort.won / cohort.eligible) * 100)
+      : winRate;
 
   return (
     <article
@@ -58,9 +69,23 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
         </div>
       </div>
 
-      {/* Mid Body: Balance Label & Tabular Numerical Amount */}
-      <div className={styles.cardBody}>
-        <span className={styles.balanceLabel}>Active Commercial Balance</span>
+      {/* Mid Body: Clickable Balance Drill-Down with Arrow Icon */}
+      <div
+        className={styles.cardBody}
+        role="button"
+        tabIndex={0}
+        onClick={() => router.push("/admin/deals?bucket=open")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            router.push("/admin/deals?bucket=open");
+          }
+        }}
+        aria-label={`Active Commercial Balance ${displayBalance}. Click to inspect active pipeline deals.`}
+      >
+        <div className={styles.balanceHeaderRow}>
+          <span className={styles.balanceLabel}>Active Commercial Balance</span>
+          <span className={styles.cardArrow} aria-hidden="true">↗</span>
+        </div>
         <div className={styles.balanceRow}>
           <span className={styles.balanceAmount}>{displayBalance}</span>
         </div>
@@ -70,15 +95,26 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
       <footer className={styles.cardFooter}>
         <div className={styles.metaChip}>
           <span className={styles.metaLabel}>PERIOD</span>
-          <span className={styles.metaValue}>Q4 2026</span>
+          <span className={styles.metaValue}>{periodLabel}</span>
         </div>
         <div className={styles.metaChip}>
           <span className={styles.metaLabel}>WIN RATE</span>
-          <span className={styles.metaValue}>{winRate}%</span>
+          <span className={styles.metaValue}>{resolvedWinRate}%</span>
         </div>
-        <div className={styles.metaChip}>
+        <div
+          className={`${styles.metaChip} ${styles.interactiveChip}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push("/admin/deals?bucket=open")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              router.push("/admin/deals?bucket=open");
+            }
+          }}
+          aria-label={`View ${dealCount ?? 0} active deals in pipeline`}
+        >
           <span className={styles.metaLabel}>ACTIVE</span>
-          <span className={styles.metaValue}>{dealCount ?? 0} DEALS</span>
+          <span className={styles.metaValue}>{dealCount ?? 0} DEALS ↗</span>
         </div>
       </footer>
     </article>

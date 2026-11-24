@@ -66,6 +66,38 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  cursor: pointer;
+  padding: 6px 8px;
+  margin-left: -8px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+
+    .cardArrow {
+      opacity: 1;
+      transform: translate(2px, -2px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 2px;
+  }
+}
+
+.balanceHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardArrow {
+  font-size: 14px;
+  color: #ea002a;
+  opacity: 0.6;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .balanceLabel {
@@ -111,6 +143,21 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 6px;
+}
+
+.interactiveChip {
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 2px;
+  }
 }
 
 .metaLabel {

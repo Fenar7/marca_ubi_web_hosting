@@ -12,6 +12,7 @@
  */
 
 import React, { useMemo, useState, useDeferredValue } from "react";
+import { useRouter } from "next/navigation";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./CommercialDealsLedger.module.scss";
 
@@ -249,6 +250,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
   onAdvanceStage,
   onOpenDossier,
 }) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<LedgerFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStageFilter, setSelectedStageFilter] = useState<string | null>(null);
@@ -408,43 +410,56 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
           </p>
         </div>
 
-        {/* 60fps Search Trigger */}
-        <div className={styles.searchWrapper}>
-          <label className={styles.searchLabel} htmlFor="ledger-search-input">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className={styles.searchIcon}
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <span className={styles.srOnly}>Search opportunities</span>
-          </label>
-          <input
-            id="ledger-search-input"
-            className={styles.searchInput}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search deals, company, rep..."
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              className={styles.clearSearchBtn}
-              onClick={() => setSearchQuery("")}
-              aria-label="Clear search input"
-            >
-              ×
-            </button>
-          )}
+        {/* Search & Global Deals Action */}
+        <div className={styles.headerRightActions}>
+          <button
+            type="button"
+            className={styles.viewAllDealsLink}
+            onClick={() => router.push("/admin/deals")}
+            aria-label="View all deals in commercial pipeline"
+          >
+            <span>View All Deals</span>
+            <span className={styles.linkArrow} aria-hidden="true">↗</span>
+          </button>
+
+          {/* 60fps Search Trigger */}
+          <div className={styles.searchWrapper}>
+            <label className={styles.searchLabel} htmlFor="ledger-search-input">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className={styles.searchIcon}
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <span className={styles.srOnly}>Search opportunities</span>
+            </label>
+            <input
+              id="ledger-search-input"
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search deals, company, rep..."
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className={styles.clearSearchBtn}
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search input"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -584,7 +599,18 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                   <article
                     key={record.id}
                     className={`${styles.dealCardlet} ${isSelected ? styles.selectedCardlet : ""}`}
-                    onClick={() => setSelectedDealId(record.id)}
+                    onClick={() => {
+                      setSelectedDealId(record.id);
+                      if (onOpenDossier) {
+                        onOpenDossier(record);
+                      } else if (typeof window !== "undefined") {
+                        window.dispatchEvent(
+                          new CustomEvent("open-lead-drawer", {
+                            detail: { leadId: record.id, id: record.id, fullPage: false },
+                          })
+                        );
+                      }
+                    }}
                     tabIndex={0}
                     role="button"
                     aria-selected={isSelected}
@@ -602,6 +628,15 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
                         setSelectedDealId(record.id);
+                        if (onOpenDossier) {
+                          onOpenDossier(record);
+                        } else if (typeof window !== "undefined") {
+                          window.dispatchEvent(
+                            new CustomEvent("open-lead-drawer", {
+                              detail: { leadId: record.id, id: record.id, fullPage: false },
+                            })
+                          );
+                        }
                       }
                     }}
                   >

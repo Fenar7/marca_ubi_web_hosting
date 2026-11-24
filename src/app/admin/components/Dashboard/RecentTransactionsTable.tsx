@@ -9,7 +9,8 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./RecentTransactionsTable.module.scss";
@@ -69,6 +70,21 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
   financials = true,
   onOpenRecord,
 }) => {
+  const router = useRouter();
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside() {
+      setOpenMenuId(null);
+    }
+    if (openMenuId) {
+      document.addEventListener("click", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [openMenuId]);
+
   // If actual records are supplied, map top 3 converted/potential records
   const displayItems: TransactionItem[] = React.useMemo(() => {
     if (!records || records.length === 0) {
@@ -106,6 +122,7 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
         <button
           type="button"
           className={styles.filterButton}
+          onClick={() => router.push("/admin/deals?bucket=converted")}
           aria-label="Filter recent transactions"
         >
           <span>Filter</span>
@@ -174,16 +191,49 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
                   </td>
 
                   <td className={styles.actionCell}>
-                    <button
-                      type="button"
-                      className={styles.actionMenuButton}
-                      aria-label={`Options for ${item.title}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      ···
-                    </button>
+                    <div className={styles.actionMenuWrapper}>
+                      <button
+                        type="button"
+                        className={styles.actionMenuButton}
+                        aria-label={`Options for ${item.title}`}
+                        aria-expanded={openMenuId === item.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId((prev) => (prev === item.id ? null : item.id));
+                        }}
+                      >
+                        ···
+                      </button>
+                      {openMenuId === item.id && (
+                        <div
+                          className={styles.actionPopover}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            className={styles.popoverItem}
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              if (matchedRecord && onOpenRecord) {
+                                onOpenRecord(matchedRecord);
+                              }
+                            }}
+                          >
+                            Inspect Dossier
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.popoverItem}
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              router.push(`/admin/deals/${item.id}`);
+                            }}
+                          >
+                            Open Full Page ↗
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -191,6 +241,17 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
           </tbody>
         </table>
       </div>
+
+      <footer className={styles.tableFooter}>
+        <button
+          type="button"
+          className={styles.viewAllTransactionsBtn}
+          onClick={() => router.push("/admin/deals")}
+        >
+          <span>View All Pipeline Transactions &amp; Ledger</span>
+          <span className={styles.btnArrow} aria-hidden="true">↗</span>
+        </button>
+      </footer>
     </article>
   );
 };

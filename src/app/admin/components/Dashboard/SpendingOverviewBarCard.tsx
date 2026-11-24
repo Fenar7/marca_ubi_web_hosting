@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import {
   type CardTimeframe,
@@ -37,6 +38,7 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
   financials = true,
   onTimeframeChange,
 }) => {
+  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -142,11 +144,11 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
       {/* Header: Title and Timeframe dropdown */}
       <header className={styles.cardHeader}>
         <div className={styles.titleRow}>
-          <h2 className={styles.title}>Spending Overview</h2>
+          <h2 className={styles.title}>Practice Allocation</h2>
           <span
             className={styles.infoIcon}
-            title="Categorical allocation and spending distribution across active advisory accounts"
-            aria-label="Information regarding spending overview"
+            title="Categorical allocation and volume distribution across active advisory accounts"
+            aria-label="Information regarding practice allocation"
           >
             ⓘ
           </span>
@@ -217,19 +219,31 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
       {/* Hero Metric & Dynamic Deal Count Badge */}
       <div className={styles.heroRow}>
         <span className={styles.heroValuation}>{displayTotal}</span>
-        <span className={styles.trendPill} aria-label={`${activeDeals} active deals`}>
-          {activeDeals} Active Deals
-        </span>
+        <button
+          type="button"
+          className={styles.trendPill}
+          onClick={() => router.push("/admin/deals")}
+          aria-label={`${activeDeals} active deals, inspect in deals ledger`}
+        >
+          <span>{activeDeals} Active Deals</span>
+          <span className={styles.trendArrow} aria-hidden="true">↗</span>
+        </button>
       </div>
 
       {/* Breakdown Section: Horizontal Legend + Continuous Capsule Bar */}
       <div className={styles.breakdownSection}>
-        <h3 className={styles.breakdownTitle}>Spending Breakdown</h3>
+        <h3 className={styles.breakdownTitle}>Practice Breakdown</h3>
 
         {/* Horizontal Legend */}
         <div className={styles.legendRow}>
           {resolvedList.map((item) => (
-            <div key={item.name} className={styles.legendItem}>
+            <button
+              key={item.name}
+              type="button"
+              className={styles.legendItem}
+              onClick={() => router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`)}
+              aria-label={`View deals for ${item.name}`}
+            >
               <div className={styles.legendHeader}>
                 <span
                   className={styles.legendDot}
@@ -241,7 +255,7 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
               <span className={styles.legendAmount}>
                 {financials ? formatCrmCurrency(item.value) : "Confidential"}
               </span>
-            </div>
+            </button>
           ))}
         </div>
 
@@ -260,13 +274,22 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
               <div
                 key={item.name}
                 className={styles.gradientSegment}
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`);
+                  }
+                }}
+                aria-label={`Filter deals by ${item.name}`}
                 style={{
                   width: `${pct}%`,
                   background: item.gradient,
                 }}
               >
                 <div className={styles.segmentTooltip}>
-                  {item.name}: {financials ? formatCrmCurrency(item.value) : "Confidential"} ({Math.round((item.value / totalSum) * 100)}%)
+                  {item.name}: {financials ? formatCrmCurrency(item.value) : "Confidential"} ({Math.round((item.value / totalSum) * 100)}%) ↗
                 </div>
               </div>
             );

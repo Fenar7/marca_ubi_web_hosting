@@ -150,13 +150,13 @@ export function OverviewWorkspace({
     setIsStageModalOpen(true);
   };
 
-  const handleOpenDossier = (record: OverviewRecord) => {
-    if (record.href) {
+  const handleOpenDossier = (record: OverviewRecord, options?: { fullPage?: boolean }) => {
+    if (options?.fullPage && record.href) {
       router.push(record.href);
     } else {
       window.dispatchEvent(
         new CustomEvent("open-lead-drawer", {
-          detail: { leadId: record.id, id: record.id },
+          detail: { leadId: record.id, id: record.id, fullPage: false },
         })
       );
     }
@@ -180,6 +180,7 @@ export function OverviewWorkspace({
         averageCycleDays={data.averageCycleDays}
         financials={data.financials}
         canExport={data.canExport}
+        cohort={data.cohort}
         onExportSummary={exportSummary}
       />
 
@@ -190,7 +191,8 @@ export function OverviewWorkspace({
       >
         <div className={styles.rowOneColumn}>
           <EarningOverviewSplineCard
-            totalValue={data.pipelineValue}
+            totalValue={data.convertedValue}
+            points={data.chart}
             financials={data.financials}
           />
         </div>

@@ -10,6 +10,7 @@
  */
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./UpcomingSlaCard.module.scss";
@@ -79,28 +80,34 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
   financials = true,
   onOpenRecord,
 }) => {
+  const router = useRouter();
   const displayItems: UpcomingSlaItem[] = React.useMemo(() => {
     if (!records || records.length === 0) {
       return DEFAULT_ITEMS;
     }
 
     const colors: ("red" | "green" | "coral" | "blue")[] = ["red", "green", "coral", "blue"];
+    const now = Date.now();
+
     return records.slice(0, 4).map((rec, idx) => {
-      let badgeType: "scheduled" | "today" | "overdue" = "scheduled";
-      let statusStr = "Scheduled";
-
-      if (idx === 0) {
-        badgeType = "today";
-        statusStr = "Due Today";
-      } else if (idx === 3) {
-        badgeType = "overdue";
-        statusStr = "Overdue 1d";
-      } else {
-        badgeType = "scheduled";
-        statusStr = "Scheduled";
-      }
-
       const d = rec.due ? new Date(rec.due) : new Date(rec.createdAt);
+      const dueTime = d.getTime();
+      const isOverdue = Number.isFinite(dueTime) && dueTime < now;
+      const isToday = Number.isFinite(dueTime) && !isOverdue && dueTime - now < 86400000;
+      const daysDiff = Math.abs(Math.round((now - dueTime) / 86400000));
+
+      const badgeType: "scheduled" | "today" | "overdue" = isOverdue
+        ? "overdue"
+        : isToday
+        ? "today"
+        : "scheduled";
+
+      const statusStr = isOverdue
+        ? `Overdue ${daysDiff > 0 ? `${daysDiff}d` : "1d"}`
+        : isToday
+        ? "Due Today"
+        : "Scheduled";
+
       const dateFormatted = d.toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
@@ -136,6 +143,11 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
         <button
           type="button"
           className={styles.addButton}
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("open-new-lead-modal"));
+            }
+          }}
           aria-label="Add new milestone or SLA commitment"
         >
           +
@@ -214,14 +226,10 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
       <button
         type="button"
         className={styles.viewAllButton}
-        onClick={() => {
-          // Open first record or trigger drawer
-          if (records && records[0] && onOpenRecord) {
-            onOpenRecord(records[0]);
-          }
-        }}
+        onClick={() => router.push("/admin/tasks?queue=upcoming")}
       >
-        View All Milestone Commitments
+        <span>View All Milestone Commitments</span>
+        <span className={styles.btnArrow} aria-hidden="true">↗</span>
       </button>
     </article>
   );
