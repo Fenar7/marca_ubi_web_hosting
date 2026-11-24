@@ -9,3 +9,5 @@ Existing inbox errors remain visible and retryable. Record access and management
 Test inquiries support triage and assignment. Lead resolution is disabled for test inquiries because the live matching workflow excludes synthetic leads. Existing fixture links remain visible to authorized users.
 
 The isolated Playwright run passed all ten checks. It exercises the inbox and detail management client with simulated writes. The fixture shell supplies static brief and activity content, so this run does not verify the signed-in Next.js routes or hosted Supabase writes.
+
+Repository-wide TypeScript and Inquiries ESLint checks passed. A separate hosted database check used an authenticated administrator role in a rollback-only transaction. It read all 12 test inquiries, changed one unlinked test inquiry to Reviewed, assigned its owner, and read back the saved state, owner, and audit event. The original revision was confirmed after rollback. This verifies the database permissions and write path independently of browser authentication.
