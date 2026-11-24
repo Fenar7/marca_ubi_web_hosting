@@ -268,14 +268,24 @@ describe('Marca Ubi CRM — Next.js 16 Edge Middleware & Login Hardening (Sprint
       assert.equal(result.error, 'Password cannot be empty');
     });
 
-    it('returns generic error on invalid corporate credentials defending against user enumeration', async () => {
+    it('keeps the credential error generic and records only sanitized provider diagnostics', async (t) => {
       const formData = new FormData();
       formData.set('email', 'nonexistent_agent_999@marcaubi.com');
       formData.set('password', 'IncorrectPassword123!');
 
+      const info = t.mock.method(console, 'info', () => {});
+      const warn = t.mock.method(console, 'warn', () => {});
       const result = await loginAction(null, formData);
       assert.equal(result.success, false);
       assert.equal(result.error, 'Invalid corporate credentials');
+      const attempt = info.mock.calls.find(({ arguments: args }) => args[0] === '[CRM_LOGIN] attempt');
+      const rejection = warn.mock.calls.find(({ arguments: args }) => args[0] === '[CRM_LOGIN] provider_rejected');
+      assert.ok(attempt && rejection);
+      assert.equal(rejection.arguments[1].attemptId, attempt.arguments[1].attemptId);
+      assert.equal(rejection.arguments[1].code, 'invalid_credentials');
+      const logged = JSON.stringify([...info.mock.calls, ...warn.mock.calls].map(({ arguments: args }) => args));
+      assert.ok(!logged.includes(String(formData.get('email'))));
+      assert.ok(!logged.includes(String(formData.get('password'))));
     });
   });
 
