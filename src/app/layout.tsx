@@ -10,7 +10,7 @@
 
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import SmoothScrollProvider from "./components/SmoothScrollProvider/SmoothScrollProvider";
+import SmoothScrollGate from "./components/SmoothScrollProvider/SmoothScrollGate";
 import ChatPodBoundary from "./chat-pod/ChatPodBoundary";
 import { graphik, circularXX, helveticaNeue } from "./fonts";
 import "./globals.css";
@@ -143,9 +143,9 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>
-        <SmoothScrollProvider>
+        <SmoothScrollGate>
           {children}
-        </SmoothScrollProvider>
+        </SmoothScrollGate>
         {/* Outside the scroll provider on purpose: Lenis transforms its wrapper, and a fixed element
             inside a transformed ancestor is positioned against that ancestor instead of the viewport.
             Suspense keeps the two Sanity round-trips off the first byte of every page. */}

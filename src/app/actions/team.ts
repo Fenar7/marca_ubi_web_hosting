@@ -11,7 +11,7 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/app/lib/supabase/server';
+import { createClient, getCachedCallerProfile } from '@/app/lib/supabase/server';
 import { getAdminClient } from '@/app/lib/supabase/admin';
 import type {
   CrmUserRole,
@@ -729,20 +729,13 @@ export async function setTeamUserStatus(
  * @returns {Promise<TeamActionResult<TeamMemberRosterItem[]>>} Directory roster records.
  */
 export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRosterItem[]>> {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { supabase, user, profile: callerProfile, error: callerError } = await getCachedCallerProfile();
 
-  if (authError || !user) {
+  if (!user) {
     return { success: false, error: 'Unauthorized: Session authentication required.' };
   }
 
-  const { data: callerProfile, error: callerProfileError } = await supabase
-    .from('profiles')
-    .select('role, status, allowed_tabs, feature_permissions')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (callerProfileError || !callerProfile) {
+  if (callerError || !callerProfile) {
     return { success: false, error: 'Caller profile could not be verified.' };
   }
 
@@ -1002,18 +995,11 @@ export async function getPersonnelProfile(
       return { success: false, error: 'Invalid user ID format: UUID expected.' };
     }
 
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { supabase, user, profile: callerProfile, error: callerProfileError } = await getCachedCallerProfile();
 
-    if (authError || !user) {
+    if (!user) {
       return { success: false, error: 'Unauthorized: Session authentication required.' };
     }
-
-    const { data: callerProfile, error: callerProfileError } = await supabase
-      .from('profiles')
-      .select('id, role, status, allowed_tabs, feature_permissions')
-      .eq('id', user.id)
-      .maybeSingle();
 
     if (callerProfileError || !callerProfile) {
       return { success: false, error: 'Caller profile could not be verified in the agency directory.' };
