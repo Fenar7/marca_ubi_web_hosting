@@ -7,18 +7,29 @@
  */
 
 import React, { useState, useTransition, useRef, useEffect } from 'react';
-import type { Profile } from '@/types/crm';
+import type { Profile, PersonnelLoginSummary } from '@/types/crm';
 import { adminResetPersonnelPassword, adminRevokePersonnelSessions } from '@/app/actions/team';
 import styles from './PersonnelSecurityEnclave.module.scss';
 
 interface PersonnelSecurityEnclaveProps {
   profile: Profile;
+  loginSummary?: PersonnelLoginSummary;
   canEdit: boolean;
   isSelf: boolean;
 }
 
+function summarizeUserAgent(ua: string | null): string {
+  if (!ua) return 'Browser session';
+  if (ua.includes('Edg/')) return 'Edge';
+  if (ua.includes('Chrome/')) return 'Chrome';
+  if (ua.includes('Firefox/')) return 'Firefox';
+  if (ua.includes('Safari/')) return 'Safari';
+  return 'Web client';
+}
+
 export function PersonnelSecurityEnclave({
   profile,
+  loginSummary,
   canEdit,
   isSelf,
 }: PersonnelSecurityEnclaveProps): React.ReactElement {
@@ -148,10 +159,33 @@ export function PersonnelSecurityEnclave({
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
-        <h3 className={styles.title}>Security &amp; Authentication</h3>
+        <h3 className={styles.title}>Login &amp; Session Telemetry</h3>
       </div>
 
       <div className={styles.securityList}>
+        <div className={styles.securityItem}>
+          <span className={styles.itemLabel}>Last Authenticated</span>
+          <span className={styles.itemValue}>
+            {loginSummary?.lastLoginAt || profile.last_login_at
+              ? new Date(loginSummary?.lastLoginAt || (profile.last_login_at as string)).toLocaleString('en-IN', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : 'Never logged in'}
+          </span>
+        </div>
+
+        {loginSummary && (
+          <div className={styles.securityItem}>
+            <span className={styles.itemLabel}>Sign-Ins (30d / Total)</span>
+            <span className={styles.itemValue}>
+              {loginSummary.logins30dCount} / {loginSummary.totalLoginsCount}
+            </span>
+          </div>
+        )}
+
         <div className={styles.securityItem}>
           <span className={styles.itemLabel}>Password Rotation</span>
           <span
@@ -164,26 +198,36 @@ export function PersonnelSecurityEnclave({
         </div>
 
         <div className={styles.securityItem}>
-          <span className={styles.itemLabel}>Last Authenticated</span>
-          <span className={styles.itemValue}>
-            {profile.last_login_at
-              ? new Date(profile.last_login_at).toLocaleDateString('en-IN', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : 'Never logged in'}
-          </span>
-        </div>
-
-        <div className={styles.securityItem}>
           <span className={styles.itemLabel}>Account State</span>
           <span className={`${styles.itemValue} ${styles.statusText}`}>
             {profile.status}
           </span>
         </div>
       </div>
+
+      {loginSummary && loginSummary.recentLogins.length > 0 && (
+        <div className={styles.loginHistoryBlock}>
+          <h4 className={styles.loginHistoryHeading}>Recent Sign-In History</h4>
+          <ol className={styles.loginHistoryList}>
+            {loginSummary.recentLogins.slice(0, 5).map((ev) => (
+              <li key={ev.id} className={styles.loginHistoryRow}>
+                <time className={styles.loginTime} dateTime={ev.created_at}>
+                  {new Date(ev.created_at).toLocaleString('en-IN', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </time>
+                <span className={styles.loginMeta} title={ev.user_agent || undefined}>
+                  {summarizeUserAgent(ev.user_agent)}
+                  {ev.ip_address ? ` · ${ev.ip_address}` : ''}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {alert && (
         <div className={`${styles.alertBox} ${styles[alert.type]}`} role="alert">

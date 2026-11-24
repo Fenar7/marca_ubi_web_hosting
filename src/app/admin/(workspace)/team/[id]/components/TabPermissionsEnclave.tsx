@@ -103,10 +103,6 @@ export function TabPermissionsEnclave({
                     key={tab.key}
                     className={`${styles.tabChip} ${isGranted ? styles.granted : styles.denied}`}
                   >
-                    <span
-                      className={`${styles.dot} ${isGranted ? styles.dotGranted : styles.dotDenied}`}
-                      aria-hidden="true"
-                    />
                     <span className={styles.srOnly}>{isGranted ? 'Granted: ' : 'Denied: '}</span>
                     {tab.label}
                   </span>

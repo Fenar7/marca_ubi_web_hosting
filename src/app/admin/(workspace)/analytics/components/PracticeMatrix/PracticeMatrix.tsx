@@ -56,13 +56,9 @@ export const PracticeMatrix: React.FC<PracticeMatrixProps> = ({
             key={cat.categoryName}
             href={`/admin/leads?search=${encodeURIComponent(cat.categoryName)}`}
             className={styles.categoryRow}
+            style={{ borderLeftColor: cat.colorCode || '#4338ca' }}
           >
             <div className={styles.catLeft}>
-              <span
-                className={styles.catDot}
-                style={{ backgroundColor: cat.colorCode || '#111111' }}
-                aria-hidden="true"
-              />
               <span className={styles.catName}>{cat.categoryName}</span>
             </div>
 
@@ -73,9 +69,18 @@ export const PracticeMatrix: React.FC<PracticeMatrixProps> = ({
               <strong className={styles.catVal}>
                 {formatCrmCurrency(cat.activePipelineValue)}
               </strong>
-              <span className={styles.chevron} aria-hidden="true">
-                →
-              </span>
+              <svg
+                className={styles.chevron}
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </div>
           </Link>
         ))}

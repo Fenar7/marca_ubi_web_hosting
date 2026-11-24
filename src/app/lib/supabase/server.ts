@@ -7,9 +7,11 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
+import { cache } from 'react';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getEnv } from '@/app/lib/env';
+import type { CrmUserRole, FeaturePermissions } from '@/types/crm';
 
 /**
  * Creates an authenticated Supabase client for Server Components, Server Actions,
@@ -90,3 +92,55 @@ export async function createClient() {
     }
   );
 }
+
+/**
+ * Request-scoped deduplicated Supabase Auth lookup using `React.cache()`.
+ * Eliminates duplicate HTTPS `auth.getUser()` round-trips across layout, page,
+ * and Server Actions during the same SSR render without cross-request sharing.
+ */
+export const getCachedAuthUser = cache(async () => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  return {
+    supabase,
+    user: data?.user ?? null,
+    error,
+  };
+});
+
+export interface CachedCallerProfile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  role: CrmUserRole;
+  status: string;
+  job_title: string | null;
+  allowed_tabs: string[] | null;
+  feature_permissions: FeaturePermissions | null;
+  avatar_url: string | null;
+}
+
+/**
+ * Request-scoped deduplicated caller `public.profiles` lookup using `React.cache()`.
+ * Pairs with `getCachedAuthUser()` so layout guards, pages, and Server Actions share
+ * a single database lookup per request.
+ */
+export const getCachedCallerProfile = cache(async () => {
+  const { supabase, user, error: authError } = await getCachedAuthUser();
+  if (authError || !user) {
+    return { supabase, user: null, profile: null as CachedCallerProfile | null, error: authError };
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, role, status, job_title, allowed_tabs, feature_permissions, avatar_url')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  return {
+    supabase,
+    user,
+    profile: (profile as CachedCallerProfile | null) ?? null,
+    error: profileError,
+  };
+});

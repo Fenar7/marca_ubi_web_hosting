@@ -25,6 +25,14 @@ import {
 } from './components/StageDwellMatrix/StageDwellMatrix';
 import styles from './analytics.module.scss';
 
+export type {
+  AnalyticsMastheadMetrics,
+  FunnelStageItem,
+  RevenueSplinePoint,
+  PracticeCategoryItem,
+  StageDwellRow,
+};
+
 export interface AnalyticsWorkspaceClientProps {
   initialTimeframe: AnalyticsTimeframeSlug;
   periodLabel: string;

@@ -33,6 +33,64 @@
   gap: 0.75rem;
 }
 
+.loginHistoryBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
+}
+
+.loginHistoryHeading {
+  margin: 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted, #575753);
+}
+
+.loginHistoryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.loginHistoryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--admin-bg-canvas, #fbfbfa);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-left: 3px solid #4338ca;
+  border-radius: 6px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.75rem;
+}
+
+.loginTime {
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+  font-variant-numeric: tabular-nums;
+}
+
+.loginMeta {
+  color: var(--admin-text-muted, #575753);
+  font-size: 0.71875rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 170px;
+}
+
 .securityItem {
   display: flex;
   justify-content: space-between;

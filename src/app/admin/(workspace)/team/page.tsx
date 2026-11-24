@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/app/lib/supabase/server';
+import { getCachedCallerProfile } from '@/app/lib/supabase/server';
 import { getTeamRoster } from '@/app/actions/team';
 import { hasPersonnelDirectoryAccess } from '@/app/lib/team-permissions-config';
 import { formatNumber, formatDealValuation } from '@/app/lib/team-utils';
@@ -18,15 +18,8 @@ export const metadata: Metadata = {
 
 /** The roster and its actions are available only to authorized, active CRM users. */
 export default async function AdminTeamPage(): Promise<React.ReactElement> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, profile, error } = await getCachedCallerProfile();
   if (!user) redirect('/admin/login?next=%2Fadmin%2Fteam');
-
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('id, role, status, allowed_tabs, feature_permissions')
-    .eq('id', user.id)
-    .maybeSingle();
 
   if (error || !profile) redirect('/admin/login?error=profile_not_found');
   if (profile.status !== 'active') redirect('/admin/login?error=account_suspended');

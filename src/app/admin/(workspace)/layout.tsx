@@ -10,7 +10,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { createClient } from "@/app/lib/supabase/server";
+import { getCachedCallerProfile } from "@/app/lib/supabase/server";
 import type { CrmUserRole } from "@/types/crm";
 import { AdminWorkspaceShell } from "@/app/admin/components/layout/AdminWorkspaceShell";
 import { isTabAuthorized } from "@/app/admin/components/layout/navigationConfig";
@@ -39,23 +39,11 @@ export default async function AdminWorkspaceLayout({
 }: {
   children: React.ReactNode;
 }): Promise<React.ReactElement> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user, profile } = await getCachedCallerProfile();
 
   if (!user) {
     redirect("/admin/login?next=%2Fadmin");
   }
-
-  // Retrieve authenticated staff profile and verify active operational standing
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select(
-      "id, full_name, email, role, status, job_title, allowed_tabs, feature_permissions, avatar_url",
-    )
-    .eq("id", user.id)
-    .maybeSingle();
 
   if (profile?.status === "suspended") {
     redirect("/admin/login?error=account_suspended");

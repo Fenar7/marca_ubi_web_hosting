@@ -1,236 +1,253 @@
 .funnelSection {
-  background-color: var(--admin-card-bg, #ffffff);
+  background: var(--admin-bg-surface, #ffffff);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: var(--admin-radius-card, 12px);
-  padding: 24px 26px;
+  border-radius: 12px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  width: 100%;
 }
 
 .sectionHeader {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .sectionTitle {
+  margin: 0;
   font-family: var(--font-circular), sans-serif;
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   color: var(--admin-text-primary, #111111);
-  margin: 0 0 4px 0;
 }
 
 .sectionSubtitle {
+  margin: 0.2rem 0 0;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.8125rem;
-  color: var(--admin-text-muted, #696965);
-  margin: 0;
+  color: var(--admin-text-muted, #575753);
 }
 
-.intakeBadge {
+.intakeReadout {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.75rem;
-  padding: 4px 12px;
-  background-color: var(--admin-card-quiet, #efefed);
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted, #575753);
+  font-variant-numeric: tabular-nums;
+  padding: 0.4rem 0.85rem;
+  background: var(--admin-bg-canvas, #fbfbfa);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: var(--admin-radius-pill, 9999px);
-  color: var(--admin-text-secondary, #454542);
+  border-radius: 9999px;
 
   strong {
     color: var(--admin-text-primary, #111111);
     font-weight: 600;
-    font-variant-numeric: tabular-nums;
   }
 }
 
-.funnelRail {
-  display: flex;
-  align-items: stretch;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.15);
-    border-radius: 9999px;
-  }
+.emptyFunnel {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.875rem;
+  color: var(--admin-text-muted, #575753);
 }
 
-.stagePod {
-  flex: 1;
-  min-width: 175px;
-  background-color: var(--admin-card-quiet, #efefed);
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: 10px;
-  padding: 16px 14px;
+.funnelList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: all 0.15s ease;
+}
 
-  &:hover {
-    background-color: #ffffff;
-    box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
-    border-color: #d8d8d4;
+.listHeaderRow {
+  display: grid;
+  grid-template-columns: 1.3fr 1.8fr 0.7fr 0.7fr 0.75fr 1fr;
+  gap: 1rem;
+  padding: 0.65rem 1.5rem;
+  background: var(--admin-bg-canvas, #fbfbfa);
+  border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted, #575753);
+
+  @media (max-width: 900px) {
+    display: none;
   }
 }
 
-.wonStagePod {
-  background-color: #f7fdf9;
-  border-color: #a7f3d0;
-
-  &:hover {
-    background-color: #ecfdf5;
-  }
-}
-
-.podTop {
-  display: flex;
+.stageRow {
+  display: grid;
+  grid-template-columns: 1.3fr 1.8fr 0.7fr 0.7fr 0.75fr 1fr;
+  gap: 1rem;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.stageTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.stageDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.stageName {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--admin-text-primary, #111111);
-}
-
-.reachedPill {
-  font-family: var(--font-admin-code), monospace;
-  font-size: 0.6875rem;
-  color: var(--admin-text-muted, #696965);
-  background: rgba(0, 0, 0, 0.04);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.podMetrics {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background-color: #ffffff;
-  border: 1px solid var(--admin-border-hairline, rgba(0, 0, 0, 0.06));
-  border-radius: 6px;
-  padding: 10px 12px;
-}
-
-.metricRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.subLabel {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.6875rem;
-  color: var(--admin-text-muted, #696965);
-}
-
-.metricVal {
-  font-family: var(--font-helvetica-neue), sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 400;
-  color: var(--admin-text-primary, #111111);
-  font-variant-numeric: tabular-nums;
-}
-
-.rateTag {
-  font-family: var(--font-admin-code), monospace;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-.highRate {
-  background-color: #ecfdf5;
-  color: #065f46;
-}
-
-.midRate {
-  background-color: #fffbeb;
-  color: #78350f;
-}
-
-.dropOffBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.6875rem;
-  font-family: var(--font-graphik), sans-serif;
-  padding: 4px 6px;
-  background: rgba(234, 0, 42, 0.05);
-  border-radius: 4px;
-}
-
-.dropOffLabel {
-  color: var(--admin-text-muted, #696965);
-}
-
-.dropOffVal {
-  font-family: var(--font-admin-code), monospace;
-  font-weight: 500;
-  color: var(--admin-brand-primary, #ea002a);
-}
-
-.drillLink {
-  margin-top: auto;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--admin-text-secondary, #454542);
+  min-height: 54px;
+  padding: 0.8rem 1.5rem;
+  border-bottom: 1px solid var(--admin-bg-subtle, #efefed);
+  border-left: 3px solid #4338ca;
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.12s ease;
+  color: inherit;
+  transition: background-color 0.12s ease;
 
-  span {
-    transition: transform 0.12s ease;
+  &:last-child {
+    border-bottom: none;
   }
 
   &:hover {
-    color: var(--admin-brand-primary, #ea002a);
-    span {
+    background: var(--admin-bg-canvas, #fbfbfa);
+
+    .rowChevron {
+      color: var(--admin-text-primary, #111111);
       transform: translateX(2px);
     }
   }
 
   &:focus-visible {
     outline: 2px solid var(--admin-focus-ring, #9c001e);
-    border-radius: 2px;
+    outline-offset: -2px;
+  }
+
+  &.wonStageRow {
+    background: rgba(16, 185, 129, 0.03);
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 1rem;
+    padding: 0.95rem 1.25rem;
   }
 }
 
-.stepChevron {
+.stageNameCell {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #c4c4bf;
+  gap: 0.5rem;
+  min-width: 0;
+
+  @media (max-width: 900px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.stageName {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+}
+
+.wonTag {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+  border: 1px solid rgba(6, 95, 70, 0.25);
+}
+
+.barCell {
+  min-width: 0;
+
+  @media (max-width: 900px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.barTrack {
+  width: 100%;
+  height: 7px;
+  background: var(--admin-bg-subtle, #efefed);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.25s ease;
+}
+
+.metricCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+
+  @media (max-width: 900px) {
+    justify-content: space-between;
+  }
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.mobileMetricLabel {
+  display: none;
+  font-size: 0.72rem;
+  color: var(--admin-text-muted, #575753);
+
+  @media (max-width: 900px) {
+    display: inline;
+  }
+}
+
+.metricVal {
+  font-family: var(--font-helvetica-neue), var(--font-graphik), sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--admin-text-primary, #111111);
+}
+
+.metricSubVal {
+  color: var(--admin-text-secondary, #454542);
+}
+
+.rateValue {
+  font-weight: 600;
+  color: var(--admin-text-secondary, #454542);
+
+  &.highRate {
+    color: #065f46;
+  }
+}
+
+.dropOffCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.dropOffWarn {
+  font-weight: 600;
+  color: #9c001e;
+}
+
+.dropOffNeutral {
+  color: var(--admin-text-muted, #575753);
+}
+
+.rowChevron {
+  color: var(--admin-text-muted, #575753);
   flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageRow,
+  .barFill,
+  .rowChevron {
+    transition: none;
+  }
 }

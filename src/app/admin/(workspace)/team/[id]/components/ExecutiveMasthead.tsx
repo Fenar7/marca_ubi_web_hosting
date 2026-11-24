@@ -18,6 +18,7 @@ import styles from './ExecutiveMasthead.module.scss';
 interface ExecutiveMastheadProps {
   profile: Profile;
   invitedByName: string | null;
+  lastLoginAt?: string | null;
   canEditAvatar: boolean;
   onOpenAvatarModal: () => void;
 }
@@ -25,6 +26,7 @@ interface ExecutiveMastheadProps {
 export function ExecutiveMasthead({
   profile,
   invitedByName,
+  lastLoginAt,
   canEditAvatar,
   onOpenAvatarModal,
 }: ExecutiveMastheadProps): React.ReactElement {
@@ -100,18 +102,12 @@ export function ExecutiveMasthead({
               title="Update profile photograph"
               aria-label="Update profile photograph"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </button>
           )}
-
-          <div
-            className={`${styles.onlineStatusDot} ${profile.status === 'active' ? styles.active : styles.suspended}`}
-            title={`Status: ${profile.status === 'active' ? 'Active' : 'Suspended'}`}
-            aria-hidden="true"
-          />
         </div>
 
         <div className={styles.identityMeta}>
@@ -124,16 +120,31 @@ export function ExecutiveMasthead({
 
           <p className={styles.jobTitle}>{profile.job_title || 'Commercial Personnel'}</p>
 
-          {invitedByName && (
-            <p className={styles.inviterNote}>
-              Onboarded by <strong>{invitedByName}</strong> • Member since{' '}
-              {new Date(profile.created_at).toLocaleDateString('en-IN', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </p>
-          )}
+          <p className={styles.inviterNote}>
+            {invitedByName && (
+              <>
+                Onboarded by <strong>{invitedByName}</strong> ·{' '}
+              </>
+            )}
+            Member since{' '}
+            {new Date(profile.created_at).toLocaleDateString('en-IN', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+            {' · '}
+            Last login:{' '}
+            <strong>
+              {lastLoginAt
+                ? new Date(lastLoginAt).toLocaleString('en-IN', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : 'No sign-in recorded'}
+            </strong>
+          </p>
         </div>
       </div>
 

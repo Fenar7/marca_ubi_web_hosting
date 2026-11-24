@@ -27,7 +27,7 @@ export const StageDwellMatrix: React.FC<StageDwellMatrixProps> = ({ rows }) => {
             Stage Velocity &amp; Bottleneck Diagnostics
           </h2>
           <p className={styles.sectionSubtitle}>
-            Audits dwell duration across pipeline stages. Stalled deals (>14 days without movement) are flagged in crimson.
+            Audits dwell duration across pipeline stages. Stalled deals (&gt;14 days without movement) are flagged in crimson.
           </p>
         </div>
       </div>
@@ -54,12 +54,10 @@ export const StageDwellMatrix: React.FC<StageDwellMatrixProps> = ({ rows }) => {
               return (
                 <tr key={row.stageId}>
                   <td>
-                    <div className={styles.stageCell}>
-                      <span
-                        className={styles.stageDot}
-                        style={{ backgroundColor: row.colorCode || '#111111' }}
-                        aria-hidden="true"
-                      />
+                    <div
+                      className={styles.stageCell}
+                      style={{ borderLeftColor: row.colorCode || '#4338ca' }}
+                    >
                       <span className={styles.stageNameText}>{row.stageName}</span>
                     </div>
                   </td>
@@ -98,7 +96,10 @@ export const StageDwellMatrix: React.FC<StageDwellMatrixProps> = ({ rows }) => {
                       href={`/admin/leads?stage=${encodeURIComponent(row.stageId)}`}
                       className={styles.inspectBtn}
                     >
-                      View deals <span>→</span>
+                      <span>View deals</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
                     </Link>
                   </td>
                 </tr>

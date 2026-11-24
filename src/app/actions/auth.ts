@@ -84,6 +84,50 @@ async function resolveClientIp(): Promise<string> {
 }
 
 /**
+ * Persists real login timestamp onto `public.profiles.last_login_at` and appends an
+ * immutable `user_login` telemetry entry into `public.team_audit_logs`.
+ * Non-blocking so transient telemetry or migration delays never prevent sign-in.
+ */
+async function recordLoginTelemetry(
+  userId: string,
+  email: string,
+  ipAddress: string,
+  userAgent: string | null,
+  fallbackClient: Awaited<ReturnType<typeof createClient>>
+): Promise<void> {
+  try {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const dbClient =
+      serviceRoleKey && serviceRoleKey.trim().length >= 20
+        ? getAdminClient()
+        : fallbackClient;
+
+    const nowIso = new Date().toISOString();
+
+    await Promise.all([
+      dbClient
+        .from('profiles')
+        .update({ last_login_at: nowIso })
+        .eq('id', userId),
+      dbClient.from('team_audit_logs').insert({
+        actor_id: userId,
+        action: 'user_login',
+        target_user_email: email,
+        details: {
+          target_user_id: userId,
+          ip_address: ipAddress,
+          user_agent: userAgent ? userAgent.slice(0, 240) : null,
+          method: 'password',
+        },
+      }),
+    ]);
+  } catch (telemetryErr: unknown) {
+    const msg = telemetryErr instanceof Error ? telemetryErr.message : String(telemetryErr);
+    console.warn('[LOGIN_TELEMETRY_WARNING] Non-blocking login tracking skipped:', msg);
+  }
+}
+
+/**
  * Executes administrative authentication against Supabase Auth.
  *
  * Security Lifecycle:
@@ -196,6 +240,22 @@ export async function loginAction(
 
     // Reset rate limiter on successful authentication
     resetRateLimit(rateLimitKey);
+
+    let userAgent: string | null = null;
+    try {
+      const hdrs = await headers();
+      userAgent = hdrs.get('user-agent');
+    } catch {
+      userAgent = null;
+    }
+
+    await recordLoginTelemetry(
+      data.user.id,
+      data.user.email || email,
+      clientIp,
+      userAgent,
+      supabase
+    );
 
     // SEC-03: Synchronize profile role and allowed_tabs into app_metadata and rotate session cookie
     // Ensures Next.js Edge Proxy and Server Components have synchronized, authoritative JWT claims
