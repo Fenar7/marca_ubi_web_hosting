@@ -19,6 +19,7 @@ import {
   resetRateLimit,
 } from '@/app/lib/auth-rate-limit';
 import { getAdminClient } from '@/app/lib/supabase/admin';
+import { getEnv } from '@/app/lib/env';
 import { ResetPasswordSchema } from '@/app/lib/team-schemas';
 import type { LoginActionResult, ResetPasswordResult, SignupActionResult } from '@/types/crm';
 
@@ -101,6 +102,9 @@ export async function loginAction(
   _prevState: LoginActionResult | null,
   formData: FormData
 ): Promise<LoginActionResult> {
+  // Correlate server events without using any part of the submitted credentials.
+  const attemptId = crypto.randomUUID();
+  console.info('[CRM_LOGIN] attempt', { attemptId });
   const rawEmail = formData.get('email');
   const rawPassword = formData.get('password');
   const rawNext = formData.get('next')?.toString();
@@ -112,6 +116,7 @@ export async function loginAction(
   });
 
   if (!parseResult.success) {
+    console.info('[CRM_LOGIN] invalid_input', { attemptId });
     const firstError = parseResult.error.issues[0]?.message || 'Invalid corporate credentials';
     return {
       success: false,
@@ -126,6 +131,7 @@ export async function loginAction(
   // Evaluate brute-force rate limit status
   const rateLimitStatus = checkRateLimit(rateLimitKey);
   if (!rateLimitStatus.allowed) {
+    console.info('[CRM_LOGIN] rate_limited', { attemptId });
     return {
       success: false,
       error: `Access temporarily restricted due to consecutive failed attempts. Please retry in ${rateLimitStatus.remainingLockoutSeconds} seconds.`,
@@ -141,12 +147,21 @@ export async function loginAction(
 
   try {
     const supabase = await createClient();
+    const supabaseHost = new URL(getEnv().NEXT_PUBLIC_SUPABASE_URL).hostname;
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error || !data.user) {
+      const providerCode = error?.code;
+      console.warn('[CRM_LOGIN] provider_rejected', {
+        attemptId,
+        supabaseHost,
+        status: error?.status,
+        code: providerCode && /^[a-z0-9_]{1,64}$/.test(providerCode) ? providerCode : undefined,
+        userReturned: Boolean(data.user),
+      });
       const recordResult = recordFailedAttempt(rateLimitKey);
 
       if (recordResult.isLocked) {
@@ -171,6 +186,7 @@ export async function loginAction(
       (data.user.user_metadata?.status as string | undefined);
 
     if (accountStatus === 'suspended') {
+      console.info('[CRM_LOGIN] account_suspended', { attemptId });
       await supabase.auth.signOut();
       return {
         success: false,
@@ -230,6 +246,7 @@ export async function loginAction(
       data.user.user_metadata?.must_change_password === true;
 
     if (mustChangePassword) {
+      console.info('[CRM_LOGIN] password_change_required', { attemptId });
       return {
         success: true,
         redirectTo: '/admin/reset-password',
@@ -242,13 +259,17 @@ export async function loginAction(
       safeDestination = '/admin';
     }
 
+    console.info('[CRM_LOGIN] authenticated', { attemptId });
     return {
       success: true,
       redirectTo: safeDestination,
     };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown internal error';
-    console.error('[AUTH_ACTION_FATAL] Unexpected failure during administrative login:', message);
+    console.error('[AUTH_ACTION_FATAL] Unexpected failure during administrative login:', {
+      attemptId,
+      configurationError: message.startsWith('[CRITICAL CONFIGURATION ERROR]'),
+    });
     return {
       success: false,
       error: 'An internal authentication error occurred. Please try again later.',
