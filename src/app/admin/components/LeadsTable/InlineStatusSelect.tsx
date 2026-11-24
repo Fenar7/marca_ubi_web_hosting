@@ -195,7 +195,7 @@ export function InlineStatusSelect({
 
   const rawColor = optimisticStatus.color_code?.toLowerCase().trim();
   const isWhite = !rawColor || rawColor === '#ffffff' || rawColor === '#fff' || rawColor === 'white';
-  const statusColor = isWhite ? '#475569' : optimisticStatus.color_code || '#1f242f';
+  const statusColor = isWhite ? '#666663' : optimisticStatus.color_code || '#111111';
 
   return (
     <div
@@ -247,7 +247,7 @@ export function InlineStatusSelect({
             const isGuarded = status.bucket === 'converted' || status.bucket === 'lost';
             const rawItemColor = status.color_code?.toLowerCase().trim();
             const isItemWhite = !rawItemColor || rawItemColor === '#ffffff' || rawItemColor === '#fff' || rawItemColor === 'white';
-            const itemColor = isItemWhite ? '#475569' : status.color_code || '#1f242f';
+            const itemColor = isItemWhite ? '#666663' : status.color_code || '#111111';
 
             return (
               <button

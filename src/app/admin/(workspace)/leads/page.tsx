@@ -72,7 +72,7 @@ export default async function AdminLeadsPage(
   // Verify tab-level access against user's granular allowed_tabs
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, status, allowed_tabs')
+    .select('role, status, allowed_tabs, feature_permissions')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -169,11 +169,17 @@ export default async function AdminLeadsPage(
     };
   });
 
+  const permissions = profile?.feature_permissions as Record<string, unknown> | null;
+  const canViewFinancials =
+    role === 'admin' ||
+    role === 'sales_manager' ||
+    permissions?.can_view_financials === true;
+
   const availableStatuses: InlineStatusOption[] = (statusesRes.data || []).map((s) => ({
     id: s.id,
     name: s.name,
     bucket: s.bucket as FunnelBucket,
-    color_code: s.color_code || '#1f242f',
+    color_code: s.color_code || '#111111',
     sort_order: s.sort_order,
   }));
 
@@ -201,11 +207,11 @@ export default async function AdminLeadsPage(
       email: l.email,
       preferred_channel: l.preferred_channel || 'Email',
       service_category: l.service_category || 'Creative Agency',
-      expected_value: Number(l.expected_value) || 0,
+      expected_value: canViewFinancials ? Number(l.expected_value) || 0 : 0,
       priority: l.priority || 'Medium',
       status_id: l.status_id,
       status_name: statusData?.name || 'Active Deal',
-      status_color: statusData?.color_code || '#1f242f',
+      status_color: statusData?.color_code || '#111111',
       bucket: statusData?.bucket || 'open',
       assigned_to: l.assigned_to,
       assigned_to_name: l.assigned_to

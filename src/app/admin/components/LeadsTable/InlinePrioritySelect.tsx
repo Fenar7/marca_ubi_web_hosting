@@ -208,10 +208,10 @@ export function InlinePrioritySelect({
                     style={{
                       background:
                         priority === 'High'
-                          ? '#991b1b'
+                          ? '#ea002a'
                           : priority === 'Medium'
                           ? '#92400e'
-                          : '#525965',
+                          : '#666663',
                     }}
                     aria-hidden="true"
                   />
