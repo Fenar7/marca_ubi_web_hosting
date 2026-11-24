@@ -12,8 +12,8 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   dashboardCsvCell,
   type OverviewQueue,
@@ -89,20 +89,10 @@ export function OverviewWorkspace({
   data: OverviewData;
 }): React.ReactElement {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
 
   // Guarded Stage Transition Modal State
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
   const [targetTransitionRecord, setTargetTransitionRecord] = useState<OverviewRecord | null>(null);
-
-  function handleTimeframeChange(newSlug: TimeframeSlug): void {
-    const params = new URLSearchParams(searchParams?.toString() ?? "");
-    params.set("timeframe", newSlug);
-    startTransition(() => {
-      router.push(`/admin?${params.toString()}`, { scroll: false });
-    });
-  }
 
   function exportSummary(): void {
     if (!data.canExport || !data.pipelineReady)
@@ -183,14 +173,19 @@ export function OverviewWorkspace({
         onExportSummary={exportSummary}
       />
 
-      {/* Tier 2: Row 1 - Equal 50% / 50% Split (Earning Area Spline + Spending Continuous Gradient Bar) */}
       <section
         className={`${styles.visualCockpitGrid} ${styles.fundoraRowOneGrid}`}
-        aria-label="Earning overview area spline chart and spending breakdown continuous gradient bar"
+        aria-label="Converted contract value and pipeline by service"
       >
         <div className={styles.rowOneColumn}>
           <EarningOverviewSplineCard
-            totalValue={data.pipelineValue}
+            totalValue={data.convertedValue}
+            periodLabel={data.periodLabel}
+            points={data.chart.map(({ month, fullPeriod, cashVal }) => ({
+              label: month,
+              period: fullPeriod,
+              value: cashVal,
+            }))}
             financials={data.financials}
           />
         </div>
@@ -213,12 +208,10 @@ export function OverviewWorkspace({
         <div className={styles.cockpitLeftStack}>
           <CommercialVelocityBarChart
             chart={data.chart}
-            totalIntake={data.pipelineValue}
-            totalRealized={data.convertedValue}
+            intakeReady={data.pipelineValue !== null}
+            revenueReady={data.convertedValue !== null}
             periodLabel={data.periodLabel}
-            timeframe={data.timeframe}
             financials={data.financials}
-            onTimeframeChange={handleTimeframeChange}
           />
           <RecentTransactionsTable
             records={data.records}

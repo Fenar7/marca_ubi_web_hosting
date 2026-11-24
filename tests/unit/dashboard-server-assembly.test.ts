@@ -23,6 +23,7 @@ const reads: Read[] = [];
 let role = "sales_manager";
 let stageFailure = false;
 let missingPreview = false;
+let outcomeFailure = false;
 const today = new Date().toISOString().slice(0, 10);
 const eligible: Row[] = Array.from({ length: 7 }, (_, index) => ({
   id: `lead-${index}`,
@@ -141,6 +142,8 @@ class Query implements PromiseLike<Response> {
             ],
             error: null,
           };
+    else if (outcomeFailure && this.read.columns.startsWith("converted_at,"))
+      response = { data: null, error: { message: "Conversion lookup unavailable" } };
     else {
       const rows = [deferred, ...eligible].filter((row) =>
         this.predicates.every((predicate) => predicate(row)),
@@ -256,6 +259,7 @@ describe(
       assert.equal(data.financials, false);
       assert.equal(data.pipelineValue, null);
       assert.equal(data.convertedValue, null);
+      assert.deepEqual(data.chart, []);
       assert.equal(data.canExport, false);
       assert.ok(
         reads
@@ -285,6 +289,23 @@ describe(
       assert.equal(data.queueCounts.overdue, 7);
       assert.equal(data.pipelineReady, true);
       missingPreview = false;
+    });
+    it("preserves recorded active-deal intake when conversion data is unavailable", async () => {
+      role = "sales_manager";
+      outcomeFailure = true;
+      const originalTimestamp = eligible[0].created_at;
+      eligible[0].created_at = new Date(Date.now() - 86_400_000).toISOString();
+      try {
+        const {
+          props: { data },
+        } = await page({ searchParams: Promise.resolve({}) });
+        assert.equal(data.convertedValue, null);
+        assert.equal(data.chart.reduce((total, point) => total + (point.intakeVal ?? 0), 0), 100);
+        assert.equal(data.categories[0].name, "Uncategorized");
+      } finally {
+        eligible[0].created_at = originalTimestamp;
+        outcomeFailure = false;
+      }
     });
   },
 );

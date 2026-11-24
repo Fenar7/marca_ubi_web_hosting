@@ -1,421 +1,247 @@
-/**
- * @file CommercialVelocityBarChart.module.scss
- * @description Luxury Styling for Cash Flow Bar Chart (Fundora & Finlo Flash Archetype).
- *              Pristine canvas, bold headline valuation, segmented perspective controls,
- *              soft warm-neutral pill bars (#f0f0ee), brand crimson vertical spotlight gradient,
- *              and tactile apex beacon ring with zero text collision.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
 .cardContainer {
-  min-width: 0;
+  box-sizing: border-box;
   width: 100%;
-  height: 100%;
-  flex: 1 1 auto;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  padding: 24px 26px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    border-color: rgba(0, 0, 0, 0.12);
-  }
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: clamp(14px, 2vw, 24px);
+  background: #fff;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 12px;
 }
 
 .chartHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 0.75rem;
+  gap: 8px 16px;
   flex-wrap: wrap;
-}
-
-.titleAndValuation {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .title {
-  margin: 0;
+  margin: 0 0 4px;
   color: var(--admin-text-primary, #111111);
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 1.05rem;
+  font-family: var(--font-circular, sans-serif);
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.infoIcon {
-  font-size: 0.78rem;
-  color: #8e8e8a;
-  cursor: help;
-  user-select: none;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: #111111;
-  }
 }
 
 .heroValuation {
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", var(--font-graphik), sans-serif;
-  font-size: clamp(2.1rem, 2.5vw, 2.55rem);
-  font-weight: 300;
+  margin: 0;
   color: var(--admin-text-primary, #111111);
-  letter-spacing: -0.035em;
-  line-height: 1.1;
-  margin: 0.35rem 0 0.75rem;
-  font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-family: var(--font-circular, sans-serif);
+  font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
 }
 
-/* Fundora Segmented Perspective Controls */
+.periodLabel,
+.measureNote,
+.emptyState,
+.readout {
+  color: var(--admin-text-secondary, #454542);
+  font-family: var(--font-graphik, sans-serif);
+  font-size: 0.8125rem;
+}
+
+.periodLabel {
+  padding-block: 2px;
+}
+
 .segmentedControls {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
 }
 
 .segmentedPill {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 9999px;
-  background: var(--admin-canvas-bg, #f5f5f3);
-  color: #52525b;
+  min-height: 44px;
+  padding: 6px 10px;
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-height: 44px;
-    min-width: 100%;
-  }
-
-  &:hover {
-    background: #ebebe8;
-    color: #111111;
-  }
-}
-
-.segmentedPillActive {
-  background: #111111 !important;
-  color: #ffffff !important;
-  border-color: #111111 !important;
-  font-weight: 600;
-}
-
-.controlsGroup {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.dropdownContainer {
-  position: relative;
-}
-
-.timeframeButton {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 12px;
-  background: var(--admin-canvas-bg, #f5f5f3);
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: 9999px;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  font-weight: 500;
+  border-radius: 8px;
+  background: #fff;
   color: var(--admin-text-secondary, #454542);
-  user-select: none;
+  font: 500 0.8125rem var(--font-graphik, sans-serif);
   cursor: pointer;
-  transition: all 0.15s ease;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-height: 44px;
-    min-width: 100%;
-  }
 
   &:hover {
-    background: #ebebe8;
-    color: #111111;
-    border-color: #dcdcd8;
+    background: var(--admin-surface-muted, #efefed);
+  }
+
+  &[aria-pressed="true"] {
+    border-color: #111111;
+    background: #111111;
+    color: #fff;
+  }
+}
+
+.segmentedPill:focus-visible,
+.bucketButton:focus-visible,
+.intervalSelect:focus-visible {
+  outline: 2px solid var(--admin-focus-ring, #9c001e);
+  outline-offset: 2px;
+}
+
+.measureNote,
+.emptyState {
+  margin: 0;
+}
+
+.chartBody {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.readoutValue {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  flex-wrap: wrap;
+  min-height: 1.5em;
+  margin: 0;
+
+  strong {
+    color: var(--admin-text-primary, #111111);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.readout {
+  margin: 0 0 8px;
+}
+
+.intervalSelect {
+  display: none;
+}
+
+.plot {
+  --plot-height: clamp(132px, 25cqi, 220px);
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.axis {
+  position: relative;
+  width: fit-content;
+  height: var(--plot-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--admin-text-secondary, #454542);
+  font: 400 0.6875rem var(--font-graphik, sans-serif);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.bucketGrid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--bucket-count), minmax(0, 1fr));
+  min-width: 0;
+  isolation: isolate;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset-inline: 0;
+    content: "";
+    pointer-events: none;
+    height: var(--plot-height);
+    border-top: 1px solid var(--admin-border-subtle, #e7e7e4);
+    border-bottom: 1px solid var(--admin-border-subtle, #e7e7e4);
+    box-sizing: border-box;
+  }
+}
+
+.bucket {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: var(--plot-height) 1.9em;
+  gap: 6px;
+}
+
+.bucketButton {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+
+  &::before {
+    position: absolute;
+    inset-inline: 0;
+    top: var(--zero-offset);
+    border-top: 1px solid #9c9c95;
+    content: "";
+    pointer-events: none;
   }
 
   &:focus-visible {
-    outline: 2px solid #111111;
-    outline-offset: 2px;
+    outline-offset: -2px;
+  }
+
+  &[aria-pressed="true"] .bar {
+    background: var(--admin-accent-brand, #ea002a);
   }
 }
 
-.timeframeButtonActive {
-  background: #ffffff;
-  color: #111111;
-  border-color: #111111;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
-.chevron {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  color: #696965;
-}
-
-.chevronOpen {
-  transform: rotate(180deg);
-}
-
-.dropdownMenu {
+.bar {
   position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 200px;
-  background: #ffffff;
-  border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-radius: 10px;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 6px -1px rgba(0, 0, 0, 0.05);
-  padding: 4px;
-  z-index: 50;
-  list-style: none;
-  margin: 0;
-  animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdownItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: transparent;
-  border: none;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.74rem;
-  font-weight: 500;
-  color: var(--admin-text-primary, #111111);
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.12s ease;
-
-  &:hover,
-  &.dropdownItemFocused {
-    background: #f5f5f3;
-  }
-}
-
-.dropdownItemActive {
-  font-weight: 600;
-  color: #111111;
-  background: #f9f9f8;
-}
-
-.optionLabel {
-  display: block;
-}
-
-.optionSubtext {
-  display: block;
-  font-size: 0.66rem;
-  color: #8c8c88;
-  font-weight: 400;
-  margin-top: 1px;
-}
-
-.activeCheck {
-  color: var(--admin-accent-brand, #ea002a);
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin-left: 8px;
-}
-
-.svgWrapper {
-  width: 100%;
-  position: relative;
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-}
-
-.chartSvg {
-  width: 100%;
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-
-/* Swiss Dashed Hairline Gridlines */
-.hairlineGrid {
-  stroke: #ebebe8;
-  stroke-width: 1;
-  stroke-dasharray: 3 4;
-}
-
-.axisBaseline {
-  stroke: #e2e2df;
-  stroke-width: 1.25;
-}
-
-.axisText {
-  font-family: var(--font-circular), sans-serif;
-  font-size: 10px;
-  fill: #696965;
-  text-anchor: end;
-  font-variant-numeric: tabular-nums;
-}
-
-.monthText {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 11px;
-  fill: #696965;
-  text-anchor: middle;
-  font-weight: 500;
-  transition: fill 0.15s ease;
-}
-
-.monthTextActive {
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 11px;
-  fill: var(--admin-text-primary, #111111);
-  text-anchor: middle;
-  font-weight: 600;
-}
-
-/* Pillar Bars */
-.barIdle {
-  cursor: pointer;
-  transition: fill 0.2s ease, opacity 0.2s ease;
-
-  &:hover {
-    fill: #e5e5e2;
-  }
-}
-
-.barActive {
-  cursor: pointer;
-  filter: drop-shadow(0 4px 14px rgba(234, 0, 42, 0.26));
-  transition: fill 0.2s ease, filter 0.2s ease;
-}
-
-/* Grounded Pedestal Zero Indicators */
-.barPedestalZero {
-  fill: #e8e8e5;
-  transition: fill 0.15s ease;
-}
-
-/* Fundora Tactile Dot Ring Beacon */
-.beaconRing {
-  fill: #ffffff;
-  stroke: var(--admin-accent-brand, #ea002a);
-  stroke-width: 2.5;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+  inset-inline: 50% auto;
+  width: min(52%, 22px);
+  border-radius: 3px;
+  transform: translateX(-50%);
+  background: #727270;
   pointer-events: none;
 }
 
-.hitArea {
-  fill: transparent;
-  cursor: pointer;
-}
-
-.columnGroup {
-  cursor: pointer;
-}
-
-/* Fundora Pristine White Floating Tooltip Card */
-.floatingBadge {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  background: #ffffff;
-  color: #111111;
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: 1px solid #e7e7e4;
-  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  z-index: 20;
+.bucketLabel {
+  display: block;
+  align-self: center;
+  overflow: hidden;
+  color: var(--admin-text-secondary, #454542);
+  font: 400 0.6875rem var(--font-graphik, sans-serif);
+  text-align: center;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  animation: badgeFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes badgeFadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, calc(-100% - 4px));
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -100%);
+@container (max-width: 600px) {
+  .bucketLabel[data-compact="false"] {
+    visibility: hidden;
   }
 }
 
-.badgeDate {
-  font-family: var(--font-graphik), sans-serif;
-  font-weight: 500;
-  font-size: 0.72rem;
-  color: #696965;
-}
+@container (max-width: 420px) {
+  .readout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 10px;
+  }
 
-.badgeAmount {
-  font-weight: 600;
-  font-size: 0.88rem;
-  color: #111111;
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", sans-serif;
-  font-variant-numeric: tabular-nums lining-nums;
-}
+  .intervalSelect {
+    display: block;
+    min-height: 44px;
+    max-width: 100%;
+    padding: 4px 8px;
+    border: 1px solid var(--admin-border-subtle, #e7e7e4);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--admin-text-primary, #111111);
+    font: inherit;
+  }
 
-/* Connecting Stem Line in SVG */
-.stemLine {
-  stroke: var(--admin-accent-brand, #ea002a);
-  stroke-width: 1px;
-  stroke-dasharray: 2 2;
-  opacity: 0.65;
-  pointer-events: none;
+  .readoutPeriod {
+    display: none;
+  }
 }
