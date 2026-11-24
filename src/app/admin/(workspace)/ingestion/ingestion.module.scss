@@ -1,103 +1,29 @@
-/**
- * @file ingestion.module.scss
- * @description Sypher Light & Accordion Editorial styling for /admin/ingestion.
- *              Uses design tokens: --admin-canvas-bg, --admin-text-primary (#1f242f),
- *              --admin-text-secondary (#525965), and crisp 1px borders (#e2e5ea).
- *              Strictly complies with WCAG AA 4.5:1 contrast standards.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
+.loading {
+  display: grid;
+  gap: 14px;
+  color: #111;
+  font-family: var(--font-graphik, Arial, sans-serif);
 
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  width: 100%;
-}
+  h1 {
+    margin: 0;
+    font-family: var(--font-circular, Arial, sans-serif);
+    font-size: clamp(1.75rem, 3vw, 2.35rem);
+  }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--admin-border-subtle, #e2e5ea);
-  padding-bottom: 1.5rem;
-  gap: 1.5rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
+  p {
+    margin: 0;
+    color: #54534f;
   }
 }
 
-.headerLeft {
-  display: flex;
-  flex-direction: column;
-}
-
-.eyebrow {
-  font-family: var(--font-admin-sans, 'MessinaSans', -apple-system, sans-serif);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--admin-text-secondary, #525965);
-  display: block;
-  margin-bottom: 0.35rem;
-}
-
-.pageTitle {
-  font-family: var(--font-admin-sans, 'MessinaSans', -apple-system, sans-serif);
-  font-size: 1.85rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  color: var(--admin-text-primary, #1f242f);
-  margin: 0 0 0.4rem;
-}
-
-.pageSubtitle {
-  font-family: var(--font-admin-sans, 'MessinaSans', -apple-system, sans-serif);
-  font-size: 0.88rem;
-  color: var(--admin-text-secondary, #525965);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.sectionBox {
-  background: var(--admin-card-bg, #ffffff);
-  border: 1px solid var(--admin-border-subtle, #e2e5ea);
-  border-radius: 16px;
-  padding: 1.5rem;
-}
-
-.sectionTitle {
-  font-family: var(--font-admin-sans, 'MessinaSans', -apple-system, sans-serif);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--admin-text-primary, #1f242f);
-  margin: 0 0 1rem;
-}
-
-.ruleList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.ruleItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  background: var(--admin-canvas-bg, #f7f8fa);
-  border: 1px solid var(--admin-border-subtle, #e2e5ea);
+.summaryPlaceholder,
+.queuePlaceholder {
+  min-height: 95px;
+  border: 1px solid #deddd7;
   border-radius: 10px;
-  font-family: var(--font-admin-sans, 'MessinaSans', -apple-system, sans-serif);
-  font-size: 0.84rem;
-  color: var(--admin-text-primary, #1f242f);
-  line-height: 1.5;
+  background: #fff;
+}
 
-  svg {
-    color: #10b981;
-    flex-shrink: 0;
-    margin-top: 0.2rem;
-  }
+.queuePlaceholder {
+  min-height: 340px;
 }

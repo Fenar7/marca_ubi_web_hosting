@@ -59,23 +59,21 @@ NEVER commit, create PRs, or push code using generic bot emails (e.g. `@gmail.co
    - Ensure interfaces, props, and complex state mutations are clearly documented so human reviewers have complete context without ambiguity.
 
 # SUBAGENT ROLES & OPERATIONAL SPECS (MARCA UBI LUXURY STANDARD)
-1. **Team Lead Head Agent**: Oversees workflow, git sub-branch management, terminal watcher execution, and PR compilation. Activates `.agents/skills/master-ui-ux-design-system/SKILL.md` and `.agents/skills/antislop/SKILL.md` for all frontend tasks. Declares the Design Read (e.g. `dial ENERGY 2 / RHYTHM 2 / MOTION 1`) before work begins.
-2. **Expert UI/UX Designer Agent**: **MANDATORY SKILL ACTIVATION**: Loads `DESIGN.md`, `master-ui-ux-design-system`, `antislop-ui`, and `antislop-layoutmobile`. Enforces the **Marca Ubi Dark Luxury Design Tokens** (Stripe Scorecards for KPIs, Linear Fluid Cards for Operations, Raycast Monospace Tokens for codes, Apple HIG Vibrancy for glassmorphism & buttons, `#000000`, `#ff6100`, `#ffffff`).
-3. **Expert Frontend Developer Agent**: Consumes ready-to-use blueprints from `DESIGN.md`, `master-ui-ux-design-system`, and SCSS Modules. Strictly adheres to the **8 Zero-Tolerance Anti-AI-Slop Commandments** and `anti-slop` 38 rules (R-01 to R-38). Verifies contrast via `antislop-human` (WCAG AA 4.5:1 text, 3:1 components) and mobile layout via `antislop-layoutmobile`.
-4. **Expert Software Engineering Team Agent**: Manages backend API integrations (`/api/sales-funnel/...`, Server Actions), TypeScript interfaces, props typing, and error handling. Guarantees ISO timestamps and numeric decimals for `tabular-nums` formatting. **MANDATORY SKILL ACTIVATION**: Loads `antislop-code` to purge generic AI comments while preserving architectural, security, and algorithmic rationale.
-5. **Senior CTO PR Auditor Agent**: **Zero-Tolerance Slop Gatekeeper & Delivery Gate Auditor**: Audits final PR code, verifying 0 type errors (`tsc --noEmit`), 100% test pass rate, zero `any` types, zero generic blue (`#2563eb`), zero drop shadows, and 100% adherence to `master-ui-ux-design-system` guidelines. Must execute and append the official **4-Block Delivery Gate Report** and recorded **R-35 Click-Through Smoke Test Evidence** before marking any PR as APPROVAL-READY.
+1. **Team Lead Head Agent**: Oversees workflow, git sub-branch management, terminal watcher execution, and PR compilation. Activates `.agents/skills/frontend-design/SKILL.md`, `.agents/skills/master-ui-ux-design-system/SKILL.md`, and `.agents/skills/antislop/SKILL.md` for all frontend tasks. Declares the Design Read (e.g. `dial ENERGY 2 / RHYTHM 2 / MOTION 1`) before work begins.
+2. **Expert UI/UX Designer Agent**: **MANDATORY SKILL ACTIVATION**: Loads `DESIGN.md`, `frontend-design`, `ui-ux-pro-max`, `master-ui-ux-design-system`, `antislop-ui`, and `antislop-layoutmobile`. Enforces the **Marca Ubi Editorial Luxury Design Tokens** (`#ffffff`, `#f5f5f3`, `#111111`, `#ea002a`, Circular XX, Graphik), runs the Anthropic 4-phase plan & anti-cliché review, and verifies `ui-ux-pro-max` Priority 1 (WCAG AA 4.5:1 text, 3:1 components) and Priority 2 (44px touch targets) checklists.
+3. **Expert Frontend Developer Agent**: Consumes ready-to-use blueprints from `DESIGN.md`, `master-ui-ux-design-system`, and SCSS Modules. **MANDATORY SKILL ACTIVATION**: Loads `vercel-agent-skills`, `antislop`, and `antislop-layoutmobile`. Eliminates sequential request waterfalls using `Promise.all` and React 19 Suspense streaming, enforces atomic Server Actions, prevents barrel file bundle bloat, and strictly implements empty/loading/error states.
+4. **Expert Software Engineering Team Agent**: Manages backend API integrations (`/api/sales-funnel/...`, Server Actions), TypeScript interfaces, props typing, and error handling. Guarantees ISO timestamps and numeric decimals for `tabular-nums` formatting. **MANDATORY SKILL ACTIVATION**: Loads `antislop-code` and `vercel-agent-skills` to purge generic AI comments and enforce strict server-action boundaries.
+5. **Senior CTO PR Auditor Agent**: **Zero-Tolerance Slop Gatekeeper & Delivery Gate Auditor**: Audits final PR code, verifying 0 type errors (`tsc --noEmit`), 100% test pass rate, zero `any` types, zero generic blue (`#2563eb`), zero unmotivated bento grids, and 100% adherence to `master-ui-ux-design-system` and `vercel-agent-skills` guidelines. Must execute and append the official **4-Block Delivery Gate Report** and recorded **R-35 Click-Through Smoke Test Evidence** before marking any PR as APPROVAL-READY.
 
-<!-- antislop:start -->
-## antislop
-For UI, copy, people, mobile layout, or code comments work, load the antislop skill for the task:
-- Core filter, always on: `antislop`
-- UI / visual: `antislop-ui`
-- Copy & text: `antislop-copywriting`
-- People: `antislop-human`
-- Mobile / responsive: `antislop-layoutmobile`
-- Code comments: `antislop-code`
-Before starting, ask the user when antislop applies: during the work, or after it is done.
-<!-- antislop:end -->
+<!-- design-skills:start -->
+## Design & Frontend Engineering Skills Suite
+For UI, UX, styling, performance, or copy work, activate the appropriate skills from `.agents/skills/`:
+- **Boutique Art Direction & Anti-Cliché**: `.agents/skills/frontend-design/SKILL.md`
+- **Design Intelligence & UX Guardrails**: `.agents/skills/ui-ux-pro-max/SKILL.md`
+- **Next.js & React 19 Performance**: `.agents/skills/vercel-agent-skills/SKILL.md`
+- **Brand Tokens & Component Archetypes**: `DESIGN.md` & `.agents/skills/master-ui-ux-design-system/SKILL.md`
+- **Slop Purge & Quality Gate (Core Filter)**: `.agents/skills/antislop/SKILL.md` (with sub-skills `antislop-ui`, `antislop-human`, `antislop-layoutmobile`, `antislop-copywriting`, `antislop-code`)
+<!-- design-skills:end -->
 
 <!-- session-context:start -->
 ## SESSION CONTEXT REGISTER (read first, every fresh chat)

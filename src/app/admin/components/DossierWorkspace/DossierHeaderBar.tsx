@@ -103,8 +103,8 @@ export function DossierHeaderBar({
     }
   }, [leadIdCode]);
 
-  // Formatted heading with architectural trailing period (e.g. 'Morar Group 8500.')
-  const entityTitle = (companyName?.trim() || contactName.trim() || 'Private Client') + '.';
+  // Formatted editorial heading with pure typography (no trailing periods per Marca Ubi standard)
+  const entityTitle = companyName?.trim() || contactName.trim() || 'Private Client';
   const backTarget = workspaceMode === 'deals' ? '/admin/deals' : '/admin/leads';
   const backLabel = workspaceMode === 'deals' ? 'Back to Deals' : 'Back to Leads';
 
@@ -160,12 +160,7 @@ export function DossierHeaderBar({
               aria-expanded={isStatusDropdownOpen}
               disabled={isPending}
             >
-              <span
-                className={styles.radarDot}
-                style={{ backgroundColor: currentStatus.color_code || 'var(--admin-status-emerald-dot, #10b981)' }}
-                aria-hidden="true"
-              />
-              <span>{currentStatus.name}</span>
+              <span className={styles.statusPillLabel}>{currentStatus.name}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 12, height: 12, marginLeft: 2 }}>
                 <polyline points="6 9 12 15 18 9" />
               </svg>

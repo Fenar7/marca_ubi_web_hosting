@@ -15,6 +15,7 @@ import assert from 'node:assert/strict';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import type { InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import type { LeadPriority } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 
 /**
  * Creates mock hydrated lead records for virtualization and inline mutation tests.
@@ -192,24 +193,13 @@ describe('Sprint 7.2: Virtualized Data Grid & Optimistic Inline Editing Engine',
   });
 
   describe('Block 4: Monospace Token & Currency Formatting', () => {
-    it('formats Indian rupee values accurately into Lakhs (L) and Crores (Cr)', () => {
-      function formatCurrency(amount: number): string {
-        if (!amount || amount <= 0) return '₹0';
-        if (amount >= 10000000) {
-          return `₹${(amount / 10000000).toFixed(1)}Cr`;
-        }
-        if (amount >= 100000) {
-          return `₹${(amount / 100000).toFixed(1)}L`;
-        }
-        return `₹${amount.toLocaleString('en-IN')}`;
-      }
-
-      assert.equal(formatCurrency(0), '₹0');
-      assert.equal(formatCurrency(45000), '₹45,000');
-      assert.equal(formatCurrency(150000), '₹1.5L');
-      assert.equal(formatCurrency(4800000), '₹48.0L');
-      assert.equal(formatCurrency(12500000), '₹1.3Cr');
-      assert.equal(formatCurrency(35000000), '₹3.5Cr');
+    it('formats Indian rupee values with full digits at every magnitude', () => {
+      assert.equal(formatCrmCurrency(0), '₹ 0');
+      assert.equal(formatCrmCurrency(45000), '₹ 45,000');
+      assert.equal(formatCrmCurrency(150000), '₹ 1,50,000');
+      assert.equal(formatCrmCurrency(4800000), '₹ 48,00,000');
+      assert.equal(formatCrmCurrency(12500000), '₹ 1,25,00,000');
+      assert.equal(formatCrmCurrency(35000000), '₹ 3,50,00,000');
     });
   });
 });

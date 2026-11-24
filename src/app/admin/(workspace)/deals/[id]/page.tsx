@@ -8,14 +8,17 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React from 'react';
+import React, { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { getLeadDetails } from '@/app/actions/leads';
 import { createClient } from '@/app/lib/supabase/server';
 import type { CrmUserRole } from '@/types/crm';
-import { LeadDossierWorkspaceClient } from '@/app/admin/components/DossierWorkspace';
+import { LeadDossierWorkspaceClient } from '@/app/admin/components/DossierWorkspace/LeadDossierWorkspaceClient';
 import styles from './page.module.scss';
+
+/** Share the authorized dossier read between metadata and rendering for this request. */
+const loadDossier = cache(getLeadDetails);
 
 interface DealDossierPageProps {
   params: Promise<{
@@ -30,7 +33,7 @@ export async function generateMetadata(
   props: DealDossierPageProps
 ): Promise<Metadata> {
   const { id } = await props.params;
-  const result = await getLeadDetails(id);
+  const result = await loadDossier(id);
 
   if (!result.success || !result.data?.lead) {
     return {
@@ -81,8 +84,8 @@ export default async function DealDossierPage(
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  // 2. Direct RSC data resolution (0ms waterfall)
-  const result = await getLeadDetails(id);
+  // 2. Reuse the request-scoped dossier read
+  const result = await loadDossier(id);
 
   if (!result.success || !result.data) {
     if (result.error?.includes('Privilege Violation') || result.error?.includes('Unauthorized')) {

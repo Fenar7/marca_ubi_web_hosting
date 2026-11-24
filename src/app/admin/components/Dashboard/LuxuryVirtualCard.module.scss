@@ -1,0 +1,128 @@
+/**
+ * @file LuxuryVirtualCard.module.scss
+ * @description Pure SCSS module for the Executive VIP Virtual Card Widget.
+ *              Strictly compliant with Next.js pure selector rules.
+ */
+
+.virtualCard {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 180px;
+  padding: 24px 26px;
+  background: linear-gradient(135deg, #111827 0%, #1a2234 50%, #0f172a 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -6px rgba(15, 23, 42, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+}
+
+.watermarkSvg {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 220px;
+  height: 160px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cardHeader {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.monikerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.monikerPrefix {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.monikerTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f8fafc;
+}
+
+.cardBody {
+  position: relative;
+  z-index: 2;
+  margin: 16px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.balanceLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #94a3b8;
+}
+
+.balanceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.balanceAmount {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  line-height: 1.1;
+}
+
+.cardFooter {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.metaChip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.metaLabel {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.metaValue {
+  font-size: 10px;
+  font-weight: 600;
+  color: #f1f5f9;
+  font-variant-numeric: tabular-nums;
+}

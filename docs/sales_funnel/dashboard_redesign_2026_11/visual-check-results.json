@@ -1,0 +1,130 @@
+{
+  "environment": "Isolated actual-component fixtures; no live authentication/database",
+  "results": [
+    {
+      "name": "Six queue preview records",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Queue URL and selection update",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Period retains queue scope",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Reporting definitions expand",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Export declares snapshot and period",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Sidebar collapse responds",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Launcher focuses query",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Launcher real workspace search destinations",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Launcher Escape closes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Desktop axe WCAG2AA",
+      "passed": true,
+      "detail": "[{\"id\":\"region\",\"impact\":\"moderate\",\"nodes\":[[\".fixture-label\"]]}]"
+    },
+    {
+      "name": "No horizontal overflow 320",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No horizontal overflow 375",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Mobile drawer opens",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Mobile drawer Escape focus restoration",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No horizontal overflow 768",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No horizontal overflow 1024",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No horizontal overflow 1440",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No horizontal overflow 1920",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "empty state explicit",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unavailable state explicit",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "viewer controls restricted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Viewer opportunities replace task queue",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "sales_executive controls restricted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Executive fixture has no monetary output",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No browser runtime errors",
+      "passed": true,
+      "detail": "[]"
+    }
+  ]
+}

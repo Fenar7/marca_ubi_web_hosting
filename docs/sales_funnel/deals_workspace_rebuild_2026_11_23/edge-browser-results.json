@@ -1,0 +1,55 @@
+{
+  "environment": "Actual components; isolated stubbed mutations; drag performed through browser mouse input",
+  "results": [
+    {
+      "name": "Failed ordinary move remains in source lane",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Failed move destination retained on retry",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Escape restores action trigger focus",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Guarded cancellation leaves source stage",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Mouse drag from the card body confirms the stage change",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Mouse drag to a guarded stage requires its form and cancellation keeps the card",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Viewer cards are not draggable",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "View toggle preserves search",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Applied owner filter preserves view/search",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Overlapping delayed navigation keeps view, bucket and debounced search",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

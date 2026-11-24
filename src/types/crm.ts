@@ -483,6 +483,20 @@ export interface LoginActionResult {
 }
 
 /**
+ * Action result envelope returned by the agency account provisioning Server Action.
+ * Encapsulates redirection path, verification state, rate limit metrics, and validation issues.
+ */
+export interface SignupActionResult {
+  success: boolean;
+  error?: string;
+  redirectTo?: string;
+  validationErrors?: Record<string, string>;
+  remainingLockoutSeconds?: number;
+  isLocked?: boolean;
+  requiresEmailConfirmation?: boolean;
+}
+
+/**
  * Action result envelope returned by the mandatory password rotation Server Action.
  * Encapsulates operation status, form-level error message, and granular field validation issues.
  */

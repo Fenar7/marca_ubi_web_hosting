@@ -1,0 +1,85 @@
+{
+  "environment": "Isolated real-component fixtures; mutations stubbed; CSS zoom is not browser zoom",
+  "results": [
+    {
+      "name": "No permanent Move select",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Explicit ordinary move commits fixture",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Table semantic headings",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Filter escape closes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No document overflow 320",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No document overflow 375",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No document overflow 768",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No document overflow 1024",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No document overflow 1440",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No document overflow 1920",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Viewer has no movement action",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Restricted fixture has no monetary output",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Empty state explicit",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No serious or critical axe violations",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "200 percent CSS zoom no overflow",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No runtime errors",
+      "passed": true,
+      "detail": "[]"
+    }
+  ]
+}

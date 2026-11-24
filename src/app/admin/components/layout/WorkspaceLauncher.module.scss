@@ -1,0 +1,109 @@
+.dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(640px, calc(100dvh - 48px));
+  margin: max(24px, 12dvh) auto auto;
+  padding: 0;
+  border: 1px solid #a9a9a1;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+  font-family: var(--font-admin-primary);
+  &::backdrop {
+    background: rgb(17 17 17 / 24%);
+  }
+}
+.surface {
+  padding: 20px;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  h2 {
+    margin: 0;
+    font-family: var(--font-circular);
+    font-size: 20px;
+    font-weight: 500;
+  }
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    border: 0;
+    border-radius: 5px;
+    color: #62625d;
+    background: #f3f3ef;
+    cursor: pointer;
+  }
+}
+.label {
+  display: block;
+  margin: 16px 0 8px;
+  color: #454542;
+  font-size: 12px;
+}
+.dialog input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #85857c;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 16px;
+}
+.results {
+  margin-top: 14px;
+  ul {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 44px;
+    padding: 10px;
+    border-radius: 6px;
+    color: #111;
+    font-size: 14px;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    &:hover {
+      background: #f2f2ee;
+    }
+    small {
+      color: #62625d;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+  }
+}
+.count,
+.help {
+  color: #62625d;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.help {
+  margin: 18px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #e7e7e4;
+}
+.dialog :is(a, button, input):focus-visible {
+  outline: 2px solid var(--admin-focus-ring);
+  outline-offset: 2px;
+}
+@media (max-width: 420px) {
+  .surface {
+    padding: 16px;
+  }
+  .results a {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+}

@@ -59,22 +59,15 @@ export interface HydratedLeadItem {
 
 export interface LeadsWorkspaceClientProps {
   initialLeads: HydratedLeadItem[];
+  pagination?: React.ReactNode;
+  lookupNotice?: string;
   availableSources?: FilterDropdownOption[];
   availableAssignees?: FilterDropdownOption[];
   availableStatuses?: InlineStatusOption[];
   userRole?: string;
 }
 
-function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
+const VALID_BUCKETS: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
 
 /**
  * Evaluates whether a lead has an overdue follow-up timestamp.
@@ -93,6 +86,8 @@ function isLeadOverdue(lead: HydratedLeadItem): boolean {
 
 function LeadsWorkspaceContent({
   initialLeads,
+  pagination,
+  lookupNotice,
   availableSources: initialSources,
   availableAssignees: initialAssignees,
   availableStatuses: initialStatuses,
@@ -128,8 +123,7 @@ function LeadsWorkspaceContent({
   // Deep-link query param resolution: supports both canonical ?id=<uuid> and legacy ?leadId=<uuid>
   const leadIdParam = searchParams.get('id') || searchParams.get('leadId');
 
-  const validBuckets: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
-  const initialBucket: BucketTabId = validBuckets.includes(bucketParam as BucketTabId)
+  const initialBucket: BucketTabId = VALID_BUCKETS.includes(bucketParam as BucketTabId)
     ? (bucketParam as BucketTabId)
     : 'all';
 
@@ -304,8 +298,8 @@ function LeadsWorkspaceContent({
         url.searchParams.delete('stage');
       }
 
-      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-      window.dispatchEvent(new Event('popstate'));
+      url.searchParams.delete('page');
+      router.replace(url.pathname + (url.search ? url.search : ''), { scroll: false });
     },
     [
       selectedBucket,
@@ -314,13 +308,14 @@ function LeadsWorkspaceContent({
       selectedAssigneeId,
       selectedPriority,
       selectedStageId,
+      router,
     ]
   );
 
   // Sync state if URL changes externally (e.g. browser back/forward or external deep links)
   useEffect(() => {
     const rawBucket = searchParams.get('bucket');
-    if (validBuckets.includes(rawBucket as BucketTabId)) {
+    if (VALID_BUCKETS.includes(rawBucket as BucketTabId)) {
       setSelectedBucket(rawBucket as BucketTabId);
     } else {
       setSelectedBucket('all');
@@ -622,8 +617,6 @@ function LeadsWorkspaceContent({
 
   // In-memory filtered leads with multi-dimensional criteria evaluation
   const filteredLeads = useMemo<HydratedLeadItem[]>(() => {
-    const q = searchQuery.toLowerCase().trim();
-
     return leads.filter((lead) => {
       // 1. Bucket condition
       if (selectedBucket === 'overdue') {
@@ -652,23 +645,11 @@ function LeadsWorkspaceContent({
         return false;
       }
 
-      // 6. Search query condition (multi-attribute match)
-      if (!q) return true;
-
-      return (
-        lead.lead_id.toLowerCase().includes(q) ||
-        lead.name.toLowerCase().includes(q) ||
-        (lead.company && lead.company.toLowerCase().includes(q)) ||
-        (lead.email && lead.email.toLowerCase().includes(q)) ||
-        (lead.phone && lead.phone.toLowerCase().includes(q)) ||
-        lead.service_category.toLowerCase().includes(q) ||
-        lead.assigned_to_name.toLowerCase().includes(q)
-      );
+      return true;
     });
   }, [
     leads,
     selectedBucket,
-    searchQuery,
     selectedSourceId,
     selectedAssigneeId,
     selectedPriority,
@@ -802,143 +783,88 @@ function LeadsWorkspaceContent({
     []
   );
 
-  return (
-    <>
-      {/* High-Performance Multi-Filter Action Bar */}
-      <FilterActionBar
-        scope="leads"
-        counts={counts}
-        selectedBucket={selectedBucket}
-        searchQuery={searchQuery}
-        selectedSourceId={selectedSourceId}
-        selectedAssigneeId={selectedAssigneeId}
-        selectedPriority={selectedPriority}
-        selectedStageId={selectedStageId}
-        availableSources={availableSources}
-        availableAssignees={availableAssignees}
-        onBucketChange={handleBucketChange}
-        onSearchChange={handleSearchChange}
-        onSourceChange={handleSourceChange}
-        onAssigneeChange={handleAssigneeChange}
-        onPriorityChange={handlePriorityChange}
-        onStageClear={handleStageClear}
-        onClearAll={handleClearAll}
-      />
+  const conversionCandidate = selectedBucket === 'open' && userRole !== 'viewer'
+    ? filteredLeads.find((lead) => lead.bucket === 'open')
+    : undefined;
 
-      {/* Overdue Stalled Pipeline Escalation Banner */}
-      {selectedBucket === 'overdue' && counts.overdue > 0 && (
-        <div className={styles.overdueNoticeBanner} role="region" aria-label="Overdue SLA Alert">
-          <div className={styles.overdueNoticeLeft}>
-            <div className={styles.overdueNoticeIcon} aria-hidden="true">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-            </div>
-            <div>
-              <p className={styles.overdueNoticeTitle}>
-                {counts.overdue} Overdue {counts.overdue === 1 ? 'Touchpoint' : 'Touchpoints'} Requiring Escalation
-              </p>
-              <p className={styles.overdueNoticeSub}>
-                Reallocate stalled accounts across active sales personnel to restore pipeline velocity.
-              </p>
-            </div>
-          </div>
-          {userRole !== 'viewer' && (
-            <button
-              type="button"
-              className={styles.batchReassignTriggerBtn}
-              onClick={() => setIsBatchReassignOpen(true)}
-              aria-label="Launch batch reassignment modal"
-            >
-              Batch Reassign Overdue Leads
-            </button>
-          )}
+  return (
+    <section className={styles.inboxWorkspace} aria-label="Lead inbox">
+      <div className={styles.inboxControls}>
+        <FilterActionBar
+          scope="leads"
+          counts={counts}
+          selectedBucket={selectedBucket}
+          searchQuery={searchQuery}
+          selectedSourceId={selectedSourceId}
+          selectedAssigneeId={selectedAssigneeId}
+          selectedPriority={selectedPriority}
+          selectedStageId={selectedStageId}
+          availableSources={availableSources}
+          availableAssignees={availableAssignees}
+          onBucketChange={handleBucketChange}
+          onSearchChange={handleSearchChange}
+          onSourceChange={handleSourceChange}
+          onAssigneeChange={handleAssigneeChange}
+          onPriorityChange={handlePriorityChange}
+          onStageClear={handleStageClear}
+          onClearAll={handleClearAll}
+        />
+      </div>
+
+      {lookupNotice && (
+        <div className={styles.lookupNotice}>
+          <span role="status">{lookupNotice}</span>
+          <button type="button" onClick={() => router.refresh()}>Retry</button>
         </div>
       )}
 
-      {/* Inbound Speed-to-Lead Triage Banner */}
-      {selectedBucket === 'open' && counts.open > 0 && (
-        <div className={styles.inboundTriageBanner} role="region" aria-label="Inbound Discovery Triage">
-          <div className={styles.overdueNoticeLeft}>
-            <div className={styles.inboundTriageIcon} aria-hidden="true">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-            </div>
-            <div>
-              <p className={styles.overdueNoticeTitle}>
-                {counts.open} Inbound {counts.open === 1 ? 'Inquiry' : 'Inquiries'} in Speed-to-Lead Triage
-              </p>
-              <p className={styles.overdueNoticeSub}>
-                Qualify incoming briefs and convert high-intent prospective engagements into active pipeline deals.
-              </p>
-            </div>
-          </div>
-          {filteredLeads.length > 0 && userRole !== 'viewer' && (
-            <button
-              type="button"
-              className={styles.convertTriggerBtn}
-              onClick={() => {
-                const target = filteredLeads.find((l) => l.bucket === 'open') || filteredLeads[0];
-                if (target) {
-                  setConvertModalState({
-                    isOpen: true,
-                    lead: {
-                      id: target.id,
-                      lead_id: target.lead_id,
-                      name: target.name,
-                      company: target.company,
-                      service_category: target.service_category,
-                      expected_value: target.expected_value,
-                      assigned_to: target.assigned_to,
-                      priority: target.priority,
-                    },
-                  });
-                }
-              }}
-              aria-label="Convert lead to pipeline deal"
-            >
-              1-Click Convert to Deal
-            </button>
-          )}
+      {selectedBucket === 'overdue' && counts.overdue > 0 && userRole !== 'viewer' && (
+        <div className={styles.queueAction}>
+          <span>Batch actions apply to overdue leads on this page.</span>
+          <button type="button" className={styles.batchReassignTriggerBtn}
+            onClick={() => setIsBatchReassignOpen(true)}>
+            Reassign overdue leads
+          </button>
+        </div>
+      )}
+      {conversionCandidate && (
+        <div className={styles.queueAction}>
+          <span>{conversionCandidate.name}</span>
+          <button
+            type="button"
+            className={styles.convertTriggerBtn}
+            onClick={() => setConvertModalState({ isOpen: true, lead: conversionCandidate })}
+          >
+            Convert to deal
+          </button>
         </div>
       )}
 
       {/* Commercial Leads Virtualized Data Grid */}
-      <LeadsDataGrid
-        leads={filteredLeads}
-        availableStatuses={resolvedStatuses}
-        onStatusChange={handleInlineStatusChange}
-        onPriorityChange={handleInlinePriorityChange}
-        userRole={userRole}
-      />
+      <div className={styles.inboxRecords}>
+        {filteredLeads.length !== counts.all && (
+          <div className={styles.inboxRecordsHeading} role="status">
+            {filteredLeads.length.toLocaleString('en-IN')} matching on this page
+          </div>
+        )}
+        <LeadsDataGrid
+          className={styles.queueGrid}
+          leads={filteredLeads}
+          availableStatuses={resolvedStatuses}
+          onStatusChange={handleInlineStatusChange}
+          onPriorityChange={handleInlinePriorityChange}
+          userRole={userRole}
+        />
+      </div>
+
+      {pagination && <div className={styles.queueFooter}>{pagination}</div>}
 
       {/* Slide-over Client 360 Degree Dossier Drawer */}
       <ClientDossierDrawer
         leadId={activeDrawerLeadId}
         isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        onLeadUpdated={() => {
+          onClose={handleCloseDrawer}
+          onLeadUpdated={() => {
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new Event('popstate'));
           }
@@ -1010,7 +936,7 @@ function LeadsWorkspaceContent({
           availableAssignees={availableAssignees}
           availableStatuses={resolvedStatuses}
           onClose={() => setConvertModalState({ isOpen: false, lead: null })}
-          onSuccess={(_convertedId) => {
+          onSuccess={() => {
             setConvertModalState({ isOpen: false, lead: null });
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new Event('popstate'));
@@ -1018,7 +944,7 @@ function LeadsWorkspaceContent({
           }}
         />
       )}
-    </>
+    </section>
   );
 }
 

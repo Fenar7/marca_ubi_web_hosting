@@ -13,6 +13,7 @@
 import React, { useState, useTransition, useEffect, useRef, useCallback, useMemo } from 'react';
 import { convertInboundLeadToDealAction } from '@/app/actions/leads';
 import { useModalAnimation } from './useModalAnimation';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import type { LeadPriority } from '@/types/crm';
 import styles from './ConvertLeadToDealModal.module.scss';
 
@@ -37,14 +38,7 @@ export interface ConvertLeadToDealModalProps {
 }
 
 function formatCurrencyLive(val: number): string {
-  if (!val || val <= 0) return '₹0';
-  if (val >= 10000000) {
-    return `₹${(val / 10000000).toFixed(2)} Cr`;
-  }
-  if (val >= 100000) {
-    return `₹${(val / 100000).toFixed(1)}L`;
-  }
-  return `₹${val.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(val);
 }
 
 export function ConvertLeadToDealModal({

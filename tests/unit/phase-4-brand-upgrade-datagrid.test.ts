@@ -103,8 +103,8 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
         'Must define precise 9-column layout metrics'
       );
       assert.ok(
-        scss.includes('$grid-min-width:') && (scss.includes('1125px;') || scss.includes('1140px;')),
-        'Must define min-width constraint to prevent horizontal collision'
+        scss.includes('$grid-min-width:') && scss.includes('1200px;'),
+        'Desktop grid must retain its minimum width while mobile uses the dedicated card view'
       );
 
       // Check tableHeader, virtualViewport, virtualRow
@@ -175,18 +175,20 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
 
     it('verifies LeadsTableSkeleton.module.scss shares the identical 9-column grid metrics', () => {
       const scss = fs.readFileSync(skeletonScssPath, 'utf8');
+      const grid = fs.readFileSync(dataGridScssPath, 'utf8');
 
-      assert.ok(
-        scss.includes('$grid-columns: 85px minmax(180px, 1.4fr) 120px 130px 110px 130px 105px 125px 140px;'),
-        'Skeleton must share identical grid columns definition with 140px track'
+      assert.deepEqual(
+        scss.match(/^\$grid-(?:columns|min-width):.+;/gm),
+        grid.match(/^\$grid-(?:columns|min-width):.+;/gm),
+        'Loading and loaded grids must use the same column tracks'
       );
       assert.ok(
-        scss.includes('$grid-min-width: 1125px;'),
-        'Skeleton must share identical 1125px min-width'
+        scss.includes('$grid-min-width: 1200px;'),
+        'Skeleton must share identical 1200px min-width'
       );
       assert.ok(
-        scss.includes('min-height: 44px;') && scss.includes('height: 44px;'),
-        'Skeleton header must have 44px height matching tableHeader'
+        scss.includes('min-height: 53px;') && scss.includes('height: 53px;'),
+        'Skeleton header must have 53px height matching tableHeader'
       );
     });
   });

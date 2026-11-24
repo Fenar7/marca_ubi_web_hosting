@@ -6,7 +6,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page, test } from '@playwright/test';
 
 /**
  * Ensures an active administrative session before executing user journey assertions.
@@ -25,14 +25,33 @@ export async function ensureAuthenticatedSession(
 
   // Check if edge middleware intercepted unauthenticated access and redirected to login
   if (page.url().includes('/admin/login') || page.url().includes('/login')) {
+    const currentUrl = new URL(page.url());
+    const loopbackHosts = new Set(['localhost', '127.0.0.1', '::1']);
+    const credentialPrefix = role === 'admin' ? 'ADMIN' : role === 'sales_manager' ? 'MANAGER' : 'EXECUTIVE';
+    const credentials = {
+      email: process.env[`CRM_E2E_${credentialPrefix}_EMAIL`],
+      password: process.env[`CRM_E2E_${credentialPrefix}_PASSWORD`],
+    };
+
+    if (
+      !loopbackHosts.has(currentUrl.hostname) ||
+      process.env.CRM_E2E_DATABASE_ISOLATED !== 'true'
+    ) {
+      test.skip(true, 'Authenticated CRM E2E requires explicit credentials and an isolated test database on loopback.');
+      return;
+    }
+    if (!credentials.email || !credentials.password) {
+      test.skip(true, 'Authenticated CRM E2E requires explicit credentials and an isolated test database on loopback.');
+      return;
+    }
+
     const emailInput = page.locator('input[type="email"], input[name="email"]').first();
     const passwordInput = page.locator('input[type="password"], input[name="password"]').first();
     const submitButton = page.locator('button[type="submit"]').first();
 
     if (await emailInput.isVisible()) {
-      const email = role === 'admin' ? 'admin@marcaubi.com' : 'matrix_exec1@marcaubi.com';
-      await emailInput.fill(email);
-      await passwordInput.fill('Password@123');
+      await emailInput.fill(credentials.email);
+      await passwordInput.fill(credentials.password);
       await submitButton.click();
 
       // Wait for navigation back to target administrative enclave

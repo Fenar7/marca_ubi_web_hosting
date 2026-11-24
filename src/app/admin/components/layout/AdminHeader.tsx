@@ -1,154 +1,78 @@
-'use client';
-
-/**
- * @file AdminHeader.tsx
- * @description Notion-Caliber 48px top navigation rail for the Marca Ubi CRM Workspace Shell.
- * @architecture Encapsulates dynamic 3-tier breadcrumbs, responsive mobile drawer toggle,
- *               32px omni-search trigger, refined 32px sentence-case quick action triggers,
- *               and a minimalist 32px user identity popover.
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-import React from 'react';
-import { AdminBreadcrumbs } from './AdminBreadcrumbs';
-import { UserProfileDropdown, type CurrentUserSession } from './UserProfileDropdown';
-import styles from './AdminHeader.module.scss';
+"use client";
+import React from "react";
+import { AdminBreadcrumbs } from "./AdminBreadcrumbs";
+import type { CurrentUserSession } from "./UserProfileDropdown";
+import styles from "./AdminHeader.module.scss";
 
 interface AdminHeaderProps {
   currentUser: CurrentUserSession;
+  isMobileNavOpen: boolean;
   onOpenMobileNav: () => void;
+  className?: string;
 }
 
-export function AdminHeader({ currentUser, onOpenMobileNav }: AdminHeaderProps): React.ReactElement {
-  const canManageTeam = currentUser.role === 'admin';
-  const canCreateLead = currentUser.role !== 'viewer';
-
-  const handleOpenNewLead = (): void => {
-    window.dispatchEvent(new CustomEvent('open-new-lead-drawer'));
-  };
-
-  const handleOpenAddMember = (): void => {
-    window.dispatchEvent(new CustomEvent('open-add-member-drawer'));
-  };
-
-  const handleOpenSearch = (): void => {
-    window.dispatchEvent(new CustomEvent('open-command-palette'));
-  };
-
+/**
+ * Single-Tier 56px Executive Toolbar:
+ * - Left: Route breadcrumbs via dynamic <AdminBreadcrumbs />, route context, and real-time live pulse.
+ * - Right: Global command search (⌘K) and notification trigger.
+ * - Invariant: Keeps header strictly contextual; creation modals belong to workspace surfaces and command palette.
+ * - Invariant: User profile exclusively lives in the sidebar card, eliminating visual duplication.
+ */
+export function AdminHeader({
+  currentUser,
+  isMobileNavOpen,
+  onOpenMobileNav,
+  className,
+}: AdminHeaderProps): React.ReactElement {
   return (
-    <header className={styles.header}>
-      {/* Left: Mobile Toggle & Dynamic Hierarchical Breadcrumbs */}
-      <div className={styles.headerLeft}>
+    <header className={`${styles.executiveToolbar} ${className || ""}`} role="banner">
+      {/* Left: Mobile Trigger + Contextual Dynamic Breadcrumbs */}
+      <div className={styles.toolbarLeft}>
         <button
           type="button"
+          className={styles.mobileMenuTrigger}
           onClick={onOpenMobileNav}
-          className={styles.mobileHamburger}
-          aria-label="Open mobile navigation menu"
+          aria-expanded={isMobileNavOpen}
+          aria-label="Toggle navigation drawer"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="18" x2="21" y2="18" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
 
-        <AdminBreadcrumbs />
+        <div className={styles.contextCluster}>
+          <AdminBreadcrumbs />
+        </div>
       </div>
 
-      {/* Right: Search, Quick Actions & User Identity */}
-      <div className={styles.headerRight}>
-        {/* Omni Search Trigger */}
+      {/* Right: Search Capsule + Notification Bell */}
+      <div className={styles.toolbarRight}>
         <button
           type="button"
-          onClick={handleOpenSearch}
-          className={styles.omniSearchTrigger}
-          title="Search deals, clients, or reps (⌘K)"
+          className={styles.searchPill}
+          onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+          aria-label="Search leads, deals, clients (⌘K)"
         >
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <circle cx="10.5" cy="10.5" r="7" />
+            <path d="m16 16 5 5" />
           </svg>
-          <span className={styles.searchPlaceholder}>Quick search...</span>
-          <kbd className={styles.searchKbd}>⌘K</kbd>
+          <span className={styles.searchPlaceholder}>Search...</span>
+          <kbd className={styles.shortcutTag}>⌘K</kbd>
         </button>
 
-        {/* Quick Action Triggers */}
-        <div className={styles.headerActionBtns}>
-          {canCreateLead && (
-            <button
-              type="button"
-              onClick={handleOpenNewLead}
-              className={`${styles.quickActionBtn} ${styles.primaryAction}`}
-              title="Log new prospective engagement"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>New Lead</span>
-            </button>
-          )}
-
-          {canManageTeam && (
-            <button
-              type="button"
-              onClick={handleOpenAddMember}
-              className={`${styles.quickActionBtn} ${styles.secondaryAction}`}
-              title="Provision new commercial personnel"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="8.5" cy="7" r="4" />
-                <line x1="20" y1="8" x2="20" y2="14" />
-                <line x1="23" y1="11" x2="17" y2="11" />
-              </svg>
-              <span>Add Member</span>
-            </button>
-          )}
-        </div>
-
-        {/* User Identity Popover */}
-        <UserProfileDropdown currentUser={currentUser} />
+        <button
+          type="button"
+          className={styles.notificationBtn}
+          onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+          aria-label="Notifications"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span className={styles.notificationDot} />
+        </button>
       </div>
     </header>
   );

@@ -1,0 +1,45 @@
+{
+  "scope": "Actual inquiry components with isolated fixtures and simulated writes",
+  "results": [
+    {
+      "name": "Desktop inquiry queue, scoped metrics, and source filters",
+      "passed": true
+    },
+    {
+      "name": "Search submits URL state and clear resets the queue",
+      "passed": true
+    },
+    {
+      "name": "Detail opens with structured brief and history",
+      "passed": true
+    },
+    {
+      "name": "Manual form uses native focus management and stable retry key",
+      "passed": true
+    },
+    {
+      "name": "Read access and lead-resolution permission are distinct",
+      "passed": true
+    },
+    {
+      "name": "Triage sends the exact snapshot and explicit closure reason",
+      "passed": true
+    },
+    {
+      "name": "Assignment excludes directory contacts without inquiry access",
+      "passed": true
+    },
+    {
+      "name": "Empty and failed reads are distinct",
+      "passed": true
+    },
+    {
+      "name": "Mobile and desktop avoid document overflow",
+      "passed": true
+    },
+    {
+      "name": "No serious or critical accessibility issues or browser errors",
+      "passed": true
+    }
+  ]
+}

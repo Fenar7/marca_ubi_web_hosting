@@ -134,18 +134,7 @@ export async function getAgencySettingsAction(): Promise<{
     }
 
     if (!data) {
-      return {
-        success: true,
-        data: {
-          id: 'default',
-          lead_response_sla_minutes: 60,
-          followup_grace_period_hours: 4,
-          stale_deal_threshold_days: 14,
-          dedup_window_hours: 24,
-          bot_rate_limit_per_minute: 10,
-          notification_email: 'executive@marcaubi.com',
-        },
-      };
+      return { success: false, error: 'The agency settings record is missing or inaccessible.' };
     }
 
     return {
@@ -170,7 +159,7 @@ export async function updateAgencySettingsAction(rawInput: unknown): Promise<{
   error?: string;
 }> {
   try {
-    const { callerId, callerEmail } = await assertAdminRole();
+    const { callerId } = await assertAdminRole();
 
     const parseResult = updateAgencySettingsSchema.safeParse(rawInput);
     if (!parseResult.success) {
@@ -183,7 +172,7 @@ export async function updateAgencySettingsAction(rawInput: unknown): Promise<{
     const input = parseResult.data;
     const supabase = await createClient();
 
-    // Singleton table pre-seeded at migration: execute atomic update
+    // The database trigger writes the audit record in the same transaction.
     const { data: updated, error: updateError } = await supabase
       .from('agency_settings')
       .update({
@@ -204,31 +193,6 @@ export async function updateAgencySettingsAction(rawInput: unknown): Promise<{
       return {
         success: false,
         error: updateError?.message || 'Failed to persist agency settings update.',
-      };
-    }
-
-    // Append immutable audit log and verify insertion
-    const { error: auditError } = await supabase.from('team_audit_logs').insert({
-      actor_id: callerId,
-      actor_email: callerEmail,
-      target_user_id: callerId,
-      target_user_email: callerEmail,
-      action: 'update_agency_settings',
-      metadata: {
-        lead_response_sla_minutes: input.lead_response_sla_minutes,
-        followup_grace_period_hours: input.followup_grace_period_hours,
-        stale_deal_threshold_days: input.stale_deal_threshold_days,
-        dedup_window_hours: input.dedup_window_hours,
-        bot_rate_limit_per_minute: input.bot_rate_limit_per_minute,
-        notification_email: input.notification_email || null,
-      },
-    });
-
-    if (auditError) {
-      // Invariant: Fail if audit ledger write fails
-      return {
-        success: false,
-        error: `Settings saved but audit ledger logging failed: ${auditError.message}`,
       };
     }
 
@@ -299,7 +263,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
     // 3. Query existing lead within the configured window using parameterized / sanitized matching
     let query = supabase
       .from('leads')
-      .select('id, lead_id, name, created_at, inquiry_count')
+      .select('id, lead_id, name, created_at, inquiry_count, brief_payload')
       .gte('created_at', windowStart);
 
     // Sanitize string to prevent PostgREST AST injection (commas or parentheses in input)
@@ -314,7 +278,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
       query = query.eq('phone', safePhone);
     }
 
-    const { data: existingLeads, error: queryError } = await query.limit(1);
+    const { data: existingLeads, error: queryError } = await query;
 
     if (queryError) {
       return {
@@ -324,7 +288,17 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
     }
 
     if (existingLeads && existingLeads.length > 0) {
-      const existing = existingLeads[0];
+      const existing = existingLeads.find((lead) => {
+        const payload = lead.brief_payload as Record<string, unknown> | null;
+        return payload?.synthetic_benchmark === true;
+      });
+      if (existingLeads.some((lead) => {
+        const payload = lead.brief_payload as Record<string, unknown> | null;
+        return payload?.synthetic_benchmark !== true;
+      })) {
+        return { success: false, error: 'These contact details match a live lead. Use test-only contact details; no live lead was changed.' };
+      }
+      if (!existing) return { success: false, error: 'No isolated simulation record was available to merge.' };
 
       // Increment inquiry_count on leads table
       await supabase
@@ -341,6 +315,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
         actor_id: callerId,
         activity_type: 'duplicate_inquiry',
         description: `Simulated repeat inquiry from ${input.name} (${safeEmail || safePhone}). Smart merge applied within ${dedupHours}h window.`,
+        metadata: { synthetic_benchmark: true },
       });
 
       if (actError) {
@@ -403,6 +378,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
       timeline: 'Q4 2026',
       client_message: input.message,
       simulated: true,
+      synthetic_benchmark: true,
       simulated_at: new Date().toISOString(),
       simulated_by: callerId,
     };
@@ -418,7 +394,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
         budget_bracket: input.budgetBracket,
         lead_source_id: fallbackSourceId,
         status_id: fallbackStatusId,
-        expected_value: 1500000,
+        expected_value: 0,
         brief_payload: briefPayload,
       })
       .select('id, lead_id')
@@ -437,6 +413,7 @@ export async function simulateInboundBriefAction(rawPayload: unknown): Promise<{
       actor_id: callerId,
       activity_type: 'system_event',
       description: `Inbound inquiry registered via simulation console for ${input.name} (${input.company || 'Private Client'}).`,
+      metadata: { synthetic_benchmark: true },
     });
 
     revalidatePath('/admin/ingestion');

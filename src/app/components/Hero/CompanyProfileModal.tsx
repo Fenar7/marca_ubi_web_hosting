@@ -57,7 +57,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
   const wasOpenRef = useRef(false);
   const focusTimerRef = useRef<number | null>(null);
   const resetTimerRef = useRef<number | null>(null);
-  const submissionIdRef = useRef("");
+  const submissionRef = useRef<{ key: string; snapshot: string } | null>(null);
   const isBrowser = typeof document !== "undefined";
 
   const resetFormState = useCallback(() => {
@@ -66,7 +66,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
     setIsSubmitted(false);
     setIsSubmitting(false);
     setSubmitError(null);
-    submissionIdRef.current = "";
+    submissionRef.current = null;
   }, []);
 
   const handleClose = useCallback(() => {
@@ -80,7 +80,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
         resetTimerRef.current = null;
       }, 260);
     } else {
-      submissionIdRef.current = "";
+      submissionRef.current = null;
       setIsSubmitting(false);
       setSubmitError(null);
     }
@@ -175,8 +175,6 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
       document.documentElement.classList.add("profile-modal-open");
 
       if (isOpening) {
-        submissionIdRef.current = crypto.randomUUID();
-
         if (focusTimerRef.current !== null) {
           window.clearTimeout(focusTimerRef.current);
         }
@@ -258,6 +256,7 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
     const nextErrors = validateCompanyProfileSubmission(formData);
 
@@ -284,8 +283,12 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const submissionId = submissionIdRef.current || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `modal-${Date.now()}`);
     const sanitized = sanitizeCompanyProfileSubmission(formData);
+    const snapshot = JSON.stringify(sanitized);
+    if (submissionRef.current?.snapshot !== snapshot) {
+      submissionRef.current = { key: crypto.randomUUID(), snapshot };
+    }
+    const submissionId = submissionRef.current.key;
 
     const combinedNotes = [
       sanitized.businessType ? `Business Type: ${sanitized.businessType}` : "",
@@ -332,6 +335,11 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
 
         if (!response.ok) {
           const errData = (await response.json().catch(() => ({}))) as { error?: string };
+          if (response.status >= 400 && response.status < 500 && response.status !== 408) {
+            setSubmitError(errData.error || "Check your details and try again.");
+            setIsSubmitting(false);
+            return;
+          }
           throw new Error(errData.error || `Server responded with status ${response.status}`);
         }
 

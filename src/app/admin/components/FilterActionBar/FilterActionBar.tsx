@@ -103,7 +103,7 @@ export function FilterActionBar({
     { id: 'potential', label: 'Potential' },
     { id: 'converted', label: 'Won' },
     { id: 'lost', label: 'Lost' },
-    { id: 'overdue', label: 'Overdue Today', isUrgent: true },
+    { id: 'overdue', label: 'Overdue', isUrgent: true },
   ];
   const [localSearch, setLocalSearch] = useState<string>(searchQuery);
   const [activeDropdown, setActiveDropdown] = useState<'source' | 'assignee' | 'priority' | null>(null);
@@ -196,33 +196,30 @@ export function FilterActionBar({
       className={`${styles.filterActionBar} ${className || ''}`}
       ref={containerRef}
       role="region"
-      aria-label="Commercial Pipeline Filters"
+      aria-label="Pipeline filters"
+      data-scope={scope}
     >
       {/* 1. Main Controls Bar */}
       <div className={styles.controlsRow}>
         {/* Pipeline Bucket Segmented Navigation Tabs */}
-        <div className={styles.bucketTabs} role="tablist" aria-label="Pipeline Stages">
+        <div className={styles.bucketTabs} role="group" aria-label="Pipeline views">
           {bucketTabs.map((tab) => {
             const count = counts[tab.id] ?? 0;
             const isSelected = selectedBucket === tab.id;
-            const isOverdueTab = tab.id === 'overdue';
-            const hasOverdueLeads = isOverdueTab && count > 0;
 
             return (
               <button
                 key={tab.id}
                 type="button"
-                role="tab"
-                aria-selected={isSelected}
+                aria-pressed={isSelected}
                 onClick={() => onBucketChange(tab.id)}
                 className={`
                   ${styles.tabBtn}
                   ${isSelected ? styles.activeTab : ''}
                   ${tab.isUrgent ? styles.urgentTab : ''}
-                  ${hasOverdueLeads ? styles.hasOverdue : ''}
                 `}
               >
-                {hasOverdueLeads && <span className={styles.urgentPulseDot} aria-hidden="true" />}
+
                 <span>{tab.label}</span>
                 <span className={styles.tabCount} aria-label={`${count} ${itemTypeLabel}`}>
                   {count}
@@ -251,7 +248,7 @@ export function FilterActionBar({
                   handleClearSearch();
                 }
               }}
-              placeholder={`Search ${itemTypeLabel}, company, rep...`}
+              placeholder="Name, company or reference"
               className={styles.searchInput}
               aria-label={`Search commercial ${itemTypeLabel}`}
             />
@@ -322,7 +319,7 @@ export function FilterActionBar({
                       }}
                       className={`${styles.popoverItem} ${isSelected ? styles.selectedItem : ''}`}
                       role="option"
-                      aria-selected={isSelected}
+                      aria-pressed={isSelected}
                     >
                       <div className={styles.itemLeft}>
                         {s.colorCode && (
@@ -399,7 +396,7 @@ export function FilterActionBar({
                       }}
                       className={`${styles.popoverItem} ${isSelected ? styles.selectedItem : ''}`}
                       role="option"
-                      aria-selected={isSelected}
+                      aria-pressed={isSelected}
                     >
                       <div className={styles.itemLeft}>
                         <span className={styles.avatarPillSmall}>
@@ -472,7 +469,7 @@ export function FilterActionBar({
                       }}
                       className={`${styles.popoverItem} ${isSelected ? styles.selectedItem : ''}`}
                       role="option"
-                      aria-selected={isSelected}
+                      aria-pressed={isSelected}
                     >
                       <div className={styles.itemLeft}>
                         {p.colorCode && (

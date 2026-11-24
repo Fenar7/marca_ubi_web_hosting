@@ -146,7 +146,7 @@ export function IngestionBriefMatrix({
             <line x1="16" y1="17" x2="8" y2="17" />
             <polyline points="10 9 9 9 8 9" />
           </svg>
-          <span>Original Ingestion Brief Matrix.</span>
+          <span>Original Ingestion Brief Matrix</span>
         </h2>
 
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>

@@ -1,0 +1,234 @@
+/**
+ * @file LuxuryQuickDispatchPod.module.scss
+ * @description Pure SCSS module for the Quick Commercial Dispatch Pod.
+ *              Strictly compliant with Next.js pure selector rules.
+ */
+
+.dispatchCard {
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 24px 26px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #111827;
+}
+
+.headerBadge {
+  padding: 2px 7px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 9999px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.repCountTag {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.repsRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.avatarList {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatarChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  &:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+}
+
+.avatarChipSelected {
+  background-color: #111827;
+  border-color: #111827;
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
+
+  &:hover {
+    background-color: #111827;
+  }
+
+  .avatarInitials {
+    background-color: #ea002a;
+    color: #ffffff;
+  }
+
+  .avatarName {
+    color: #f8fafc;
+  }
+}
+
+.avatarInitials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background-color: #e2e8f0;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.avatarName {
+  font-size: 10px;
+  font-weight: 500;
+  color: #64748b;
+  transition: color 0.18s ease;
+}
+
+.dealControlGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputContainer {
+  position: relative;
+  width: 100%;
+}
+
+.dealSelect {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e293b;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: #ea002a;
+    box-shadow: 0 0 0 3px rgba(234, 0, 42, 0.12);
+  }
+}
+
+.dealSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.dealMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metaLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.stagePill {
+  padding: 2px 8px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.dealValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.executeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #ea002a 0%, #dc2626 100%);
+  border: 1px solid rgba(234, 0, 42, 0.4);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(234, 0, 42, 0.25);
+  transition: all 0.18s ease;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #f43f5e 0%, #ea002a 100%);
+    box-shadow: 0 6px 18px rgba(234, 0, 42, 0.35);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}

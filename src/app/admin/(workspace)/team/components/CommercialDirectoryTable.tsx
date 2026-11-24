@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -36,58 +36,11 @@ export function CommercialDirectoryTable({
 }: CommercialDirectoryTableProps): React.ReactElement {
   const router = useRouter();
   const [roster, setRoster] = useState<TeamMemberRosterItem[]>(initialRoster);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Synchronize internal state if initialRoster reference changes
   useEffect(() => {
     setRoster(initialRoster);
   }, [initialRoster]);
-
-  // F-03 & F-04: Single authoritative listener for team-member-created with real UUID
-  useEffect(() => {
-    const handleTeamMemberCreated = (event: Event): void => {
-      const customEvent = event as CustomEvent<{
-        id?: string;
-        credentials: {
-          fullName: string;
-          email: string;
-          role: string;
-          jobTitle: string;
-          tempPassword?: string;
-          allowedTabs?: string[];
-        };
-      }>;
-      if (!customEvent.detail?.credentials) return;
-      const { id, credentials } = customEvent.detail;
-
-      const newMember: TeamMemberRosterItem = {
-        id: id || `temp-${Date.now()}`,
-        full_name: credentials.fullName,
-        email: credentials.email,
-        role: credentials.role as CrmUserRole,
-        job_title: credentials.jobTitle,
-        phone: null,
-        status: 'active',
-        avatar_url: null,
-        invited_by: currentUserId,
-        last_login_at: null,
-        must_change_password: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        allowed_tabs: credentials.allowedTabs || ['command_center', 'leads', 'deals', 'works', 'tasks'],
-        active_deals_count: 0,
-        total_deal_value: 0,
-      };
-
-      setRoster((prev) => [newMember, ...prev]);
-      router.refresh();
-    };
-
-    window.addEventListener('team-member-created', handleTeamMemberCreated);
-    return () => window.removeEventListener('team-member-created', handleTeamMemberCreated);
-  }, [currentUserId, router]);
 
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -133,25 +86,7 @@ export function CommercialDirectoryTable({
     setTimeout(() => setSuccessNotice(null), 4000);
   };
 
-  // Filter roster dynamically
-  const filteredRoster = useMemo(() => {
-    return roster.filter((member) => {
-      // Search matching: name, email, job title
-      const matchesSearch =
-        !searchQuery.trim() ||
-        member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.job_title.toLowerCase().includes(searchQuery.toLowerCase());
-
-      // Role filter matching
-      const matchesRole = roleFilter === 'all' || member.role === roleFilter;
-
-      // Status filter matching
-      const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
-
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-  }, [roster, searchQuery, roleFilter, statusFilter]);
+  const filteredRoster = roster;
 
   const isAdmin = currentUserRole === 'admin';
 
@@ -258,61 +193,6 @@ export function CommercialDirectoryTable({
         </div>
       )}
 
-      {/* Directory Filter Toolbar */}
-      <div className={styles.tableToolbar}>
-        <div className={styles.searchBox}>
-          <svg
-            className={styles.searchIcon}
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Search by personnel name, email, or title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Filter team members by name, email, or title"
-          />
-        </div>
-
-        <div className={styles.filterControls}>
-          <select
-            className={styles.filterSelect}
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            aria-label="Filter directory by commercial role"
-          >
-            <option value="all">All Roles</option>
-            <option value="admin">Administrators</option>
-            <option value="sales_manager">Sales Managers</option>
-            <option value="sales_executive">Sales Executives</option>
-            <option value="viewer">Viewers</option>
-          </select>
-
-          <select
-            className={styles.filterSelect}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            aria-label="Filter directory by account status"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active Only</option>
-            <option value="suspended">Suspended Only</option>
-          </select>
-        </div>
-      </div>
-
       {/* Commercial Personnel Directory Grid */}
       <div className={styles.tableResponsiveWrapper}>
         <table className={styles.table}>
@@ -353,7 +233,7 @@ export function CommercialDirectoryTable({
                         </div>
                         <div className={styles.identityInfo}>
                           <span className={styles.fullName}>
-                            {member.full_name}
+                            <Link href={`/admin/team/${member.id}`} className={styles.profileLink}>{member.full_name}</Link>
                             {isSelf && (
                               <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-secondary, #525965)', marginLeft: '0.4rem', fontWeight: 600 }}>
                                 (You)

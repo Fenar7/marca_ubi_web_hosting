@@ -13,7 +13,8 @@ export type StudioAlertAction =
   | 'NEW_LEAD'
   | 'MERGE_INQUIRY'
   | 'REACTIVATE_LEAD'
-  | 'CREATE_NEW_REENGAGEMENT';
+  | 'CREATE_NEW_REENGAGEMENT'
+  | 'NEEDS_REVIEW';
 
 export interface StudioLeadAlertPayload {
   leadId: string;
@@ -39,17 +40,11 @@ export interface DispatchAlertResult {
 }
 
 /**
- * Formats monetary amounts into clean Indian Lakhs/Crores or USD for alert summaries.
+ * Formats monetary amounts with full Indian digit grouping for alert summaries.
  */
 function formatAlertValue(amount?: number): string {
   if (!amount || amount === 0) return 'Undisclosed';
-  if (amount >= 10000000) {
-    return `₹ ${(amount / 10000000).toFixed(2)} Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹ ${(amount / 100000).toFixed(2)} L`;
-  }
-  return `₹ ${amount.toLocaleString('en-IN')}`;
+  return `₹ ${Math.round(amount).toLocaleString('en-IN')}`;
 }
 
 /**
@@ -83,8 +78,8 @@ export async function dispatchStudioLeadAlert(
   };
 
   if (!webhookUrl) {
-    // Structured console audit dispatch when webhook URL is not configured
-    console.log('[STUDIO_ALERT_DISPATCH]', JSON.stringify(alertBody, null, 2));
+    // Without a destination, keep contact details and brief text out of platform logs.
+    console.info('[STUDIO_ALERT_DISPATCH]', { reference: payload.leadId, action: payload.action });
     return {
       success: true,
       delivered: false,

@@ -1,8 +1,3 @@
-// SCSS Module: LeadsDataGrid.module.scss
-// Aesthetic: Accordion Executive Advisory & Sypher High-Density Data Grid
-// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
-// Strict Anti-AI-Slop: Fixed 72px row rhythm, zero CLS, tabular-nums, zero drop shadows
-
 .gridContainer {
   width: 100%;
   display: flex;
@@ -11,18 +6,18 @@
 
 // Dedicated 9-Column Collision-Free Grid Metrics
 // 1: Lead ID | 2: Client & Org | 3: Service Scope | 4: Funnel Stage | 5: Expected Value | 6: Representative | 7: Priority | 8: Next SLA | 9: Actions
-$grid-columns: 85px minmax(170px, 1.3fr) 115px 125px 105px 125px 100px 120px 190px;
-$grid-min-width: 1140px;
+$grid-columns: 76px minmax(164px, 2.4fr) minmax(100px, 1fr) 132px minmax(104px, .75fr) minmax(134px, 1.15fr) 84px 120px 190px;
+$grid-min-width: 1200px;
 
 // Desktop & Tablet Virtualized View
 .virtualScrollContainer {
   width: 100%;
   background: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: var(--admin-radius-card, 12px);
+  border-radius: 4px;
   overflow-x: auto;
   overflow-y: auto;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   max-height: calc(100vh - 280px);
   min-height: 400px;
   position: relative;
@@ -53,20 +48,20 @@ $grid-min-width: 1140px;
   gap: 0.5rem;
   background: var(--admin-surface-muted, #f0f2f5);
   border-bottom: 1px solid var(--admin-border-default, #e2e5ea);
-  padding: 0.85rem 1.25rem;
+  padding: 0.25rem 1rem;
   position: sticky;
   top: 0;
   z-index: 20;
-  box-shadow: 0 1px 2px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   box-sizing: border-box;
 }
 
 .thCell {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+
+
   color: var(--admin-text-secondary, #525965);
   white-space: nowrap;
   user-select: none;
@@ -81,11 +76,11 @@ $grid-min-width: 1140px;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+
+
   color: var(--admin-text-secondary, #525965);
   white-space: nowrap;
   user-select: none;
@@ -115,11 +110,11 @@ $grid-min-width: 1140px;
 }
 
 .headerColActions {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+
+
   color: var(--admin-text-secondary, #525965);
   white-space: nowrap;
   user-select: none;
@@ -146,7 +141,7 @@ $grid-min-width: 1140px;
   grid-template-columns: $grid-columns;
   align-items: center;
   gap: 0.5rem;
-  padding: 0 1.25rem;
+  padding: 0 1rem;
   border-bottom: 1px solid var(--admin-border-subtle, #eef0f3);
   transition: background-color 0.12s ease;
   cursor: pointer;
@@ -176,6 +171,7 @@ $grid-min-width: 1140px;
 // Columns Specific Styling
 .leadIdToken {
   position: relative;
+  white-space: nowrap;
   font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
   font-size: 0.72rem;
   font-weight: 600;
@@ -220,7 +216,7 @@ $grid-min-width: 1140px;
 }
 
 .clientName {
-  font-family: var(--font-admin-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.86rem;
   font-weight: 600;
   color: var(--admin-text-primary, #1f242f);
@@ -231,7 +227,7 @@ $grid-min-width: 1140px;
 }
 
 .companyTitle {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.74rem;
   color: var(--admin-text-secondary, #525965);
   white-space: nowrap;
@@ -240,7 +236,7 @@ $grid-min-width: 1140px;
 }
 
 .serviceCategory {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.76rem;
   color: var(--admin-text-secondary, #525965);
   white-space: nowrap;
@@ -249,9 +245,9 @@ $grid-min-width: 1140px;
 }
 
 .dealValue {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--admin-text-primary, #1f242f);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
@@ -274,7 +270,7 @@ $grid-min-width: 1140px;
   background: var(--admin-surface-inverse, #1f242f);
   color: #ffffff;
   font-size: 0.62rem;
-  font-weight: 700;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,22 +292,24 @@ $grid-min-width: 1140px;
 }
 
 .actionsCol {
-  display: flex;
+  display: grid;
+  grid-template-columns: 84px 64px 28px;
+  gap: 6px;
   align-items: center;
-  gap: 0.45rem;
-  justify-content: flex-start;
   min-width: 0;
 }
 
 .rowInspectBtn {
+  grid-column: 2;
+  justify-content: center;
   position: relative;
-  min-height: 28px;
+  min-height: 34px;
   padding: 0.25rem 0.65rem;
-  border-radius: var(--admin-radius-pill, 9999px);
+  border-radius: 7px;
   border: 1px solid var(--admin-border-default, #e2e5ea);
   background: var(--admin-surface-card, #ffffff);
   color: var(--admin-text-secondary, #525965);
-  font-family: var(--font-admin-btn, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
@@ -354,7 +352,7 @@ $grid-min-width: 1140px;
 .touchpointDate {
   position: relative;
   font-family: var(--font-admin-mono, 'SF Mono', 'Fira Code', Menlo, monospace);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   color: var(--admin-text-secondary, #525965);
   background: transparent;
   border: none;
@@ -417,25 +415,27 @@ $grid-min-width: 1140px;
 }
 
 .emptyStateTitle {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--admin-text-primary, #1f242f);
 }
 
 .rowConvertBtn {
+  grid-column: 1;
+  justify-content: center;
   position: relative;
-  min-height: 28px;
+  min-height: 34px;
   padding: 0.25rem 0.65rem;
-  border-radius: var(--admin-radius-pill, 9999px);
+  border-radius: 7px;
   border: 1px solid var(--admin-border-strong, #1f242f);
-  background: var(--admin-accent-lemon, #eefb87);
-  color: var(--admin-accent-lemon-ink, #1f242f);
-  font-family: var(--font-admin-btn, sans-serif);
+  background: #fff1f3;
+  color: #970022;
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+
+
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
@@ -458,7 +458,7 @@ $grid-min-width: 1140px;
   }
 
   &:hover {
-    background: var(--admin-accent-lemon-hover, #e4f375);
+    background: #ffe2e7;
   }
 
   &:active {
@@ -472,13 +472,13 @@ $grid-min-width: 1140px;
 }
 
 .rowQuickActions {
+  grid-column: 3;
   display: flex;
   align-items: center;
   gap: 0.35rem;
   transition: opacity 0.15s ease, transform 0.15s ease;
 
   @media (min-width: 1024px) {
-    display: none;
     opacity: 0;
     pointer-events: none;
     transform: translateX(4px);
@@ -530,5 +530,97 @@ $grid-min-width: 1140px;
   &:focus-visible {
     outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
+  }
+}
+
+.virtualScrollContainer {
+  min-height: 280px;
+  max-height: clamp(320px, calc(100dvh - 245px), 780px);
+  border-color: var(--lead-grid-border, var(--admin-border-subtle, #e7e7e4));
+  border-width: var(--lead-grid-border-width, 1px);
+  border-radius: var(--lead-grid-radius, var(--admin-radius-card, 12px));
+  background: var(--admin-card-bg, #fff);
+}
+.tableHeader { background: #f5f6f8; }
+.thCell {
+  color: var(--admin-text-muted, #696965);
+  letter-spacing: 0.08em;
+}
+.virtualRow { border-bottom-color: var(--admin-border-subtle, #e7e7e4); }
+.virtualRow:hover { background: var(--admin-surface-hover, #f7f7f5); }
+.leadIdToken {
+  border-radius: var(--admin-radius-micro, 4px);
+  background: var(--admin-surface-muted, #efefed);
+}
+.clientName,
+.dealValue { color: var(--admin-text-primary, #111); }
+.emptyState {
+  border-color: var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .mobileCardsContainer { gap: 0.6rem; }
+}
+
+.virtualRow > div {
+  min-width: 0;
+}
+
+.sortableHeaderCol:nth-child(5) {
+  justify-content: flex-end;
+}
+
+.virtualRow > div:nth-child(5) {
+  text-align: right;
+  padding-inline-end: .45rem;
+}
+
+.clientName {
+  font-family: var(--font-circular), sans-serif;
+  font-size: .98rem;
+  font-weight: 500;
+}
+
+.clientMeta {
+  gap: .22rem;
+}
+
+.dealValue {
+  font-family: var(--font-helvetica-neue), var(--font-circular), sans-serif;
+  font-size: 1.02rem;
+  font-weight: 300;
+  white-space: nowrap;
+}
+
+.repBadge {
+  display: flex;
+
+  > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.repAvatar {
+  background: #edf1f7;
+  color: #38465c;
+  border-radius: 7px;
+}
+
+.rowConvertBtn {
+  border-color: #e8b5c0;
+}
+
+.rowQuickActions:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .virtualRow, .clientName, .rowQuickActions, .rowConvertBtn, .rowInspectBtn {
+    transition: none;
   }
 }

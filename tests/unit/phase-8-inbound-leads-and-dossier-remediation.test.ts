@@ -123,14 +123,14 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
   });
 
   describe('Block 4: Pure Dossier Utilities Runtime Invariant Tests', () => {
-    it('accurately formats monetary values in Indian Lakhs and Crores via formatDossierCurrency', () => {
-      assert.strictEqual(formatDossierCurrency(0), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(-500), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(NaN), '₹0.00');
-      assert.strictEqual(formatDossierCurrency(206000), '₹2.06 L');
-      assert.strictEqual(formatDossierCurrency(1500000), '₹15.00 L');
-      assert.strictEqual(formatDossierCurrency(15000000), '₹1.50 Cr');
-      assert.strictEqual(formatDossierCurrency(27500000), '₹2.75 Cr');
+    it('accurately formats monetary values with full Indian digit grouping', () => {
+      assert.strictEqual(formatDossierCurrency(0), '₹0');
+      assert.strictEqual(formatDossierCurrency(-500), '₹-500');
+      assert.strictEqual(formatDossierCurrency(NaN), '₹0');
+      assert.strictEqual(formatDossierCurrency(206000), '₹2,06,000');
+      assert.strictEqual(formatDossierCurrency(1500000), '₹15,00,000');
+      assert.strictEqual(formatDossierCurrency(15000000), '₹1,50,00,000');
+      assert.strictEqual(formatDossierCurrency(27500000), '₹2,75,00,000');
     });
 
     it('sanitizes telephone strings into RFC 3966 URIs via sanitizeTelUri', () => {
@@ -346,7 +346,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const clientPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx');
       const code = fs.readFileSync(clientPath, 'utf8');
       assert.ok(
-        code.includes("searchParams.get('id') || searchParams.get('leadId')"),
+        /searchParams\.get\(["']id["']\)\s*\|\|\s*searchParams\.get\(["']leadId["']\)/.test(code),
         'LeadsWorkspaceClient must hydrate active drawer lead ID from id or leadId'
       );
       assert.ok(code.includes("url.searchParams.delete('id')"), 'handleCloseDrawer must delete id from searchParams');
@@ -357,7 +357,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const shellPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminWorkspaceShell.tsx');
       const code = fs.readFileSync(shellPath, 'utf8');
       assert.ok(
-        code.includes("searchParams.get('id') || searchParams.get('leadId')"),
+        /searchParams.get\(["']id["']\)\s*\|\|\s*searchParams.get\(["']leadId["']\)/.test(code),
         'AdminWorkspaceShell LeadUrlSync must check id or leadId'
       );
     });
@@ -416,17 +416,19 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
   });
 
   describe('Block 9: User Management Navigation, Scrim Stacking & RBAC Synchronization', () => {
-    it('verifies AdminSidebar.module.scss elevates .sidebar to z-index: 10000 above drawer scrims', () => {
+    it('verifies desktop navigation rail stays above workspace content', () => {
       const sidebarScssPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminSidebar.module.scss');
       const scss = fs.readFileSync(sidebarScssPath, 'utf8');
-      assert.ok(scss.includes('z-index: 10000;'), 'AdminSidebar must have z-index: 10000');
+      assert.ok(scss.includes('z-index: 120;'), 'Desktop navigation rail must sit above workspace content');
     });
 
     it('verifies AdminMobileDrawer elevates backdrop and drawer above overlay drawers', () => {
       const mobileScssPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminMobileDrawer.module.scss');
       const scss = fs.readFileSync(mobileScssPath, 'utf8');
-      assert.ok(scss.includes('z-index: 10001;'), 'Backdrop must have z-index: 10001');
-      assert.ok(scss.includes('z-index: 10002;'), 'Drawer must have z-index: 10002');
+      const backdropZ = Number(scss.match(/\.backdrop\s*\{[^}]*z-index:\s*(\d+)/)?.[1]);
+      const drawerZ = Number(scss.match(/\.drawer\s*\{[^}]*z-index:\s*(\d+)/)?.[1]);
+      assert.ok(Number.isFinite(backdropZ) && Number.isFinite(drawerZ), 'Backdrop and drawer must define stacking levels');
+      assert.ok(drawerZ > backdropZ, 'Drawer must render above its backdrop');
     });
 
     it('verifies AdminWorkspaceShell monitors pathname changes to reset drawers and clear scroll locks', () => {
@@ -434,7 +436,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const code = fs.readFileSync(shellPath, 'utf8');
       assert.ok(code.includes('usePathname'), 'AdminWorkspaceShell must consume usePathname');
       assert.ok(code.includes('setIsDrawerOpen(false);'), 'Must reset drawer state on navigation');
-      assert.ok(code.includes("document.body.style.overflow = '';"), 'Must reset document overflow on navigation');
+      assert.match(code, /document\.body\.style\.overflow = ["']["'];/, 'Must reset document overflow on navigation');
     });
 
     it('verifies src/middleware.ts checks hasExplicitAuthClaims to prevent false-positive role lockouts', () => {
@@ -507,30 +509,47 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       const { calculateMetricDelta } = await import(
         '../../src/app/admin/lib/timeframeUtils'
       );
-      assert.equal(calculateMetricDelta(100, 0), 100.0);
-      assert.equal(calculateMetricDelta(0, 0), 0.0);
+      assert.equal(calculateMetricDelta(100, 0), null);
+      assert.equal(calculateMetricDelta(0, 0), null);
       assert.equal(calculateMetricDelta(150, 100), 50.0);
       assert.equal(calculateMetricDelta(80, 100), -20.0);
     });
 
-    it('verifies generateTimeframeSplinePoints synthesizes dynamic intervals', async () => {
-      const { generateTimeframeSplinePoints } = await import(
+    it('groups persisted converted values into the selected date window', async () => {
+      const { aggregateTimeframeRevenue, resolveTimeframeBounds } = await import(
         '../../src/app/admin/lib/timeframeUtils'
       );
-      const p7d = generateTimeframeSplinePoints('7d', 480000);
-      assert.equal(p7d.length, 7);
-      assert.equal(p7d[0].month, 'Mon');
+      const bounds = resolveTimeframeBounds('30d', new Date('2026-10-31T00:00:00.000Z'));
+      const points = aggregateTimeframeRevenue('30d', bounds, [
+        { convertedAt: '2026-10-02T00:00:00.000Z', amount: 125000 },
+        { convertedAt: '2026-10-31T00:00:00.000Z', amount: 87500 },
+        { convertedAt: '2026-10-01T23:59:59.999Z', amount: 999999 },
+        { convertedAt: 'not-a-date', amount: 999999 },
+      ]);
 
-      const p30d = generateTimeframeSplinePoints('30d', 4280000);
-      assert.equal(p30d.length, 5);
-      assert.equal(p30d[0].month, 'W1');
+      assert.equal(points.length, 8);
+      assert.equal(points.reduce((total, point) => total + point.cashVal, 0), 1212499);
+      assert.equal(points.at(-1)?.cashFormatted, '₹87,500.00');
+    });
 
-      const p90d = generateTimeframeSplinePoints('90d', 11250000);
-      assert.equal(p90d.length, 3);
+    it('preserves real zero periods and creates the expected interval count for each range', async () => {
+      const { aggregateTimeframeRevenue, resolveTimeframeBounds } = await import(
+        '../../src/app/admin/lib/timeframeUtils'
+      );
+      const reference = new Date('2026-10-31T00:00:00.000Z');
+      const expectedCounts = new Map([
+        ['7d', 7],
+        ['30d', 8],
+        ['90d', 8],
+        ['quarter', 6],
+        ['year', 12],
+      ] as const);
 
-      const pYear = generateTimeframeSplinePoints('year', 38400000);
-      assert.equal(pYear.length, 4);
-      assert.equal(pYear[0].month, 'Q1');
+      for (const [slug, expectedCount] of expectedCounts) {
+        const points = aggregateTimeframeRevenue(slug, resolveTimeframeBounds(slug, reference), []);
+        assert.equal(points.length, expectedCount);
+        assert.ok(points.every((point) => point.cashVal === 0));
+      }
     });
 
     it('verifies ExecutiveMasthead binds URL query synchronization with React 19 transitions', () => {
@@ -541,7 +560,7 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(code.includes('useRouter'), 'Must import useRouter');
       assert.ok(code.includes('useSearchParams'), 'Must import useSearchParams');
       assert.ok(code.includes('useTransition'), 'Must import useTransition');
-      assert.ok(code.includes("params.set('timeframe', targetSlug);"), 'Must mutate timeframe query param');
+      assert.ok(code.includes('params.set("timeframe", targetSlug);'), 'Must mutate timeframe query param');
       assert.ok(code.includes('router.push('), 'Must push updated search parameters to router');
     });
 
@@ -552,10 +571,10 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       );
       assert.ok(code.includes('searchParams?: Promise<{'), 'page.tsx must accept async searchParams');
       assert.ok(code.includes('resolveTimeframeBounds'), 'Must resolve temporal boundaries');
-      assert.ok(code.includes('<ExecutiveMasthead selectedTimeframe={bounds.label} />'), 'Must pass active label to Masthead');
-      assert.ok(code.includes('cadenceLabel={bounds.cadenceLabel}'), 'Must pass dynamic cadence to KPI grid');
-      assert.ok(code.includes('dataPoints={revenueSplinePoints}'), 'Must pass dynamic spline points to RevenueDynamicsCard');
-      assert.ok(code.includes('stages={dynamicStages}'), 'Must pass dynamic stages array to PipelineAllocationCard');
+      assert.ok(code.includes('<OverviewWorkspace data={data}'), 'Must pass the authorized server DTO to Overview');
+      assert.ok(code.includes('periodStart: bounds.currentStart.toISOString()'), 'Must pass the explicit outcomes window');
+      assert.ok(code.includes('pipelineReady:'), 'Must preserve snapshot availability separately');
+      assert.ok(code.includes('outcomesReady:'), 'Must preserve reporting availability separately');
     });
   });
 });

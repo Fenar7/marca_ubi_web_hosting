@@ -16,6 +16,7 @@ import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelec
 import { InlinePrioritySelect } from './InlinePrioritySelect';
 import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { LeadPriority } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from './LeadMobileCard.module.scss';
 
 export interface LeadMobileCardProps {
@@ -34,14 +35,7 @@ export interface LeadMobileCardProps {
 }
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 export function LeadMobileCard({
@@ -99,15 +93,6 @@ export function LeadMobileCard({
   return (
     <article
       className={`${styles.cardWrapper} ${className || ''}`}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCardClick();
-        }
-      }}
       aria-label={`Lead ${lead.lead_id}: ${lead.name} from ${lead.company || 'Private Client'}`}
     >
       {/* 1. Header: Lead ID, Timestamp, and Expected Valuation */}
@@ -192,8 +177,9 @@ export function LeadMobileCard({
           disabled={userRole === 'viewer'}
         />
 
-        <div className={styles.repInfo} title={`Assigned to ${lead.assigned_to_name}`}>
-          <div className={styles.repAvatar}>{repInitials}</div>
+        <div className={styles.repInfo} title={lead.assigned_to_name || 'Unassigned'}>
+          {lead.assigned_to && <div className={styles.repAvatar} aria-hidden="true">{repInitials}</div>}
+          <span>{lead.assigned_to_name || 'Unassigned'}</span>
         </div>
       </div>
 

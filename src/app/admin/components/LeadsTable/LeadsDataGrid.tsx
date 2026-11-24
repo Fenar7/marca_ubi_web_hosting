@@ -19,6 +19,7 @@ import { InlinePrioritySelect } from './InlinePrioritySelect';
 import { LeadMobileCard } from './LeadMobileCard';
 import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { LeadPriority } from '@/types/crm';
+import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from './LeadsDataGrid.module.scss';
 
 export interface LeadsDataGridProps {
@@ -47,14 +48,7 @@ type SortField =
   | 'next_follow_up';
 
 function formatCurrency(amount: number): string {
-  if (!amount || amount <= 0) return '₹0';
-  if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  }
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
-  }
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return formatCrmCurrency(amount);
 }
 
 export function LeadsDataGrid({
@@ -156,8 +150,9 @@ export function LeadsDataGrid({
       <div
         ref={parentRef}
         className={styles.virtualScrollContainer}
-        role="region"
-        aria-label="Commercial Pipeline Data Grid"
+        role="table"
+        aria-rowcount={sortedLeads.length + 1}
+        aria-label="Lead queue"
         tabIndex={0}
       >
         {/* Sticky Table Header (9 Dedicated Columns) with Sort Controls */}
@@ -313,7 +308,7 @@ export function LeadsDataGrid({
 
         {/* Dynamic Virtualized Rows Viewport */}
         <div
-          className={styles.virtualViewport}
+          className={styles.virtualViewport} role="rowgroup"
           style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -347,7 +342,7 @@ export function LeadsDataGrid({
             return (
               <div
                 key={lead.id}
-                data-index={virtualRow.index}
+                data-index={virtualRow.index} aria-rowindex={virtualRow.index + 2}
                 className={styles.virtualRow}
                 style={{
                   transform: `translateY(${virtualRow.start}px)`,
@@ -357,14 +352,14 @@ export function LeadsDataGrid({
                 role="row"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.target === e.currentTarget && e.key === 'Enter') {
                     handleRowClick(lead.id);
                   }
                 }}
                 aria-label={`Lead ${lead.lead_id}: ${lead.name}`}
               >
                 {/* Col 1: Lead ID Monospace Token */}
-                <div>
+                <div role="cell">
                   <button
                     type="button"
                     onClick={(e) => handleCopyLeadId(lead.lead_id, e)}
@@ -392,22 +387,22 @@ export function LeadsDataGrid({
                 </div>
 
                 {/* Col 2: Client & Organization Dual-Line */}
-                <div className={styles.clientMeta}>
-                  <span className={styles.clientName}>{lead.name}</span>
-                  <span className={styles.companyTitle}>
+                <div role="cell" className={styles.clientMeta}>
+                  <span className={styles.clientName} title={lead.name}>{lead.name}</span>
+                  <span className={styles.companyTitle} title={lead.company || undefined}>
                     {lead.company || 'Private Client'}
                   </span>
                 </div>
 
                 {/* Col 3: Service Scope */}
-                <div>
+                <div role="cell">
                   <span className={styles.serviceCategory}>
                     {lead.service_category}
                   </span>
                 </div>
 
                 {/* Col 4: Inline Funnel Stage Selector */}
-                <div>
+                <div role="cell">
                   <InlineStatusSelect
                     leadId={lead.id}
                     currentStatus={currentStatusOption}
@@ -418,25 +413,25 @@ export function LeadsDataGrid({
                 </div>
 
                 {/* Col 5: Expected Value Numerals */}
-                <div>
+                <div role="cell">
                   <span className={styles.dealValue}>
                     {formatCurrency(lead.expected_value)}
                   </span>
                 </div>
 
                 {/* Col 6: Assigned Representative Badge */}
-                <div>
+                <div role="cell">
                   <div
                     className={styles.repBadge}
                     title={lead.assigned_to_name || 'Unassigned'}
                   >
-                    <div className={styles.repAvatar}>{repInitials}</div>
-                    <span>{lead.assigned_to_name}</span>
+                    {lead.assigned_to && <div className={styles.repAvatar} aria-hidden="true">{repInitials}</div>}
+                    <span>{lead.assigned_to_name || 'Unassigned'}</span>
                   </div>
                 </div>
 
                 {/* Col 7: Inline Priority Selector */}
-                <div className={styles.priorityCol}>
+                <div role="cell" className={styles.priorityCol}>
                   <InlinePrioritySelect
                     leadId={lead.id}
                     currentPriority={lead.priority}
@@ -446,7 +441,7 @@ export function LeadsDataGrid({
                 </div>
 
                 {/* Col 8: Next SLA Touchpoint */}
-                <div
+                <div role="cell"
                   className={styles.slaCol}
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
@@ -510,7 +505,7 @@ export function LeadsDataGrid({
                 </div>
 
                 {/* Col 9: Action Controls Strip */}
-                <div
+                <div role="cell"
                   className={styles.actionsCol}
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
@@ -541,7 +536,7 @@ export function LeadsDataGrid({
                           }
                         }
                       }}
-                      title="1-Click Convert Inbound Lead to Pipeline Deal"
+                      title="Convert inquiry to deal"
                       aria-label={`Convert ${lead.lead_id} to pipeline deal`}
                     >
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -591,7 +586,7 @@ export function LeadsDataGrid({
       </div>
 
       {/* 2. Mobile Responsive Card Queue (< 768px) */}
-      <div className={styles.mobileCardsContainer} role="feed" aria-label="Commercial Inquiries Queue">
+      <div className={styles.mobileCardsContainer} role="region" aria-label="Lead queue cards">
         {sortedLeads.map((lead) => (
           <LeadMobileCard
             key={lead.id}

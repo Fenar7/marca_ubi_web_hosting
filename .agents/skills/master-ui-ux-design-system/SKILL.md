@@ -9,7 +9,10 @@ description: >-
 
 # 🧠 Intelligent Unified Master Design System & Anti-AI-Slop Engineering Guide
 
-This skill is the central visual architecture, component construction, and UX intelligence standard for **Stayee Anywhere**. All UI components, Next.js pages, dashboards, modal sheets, tables, and interactive widgets must strictly adhere to these standards.
+This skill is the central visual architecture, component construction, and UX intelligence standard for **Marca Ubi Enterprise**. All UI components, Next.js pages, dashboards, modal sheets, tables, and interactive widgets must strictly adhere to these standards.
+
+> [!NOTE] Archetype Nomenclature Clarification
+> Archetype labels below (Stripe Scorecards, Linear Fluid Cards, Uber HUD, Notion Callouts) represent **information density, structural rhythm, and mathematical proportions only**. Per `antislop` rule **R-30**, agents must **never** visually clone or mimic third-party product themes. The visual skin, color tokens, and typography are governed strictly by `DESIGN.md` (Circular XX, Graphik, `#ea002a`, `#111111`, `#f5f5f3`, `#ffffff`).
 
 --------------------------------------------------------------------------------
 
@@ -155,14 +158,14 @@ $font-mono: 'Fira Code', 'SF Mono', Menlo, Consolas, Monaco, monospace;
   }
 
   @if $variant == 'primary' {
-    background: linear-gradient(135deg, #ff3b00 0%, #d42e00 100%);
+    background: linear-gradient(135deg, #ea002a 0%, #b3001f 100%);
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(255, 59, 0, 0.25);
+    box-shadow: 0 4px 14px rgba(234, 0, 42, 0.25);
 
     &:hover {
-      background: lighten(#ff3b00, 3%);
-      box-shadow: 0 6px 20px rgba(255, 59, 0, 0.35);
+      background: lighten(#ea002a, 3%);
+      box-shadow: 0 6px 20px rgba(234, 0, 42, 0.35);
     }
   } @else {
     background: rgba(255, 255, 255, 0.04);

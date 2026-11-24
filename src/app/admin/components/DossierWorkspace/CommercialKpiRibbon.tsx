@@ -4,7 +4,7 @@
  * @file CommercialKpiRibbon.tsx
  * @description Commercial KPI Ribbon presenting 3 Minimalist Stat Pods for the Client 360° Workspace.
  *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
- *              1. Expected Valuation in Indian Rupees (Lakhs/Crores) with tabular numeric stabilization
+ *              1. Expected Valuation in Indian Rupees with full digits and tabular numeric stabilization
  *                 and 44px circular Emerald icon chip (#ecfdf5).
  *              2. Priority SLA Badge with semantic radar dot indicator and 44px Amber icon chip (#fffbeb).
  *              3. Win Probability & Deal Momentum index derived from current funnel stage mechanics
@@ -16,6 +16,7 @@
 import React, { useMemo } from 'react';
 import type { LeadPriority, FunnelBucket } from '@/types/crm';
 import { formatDossierCurrency } from '../DossierDrawer/dossierUtils';
+import { reconcileBudgetBracket } from '@/app/admin/lib/currency';
 import styles from './LeadDossierWorkspace.module.scss';
 
 export interface CommercialKpiRibbonProps {
@@ -114,6 +115,11 @@ export function CommercialKpiRibbon({
 
   const slaDetails = useMemo(() => getPrioritySlaDetails(priority), [priority]);
 
+  const reconciledTier = useMemo(
+    () => reconcileBudgetBracket(budgetBracket),
+    [budgetBracket]
+  );
+
   const formattedValuation = useMemo(
     () => formatDossierCurrency(expectedValue),
     [expectedValue]
@@ -127,7 +133,7 @@ export function CommercialKpiRibbon({
           <div className={styles.scorecardLabelGroup}>
             <span className={styles.scorecardLabel}>Expected Valuation</span>
             <span className={styles.scorecardPill}>
-              {budgetBracket ? budgetBracket : 'Calculated Scope'}
+              {budgetBracket ? reconciledTier.displayBadge : 'Calculated Scope'}
             </span>
           </div>
           <div
@@ -145,7 +151,7 @@ export function CommercialKpiRibbon({
         </div>
 
         <div className={styles.scorecardMetaRow}>
-          <span>Indian Rupee Tabular Numerals</span>
+          <span>Scope Basis: Initial Scoping Estimate · Institutional FX Peg: 1 USD = 83.50 INR</span>
           <span>{inquiryCount > 1 ? `${inquiryCount} Inbound Touchpoints` : 'Calculated Scope'}</span>
         </div>
       </div>
@@ -168,13 +174,8 @@ export function CommercialKpiRibbon({
           </div>
         </div>
 
-        <div className={styles.scorecardValue} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span
-            className={styles.radarDot}
-            style={{ backgroundColor: slaDetails.dotColorCss }}
-            aria-hidden="true"
-          />
-          <span>{priority} Priority</span>
+        <div className={styles.scorecardValue}>
+          <span className={styles.priorityText}>{priority} Priority</span>
         </div>
 
         <div className={styles.scorecardMetaRow}>

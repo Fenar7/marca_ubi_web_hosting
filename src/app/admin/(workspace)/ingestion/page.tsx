@@ -1,190 +1,240 @@
-/**
- * @file page.tsx
- * @description Website Inquiries & Webhook Ingestion Workspace (/admin/ingestion).
- *              Server Component role-gated to authorized staff.
- *              Fetches authentic database telemetry, recent brief submissions with JSON payloads,
- *              and renders the interactive IngestionWorkspaceClient console.
- * @module app/admin/(workspace)/ingestion/page
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
-
-import React from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import { getAgencySettingsAction } from '@/app/actions/settings';
-import type { CrmUserRole } from '@/types/crm';
+import { getCrmDirectoryList } from '@/app/admin/lib/crmDirectory';
+import { ROLE_DEFAULT_TABS, type CrmUserRole } from '@/types/crm';
+import { IngestionWorkspaceClient } from './components/IngestionWorkspaceClient';
 import {
-  IngestionWorkspaceClient,
-  type IngestionTelemetryData,
-  type InboundSubmissionItem,
-  type IngestionActivityItem,
-} from './components/IngestionWorkspaceClient';
-import styles from './ingestion.module.scss';
+  canAssignInquiryOwner,
+  inboxHref,
+  inquiryCursor,
+  readInboxFilters,
+  type InboxQuery,
+  type InquiryRow,
+} from './inquiryView';
 
 export const metadata: Metadata = {
-  title: 'Website Inquiries & Form Capture | Marca Ubi Enterprise CRM',
-  robots: {
-    index: false,
-    follow: false,
-  },
+  title: 'Inquiries | Marca Ubi CRM',
+  robots: { index: false, follow: false },
 };
 
-export default async function AdminIngestionPage(): Promise<React.ReactElement> {
-  const supabase = await createClient();
+const PAGE_SIZE = 25;
+const ROW_FIELDS =
+  'id,inquiry_ref,origin,received_at,name,company,service_category,state,assigned_to,is_historical,test_batch,summary';
+export interface InquiryHistory {
+  id: string;
+  event_type: 'received' | 'linked' | 'triaged' | 'backfilled';
+  created_at: string;
+}
 
+interface InboxPageProps {
+  searchParams: Promise<InboxQuery>;
+}
+
+/** All reads use the authenticated client; RLS scopes both the result rows and exact counts. */
+export default async function AdminIngestionPage({
+  searchParams,
+}: InboxPageProps) {
+  const [supabase, query] = await Promise.all([createClient(), searchParams]);
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/admin/login?next=%2Fadmin%2Fingestion');
-  }
+  if (!user) redirect('/admin/login?next=%2Fadmin%2Fingestion');
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, status, allowed_tabs')
+    .select('role,status,allowed_tabs')
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.status !== 'active') {
+  if (profileError) {
+    console.error('[inquiries] Profile lookup failed', profileError.code);
+    throw new Error('Inquiry access could not be verified.');
+  }
+  if (!profile || profile.status !== 'active')
     redirect('/admin/login?error=account_suspended');
+
+  const role = profile.role as CrmUserRole;
+  const tabs = profile.allowed_tabs as string[] | null;
+  const hasTab = (tab: 'ingestion' | 'leads') =>
+    role === 'admin' ||
+    (tabs?.length
+      ? tabs.includes(tab)
+      : Boolean(ROLE_DEFAULT_TABS[role]?.[tab]));
+
+  if (!hasTab('ingestion')) redirect('/admin?error=unauthorized_role_access');
+
+  const canWrite = role === 'admin' || role === 'sales_manager';
+  const filters = readInboxFilters(query);
+  if (filters.inquiry) {
+    redirect(
+      '/admin/ingestion/' +
+        encodeURIComponent(filters.inquiry) +
+        '?returnTo=' +
+        encodeURIComponent(inboxHref(filters, { inquiry: null })),
+    );
   }
-
-  const role = (profile?.role as CrmUserRole) || 'viewer';
-  const allowedTabs = profile?.allowed_tabs as string[] | undefined;
-
-  const hasIngestionAccess = Array.isArray(allowedTabs)
-    ? allowedTabs.includes('ingestion')
-    : role === 'admin' || role === 'sales_manager';
-
-  if (!hasIngestionAccess) {
-    redirect('/admin?error=unauthorized_role_access');
-  }
-
-  // Calculate dynamic deduplication window baseline
-  const window24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-  // Aggregate verified inquiry volume within active rolling window
-  const { count: inboundCount } = await supabase
-    .from('leads')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', window24h);
-
-  // Aggregate duplicate smart merges logged during identical window
-  const { count: dedupCount } = await supabase
-    .from('lead_activities')
-    .select('*', { count: 'exact', head: true })
-    .eq('activity_type', 'duplicate_inquiry')
-    .gte('created_at', window24h);
-
-  // Retrieve calibrated operational settings for rate limiting and dedup thresholds
-  const settingsResult = await getAgencySettingsAction();
-  const settings = settingsResult.data || {
-    id: 'default' as const,
-    lead_response_sla_minutes: 60,
-    followup_grace_period_hours: 4,
-    stale_deal_threshold_days: 14,
-    dedup_window_hours: 24,
-    bot_rate_limit_per_minute: 10,
-    notification_email: 'executive@marcaubi.com',
+  const sourceOrigins = filters.origin
+    ? [filters.origin]
+    : filters.channel === 'website'
+      ? ['contact', 'start_project', 'chat_pod', 'website']
+      : filters.channel === 'manual'
+        ? ['manual']
+        : null;
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - 86_400_000).toISOString();
+  const countInquiries = () => {
+    const count = supabase
+      .from('inquiries')
+      .select('id', { count: 'exact', head: true })
+      .is('test_batch', null);
+    return sourceOrigins ? count.in('origin', sourceOrigins) : count;
   };
 
-  const telemetry: IngestionTelemetryData = {
-    inboundCount24h: inboundCount ?? 0,
-    dedupMerges24h: dedupCount ?? 0,
-    dedupWindowHours: settings.dedup_window_hours,
-    botRateLimit: settings.bot_rate_limit_per_minute,
-    endpointHealth: '200 OK: Active',
-  };
+  let list = supabase.from('inquiries').select(ROW_FIELDS);
+  if (filters.live) list = list.is('test_batch', null);
+  if (sourceOrigins) list = list.in('origin', sourceOrigins);
+  if (filters.state === 'open') list = list.neq('state', 'closed');
+  else if (filters.state) list = list.eq('state', filters.state);
+  if (filters.owner === 'unassigned') list = list.is('assigned_to', null);
+  else if (filters.owner) list = list.eq('assigned_to', filters.owner);
+  if (filters.from) list = list.gte('received_at', filters.from + 'T00:00:00Z');
+  if (filters.to) {
+    const nextDay = new Date(Date.parse(filters.to) + 86_400_000).toISOString();
+    list = list.lt('received_at', nextDay);
+  }
+  if (filters.window)
+    list = list
+      .gte('received_at', windowStart)
+      .lte('received_at', now.toISOString())
+      .eq('is_historical', false);
+  if (filters.q) {
+    const term = '%' + filters.q + '%';
+    list = list.or(
+      ['name', 'company', 'inquiry_ref', 'email', 'phone']
+        .map((field) => field + '.ilike.' + term)
+        .join(','),
+    );
+  }
+  const ascending = filters.sort === 'oldest';
+  const backwards = Boolean(filters.before);
+  const cursor = filters.before ?? filters.after;
+  if (cursor) {
+    const comparison = ascending !== backwards ? 'gt' : 'lt';
+    list = list.or(
+      'received_at.' +
+        comparison +
+        '.' +
+        cursor.stamp +
+        ',and(received_at.eq.' +
+        cursor.stamp +
+        ',id.' +
+        comparison +
+        '.' +
+        cursor.id +
+        ')',
+    );
+  }
 
-  // Hydrate recent inbound brief submissions with raw payload structures
-  const { data: recentLeads } = await supabase
-    .from('leads')
-    .select('id, lead_id, name, company, email, phone, service_category, expected_value, created_at, brief_payload')
-    .order('created_at', { ascending: false })
-    .limit(10);
+  const [
+    rowsResult,
+    needsReview,
+    unassigned,
+    received,
+    directory,
+    ownerEligibility,
+  ] = await Promise.all([
+    list
+      .order('received_at', { ascending: ascending !== backwards })
+      .order('id', { ascending: ascending !== backwards })
+      .limit(PAGE_SIZE + 1),
+    countInquiries().eq('state', 'new'),
+    countInquiries().is('assigned_to', null).neq('state', 'closed'),
+    countInquiries()
+      .eq('is_historical', false)
+      .gte('received_at', windowStart)
+      .lte('received_at', now.toISOString()),
+    getCrmDirectoryList(supabase, [
+      'admin',
+      'sales_manager',
+      'sales_executive',
+    ]),
+    canWrite
+      ? supabase
+          .from('profiles')
+          .select('id,role,allowed_tabs')
+          .eq('status', 'active')
+          .in('role', ['admin', 'sales_manager', 'sales_executive'])
+      : null,
+  ]);
 
-  const submissions: InboundSubmissionItem[] = (recentLeads || []).map((lead) => ({
-    id: lead.id,
-    lead_id: lead.lead_id,
-    name: lead.name,
-    company: lead.company,
-    email: lead.email,
-    phone: lead.phone,
-    service_category: lead.service_category || 'Web & Digital',
-    expected_value: Number(lead.expected_value) || 0,
-    created_at: lead.created_at,
-    brief_payload: (lead.brief_payload as Record<string, unknown>) || null,
+  for (const [area, error] of [
+    ['queue', rowsResult.error],
+    ['needs review', needsReview.error],
+    ['unassigned', unassigned.error],
+    ['received', received.error],
+    ['assignment eligibility', ownerEligibility?.error],
+  ] as const) {
+    if (error)
+      console.error('[inquiries] Query failed', { area, code: error.code });
+  }
+
+  const pageRows = ((rowsResult.data ?? []) as InquiryRow[]).slice(
+    0,
+    PAGE_SIZE,
+  );
+  const more = (rowsResult.data?.length ?? 0) > PAGE_SIZE;
+  const rows = backwards ? pageRows.reverse() : pageRows;
+  const first = rows[0];
+  const last = rows.at(-1);
+  const previous =
+    first && (backwards ? more : filters.after)
+      ? inboxHref(filters, {
+          inquiry: null,
+          before: inquiryCursor(first),
+          after: null,
+        })
+      : null;
+  const next =
+    last && (backwards ? filters.before : more)
+      ? inboxHref(filters, {
+          inquiry: null,
+          after: inquiryCursor(last),
+          before: null,
+        })
+      : null;
+  const owners = directory.map(({ id, full_name }) => ({
+    id,
+    name: full_name,
   }));
+  const eligibleOwnerRoles = new Map(
+    (ownerEligibility?.data ?? [])
+      .filter(({ role, allowed_tabs }) =>
+        canAssignInquiryOwner(role, allowed_tabs),
+      )
+      .map(({ id, role }) => [id, role]),
+  );
 
-  // Fetch recent ingestion and deduplication activities
-  const { data: ingestionActivities } = await supabase
-    .from('lead_activities')
-    .select('id, activity_type, description, created_at')
-    .in('activity_type', ['duplicate_inquiry', 'system_event', 'status_change'])
-    .order('created_at', { ascending: false })
-    .limit(8);
-
-  const activities: IngestionActivityItem[] = (ingestionActivities || []).map((act) => ({
-    id: act.id,
-    activity_type: act.activity_type,
-    description: act.description,
-    created_at: act.created_at,
-  }));
-
-  const canSimulate = role === 'admin' || role === 'sales_manager';
-
+  const listUnavailable = Boolean(rowsResult.error) || rowsResult.data === null;
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <span className={styles.eyebrow}>Ingestion Protocols</span>
-          <h1 className={styles.pageTitle}>Inbound Lead Ingestion Protocols.</h1>
-          <p className={styles.pageSubtitle}>
-            Monitor inbound inquiries, inspect raw webhook JSON brief payloads, and simulate test submissions.
-          </p>
-        </div>
-      </header>
-
-      {/* Interactive Ingestion Workspace Client Component */}
+    <>
       <IngestionWorkspaceClient
-        telemetry={telemetry}
-        recentSubmissions={submissions}
-        recentActivities={activities}
-        canSimulate={canSimulate}
+        canWrite={canWrite}
+        canResolve={canWrite && hasTab('leads')}
+        filters={filters}
+        rows={rows}
+        listUnavailable={listUnavailable}
+        metrics={{
+          needsReview: needsReview.error ? null : needsReview.count,
+          unassigned: unassigned.error ? null : unassigned.count,
+          received: received.error ? null : received.count,
+        }}
+        owners={owners}
+        assignmentOwners={owners.filter(({ id }) => eligibleOwnerRoles.has(id))}
+        previous={previous}
+        next={next}
       />
-
-      {/* Deduplication & Ingestion Governance Protocol */}
-      <section className={styles.sectionBox}>
-        <h2 className={styles.sectionTitle}>Automated Deduplication Protocol.</h2>
-        <div className={styles.ruleList}>
-          <div className={styles.ruleItem}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            <span>
-              <strong>International Phone Formatting:</strong> Strips extraneous characters, converts Indian 10-digit numbers to +91 international standard before deduplication comparison.
-            </span>
-          </div>
-          <div className={styles.ruleItem}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            <span>
-              <strong>Automatic Email Matching:</strong> Ensures whitespace is trimmed and strings are forced to lowercase, preventing duplicate submissions from multiple marketing campaigns.
-            </span>
-          </div>
-          <div className={styles.ruleItem}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            <span>
-              <strong>Repeat Inquiry Tracking:</strong> Duplicate inquiries within the {settings.dedup_window_hours}-hour window update `inquiry_count` and append an immutable touchpoint record to `lead_activities` without resetting deal stages.
-            </span>
-          </div>
-        </div>
-      </section>
-    </div>
+    </>
   );
 }

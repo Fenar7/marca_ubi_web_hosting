@@ -1,19 +1,23 @@
-'use client';
+"use client";
 
 /**
  * @file AdminMobileDrawer.tsx
- * @description Responsive off-canvas slide-out sheet for viewport widths < 1024px.
+ * @description Focus-managed mobile navigation drawer for the Commercial Desk.
  * @architecture Provides full touch-optimized agency navigation, dynamic tab-level RBAC gating,
  *               focus containment, and live task badge synchronization matching AdminSidebar.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import type { CurrentUserSession } from './UserProfileDropdown';
-import { NAVIGATION_GROUPS, isTabAuthorized } from './navigationConfig';
-import styles from './AdminMobileDrawer.module.scss';
+import React, { useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import {
+  UserProfileDropdown,
+  type CurrentUserSession,
+} from "./UserProfileDropdown";
+import { NAVIGATION_GROUPS, isTabAuthorized } from "./navigationConfig";
+import styles from "./AdminMobileDrawer.module.scss";
 
 interface AdminMobileDrawerProps {
   isOpen: boolean;
@@ -28,21 +32,58 @@ export function AdminMobileDrawer({
   currentUser,
   dueTasksCount,
 }: AdminMobileDrawerProps): React.ReactElement {
-  const pathname = usePathname() || '/admin';
+  const pathname = usePathname() || "/admin";
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-  // Lock body scroll and listen for Escape key when drawer is active
+  /** Keep focus inside the navigation while it is open, and return it to the trigger on close. */
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      const previousFocus =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      closeRef.current?.focus();
       const handleKeyDown = (e: KeyboardEvent): void => {
-        if (e.key === 'Escape') {
+        // A body-portaled account dialog owns focus and Escape until it closes.
+        if (document.querySelector('[data-account-avatar-layer="true"]'))
+          return;
+        if (e.key === "Escape") {
+          e.preventDefault();
           onClose();
+        } else if (e.key === "Tab" && drawerRef.current) {
+          const controls = Array.from(
+            drawerRef.current.querySelectorAll<HTMLElement>(
+              "a[href], button:not([disabled])",
+            ),
+          );
+          const first = controls[0];
+          const last = controls[controls.length - 1];
+          if (!first || !last) return;
+          if (
+            e.shiftKey &&
+            (document.activeElement === first ||
+              !drawerRef.current.contains(document.activeElement))
+          ) {
+            e.preventDefault();
+            last.focus();
+          } else if (
+            !e.shiftKey &&
+            (document.activeElement === last ||
+              !drawerRef.current.contains(document.activeElement))
+          ) {
+            e.preventDefault();
+            first.focus();
+          }
         }
       };
-      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener("keydown", handleKeyDown);
       return () => {
-        document.body.style.overflow = '';
-        window.removeEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = previousOverflow;
+        window.removeEventListener("keydown", handleKeyDown);
+        if (previousFocus?.isConnected) previousFocus.focus();
       };
     }
   }, [isOpen, onClose]);
@@ -53,42 +94,44 @@ export function AdminMobileDrawer({
   }, [pathname, onClose]);
 
   const isRouteActive = (href: string): boolean => {
-    if (href === '/admin') {
-      return pathname === '/admin';
+    if (href === "/admin") {
+      return pathname === "/admin";
     }
     return pathname.startsWith(href);
   };
-
-  const formattedRole = currentUser.role
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
 
   return (
     <>
       {/* Backdrop overlay */}
       <div
-        className={`${styles.backdrop} ${isOpen ? styles.backdropVisible : ''}`}
+        className={`${styles.backdrop} ${isOpen ? styles.backdropVisible : ""}`}
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Slide-out drawer sheet */}
       <aside
-        className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}
-        aria-label="Mobile Navigation Drawer"
+        ref={drawerRef}
+        className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}
+        aria-label="Commercial Desk navigation"
         aria-hidden={!isOpen}
+        aria-modal={isOpen ? true : undefined}
+        role="dialog"
+        inert={!isOpen}
       >
         <div className={styles.drawerHeader}>
           <Link href="/admin" onClick={onClose} className={styles.brandLink}>
-            <img
-              src="/hero/marca-ubi-logo.png"
+            <Image
+              src="/images/marca-ubi-dark.svg"
               alt="Marca Ubi."
+              width={158}
+              height={34}
               className={styles.brandLogo}
             />
-            <span className={styles.systemTag}>CRM Portal</span>
+            <span className={styles.systemTag}>COMMERCIAL DESK</span>
           </Link>
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
             className={styles.closeButton}
@@ -111,100 +154,65 @@ export function AdminMobileDrawer({
           </button>
         </div>
 
-        {/* Quick Action Button for Mobile: Gated against viewers */}
-        {currentUser.role !== 'viewer' && (
-          <div className={styles.quickActionBox}>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (typeof window !== 'undefined') {
-                  window.dispatchEvent(new CustomEvent('open-new-lead-modal'));
-                }
-              }}
-              className={styles.newLeadBtn}
-              aria-label="New Lead"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>New Lead</span>
-            </button>
-          </div>
-        )}
-
-        <nav className={styles.navScrollArea}>
+        <nav className={styles.navScrollArea} aria-label="Workspace sections">
           {NAVIGATION_GROUPS.map((group) => {
             const authorizedItems = group.items.filter((item) =>
-              isTabAuthorized(item.key, currentUser)
+              isTabAuthorized(item.key, currentUser),
             );
 
             if (authorizedItems.length === 0) return null;
 
             return (
-              <div key={group.groupTitle} className={styles.navGroup}>
+              <section
+                key={group.groupTitle}
+                className={styles.navGroup}
+                aria-label={group.groupTitle}
+              >
                 <div className={styles.groupHeading}>{group.groupTitle}</div>
                 <ul className={styles.navList}>
                   {authorizedItems.map((item) => {
                     const active = isRouteActive(item.href);
                     const badgeInfo = item.getBadge?.({ dueTasksCount });
                     const badgeClass =
-                      badgeInfo?.variant === 'emerald'
+                      badgeInfo?.variant === "emerald"
                         ? styles.badgeEmerald
-                        : badgeInfo?.variant === 'amber'
-                        ? styles.badgeAmber
-                        : styles.badgeOrange;
+                        : badgeInfo?.variant === "amber"
+                          ? styles.badgeAmber
+                          : styles.badgeOrange;
 
                     return (
                       <li key={item.href}>
                         <Link
                           href={item.href}
                           onClick={onClose}
-                          className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                          aria-current={active ? 'page' : undefined}
+                          className={`${styles.navItem} ${active ? styles.navItemActive : ""}`}
+                          aria-current={active ? "page" : undefined}
                         >
                           <div className={styles.iconWrapper}>
                             {item.icon({ active })}
                           </div>
                           <div className={styles.itemContent}>
-                            <span className={styles.itemLabel}>{item.label}</span>
+                            <span className={styles.itemLabel}>
+                              {item.label}
+                            </span>
                             {badgeInfo && (
                               <span className={`${styles.badge} ${badgeClass}`}>
                                 {badgeInfo.text}
                               </span>
                             )}
                           </div>
-                          {active && <span className={styles.activePill} />}
                         </Link>
                       </li>
                     );
                   })}
                 </ul>
-              </div>
+              </section>
             );
           })}
         </nav>
 
-        {/* Footer Authenticated Session Telemetry */}
         <div className={styles.drawerFooter}>
-          <div className={styles.systemStatusBlock}>
-            <span className={styles.statusDot} aria-hidden="true" />
-            <div className={styles.statusText}>
-              <span className={styles.statusLabel}>{formattedRole}</span>
-              <span className={styles.statusSub}>{currentUser.email}</span>
-            </div>
-          </div>
+          <UserProfileDropdown currentUser={currentUser} placement="above" />
         </div>
       </aside>
     </>

@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildPodPayload, reviewRows } from '@/app/chat-pod/intake/review';
+import { submitBrief } from '@/app/chat-pod/intake/submit';
 import { SERVICE_INTEREST_OPTIONS, SERVICE_INTEREST_ROUTING, validateServiceInterests } from '@/app/chat-pod/intake/serviceInterest';
 import { canSubmit, currentSlot, initialIntakeState, transition } from '@/app/chat-pod/intake/useIntakeFlow';
 import { ingestLeadSchema } from '@/app/lib/validations/ingest';
@@ -23,6 +24,28 @@ function shortBrief(email = 'owner@example.com'): IntakeState {
 }
 
 describe('short project enquiry contract', () => {
+  it('does not automatically resend when the submission reference conflicts', async (context) => {
+    const fetch = context.mock.method(globalThis, 'fetch', async () => new Response('{}', { status: 409 }));
+    const payload = buildPodPayload(shortBrief().slots, 'fixture-intent');
+    const outcome = await submitBrief(payload, { idempotencyKey: 'fixture-intent', wait: async () => {} });
+    assert.equal(outcome.status, 409);
+    assert.equal(outcome.retryable, false);
+    assert.equal(fetch.mock.callCount(), 1);
+  });
+
+  it('does not claim an in-flight inquiry was unsent when a visitor stops waiting', async (context) => {
+    const controller = new AbortController();
+    const fetch = context.mock.method(globalThis, 'fetch', async () => {
+      controller.abort();
+      throw new DOMException('Stopped', 'AbortError');
+    });
+    const payload = buildPodPayload(shortBrief().slots, 'fixture-intent');
+    const outcome = await submitBrief(payload, { idempotencyKey: 'fixture-intent', signal: controller.signal });
+    assert.equal(outcome.ok, false);
+    assert.match(outcome.message, /may already have received/);
+    assert.equal(fetch.mock.callCount(), 1);
+  });
+
   it('has an explicit routing policy for every published service and no unpublished IDs', () => {
     const published = [...B2B_SERVICES, ...B2C_SERVICES].map((service) => service.slug).sort();
     assert.deepEqual(Object.keys(SERVICE_INTEREST_ROUTING).sort(), published);
