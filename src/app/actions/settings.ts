@@ -134,18 +134,7 @@ export async function getAgencySettingsAction(): Promise<{
     }
 
     if (!data) {
-      return {
-        success: true,
-        data: {
-          id: 'default',
-          lead_response_sla_minutes: 60,
-          followup_grace_period_hours: 4,
-          stale_deal_threshold_days: 14,
-          dedup_window_hours: 24,
-          bot_rate_limit_per_minute: 10,
-          notification_email: 'executive@marcaubi.com',
-        },
-      };
+      return { success: false, error: 'The agency settings record is missing or inaccessible.' };
     }
 
     return {
@@ -170,7 +159,7 @@ export async function updateAgencySettingsAction(rawInput: unknown): Promise<{
   error?: string;
 }> {
   try {
-    const { callerId, callerEmail } = await assertAdminRole();
+    const { callerId } = await assertAdminRole();
 
     const parseResult = updateAgencySettingsSchema.safeParse(rawInput);
     if (!parseResult.success) {
@@ -183,7 +172,7 @@ export async function updateAgencySettingsAction(rawInput: unknown): Promise<{
     const input = parseResult.data;
     const supabase = await createClient();
 
-    // Singleton table pre-seeded at migration: execute atomic update
+    // The database trigger writes the audit record in the same transaction.
     const { data: updated, error: updateError } = await supabase
       .from('agency_settings')
       .update({
@@ -204,31 +193,6 @@ export async function updateAgencySettingsAction(rawInput: unknown): Promise<{
       return {
         success: false,
         error: updateError?.message || 'Failed to persist agency settings update.',
-      };
-    }
-
-    // Append immutable audit log and verify insertion
-    const { error: auditError } = await supabase.from('team_audit_logs').insert({
-      actor_id: callerId,
-      actor_email: callerEmail,
-      target_user_id: callerId,
-      target_user_email: callerEmail,
-      action: 'update_agency_settings',
-      metadata: {
-        lead_response_sla_minutes: input.lead_response_sla_minutes,
-        followup_grace_period_hours: input.followup_grace_period_hours,
-        stale_deal_threshold_days: input.stale_deal_threshold_days,
-        dedup_window_hours: input.dedup_window_hours,
-        bot_rate_limit_per_minute: input.bot_rate_limit_per_minute,
-        notification_email: input.notification_email || null,
-      },
-    });
-
-    if (auditError) {
-      // Invariant: Fail if audit ledger write fails
-      return {
-        success: false,
-        error: `Settings saved but audit ledger logging failed: ${auditError.message}`,
       };
     }
 
