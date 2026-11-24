@@ -37,6 +37,7 @@ const stubs = [
 const source = [
   "import {createRoot} from 'react-dom/client';",
   'import {IngestionWorkspaceClient} from ' + componentPath + ';',
+  'import {DetailManagement} from ' + JSON.stringify(path.join(dir, '[id]/DetailManagement')) + ';',
   'import {readInboxFilters} from ' + modelPath + ';',
   'const params = Object.fromEntries(new URLSearchParams(location.search));',
   'const filters = readInboxFilters(params);',
@@ -49,10 +50,10 @@ const source = [
   "const rows = seeds.map(([number,name,company,origin,state,service_category]) => ({ id:'10000000-0000-0000-0000-0000000000'+number, inquiry_ref:'INQ-SAMPLE-'+number, name, company, origin, state, service_category, received_at:'2026-11-23T13:45:07.123456+00:00',assigned_to:null,is_historical:false }));",
   "const owner = {id:'21000000-0000-0000-0000-000000000001',name:'Sample Owner'};",
   "const directoryOnly = {id:'21000000-0000-0000-0000-000000000002',name:'Directory Only'};",
-  'const selected = rows.find(row=>row.id===filters.inquiry);',
+  "const selected = rows.find(row=>location.pathname==='/admin/ingestion/'+row.id);",
   "const detail = selected ? {...selected, updated_at:selected.received_at, original_channel:selected.origin==='manual'?'phone':null, email:'client@example.test', phone:null, summary:'Brand identity and an editorial website for a newly established architecture practice.', lead_id:null, has_link:false, timeline:'Three months',budget:null,close_reason:null} : null;",
   "const visible = params.empty ? [] : rows.filter(row=>(filters.channel==='all'||(filters.channel==='manual')===(row.origin==='manual'))&&(!filters.origin||row.origin===filters.origin)&&(!filters.state||row.state===filters.state||filters.state==='open'&&row.state!=='closed')&&(!filters.q||[row.name,row.company,row.inquiry_ref].join(' ').toLowerCase().includes(filters.q.toLowerCase())));",
-  "createRoot(document.getElementById('root')).render(<><aside className='fixture-banner' aria-label='Fixture environment'>Local UI test · synthetic inquiries · writes simulated</aside><main><IngestionWorkspaceClient canWrite={!params.viewer} canResolve={!params.viewer&&!params.no_leads} filters={filters} rows={visible} listUnavailable={Boolean(params.error)} metrics={{needsReview:params.error?null:2,unassigned:3,received:4}} owners={[owner,directoryOnly]} assignmentOwners={[owner]} triageOwners={[owner]} selected={detail} linkedLead={null} selectionUnavailable={false} history={detail?[{id:'fixture-event',event_type:'received',created_at:detail.received_at}]:[]} historyUnavailable={false} previous={null} next={null}/></main></>);",
+  "createRoot(document.getElementById('root')).render(<><aside className='fixture-banner' aria-label='Fixture environment'>Local UI test · synthetic inquiries · writes simulated</aside><main>{location.pathname===`/admin/ingestion`?<IngestionWorkspaceClient canWrite={!params.viewer} canResolve={!params.viewer&&!params.no_leads} filters={filters} rows={visible} listUnavailable={Boolean(params.error)} metrics={{needsReview:params.error?null:2,unassigned:3,received:4}} owners={[owner,directoryOnly]} assignmentOwners={[owner]} triageOwners={[owner]} previous={null} next={null}/>:detail?<><a href={`/admin/ingestion`}>Back to inquiries</a><h1>{detail.company}</h1><h2>Original inquiry</h2><p>{detail.summary}</p><p>Inquiry received</p>{!params.viewer&&<DetailManagement detail={detail} owners={[owner]} canResolve={!params.no_leads}/>}</>:<h1>Inquiry unavailable</h1>}</main></>);",
 ].join('\n');
 
 async function start() {
@@ -117,7 +118,7 @@ async function start() {
     } else if (url.pathname === '/fixture.css') {
       response.setHeader('content-type', 'text/css');
       response.end(siteStyles);
-    } else if (url.pathname === '/admin/ingestion') {
+    } else if (/^\/admin\/ingestion(?:\/[a-f0-9-]{36})?$/.test(url.pathname)) {
       response.setHeader('content-type', 'text/html; charset=utf-8');
       response.end(html);
     } else {

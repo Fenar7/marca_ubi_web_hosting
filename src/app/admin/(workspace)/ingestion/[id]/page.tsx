@@ -135,8 +135,9 @@ export default async function InquiryDetailPage({ params, searchParams }: Props)
               <dt>Owner</dt><dd>{ownerLabel(inquiry.assigned_to, people)}</dd>
               {inquiry.state === 'closed' && inquiry.close_reason && <><dt>Closure reason</dt><dd>{inquiry.close_reason}</dd></>}
             </dl>
-            {canWrite && <DetailManagement key={inquiry.updated_at} detail={detail}
-              owners={people.filter(({ id: ownerId }) => eligible.has(ownerId))} canResolve={canOpenLead} />}
+            {canWrite && <DetailManagement key={inquiry.id} detail={detail}
+              owners={people.filter(({ id: ownerId }) => eligible.has(ownerId))} canResolve={canOpenLead && !inquiry.test_batch} />}
+            {canWrite && canOpenLead && inquiry.test_batch && !inquiry.lead_id && <p>Lead resolution is disabled for test inquiries.</p>}
           </section>
           <section className={styles.surface}>
             <h2>Contact</h2>

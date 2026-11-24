@@ -80,7 +80,7 @@ async function verify() {
       await open();
       await row('Asha Mehta').click();
       await expect(
-        detail().getByRole('heading', { name: 'Inquiry brief' }),
+        detail().getByRole('heading', { name: 'Original inquiry' }),
       ).toBeVisible();
       await expect(
         detail().getByText('Inquiry received', { exact: true }),

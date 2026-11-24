@@ -55,9 +55,12 @@ WITH examples(n, origin, channel, name, company, service, summary, age, state) A
         WHERE lead.id = md5('inquiries-redesign-20261124:lead:' || CASE WHEN f.n = 7 THEN 1 ELSE f.n END)::uuid
     ) AS linked ON true
     ON CONFLICT (id) DO NOTHING
-    RETURNING id, received_at, state
+    RETURNING id, received_at, state, lead_id
 )
-INSERT INTO public.inquiry_activity (inquiry_id, event_type, created_at)
-SELECT id, 'received', received_at FROM inserted_inquiries
+INSERT INTO public.inquiry_activity (inquiry_id, event_type, created_at, metadata)
+SELECT id, 'received', received_at, '{}'::jsonb FROM inserted_inquiries
 UNION ALL
-SELECT id, 'triaged', received_at + interval '30 minutes' FROM inserted_inquiries WHERE state <> 'new';
+SELECT id, 'triaged', received_at + interval '30 minutes', jsonb_build_object('state', state)
+FROM inserted_inquiries WHERE state <> 'new'
+UNION ALL
+SELECT id, 'linked', received_at, '{}'::jsonb FROM inserted_inquiries WHERE lead_id IS NOT NULL;
