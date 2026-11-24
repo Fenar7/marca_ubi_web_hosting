@@ -160,6 +160,12 @@
   }
 }
 
+.cardClosedRevenue,
+.cardWeightedValue,
+.cardSalesCycle {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
 .cardHeader {
   display: flex;
   align-items: center;
@@ -260,10 +266,11 @@
 .primaryMetric {
   font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: clamp(1.75rem, 2.2vw, 2.25rem);
-  font-weight: 600;
+  font-weight: 300;
   letter-spacing: -0.035em;
   line-height: 1.15;
   font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   color: #111827;
   margin-bottom: 12px;
   display: flex;

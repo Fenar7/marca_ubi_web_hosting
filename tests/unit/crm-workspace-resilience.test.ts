@@ -20,17 +20,21 @@ describe('CRM list query resilience and overview hierarchy', () => {
     assert.ok(!leads.includes('lead_sources(id, name, color_code)'));
     assert.ok(leads.includes('sourceById.get(l.lead_source_id)'));
     assert.ok(leads.includes('invalidFilter || leadsRes.error || statusesRes.error'));
-    assert.ok(leads.includes('Lead records are available'));
+    assert.match(leads, /profilesRes\.error\s*\? await supabase\.from\('profiles'\)[^\n]*\.eq\('status', 'active'\)/);
+    assert.ok(leads.includes('lookupNotice={lookupNotice}'));
   });
 
   it('keeps deal rows available when optional directory or source lookups fail', () => {
-    assert.ok(deals.includes(".from('crm_team_directory')"));
+    assert.match(deals, /\.from\(["']crm_team_directory["']\)/);
     assert.ok(deals.includes('ownerNameById.get(item.assigned_to as string)'));
     assert.ok(!deals.includes('crm_team_directory!leads_assigned_to_fkey'));
     assert.ok(!deals.includes('lead_sources!leads_lead_source_id_fkey'));
     assert.ok(deals.includes("sourceNameById.get(item.lead_source_id as string)"));
-    assert.ok(deals.includes('invalidFilter || dealsRes.error || statusesRes.error'));
-    assert.ok(deals.includes('Deal records are available'));
+    assert.match(deals, /dealsPayloadAvailable\(\s*dealsRes\.data,\s*dealsRes\.error,?\s*\)/);
+    assert.match(deals, /dealsPayloadAvailable\(\s*statusesRes\.data,\s*statusesRes\.error,?\s*\)/);
+    assert.ok(deals.includes('invalidFilter || !dealsAvailable || !stagesAvailable'));
+    assert.match(deals, /from\(["']profiles["']\)[\s\S]*?\.select\(["']id, full_name["']\)[\s\S]*?\.eq\(["']status["'], ["']active["']\)/);
+    assert.ok(deals.includes('lookupNotice={lookupNotice}'));
   });
 
   it('prioritizes executive telemetry and commercial action queue with responsive layout', () => {

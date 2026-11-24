@@ -212,7 +212,6 @@ export function InlineStatusSelect({
         style={{
           background: hexToRgba(statusColor, 0.1),
           borderColor: hexToRgba(statusColor, 0.3),
-          color: statusColor,
         }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -222,7 +221,6 @@ export function InlineStatusSelect({
           className={styles.statusDot}
           style={{
             background: statusColor,
-            boxShadow: `0 0 6px ${hexToRgba(statusColor, 0.5)}`,
           }}
           aria-hidden="true"
         />

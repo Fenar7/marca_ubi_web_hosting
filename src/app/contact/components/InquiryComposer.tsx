@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { submitContactInquiry } from "@/app/actions/contactActions";
 import type { ContactTrack, ContactActionResult } from "@/app/lib/validations/contact";
@@ -29,6 +29,7 @@ export default function InquiryComposer() {
   const [selectedTrack, setSelectedTrack] = useState<ContactTrack>("new-business");
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<ContactActionResult | null>(null);
+  const submission = useRef<{ key: string; snapshot: string } | null>(null);
 
   const handleTrackSelect = (track: ContactTrack) => {
     setSelectedTrack(track);
@@ -42,15 +43,22 @@ export default function InquiryComposer() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isPending) return;
     const form = e.currentTarget;
     const formData = new FormData(form);
     formData.set("track", selectedTrack);
+    const snapshot = JSON.stringify(Array.from(formData.entries()));
+    if (submission.current?.snapshot !== snapshot) {
+      submission.current = { key: crypto.randomUUID(), snapshot };
+    }
+    formData.set("idempotencyKey", submission.current.key);
 
     startTransition(async () => {
       try {
         const response = await submitContactInquiry(null, formData);
         setResult(response);
         if (response.success) {
+          submission.current = null;
           form.reset();
         }
       } catch {

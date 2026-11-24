@@ -1,26 +1,29 @@
-'use client';
+"use client";
 
-/**
- * @file DealsWorkspaceClient.tsx
- * @description Interactive Client Component for the Pipeline Deals Workspace (/admin/deals).
- *              Features a switchable Interactive Kanban Board (grouped by funnel stages with column
- *              pipeline valuation sums and 1-click stage advancement) alongside an interactive,
- *              sortable Data Grid. Integrated with Client 360° Dossier Drawer and guarded StageTransitionModal.
- * @module app/admin/(workspace)/deals/DealsWorkspaceClient
- * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
- */
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import type { FunnelBucket } from "@/types/crm";
+import { updateLeadStatusInlineAction } from "@/app/actions/leadInlineActions";
+import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
+import type { GuardedTransitionResultPayload } from "@/app/lib/stage-transition-schemas";
+import { DealsKanbanBoard } from "./DealsKanbanBoard";
+import { DealsToolbar } from "./DealsToolbar";
+import { DealsTable } from "./DealsTable";
+import { canMoveDeal } from "./dealPresentation";
+import {
+  dealsFilterUrl,
+  sortPageDeals,
+  type DealSortField,
+} from "./dealsWorkspaceModel";
+import styles from "./DealsWorkspaceClient.module.scss";
 
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import type { FunnelBucket } from '@/types/crm';
-import { formatCrmCurrency } from '@/app/admin/lib/currency';
-import { updateLeadStatusInlineAction } from '@/app/actions/leadInlineActions';
-import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
-import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
-import { OverdueBadge } from '@/app/admin/components/Badges';
-import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
-import styles from './DealsWorkspaceClient.module.scss';
-
+/** Only authorized amounts cross the server boundary; null is unavailable/restricted, never a fabricated zero. */
 export interface HydratedDealItem {
   id: string;
   lead_id: string;
@@ -28,8 +31,9 @@ export interface HydratedDealItem {
   company: string | null;
   phone: string | null;
   email: string | null;
-  expected_value: number;
-  priority: 'High' | 'Medium' | 'Low';
+  expected_value: number | null;
+  service_category?: string;
+  priority: "High" | "Medium" | "Low";
   next_follow_up: string | null;
   revisit_date?: string | null;
   created_at: string;
@@ -39,996 +43,368 @@ export interface HydratedDealItem {
   lead_source_id: string;
   assigned_to_name: string;
   status_name: string;
-  status_bucket: 'open' | 'potential' | 'converted' | 'lost';
+  status_bucket: "open" | "potential" | "converted" | "lost";
   status_color: string;
   source_name: string;
 }
-
 export interface FunnelStatusItem {
   id: string;
   name: string;
   sort_order: number;
   bucket: string;
   color_code: string;
+  is_active?: boolean;
 }
-
 interface DealsWorkspaceClientProps {
   initialDeals: HydratedDealItem[];
-  sources?: Array<{ id: string; name: string }>;
+  pagination?: React.ReactNode;
+  lookupNotice?: string;
+  sources?: { id: string; name: string }[];
+  owners?: { id: string; name: string }[];
   statuses?: FunnelStatusItem[];
   userRole?: string;
+  canViewFinancials?: boolean;
+  canCreate?: boolean;
 }
 
-function formatDealValue(amount: number): string {
-  return formatCrmCurrency(amount);
-}
-
-/**
- * Formats stage age velocity into concise, human-legible time deltas.
- */
-function formatStageAge(updatedAt: string): string {
-  if (!updatedAt) return 'Active recently';
-  const time = new Date(updatedAt).getTime();
-  if (Number.isNaN(time)) return 'Active recently';
-  const diffMs = Math.max(0, Date.now() - time);
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffMins < 60) return diffMins <= 1 ? 'Updated just now' : `Updated ${diffMins}m ago`;
-  if (diffHours < 24) return `Updated ${diffHours}h ago`;
-  if (diffDays === 1) return 'Updated 1d ago';
-  return `Updated ${diffDays}d ago`;
-}
-
-type SortField =
-  | 'lead_id'
-  | 'name'
-  | 'status_name'
-  | 'expected_value'
-  | 'priority'
-  | 'assigned_to_name'
-  | 'next_follow_up';
-
+/** Query changes stay URL-owned; the local record copy changes only after confirmed mutations. */
 export function DealsWorkspaceClient({
   initialDeals,
+  pagination,
+  lookupNotice,
+  sources = [],
+  owners = [],
   statuses = [],
   userRole,
+  canViewFinancials = true,
+  canCreate = false,
 }: DealsWorkspaceClientProps): React.ReactElement {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const bucketParam = searchParams.get('bucket');
-  const assignedToParam = searchParams.get('assigned_to');
-  const searchParam = searchParams.get('search') || searchParams.get('q') || '';
-
-  const initialBucket: 'all' | 'open' | 'potential' | 'converted' | 'lost' =
-    bucketParam === 'potential' || bucketParam === 'converted' || bucketParam === 'open' || bucketParam === 'lost'
-      ? bucketParam
-      : 'all';
-
-  const [deals, setDeals] = useState<HydratedDealItem[]>(initialDeals);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const [deals, setDeals] = useState(initialDeals);
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("search") || searchParams.get("q") || "",
+  );
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestedQuery = useRef<string | null>(null);
+  const moveLock = useRef(false);
   const [movingLeadId, setMovingLeadId] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
-
-  const handleCopyDealId = (dealIdStr: string, e: React.MouseEvent): void => {
-    e.stopPropagation();
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(dealIdStr);
-      setCopiedId(dealIdStr);
-      setTimeout(() => setCopiedId(null), 2000);
-    }
-  };
-
-  // Synchronize state when server hydration updates
-  useEffect(() => {
-    setDeals(initialDeals);
-  }, [initialDeals]);
-
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('table');
-  const [searchTerm, setSearchTerm] = useState(searchParam);
-  const [selectedBucket, setSelectedBucket] = useState<'all' | 'open' | 'potential' | 'converted' | 'lost'>(initialBucket);
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assignedToParam);
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [sortField, setSortField] = useState<SortField>('expected_value');
-  const [sortAscending, setSortAscending] = useState(false);
-
-  useEffect(() => {
-    const desktopBoard = window.matchMedia('(min-width: 1100px)');
-    if (desktopBoard.matches) setViewMode('kanban');
-    const handleViewportChange = (event: MediaQueryListEvent): void => {
-      if (!event.matches) setViewMode('table');
-    };
-    desktopBoard.addEventListener('change', handleViewportChange);
-    return () => desktopBoard.removeEventListener('change', handleViewportChange);
-  }, []);
-
-  // Synchronize with URL search parameters on route navigation
-  useEffect(() => {
-    setSelectedBucket(bucketParam && ['open', 'potential', 'converted', 'lost'].includes(bucketParam)
-      ? bucketParam as 'open' | 'potential' | 'converted' | 'lost' : 'all');
-    setSelectedAssigneeId(assignedToParam);
-  }, [bucketParam, assignedToParam]);
-
-  useEffect(() => { if (!searchTimer.current) setSearchTerm(searchParam); }, [searchParam]);
-  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
-
-  const updateServerFilter = (key: string, value: string | null): void => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value && value !== 'all') params.set(key, value);
-    else params.delete(key);
-    params.delete('page');
-    const query = params.toString();
-    router.replace(query ? `/admin/deals?${query}` : '/admin/deals', { scroll: false });
-  };
-
-  const updateSearch = (value: string): void => {
-    setSearchTerm(value);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      const params = new URLSearchParams(window.location.search);
-      if (value.trim()) params.set('search', value.trim());
-      else params.delete('search');
-      params.delete('q');
-      params.delete('page');
-      const query = params.toString();
-      router.replace(query ? `/admin/deals?${query}` : '/admin/deals', { scroll: false });
-      searchTimer.current = null;
-    }, 300);
-  };
-
-  // Drawer and modal state
-  const [activeDrawerDealId, setActiveDrawerDealId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
+  const [moveNotice, setMoveNotice] = useState("");
+  const [sortField, setSortField] = useState<DealSortField>("identity");
+  const [sortAscending, setSortAscending] = useState(true);
+  const [nowMs, setNowMs] = useState<number | null>(null);
   const [stageModalState, setStageModalState] = useState<{
     isOpen: boolean;
     leadId: string | null;
     targetStatus: { id: string; name: string; bucket: FunnelBucket } | null;
-  }>({
-    isOpen: false,
-    leadId: null,
-    targetStatus: null,
-  });
-
-  // Sorted stages for Kanban columns
-  const sortedStages = useMemo(() => {
-    return [...statuses].sort((a, b) => a.sort_order - b.sort_order);
-  }, [statuses]);
-
-  // Filtered deals
-  const filteredDeals = useMemo(() => {
-    return deals.filter((deal) => {
-      const matchesBucket =
-        selectedBucket === 'all' || deal.status_bucket === selectedBucket;
-
-      const matchesAssignee =
-        !selectedAssigneeId || deal.assigned_to === selectedAssigneeId;
-
-      return matchesBucket && matchesAssignee;
-    });
-  }, [deals, selectedBucket, selectedAssigneeId]);
-
-  const loadedPipelineValue = useMemo(
-    () => filteredDeals.reduce((total, deal) => total + (Number.isFinite(deal.expected_value) ? deal.expected_value : 0), 0),
-    [filteredDeals]
+  }>({ isOpen: false, leadId: null, targetStatus: null });
+  const viewMode = searchParams.get("view") === "table" ? "table" : "kanban";
+  const sortedStages = useMemo(
+    () => [...statuses].sort((a, b) => a.sort_order - b.sort_order),
+    [statuses],
   );
-  const scheduledFollowUpCount = useMemo(
-    () => filteredDeals.filter((deal) => Boolean(deal.next_follow_up)).length,
-    [filteredDeals]
+  const sortedTableDeals = useMemo(
+    () => sortPageDeals(deals, sortField, sortAscending),
+    [deals, sortField, sortAscending],
   );
 
-  // Sorted deals for Table view
-  const sortedTableDeals = useMemo(() => {
-    const list = [...filteredDeals];
-    list.sort((a, b) => {
-      if (sortField === 'expected_value') {
-        const valA = a.expected_value || 0;
-        const valB = b.expected_value || 0;
-        if (valA < valB) return sortAscending ? -1 : 1;
-        if (valA > valB) return sortAscending ? 1 : -1;
-        return 0;
-      }
-
-      if (sortField === 'priority') {
-        const priorityWeight = { High: 3, Medium: 2, Low: 1 };
-        const valA = priorityWeight[a.priority] || 0;
-        const valB = priorityWeight[b.priority] || 0;
-        if (valA < valB) return sortAscending ? -1 : 1;
-        if (valA > valB) return sortAscending ? 1 : -1;
-        return 0;
-      }
-
-      if (sortField === 'next_follow_up') {
-        const aTime = a.next_follow_up ? new Date(a.next_follow_up).getTime() : NaN;
-        const bTime = b.next_follow_up ? new Date(b.next_follow_up).getTime() : NaN;
-        const aValid = !Number.isNaN(aTime);
-        const bValid = !Number.isNaN(bTime);
-        if (!aValid && !bValid) return 0;
-        if (!aValid) return 1; // SQL NULLS LAST standard
-        if (!bValid) return -1;
-        return sortAscending ? aTime - bTime : bTime - aTime;
-      }
-
-      const valA = (a[sortField] ?? '').toString().toLowerCase();
-      const valB = (b[sortField] ?? '').toString().toLowerCase();
-
-      if (valA < valB) return sortAscending ? -1 : 1;
-      if (valA > valB) return sortAscending ? 1 : -1;
-      return 0;
-    });
-    return list;
-  }, [filteredDeals, sortField, sortAscending]);
-
-  const handleToggleSort = (field: SortField): void => {
-    if (sortField === field) {
-      setSortAscending((prev) => !prev);
-    } else {
-      setSortField(field);
-      setSortAscending(false);
-    }
-  };
-
-  const handleInspectDeal = useCallback((dealId: string): void => {
-    router.push(`/admin/deals/${dealId}`);
-  }, [router]);
-
-  const handleCloseDrawer = (): void => {
-    setIsDrawerOpen(false);
-    setActiveDrawerDealId(null);
-  };
-
-  // Synchronize with global open-lead-drawer events dispatched by header / URL sync
   useEffect(() => {
-    const handleOpenDrawerEvent = (e: Event): void => {
-      const customEvt = e as CustomEvent<{ leadId?: string } | string>;
-      const id =
-        typeof customEvt.detail === 'string'
-          ? customEvt.detail
-          : customEvt.detail?.leadId;
-      if (id) {
-        handleInspectDeal(id);
+    setDeals(initialDeals);
+  }, [initialDeals]);
+  useEffect(() => {
+    if (requestedQuery.current === searchParams.toString())
+      requestedQuery.current = null;
+    if (!searchTimer.current && requestedQuery.current === null)
+      setSearchTerm(searchParams.get("search") || searchParams.get("q") || "");
+  }, [searchParams]);
+  useEffect(() => {
+    const start = window.setTimeout(() => setNowMs(Date.now()), 0);
+    const clock = window.setInterval(() => setNowMs(Date.now()), 60_000);
+    function restoreHistorySearch(): void {
+      requestedQuery.current = null;
+      if (searchTimer.current) {
+        clearTimeout(searchTimer.current);
+        searchTimer.current = null;
       }
+      const restored = new URLSearchParams(window.location.search);
+      setSearchTerm(restored.get("search") || restored.get("q") || "");
+    }
+    window.addEventListener("popstate", restoreHistorySearch);
+    return () => {
+      window.removeEventListener("popstate", restoreHistorySearch);
+      window.clearTimeout(start);
+      window.clearInterval(clock);
+      if (searchTimer.current) clearTimeout(searchTimer.current);
     };
-    window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
-    return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
-  }, [handleInspectDeal]);
+  }, []);
 
-  /**
-   * Evaluates if advancing to a target status triggers guarded requirements.
-   */
-  const isGuardedStatus = (statusName: string, bucket: string): boolean => {
-    const norm = statusName.toLowerCase();
-    return (
-      bucket === 'converted' ||
-      bucket === 'lost' ||
-      norm.includes('negotiation') ||
-      norm.includes('converted') ||
-      norm.includes('lost') ||
-      norm.includes('hold')
+  /** Fold changes into the latest requested query while Next resolves earlier navigations. */
+  function updateFilters(changes: Record<string, string | null>): void {
+    if ("search" in changes) {
+      if (searchTimer.current) {
+        clearTimeout(searchTimer.current);
+        searchTimer.current = null;
+      }
+      setSearchTerm(changes.search || "");
+    }
+    const current = new URLSearchParams(window.location.search).toString();
+    const previous = requestedQuery.current ?? current;
+    const next = dealsFilterUrl(previous, changes);
+    const query = next.split("?")[1] ?? "";
+    if (query === previous) return;
+    requestedQuery.current = query === current ? null : query;
+    startTransition(() =>
+      router.replace(next, {
+        scroll: false,
+      }),
     );
-  };
+  }
+  function updateSearch(value: string): void {
+    setSearchTerm(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      searchTimer.current = null;
+      updateFilters({ search: value.trim() || null });
+    }, 300);
+  }
+  function handleToggleSort(field: DealSortField, ascending?: boolean): void {
+    if (ascending !== undefined) {
+      setSortField(field);
+      setSortAscending(ascending);
+      return;
+    }
+    if (field === sortField) setSortAscending((value) => !value);
+    else {
+      setSortField(field);
+      setSortAscending(true);
+    }
+  }
 
-  /**
-   * 1-Click stage progression from Kanban card controls.
-   */
-  const handleMoveStage = useCallback(
-    async (deal: HydratedDealItem, direction: 'prev' | 'next'): Promise<void> => {
-      if (userRole === 'viewer' || movingLeadId) return;
-
-      const currentIndex = sortedStages.findIndex((s) => s.id === deal.status_id);
-      if (currentIndex === -1) return;
-
-      const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-      if (targetIndex < 0 || targetIndex >= sortedStages.length) return;
-
-      const targetStage = sortedStages[targetIndex];
-
-      // Check if guarded transition
-      if (isGuardedStatus(targetStage.name, targetStage.bucket)) {
-        setStageModalState({
-          isOpen: true,
-          leadId: deal.id,
-          targetStatus: {
-            id: targetStage.id,
-            name: targetStage.name,
-            bucket: targetStage.bucket as FunnelBucket,
-          },
-        });
+  /** Ordinary and guarded moves share server authorization; no optimistic card/count movement claims success. */
+  async function handleMoveStage(
+    deal: HydratedDealItem,
+    destination: FunnelStatusItem,
+  ): Promise<void> {
+    if (
+      !canMoveDeal(deal, userRole) ||
+      moveLock.current ||
+      stageModalState.isOpen
+    )
+      return;
+    const target = sortedStages.find(
+      (stage) => stage.id === destination.id && stage.is_active !== false,
+    );
+    const current = deals.find((item) => item.id === deal.id);
+    if (!target || !current || current.status_id === target.id) return;
+    setMoveError(null);
+    setMoveNotice("");
+    const targetName = target.name.trim().toLowerCase();
+    if (
+      target.bucket === "converted" ||
+      target.bucket === "lost" ||
+      targetName === "negotiation" ||
+      targetName === "on hold"
+    ) {
+      if (
+        !canViewFinancials &&
+        (target.bucket === "converted" || targetName === "negotiation")
+      ) {
+        setMoveError(
+          "A colleague with financial access must complete this stage because it requires contract valuation.",
+        );
         return;
       }
-
-      setMoveError(null);
-      setMovingLeadId(deal.id);
-      // Keep a copy for rollback if the server rejects the transition.
-      setDeals((prev) =>
-        prev.map((d) =>
-          d.id === deal.id
+      setStageModalState({
+        isOpen: true,
+        leadId: current.id,
+        targetStatus: {
+          id: target.id,
+          name: target.name,
+          bucket: target.bucket as FunnelBucket,
+        },
+      });
+      return;
+    }
+    moveLock.current = true;
+    setMovingLeadId(current.id);
+    try {
+      const result = await updateLeadStatusInlineAction(current.id, target.id);
+      if (!result.success)
+        throw new Error(result.error || "The stage change could not be saved.");
+      const confirmed = result.data?.statusDetails;
+      setDeals((previous) =>
+        previous.map((item) =>
+          item.id === current.id
             ? {
-                ...d,
-                status_id: targetStage.id,
-                status_name: targetStage.name,
-                status_bucket: targetStage.bucket as HydratedDealItem['status_bucket'],
-                status_color: targetStage.color_code,
+                ...item,
+                status_id: confirmed?.id ?? target.id,
+                status_name: confirmed?.name ?? target.name,
+                status_bucket: (confirmed?.bucket ??
+                  target.bucket) as FunnelBucket,
+                status_color: confirmed?.color_code ?? target.color_code,
+                updated_at: result.data?.updatedAt ?? item.updated_at,
               }
-            : d
-        )
+            : item,
+        ),
       );
+      setMoveNotice(
+        `${current.company || current.name} moved to ${confirmed?.name ?? target.name}.`,
+      );
+      router.refresh();
+    } catch (cause: unknown) {
+      console.error(
+        "[deals] Stage change failed",
+        cause instanceof Error ? cause.name : "UnknownError",
+      );
+      setMoveError(
+        cause instanceof Error
+          ? cause.message
+          : "Could not save the stage change. Please retry.",
+      );
+    } finally {
+      moveLock.current = false;
+      setMovingLeadId(null);
+    }
+  }
 
-      // Perform server mutation
-      try {
-        const res = await updateLeadStatusInlineAction(deal.id, targetStage.id);
-        if (!res.success) throw new Error(res.error || 'The stage change could not be saved.');
-      } catch (error) {
-        setDeals((prev) => prev.map((d) => (d.id === deal.id ? deal : d)));
-        const message = error instanceof Error ? error.message : 'The stage change could not be saved.';
-        console.error('[DealsWorkspaceClient] Stage transition failed:', message);
-        setMoveError(message);
-      } finally {
-        setMovingLeadId(null);
-      }
-    },
-    [sortedStages, userRole, movingLeadId]
-  );
-
-  const handleStageTransitionSuccess = (payload: GuardedTransitionResultPayload): void => {
-    const matchingStage = sortedStages.find((s) => s.id === payload.newStatusId);
-    setDeals((prev) =>
-      prev.map((d) =>
-        d.id === payload.leadId
+  /** Restricted DTOs never retain amounts returned by legacy mutation responses. */
+  function handleStageTransitionSuccess(
+    payload: GuardedTransitionResultPayload,
+  ): void {
+    const stage = sortedStages.find((item) => item.id === payload.newStatusId);
+    setDeals((previous) =>
+      previous.map((deal) =>
+        deal.id === payload.leadId
           ? {
-              ...d,
+              ...deal,
               status_id: payload.newStatusId,
               status_name: payload.newStatusName,
-              status_bucket: payload.bucket as HydratedDealItem['status_bucket'],
-              status_color: matchingStage?.color_code || d.status_color,
-              expected_value:
-                payload.expectedValue !== undefined ? payload.expectedValue : d.expected_value,
-              updated_at: payload.updatedAt || new Date().toISOString(),
+              status_bucket: payload.bucket as FunnelBucket,
+              status_color: stage?.color_code || deal.status_color,
+              expected_value: canViewFinancials
+                ? (payload.expectedValue ?? deal.expected_value)
+                : null,
+              updated_at: payload.updatedAt || deal.updated_at,
+              next_follow_up:
+                payload.nextFollowUp === undefined
+                  ? deal.next_follow_up
+                  : payload.nextFollowUp,
+              revisit_date:
+                payload.revisitDate === undefined
+                  ? deal.revisit_date
+                  : payload.revisitDate,
             }
-          : d
-      )
+          : deal,
+      ),
     );
-  };
+    setMoveNotice(`Moved to ${payload.newStatusName}.`);
+    router.refresh();
+  }
 
+  const activeDeal = deals.find((deal) => deal.id === stageModalState.leadId);
   return (
     <div className={styles.clientContainer}>
-      {moveError && <p className={styles.moveError} role="alert">{moveError}</p>}
-      <section className={styles.pipelineSummary} aria-label="Loaded deal summary">
-        <div className={styles.pipelineSummaryIntro}>
-          <span className={styles.pipelineEyebrow}>Pipeline snapshot</span>
-          <p>Figures reflect the records currently loaded for this view.</p>
+      <header className={styles.pageHeader}>
+        <div>
+          <h1>Deals</h1>
+          <p>Track opportunities and move the next conversation forward.</p>
         </div>
-        <dl className={styles.pipelineSummaryMetrics}>
-          <div>
-            <dt>Loaded deals</dt>
-            <dd>{filteredDeals.length}</dd>
-          </div>
-          <div>
-            <dt>Loaded value</dt>
-            <dd>{formatDealValue(loadedPipelineValue)}</dd>
-          </div>
-          <div>
-            <dt>With follow-up</dt>
-            <dd>{scheduledFollowUpCount}</dd>
-          </div>
-        </dl>
-      </section>
-      {/* Search & Operational Controls Toolbar */}
-      <div className={styles.topControlBar}>
-        <div className={styles.searchWrapper}>
-          <svg
-            className={styles.searchIcon}
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            className={styles.searchInput}
-            aria-label="Search deals by name, company or reference"
-            placeholder="Search name, company or deal reference..."
-            value={searchTerm}
-            onChange={(e) => updateSearch(e.target.value)}
-          />
-        </div>
-
-        <div className={styles.rightControls}>
-          {/* View Mode Toggle */}
-          <div className={styles.viewModeToggle} role="group" aria-label="View Mode Switcher">
-            <button
-              type="button"
-              className={`${styles.viewModeBtn} ${viewMode === 'kanban' ? styles.viewModeBtnActive : ''}`}
-              onClick={() => setViewMode('kanban')}
-              aria-pressed={viewMode === 'kanban'}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="7" height="18" rx="1" />
-                <rect x="14" y="3" width="7" height="11" rx="1" />
-              </svg>
-              Kanban Board
-            </button>
-            <button
-              type="button"
-              className={`${styles.viewModeBtn} ${viewMode === 'table' ? styles.viewModeBtnActive : ''}`}
-              onClick={() => setViewMode('table')}
-              aria-pressed={viewMode === 'table'}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="8" y1="6" x2="21" y2="6" />
-                <line x1="8" y1="12" x2="21" y2="12" />
-                <line x1="8" y1="18" x2="21" y2="18" />
-                <line x1="3" y1="6" x2="3.01" y2="6" />
-                <line x1="3" y1="12" x2="3.01" y2="12" />
-                <line x1="3" y1="18" x2="3.01" y2="18" />
-              </svg>
-              Data Grid
-            </button>
-          </div>
-
-          {/* Bucket Filter Pills */}
-          <div className={styles.bucketFilterGroup} role="group" aria-label="Bucket Filter">
-            <button
-              type="button"
-              className={`${styles.filterPill} ${selectedBucket === 'all' ? styles.filterPillActive : ''}`}
-              onClick={() => { setSelectedBucket('all'); updateServerFilter('bucket', null); }}
-              aria-pressed={selectedBucket === 'all'}
-            >
-              All ({deals.length})
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterPill} ${selectedBucket === 'open' ? styles.filterPillActive : ''}`}
-              onClick={() => { setSelectedBucket('open'); updateServerFilter('bucket', 'open'); }}
-              aria-pressed={selectedBucket === 'open'}
-            >
-              Active
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterPill} ${selectedBucket === 'potential' ? styles.filterPillActive : ''}`}
-              onClick={() => { setSelectedBucket('potential'); updateServerFilter('bucket', 'potential'); }}
-              aria-pressed={selectedBucket === 'potential'}
-            >
-              Potential
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterPill} ${selectedBucket === 'converted' ? styles.filterPillActive : ''}`}
-              onClick={() => { setSelectedBucket('converted'); updateServerFilter('bucket', 'converted'); }}
-              aria-pressed={selectedBucket === 'converted'}
-            >
-              Converted
-            </button>
-            <button type="button" className={`${styles.filterPill} ${selectedBucket === 'lost' ? styles.filterPillActive : ''}`}
-              onClick={() => { setSelectedBucket('lost'); updateServerFilter('bucket', 'lost'); }} aria-pressed={selectedBucket === 'lost'}>
-              Lost
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {selectedAssigneeId && (
-        <div className={styles.activeFilterNotice}>
-          <span>
-            Filtering by Representative: <strong>{deals.find((d) => d.assigned_to === selectedAssigneeId)?.assigned_to_name || 'Assigned Representative'}</strong>
-          </span>
+        {canCreate && (
           <button
             type="button"
-            className={styles.clearFilterBtn}
-            onClick={() => { setSelectedAssigneeId(null); updateServerFilter('assigned_to', null); }}
-            aria-label="Clear representative filter"
+            className={styles.primary}
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("open-new-lead-modal"))
+            }
           >
-            Clear Filter
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            + New lead
+          </button>
+        )}
+      </header>
+      <DealsToolbar
+        view={viewMode}
+        search={searchTerm}
+        params={searchParams.toString()}
+        stages={sortedStages}
+        sources={sources}
+        owners={owners}
+        pending={pending}
+        onSearch={updateSearch}
+        onChange={updateFilters}
+      />
+      {lookupNotice && (
+        <div className={styles.notice} role="status">
+          {lookupNotice}
+          <button type="button" onClick={() => router.refresh()}>
+            Retry details
           </button>
         </div>
       )}
-
-      {/* KANBAN BOARD VIEW */}
-      {viewMode === 'kanban' && (
-        <div className={styles.kanbanBoardContainer} aria-label="Interactive Deals Kanban Board">
-          {sortedStages.map((stage, stageIdx) => {
-            const stageDeals = filteredDeals.filter((d) => d.status_id === stage.id);
-            const totalStageValuation = stageDeals.reduce((sum, d) => sum + (d.expected_value || 0), 0);
-
-            return (
-              <section key={stage.id} className={styles.kanbanColumn} aria-label={`Stage ${stage.name}`}>
-                {/* Column Header Strip */}
-                <div className={styles.columnHeader}>
-                  <div className={styles.columnTitleRow}>
-                    <div className={styles.columnIdentity}>
-                      <span
-                        className={styles.columnStatusDot}
-                        style={{ backgroundColor: stage.color_code || '#1f242f' }}
-                        aria-hidden="true"
-                      />
-                      <h2 className={styles.columnTitle}>{stage.name}</h2>
-                    </div>
-                    <span className={styles.columnCountBadge}>{stageDeals.length}</span>
-                  </div>
-
-                  <div className={styles.columnValuationRow}>
-                    <span className={styles.columnValuationLabel}>Pipeline Value</span>
-                    <span className={styles.columnValuationSum}>
-                      {formatDealValue(totalStageValuation)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Column Card List */}
-                <div className={styles.columnCardList}>
-                  {stageDeals.length === 0 ? (
-                    <div className={styles.emptyColumnState}>No deals in this stage</div>
-                  ) : (
-                    stageDeals.map((deal) => {
-                      const priorityClass =
-                        deal.priority === 'High'
-                          ? styles.priorityHigh
-                          : deal.priority === 'Medium'
-                          ? styles.priorityMedium
-                          : styles.priorityLow;
-
-                      const initials = (deal.assigned_to_name || 'MU')
-                        .split(' ')
-                        .filter(Boolean)
-                        .map((n) => n[0])
-                        .join('')
-                        .substring(0, 2)
-                        .toUpperCase();
-
-                      const isCopied = copiedId === deal.lead_id;
-                      const cleanPhone = (deal.phone || '').replace(/[^\d+]/g, '');
-                      const hasPhone = cleanPhone.length >= 7;
-                      const digitsOnly = (deal.phone || '').replace(/\D/g, '');
-                      const whatsAppUrl = digitsOnly.length >= 7
-                        ? `https://wa.me/${digitsOnly}?text=${encodeURIComponent(
-                            `Hello ${deal.name}, this is regarding your deal with Marca Ubi (Ref: ${deal.lead_id}).`
-                          )}`
-                        : null;
-
-                      return (
-                        <article
-                          key={deal.id}
-                          className={styles.kanbanCard}
-                          onClick={() => handleInspectDeal(deal.id)}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              handleInspectDeal(deal.id);
-                            }
-                          }}
-                          aria-label={`Deal ${deal.lead_id}: ${deal.name} from ${deal.company || 'Private Account'}`}
-                        >
-                          <div className={styles.cardTopRow}>
-                            <button
-                              type="button"
-                              className={styles.cardIdBadge}
-                              onClick={(e) => handleCopyDealId(deal.lead_id, e)}
-                              onKeyDown={(e) => {
-                                e.stopPropagation();
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  handleCopyDealId(deal.lead_id, e as unknown as React.MouseEvent);
-                                }
-                              }}
-                              title="Click to copy Deal Ref"
-                              aria-label={`Copy Deal Reference ${deal.lead_id}`}
-                            >
-                              {isCopied ? (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <polyline points="20 6 9 17 4 12" />
-                                  </svg>
-                                  Copied
-                                </span>
-                              ) : (
-                                <span>{deal.lead_id}</span>
-                              )}
-                            </button>
-
-                            <div className={styles.cardMetaPills}>
-                              <span
-                                className={styles.velocityBadge}
-                                title={`Last updated ${new Date(deal.updated_at).toLocaleString()}`}
-                              >
-                                {formatStageAge(deal.updated_at)}
-                              </span>
-                              <span className={`${styles.priorityBadge} ${priorityClass}`}>
-                                {deal.priority}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className={styles.cardClientBlock}>
-                            <h3 className={styles.cardClientName}>{deal.name}</h3>
-                            <span className={styles.cardCompanyName}>
-                              {deal.company || 'Private Account'}
-                            </span>
-                          </div>
-
-                          <div className={styles.cardValueRow}>
-                            <div className={styles.valuationInfo}>
-                              <span className={styles.cardValueLabel}>Valuation</span>
-                              <span className={styles.cardValueAmount}>
-                                {formatDealValue(deal.expected_value)}
-                              </span>
-                            </div>
-
-                            {deal.next_follow_up && (
-                              <div
-                                className={styles.cardSlaBlock}
-                                onClick={(e) => e.stopPropagation()}
-                                onKeyDown={(e) => e.stopPropagation()}
-                              >
-                                <span className={styles.cardSlaDate}>
-                                  {new Date(deal.next_follow_up).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  })}
-                                </span>
-                                <OverdueBadge
-                                  nextFollowUp={deal.next_follow_up}
-                                  statusName={deal.status_name}
-                                  revisitDate={deal.revisit_date}
-                                  bucket={deal.status_bucket}
-                                  variant="short"
-                                />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className={styles.cardFooter}>
-                            <div className={styles.cardOwnerInfo} title={`Assigned to ${deal.assigned_to_name}`}>
-                              <div className={styles.avatarMonogram}>{initials || 'MU'}</div>
-                              <span className={styles.cardOwnerName}>{deal.assigned_to_name}</span>
-                            </div>
-
-                            <div
-                              className={styles.cardQuickActions}
-                              onClick={(e) => e.stopPropagation()}
-                              onKeyDown={(e) => e.stopPropagation()}
-                            >
-                              {hasPhone && (
-                                <a
-                                  href={`tel:${cleanPhone}`}
-                                  className={styles.cardOmniBtn}
-                                  onClick={(e) => e.stopPropagation()}
-                                  title={`Direct Phone Call: ${deal.phone}`}
-                                  aria-label={`Call ${deal.name} at ${deal.phone}`}
-                                >
-                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                  </svg>
-                                </a>
-                              )}
-                              {whatsAppUrl && (
-                                <a
-                                  href={whatsAppUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={styles.cardOmniBtn}
-                                  onClick={(e) => e.stopPropagation()}
-                                  title={`Message ${deal.name} on WhatsApp`}
-                                  aria-label={`WhatsApp ${deal.name}`}
-                                >
-                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                                  </svg>
-                                </a>
-                              )}
-
-                              <button
-                                type="button"
-                                className={styles.stageMoveBtn}
-                                title={userRole === 'viewer' ? 'Read-only access' : 'Move to previous stage'}
-                                disabled={stageIdx === 0 || userRole === 'viewer' || movingLeadId !== null}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleMoveStage(deal, 'prev');
-                                }}
-                                onKeyDown={(e) => e.stopPropagation()}
-                                aria-label={`Move ${deal.lead_id} to previous stage`}
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <polyline points="15 18 9 12 15 6" />
-                                </svg>
-                              </button>
-                              <button
-                                type="button"
-                                className={styles.stageMoveBtn}
-                                title={userRole === 'viewer' ? 'Read-only access' : 'Advance to next stage'}
-                                disabled={stageIdx === sortedStages.length - 1 || userRole === 'viewer' || movingLeadId !== null}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleMoveStage(deal, 'next');
-                                }}
-                                onKeyDown={(e) => e.stopPropagation()}
-                                aria-label={`Advance ${deal.lead_id} to next stage`}
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <polyline points="9 18 15 12 9 6" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })
-                  )}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+      {moveError && (
+        <p className={styles.error} role="alert">
+          {moveError}
+        </p>
       )}
-
-      {/* SORTABLE DATA GRID (TABLE) VIEW */}
-      {viewMode === 'table' && (
-        <div className={styles.gridCard}>
-          <div className={styles.tableHeader}>
-            <button
-              type="button"
-              className={styles.sortableHeaderCol}
-              onClick={() => handleToggleSort('lead_id')}
-            >
-              Deal Ref{' '}
-              {sortField === 'lead_id' && (
-                <span className={styles.sortArrow} aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
-                  </svg>
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.sortableHeaderCol}
-              onClick={() => handleToggleSort('name')}
-            >
-              Client & Company{' '}
-              {sortField === 'name' && (
-                <span className={styles.sortArrow} aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
-                  </svg>
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.sortableHeaderCol}
-              onClick={() => handleToggleSort('status_name')}
-            >
-              Stage{' '}
-              {sortField === 'status_name' && (
-                <span className={styles.sortArrow} aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
-                  </svg>
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.sortableHeaderCol}
-              onClick={() => handleToggleSort('expected_value')}
-            >
-              Contract Valuation{' '}
-              {sortField === 'expected_value' && (
-                <span className={styles.sortArrow} aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
-                  </svg>
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.sortableHeaderCol}
-              onClick={() => handleToggleSort('priority')}
-            >
-              Priority{' '}
-              {sortField === 'priority' && (
-                <span className={styles.sortArrow} aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
-                  </svg>
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.sortableHeaderCol}
-              onClick={() => handleToggleSort('assigned_to_name')}
-            >
-              Representative{' '}
-              {sortField === 'assigned_to_name' && (
-                <span className={styles.sortArrow} aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
-                  </svg>
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.sortableHeaderCol}
-              onClick={() => handleToggleSort('next_follow_up')}
-              aria-label={`Sort by Next SLA Touchpoint, currently ${sortField === 'next_follow_up' ? (sortAscending ? 'ascending' : 'descending') : 'unsorted'}`}
-            >
-              Next SLA{' '}
-              {sortField === 'next_follow_up' && (
-                <span className={styles.sortArrow} aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    {sortAscending ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
-                  </svg>
-                </span>
-              )}
-            </button>
-            <span className={styles.colAction}>Action</span>
-          </div>
-
-          {sortedTableDeals.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyTitle}>No deals match the selected criteria.</p>
-              <p className={styles.emptySub}>Adjust filters or log a new commercial opportunity.</p>
-            </div>
-          ) : (
-            <div className={styles.tableBody}>
-              {sortedTableDeals.map((deal) => {
-                const priorityClass =
-                  deal.priority === 'High'
-                    ? styles.priorityHigh
-                    : deal.priority === 'Medium'
-                    ? styles.priorityMedium
-                    : styles.priorityLow;
-
-                return (
-                  <div
-                    key={deal.id}
-                    className={styles.dealRow}
-                    onClick={() => handleInspectDeal(deal.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleInspectDeal(deal.id);
-                      }
-                    }}
-                  >
-                    <span className={styles.colId}>
-                      <code className={styles.monoId}>{deal.lead_id}</code>
-                    </span>
-
-                    <div className={styles.colClient}>
-                      <span className={styles.clientName}>{deal.name}</span>
-                      <span className={styles.companyName}>
-                        {deal.company || 'Private Account'}
-                      </span>
-                    </div>
-
-                    <span className={styles.colStage}>
-                      <span
-                        className={styles.stagePill}
-                        style={{
-                          backgroundColor: `${deal.status_color}18`,
-                          borderColor: `${deal.status_color}40`,
-                          color: deal.status_color,
-                        }}
-                      >
-                        {deal.status_name}
-                      </span>
-                    </span>
-
-                    <span className={styles.colValue}>
-                      <span className={styles.valueNumber}>
-                        {formatDealValue(deal.expected_value)}
-                      </span>
-                    </span>
-
-                    <span className={styles.colPriority}>
-                      <span className={`${styles.priorityBadge} ${priorityClass}`}>
-                        {deal.priority}
-                      </span>
-                    </span>
-
-                    <span className={styles.colOwner}>
-                      <span className={styles.ownerText}>{deal.assigned_to_name}</span>
-                    </span>
-
-                    <div
-                      className={styles.colSla}
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => e.stopPropagation()}
-                    >
-                      <span className={styles.slaDateText}>
-                        {deal.next_follow_up
-                          ? new Date(deal.next_follow_up).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : 'None'}
-                      </span>
-                      <OverdueBadge
-                        nextFollowUp={deal.next_follow_up}
-                        statusName={deal.status_name}
-                        revisitDate={deal.revisit_date}
-                        bucket={deal.status_bucket}
-                        variant="short"
-                      />
-                    </div>
-
-                    <div className={styles.colAction}>
-                      <button
-                        type="button"
-                        className={styles.inspectButton}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInspectDeal(deal.id);
-                        }}
-                        title="Inspect Client 360 Dossier"
-                        aria-label={`Inspect dossier for ${deal.lead_id}`}
-                      >
-                        <span>View 360°</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+      {moveNotice && (
+        <p className={styles.notice} role="status">
+          {moveNotice}
+        </p>
       )}
-
-      {/* Client 360° Slide-over Dossier Drawer */}
-      <ClientDossierDrawer
-        leadId={activeDrawerDealId}
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        onLeadUpdated={() => {
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('popstate'));
-          }
-        }}
-      />
-
-      {/* Guarded Stage Transition Modal */}
-      {stageModalState.isOpen && stageModalState.leadId && stageModalState.targetStatus && (
-        <StageTransitionModal
-          isOpen={stageModalState.isOpen}
-          onClose={() =>
-            setStageModalState({ isOpen: false, leadId: null, targetStatus: null })
-          }
-          leadId={stageModalState.leadId}
-          targetStatus={stageModalState.targetStatus}
-          dealIdCode={deals.find((d) => d.id === stageModalState.leadId)?.lead_id}
-          dealName={
-            deals.find((d) => d.id === stageModalState.leadId)?.company ||
-            deals.find((d) => d.id === stageModalState.leadId)?.name
-          }
-          currentExpectedValue={
-            deals.find((d) => d.id === stageModalState.leadId)?.expected_value
-          }
-          onSuccess={handleStageTransitionSuccess}
-        />
-      )}
+      <div
+        aria-busy={pending}
+        className={`${styles.results} ${pending ? styles.pendingResults : ""}`}
+      >
+        {viewMode === "kanban" ? (
+          <DealsKanbanBoard
+            stages={sortedStages}
+            deals={deals}
+            userRole={userRole}
+            movingDealId={movingLeadId}
+            onMove={handleMoveStage}
+            canViewFinancials={canViewFinancials}
+          />
+        ) : (
+          <DealsTable
+            deals={sortedTableDeals}
+            stages={sortedStages}
+            userRole={userRole}
+            financial={canViewFinancials}
+            sort={sortField}
+            ascending={sortAscending}
+            onSort={handleToggleSort}
+            onMove={handleMoveStage}
+            movingId={movingLeadId}
+            nowMs={nowMs}
+          />
+        )}
+      </div>
+      {pagination}
+      {stageModalState.isOpen &&
+        stageModalState.leadId &&
+        stageModalState.targetStatus && (
+          <StageTransitionModal
+            isOpen
+            onClose={() =>
+              setStageModalState({
+                isOpen: false,
+                leadId: null,
+                targetStatus: null,
+              })
+            }
+            leadId={stageModalState.leadId}
+            targetStatus={stageModalState.targetStatus}
+            dealIdCode={activeDeal?.lead_id}
+            dealName={activeDeal?.company || activeDeal?.name}
+            currentExpectedValue={
+              canViewFinancials
+                ? (activeDeal?.expected_value ?? undefined)
+                : undefined
+            }
+            onSuccess={handleStageTransitionSuccess}
+          />
+        )}
     </div>
   );
 }

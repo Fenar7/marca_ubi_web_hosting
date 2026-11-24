@@ -25,6 +25,7 @@ export default function ProjectForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submissionReceipt, setSubmissionReceipt] = useState<string | null>(null);
+  const submission = useRef<{ key: string; snapshot: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mountedStepRef = useRef(currentStep);
 
@@ -46,13 +47,20 @@ export default function ProjectForm() {
   const goToStep = (step: number) => setCurrentStep(step);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const idempotencyKey =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `brief-${Date.now()}`;
+    const snapshot = JSON.stringify(formData);
+    if (submission.current?.snapshot !== snapshot) {
+      submission.current = {
+        key: typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `brief-${Date.now()}`,
+        snapshot,
+      };
+    }
+    const idempotencyKey = submission.current.key;
 
     // Built by the shared intake module, the same one the Chat Pod submits through. The wizard's body
     // is unchanged by this: one builder, two surfaces, so a field added on one side cannot be missing
@@ -79,13 +87,23 @@ export default function ProjectForm() {
         });
 
         if (response.ok) {
+          const result: unknown = await response.json();
+          if (!result || typeof result !== "object" ||
+            !("receiptId" in result) || typeof result.receiptId !== "string") {
+            throw new Error("We could not confirm your receipt. Try sending the same brief again.");
+          }
           success = true;
-          setSubmissionReceipt(idempotencyKey);
+          setSubmissionReceipt(result.receiptId);
           setSubmitSuccess(true);
           return;
         }
 
         const data = await response.json().catch(() => ({}));
+        if (response.status >= 400 && response.status < 500 && response.status !== 408) {
+          setSubmitError(typeof data.error === "string" ? data.error : "Check your inquiry and try again.");
+          setIsSubmitting(false);
+          return;
+        }
         if (attempt === maxAttempts) {
           throw new Error(data.error || `Server responded with status ${response.status}`);
         }

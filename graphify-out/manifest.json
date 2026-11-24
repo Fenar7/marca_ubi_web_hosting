@@ -492,9 +492,9 @@
     "semantic_hash": "54c652a32b58263f650b1f5cd60d297c"
   },
   "src/app/actions/leads.ts": {
-    "mtime": 1794906270.839383,
-    "seen": 1794906819.2750888,
-    "ast_hash": "877b34e247aa33522086f13e3909c186",
+    "mtime": 1795426561.547707,
+    "seen": 1795426626.2805789,
+    "ast_hash": "6e8a5c2353df897f2f9bdc818660ea1f",
     "semantic_hash": ""
   },
   "src/app/actions/reassignment.ts": {
@@ -552,9 +552,9 @@
     "semantic_hash": "47d47d763c059d79fd1f2c981119eb38"
   },
   "src/app/admin/(workspace)/deals/DealsWorkspaceClient.tsx": {
-    "mtime": 1794042380.8484828,
-    "seen": 1794044531.3041291,
-    "ast_hash": "1e1f9f33f8d8f2f82606b7a3f5106109",
+    "mtime": 1795443449.0256498,
+    "seen": 1795443614.353287,
+    "ast_hash": "daf576535bb4688d2d4aaeb39db78aeb",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/[id]/loading.tsx": {
@@ -570,15 +570,15 @@
     "semantic_hash": "996a3aec9f880a5809bfd41373c1a9fc"
   },
   "src/app/admin/(workspace)/deals/[id]/page.tsx": {
-    "mtime": 1793001791.9804237,
-    "seen": 1793862052.6845307,
-    "ast_hash": "a654ed0915927f87283bc51b217b9ad6",
-    "semantic_hash": "a654ed0915927f87283bc51b217b9ad6"
+    "mtime": 1795426537.996499,
+    "seen": 1795426626.2847412,
+    "ast_hash": "ba0a8db34e831378982aeed673d11194",
+    "semantic_hash": ""
   },
   "src/app/admin/(workspace)/deals/page.tsx": {
-    "mtime": 1794042318.548475,
-    "seen": 1794044531.3041291,
-    "ast_hash": "23a0fda5ec29647490edffcc65db430e",
+    "mtime": 1795444399.8523355,
+    "seen": 1795444446.1665535,
+    "ast_hash": "15ed680dc3f3efd3f5379aa7e23b544b",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient.tsx": {
@@ -600,16 +600,16 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx": {
-    "mtime": 1794044348.37812,
-    "seen": 1794044531.3041291,
-    "ast_hash": "a7ae509404f976131b014df18a762604",
+    "mtime": 1795425751.5817502,
+    "seen": 1795425849.7854147,
+    "ast_hash": "09d63e3833b690a5204f322f3d4f8c4e",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/leads/NewLeadHeaderButton.tsx": {
-    "mtime": 1793001792.5393107,
-    "seen": 1793862052.6845307,
-    "ast_hash": "2825707747e307c198702e5b15f02028",
-    "semantic_hash": "2825707747e307c198702e5b15f02028"
+    "mtime": 1795425408.2135882,
+    "seen": 1795425849.7854147,
+    "ast_hash": "a90251feec28b4dd252264dc44ef4845",
+    "semantic_hash": ""
   },
   "src/app/admin/(workspace)/leads/[id]/loading.tsx": {
     "mtime": 1793001792.6401496,
@@ -624,20 +624,20 @@
     "semantic_hash": "954b94b1ed2c21e4cd054e16f9bbea33"
   },
   "src/app/admin/(workspace)/leads/[id]/page.tsx": {
-    "mtime": 1793001792.9669309,
-    "seen": 1793862052.6845307,
-    "ast_hash": "5b35bc2956e3929dad29ec14e54f3f49",
-    "semantic_hash": "5b35bc2956e3929dad29ec14e54f3f49"
+    "mtime": 1795426537.996499,
+    "seen": 1795426626.286422,
+    "ast_hash": "b38b7dcf3da7eeb3fe01695f1cebf0ff",
+    "semantic_hash": ""
   },
   "src/app/admin/(workspace)/leads/page.tsx": {
-    "mtime": 1794042305.0655246,
-    "seen": 1794044531.3041291,
-    "ast_hash": "6be36107292c7729b1d6e5c026545108",
+    "mtime": 1795426537.996499,
+    "seen": 1795426626.286422,
+    "ast_hash": "4da2cb40f870dcdbfa5bbb333e4051b6",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/page.tsx": {
-    "mtime": 1794926615.16805,
-    "seen": 1794927174.0849726,
+    "mtime": 1795376585.7325184,
+    "seen": 1795376619.7261283,
     "ast_hash": "a364bc3b78a13e2d2e315b7781d03ca1",
     "semantic_hash": ""
   },
@@ -654,15 +654,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/components/TaskCard.tsx": {
-    "mtime": 1793950725.696066,
-    "seen": 1793950755.4680746,
-    "ast_hash": "c8ea1cc9499c3afbbb96cea81d88cc34",
+    "mtime": 1795166438.28124,
+    "seen": 1795167376.1348324,
+    "ast_hash": "b479144deb2f2f0f95f4ba01eb7b8ed3",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/page.tsx": {
-    "mtime": 1794905582.6383643,
-    "seen": 1794906819.2750888,
-    "ast_hash": "31c0a64e74916dec4b97a5da217ec7d3",
+    "mtime": 1795167388.5311575,
+    "seen": 1795376619.7261283,
+    "ast_hash": "6621d05fc02a37d13ee0fa4a1c586ac9",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/team/[id]/components/CommercialVelocityScorecards.tsx": {
@@ -888,9 +888,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/index.ts": {
-    "mtime": 1794926840.1246333,
-    "seen": 1794927174.086485,
-    "ast_hash": "7909e703d584627d48e7f1c56ac50dba",
+    "mtime": 1795376585.777476,
+    "seen": 1795376619.7261283,
+    "ast_hash": "36ebd78d400e56d52012b31925971788",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/types.ts": {
@@ -930,9 +930,9 @@
     "semantic_hash": "920852ff7e23cf4cdfdbacc7e4ca9261"
   },
   "src/app/admin/components/DossierDrawer/dossierUtils.ts": {
-    "mtime": 1793937317.5325806,
-    "seen": 1793937826.854044,
-    "ast_hash": "70f5b3e20b37ab47e5b77f943ab2916d",
+    "mtime": 1795166442.930679,
+    "seen": 1795167376.1348324,
+    "ast_hash": "9cb13130f15c0edfdcd60336551d4127",
     "semantic_hash": ""
   },
   "src/app/admin/components/DossierDrawer/index.ts": {
@@ -942,34 +942,34 @@
     "semantic_hash": "40eb706860dee0547c29ddcafa62a973"
   },
   "src/app/admin/components/DossierWorkspace/CommercialKpiRibbon.tsx": {
-    "mtime": 1793937706.6570284,
-    "seen": 1793937826.854044,
-    "ast_hash": "6f39fdf55a8486e793bf7560d3bbcfa2",
+    "mtime": 1795181029.643349,
+    "seen": 1795376619.7261283,
+    "ast_hash": "7891bf92db7a1a49d72cbbc0d7e7add7",
     "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/DossierHeaderBar.tsx": {
-    "mtime": 1793001800.320856,
-    "seen": 1793862052.6845307,
-    "ast_hash": "33ed73989fd3bbb88306acf8a62d7400",
-    "semantic_hash": "33ed73989fd3bbb88306acf8a62d7400"
+    "mtime": 1795181014.1697655,
+    "seen": 1795376619.7261283,
+    "ast_hash": "3c4e25b066279bd6a9b4304cb64465da",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/IngestionBriefMatrix.tsx": {
-    "mtime": 1793001800.4031043,
-    "seen": 1793862052.6845307,
-    "ast_hash": "cfb50637bc5f314e97eaf46804c4c765",
-    "semantic_hash": "cfb50637bc5f314e97eaf46804c4c765"
+    "mtime": 1795166409.840093,
+    "seen": 1795167376.1348324,
+    "ast_hash": "2d6d5aa9bc90840ceccd0eea5428a5f7",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/LeadDossierWorkspaceClient.tsx": {
-    "mtime": 1793001800.5507984,
-    "seen": 1793862052.6845307,
-    "ast_hash": "c0bf2cda4a5121cefca0c9125b2d1331",
-    "semantic_hash": "c0bf2cda4a5121cefca0c9125b2d1331"
+    "mtime": 1795166725.996355,
+    "seen": 1795167376.1348324,
+    "ast_hash": "afeeac3c6b8eb2f9feffbb8f23197c89",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/RapidTouchpointComposer.tsx": {
-    "mtime": 1793001800.5682585,
-    "seen": 1793862052.6845307,
-    "ast_hash": "0c61106e0ede1ea0279a960f52471b6b",
-    "semantic_hash": "0c61106e0ede1ea0279a960f52471b6b"
+    "mtime": 1795166266.0939884,
+    "seen": 1795167376.1348324,
+    "ast_hash": "c662f898a282a901a826593f3235a086",
+    "semantic_hash": ""
   },
   "src/app/admin/components/DossierWorkspace/index.ts": {
     "mtime": 1793001800.6458235,
@@ -978,9 +978,9 @@
     "semantic_hash": "7ca3934f2d408d9881dd87692897cbb9"
   },
   "src/app/admin/components/FilterActionBar/FilterActionBar.tsx": {
-    "mtime": 1793943403.8311906,
-    "seen": 1793945072.125817,
-    "ast_hash": "55159b4a6a90c29b99ee5e3db7af260a",
+    "mtime": 1795425480.4400594,
+    "seen": 1795425849.7854147,
+    "ast_hash": "0baef89960ca2186dc228bc8fa2a5205",
     "semantic_hash": ""
   },
   "src/app/admin/components/FilterActionBar/index.ts": {
@@ -1014,21 +1014,21 @@
     "semantic_hash": "a2b36ce0c961c128dde5e7adff2cf0c4"
   },
   "src/app/admin/components/LeadsTable/InlineStatusSelect.tsx": {
-    "mtime": 1793001801.4920833,
-    "seen": 1793862052.6845307,
-    "ast_hash": "7a1bbe03e319726eb3ef697b13899579",
-    "semantic_hash": "7a1bbe03e319726eb3ef697b13899579"
+    "mtime": 1795377166.2791648,
+    "seen": 1795377259.9892123,
+    "ast_hash": "131441757fd1a2660001b67c68a62ae1",
+    "semantic_hash": ""
   },
   "src/app/admin/components/LeadsTable/LeadMobileCard.tsx": {
-    "mtime": 1793937317.5370798,
-    "seen": 1793937826.8565428,
-    "ast_hash": "a716de7d09b817399d93cc4f6cd07c5b",
+    "mtime": 1795377314.2543356,
+    "seen": 1795377352.5171978,
+    "ast_hash": "d0a452a38073cba135a23edd50197650",
     "semantic_hash": ""
   },
   "src/app/admin/components/LeadsTable/LeadsDataGrid.tsx": {
-    "mtime": 1793937317.5335815,
-    "seen": 1793937826.8565428,
-    "ast_hash": "7b080b6bd74afca8081b6ec20b8c7b31",
+    "mtime": 1795377166.299426,
+    "seen": 1795377259.9892123,
+    "ast_hash": "4e01e51efa46f4f49e233734cea0f3d9",
     "semantic_hash": ""
   },
   "src/app/admin/components/LeadsTable/LeadsTableSkeleton.tsx": {
@@ -1110,20 +1110,20 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminBreadcrumbs.tsx": {
-    "mtime": 1794636404.9551628,
-    "seen": 1794734582.8670247,
+    "mtime": 1795376585.8076143,
+    "seen": 1795376619.7261283,
     "ast_hash": "d2e6174c5d095b42e56a6fee5439fc39",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminHeader.tsx": {
-    "mtime": 1794556440.4623995,
-    "seen": 1794557293.483747,
-    "ast_hash": "f5708d99f12a23c22d3c81b7a936e6fe",
+    "mtime": 1795376585.8076143,
+    "seen": 1795376619.7261283,
+    "ast_hash": "decf312b6107705e9122b6a33e972f55",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminMobileDrawer.tsx": {
-    "mtime": 1794348976.0967863,
-    "seen": 1794356196.5108132,
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.7261283,
     "ast_hash": "b0794c77d497b2fc9556a72b0c87ee38",
     "semantic_hash": ""
   },
@@ -1134,14 +1134,14 @@
     "semantic_hash": "4572fabb70ae9163d445232dab7729ee"
   },
   "src/app/admin/components/layout/AdminSidebar.tsx": {
-    "mtime": 1794766641.5747185,
-    "seen": 1794766995.249293,
-    "ast_hash": "45f6a1e8cb73dd49972a92e9351e3a5b",
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.7261283,
+    "ast_hash": "2e57998cd0b340d91bb001d9a91d4eb9",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminWorkspaceShell.tsx": {
-    "mtime": 1794766669.4296408,
-    "seen": 1794766995.249293,
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.7261283,
     "ast_hash": "86de237443a1d8d5d427cab80b388c48",
     "semantic_hash": ""
   },
@@ -1188,8 +1188,8 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/ConvertedCelebrationModal.tsx": {
-    "mtime": 1793937340.7527015,
-    "seen": 1793937826.8615434,
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.7356493,
     "ast_hash": "2771d8d788072450ae6005c17b7ff481",
     "semantic_hash": ""
   },
@@ -1218,8 +1218,8 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/StageTransitionModal.tsx": {
-    "mtime": 1793937340.7532027,
-    "seen": 1793937826.8620439,
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.7356493,
     "ast_hash": "b181e73d0c8b98f63d1e93de2536b2cb",
     "semantic_hash": ""
   },
@@ -1248,9 +1248,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/timeframeUtils.ts": {
-    "mtime": 1794808399.695368,
-    "seen": 1794808940.8647454,
-    "ast_hash": "715d86773d55bd71ba24845ec32decc9",
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.7356493,
+    "ast_hash": "fdd2b3bb37483784b8240601270ef944",
     "semantic_hash": ""
   },
   "src/app/admin/login/LoginForm.tsx": {
@@ -2706,9 +2706,9 @@
     "semantic_hash": "bee5d688136b6cc167b685c9fcaf7f7f"
   },
   "tests/leads/client_360_full_page_workspace.test.ts": {
-    "mtime": 1793951651.8203762,
-    "seen": 1793952511.2031763,
-    "ast_hash": "65ff68d35ee155115ae65f85c7544280",
+    "mtime": 1795443625.5898757,
+    "seen": 1795444283.1721716,
+    "ast_hash": "7293febe917be78dc4420256d6172839",
     "semantic_hash": ""
   },
   "tests/leads/client_360_light_luxury_redesign.test.ts": {
@@ -2946,14 +2946,14 @@
     "semantic_hash": "f2c1f4df9be03fe358f34d37a7bb4769"
   },
   "tests/unit/phase-1-redesign-tokens-and-shell.test.ts": {
-    "mtime": 1794348976.2359352,
-    "seen": 1794356196.5108132,
-    "ast_hash": "0a9a8de850b128f3f15bb744faf78db1",
+    "mtime": 1795442284.4399786,
+    "seen": 1795443614.353287,
+    "ast_hash": "a2c7dae92733aaada9c106f66a766b80",
     "semantic_hash": ""
   },
   "tests/unit/phase-2-brand-upgrade-layout-and-fixed-rail.test.ts": {
-    "mtime": 1794348976.2409532,
-    "seen": 1794356196.5108132,
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.736247,
     "ast_hash": "58a5b49a4ddedd1a3eb02287594679b2",
     "semantic_hash": ""
   },
@@ -2976,9 +2976,9 @@
     "semantic_hash": ""
   },
   "tests/unit/phase-3-redesign-executive-overview.test.ts": {
-    "mtime": 1794348976.2575064,
-    "seen": 1794356196.5108132,
-    "ast_hash": "1acfb644f2f720d4165d838c40508ccd",
+    "mtime": 1795442284.7370167,
+    "seen": 1795443614.353287,
+    "ast_hash": "94d0b16a65102df1fc6241a5e2b43589",
     "semantic_hash": ""
   },
   "tests/unit/phase-3-user-management-and-permissions.test.ts": {
@@ -2988,9 +2988,9 @@
     "semantic_hash": "c26905ceff1c5279efe4c8f0cec3d98b"
   },
   "tests/unit/phase-4-brand-upgrade-datagrid.test.ts": {
-    "mtime": 1793950996.868608,
-    "seen": 1793951105.7957585,
-    "ast_hash": "c8c1db71833677f12d89c542ee59e9b6",
+    "mtime": 1795377274.0764217,
+    "seen": 1795377312.6340482,
+    "ast_hash": "0e490ae037f2d5769ed2c2526b85b159",
     "semantic_hash": ""
   },
   "tests/unit/phase-4-funnel-workspaces-and-kanban.test.ts": {
@@ -3000,15 +3000,15 @@
     "semantic_hash": "45b3f958607c72599073e28b609015d8"
   },
   "tests/unit/phase-4-redesign-funnel-workspaces.test.ts": {
-    "mtime": 1793951053.6212983,
-    "seen": 1793951105.7957585,
-    "ast_hash": "d993b9e00ad0a0cc2a568ab9d9be30f5",
+    "mtime": 1795443655.0726683,
+    "seen": 1795444283.1721716,
+    "ast_hash": "77588fafc85d675f53b68db2be15e399",
     "semantic_hash": ""
   },
   "tests/unit/phase-5-brand-upgrade-deals-and-dossier.test.ts": {
-    "mtime": 1793951004.14247,
-    "seen": 1793951105.7957585,
-    "ast_hash": "68ad5d349bbd3380ea0796e6a5df183c",
+    "mtime": 1795442672.8084693,
+    "seen": 1795443614.353287,
+    "ast_hash": "c08f5f18ee32037cf23d51996b534bb8",
     "semantic_hash": ""
   },
   "tests/unit/phase-5-command-center-and-interactions.test.ts": {
@@ -3042,14 +3042,14 @@
     "semantic_hash": "a91af9c040bf9a0599df6282be46dbf4"
   },
   "tests/unit/phase-7-logip-executive-dashboard.test.ts": {
-    "mtime": 1794348976.2585118,
-    "seen": 1794356196.5108132,
-    "ast_hash": "49afcf9d3f56262e4d4f0197952519d0",
+    "mtime": 1795442285.6926782,
+    "seen": 1795443614.353287,
+    "ast_hash": "9644a12675c5f7b63ed2479285ef73ef",
     "semantic_hash": ""
   },
   "tests/unit/phase-8-inbound-leads-and-dossier-remediation.test.ts": {
-    "mtime": 1794809762.4134855,
-    "seen": 1794906819.277086,
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.736247,
     "ast_hash": "730894c888a1fca1d3235c2c6fde068d",
     "semantic_hash": ""
   },
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1794906751.5503337,
-    "seen": 1794906819.277591,
-    "ast_hash": "e2fcb8a7f531d085be08fda9b2b1f340",
+    "mtime": 1795443869.4515173,
+    "seen": 1795444283.1726956,
+    "ast_hash": "824213ea4ecae7f6ca88b294a1ee204d",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5358,9 +5358,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/currency.ts": {
-    "mtime": 1794418547.7219505,
-    "seen": 1794418732.2819185,
-    "ast_hash": "2814559b985b560265ed57504b7c2d02",
+    "mtime": 1795167065.5093057,
+    "seen": 1795167376.1348324,
+    "ast_hash": "1a272c2a01abd7836610b268955eb7ab",
     "semantic_hash": ""
   },
   "supabase/migrations/20261105000001_preserve_activity_attribution_and_history.sql": {
@@ -5418,9 +5418,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/loading.tsx": {
-    "mtime": 1793950127.133446,
-    "seen": 1793950560.1511924,
-    "ast_hash": "4658dcc92739653083b1cda74419a9a9",
+    "mtime": 1795166504.3933697,
+    "seen": 1795167376.1348324,
+    "ast_hash": "21707eb497390ab356f340814b286cad",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/AttentionQueue.tsx": {
@@ -5442,9 +5442,9 @@
     "semantic_hash": ""
   },
   "tests/unit/command-center-dashboard-data.test.ts": {
-    "mtime": 1794809731.940691,
-    "seen": 1794906819.277086,
-    "ast_hash": "af03bd68368ecd19a272fa5326d33452",
+    "mtime": 1795376585.8101273,
+    "seen": 1795376619.736247,
+    "ast_hash": "4ff5721762b82406aade805e3433279d",
     "semantic_hash": ""
   },
   "tests/unit/follow-up-queue.test.ts": {
@@ -5472,9 +5472,9 @@
     "semantic_hash": ""
   },
   "tests/unit/crm-workspace-resilience.test.ts": {
-    "mtime": 1794906587.1897442,
-    "seen": 1794906819.277086,
-    "ast_hash": "b7c2d2ff098608b19eb7afa402469d6f",
+    "mtime": 1795443689.1637325,
+    "seen": 1795444283.1721716,
+    "ast_hash": "ef73ee0bf96393b1b175b646f9616e6b",
     "semantic_hash": ""
   },
   "docs/sales_funnel/crm_saas_redesign/REDESIGN_RECOVERY_PLAN_2026-11-07.md": {
@@ -5616,14 +5616,14 @@
     "semantic_hash": ""
   },
   "docs/sales_funnel/dashboard_redesign_2026_11/verify-visual-harness.cjs": {
-    "mtime": 1794348975.913556,
-    "seen": 1794356196.5108132,
+    "mtime": 1795376585.643402,
+    "seen": 1795376619.7261283,
     "ast_hash": "d9e212726f1a4c3ca1423dd58a842837",
     "semantic_hash": ""
   },
   "docs/sales_funnel/dashboard_redesign_2026_11/visual-harness.cjs": {
-    "mtime": 1794348975.9378285,
-    "seen": 1794356196.5108132,
+    "mtime": 1795376585.643402,
+    "seen": 1795376619.7261283,
     "ast_hash": "0404e126beb0f5f9843e7ca76f10253d",
     "semantic_hash": ""
   },
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1794926529.101599,
-    "seen": 1794927174.086485,
-    "ast_hash": "842e2200de42374813866f6395e7121a",
+    "mtime": 1795376585.7577262,
+    "seen": 1795376619.7261283,
+    "ast_hash": "ccdda9073ce952910ed01c8ccbab068a",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5664,9 +5664,9 @@
     "semantic_hash": ""
   },
   "tests/unit/dashboard-server-assembly.test.ts": {
-    "mtime": 1794348976.2032735,
-    "seen": 1794356196.5108132,
-    "ast_hash": "35db9326588e2d1428d6059a35d903c5",
+    "mtime": 1795442283.8056495,
+    "seen": 1795443614.353287,
+    "ast_hash": "1c33583eb16791b71b2092a9f982a7aa",
     "semantic_hash": ""
   },
   "tests/unit/dashboard-workspace-contracts.test.ts": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1794926151.752203,
-    "seen": 1794927174.086485,
-    "ast_hash": "568f99f7116da489f68d5c51addcb05a",
+    "mtime": 1795376585.7577262,
+    "seen": 1795376619.7261283,
+    "ast_hash": "3689907b07a688efcc02c1a90f727654",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6024,9 +6024,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1794816180.7614002,
-    "seen": 1794906819.2760882,
-    "ast_hash": "7798788c16dd7dbabaa1889df95971bf",
+    "mtime": 1795376585.734536,
+    "seen": 1795376619.7261283,
+    "ast_hash": "8e3c06711047d9c9679a76ecaa65e0f1",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
@@ -6192,8 +6192,8 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxuryDonutCookieChart.tsx": {
-    "mtime": 1794925827.7378638,
-    "seen": 1794927174.086485,
+    "mtime": 1795075353.8261917,
+    "seen": 1795076377.9222496,
     "ast_hash": "930d3f03d7cf0370335407256bdb9533",
     "semantic_hash": ""
   },
@@ -6210,9 +6210,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx": {
-    "mtime": 1794925746.0908835,
-    "seen": 1794927174.086485,
-    "ast_hash": "1bccaea6e5966a088e187c2ccba7fada",
+    "mtime": 1795075286.5156238,
+    "seen": 1795076377.9222496,
+    "ast_hash": "bfc1d9ea086c9abf87d9e168fc65b597",
     "semantic_hash": ""
   },
   "docs/LuxuryDashboard/LUXURY_DASHBOARD_GREENFIELD_PLAN.md": {
@@ -6225,6 +6225,480 @@
     "mtime": 1794923457.5074346,
     "seen": 1794927174.0876813,
     "ast_hash": "33e3b6bef9442b84e956a2b6d7e78b16",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/EarningOverviewSplineCard.tsx": {
+    "mtime": 1795376585.7420871,
+    "seen": 1795376619.7261283,
+    "ast_hash": "b9ee9029d6c7b4733aa4c9d82a894fca",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/RecentTransactionsTable.tsx": {
+    "mtime": 1795376585.777476,
+    "seen": 1795376619.7261283,
+    "ast_hash": "e71cc41105e225631dcbd266c5951bb3",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/SpendingOverviewBarCard.tsx": {
+    "mtime": 1795376585.777476,
+    "seen": 1795376619.7261283,
+    "ast_hash": "cea49373b037cfffe01fa0b69b22db2c",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/UpcomingSlaCard.tsx": {
+    "mtime": 1795376585.777476,
+    "seen": 1795376619.7261283,
+    "ast_hash": "0535557566cc53a507de8e6134f4de94",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-17_20-30-00.md": {
+    "mtime": 1794980336.5795767,
+    "seen": 1794986589.5712862,
+    "ast_hash": "a943edcb16d49edee8a746342dee069e",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/LUXURY_DASHBOARD_REFINEMENT_AND_DONUT_REDESIGN_PLAN.md": {
+    "mtime": 1794984801.8916292,
+    "seen": 1794986589.5712862,
+    "ast_hash": "7dbc981edaeb9b8adec099aabdc35509",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/MASTER_FUNDORA_IMAGE_PARITY_REDESIGN_PLAN.md": {
+    "mtime": 1794985372.121164,
+    "seen": 1794986589.5712862,
+    "ast_hash": "32a0658103b3ce1b0c0e30f4571097c4",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/FUNDORA_1TO1_DESIGN_SPECIFICATION.md": {
+    "mtime": 1794986250.8858345,
+    "seen": 1794986589.5712862,
+    "ast_hash": "e60509b2b46317c7e500a9921286fa27",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-18_12-50-00.md": {
+    "mtime": 1794986642.2532682,
+    "seen": 1794989081.9695292,
+    "ast_hash": "e38de155626d590f1e837b0d30d0bf82",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/RIGHT_COLUMN_AND_COCKPIT_REMEDIATION_PLAN.md": {
+    "mtime": 1794987623.6253269,
+    "seen": 1794989081.9695292,
+    "ast_hash": "00d9a1f6f5d3971d3e9da647f2ad233a",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/COMMERCIAL_DEALS_LEDGER_REMEDIATION_PLAN.md": {
+    "mtime": 1794989826.4787493,
+    "seen": 1794990241.9117055,
+    "ast_hash": "674c6f9fc35978fd609a5e524b45b96d",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/COMMERCIAL_DEALS_CONCEPTUAL_REDESIGN_PLAN.md": {
+    "mtime": 1794991507.0008283,
+    "seen": 1794992236.1764493,
+    "ast_hash": "00125632316e0e9a06da834e25943799",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_cockpit_redesign/DEALS_OPPORTUNITIES_ARCHITECTURAL_REDESIGN_PLAN.md": {
+    "mtime": 1794991388.6135223,
+    "seen": 1794992236.1764493,
+    "ast_hash": "02da122d99e37d1ba36783ab57886d3a",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-18_14-30-00.md": {
+    "mtime": 1794992260.049513,
+    "seen": 1794992314.0696216,
+    "ast_hash": "030d68ffdbcbbbd63a866629538cbf24",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/EDITORIAL_LUXURY_COLOR_AND_DEPTH_PLAN.md": {
+    "mtime": 1794993428.6592147,
+    "seen": 1794994062.0868945,
+    "ast_hash": "d7576f372589eef7bb6cedffdd036a48",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-18_15-00-00.md": {
+    "mtime": 1794994100.0817218,
+    "seen": 1794994190.793734,
+    "ast_hash": "4df4e068ce6b12c43983179cfeee5e2b",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_cockpit_redesign/AUDIT_LOG.md": {
+    "mtime": 1794995337.360497,
+    "seen": 1795026500.1406884,
+    "ast_hash": "779f5a1f6c9751b9c6936fa863a186f3",
+    "semantic_hash": ""
+  },
+  "src/app/admin/components/Dashboard/ExecutiveSlaVelocityGauge.tsx": {
+    "mtime": 1795102895.2493887,
+    "seen": 1795103327.7412415,
+    "ast_hash": "dfdd611558d799f65299756b81721eb7",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/metallic_editorial_palette/EDITORIAL_METALLIC_LUXURY_PLAN.md": {
+    "mtime": 1795072479.767627,
+    "seen": 1795074189.2717993,
+    "ast_hash": "eb2e6431b46489193b6b273aa448d58a",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-19_13-55-00.md": {
+    "mtime": 1795076833.929917,
+    "seen": 1795076957.7495866,
+    "ast_hash": "c0fd7b206c77cbd5165cab90f416d645",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-19_21-15-00.md": {
+    "mtime": 1795103254.6718824,
+    "seen": 1795103327.7427454,
+    "ast_hash": "3be77f7fc46e4d6613e3cc043a7529b9",
+    "semantic_hash": ""
+  },
+  "docs/luxury_dashboard_redesign/EXECUTIVE_SLA_VELOCITY_GAUGE_REDESIGN_PLAN.md": {
+    "mtime": 1795099567.1430364,
+    "seen": 1795103327.7427454,
+    "ast_hash": "f61865dbbf43fd3f0f90fa98bd80e37f",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/dashboard_redesign_2026_11/EXECUTIVE_SLA_VELOCITY_GAUGE_ENGINEERING_AUDIT.md": {
+    "mtime": 1795099488.358178,
+    "seen": 1795103327.7427454,
+    "ast_hash": "aacd60e72d37e8fab3540dcb6e381694",
+    "semantic_hash": ""
+  },
+  "tests/unit/currency-reconciliation.test.ts": {
+    "mtime": 1795166352.2963479,
+    "seen": 1795167376.135338,
+    "ast_hash": "09de5671984a6a44f8ded0de0b48e00c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/FOLLOW_UPS_AND_LEAD_360_REDESIGN_PLAN.md": {
+    "mtime": 1795165568.9092796,
+    "seen": 1795167376.136418,
+    "ast_hash": "dbd9be92f29b181838fef8aeacbcf848",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/FORENSIC_DESIGN_AUDIT_AND_REDESIGN_SPEC.md": {
+    "mtime": 1795165236.0315032,
+    "seen": 1795167376.136418,
+    "ast_hash": "a43db6e94b1f6e545f021bc52e4c855c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/TECHNICAL_DATA_FLOW_AND_COMPONENT_ARCHITECTURE_AUDIT.md": {
+    "mtime": 1795165402.9819472,
+    "seen": 1795167376.136418,
+    "ast_hash": "8469bf946aac187571dedaf6cb04ffaa",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/followup_queue_page.png": {
+    "mtime": 1795164314.505853,
+    "seen": 1795167376.136418,
+    "ast_hash": "80d133793df595acca818df468523f5b",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/lead_detail_hero.png": {
+    "mtime": 1795164365.0113375,
+    "seen": 1795167376.136418,
+    "ast_hash": "92ac51901a6b3fbef3a7408229b66023",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/lead_detail_notes_routing.png": {
+    "mtime": 1795164376.0093234,
+    "seen": 1795167376.136418,
+    "ast_hash": "2d73642f4f834afcfb2f7788afaa6cc0",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/omnichannel_activity_ledger_slop.png": {
+    "mtime": 1795164382.878145,
+    "seen": 1795167376.136418,
+    "ast_hash": "80a4ea230c1020a852cbf9e656f8d410",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/usd_inr_mismatch_badge.png": {
+    "mtime": 1795164389.994115,
+    "seen": 1795167376.136418,
+    "ast_hash": "cb5eaadf7a42c19d00229fde91a6fbe9",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/images/valuation_card_contradiction.png": {
+    "mtime": 1795164393.491888,
+    "seen": 1795167376.136418,
+    "ast_hash": "b993afabfd57ac2e2084f0edb867fdfb",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-20_19-10-00.md": {
+    "mtime": 1795181862.7798102,
+    "seen": 1795376619.736247,
+    "ast_hash": "0ea94395e1c1721f4addb0a6cc4af4cc",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-22_21-45-00.md": {
+    "mtime": 1795364156.8232985,
+    "seen": 1795376619.736247,
+    "ast_hash": "50a3386b23ffefb19c417142e4315e58",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/executive_triage_and_dossier_redesign/UI_UX_RADICAL_REDESIGN_BLUEPRINT.md": {
+    "mtime": 1795178051.9899766,
+    "seen": 1795376619.736247,
+    "ast_hash": "9870ed04445a608554b90d7475041799",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/RADICAL_EDITORIAL_LIGHT_REDESIGN_PLAN.md": {
+    "mtime": 1795178034.527672,
+    "seen": 1795376619.736247,
+    "ast_hash": "2a39ba5c707f7daae432ec58c96e1c4a",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/followup_and_dossier_luxury_redesign/pr_body.md": {
+    "mtime": 1795167589.9208424,
+    "seen": 1795376619.736247,
+    "ast_hash": "348f36a7605248be33a91be2806f9a50",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_01-26-00.md": {
+    "mtime": 1795377424.4948719,
+    "seen": 1795377469.9549162,
+    "ast_hash": "7d32798bbf512b4f002679998fbd8f85",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/lead_queue_redesign/DELIVERY.md": {
+    "mtime": 1795425835.4793365,
+    "seen": 1795425849.79402,
+    "ast_hash": "0561d3b83656b0eaae7178f18bd86402",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_14-53-55.md": {
+    "mtime": 1795425835.6065333,
+    "seen": 1795425957.6549516,
+    "ast_hash": "646d531ee3f7269ea0abea4ecbf50514",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_15-06-59.md": {
+    "mtime": 1795426619.4459946,
+    "seen": 1795426720.5382855,
+    "ast_hash": "11244cef1e8f19a3bcab17ff270ecb45",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/lead_queue_redesign/DIRECTORY_AND_DOSSIER_DIAGNOSIS.md": {
+    "mtime": 1795426676.1303198,
+    "seen": 1795426720.577938,
+    "ast_hash": "884cc97bb628ddd73c9cc1ad9dedd39d",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsKanbanBoard.tsx": {
+    "mtime": 1795445784.3783627,
+    "seen": 1795445853.483499,
+    "ast_hash": "323845853b8c3aecaea6e97a421b8e12",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_15-45-00.md": {
+    "mtime": 1795428476.9026024,
+    "seen": 1795428557.2075686,
+    "ast_hash": "f327ad39427c6d813da74aa5ada1a03d",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_kanban_redesign/DELIVERY.md": {
+    "mtime": 1795428399.5012798,
+    "seen": 1795428557.2468054,
+    "ast_hash": "62fe61b2e4dcfe9a3589eb6db3aded7a",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20261123000001_restore_crm_team_directory.sql": {
+    "mtime": 1795426560.5716918,
+    "seen": 1795428623.5789459,
+    "ast_hash": "56e2af04edfa93699cd7fcf3f61cdf14",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/browser-results.json": {
+    "mtime": 1795445938.9812129,
+    "seen": 1795445972.4160273,
+    "ast_hash": "f9b5836654e7202af57dcd3122b70363",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/verify-browser.cjs": {
+    "mtime": 1795443774.2593286,
+    "seen": 1795444283.171107,
+    "ast_hash": "a97e712cf88d251cb83bafc45294daa0",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/visual-harness.cjs": {
+    "mtime": 1795444477.0944424,
+    "seen": 1795444526.22481,
+    "ast_hash": "24f6d48cfcf083237cc9a6a0a66d42de",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealActionsMenu.tsx": {
+    "mtime": 1795443649.3051536,
+    "seen": 1795444283.171107,
+    "ast_hash": "1d0faa9181720ed31b09b177423d9fe1",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealCard.tsx": {
+    "mtime": 1795445784.020085,
+    "seen": 1795445853.483499,
+    "ast_hash": "712ed60f327575332209b7c1cdc8c328",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealIcon.tsx": {
+    "mtime": 1795442627.03506,
+    "seen": 1795443614.353287,
+    "ast_hash": "970e8f60dd8f87ddee6f98c6e4e41151",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsLoading.tsx": {
+    "mtime": 1795442621.2439969,
+    "seen": 1795443614.353287,
+    "ast_hash": "9eb8e5fc7e1ff06ad4d32f58f2d63cbd",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsTable.tsx": {
+    "mtime": 1795442450.1276138,
+    "seen": 1795443614.353287,
+    "ast_hash": "23c1ee61d3156dba7227d60eacec9a74",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/DealsToolbar.tsx": {
+    "mtime": 1795442621.1557639,
+    "seen": 1795443614.353287,
+    "ast_hash": "3df6c3a85f086fc842560314af1059da",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/dealPresentation.ts": {
+    "mtime": 1795442397.0123496,
+    "seen": 1795443614.353287,
+    "ast_hash": "0440d2b0f46932d1036542ba5f556ad1",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/dealsWorkspaceModel.ts": {
+    "mtime": 1795443449.0256498,
+    "seen": 1795443614.353287,
+    "ast_hash": "7c2f9cc68b65e19a856e21debcc5afdf",
+    "semantic_hash": ""
+  },
+  "src/app/admin/(workspace)/deals/loading.tsx": {
+    "mtime": 1795442621.2523952,
+    "seen": 1795443614.353287,
+    "ast_hash": "9dc69728e697339b2ea5ce73c7b7d62c",
+    "semantic_hash": ""
+  },
+  "tests/unit/deals-board-presentation.test.ts": {
+    "mtime": 1795442490.9736135,
+    "seen": 1795443614.353287,
+    "ast_hash": "31e6311ff6bd94071277ca23a507927d",
+    "semantic_hash": ""
+  },
+  "tests/unit/deals-server-assembly.test.ts": {
+    "mtime": 1795443041.1587121,
+    "seen": 1795443614.353287,
+    "ast_hash": "1d08ba64aaa44357fbe53ae95c93d881",
+    "semantic_hash": ""
+  },
+  "tests/unit/deals-workspace-rebuild.test.ts": {
+    "mtime": 1795443547.9080284,
+    "seen": 1795443614.353287,
+    "ast_hash": "ca17b400a060411b5844fd319c856e28",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/IMPLEMENTATION_REGISTER.md": {
+    "mtime": 1795444533.1444702,
+    "seen": 1795444623.4039621,
+    "ast_hash": "a29ea3a6dbbd7f520aaa1955b4b169ee",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/INDEPENDENT_REVIEW.md": {
+    "mtime": 1795444239.060194,
+    "seen": 1795444283.1726956,
+    "ast_hash": "b54de4fee60a3bd1246e191d7038fc26",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/REDESIGN_PLAN.md": {
+    "mtime": 1795441401.733946,
+    "seen": 1795443614.353287,
+    "ast_hash": "e88838556380fd9bf28d1c9e906fc821",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/RESEARCH_AND_QA.md": {
+    "mtime": 1795445919.3605127,
+    "seen": 1795445972.418005,
+    "ast_hash": "29358d5ff62aa747f1de1cfb6a20ae62",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/board-desktop.png": {
+    "mtime": 1795445930.2412302,
+    "seen": 1795445972.418005,
+    "ast_hash": "2ed5d35681a87514bbe0345a20f704bf",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/board-mobile.png": {
+    "mtime": 1795445932.2206433,
+    "seen": 1795445972.418005,
+    "ast_hash": "c7a876076841e393d9ffc1d67d6c388a",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/empty-desktop.png": {
+    "mtime": 1795445935.213085,
+    "seen": 1795445972.418005,
+    "ast_hash": "d70ab5fcc4e61417d7a9e8ab7717c1a7",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/filters-desktop.png": {
+    "mtime": 1795445931.4796548,
+    "seen": 1795445972.418005,
+    "ast_hash": "429ec858d4580169a42f4134ee9eb35e",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/move-popover.png": {
+    "mtime": 1795445930.5321093,
+    "seen": 1795445972.418005,
+    "ast_hash": "bcba54b666eec06106da62d97c858691",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/restricted-desktop.png": {
+    "mtime": 1795445934.9977245,
+    "seen": 1795445972.418005,
+    "ast_hash": "cf7bbb97167c98327a4297740470d042",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/table-desktop.png": {
+    "mtime": 1795445931.300754,
+    "seen": 1795445972.418005,
+    "ast_hash": "05ea35173b922c97002b0a80cbce6347",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/table-mobile.png": {
+    "mtime": 1795445932.4618876,
+    "seen": 1795445972.418005,
+    "ast_hash": "f865edbe6c88a9f082f2e62799e10bca",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/screenshots/zoom-200-css.png": {
+    "mtime": 1795445938.7144463,
+    "seen": 1795445972.418005,
+    "ast_hash": "56dc318e557c8c7a847a955650f9662c",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/edge-browser-results.json": {
+    "mtime": 1795445898.0125024,
+    "seen": 1795445972.4160273,
+    "ast_hash": "89a55efdec39d8a8ab8ff259ef6774cd",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/verify-edge-browser.cjs": {
+    "mtime": 1795445889.818718,
+    "seen": 1795445972.4160273,
+    "ast_hash": "9690c7d1e759f29bfbef2a48077f6f1d",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-23_19-54-00.md": {
+    "mtime": 1795445919.3605127,
+    "seen": 1795445972.418005,
+    "ast_hash": "b5c98748b7d893e994f0fa0a988709b4",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/deals_workspace_rebuild_2026_11_23/DELIVERY.md": {
+    "mtime": 1795445919.3605127,
+    "seen": 1795445972.418005,
+    "ast_hash": "27e72503be33b8f88c05bb240d1a4832",
     "semantic_hash": ""
   },
   "package-lock.json": {

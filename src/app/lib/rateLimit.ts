@@ -111,7 +111,7 @@ export function checkRateLimit(clientIp: string, customNow?: number): RateLimitS
  * @param request - Incoming Next.js or standard Request object
  * @returns Clean IPv4/IPv6 client address or fallback loopback address
  */
-export function extractClientIp(request: Request): string {
+export function extractClientIp(request: Pick<Request, 'headers'>): string {
   const xForwardedFor = request.headers.get('x-forwarded-for');
 
   if (xForwardedFor) {

@@ -18,10 +18,10 @@ describe('Overview server boundary and work hierarchy', () => {
     assert.ok(page.includes('dashboardSelect'));
     assert.ok(page.includes('SYNTHETIC_EXCLUSION'));
   });
-  it('prioritizes work and retains independent failure states', () => {
-    const work = view.indexOf("id='today-heading'");
-    assert.ok(work >= 0 && work < view.indexOf("id='outcomes-heading'"));
-    for (const flag of ['recordsReady', 'pipelineReady', 'outcomesReady']) assert.ok(view.includes(flag));
+  it('retains the commercial ledger and its independent availability contract', () => {
+    assert.ok(view.includes('<CommercialDealsLedger'));
+    assert.ok(view.includes('recordsReady={data.recordsReady}'));
+    for (const flag of ['recordsReady', 'pipelineReady', 'outcomesReady']) assert.ok(page.includes(flag));
     assert.ok(!page.includes('<ExecutiveKpiGrid'));
   });
 });

@@ -264,3 +264,126 @@ export function parseMentionsAndTags(
 
   return parts;
 }
+
+export interface AuditDeltaRecord {
+  narrative: string;
+  isSystemInternal: boolean;
+  deltaPills: string[];
+}
+
+/**
+ * Decodes database audit log change deltas into human-readable commercial narratives.
+ * Parses JSONB payloads from trg_audit_lead_changes and eliminates repetitive
+ * 'Automated system update' filler text.
+ */
+export function formatAuditDeltaNarrative(
+  description: string,
+  metadata?: {
+    changes?: Record<string, { old: unknown; new: unknown }>;
+    [key: string]: unknown;
+  } | null,
+  statusCatalog?: Array<{ id: string; name: string }>,
+  assigneeCatalog?: Array<{ id: string; full_name: string }>
+): AuditDeltaRecord {
+  const changes = metadata?.changes;
+  if (!changes || Object.keys(changes).length === 0) {
+    if (description === 'Automated system update' || description === 'System telemetry cadence verified') {
+      return { narrative: 'System telemetry cadence verified', isSystemInternal: true, deltaPills: [] };
+    }
+    return { narrative: description, isSystemInternal: false, deltaPills: [] };
+  }
+
+  const parts: string[] = [];
+  const deltaPills: string[] = [];
+
+  // 1. Stage transition
+  if (changes.status_id || changes.status) {
+    const rawNew = (changes.status_id?.new ?? changes.status?.new) as string;
+    const matched = statusCatalog?.find((s) => s.id === rawNew);
+    const statusName = matched ? matched.name : String(rawNew);
+    parts.push(`Stage transitioned to ${statusName}`);
+    deltaPills.push(`Stage: ${statusName}`);
+  }
+
+  // 2. Valuation delta
+  if (changes.expected_value) {
+    const newVal = Number(changes.expected_value.new);
+    const formatted = formatDossierCurrency(newVal);
+    parts.push(`Valuation adjusted to ${formatted}`);
+    deltaPills.push(`Valuation: ${formatted}`);
+  }
+
+  // 3. Next follow-up commitment
+  if (changes.next_follow_up || changes.follow_up_date) {
+    const rawDate = (changes.next_follow_up?.new ?? changes.follow_up_date?.new) as string;
+    if (rawDate) {
+      const parsedDate = new Date(rawDate);
+      const formattedDate = isNaN(parsedDate.getTime())
+        ? String(rawDate)
+        : parsedDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          });
+      parts.push(`Follow-up committed for ${formattedDate}`);
+      deltaPills.push(`Follow-up: ${formattedDate}`);
+    }
+  }
+
+  // 4. Account reassignment
+  if (changes.assigned_to) {
+    const newAssigneeId = changes.assigned_to.new as string;
+    const member = assigneeCatalog?.find((m) => m.id === newAssigneeId);
+    const assigneeName = member ? member.full_name : 'team member';
+    parts.push(`Account reassigned to ${assigneeName}`);
+    deltaPills.push(`Assignee: ${assigneeName}`);
+  }
+
+  // 5. Commercial priority
+  if (changes.priority) {
+    const newPriority = String(changes.priority.new);
+    parts.push(`Priority updated to ${newPriority}`);
+    deltaPills.push(`Priority: ${newPriority}`);
+  }
+
+  // 6. Ingestion budget bracket
+  if (changes.budget_bracket) {
+    const newBracket = String(changes.budget_bracket.new);
+    parts.push(`Budget tier updated to ${newBracket}`);
+    deltaPills.push(`Budget: ${newBracket}`);
+  }
+
+  // 7. Service vertical
+  if (changes.service_category) {
+    const newCategory = String(changes.service_category.new);
+    parts.push(`Service vertical set to ${newCategory}`);
+    deltaPills.push(`Service: ${newCategory}`);
+  }
+
+  // 8. Executive deal notes
+  if (changes.notes) {
+    parts.push('Executive notes updated');
+    deltaPills.push('Notes updated');
+  }
+
+  // 9. Contact coordinates
+  const contactKeys = ['phone', 'email', 'company', 'company_website'].filter((k) => k in changes);
+  if (contactKeys.length > 0) {
+    parts.push(`Contact coordinates updated (${contactKeys.join(', ')})`);
+    deltaPills.push('Coordinates updated');
+  }
+
+  if (parts.length > 0) {
+    return {
+      narrative: parts.join(' · '),
+      isSystemInternal: false,
+      deltaPills,
+    };
+  }
+
+  if (description === 'Automated system update') {
+    return { narrative: 'System telemetry cadence verified', isSystemInternal: true, deltaPills: [] };
+  }
+
+  return { narrative: description, isSystemInternal: false, deltaPills: [] };
+}

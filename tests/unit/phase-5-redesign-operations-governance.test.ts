@@ -195,7 +195,7 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       assert.match(pageContent, /Settings unavailable/);
     });
 
-    it('shows ingestion query failures and does not claim endpoint health is monitored', () => {
+    it('keeps inquiry metrics honest when the inbox or an individual count fails', () => {
       const pageContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/ingestion/page.tsx'),
         'utf8'
@@ -204,10 +204,10 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
         path.resolve(process.cwd(), 'src/app/admin/(workspace)/ingestion/components/IngestionWorkspaceClient.tsx'),
         'utf8'
       );
-      assert.match(pageContent, /submissionsUnavailable=\{Boolean\(recentLeadsError\)\}/);
-      assert.match(pageContent, /endpointHealth: 'Unavailable'/);
-      assert.match(clientContent, /Recent leads could not be loaded/);
-      assert.match(clientContent, /Endpoint health is not measured here/);
+      assert.match(pageContent, /const listUnavailable\s*=\s*Boolean\(rowsResult\.error\) \|\| rowsResult\.data === null/);
+      assert.match(pageContent, /needsReview: needsReview\.error \? null : needsReview\.count/);
+      assert.match(clientContent, /Could not load the inbox/);
+      assert.doesNotMatch(clientContent, /Endpoint Health|Simulate Inbound Brief|Inspect JSON/);
     });
   });
 
@@ -249,7 +249,7 @@ describe('Phase 5 Redesign: Operations, Governance & Ingestion Workspaces Suite'
       );
       assert.ok(content.includes('redirect(\'/admin/login?next=%2Fadmin%2Fingestion\')'));
       assert.ok(content.includes('redirect(\'/admin/login?error=account_suspended\')'));
-      assert.ok(content.includes('hasIngestionAccess'));
+      assert.match(content, /if \(!hasTab\('ingestion'\)\)\s*redirect\('\/admin\?error=unauthorized_role_access'\)/);
     });
   });
 

@@ -110,7 +110,7 @@ describe("Phase 1 Redesign: Typography, Master Tokens & Workspace Shell Suite", 
 
     it("declares all core palette tokens in tokens.scss", () => {
       const content = fs.readFileSync(tokensScssPath, "utf8");
-      assert.ok(content.includes("--admin-canvas-bg: #f5f5f3"));
+      assert.ok(content.includes("--admin-canvas-bg: #fbfbfa"));
       assert.ok(content.includes("--admin-card-bg: #ffffff"));
       assert.ok(content.includes("--admin-text-primary: #111111"));
       assert.ok(content.includes("--admin-text-secondary: #454542"));

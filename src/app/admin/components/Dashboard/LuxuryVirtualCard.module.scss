@@ -59,42 +59,6 @@
   color: #f8fafc;
 }
 
-.toggleTrack {
-  position: relative;
-  width: 38px;
-  height: 22px;
-  padding: 2px;
-  background-color: rgba(255, 255, 255, 0.16);
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.24);
-  }
-}
-
-.toggleTrackActive {
-  background-color: #ea002a;
-  border-color: #f43f5e;
-}
-
-.toggleThumb {
-  display: block;
-  width: 16px;
-  height: 16px;
-  background-color: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  transform: translateX(0);
-}
-
-.toggleTrackActive .toggleThumb {
-  transform: translateX(16px);
-}
-
 .cardBody {
   position: relative;
   z-index: 2;
@@ -119,49 +83,14 @@
 }
 
 .balanceAmount {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-weight: 300;
+  letter-spacing: -0.035em;
   color: #ffffff;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   line-height: 1.1;
-}
-
-.liveIndicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 7px;
-  background: rgba(34, 197, 94, 0.16);
-  border: 1px solid rgba(34, 197, 94, 0.35);
-  border-radius: 9999px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: #4ade80;
-}
-
-.liveBeacon {
-  width: 5px;
-  height: 5px;
-  background-color: #4ade80;
-  border-radius: 50%;
-  animation: pulseBeacon 2s infinite ease-in-out;
-}
-
-@keyframes pulseBeacon {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0.9);
-    opacity: 0.8;
-  }
 }
 
 .cardFooter {

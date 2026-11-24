@@ -336,33 +336,46 @@ export async function getLeadDetails(
       };
     }
 
-    const { data: rawActivities } = await supabase
-      .from('lead_activities')
-      .select(`
-        id,
-        lead_id,
-        actor_id,
-        activity_type,
-        description,
-        metadata,
-        created_at,
-        profiles:profiles!lead_activities_actor_id_fkey(id, full_name, role, avatar_url)
-      `)
-      .eq('lead_id', leadId)
-      .order('created_at', { ascending: false });
+    // These reads share the authorized lead but do not depend on each other.
+    const [activitiesResult, statusesResult, staffResult] = await Promise.all([
+      supabase
+        .from('lead_activities')
+        .select(`
+          id,
+          lead_id,
+          actor_id,
+          activity_type,
+          description,
+          metadata,
+          created_at,
+          profiles:profiles!lead_activities_actor_id_fkey(id, full_name, role, avatar_url)
+        `)
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false }),
 
-    const { data: rawStatuses } = await supabase
-      .from('funnel_statuses')
-      .select('id, name, bucket, color_code, sort_order, is_active, created_at')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+      supabase
+        .from('funnel_statuses')
+        .select('id, name, bucket, color_code, sort_order, is_active, created_at')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true }),
 
-    const { data: rawStaff } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, role')
-      .eq('status', 'active')
-      .in('role', ['admin', 'sales_manager', 'sales_executive'])
-      .order('full_name', { ascending: true });
+      supabase
+        .from('profiles')
+        .select('id, full_name, email, role')
+        .eq('status', 'active')
+        .in('role', ['admin', 'sales_manager', 'sales_executive'])
+        .order('full_name', { ascending: true }),
+    ]);
+    const { data: rawActivities } = activitiesResult;
+    const { data: rawStatuses } = statusesResult;
+    const { data: rawStaff } = staffResult;
+    for (const [source, result] of [
+      ['activities', activitiesResult],
+      ['stages', statusesResult],
+      ['staff', staffResult],
+    ] as const) {
+      if (result.error) console.error('[lead-details] Lookup failed', { source, code: result.error.code });
+    }
 
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
       const actProfile = act.profiles as {

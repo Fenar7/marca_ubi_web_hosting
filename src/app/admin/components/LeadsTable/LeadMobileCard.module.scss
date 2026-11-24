@@ -6,16 +6,16 @@
 .cardWrapper {
   background: #ffffff;
   border: 1px solid var(--admin-border-default, #e2e5ea);
-  border-radius: 4px;
+  border-radius: 12px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   box-shadow: none;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
+
   position: relative;
-  overflow: hidden;
+  min-width: 0;
 
   &:hover {
     border-color: var(--admin-border-strong, #1f242f);
@@ -65,13 +65,13 @@
 }
 
 .timeTag {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.68rem;
   color: var(--admin-text-secondary, #525965);
 }
 
 .dealValue {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--admin-text-primary, #1f242f);
@@ -88,7 +88,7 @@
 }
 
 .clientName {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-circular), sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--admin-text-primary, #1f242f);
@@ -96,7 +96,7 @@
 }
 
 .companyTitle {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.78rem;
   color: var(--admin-text-secondary, #525965);
 }
@@ -110,7 +110,7 @@
 }
 
 .serviceTag {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.68rem;
   color: var(--admin-text-secondary, #525965);
   background: var(--admin-surface-muted, #f0f2f5);
@@ -120,7 +120,7 @@
 }
 
 .sourceTag {
-  font-family: var(--font-admin-sans, sans-serif);
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.68rem;
   color: var(--admin-text-primary, #1f242f);
   background: var(--admin-surface-muted, #f0f2f5);
@@ -145,6 +145,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  flex: 1 1 100%;
+  overflow-wrap: anywhere;
   font-size: 0.76rem;
   color: var(--admin-text-secondary, #525965);
 }
@@ -173,8 +175,8 @@
 .actionBtn {
   min-height: 44px;
   padding: 0 0.75rem;
-  border-radius: var(--admin-radius-pill, 9999px);
-  font-family: var(--font-admin-btn, sans-serif);
+  border-radius: 8px;
+  font-family: var(--font-graphik), sans-serif;
   font-size: 0.78rem;
   font-weight: 600;
   display: inline-flex;
@@ -231,15 +233,36 @@
 }
 
 .drawerBtn {
-  background: var(--admin-accent-lemon, #eefb87);
-  border-color: var(--admin-border-strong, #1f242f);
-  color: var(--admin-accent-lemon-ink, #1f242f);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  background: #20242c;
+  border-color: #20242c;
+  color: #fff;
+  font-weight: 500;
   padding: 0 1rem;
 
   &:hover {
-    background: var(--admin-accent-lemon-hover, #e4f375);
+    background: #353d49;
   }
+}
+
+.clientSection {
+  overflow-wrap: anywhere;
+}
+
+.dealValue {
+  font-family: var(--font-helvetica-neue), var(--font-circular), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 300;
+  white-space: nowrap;
+}
+
+.repAvatar {
+  flex-shrink: 0;
+  background: #edf1f7;
+  color: #38465c;
+  border-radius: 7px;
+}
+
+@media (max-width: 360px) {
+  .cardHeader { align-items: flex-start; flex-wrap: wrap; }
+  .actionBar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

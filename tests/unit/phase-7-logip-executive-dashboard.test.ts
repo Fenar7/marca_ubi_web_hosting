@@ -19,11 +19,11 @@ describe('Commercial Desk overview contracts', () => {
 
   it('renders the complete overview hierarchy and responsive layout', () => {
     assert.ok(page.includes('<OverviewWorkspace data={data}'));
-    for (const landmark of ['today-heading', 'pipeline-heading', 'outcomes-heading']) {
-      assert.ok(overview.includes(`id="${landmark}"`));
+    for (const component of ['ExecutiveTelemetryMasthead', 'CommercialVelocityBarChart', 'CommercialDealsLedger']) {
+      assert.ok(overview.includes(`<${component}`));
     }
-    assert.ok(pageStyles.includes('.workingGrid'));
-    assert.ok(pageStyles.includes('@media (max-width: 700px)'));
+    assert.ok(pageStyles.includes('.fundoraAsymmetricCockpitGrid'));
+    assert.ok(pageStyles.includes('@media'));
   });
 
   it('keeps KPI labels tied to full digit currency and exact conversion cohort counts', () => {

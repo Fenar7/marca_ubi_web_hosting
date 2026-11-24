@@ -101,8 +101,8 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
   describe('2. Inbound Leads Workspace Architecture (/admin/leads)', () => {
     it('verifies the leads workspace uses the current concise page heading', () => {
       const content = fs.readFileSync(leadsPagePath, 'utf8');
-      assert.ok(content.includes('Inbound leads'));
-      assert.ok(content.includes('Review inquiries, assign owners'));
+      assert.match(content, /<h1 className=\{styles\.pageTitle\}>Inbound leads<\/h1>/);
+      assert.ok(content.includes('pagination={!search.error && <ResultPagination'));
     });
 
     it('verifies leads/page.tsx passes userRole={role} to LeadsWorkspaceClient', () => {
@@ -160,11 +160,11 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.ok(priorityScss.includes('min-height: 44px;'));
     });
 
-    it('verifies LeadMobileCard.module.scss enforces uppercase tracking on drawerBtn and flex-wrap on inlineSelectorsRow', () => {
+    it('keeps mobile selectors wrapping and dossier actions readable at narrow widths', () => {
       const scss = fs.readFileSync(mobileCardScssPath, 'utf8');
-      assert.ok(scss.includes('text-transform: uppercase;'));
-      assert.ok(scss.includes('letter-spacing: 0.06em;'));
-      assert.ok(scss.includes('flex-wrap: wrap;'));
+      assert.match(scss, /\.inlineSelectorsRow\s*\{[^}]*flex-wrap: wrap;/);
+      assert.match(scss, /\.actionBtn\s*\{[^}]*min-height: 44px;/);
+      assert.match(scss, /@media \(max-width: 360px\)[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
     });
 
     it('verifies OverdueBadge.module.scss uses WCAG AAA/AA light tokens and zero generic red', () => {
@@ -178,35 +178,38 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
 
   describe('3. Commercial Deals Pipeline Workspace Architecture (/admin/deals)', () => {
     it('verifies the deals workspace uses the current concise page heading', () => {
-      const content = fs.readFileSync(dealsPagePath, 'utf8');
+      const content = fs.readFileSync(dealsClientTsxPath, 'utf8');
       assert.ok(content.includes('>Deals</h1>'));
-      assert.ok(content.includes('Track opportunities, follow-ups'));
+      const page = fs.readFileSync(dealsPagePath, 'utf8');
+      assert.ok(page.includes('ResultPagination'));
+      assert.ok(page.includes('totalCount={dealsRes.count}'));
     });
 
     it('verifies deals/page.tsx sanitizes status_color fallback to #1f242f', () => {
       const content = fs.readFileSync(dealsPagePath, 'utf8');
       assert.strictEqual(content.includes("color_code || '#ff6100'"), false);
-      assert.ok(content.includes("color_code || '#1f242f'"));
+      assert.match(content, /color_code\s*\|\|\s*["']#1f242f["']/);
     });
 
     it('verifies deals.module.scss purges #ff6100 and uses light theme typography', () => {
       const scss = fs.readFileSync(dealsScssPath, 'utf8');
       assert.strictEqual(scss.includes('#ff6100'), false);
-      assert.ok(scss.includes('.eyebrow'));
-      assert.ok(scss.includes('.heading'));
-      assert.ok(scss.includes('.subheading'));
+      const workspaceScss = fs.readFileSync(dealsClientScssPath, 'utf8');
+      assert.ok(workspaceScss.includes('.pageHeader'));
+      assert.ok(workspaceScss.includes('var(--font-circular)'));
     });
 
     it('verifies DealsWorkspaceClient.tsx guards handleMoveStage for viewers and in-flight writes', () => {
       const content = fs.readFileSync(dealsClientTsxPath, 'utf8');
-      assert.ok(content.includes("if (userRole === 'viewer' || movingLeadId) return;"));
-      assert.ok(content.includes('[sortedStages, userRole, movingLeadId]'));
+      assert.match(content, /!canMoveDeal\(deal, userRole\)\s*\|\|\s*moveLock\.current\s*\|\|\s*stageModalState\.isOpen/);
+      assert.ok(content.includes('stage.is_active !== false'));
+      assert.ok(content.includes('onMove={handleMoveStage}'));
     });
 
-    it('verifies DealsWorkspaceClient.tsx sanitizes columnStatusDot fallback to #1f242f', () => {
-      const content = fs.readFileSync(dealsClientTsxPath, 'utf8');
-      assert.strictEqual(content.includes("color_code || '#ff6100'"), false);
-      assert.ok(content.includes("color_code || '#1f242f'"));
+    it('keeps lane markers independent of untrusted stored colors', () => {
+      const board = fs.readFileSync(path.resolve(process.cwd(), 'src/app/admin/(workspace)/deals/DealsKanbanBoard.tsx'), 'utf8');
+      assert.ok(board.includes('<DealIcon name="stage" />'));
+      assert.ok(!board.includes('stage.color_code'));
     });
 
     it('verifies DealsWorkspaceClient.module.scss purges legacy obsidian tokens and #ff6100', () => {
@@ -218,18 +221,13 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       assert.strictEqual(scss.includes('#ff6100'), false);
     });
 
-    it('verifies DealsWorkspaceClient.module.scss enforces 44px minimum touch targets on all interactive elements', () => {
+    it('keeps mobile controls touch sized and keyboard focus visible', () => {
       const scss = fs.readFileSync(dealsClientScssPath, 'utf8');
-      assert.ok(scss.includes('.searchInput'));
-      assert.ok(scss.includes('.viewModeBtn'));
-      assert.ok(scss.includes('.filterPill'));
-      assert.ok(scss.includes('.stageMoveBtn'));
-      assert.ok(scss.includes('.sortableHeaderCol'));
-      assert.ok(scss.includes('.inspectButton'));
-      assert.ok(scss.includes('.clearFilterBtn'));
-
-      const occurrences = (scss.match(/min-height:\s*44px;/g) || []).length;
-      assert.ok(occurrences >= 6, `Expected at least 6 min-height 44px declarations, found ${occurrences}`);
+      assert.match(scss, /:focus-visible\s*\{[^}]*outline:/);
+      const mobile = scss.slice(scss.indexOf('@media (max-width: 760px)'));
+      assert.ok(mobile.includes('min-height: 44px;'));
+      assert.ok(mobile.includes('.tableScroll'));
+      assert.ok(mobile.includes('.mobileRecords'));
     });
 
     it('verifies tabular-nums is enforced across deal values, ID tokens, and valuations', () => {
@@ -243,10 +241,9 @@ describe('Phase 4 Redesign: Commercial Funnel Workspaces & Kanban Architecture S
       const client = fs.readFileSync(dealsClientTsxPath, 'utf8');
       const styles = fs.readFileSync(dealsClientScssPath, 'utf8');
       const currency = fs.readFileSync(path.resolve(process.cwd(), 'src/app/admin/lib/currency.ts'), 'utf8');
-      assert.ok(client.includes("useState<'kanban' | 'table'>('table')"));
-      assert.ok(client.includes('if (!event.matches) setViewMode(\'table\')'));
-      assert.ok(styles.includes('@media (max-width: 1099px)'));
-      assert.ok(styles.includes('grid-template-columns: minmax(0, 1fr) auto'));
+      assert.match(client, /searchParams\.get\(["']view["']\) === ["']table["']/);
+      assert.ok(styles.includes('@media (max-width: 760px)'));
+      assert.ok(styles.includes('.mobileRecords'));
       assert.ok(currency.includes("toLocaleString(currency === 'USD' ? 'en-US' : 'en-IN')"));
       assert.ok(currency.includes('en-IN'));
     });

@@ -13,7 +13,8 @@ export type StudioAlertAction =
   | 'NEW_LEAD'
   | 'MERGE_INQUIRY'
   | 'REACTIVATE_LEAD'
-  | 'CREATE_NEW_REENGAGEMENT';
+  | 'CREATE_NEW_REENGAGEMENT'
+  | 'NEEDS_REVIEW';
 
 export interface StudioLeadAlertPayload {
   leadId: string;
@@ -77,8 +78,8 @@ export async function dispatchStudioLeadAlert(
   };
 
   if (!webhookUrl) {
-    // Structured console audit dispatch when webhook URL is not configured
-    console.log('[STUDIO_ALERT_DISPATCH]', JSON.stringify(alertBody, null, 2));
+    // Without a destination, keep contact details and brief text out of platform logs.
+    console.info('[STUDIO_ALERT_DISPATCH]', { reference: payload.leadId, action: payload.action });
     return {
       success: true,
       delivered: false,

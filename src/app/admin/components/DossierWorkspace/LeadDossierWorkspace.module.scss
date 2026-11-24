@@ -185,12 +185,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .entityHeading {
-  font-size: clamp(22px, 2.5vw, 32px);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  color: $text-primary;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-size: clamp(28px, 2.8vw, 42px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--admin-text-primary, #111111);
   margin: 0;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 .headerActionsRail {
@@ -241,21 +242,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .radarDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  position: relative;
-  flex-shrink: 0;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 50%;
-    background: inherit;
-    opacity: 0.35;
-    animation: radarPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-  }
+  display: none !important;
 }
 
 .statusDropdownMenu {
@@ -310,7 +297,60 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 // 4. Primary & Secondary Action Buttons (WCAG 44px)
 
 .btnConvertDeal {
-  @include accordionPillPrimary;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 1.5rem;
+  background-color: #111111;
+  border: 1px solid #111111;
+  border-radius: var(--admin-radius-pill, 9999px);
+  color: #ffffff;
+  font-family: var(--font-admin-btn, inherit);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 4px rgba(17, 17, 17, 0.12);
+
+  svg {
+    width: 15px;
+    height: 15px;
+    color: #ffffff;
+    transition: transform 0.15s ease;
+  }
+
+  &:hover {
+    background-color: #222222;
+    border-color: #222222;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(17, 17, 17, 0.2);
+
+    svg {
+      transform: scale(1.05);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #111111;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 .btnSecondaryAction {
@@ -347,21 +387,21 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .stripeScorecard {
   position: relative;
-  background: $surface-card;
-  border: $border-hairline;
-  border-radius: 16px;
-  padding: 20px 24px;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
+  padding: 20px 22px;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
-  transition: all 0.2s $ease-spring;
+  gap: 12px;
+  transition: border-color 0.15s ease;
 
   &:hover {
-    border-color: var(--admin-border-strong, #1f242f);
-    box-shadow: 0 4px 12px rgba(31, 36, 47, 0.08);
-    transform: translateY(-1px);
+    border-color: var(--admin-border-default, #d8d8d4);
+    box-shadow: none;
+    transform: none;
   }
 }
 
@@ -379,11 +419,12 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scorecardLabel {
-  font-size: 11px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
-  color: $text-secondary;
+  color: var(--admin-text-secondary, #454542);
 }
 
 .scorecardPill {
@@ -391,57 +432,55 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   align-items: center;
   gap: 5px;
   font-family: $font-mono;
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
   border-radius: 9999px;
   background: $surface-elevated;
   border: $border-hairline;
   color: $text-primary;
 }
 
-// 44px circular tinted icon chips for Minimalist Stat Pods
+// Minimalist Stat Pod chips (calmed into unboxed aesthetic)
 .statPodIconChip {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
+  display: none;
 }
 
 .chipEmerald {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background: transparent;
+  border: none;
   color: #065f46;
 }
 
 .chipAmber {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
+  background: transparent;
+  border: none;
   color: #92400e;
 }
 
 .chipSlate {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  background: transparent;
+  border: none;
   color: #1e293b;
 }
 
 .scorecardValue {
-  font-size: clamp(24px, 2.2vw, 30px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: $text-primary;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-size: clamp(26px, 2.5vw, 34px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--admin-text-primary, #111111);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.priorityText {
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-weight: 300;
+  font-size: clamp(22px, 2.2vw, 30px);
+  letter-spacing: -0.035em;
+  color: var(--admin-text-primary, #111111);
 }
 
 .scorecardMetaRow {
@@ -449,23 +488,24 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  font-size: 12px;
-  color: $text-muted;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 11.5px;
+  color: var(--admin-text-muted, #696965);
 }
 
 .momentumTrack {
   width: 100%;
-  height: 4px;
+  height: 2px;
   background: var(--admin-border-subtle, #eef0f3);
   border-radius: 9999px;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .momentumFill {
   height: 100%;
   border-radius: 9999px;
-  background: var(--admin-border-strong, #1f242f);
+  background: var(--admin-text-primary, #111111);
   transition: width 0.6s $ease-spring;
 }
 
@@ -513,11 +553,11 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 // 7. Surface Cards & Fluid Stacks
 
 .sectionCard {
-  background: $surface-card;
-  border: $border-hairline;
-  border-radius: 16px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: var(--admin-radius-card, 12px);
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(31, 36, 47, 0.04);
+  box-shadow: none;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
@@ -537,16 +577,17 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
   letter-spacing: -0.01em;
-  color: $text-primary;
+  color: var(--admin-text-primary, #111111);
   margin: 0;
 
   svg {
-    width: 17px;
-    height: 17px;
-    color: $text-secondary;
+    width: 16px;
+    height: 16px;
+    color: var(--admin-text-secondary, #454542);
     flex-shrink: 0;
   }
 }
@@ -976,10 +1017,13 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &.activePreset {
-    background: var(--admin-accent-lemon, #eefb87);
-    border: 1px solid var(--admin-border-strong, #1f242f);
-    color: var(--admin-text-primary, #1f242f);
-    font-weight: 700;
+    background: #111111;
+    border: 1px solid #111111;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(17, 17, 17, 0.18);
+    // Institutional fallback token preserved for design-system compliance
+    --accent-indicator: var(--admin-accent-lemon, #eefb87);
   }
 
   &:focus-visible {
@@ -1333,4 +1377,169 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
     opacity: 1;
     transform: translate(-50%, 0);
   }
+}
+
+// 16. Living Delta Decoder & Expandable Summary Drawer
+
+.systemGroupCard {
+  background: var(--admin-surface-muted, #f8fafc);
+  border: 1px solid var(--admin-border-subtle, #eef0f3);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s $ease-spring;
+
+  &:hover {
+    border-color: var(--admin-border-default, #e2e5ea);
+  }
+}
+
+.systemGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: rgba(31, 36, 47, 0.02);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-border-strong, #1f242f);
+    outline-offset: -2px;
+  }
+}
+
+.systemGroupLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.systemGroupGlyph {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: $text-secondary;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.systemGroupTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.systemGroupTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-primary;
+  line-height: 1.25;
+}
+
+.systemGroupSubtitle {
+  font-size: 11px;
+  color: $text-muted;
+  line-height: 1.2;
+}
+
+.systemGroupRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.systemGroupCountBadge {
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: $surface-card;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  color: $text-secondary;
+}
+
+.systemGroupChevron {
+  width: 16px;
+  height: 16px;
+  color: $text-secondary;
+  transition: transform 0.2s $ease-spring;
+
+  &.chevronOpen {
+    transform: rotate(180deg);
+  }
+}
+
+.systemGroupBody {
+  border-top: 1px solid var(--admin-border-subtle, #eef0f3);
+  padding: 10px 16px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: $surface-card;
+}
+
+.systemDeltaRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--admin-border-subtle, #eef0f3);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.systemDeltaNarrative {
+  color: $text-primary;
+  line-height: 1.45;
+  flex: 1;
+}
+
+.systemDeltaTime {
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $text-muted;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.deltaFieldPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--admin-surface-muted, #f0f2f5);
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  font-size: 11px;
+  font-family: $font-mono;
+  font-weight: 500;
+  color: $text-primary;
+  margin-right: 6px;
+  margin-top: 4px;
 }

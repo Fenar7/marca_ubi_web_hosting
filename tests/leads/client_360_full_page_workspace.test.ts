@@ -67,7 +67,7 @@ describe('Phase 8.2: Client 360° Full-Page Dedicated Workspace Architecture', (
       const content = fs.readFileSync(pagePath, 'utf-8');
 
       assert.ok(content.includes('targetDealId'), 'must resolve targetDealId from searchParams');
-      assert.ok(content.includes('redirect(`/admin/deals/${targetDealId}`)'), 'must redirect to /admin/deals/${targetDealId}');
+      assert.ok(content.includes('redirect(`/admin/deals/${encodeURIComponent(targetDealId)}`)'), 'must redirect with the deal ID as a single path segment');
     });
 
     it('verifies AdminWorkspaceShell routes open-lead-drawer events via router.push', () => {
@@ -95,11 +95,12 @@ describe('Phase 8.2: Client 360° Full-Page Dedicated Workspace Architecture', (
       assert.ok(content.includes("router.push(`/admin/leads/${lead.id}`)"), 'handleCardClick must execute router.push');
     });
 
-    it('verifies DealsWorkspaceClient routes to /admin/deals/${dealId} on deal inspection', () => {
-      const dealsPath = path.join(root, 'src/app/admin/(workspace)/deals/DealsWorkspaceClient.tsx');
+    it('keeps deal inspection as an encoded dossier link in both table layouts', () => {
+      const dealsPath = path.join(root, 'src/app/admin/(workspace)/deals/DealsTable.tsx');
       const content = fs.readFileSync(dealsPath, 'utf-8');
-
-      assert.ok(content.includes("router.push(`/admin/deals/${dealId}`)"), 'handleInspectDeal must execute router.push');
+      const links = content.match(/href=\{`\/admin\/deals\/\$\{encodeURIComponent\(deal\.id\)\}`\}/g) ?? [];
+      assert.equal(links.length, 2, 'Identity and action links must preserve safe dossier navigation');
+      assert.ok(content.includes('styles.mobileRecords'));
     });
 
     it('verifies CurrentDealsTable routes to /admin/deals/${deal.id}', () => {

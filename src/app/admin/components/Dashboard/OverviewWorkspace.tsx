@@ -25,10 +25,12 @@ import {
   type TimeframeSlug,
 } from "@/app/admin/lib/timeframeUtils";
 import { ExecutiveTelemetryMasthead } from "./ExecutiveTelemetryMasthead";
+import { EarningOverviewSplineCard } from "./EarningOverviewSplineCard";
+import { SpendingOverviewBarCard } from "./SpendingOverviewBarCard";
 import { CommercialVelocityBarChart } from "./CommercialVelocityBarChart";
-import { PipelineDonutChart } from "./PipelineDonutChart";
-import { LuxuryQuickDispatchPod } from "./LuxuryQuickDispatchPod";
-import { LuxurySlaFeedCard } from "./LuxurySlaFeedCard";
+import { RecentTransactionsTable } from "./RecentTransactionsTable";
+import { UpcomingSlaCard } from "./UpcomingSlaCard";
+import { ExecutiveSlaVelocityGauge } from "./ExecutiveSlaVelocityGauge";
 import { CommercialDealsLedger } from "./CommercialDealsLedger";
 import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
 import styles from "./OverviewWorkspace.module.scss";
@@ -181,13 +183,34 @@ export function OverviewWorkspace({
         onExportSummary={exportSummary}
       />
 
-      {/* Tier 2: Visual Intelligence Cockpit (68% Cash Flow Bar Chart + 32% Category Breakdown) */}
+      {/* Tier 2: Row 1 - Equal 50% / 50% Split (Earning Area Spline + Spending Continuous Gradient Bar) */}
       <section
-        className={styles.visualCockpitGrid}
-        aria-label="Commercial cash flow bar chart and pipeline category breakdown"
+        className={`${styles.visualCockpitGrid} ${styles.fundoraRowOneGrid}`}
+        aria-label="Earning overview area spline chart and spending breakdown continuous gradient bar"
       >
-        {/* Left Column (68%): Finexy Dual-Bar Chart */}
-        <div className={styles.chartColumn}>
+        <div className={styles.rowOneColumn}>
+          <EarningOverviewSplineCard
+            totalValue={data.pipelineValue}
+            financials={data.financials}
+          />
+        </div>
+        <div className={styles.rowOneColumn}>
+          <SpendingOverviewBarCard
+            totalValue={data.pipelineValue}
+            dealCount={data.pipelineCount}
+            categories={data.categories}
+            financials={data.financials}
+          />
+        </div>
+      </section>
+
+      {/* Tier 3: Row 2 & 3 - Asymmetric 65% / 35% Cockpit Grid */}
+      <section
+        className={styles.fundoraAsymmetricCockpitGrid}
+        aria-label="Commercial cash flow, recent transactions ledger, and upcoming milestone commitments"
+      >
+        {/* Left 65%: Cash Flow Bar Chart Stacked with Recent Transactions */}
+        <div className={styles.cockpitLeftStack}>
           <CommercialVelocityBarChart
             chart={data.chart}
             totalIntake={data.pipelineValue}
@@ -197,36 +220,24 @@ export function OverviewWorkspace({
             financials={data.financials}
             onTimeframeChange={handleTimeframeChange}
           />
-        </div>
-
-        {/* Right Column (32%): Finexy Donut Gauge */}
-        <div className={styles.donutColumn}>
-          <PipelineDonutChart
-            categories={data.categories}
+          <RecentTransactionsTable
             records={data.records}
-            totalValue={data.pipelineValue}
             financials={data.financials}
+            onOpenRecord={handleOpenDossier}
           />
         </div>
-      </section>
 
-      {/* Tier 3: Reference Action & Urgency Widgets (Quick Dispatch Pod + Upcoming SLA Milestones) */}
-      <section
-        className={styles.actionWidgetsGrid}
-        aria-label="Quick commercial stage dispatch and upcoming client SLA milestones"
-      >
-        <div className={styles.widgetColumn}>
-          <LuxuryQuickDispatchPod
+        {/* Right 36%: 2-Card Stack (Upcoming Milestones + Executive SLA Velocity Gauge) */}
+        <div className={styles.cockpitRightColumn}>
+          <UpcomingSlaCard
             records={data.records}
-            onAdvanceStage={handleAdvanceStage}
             financials={data.financials}
+            onOpenRecord={handleOpenDossier}
           />
-        </div>
-        <div className={styles.widgetColumn}>
-          <LuxurySlaFeedCard
+          <ExecutiveSlaVelocityGauge
             records={data.records}
-            onOpenDossier={handleOpenDossier}
             financials={data.financials}
+            onOpenRecord={handleOpenDossier}
           />
         </div>
       </section>
@@ -240,6 +251,7 @@ export function OverviewWorkspace({
           records={data.records}
           recordsReady={data.recordsReady}
           financials={data.financials}
+          stages={data.stages}
           onAdvanceStage={handleAdvanceStage}
           onOpenDossier={handleOpenDossier}
         />
