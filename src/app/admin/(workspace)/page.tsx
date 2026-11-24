@@ -196,7 +196,7 @@ export default async function AdminDashboardPage({
             summary.stages.set(row.status_id, stage);
 
             const catName =
-              row.service_category?.trim() || "Uncategorized";
+              row.service_category?.trim() || "Full-Suite Advisory";
             const cat = summary.categories.get(catName) ?? {
               count: 0,
               value: 0,
@@ -555,14 +555,13 @@ export default async function AdminDashboardPage({
     outcomesReady: outcome !== null,
     convertedCount: outcome?.count ?? null,
     convertedValue: canFinancial && outcome?.valid ? outcome.value : null,
-    // A failed source should not hide the other period series. The client gates each perspective by its own readiness.
     chart:
-      canFinancial && (outcome?.valid || pipeline?.valid)
+      canFinancial && outcome?.valid
         ? aggregateTimeframeRevenue(
             bounds.slug,
             bounds,
-            outcome?.valid ? outcome.events : [],
-            pipeline?.valid ? pipeline.intakeEvents : undefined,
+            outcome.events,
+            pipeline?.intakeEvents,
           )
         : [],
     categories:

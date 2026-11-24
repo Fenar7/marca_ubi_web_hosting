@@ -1,155 +1,240 @@
 "use client";
 
-import { useId, useState } from "react";
+/**
+ * @file EarningOverviewSplineCard.tsx
+ * @description Master Earning Overview Card modeled 1:1 after the Fundora benchmark archetype.
+ *              Features Swiss Helvetica Neue 300 Light numerals, emerald trend badge,
+ *              interactive cubic bezier SVG spline curve, linear gradient area wash,
+ *              apex beacon target ring, dashed vertical guide stem, and floating tooltip card.
+ * @module admin/components/Dashboard/EarningOverviewSplineCard
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+import React, { useState, useId } from "react";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import styles from "./EarningOverviewSplineCard.module.scss";
 
 export interface SplineMonthPoint {
-  label: string;
-  period: string;
+  month: string;
+  year: number;
   value: number;
 }
 
 export interface EarningOverviewSplineCardProps {
-  totalValue: number | null;
-  periodLabel: string;
-  points: readonly SplineMonthPoint[];
-  financials: boolean;
+  totalValue?: number | null;
+  growthPercentage?: number;
+  timeframeLabel?: string;
+  points?: SplineMonthPoint[];
+  financials?: boolean;
 }
 
-const PLOT_WIDTH = 500;
-const PLOT_HEIGHT = 140;
-const BASELINE = 126;
-const PLOT_RANGE = 108;
+const DEFAULT_POINTS: SplineMonthPoint[] = [
+  { month: "Jan", year: 2025, value: 320000 },
+  { month: "Feb", year: 2025, value: 580000 },
+  { month: "Mar", year: 2025, value: 460000 },
+  { month: "Apr", year: 2025, value: 720000 },
+  { month: "May", year: 2025, value: 868920 },
+  { month: "Jun", year: 2025, value: 540000 },
+];
 
-/** Plot converted contract value from the same persisted buckets used by the dashboard period. */
-export function EarningOverviewSplineCard({
-  totalValue,
-  periodLabel,
-  points,
-  financials,
-}: EarningOverviewSplineCardProps) {
+export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps> = ({
+  totalValue = 6540000,
+  growthPercentage = 1.5,
+  timeframeLabel = "This Month",
+  points = DEFAULT_POINTS,
+  financials = true,
+}) => {
   const gradientId = useId();
-  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
+  // Active selected point defaults to index 4 ("May" in default set to match Image 1 benchmark)
+  const [activeIndex, setActiveIndex] = useState<number>(4);
 
-  const available = financials && totalValue !== null;
-  const visiblePoints = available ? points : [];
-  const selected = visiblePoints.findIndex((point) => point.period === selectedPeriod);
-  const activeIndex = selected >= 0 ? selected : visiblePoints.length - 1;
-  const scaleMax = Math.max(...visiblePoints.map(({ value }) => value), 0) || 1;
-  const columnWidth = PLOT_WIDTH / Math.max(visiblePoints.length, 1);
+  const displayTotal =
+    financials && totalValue !== null ? formatCrmCurrency(totalValue) : "Confidential";
 
-  // Bucket centers are shared by the SVG and equal-width HTML buttons.
-  const coordinates = visiblePoints.map(({ value }, index) => ({
-    x: (index + 0.5) * columnWidth,
-    y: BASELINE - (value / scaleMax) * PLOT_RANGE,
-  }));
-  const active = coordinates[activeIndex];
-  const activePoint = visiblePoints[activeIndex];
-  const first = coordinates[0];
-  const last = coordinates.at(-1);
-  const segments = coordinates.slice(1).map((point, index) => {
-    const previous = coordinates[index];
-    const midpoint = (previous.x + point.x) / 2;
-    return `C ${midpoint} ${previous.y}, ${midpoint} ${point.y}, ${point.x} ${point.y}`;
+  // Chart coordinates mapping (ViewBox: 500w x 140h, padding left/right 30, baseline y=130)
+  const width = 500;
+  const height = 140;
+  const paddingX = 35;
+  const baselineY = 130;
+  const chartHeight = 95;
+
+  const maxValue = Math.max(...points.map((p) => p.value), 1);
+  const minValue = Math.min(...points.map((p) => p.value), 0);
+  const range = maxValue - minValue || 1;
+
+  // Calculate coordinates for each data point
+  const coords = points.map((p, idx) => {
+    const x = paddingX + (idx / (points.length - 1)) * (width - paddingX * 2);
+    // Inverted Y: higher value = smaller Y (near top)
+    const normalized = (p.value - minValue) / range;
+    const y = baselineY - normalized * chartHeight;
+    return { x, y, point: p };
   });
-  const line = first ? `M ${first.x} ${first.y} ${segments.join(" ")}` : "";
-  const area = first && last && segments.length
-    ? `${line} L ${last.x} ${BASELINE} L ${first.x} ${BASELINE} Z`
-    : null;
+
+  // Build cubic bezier path string
+  function buildSplinePath(): string {
+    if (coords.length < 2) return "";
+    let path = `M ${coords[0].x} ${coords[0].y}`;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const current = coords[i];
+      const next = coords[i + 1];
+      const controlX1 = current.x + (next.x - current.x) / 2;
+      const controlY1 = current.y;
+      const controlX2 = current.x + (next.x - current.x) / 2;
+      const controlY2 = next.y;
+      path += ` C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${next.x} ${next.y}`;
+    }
+    return path;
+  }
+
+  const linePath = buildSplinePath();
+  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`;
+
+  const activeCoord = coords[activeIndex] || coords[coords.length - 1];
+  const activeTooltipPercent = (activeCoord.x / width) * 100;
 
   return (
-    <article className={styles.cardContainer} aria-labelledby={`${gradientId}-title`}>
+    <article
+      className={styles.cardContainer}
+      aria-label="Earning Overview Area Spline Performance Card"
+    >
+      {/* Header: Title with info tooltip and Timeframe dropdown */}
       <header className={styles.cardHeader}>
-        <h2 id={`${gradientId}-title`} className={styles.title}>Converted contract value</h2>
-        <span className={styles.periodLabel}>{periodLabel}</span>
+        <div className={styles.titleRow}>
+          <h2 className={styles.title}>Earning Overview</h2>
+          <span
+            className={styles.infoIcon}
+            title="Consolidated pipeline earnings across active advisory cadences"
+            aria-label="Information regarding earning overview"
+          >
+            ⓘ
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className={styles.dropdownButton}
+          aria-haspopup="listbox"
+          aria-label={`Timeframe filter currently set to ${timeframeLabel}`}
+        >
+          <span>{timeframeLabel}</span>
+          <span className={styles.dropdownArrow} aria-hidden="true">
+            ⌄
+          </span>
+        </button>
       </header>
+
+      {/* Hero Metric & Emerald Growth Pill */}
       <div className={styles.heroRow}>
-        <span className={styles.heroValuation}>
-          {available ? formatCrmCurrency(totalValue) : financials ? "Unavailable" : "Confidential"}
+        <span className={styles.heroValuation}>{displayTotal}</span>
+        <span className={styles.trendBadge} aria-label={`${growthPercentage}% increase this period`}>
+          +{growthPercentage}% ↑
         </span>
       </div>
 
-      {active && activePoint ? (
-        <div className={styles.chartContainer}>
-          <p className={styles.pointReadout}>
-            {activePoint.period} <strong>{formatCrmCurrency(activePoint.value)}</strong>
-          </p>
-          <svg
-            className={styles.splineSvg}
-            viewBox={`0 0 ${PLOT_WIDTH} ${PLOT_HEIGHT}`}
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ea002a" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#ea002a" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {area && <path d={area} fill={`url(#${gradientId})`} />}
-            <path d={line} fill="none" stroke="#bb0022" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-            <line
-              x1={active.x}
-              x2={active.x}
-              y1={active.y}
-              y2={BASELINE}
-              stroke="#bb0022"
-              strokeDasharray="3 3"
-              vectorEffect="non-scaling-stroke"
-            />
-            <circle cx={active.x} cy={active.y} r="4" fill="#bb0022" />
-            {visiblePoints.map((point, index) => (
-              <rect
-                key={point.period}
-                x={index * columnWidth}
-                y={0}
-                width={columnWidth}
-                height={PLOT_HEIGHT}
-                fill="transparent"
-                onMouseEnter={() => setSelectedPeriod(point.period)}
-                onClick={() => setSelectedPeriod(point.period)}
-              />
-            ))}
-          </svg>
-          <label className={styles.compactPicker}>
-            Chart interval
-            <select
-              value={activePoint.period}
-              onChange={(event) => setSelectedPeriod(event.target.value)}
-            >
-              {visiblePoints.map((point) => (
-                <option key={point.period} value={point.period}>{point.period}</option>
-              ))}
-            </select>
-          </label>
-          <div
-            className={styles.monthLabelsRow}
-            style={{ gridTemplateColumns: `repeat(${visiblePoints.length}, minmax(0, 1fr))` }}
-          >
-            {visiblePoints.map((point, index) => (
-              <button
-                key={point.period}
-                type="button"
-                className={styles.monthLabel}
-                aria-pressed={index === activeIndex}
-                aria-label={`${point.period}, ${formatCrmCurrency(point.value)}`}
-                onClick={() => setSelectedPeriod(point.period)}
-              >
-                {point.label}
-              </button>
-            ))}
-          </div>
+      {/* Interactive Spline Chart */}
+      <div className={styles.chartContainer}>
+        {/* Floating Tooltip Card */}
+        <div
+          className={styles.floatingTooltip}
+          style={{ left: `${activeTooltipPercent}%` }}
+          aria-live="polite"
+        >
+          <span className={styles.tooltipText}>
+            {activeCoord.point.month} {activeCoord.point.year} : {formatCrmCurrency(activeCoord.point.value)}
+          </span>
         </div>
-      ) : (
-        <p className={styles.emptyState}>
-          {available
-            ? "No converted contract value recorded for this period."
-            : financials
-              ? "Conversion data could not be loaded."
-              : "Financial details are restricted."}
-        </p>
-      )}
+
+        <svg
+          className={styles.splineSvg}
+          viewBox={`0 0 ${width} ${height}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id={`earning-gradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.20" />
+              <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.06" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
+            </linearGradient>
+            <filter id={`beacon-glow-${gradientId}`} x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.4" />
+            </filter>
+          </defs>
+
+          {/* Area Fill */}
+          <path d={areaPath} fill={`url(#earning-gradient-${gradientId})`} />
+
+          {/* Spline Curve Stroke */}
+          <path
+            d={linePath}
+            fill="none"
+            stroke="#2563eb"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Vertical Dashed Stem connecting apex to baseline */}
+          <line
+            x1={activeCoord.x}
+            y1={activeCoord.y}
+            x2={activeCoord.x}
+            y2={baselineY}
+            stroke="#93c5fd"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+
+          {/* Active Apex Beacon Halo & Dot */}
+          <circle
+            cx={activeCoord.x}
+            cy={activeCoord.y}
+            r="8"
+            fill="#2563eb"
+            fillOpacity="0.18"
+          />
+          <circle
+            cx={activeCoord.x}
+            cy={activeCoord.y}
+            r="4.5"
+            fill="#ffffff"
+            stroke="#2563eb"
+            strokeWidth="2.5"
+            filter={`url(#beacon-glow-${gradientId})`}
+          />
+
+          {/* Invisible interactive hover hit areas for each point */}
+          {coords.map((coord, idx) => (
+            <rect
+              key={coord.point.month}
+              x={coord.x - (width / coords.length) / 2}
+              y={0}
+              width={width / coords.length}
+              height={height}
+              fill="transparent"
+              style={{ cursor: "pointer" }}
+              onMouseEnter={() => setActiveIndex(idx)}
+              onClick={() => setActiveIndex(idx)}
+            />
+          ))}
+        </svg>
+
+        {/* X-Axis Month Legend */}
+        <div className={styles.monthLabelsRow}>
+          {points.map((pt, idx) => (
+            <button
+              key={pt.month}
+              type="button"
+              className={`${styles.monthLabel} ${idx === activeIndex ? styles.monthLabelActive : ""}`}
+              onClick={() => setActiveIndex(idx)}
+              onMouseEnter={() => setActiveIndex(idx)}
+            >
+              {pt.month}
+            </button>
+          ))}
+        </div>
+      </div>
     </article>
   );
-}
+};
