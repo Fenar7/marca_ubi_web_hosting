@@ -91,6 +91,10 @@ Following direct user review of screenshots `Screenshot 2026-11-24 161322.png` a
   - In `.cardContainer`: `justify-content: space-between;` ensures the bar chart fills the available column height, anchoring flush to the bottom padding with **0px dead space**.
 - **Preserve Archetypes**: Grounded pill bars, active spotlight `#fundoraCrimsonGradient`, apex beacon ring, and instrument zero pedestals `#e8e8e5`.
 
+### D. Timeframe Dropdown Arrow Alignment & Polish
+- Replaced the tiny unicode character `⌄` with a standardized 12x12 SVG chevron (`<polyline points="6 9 12 15 18 9" />`) in `EarningOverviewSplineCard` and `SpendingOverviewBarCard`.
+- Updated SCSS with `width: 12px; height: 12px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;` to ensure pixel-perfect vertical centering and smooth 180° rotation on open.
+
 ---
 
 ## 4. Delivery Gate Checklist

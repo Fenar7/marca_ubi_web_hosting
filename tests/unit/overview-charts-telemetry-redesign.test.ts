@@ -56,8 +56,11 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
     assert.ok(splineSource.includes('aria-selected='));
     assert.ok(splineSource.includes('aria-expanded='));
     assert.ok(splineSource.includes('Escape'));
+    assert.ok(splineSource.includes('<polyline points="6 9 12 15 18 9" />'), 'Dropdown must use SVG chevron');
+    assert.ok(!splineSource.includes('⌄'), 'Must not use raw unicode chevron character');
     assert.ok(splineStyles.includes('min-width: 116px'), 'Trigger must have invariant 116px min-width');
     assert.ok(splineStyles.includes('.dropdownMenu'));
+    assert.ok(splineStyles.includes('width: 12px'), 'Chevron icon must be 12px width');
   });
 
   it('Gate 3: SpendingOverviewBarCard - Restored vibrant blue palette and dynamic continuous gradient bar', () => {
@@ -71,8 +74,11 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
     assert.ok(spendingSource.includes('role="option"'));
     assert.ok(spendingSource.includes('aria-selected='));
     assert.ok(spendingSource.includes('aria-expanded='));
+    assert.ok(spendingSource.includes('<polyline points="6 9 12 15 18 9" />'), 'Dropdown must use SVG chevron');
+    assert.ok(!spendingSource.includes('⌄'), 'Must not use raw unicode chevron character');
     assert.ok(spendingStyles.includes('min-width: 116px'));
     assert.ok(spendingStyles.includes('min-height: 44px'));
+    assert.ok(spendingStyles.includes('width: 12px'), 'Chevron icon must be 12px width');
 
     // Animated continuous bar
     assert.ok(spendingStyles.includes('transition: width 0.35s'));

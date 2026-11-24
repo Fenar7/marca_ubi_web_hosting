@@ -179,12 +179,20 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
             aria-label={`Timeframe filter, currently set to ${currentOption.label}`}
           >
             <span>{currentOption.label}</span>
-            <span
+            <svg
               className={`${styles.dropdownArrow} ${isDropdownOpen ? styles.dropdownArrowOpen : ""}`}
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               aria-hidden="true"
             >
-              ⌄
-            </span>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </button>
 
           {isDropdownOpen && (
