@@ -267,7 +267,6 @@ export function MemberGovernanceDrawer({
 
         <div className={styles.drawerSubBar}>
           <span className={`${styles.statusTag} ${isSuspended ? styles.statusSuspended : styles.statusActive}`}>
-            <span className={styles.statusDot} aria-hidden="true" />
             <span>{isSuspended ? 'Suspended' : 'Active'}</span>
           </span>
           <Link href={`/admin/team/${member.id}`} className={styles.profileLink}>

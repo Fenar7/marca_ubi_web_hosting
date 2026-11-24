@@ -12,6 +12,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { TeamMemberRosterItem, CrmUserRole, CrmTabKey } from '@/types/crm';
 import { ROLE_DEFAULT_TABS } from '@/types/crm';
 import { formatDealValuation, formatNumber, getInitials } from '@/app/lib/team-utils';
@@ -71,6 +72,7 @@ export function CommercialDirectoryTable({
   onReactivateUser,
   onResetFilters,
 }: CommercialDirectoryTableProps): React.ReactElement {
+  const router = useRouter();
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([]);
   const isAdmin = currentUserRole === 'admin';
@@ -158,15 +160,15 @@ export function CommercialDirectoryTable({
                     rowRefs.current[idx] = el;
                   }}
                   tabIndex={0}
-                  className={`${styles.tr} ${onInspectMember ? styles.trInteractive : ''}`}
-                  onClick={() => onInspectMember?.(member)}
+                  className={`${styles.tr} ${styles.trInteractive}`}
+                  onClick={() => router.push(`/admin/team/${member.id}`)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.target === e.currentTarget) {
                       e.preventDefault();
-                      onInspectMember?.(member);
+                      router.push(`/admin/team/${member.id}`);
                     }
                   }}
-                  aria-label={`${member.full_name}, ${getRoleLabel(member.role)}`}
+                  aria-label={`Open full dossier for ${member.full_name}, ${getRoleLabel(member.role)}`}
                 >
                   {/* 1. Member Identity */}
                   <td className={styles.td}>
@@ -285,7 +287,6 @@ export function CommercialDirectoryTable({
                         isSuspended ? styles.statusSuspended : styles.statusActive
                       }`}
                     >
-                      <span className={styles.statusDot} aria-hidden="true" />
                       <span>{isSuspended ? 'Suspended' : 'Active'}</span>
                     </span>
                   </td>
@@ -382,7 +383,6 @@ export function CommercialDirectoryTable({
                     isSuspended ? styles.statusSuspended : styles.statusActive
                   }`}
                 >
-                  <span className={styles.statusDot} aria-hidden="true" />
                   <span>{isSuspended ? 'Suspended' : 'Active'}</span>
                 </span>
               </div>

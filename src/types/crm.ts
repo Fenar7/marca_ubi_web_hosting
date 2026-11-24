@@ -127,11 +127,41 @@ export interface PersonnelPerformanceKpis {
   winRatePercentage: number;
   closedDealsCount: number;
   wonDealsCount: number;
+  lostDealsCount?: number;
+  lostPipelineValue?: number;
+  avgWonDealValue?: number;
+  avgSalesCycleDays?: number | null;
+  overdueFollowUpsCount?: number;
+  touchpoints30d?: number;
+  totalTouchpoints?: number;
+  clientWorksCount?: number;
+  stageBreakdown?: StageDealBreakdown[];
   activeDealsCount: number;
   capacityLimit: number;
   capacityUtilizationPercentage: number;
   isAtCapacity: boolean;
   totalDealsAssigned: number;
+}
+
+/**
+ * Individual login telemetry event recorded on successful administrative authentication.
+ */
+export interface PersonnelLoginEvent {
+  id: string;
+  created_at: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  method: string;
+}
+
+/**
+ * Aggregated login and session telemetry for a personnel dossier (/admin/team/[id]).
+ */
+export interface PersonnelLoginSummary {
+  lastLoginAt: string | null;
+  totalLoginsCount: number;
+  logins30dCount: number;
+  recentLogins: PersonnelLoginEvent[];
 }
 
 /**
@@ -156,6 +186,7 @@ export interface PersonnelProfilePayload {
   invited_by_name: string | null;
   kpis: PersonnelPerformanceKpis;
   auditLogs: PersonnelAuditLogEntry[];
+  loginSummary?: PersonnelLoginSummary;
   canEdit: boolean;
   isSelf: boolean;
   canViewFinancials?: boolean;

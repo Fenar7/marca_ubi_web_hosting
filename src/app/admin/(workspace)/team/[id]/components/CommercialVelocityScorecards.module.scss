@@ -1,10 +1,16 @@
+.matrixWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .scorecardsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 
   @media (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @media (max-width: 640px) {
@@ -13,10 +19,12 @@
 }
 
 .scorecard {
+  position: relative;
   background: var(--admin-bg-surface, #ffffff);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-top-width: 3px;
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 1.2rem 1.25rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -25,6 +33,22 @@
 
   &:hover {
     border-color: var(--admin-border-strong, #8e8e88);
+  }
+
+  &.accentEmerald {
+    border-top-color: #059669;
+  }
+
+  &.accentIndigo {
+    border-top-color: #4338ca;
+  }
+
+  &.accentCrimson {
+    border-top-color: #ea002a;
+  }
+
+  &.accentTeal {
+    border-top-color: #0f766e;
   }
 }
 
@@ -54,7 +78,19 @@
   line-height: 1.1;
 
   &.wonMetric {
-    color: var(--admin-status-emerald-text, #065f46);
+    color: #065f46;
+  }
+
+  &.indigoMetric {
+    color: #3730a3;
+  }
+
+  &.crimsonMetric {
+    color: #9c001e;
+  }
+
+  &.tealMetric {
+    color: #115e59;
   }
 }
 
@@ -65,10 +101,11 @@
 }
 
 .metaSubtitle {
-  margin: 0.25rem 0 0;
+  margin: 0.35rem 0 0;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.75rem;
   color: var(--admin-text-muted, #575753);
+  font-variant-numeric: tabular-nums;
 }
 
 .progressBarTrack {
@@ -77,7 +114,7 @@
   background: var(--admin-bg-subtle, #efefed);
   border-radius: 9999px;
   overflow: hidden;
-  margin-top: 0.35rem;
+  margin-top: 0.45rem;
 }
 
 .progressBarFill {
@@ -95,15 +132,105 @@
 
   &.normal {
     background: rgba(16, 185, 129, 0.08);
-    color: var(--admin-status-emerald-text, #065f46);
+    color: #065f46;
     border: 1px solid rgba(6, 95, 70, 0.22);
   }
 
   &.warning {
     background: rgba(234, 0, 42, 0.08);
-    color: var(--admin-status-red-text, #9c001e);
+    color: #9c001e;
     border: 1px solid rgba(156, 0, 30, 0.25);
   }
+}
+
+.stageBreakdownCard {
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.stageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.stageTitle {
+  margin: 0;
+  font-family: var(--font-circular), sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+}
+
+.stageSummaryMeta {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.75rem;
+  color: var(--admin-text-muted, #575753);
+  font-variant-numeric: tabular-nums;
+}
+
+.stageBarTrack {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--admin-bg-subtle, #efefed);
+  gap: 2px;
+}
+
+.stageBarSegment {
+  height: 100%;
+  min-width: 6px;
+}
+
+.stageChipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stageChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  background: var(--admin-bg-canvas, #fbfbfa);
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  border-left-width: 3px;
+
+  &.bucketConverted {
+    border-left-color: #059669;
+  }
+  &.bucketPotential {
+    border-left-color: #d97706;
+  }
+  &.bucketLost {
+    border-left-color: #ea002a;
+  }
+  &.bucketOpen {
+    border-left-color: #4338ca;
+  }
+}
+
+.stageName {
+  font-weight: 600;
+  color: var(--admin-text-primary, #111111);
+}
+
+.stageCount {
+  color: var(--admin-text-muted, #575753);
 }
 
 @media (prefers-reduced-motion: reduce) {

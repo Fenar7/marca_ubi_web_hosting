@@ -87,16 +87,16 @@ export function RepresentativeDealLedger({
   };
 
   const getStatusBadgeStyle = (status?: { name: string; bucket: string; color_code?: string }) => {
-    if (!status) return { bg: '#efefed', color: '#454542', dot: '#8e8e88' };
+    if (!status) return { bg: '#efefed', color: '#454542', border: '#d8d8d4' };
     switch (status.bucket) {
       case 'converted':
-        return { bg: 'rgba(16, 185, 129, 0.08)', color: '#065f46', dot: '#10b981' };
+        return { bg: 'rgba(16, 185, 129, 0.08)', color: '#065f46', border: 'rgba(6, 95, 70, 0.28)' };
       case 'lost':
-        return { bg: 'rgba(234, 0, 42, 0.08)', color: '#9c001e', dot: '#ea002a' };
+        return { bg: 'rgba(234, 0, 42, 0.08)', color: '#9c001e', border: 'rgba(156, 0, 30, 0.28)' };
       case 'potential':
-        return { bg: 'rgba(245, 158, 11, 0.08)', color: '#92400e', dot: '#d97706' };
+        return { bg: 'rgba(217, 119, 6, 0.08)', color: '#92400e', border: 'rgba(180, 83, 9, 0.28)' };
       default:
-        return { bg: '#fbfbfa', color: '#111111', dot: '#575753' };
+        return { bg: 'rgba(67, 56, 202, 0.07)', color: '#3730a3', border: 'rgba(67, 56, 202, 0.25)' };
     }
   };
 
@@ -219,10 +219,9 @@ export function RepresentativeDealLedger({
                         style={{
                           backgroundColor: badge.bg,
                           color: badge.color,
-                          border: `1px solid ${badge.dot}33`,
+                          border: `1px solid ${badge.border}`,
                         }}
                       >
-                        <span className={styles.statusDot} style={{ backgroundColor: badge.dot }} />
                         {deal.status?.name || 'In Progress'}
                       </span>
                     </td>
