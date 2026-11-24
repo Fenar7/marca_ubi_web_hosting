@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from './FunnelVisualizer.module.scss';
 
 export interface FunnelStageItem {
@@ -23,102 +22,129 @@ export interface FunnelVisualizerProps {
   totalIntake: number;
 }
 
+function resolveStageBarColor(stage: FunnelStageItem): string {
+  if (stage.bucket === 'converted') return '#059669';
+  if (stage.bucket === 'potential') return '#d97706';
+  if (stage.bucket === 'lost') return '#ea002a';
+  return stage.colorCode && stage.colorCode !== '#ffffff' ? stage.colorCode : '#4338ca';
+}
+
 export const FunnelVisualizer: React.FC<FunnelVisualizerProps> = ({ stages, totalIntake }) => {
+  const maxStageVolume = Math.max(
+    1,
+    totalIntake,
+    ...stages.map((s) => Math.max(s.cumulativeReachedCount, s.leadsCurrentlyInStage))
+  );
+
   return (
     <section className={styles.funnelSection} aria-labelledby="funnel-heading">
       <div className={styles.sectionHeader}>
         <div>
           <h2 id="funnel-heading" className={styles.sectionTitle}>
-            Commercial Conversion Funnel &amp; Drop-off Analysis
+            Commercial Conversion Funnel
           </h2>
           <p className={styles.sectionSubtitle}>
-            Full progression from Inbound Intake to Converted Contract. Evaluates stage transitions and leakage.
+            Stage-by-stage progression across active opportunities and closed contracts.
           </p>
         </div>
-        <div className={styles.intakeBadge}>
+        <div className={styles.intakeReadout}>
           Intake Baseline: <strong>{totalIntake.toLocaleString('en-IN')}</strong> records
         </div>
       </div>
 
-      <div className={styles.funnelRail} role="list" aria-label="Pipeline Stages">
-        {stages.map((stage, idx) => {
-          const isLast = idx === stages.length - 1;
-          const isWon = stage.bucket === 'converted';
+      {stages.length === 0 ? (
+        <div className={styles.emptyFunnel}>
+          No active funnel stages available for the selected timeframe.
+        </div>
+      ) : (
+        <div className={styles.funnelList} role="list" aria-label="Pipeline Stages">
+          <div className={styles.listHeaderRow} aria-hidden="true">
+            <span>Stage</span>
+            <span>Pipeline Distribution</span>
+            <span className={styles.alignRight}>In Stage</span>
+            <span className={styles.alignRight}>Reached</span>
+            <span className={styles.alignRight}>Step Conv.</span>
+            <span className={styles.alignRight}>Drop-off</span>
+          </div>
 
-          return (
-            <React.Fragment key={stage.stageId}>
-              <div
-                className={`${styles.stagePod} ${isWon ? styles.wonStagePod : ''}`}
+          {stages.map((stage) => {
+            const isWon = stage.bucket === 'converted';
+            const barColor = resolveStageBarColor(stage);
+            const barCount = Math.max(stage.cumulativeReachedCount, stage.leadsCurrentlyInStage);
+            const barPct = barCount > 0 ? Math.max(3, Math.round((barCount / maxStageVolume) * 100)) : 0;
+
+            return (
+              <Link
+                key={stage.stageId}
+                href={`/admin/leads?stage=${encodeURIComponent(stage.stageId)}`}
+                className={`${styles.stageRow} ${isWon ? styles.wonStageRow : ''}`}
                 role="listitem"
+                style={{ borderLeftColor: barColor }}
               >
-                <div className={styles.podTop}>
-                  <div className={styles.stageTitleRow}>
-                    <span
-                      className={styles.stageDot}
-                      style={{ backgroundColor: stage.colorCode || '#111111' }}
-                      aria-hidden="true"
+                <div className={styles.stageNameCell}>
+                  <span className={styles.stageName}>{stage.stageName}</span>
+                  {isWon && <span className={styles.wonTag}>Won</span>}
+                </div>
+
+                <div className={styles.barCell}>
+                  <div className={styles.barTrack}>
+                    <div
+                      className={styles.barFill}
+                      style={{ width: `${barPct}%`, backgroundColor: barColor }}
                     />
-                    <span className={styles.stageName}>{stage.stageName}</span>
                   </div>
-                  <span className={styles.reachedPill}>
-                    {stage.cumulativeReachedCount} reached
+                </div>
+
+                <div className={`${styles.metricCell} ${styles.alignRight}`}>
+                  <span className={styles.mobileMetricLabel}>In Stage</span>
+                  <strong className={styles.metricVal}>
+                    {stage.leadsCurrentlyInStage.toLocaleString('en-IN')}
+                  </strong>
+                </div>
+
+                <div className={`${styles.metricCell} ${styles.alignRight}`}>
+                  <span className={styles.mobileMetricLabel}>Reached</span>
+                  <span className={styles.metricSubVal}>
+                    {stage.cumulativeReachedCount.toLocaleString('en-IN')}
                   </span>
                 </div>
 
-                <div className={styles.podMetrics}>
-                  <div className={styles.metricRow}>
-                    <span className={styles.subLabel}>Current In Stage</span>
-                    <strong className={styles.metricVal}>
-                      {stage.leadsCurrentlyInStage.toLocaleString('en-IN')}
-                    </strong>
-                  </div>
-                  <div className={styles.metricRow}>
-                    <span className={styles.subLabel}>Step Conversion</span>
-                    <span
-                      className={`${styles.rateTag} ${
-                        stage.stageConversionRate >= 60 ? styles.highRate : styles.midRate
-                      }`}
-                    >
-                      {stage.stageConversionRate.toFixed(1)}%
-                    </span>
-                  </div>
+                <div className={`${styles.metricCell} ${styles.alignRight}`}>
+                  <span className={styles.mobileMetricLabel}>Conv.</span>
+                  <span
+                    className={`${styles.rateValue} ${
+                      stage.stageConversionRate >= 60 ? styles.highRate : ''
+                    }`}
+                  >
+                    {stage.stageConversionRate.toFixed(1)}%
+                  </span>
                 </div>
 
-                {!isLast && (
-                  <div className={styles.dropOffBar}>
-                    <span className={styles.dropOffLabel}>Drop-off</span>
-                    <span className={styles.dropOffVal}>
-                      {stage.dropOffCount > 0 ? (
-                        <>
-                          -{stage.dropOffCount} ({stage.dropOffRate.toFixed(1)}%)
-                        </>
-                      ) : (
-                        '0 (0.0%)'
-                      )}
-                    </span>
-                  </div>
-                )}
-
-                <Link
-                  href={`/admin/leads?stage=${encodeURIComponent(stage.stageId)}`}
-                  className={styles.drillLink}
-                  aria-label={`Inspect ${stage.stageName} records`}
-                >
-                  Inspect deals <span>→</span>
-                </Link>
-              </div>
-
-              {!isLast && (
-                <div className={styles.stepChevron} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <div className={`${styles.metricCell} ${styles.alignRight} ${styles.dropOffCell}`}>
+                  <span className={styles.mobileMetricLabel}>Drop-off</span>
+                  <span className={stage.dropOffCount > 0 ? styles.dropOffWarn : styles.dropOffNeutral}>
+                    {stage.dropOffCount > 0
+                      ? `-${stage.dropOffCount} (${stage.dropOffRate.toFixed(1)}%)`
+                      : '0'}
+                  </span>
+                  <svg
+                    className={styles.rowChevron}
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </div>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 };

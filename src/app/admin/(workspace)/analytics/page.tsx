@@ -11,7 +11,7 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/app/lib/supabase/server';
+import { getCachedCallerProfile } from '@/app/lib/supabase/server';
 import { ROLE_DEFAULT_TABS, type CrmUserRole } from '@/types/crm';
 import {
   analyticsQuerySchema,
@@ -57,21 +57,11 @@ export default async function AdminAnalyticsPage(
   props: AnalyticsPageProps
 ): Promise<React.ReactElement> {
   const resolvedParams = props.searchParams ? await props.searchParams : {};
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user, profile } = await getCachedCallerProfile();
 
   if (!user) {
     redirect('/admin/login?next=%2Fadmin%2Fanalytics');
   }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, status, allowed_tabs')
-    .eq('id', user.id)
-    .maybeSingle();
 
   if (!profile || profile.status !== 'active') {
     redirect('/admin/login?error=account_suspended');

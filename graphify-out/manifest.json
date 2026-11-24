@@ -522,9 +522,9 @@
     "semantic_hash": "c7b6986f09e5a16bdae843898bdc22bb"
   },
   "src/app/actions/team.ts": {
-    "mtime": 1795550994.649595,
-    "seen": 1795551242.701274,
-    "ast_hash": "1f2d9f68a1dbcbddaa6d75918cebe609",
+    "mtime": 1795552538.1312292,
+    "seen": 1795552866.6381993,
+    "ast_hash": "f8d28d61848d71523280d5bf4188a670",
     "semantic_hash": ""
   },
   "src/app/actions/workloadActions.ts": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/page.tsx": {
-    "mtime": 1795540634.8663352,
-    "seen": 1795545910.56782,
-    "ast_hash": "04476cf1eab46cbf75e7fbfcdfe37519",
+    "mtime": 1795552544.7656934,
+    "seen": 1795552866.6381993,
+    "ast_hash": "967b46695e1e1efefe52f2e564d05d7f",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/components/ActivityRowItem.tsx": {
@@ -7050,15 +7050,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/AnalyticsWorkspaceClient.tsx": {
-    "mtime": 1795537994.2434065,
-    "seen": 1795545910.56782,
-    "ast_hash": "5e92cba9ba0feb33578ad28e2653b36e",
+    "mtime": 1795552495.0127728,
+    "seen": 1795552866.6381993,
+    "ast_hash": "c6230d7571f30c10b80c044be11a9e1a",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/AnalyticsMasthead/AnalyticsMasthead.tsx": {
-    "mtime": 1795537842.5014856,
-    "seen": 1795545910.56782,
-    "ast_hash": "a22c952d2ba998ce74ba85a8080f0bee",
+    "mtime": 1795552550.0597486,
+    "seen": 1795552866.6381993,
+    "ast_hash": "d678debfb250f3f52165e67336398299",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/AnalyticsSkeleton/AnalyticsSkeleton.tsx": {
@@ -7068,15 +7068,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/FunnelVisualizer/FunnelVisualizer.tsx": {
-    "mtime": 1795537873.5111432,
-    "seen": 1795545910.56782,
-    "ast_hash": "8e7d7c1f7d8643fda52758f3e1db7e93",
+    "mtime": 1795552556.5528016,
+    "seen": 1795552866.6381993,
+    "ast_hash": "c0f49219f994484fe855007145ad5ca7",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/PracticeMatrix/PracticeMatrix.tsx": {
-    "mtime": 1795537931.038329,
-    "seen": 1795545910.56782,
-    "ast_hash": "e2b3c1cb8d7546d96855c24262aa1a81",
+    "mtime": 1795552586.4134598,
+    "seen": 1795552866.6381993,
+    "ast_hash": "7ad42e2965fa8506f06b861b293a2f89",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/RevenueSpline/RevenueSpline.tsx": {
@@ -7086,9 +7086,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/StageDwellMatrix/StageDwellMatrix.tsx": {
-    "mtime": 1795537953.1933134,
-    "seen": 1795545910.56782,
-    "ast_hash": "9e73614d315ab1b97cbe8004040eb656",
+    "mtime": 1795552595.4958737,
+    "seen": 1795552866.6381993,
+    "ast_hash": "fdee5e5b0e2115d1c88d4075ffc0a07c",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/leads/components/QuickMetricsRibbon/QuickMetricsRibbon.tsx": {
@@ -7215,6 +7215,18 @@
     "mtime": 1795550977.886254,
     "seen": 1795551242.7816823,
     "ast_hash": "36753d7590774347eb2c85e98aac8a44",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20261125000001_personnel_login_telemetry.sql": {
+    "mtime": 1795549796.9924836,
+    "seen": 1795551325.7333162,
+    "ast_hash": "44846f175eb17c4323622761cfd395a2",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/analytics_redesign/ANALYTICS_REDESIGN_PLAN.md": {
+    "mtime": 1795552388.8489702,
+    "seen": 1795552866.6381993,
+    "ast_hash": "57bf1027fe60ed2a1707660882ab8180",
     "semantic_hash": ""
   },
   "package-lock.json": {

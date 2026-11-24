@@ -793,7 +793,7 @@ export async function getTeamRoster(): Promise<TeamActionResult<TeamMemberRoster
 
   // Aggregate deal counts and pipeline value per user for active deals only
   const metricsMap = new Map<string, { count: number; totalValue: number }>();
-  ((leads || []) as Array<{ assigned_to: string | null; status_id: string; expected_value?: number | null }>).forEach((lead) => {
+  ((leads || []) as unknown as Array<{ assigned_to: string | null; status_id: string; expected_value?: number | null }>).forEach((lead) => {
     if (lead.assigned_to && !terminalIds.has(lead.status_id)) {
       const current = metricsMap.get(lead.assigned_to) || { count: 0, totalValue: 0 };
       current.count += 1;
@@ -1134,7 +1134,7 @@ export async function getPersonnelProfile(
       });
     });
 
-    const userLeads = (leadsRes.data || []) as Array<{
+    const userLeads = (leadsRes.data || []) as unknown as Array<{
       id: string;
       status_id: string;
       expected_value?: number | null;

@@ -40,7 +40,7 @@ export const AnalyticsMasthead: React.FC<AnalyticsMastheadProps> = ({
   periodLabel,
 }) => {
   return (
-    <div className={styles.mastheadContainer}>
+    <header className={styles.mastheadContainer}>
       <div className={styles.topBar}>
         <div className={styles.headerInfo}>
           <p className={styles.eyebrow}>Commercial Intelligence &amp; Telemetry</p>
@@ -65,63 +65,50 @@ export const AnalyticsMasthead: React.FC<AnalyticsMastheadProps> = ({
         </nav>
       </div>
 
-      <div className={styles.scorecardsGrid} aria-label="Executive KPI Telemetry">
-        {/* Pod 1: Active Pipeline */}
-        <div className={styles.scorecard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardLabel}>Active Pipeline</span>
-            <span className={styles.neutralBadge}>Open Scope</span>
-          </div>
-          <strong className={styles.primaryMetric}>
+      {/* Unified 4-cell semantic telemetry strip (replaces boxed equal-card grid) */}
+      <dl className={styles.telemetryStrip} aria-label="Executive KPI Telemetry">
+        <div className={`${styles.telemetryCell} ${styles.accentIndigo}`}>
+          <dt className={styles.cellLabel}>Active Pipeline</dt>
+          <dd className={`${styles.cellValue} ${styles.valueIndigo}`}>
             {formatCrmCurrency(metrics.totalPipelineValue)}
-          </strong>
-          <p className={styles.cardDetail}>
-            <span>{metrics.activeDealsCount.toLocaleString('en-IN')}</span> active opportunities across open stages
-          </p>
+          </dd>
+          <dd className={styles.cellMeta}>
+            {metrics.activeDealsCount.toLocaleString('en-IN')} active opportunities
+          </dd>
         </div>
 
-        {/* Pod 2: Realized Converted Revenue */}
-        <div className={styles.scorecard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardLabel}>Realized Revenue</span>
-            <span className={styles.successBadge}>Closed Won</span>
-          </div>
-          <strong className={styles.primaryMetric}>
+        <div className={`${styles.telemetryCell} ${styles.accentEmerald}`}>
+          <dt className={styles.cellLabel}>Realized Revenue</dt>
+          <dd className={`${styles.cellValue} ${styles.valueEmerald}`}>
             {formatCrmCurrency(metrics.realizedRevenue)}
-          </strong>
-          <p className={styles.cardDetail}>
-            <span>{metrics.convertedDealsCount.toLocaleString('en-IN')}</span> contracts signed in selected window
-          </p>
+          </dd>
+          <dd className={styles.cellMeta}>
+            {metrics.convertedDealsCount.toLocaleString('en-IN')} closed won contracts
+          </dd>
         </div>
 
-        {/* Pod 3: Sales Cycle & Velocity */}
-        <div className={styles.scorecard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardLabel}>Average Sales Cycle</span>
-            <span className={styles.neutralBadge}>Velocity</span>
-          </div>
-          <strong className={styles.primaryMetric}>
-            {metrics.averageCycleDays.toFixed(1)} <span className={styles.metricUnit}>Days</span>
-          </strong>
-          <p className={styles.cardDetail}>
-            Throughput: <span>{formatCrmCurrency(metrics.pipelineVelocityPerDay)}</span> / day
-          </p>
+        <div className={`${styles.telemetryCell} ${styles.accentTeal}`}>
+          <dt className={styles.cellLabel}>Average Sales Cycle</dt>
+          <dd className={`${styles.cellValue} ${styles.valueTeal}`}>
+            {metrics.averageCycleDays.toFixed(1)}
+            <span className={styles.unitSuffix}> days</span>
+          </dd>
+          <dd className={styles.cellMeta}>
+            Throughput {formatCrmCurrency(metrics.pipelineVelocityPerDay)} / day
+          </dd>
         </div>
 
-        {/* Pod 4: Commercial Win Rate */}
-        <div className={styles.scorecard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardLabel}>Commercial Win Rate</span>
-            <span className={styles.accentBadge}>Win/Loss</span>
-          </div>
-          <strong className={styles.primaryMetric}>
-            {metrics.winRatePercentage.toFixed(1)}<span className={styles.metricUnit}>%</span>
-          </strong>
-          <p className={styles.cardDetail}>
-            <span>{metrics.wonCount}</span> won of {metrics.closedDecisionsCount} closed decisions
-          </p>
+        <div className={`${styles.telemetryCell} ${styles.accentCrimson}`}>
+          <dt className={styles.cellLabel}>Commercial Win Rate</dt>
+          <dd className={`${styles.cellValue} ${styles.valueCrimson}`}>
+            {metrics.winRatePercentage.toFixed(1)}%
+          </dd>
+          <dd className={styles.cellMeta}>
+            {metrics.wonCount.toLocaleString('en-IN')} won of{' '}
+            {metrics.closedDecisionsCount.toLocaleString('en-IN')} closed
+          </dd>
         </div>
-      </div>
-    </div>
+      </dl>
+    </header>
   );
 };

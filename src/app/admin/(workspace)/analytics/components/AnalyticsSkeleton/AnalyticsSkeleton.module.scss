@@ -1,28 +1,17 @@
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .skeletonContainer {
   display: flex;
   flex-direction: column;
   gap: 24px;
   width: 100%;
-}
-
-.shimmerBase {
-  background: linear-gradient(
-    90deg,
-    var(--admin-card-quiet, #efefed) 0%,
-    #f8f8f6 50%,
-    var(--admin-card-quiet, #efefed) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite linear;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 
 .mastheadShimmer {
@@ -33,56 +22,81 @@
 
 .topBarShimmer {
   height: 64px;
-  border-radius: 8px;
-  @extend .shimmerBase;
+  border-radius: 10px;
+  background: var(--admin-bg-subtle, #efefed);
+  animation: pulse 1.8s ease-in-out infinite;
 }
 
 .cardsGridShimmer {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 12px;
+  overflow: hidden;
 
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
+  @media (max-width: 1080px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-.cardShimmer {
-  height: 120px;
-  border-radius: 12px;
-  @extend .shimmerBase;
-}
-
-.funnelShimmer {
-  height: 220px;
-  border-radius: 12px;
-  @extend .shimmerBase;
-}
-
-.middleGridShimmer {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-
-  @media (max-width: 960px) {
+  @media (max-width: 600px) {
     grid-template-columns: 1fr;
   }
 }
 
-.splineShimmer {
-  height: 320px;
-  border-radius: 12px;
-  @extend .shimmerBase;
+.cardShimmer {
+  height: 108px;
+  border-right: 1px solid var(--admin-border-subtle, #e7e7e4);
+  background: var(--admin-bg-surface, #ffffff);
+  animation: pulse 1.8s ease-in-out infinite;
+
+  &:last-child {
+    border-right: none;
+  }
 }
 
+.funnelShimmer {
+  height: 360px;
+  border-radius: 12px;
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.middleGridShimmer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 20px;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.splineShimmer,
 .practiceShimmer {
   height: 320px;
   border-radius: 12px;
-  @extend .shimmerBase;
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  animation: pulse 1.8s ease-in-out infinite;
 }
 
 .dwellShimmer {
   height: 280px;
   border-radius: 12px;
-  @extend .shimmerBase;
+  background: var(--admin-bg-surface, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topBarShimmer,
+  .cardShimmer,
+  .funnelShimmer,
+  .splineShimmer,
+  .practiceShimmer,
+  .dwellShimmer {
+    animation: none;
+  }
 }
