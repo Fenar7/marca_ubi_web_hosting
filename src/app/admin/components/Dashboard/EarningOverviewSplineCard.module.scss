@@ -47,11 +47,13 @@
 .chartContainer {
   display: grid;
   min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .splineSvg {
   display: block;
   width: 100%;
+  min-width: 0;
   height: clamp(105px, 12vw, 160px);
 }
 
@@ -109,6 +111,7 @@
     display: block;
     min-width: 0;
     width: 100%;
+    box-sizing: border-box;
     min-height: 44px;
     margin-top: 6px;
     padding-inline: 8px;
