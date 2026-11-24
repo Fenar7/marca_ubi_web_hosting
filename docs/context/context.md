@@ -1,6 +1,10 @@
 # Current Engineering Context
 
+**Read first (2026-11-24 16:10 IST):** [Current CRM handoff](./2026-11-24_16-10-00.md) records the active branch, open PR #129, and the Overview charts telemetry and timeframe redesign. [Earlier handoff](./2026-11-24_15-31-26.md).
+
 **Website Inquiries:** [Current hand-off](./2026-11-24_00-45-00.md) for the inquiry inbox, manual intake, and public capture in PR #126.
+
+**Client Works redesign:** [Local hand-off](./2026-11-23_20-39-35.md) for the delivery register and development sample projects.
 
 **Deals workspace rebuild:** [Current hand-off](./2026-11-23_19-54-00.md) for the Board, Table, filters and stage movement in PR #126. [Earlier board hand-off](./2026-11-23_15-45-00.md).
 

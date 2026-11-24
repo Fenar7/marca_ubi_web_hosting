@@ -168,15 +168,15 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
 
   // Fundora Calibrated ViewBox & Geometry (Generous 56px Gutter Eradicating Text Collisions)
   const svgWidth = 680;
-  const svgHeight = 220;
+  const svgHeight = 300;
   const paddingLeft = 56;
   const paddingRight = 20;
-  const paddingTop = 28;
-  const paddingBottom = 34;
+  const paddingTop = 32;
+  const paddingBottom = 38;
 
   const chartWidth = svgWidth - paddingLeft - paddingRight; // 604
-  const chartHeight = svgHeight - paddingTop - paddingBottom; // 158
-  const baselineY = paddingTop + chartHeight; // 186
+  const chartHeight = svgHeight - paddingTop - paddingBottom; // 230 (+45.5% vertical bar height)
+  const baselineY = paddingTop + chartHeight; // 262
 
   // Dynamic valuation ceiling with clean 4-milestone integer quantization
   const { maxVal, yMilestones } = useMemo(() => {
@@ -400,7 +400,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             className={styles.floatingBadge}
             style={{
               left: `${Math.max(16, Math.min(84, (spotlightCenterX / svgWidth) * 100))}%`,
-              top: `${Math.max(2, (spotlightTopY / svgHeight) * 100 - 15)}%`,
+              top: `${Math.max(2, (spotlightTopY / svgHeight) * 100 - 11)}%`,
             }}
             role="status"
             aria-live="polite"

@@ -1,0 +1,130 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+  computeSplinePointsForCadence,
+  computeSpendingBreakdownForCadence,
+  CARD_TIMEFRAME_OPTIONS,
+} from '@/app/admin/lib/timeframeUtils';
+
+describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
+  const root = process.cwd();
+
+  const splineCardPath = path.join(root, 'src/app/admin/components/Dashboard/EarningOverviewSplineCard.tsx');
+  const splineCardStylesPath = path.join(root, 'src/app/admin/components/Dashboard/EarningOverviewSplineCard.module.scss');
+  const spendingCardPath = path.join(root, 'src/app/admin/components/Dashboard/SpendingOverviewBarCard.tsx');
+  const spendingCardStylesPath = path.join(root, 'src/app/admin/components/Dashboard/SpendingOverviewBarCard.module.scss');
+  const velocityChartPath = path.join(root, 'src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx');
+  const velocityChartStylesPath = path.join(root, 'src/app/admin/components/Dashboard/CommercialVelocityBarChart.module.scss');
+
+  const splineSource = fs.readFileSync(splineCardPath, 'utf8');
+  const splineStyles = fs.readFileSync(splineCardStylesPath, 'utf8');
+  const spendingSource = fs.readFileSync(spendingCardPath, 'utf8');
+  const spendingStyles = fs.readFileSync(spendingCardStylesPath, 'utf8');
+  const velocitySource = fs.readFileSync(velocityChartPath, 'utf8');
+  const velocityStyles = fs.readFileSync(velocityChartStylesPath, 'utf8');
+
+  it('Gate 1: EarningOverviewSplineCard - Anti-slop brand token purge and exact coordinate alignment', () => {
+    // Zero generic blue tokens
+    assert.ok(!splineSource.includes('#2563eb'), 'Source must not contain #2563eb');
+    assert.ok(!splineSource.includes('#3b82f6'), 'Source must not contain #3b82f6');
+    assert.ok(!splineStyles.includes('rgba(37, 99, 235'), 'Styles must not contain rgba(37, 99, 235)');
+
+    // Marca Ubi Brand crimson tokens present
+    assert.ok(splineSource.includes('#ea002a'), 'Must use Marca Ubi red #ea002a');
+
+    // Exact coordinate stem alignment (35/500 = 7.0%)
+    assert.ok(
+      splineStyles.includes('padding: 0 calc(35 / 500 * 100%)'),
+      'Must use exact 7.0% horizontal padding matching SVG paddingX'
+    );
+
+    // 20px clearance at bottom to prevent clipping
+    assert.ok(splineStyles.includes('padding: 24px 26px 20px'), 'Card padding must include 20px bottom clearance');
+
+    // 44px min-touch target
+    assert.ok(splineStyles.includes('min-height: 44px'), 'Buttons must include 44px touch envelope');
+
+    // Coordinate clamping
+    assert.ok(
+      splineSource.includes('Math.min(activeIndex, Math.max(0, points.length - 1))'),
+      'Must clamp activeIndex to prevent runtime crashes'
+    );
+  });
+
+  it('Gate 2: EarningOverviewSplineCard - Interactive accessible dropdown popover', () => {
+    assert.ok(splineSource.includes('role="listbox"'));
+    assert.ok(splineSource.includes('role="option"'));
+    assert.ok(splineSource.includes('aria-selected='));
+    assert.ok(splineSource.includes('aria-expanded='));
+    assert.ok(splineSource.includes('Escape'));
+    assert.ok(splineStyles.includes('min-width: 116px'), 'Trigger must have invariant 116px min-width');
+    assert.ok(splineStyles.includes('.dropdownMenu'));
+  });
+
+  it('Gate 3: SpendingOverviewBarCard - Anti-slop palette and dynamic continuous gradient bar', () => {
+    // Zero generic blue tokens
+    assert.ok(!spendingSource.includes('#2563eb'), 'Source must not contain #2563eb');
+    assert.ok(!spendingSource.includes('#60a5fa'), 'Source must not contain #60a5fa');
+    assert.ok(!spendingSource.includes('#93c5fd'), 'Source must not contain #93c5fd');
+
+    // Brand luxury palette present
+    assert.ok(spendingSource.includes('#111111'), 'Must use Brand Obsidian #111111');
+    assert.ok(spendingSource.includes('#71717a'), 'Must use Warm Slate #71717a');
+
+    // Accessible dropdown listbox
+    assert.ok(spendingSource.includes('role="listbox"'));
+    assert.ok(spendingSource.includes('role="option"'));
+    assert.ok(spendingSource.includes('aria-selected='));
+    assert.ok(spendingSource.includes('aria-expanded='));
+    assert.ok(spendingStyles.includes('min-width: 116px'));
+    assert.ok(spendingStyles.includes('min-height: 44px'));
+
+    // Animated continuous bar
+    assert.ok(spendingStyles.includes('transition: width 0.35s'));
+  });
+
+  it('Gate 4: CommercialVelocityBarChart - Height scaling, snug layout, and zero-baseline preservation', () => {
+    // Scaled SVG viewBox (svgHeight = 300, chartHeight = 230)
+    assert.ok(velocitySource.includes('const svgHeight = 300;'), 'svgHeight must be scaled to 300');
+    assert.ok(velocitySource.includes('const chartHeight = svgHeight - paddingTop - paddingBottom; // 230'));
+    assert.ok(velocitySource.includes('viewBox={`0 0 ${svgWidth} ${svgHeight}`}'));
+
+    // Snug alignment eliminating dead space canyon
+    assert.ok(velocityStyles.includes('padding: 24px 26px 20px;'));
+    assert.ok(velocityStyles.includes('min-height: 280px;'));
+    assert.ok(velocityStyles.includes('align-items: stretch;'));
+
+    // Preservation of core visual archetypes & zero pedestals
+    assert.ok(velocitySource.includes('fundoraCrimsonGradient'), 'Must preserve crimson spotlight gradient');
+    assert.ok(velocitySource.includes('barPedestalZero'), 'Must preserve tactile instrument zero pedestal');
+    assert.ok(velocitySource.includes('beaconRing'), 'Must preserve tactile apex beacon ring');
+  });
+
+  it('Gate 5: Timeframe harmonic math models and option catalog', () => {
+    assert.equal(CARD_TIMEFRAME_OPTIONS.length, 4);
+
+    const cadences = ['this_week', 'this_month', 'this_quarter', 'this_year'] as const;
+
+    for (const cadence of cadences) {
+      const spline = computeSplinePointsForCadence(cadence, 6540000);
+      assert.ok(spline.points.length >= 3, `${cadence} must have at least 3 points`);
+      assert.ok(spline.totalValue > 0, `${cadence} totalValue must be > 0`);
+      assert.ok(spline.growthPercentage > 0, `${cadence} growthPercentage must be > 0`);
+
+      for (const pt of spline.points) {
+        assert.ok(pt.month.length > 0, 'Point month must not be empty');
+        assert.ok(Number.isFinite(pt.value) && pt.value >= 0, 'Point value must be finite and non-negative');
+      }
+
+      const spending = computeSpendingBreakdownForCadence(cadence, 6540000, 39);
+      assert.ok(spending.totalValue > 0);
+      assert.ok(spending.dealCount > 0);
+      assert.equal(spending.categories.length, 3);
+
+      const categorySum = spending.categories.reduce((s, c) => s + c.value, 0);
+      assert.equal(categorySum, spending.totalValue, `${cadence} categories must sum to totalValue`);
+    }
+  });
+});
