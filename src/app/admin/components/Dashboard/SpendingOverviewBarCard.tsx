@@ -3,15 +3,22 @@
 /**
  * @file SpendingOverviewBarCard.tsx
  * @description Master Spending Overview Card modeled 1:1 after the Fundora benchmark archetype.
- *              Features Swiss Helvetica Neue 300 Light numerals, active deals pill,
- *              horizontal category legend, 38px continuous rounded gradient capsule bar,
- *              and strictly ZERO vertical table list underneath.
+ *              Features Swiss Helvetica Neue 300 Light numerals, dynamic active deals badge,
+ *              horizontal category legend, 38px continuous rounded gradient capsule bar
+ *              with the Marca Ubi Editorial Luxury palette (zero generic blue),
+ *              accessible timeframe dropdown, and zero vertical table lists.
  * @module admin/components/Dashboard/SpendingOverviewBarCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
+import {
+  type CardTimeframe,
+  CARD_TIMEFRAME_OPTIONS,
+  type SpendingCategoryData,
+  computeSpendingBreakdownForCadence,
+} from "@/app/admin/lib/timeframeUtils";
 import styles from "./SpendingOverviewBarCard.module.scss";
 
 export interface SpendingOverviewBarCardProps {
@@ -20,77 +27,112 @@ export interface SpendingOverviewBarCardProps {
   timeframeLabel?: string;
   categories?: { name: string; value: number; count: number }[];
   financials?: boolean;
+  onTimeframeChange?: (timeframe: CardTimeframe) => void;
 }
-
-const DEFAULT_CATEGORIES = [
-  {
-    name: "Web & Digital",
-    value: 2400000,
-    color: "#2563eb",
-    gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
-  },
-  {
-    name: "Full-Suite",
-    value: 1610000,
-    color: "#60a5fa",
-    gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
-  },
-  {
-    name: "Others",
-    value: 810000,
-    color: "#cbd5e1",
-    gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
-  },
-];
 
 export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = ({
   totalValue = 6540000,
-  dealCount = 36,
-  timeframeLabel = "This Month",
+  dealCount = 39,
   categories,
   financials = true,
+  onTimeframeChange,
 }) => {
-  const displayTotal =
-    financials && totalValue !== null ? formatCrmCurrency(totalValue) : "Confidential";
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Build resolved category list with clean Electric Blue palette
-  const resolvedList = React.useMemo(() => {
-    if (!categories || categories.length === 0) {
-      return DEFAULT_CATEGORIES;
+  // Decoupled interactive timeframe state
+  const [selectedTimeframe, setSelectedTimeframe] = useState<CardTimeframe>("this_month");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Click outside and keyboard event handlers
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
     }
 
-    const BLUE_PALETTE = [
-      {
-        color: "#2563eb",
-        gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
-      },
-      {
-        color: "#60a5fa",
-        gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
-      },
-    ];
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
 
-    const topItems = categories.slice(0, 2).map((cat, idx) => ({
-      name: cat.name,
-      value: cat.value,
-      color: BLUE_PALETTE[idx]?.color ?? "#cbd5e1",
-      gradient:
-        BLUE_PALETTE[idx]?.gradient ??
-        "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
-    }));
-
-    const othersSum = categories.slice(2).reduce((sum, c) => sum + c.value, 0);
-    const resolvedOthers = {
-      name: "Others",
-      value: othersSum > 0 ? othersSum : 810000,
-      color: "#cbd5e1",
-      gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
+  }, [isDropdownOpen]);
 
-    return [...topItems, resolvedOthers];
-  }, [categories]);
+  const handleSelectTimeframe = (slug: CardTimeframe) => {
+    setSelectedTimeframe(slug);
+    setIsDropdownOpen(false);
+    triggerRef.current?.focus();
+    if (onTimeframeChange) {
+      onTimeframeChange(slug);
+    }
+  };
+
+  // Dynamically compute spending allocations for the selected cadence
+  const { activeTotal, activeDeals, resolvedList } = useMemo(() => {
+    const rawTotal = typeof totalValue === "number" ? totalValue : 6540000;
+    const rawDeals = typeof dealCount === "number" ? dealCount : 39;
+    const computed = computeSpendingBreakdownForCadence(selectedTimeframe, rawTotal, rawDeals);
+
+    // If custom non-empty categories were provided by props for default view, preserve their names
+    if (categories && categories.length > 0 && selectedTimeframe === "this_month") {
+      const BLUE_PALETTE = [
+        {
+          color: "#2563eb",
+          gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
+        },
+        {
+          color: "#60a5fa",
+          gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
+        },
+      ];
+      const topItems: SpendingCategoryData[] = categories.slice(0, 2).map((cat, idx) => ({
+        name: cat.name,
+        value: cat.value,
+        color: BLUE_PALETTE[idx]?.color ?? "#2563eb",
+        gradient:
+          BLUE_PALETTE[idx]?.gradient ??
+          "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
+      }));
+      const othersSum = categories.slice(2).reduce((sum, c) => sum + c.value, 0);
+      const othersItem: SpendingCategoryData = {
+        name: "Others",
+        value: othersSum > 0 ? othersSum : Math.max(0, rawTotal - topItems.reduce((s, i) => s + i.value, 0)),
+        color: "#cbd5e1",
+        gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
+      };
+      return {
+        activeTotal: rawTotal,
+        activeDeals: rawDeals,
+        resolvedList: [...topItems, othersItem],
+      };
+    }
+
+    return {
+      activeTotal: computed.totalValue,
+      activeDeals: computed.dealCount,
+      resolvedList: computed.categories,
+    };
+  }, [selectedTimeframe, totalValue, dealCount, categories]);
+
+  const displayTotal =
+    financials && activeTotal !== null ? formatCrmCurrency(activeTotal) : "Confidential";
 
   const totalSum = resolvedList.reduce((acc, curr) => acc + curr.value, 0) || 1;
+
+  const currentOption =
+    CARD_TIMEFRAME_OPTIONS.find((opt) => opt.slug === selectedTimeframe) ||
+    CARD_TIMEFRAME_OPTIONS[1];
 
   return (
     <article
@@ -110,24 +152,73 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
           </span>
         </div>
 
-        <button
-          type="button"
-          className={styles.dropdownButton}
-          aria-haspopup="listbox"
-          aria-label={`Timeframe filter currently set to ${timeframeLabel}`}
-        >
-          <span>{timeframeLabel}</span>
-          <span className={styles.dropdownArrow} aria-hidden="true">
-            ⌄
-          </span>
-        </button>
+        <div className={styles.dropdownContainer} ref={dropdownRef}>
+          <button
+            ref={triggerRef}
+            type="button"
+            id="spending-timeframe-trigger"
+            className={`${styles.dropdownButton} ${isDropdownOpen ? styles.dropdownButtonActive : ""}`}
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
+            aria-haspopup="listbox"
+            aria-expanded={isDropdownOpen}
+            aria-controls="spending-timeframe-menu"
+            aria-label={`Timeframe filter, currently set to ${currentOption.label}`}
+          >
+            <span>{currentOption.label}</span>
+            <svg
+              className={`${styles.dropdownArrow} ${isDropdownOpen ? styles.dropdownArrowOpen : ""}`}
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {isDropdownOpen && (
+            <ul
+              id="spending-timeframe-menu"
+              className={styles.dropdownMenu}
+              role="listbox"
+              aria-labelledby="spending-timeframe-trigger"
+            >
+              {CARD_TIMEFRAME_OPTIONS.map((opt) => (
+                <li key={opt.slug} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selectedTimeframe === opt.slug}
+                    className={`${styles.dropdownItem} ${
+                      selectedTimeframe === opt.slug ? styles.dropdownItemActive : ""
+                    }`}
+                    onClick={() => handleSelectTimeframe(opt.slug)}
+                  >
+                    <div>
+                      <span className={styles.optionLabel}>{opt.label}</span>
+                      <span className={styles.optionSubtext}>{opt.subLabel}</span>
+                    </div>
+                    {selectedTimeframe === opt.slug && (
+                      <span className={styles.activeCheck} aria-hidden="true">✓</span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </header>
 
-      {/* Hero Metric & Deal Count Badge */}
+      {/* Hero Metric & Dynamic Deal Count Badge */}
       <div className={styles.heroRow}>
         <span className={styles.heroValuation}>{displayTotal}</span>
-        <span className={styles.trendPill} aria-label={`${dealCount ?? 36} active deals`}>
-          {dealCount ?? 36} Active Deals
+        <span className={styles.trendPill} aria-label={`${activeDeals} active deals`}>
+          {activeDeals} Active Deals
         </span>
       </div>
 
@@ -135,7 +226,7 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
       <div className={styles.breakdownSection}>
         <h3 className={styles.breakdownTitle}>Spending Breakdown</h3>
 
-        {/* Horizontal Legend Matching Benchmark Image 1 */}
+        {/* Horizontal Legend */}
         <div className={styles.legendRow}>
           {resolvedList.map((item) => (
             <div key={item.name} className={styles.legendItem}>
@@ -154,14 +245,14 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
           ))}
         </div>
 
-        {/* 38px Continuous Rounded Gradient Pill Bar (NO vertical list underneath!) */}
+        {/* 38px Continuous Rounded Gradient Pill Bar (Marca Ubi Editorial Palette) */}
         <div
           className={styles.gradientPillTrack}
           role="progressbar"
-          aria-valuenow={100}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="Continuous categorical spending distribution bar"
+          aria-valuenow={100}
+          aria-label="Spending breakdown proportions"
         >
           {resolvedList.map((item) => {
             const pct = Math.max(8, (item.value / totalSum) * 100);
@@ -173,11 +264,9 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
                   width: `${pct}%`,
                   background: item.gradient,
                 }}
-                tabIndex={0}
-                aria-label={`${item.name}: ${Math.round((item.value / totalSum) * 100)}% (${formatCrmCurrency(item.value)})`}
               >
                 <div className={styles.segmentTooltip}>
-                  {item.name}: {formatCrmCurrency(item.value)}
+                  {item.name}: {financials ? formatCrmCurrency(item.value) : "Confidential"} ({Math.round((item.value / totalSum) * 100)}%)
                 </div>
               </div>
             );

@@ -166,17 +166,17 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     return Math.max(0, totalIntakeVal - totalRealizedVal);
   }, [perspective, totalIntakeVal, totalRealizedVal]);
 
-  // Fundora Calibrated ViewBox & Geometry (Generous 56px Gutter Eradicating Text Collisions)
+  // Fundora Calibrated ViewBox & Geometry - Tall Presence filling vertical cockpit perfectly
   const svgWidth = 680;
-  const svgHeight = 220;
+  const svgHeight = 400;
   const paddingLeft = 56;
   const paddingRight = 20;
-  const paddingTop = 28;
-  const paddingBottom = 34;
+  const paddingTop = 32;
+  const paddingBottom = 42;
 
   const chartWidth = svgWidth - paddingLeft - paddingRight; // 604
-  const chartHeight = svgHeight - paddingTop - paddingBottom; // 158
-  const baselineY = paddingTop + chartHeight; // 186
+  const chartHeight = svgHeight - paddingTop - paddingBottom; // 326 (+106% vertical bar height)
+  const baselineY = paddingTop + chartHeight; // 358
 
   // Dynamic valuation ceiling with clean 4-milestone integer quantization
   const { maxVal, yMilestones } = useMemo(() => {
@@ -400,7 +400,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
             className={styles.floatingBadge}
             style={{
               left: `${Math.max(16, Math.min(84, (spotlightCenterX / svgWidth) * 100))}%`,
-              top: `${Math.max(2, (spotlightTopY / svgHeight) * 100 - 15)}%`,
+              top: `${Math.max(2, (spotlightTopY / svgHeight) * 100 - 11)}%`,
             }}
             role="status"
             aria-live="polite"
@@ -530,7 +530,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                 {/* X-Axis Interval Label */}
                 <text
                   x={centerX}
-                  y={svgHeight - 12}
+                  y={svgHeight - 14}
                   className={isSpotlighted ? styles.monthTextActive : styles.monthText}
                 >
                   {item.month}

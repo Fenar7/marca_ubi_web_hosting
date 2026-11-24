@@ -306,7 +306,6 @@ function AdminWorkspaceShellState({
         inert={isMobileOpen}
       >
         <AdminHeader
-          currentUser={currentUser}
           isMobileNavOpen={isMobileOpen}
           onOpenMobileNav={() => setIsMobileOpen(true)}
           className={isOverview ? styles.overviewHeader : undefined}

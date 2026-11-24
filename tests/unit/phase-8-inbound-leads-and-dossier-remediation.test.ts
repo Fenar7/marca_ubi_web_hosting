@@ -333,13 +333,12 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       );
     });
 
-    it('verifies AdminBreadcrumbs maps user-management to Administration and User Management', () => {
+    it('keeps user-management aliases readable without a duplicate section link', () => {
       const breadcrumbPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminBreadcrumbs.tsx');
       const code = fs.readFileSync(breadcrumbPath, 'utf8');
-      assert.ok(code.includes("'user-management': 'Administration'"), 'SECTION_MAP must map user-management');
       assert.ok(code.includes("'user-management': 'User Management'"), 'ROUTE_NAME_MAP must map user-management');
-      assert.ok(code.includes("users: 'Administration'"), 'SECTION_MAP must map users');
       assert.ok(code.includes("users: 'User Management'"), 'ROUTE_NAME_MAP must map users');
+      assert.ok(!code.includes('SECTION_MAP'));
     });
 
     it('verifies LeadsWorkspaceClient hydrates drawer from both canonical id and legacy leadId', () => {

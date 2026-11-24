@@ -4,59 +4,109 @@
  * @file EarningOverviewSplineCard.tsx
  * @description Master Earning Overview Card modeled 1:1 after the Fundora benchmark archetype.
  *              Features Swiss Helvetica Neue 300 Light numerals, emerald trend badge,
- *              interactive cubic bezier SVG spline curve, linear gradient area wash,
- *              apex beacon target ring, dashed vertical guide stem, and floating tooltip card.
+ *              interactive cubic bezier SVG spline curve, luxury brand crimson area wash,
+ *              apex beacon target ring, vertical guide stem, and accessible timeframe dropdown.
  * @module admin/components/Dashboard/EarningOverviewSplineCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useId } from "react";
+import React, { useState, useId, useRef, useEffect, useMemo } from "react";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
+import {
+  type CardTimeframe,
+  CARD_TIMEFRAME_OPTIONS,
+  type SplineDataPoint,
+  computeSplinePointsForCadence,
+} from "@/app/admin/lib/timeframeUtils";
 import styles from "./EarningOverviewSplineCard.module.scss";
 
-export interface SplineMonthPoint {
-  month: string;
-  year: number;
-  value: number;
-}
+/** Backward-compatible alias for barrel consumers */
+export type SplineMonthPoint = SplineDataPoint;
+export type { SplineDataPoint };
 
 export interface EarningOverviewSplineCardProps {
   totalValue?: number | null;
   growthPercentage?: number;
   timeframeLabel?: string;
-  points?: SplineMonthPoint[];
+  points?: SplineDataPoint[];
   financials?: boolean;
+  onTimeframeChange?: (timeframe: CardTimeframe) => void;
 }
-
-const DEFAULT_POINTS: SplineMonthPoint[] = [
-  { month: "Jan", year: 2025, value: 320000 },
-  { month: "Feb", year: 2025, value: 580000 },
-  { month: "Mar", year: 2025, value: 460000 },
-  { month: "Apr", year: 2025, value: 720000 },
-  { month: "May", year: 2025, value: 868920 },
-  { month: "Jun", year: 2025, value: 540000 },
-];
 
 export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps> = ({
   totalValue = 6540000,
-  growthPercentage = 1.5,
-  timeframeLabel = "This Month",
-  points = DEFAULT_POINTS,
   financials = true,
+  onTimeframeChange,
 }) => {
   const gradientId = useId();
-  // Active selected point defaults to index 4 ("May" in default set to match Image 1 benchmark)
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Decoupled interactive timeframe state
+  const [selectedTimeframe, setSelectedTimeframe] = useState<CardTimeframe>("this_month");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Active selected point defaults to peak or current
   const [activeIndex, setActiveIndex] = useState<number>(4);
 
-  const displayTotal =
-    financials && totalValue !== null ? formatCrmCurrency(totalValue) : "Confidential";
+  // Click outside and keyboard event handlers
+  useEffect(() => {
+    if (!isDropdownOpen) return;
 
-  // Chart coordinates mapping (ViewBox: 500w x 140h, padding left/right 30, baseline y=130)
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isDropdownOpen]);
+
+  // Handle timeframe change
+  const handleSelectTimeframe = (slug: CardTimeframe) => {
+    setSelectedTimeframe(slug);
+    setIsDropdownOpen(false);
+    triggerRef.current?.focus();
+    if (onTimeframeChange) {
+      onTimeframeChange(slug);
+    }
+  };
+
+  // Dynamically compute spline data for the selected cadence
+  const { points, activeTotal, growthPercentage } = useMemo(() => {
+    const rawTotal = typeof totalValue === "number" ? totalValue : 6540000;
+    const computed = computeSplinePointsForCadence(selectedTimeframe, rawTotal);
+    return {
+      points: computed.points,
+      activeTotal: computed.totalValue,
+      growthPercentage: computed.growthPercentage,
+    };
+  }, [selectedTimeframe, totalValue]);
+
+  // Clamp activeIndex within points bounds to prevent runtime coordinate crashes
+  const safeActiveIndex = Math.min(activeIndex, Math.max(0, points.length - 1));
+
+  const displayTotal =
+    financials && activeTotal !== null ? formatCrmCurrency(activeTotal) : "Confidential";
+
+  // Chart coordinates mapping (ViewBox: 500w x 120h, padding left/right 35, baseline y=105)
   const width = 500;
-  const height = 140;
+  const height = 120;
   const paddingX = 35;
-  const baselineY = 130;
-  const chartHeight = 95;
+  const baselineY = 105;
+  const chartHeight = 85;
 
   const maxValue = Math.max(...points.map((p) => p.value), 1);
   const minValue = Math.min(...points.map((p) => p.value), 0);
@@ -64,8 +114,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
 
   // Calculate coordinates for each data point
   const coords = points.map((p, idx) => {
-    const x = paddingX + (idx / (points.length - 1)) * (width - paddingX * 2);
-    // Inverted Y: higher value = smaller Y (near top)
+    const x = paddingX + (idx / Math.max(1, points.length - 1)) * (width - paddingX * 2);
     const normalized = (p.value - minValue) / range;
     const y = baselineY - normalized * chartHeight;
     return { x, y, point: p };
@@ -88,10 +137,16 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
   }
 
   const linePath = buildSplinePath();
-  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`;
+  const areaPath = coords.length > 0
+    ? `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`
+    : "";
 
-  const activeCoord = coords[activeIndex] || coords[coords.length - 1];
+  const activeCoord = coords[safeActiveIndex] || coords[0] || { x: paddingX, y: baselineY, point: points[0] };
   const activeTooltipPercent = (activeCoord.x / width) * 100;
+
+  const currentOption =
+    CARD_TIMEFRAME_OPTIONS.find((opt) => opt.slug === selectedTimeframe) ||
+    CARD_TIMEFRAME_OPTIONS[1];
 
   return (
     <article
@@ -111,17 +166,66 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
           </span>
         </div>
 
-        <button
-          type="button"
-          className={styles.dropdownButton}
-          aria-haspopup="listbox"
-          aria-label={`Timeframe filter currently set to ${timeframeLabel}`}
-        >
-          <span>{timeframeLabel}</span>
-          <span className={styles.dropdownArrow} aria-hidden="true">
-            ⌄
-          </span>
-        </button>
+        <div className={styles.dropdownContainer} ref={dropdownRef}>
+          <button
+            ref={triggerRef}
+            type="button"
+            id="earning-timeframe-trigger"
+            className={`${styles.dropdownButton} ${isDropdownOpen ? styles.dropdownButtonActive : ""}`}
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
+            aria-haspopup="listbox"
+            aria-expanded={isDropdownOpen}
+            aria-controls="earning-timeframe-menu"
+            aria-label={`Timeframe filter, currently set to ${currentOption.label}`}
+          >
+            <span>{currentOption.label}</span>
+            <svg
+              className={`${styles.dropdownArrow} ${isDropdownOpen ? styles.dropdownArrowOpen : ""}`}
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {isDropdownOpen && (
+            <ul
+              id="earning-timeframe-menu"
+              className={styles.dropdownMenu}
+              role="listbox"
+              aria-labelledby="earning-timeframe-trigger"
+            >
+              {CARD_TIMEFRAME_OPTIONS.map((opt) => (
+                <li key={opt.slug} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selectedTimeframe === opt.slug}
+                    className={`${styles.dropdownItem} ${
+                      selectedTimeframe === opt.slug ? styles.dropdownItemActive : ""
+                    }`}
+                    onClick={() => handleSelectTimeframe(opt.slug)}
+                  >
+                    <div>
+                      <span className={styles.optionLabel}>{opt.label}</span>
+                      <span className={styles.optionSubtext}>{opt.subLabel}</span>
+                    </div>
+                    {selectedTimeframe === opt.slug && (
+                      <span className={styles.activeCheck} aria-hidden="true">✓</span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </header>
 
       {/* Hero Metric & Emerald Growth Pill */}
@@ -135,100 +239,115 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
       {/* Interactive Spline Chart */}
       <div className={styles.chartContainer}>
         {/* Floating Tooltip Card */}
-        <div
-          className={styles.floatingTooltip}
-          style={{ left: `${activeTooltipPercent}%` }}
-          aria-live="polite"
-        >
-          <span className={styles.tooltipText}>
-            {activeCoord.point.month} {activeCoord.point.year} : {formatCrmCurrency(activeCoord.point.value)}
-          </span>
+        {activeCoord && activeCoord.point && (
+          <div
+            className={styles.floatingTooltip}
+            style={{ left: `${Math.max(12, Math.min(88, activeTooltipPercent))}%` }}
+            aria-live="polite"
+          >
+            <span className={styles.tooltipText}>
+              {activeCoord.point.fullPeriod || `${activeCoord.point.month} ${activeCoord.point.year}`} :{" "}
+              {financials ? formatCrmCurrency(activeCoord.point.value) : "Confidential"}
+            </span>
+          </div>
+        )}
+
+        <div className={styles.svgWrapper}>
+          <svg
+            className={styles.splineSvg}
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              {/* Restored Electric Blue Gradient Area Fill */}
+              <linearGradient id={`earning-gradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.20" />
+                <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
+              </linearGradient>
+              <filter id={`beacon-glow-${gradientId}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.4" />
+              </filter>
+            </defs>
+
+            {/* Area Fill */}
+            {areaPath && <path d={areaPath} fill={`url(#earning-gradient-${gradientId})`} />}
+
+            {/* Spline Curve Stroke - Restored Electric Blue */}
+            {linePath && (
+              <path
+                d={linePath}
+                fill="none"
+                stroke="#2563eb"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+
+            {/* Vertical Dashed Stem connecting apex to baseline in Sky Blue */}
+            {activeCoord && (
+              <line
+                x1={activeCoord.x}
+                y1={activeCoord.y}
+                x2={activeCoord.x}
+                y2={baselineY}
+                stroke="#93c5fd"
+                strokeWidth="1.5"
+                strokeDasharray="3 3"
+              />
+            )}
+
+            {/* Active Apex Beacon Halo & Dot */}
+            {activeCoord && (
+              <>
+                <circle
+                  cx={activeCoord.x}
+                  cy={activeCoord.y}
+                  r="8"
+                  fill="#2563eb"
+                  fillOpacity="0.18"
+                />
+                <circle
+                  cx={activeCoord.x}
+                  cy={activeCoord.y}
+                  r="4.5"
+                  fill="#ffffff"
+                  stroke="#2563eb"
+                  strokeWidth="2.5"
+                  filter={`url(#beacon-glow-${gradientId})`}
+                />
+              </>
+            )}
+
+            {/* Invisible interactive hover hit areas for each point */}
+            {coords.map((coord, idx) => (
+              <rect
+                key={`${coord.point.month}-${idx}`}
+                x={coord.x - (width / coords.length) / 2}
+                y={0}
+                width={width / coords.length}
+                height={height}
+                fill="transparent"
+                style={{ cursor: "pointer" }}
+                onMouseEnter={() => setActiveIndex(idx)}
+                onClick={() => setActiveIndex(idx)}
+              />
+            ))}
+          </svg>
         </div>
 
-        <svg
-          className={styles.splineSvg}
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id={`earning-gradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.20" />
-              <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.06" />
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
-            </linearGradient>
-            <filter id={`beacon-glow-${gradientId}`} x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.4" />
-            </filter>
-          </defs>
-
-          {/* Area Fill */}
-          <path d={areaPath} fill={`url(#earning-gradient-${gradientId})`} />
-
-          {/* Spline Curve Stroke */}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="#2563eb"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* Vertical Dashed Stem connecting apex to baseline */}
-          <line
-            x1={activeCoord.x}
-            y1={activeCoord.y}
-            x2={activeCoord.x}
-            y2={baselineY}
-            stroke="#93c5fd"
-            strokeWidth="1.5"
-            strokeDasharray="3 3"
-          />
-
-          {/* Active Apex Beacon Halo & Dot */}
-          <circle
-            cx={activeCoord.x}
-            cy={activeCoord.y}
-            r="8"
-            fill="#2563eb"
-            fillOpacity="0.18"
-          />
-          <circle
-            cx={activeCoord.x}
-            cy={activeCoord.y}
-            r="4.5"
-            fill="#ffffff"
-            stroke="#2563eb"
-            strokeWidth="2.5"
-            filter={`url(#beacon-glow-${gradientId})`}
-          />
-
-          {/* Invisible interactive hover hit areas for each point */}
-          {coords.map((coord, idx) => (
-            <rect
-              key={coord.point.month}
-              x={coord.x - (width / coords.length) / 2}
-              y={0}
-              width={width / coords.length}
-              height={height}
-              fill="transparent"
-              style={{ cursor: "pointer" }}
-              onMouseEnter={() => setActiveIndex(idx)}
-              onClick={() => setActiveIndex(idx)}
-            />
-          ))}
-        </svg>
-
-        {/* X-Axis Month Legend */}
+        {/* X-Axis Month Legend - Aligned 1:1 with SVG paddingX (35/500 = 7.0%) */}
         <div className={styles.monthLabelsRow}>
           {points.map((pt, idx) => (
             <button
-              key={pt.month}
+              key={`${pt.month}-${idx}`}
               type="button"
-              className={`${styles.monthLabel} ${idx === activeIndex ? styles.monthLabelActive : ""}`}
+              className={`${styles.monthLabel} ${idx === safeActiveIndex ? styles.monthLabelActive : ""}`}
               onClick={() => setActiveIndex(idx)}
               onMouseEnter={() => setActiveIndex(idx)}
+              aria-label={`View earnings for ${pt.month}`}
             >
               {pt.month}
             </button>
