@@ -89,8 +89,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .backLink {
   @include accordionPillGhost;
-  height: 36px;
-  min-height: 36px;
+  position: relative;
+  height: 44px;
+  min-height: 44px;
   text-decoration: none;
   font-size: 0.78rem;
   letter-spacing: normal;
@@ -118,13 +119,20 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 32px;
-  min-height: 32px;
+  height: 36px;
+  min-height: 36px;
   padding: 0 10px;
   border-radius: 6px;
   cursor: pointer;
   position: relative;
   transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -4px 0;
+    min-height: 44px;
+  }
 
   svg {
     width: 13px;
@@ -239,10 +247,6 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
     outline: 2px solid var(--admin-border-strong, #1f242f);
     outline-offset: 2px;
   }
-}
-
-.radarDot {
-  display: none !important;
 }
 
 .statusDropdownMenu {
@@ -665,7 +669,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   word-break: break-all;
   overflow-wrap: anywhere;
   white-space: normal;
-  min-height: 38px;
+  min-height: 44px;
   transition: all 0.15s ease;
 
   svg {
@@ -706,10 +710,12 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tagPillBtn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 10px;
+  min-height: 44px;
+  padding: 6px 12px;
   border-radius: 9999px;
   background: var(--admin-surface-muted, #f0f2f5);
   border: 1px solid var(--admin-border-default, #e2e5ea);
@@ -901,7 +907,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 36px;
+  height: 44px;
+  min-height: 44px;
   background: transparent;
   border: none;
   border-radius: 7px;
@@ -998,7 +1005,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .presetBtn {
-  height: 38px;
+  height: 44px;
+  min-height: 44px;
   background: $surface-card;
   border: $border-hairline;
   border-radius: 8px;
@@ -1159,7 +1167,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btnRescheduleMini {
-  padding: 6px 12px;
+  padding: 8px 14px;
   background: $surface-elevated;
   border: $border-hairline;
   border-radius: 6px;
@@ -1167,7 +1175,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  min-height: 36px;
+  min-height: 44px;
   transition: all 0.15s ease;
 
   &:hover {
@@ -1584,8 +1592,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
-  padding: 0 14px;
+  min-height: 44px;
+  padding: 0 16px;
   border-radius: 9999px;
   background: #065f46;
   color: #ffffff;
@@ -1597,4 +1605,62 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   &:hover {
     background: #047857;
   }
+}
+
+.tagPillRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.statusErrorSpacing {
+  margin-bottom: 16px;
+}
+
+.fullGridSpan {
+  grid-column: 1 / -1;
+}
+
+.fitContentLink {
+  width: fit-content;
+}
+
+.timelineMetaPillsRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.systemDeltaPillsRow {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+
+.sectionHeaderCompact {
+  margin-bottom: 14px;
+}
+
+.sectionHeaderTight {
+  margin-bottom: 12px;
+}
+
+.ownerSelectCompact {
+  width: auto;
+  min-width: 160px;
+}
+
+.followUpEmptyCard {
+  padding: 16px;
+}
+
+.followUpEmptyCopy {
+  margin: 0 0 10px 0;
+}
+
+.fullWidthBtn {
+  width: 100%;
 }

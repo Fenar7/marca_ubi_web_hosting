@@ -61,9 +61,11 @@
 }
 
 .addButton {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.09);
   color: #374151;
@@ -187,9 +189,20 @@
 }
 
 .chevronIcon {
-  font-size: 0.85rem;
-  color: #94a3b8;
+  flex-shrink: 0;
+  color: #64748b;
   transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.emptyItemsState {
+  padding: 24px 14px;
+  border-radius: 12px;
+  border: 1px dashed #dcdcd8;
+  background: #fafaf8;
+  color: #525965;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 .itemCard:hover .chevronIcon {

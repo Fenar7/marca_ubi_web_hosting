@@ -210,8 +210,12 @@ export async function transitionToNegotiationAction(
       },
     });
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -322,8 +326,12 @@ export async function transitionToLostAction(
       },
     });
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -533,20 +541,42 @@ export async function unlockConvertedLeadAction(
       .eq('id', user.id)
       .maybeSingle();
 
-    if (!profile || profile.role !== 'admin') {
+    if (!profile || profile.status !== 'active' || profile.role !== 'admin') {
       return {
         success: false,
-        error: 'Forbidden: Only system administrators can unlock converted deals.',
+        error: 'Forbidden: Only active system administrators can unlock converted deals.',
       };
     }
 
+    const { data: currentLead, error: leadFetchError } = await supabase
+      .from('leads')
+      .select('id, status_id, converted_at')
+      .eq('id', leadId)
+      .maybeSingle();
+
+    if (leadFetchError || !currentLead) {
+      return { success: false, error: 'Converted deal record not found or inaccessible.' };
+    }
+
+    const { data: negotiationStatus } = await supabase
+      .from('funnel_statuses')
+      .select('id, name')
+      .ilike('name', 'Negotiation')
+      .eq('is_active', true)
+      .maybeSingle();
+
     const nowIso = new Date().toISOString();
+    const updateFields: Record<string, unknown> = {
+      converted_at: null,
+      updated_at: nowIso,
+    };
+    if (negotiationStatus?.id) {
+      updateFields.status_id = negotiationStatus.id;
+    }
+
     const { error: updateError } = await supabase
       .from('leads')
-      .update({
-        converted_at: null,
-        updated_at: nowIso,
-      })
+      .update(updateFields)
       .eq('id', leadId);
 
     if (updateError) {
@@ -557,14 +587,29 @@ export async function unlockConvertedLeadAction(
       lead_id: leadId,
       actor_id: profile.id,
       activity_type: 'status_change',
-      description: `Deal converted record lock released by administrator ${profile.full_name}.`,
+      description: `Deal converted record lock released by administrator ${profile.full_name}${negotiationStatus ? ` and reverted to ${negotiationStatus.name}` : ''}.`,
       metadata: {
         action: 'unlock_converted_lead',
         unlocked_by: profile.id,
+        previous_status_id: currentLead.status_id,
+        ...(negotiationStatus
+          ? {
+              new_status_id: negotiationStatus.id,
+              new_status_name: negotiationStatus.name,
+            }
+          : {}),
       },
     });
 
+    revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/works');
+    revalidatePath('/admin/analytics');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
+
     return { success: true, data: { leadId, unlockedAt: nowIso } };
   } catch (err) {
     return {

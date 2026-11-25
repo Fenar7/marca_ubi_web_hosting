@@ -7,14 +7,6 @@
  */
 
 import { z } from 'zod';
-import type {
-  CrmUserRole,
-  PreferredChannel,
-  ServiceCategory,
-  LeadPriority,
-  AssigneeOption,
-  LeadActionResult,
-} from '@/types/crm';
 
 /**
  * Service category enum list matching database check constraint `chk_leads_service_category`.

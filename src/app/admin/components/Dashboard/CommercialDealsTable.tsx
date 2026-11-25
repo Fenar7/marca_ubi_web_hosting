@@ -149,7 +149,7 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                       </div>
                       <Link
                         className={styles.dealLink}
-                        href={`/admin/leads?id=${encodeURIComponent(deal.id)}`}
+                        href={`/admin/deals/${encodeURIComponent(deal.id)}`}
                       >
                         <strong className={styles.dealTitle}>
                           {deal.company || deal.name}
@@ -193,7 +193,7 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                   {/* Action Link */}
                   <td className={styles.tdActions}>
                     <Link
-                      href={`/admin/leads?id=${encodeURIComponent(deal.id)}`}
+                      href={`/admin/leads/${deal.id}`}
                       className={styles.actionBtn}
                       title={`Open dossier for ${deal.name}`}
                       aria-label={`Open dossier for ${deal.name}`}

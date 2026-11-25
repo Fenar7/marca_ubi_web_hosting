@@ -523,3 +523,12 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.celebrationWorksLink {
+  font-weight: 700;
+  color: #065f46;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

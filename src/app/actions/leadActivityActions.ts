@@ -13,6 +13,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
 import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import type {
   LeadActionResult,
   LeadActivityType,
@@ -83,10 +84,10 @@ export async function logLeadActivityAction(
       };
     }
 
-    if (profile.status === 'suspended') {
+    if (profile.status !== 'active') {
       return {
         success: false,
-        error: 'Forbidden: Account has been suspended by an enterprise administrator.',
+        error: 'Forbidden: Account is inactive or suspended by an enterprise administrator.',
       };
     }
 
@@ -245,7 +246,7 @@ export async function getLeadActivitiesAction(
     // Verify caller profile & status defense
     const { data: callerProfile, error: callerProfileError } = await supabase
       .from('profiles')
-      .select('id, status')
+      .select('id, role, status, feature_permissions')
       .eq('id', user.id)
       .single();
 
@@ -262,6 +263,13 @@ export async function getLeadActivitiesAction(
         error: 'Forbidden: Account is inactive or has been suspended by an enterprise administrator.',
       };
     }
+
+    const callerRole = (callerProfile.role as CrmUserRole) || 'viewer';
+    const canViewFinancials = dashboardFeature(
+      callerRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
 
     // Fetch chronological activities and resolve actor metadata via crm_team_directory
     const [{ data: rawActivities, error: activitiesError }, directoryRoster] = await Promise.all([
@@ -297,6 +305,39 @@ export async function getLeadActivitiesAction(
         ? await getCrmDirectoryMap(supabase, missingActorIds)
         : new Map<string, string>();
 
+    const FINANCIAL_METADATA_KEYS = new Set([
+      'expected_value',
+      'final_revenue',
+      'budget',
+      'budget_amount',
+      'budget_bracket',
+      'estimated_budget',
+      'contract_value',
+    ]);
+
+    const redactActivityMetadata = (raw: unknown): Record<string, unknown> => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+        if (FINANCIAL_METADATA_KEYS.has(k.toLowerCase())) continue;
+        if ((k === 'changes' || k === 'deltas') && v && typeof v === 'object' && !Array.isArray(v)) {
+          const nested: Record<string, unknown> = {};
+          for (const [ck, cv] of Object.entries(v as Record<string, unknown>)) {
+            nested[ck] = FINANCIAL_METADATA_KEYS.has(ck.toLowerCase()) ? '[Restricted]' : cv;
+          }
+          out[k] = nested;
+        } else {
+          out[k] = v;
+        }
+      }
+      return out;
+    };
+
+    const redactMonetaryText = (text: string): string =>
+      text
+        .replace(/₹\s?[\d,]+(?:\.\d+)?/g, '[Restricted]')
+        .replace(/(\bexpected valuation of\b|\bcontract value of\b)[^.]+/gi, '$1 [Restricted]');
+
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
       const actorMeta = act.actor_id ? rosterById.get(act.actor_id) : undefined;
       const fallbackName = act.actor_id ? fallbackNamesById.get(act.actor_id) : undefined;
@@ -310,8 +351,10 @@ export async function getLeadActivitiesAction(
         actor_name: resolvedName,
         actor_role: resolvedRole,
         activity_type: act.activity_type as LeadActivityType,
-        description: act.description,
-        metadata: (act.metadata as Record<string, unknown>) || {},
+        description: canViewFinancials ? act.description : redactMonetaryText(act.description),
+        metadata: canViewFinancials
+          ? (act.metadata as Record<string, unknown>) || {}
+          : redactActivityMetadata(act.metadata),
         created_at: act.created_at,
         actor: act.actor_id
           ? {

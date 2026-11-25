@@ -65,7 +65,7 @@ interface DealsWorkspaceClientProps {
   userRole?: string;
   canViewFinancials?: boolean;
   canCreate?: boolean;
-  laneTotals?: Record<string, { count: number; value: number | null }>;
+  laneTotals?: Record<string, { count: number; value: number | null; valuedCount?: number }>;
 }
 
 /** Query changes stay URL-owned; the local record copy changes only after confirmed mutations. */

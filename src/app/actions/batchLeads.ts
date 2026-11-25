@@ -16,8 +16,8 @@ import {
   batchReassignLeadsSchema,
   exportLeadsCsvSchema,
 } from '@/app/lib/lead-schemas';
-import { dashboardCsvCell } from '@/app/admin/lib/dashboardContracts';
-import type { LeadActionResult } from '@/types/crm';
+import { dashboardCsvCell, dashboardFeature } from '@/app/admin/lib/dashboardContracts';
+import type { CrmUserRole, LeadActionResult } from '@/types/crm';
 
 /**
  * Batch updates funnel stage for up to 100 candidate leads.
@@ -187,16 +187,22 @@ export async function exportLeadsCsvAction(
       return { success: false, error: 'Unauthorized: Active user session required.' };
     }
 
-    // Role & Feature check
+    // Role, Status & Feature check
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, feature_permissions')
+      .select('role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
-    const role = profile?.role || 'viewer';
-    const permissions = profile?.feature_permissions as Record<string, unknown> | null;
-    const canExport = role === 'admin' || permissions?.can_export_data === true;
+    if (!profile || profile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Forbidden: Active CRM account required for CSV export.',
+      };
+    }
+
+    const role = (profile.role || 'viewer') as CrmUserRole;
+    const canExport = dashboardFeature(role, profile.feature_permissions, 'can_export_data');
 
     if (!canExport) {
       return {
@@ -205,31 +211,39 @@ export async function exportLeadsCsvAction(
       };
     }
 
-    const canViewFinancials =
-      role === 'admin' ||
-      role === 'sales_manager' ||
-      permissions?.can_view_financials === true;
+    const canViewFinancials = dashboardFeature(
+      role,
+      profile.feature_permissions,
+      'can_view_financials'
+    );
+
+    const statusSelect =
+      parsed.data.bucket && parsed.data.bucket !== 'all'
+        ? 'funnel_statuses!inner(name, bucket)'
+        : 'funnel_statuses(name, bucket)';
+
+    const baseColumns = [
+      'id',
+      'lead_id',
+      'name',
+      'company',
+      'phone',
+      'email',
+      'preferred_channel',
+      'service_category',
+      ...(canViewFinancials ? ['expected_value'] : []),
+      'priority',
+      'next_follow_up',
+      'created_at',
+      'converted_at',
+      'assigned_to',
+      statusSelect,
+      'lead_sources(name)',
+    ].join(',\n        ');
 
     let query = supabase
       .from('leads')
-      .select(`
-        id,
-        lead_id,
-        name,
-        company,
-        phone,
-        email,
-        preferred_channel,
-        service_category,
-        expected_value,
-        priority,
-        next_follow_up,
-        created_at,
-        converted_at,
-        assigned_to,
-        funnel_statuses(name, bucket),
-        lead_sources(name)
-      `)
+      .select(baseColumns)
       .or(
         'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true'
       )
@@ -242,6 +256,17 @@ export async function exportLeadsCsvAction(
     if (parsed.data.stage) {
       query = query.eq('status_id', parsed.data.stage);
     }
+    if (parsed.data.bucket && parsed.data.bucket !== 'all') {
+      query = query.eq('funnel_statuses.bucket', parsed.data.bucket);
+    }
+    if (parsed.data.search && parsed.data.search.trim().length > 0) {
+      const sanitizedTerm = parsed.data.search.trim().replace(/[,().*\\]/g, '').slice(0, 80);
+      if (sanitizedTerm.length > 0) {
+        query = query.or(
+          `name.ilike.%${sanitizedTerm}%,company.ilike.%${sanitizedTerm}%,email.ilike.%${sanitizedTerm}%,lead_id.ilike.%${sanitizedTerm}%`
+        );
+      }
+    }
     if (parsed.data.assignedTo) {
       query = query.eq('assigned_to', parsed.data.assignedTo);
     }
@@ -252,14 +277,35 @@ export async function exportLeadsCsvAction(
       query = query.ilike('priority', parsed.data.priority);
     }
 
-    const { data: rows, error: queryError } = await query;
+    const { data: rawRows, error: queryError } = await query;
 
-    if (queryError || !rows) {
+    if (queryError || !rawRows) {
       return {
         success: false,
         error: `Failed to query records for export: ${queryError?.message || 'Unknown error'}`,
       };
     }
+
+    type ExportLeadRow = {
+      id: string;
+      lead_id: string | null;
+      name: string | null;
+      company: string | null;
+      phone: string | null;
+      email: string | null;
+      preferred_channel: string | null;
+      service_category: string | null;
+      expected_value?: number | string | null;
+      priority: string | null;
+      next_follow_up: string | null;
+      created_at: string | null;
+      converted_at: string | null;
+      assigned_to: string | null;
+      funnel_statuses: { name?: string; bucket?: string } | null;
+      lead_sources: { name?: string } | null;
+    };
+
+    const rows = rawRows as unknown as ExportLeadRow[];
 
     const headers = [
       'Lead ID',
@@ -288,8 +334,8 @@ export async function exportLeadsCsvAction(
     const lines: string[] = [headers.map((h) => dashboardCsvCell(h)).join(',')];
 
     for (const row of rows) {
-      const statusData = row.funnel_statuses as { name?: string; bucket?: string } | null;
-      const sourceData = row.lead_sources as { name?: string } | null;
+      const statusData = row.funnel_statuses;
+      const sourceData = row.lead_sources;
       const ownerName = row.assigned_to ? ownerNameById.get(row.assigned_to) : null;
 
       const cells = [
@@ -307,7 +353,7 @@ export async function exportLeadsCsvAction(
         dashboardCsvCell(row.priority || ''),
         dashboardCsvCell(
           canViewFinancials
-            ? row.expected_value !== null
+            ? row.expected_value !== null && row.expected_value !== undefined
               ? Number(row.expected_value).toFixed(2)
               : '0.00'
             : '[RESTRICTED]'

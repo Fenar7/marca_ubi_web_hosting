@@ -17,7 +17,7 @@ interface DealsKanbanBoardProps {
   userRole?: string;
   movingDealId: string | null;
   canViewFinancials?: boolean;
-  laneTotals?: Record<string, { count: number; value: number | null }>;
+  laneTotals?: Record<string, { count: number; value: number | null; valuedCount?: number }>;
   onMove: (deal: HydratedDealItem, stage: FunnelStatusItem) => void;
 }
 
@@ -225,15 +225,25 @@ export function DealsKanbanBoard({
                   {laneTotals?.[lane.key]
                     ? laneTotals[lane.key].value === null
                       ? "Value unavailable"
-                      : formatCrmCurrency(laneTotals[lane.key].value!)
-                    : lane.cards.some((deal) => deal.expected_value === null)
-                      ? "Value unavailable"
-                      : formatCrmCurrency(
-                          lane.cards.reduce(
-                            (sum, deal) => sum + (deal.expected_value ?? 0),
-                            0,
-                          ),
-                        )}
+                      : laneTotals[lane.key].valuedCount !== undefined &&
+                          laneTotals[lane.key].valuedCount! < laneTotals[lane.key].count
+                        ? `${formatCrmCurrency(laneTotals[lane.key].value!)} · ${laneTotals[lane.key].valuedCount} valued`
+                        : formatCrmCurrency(laneTotals[lane.key].value!)
+                    : (() => {
+                        const valuedDeals = lane.cards.filter(
+                          (deal) => deal.expected_value !== null,
+                        );
+                        if (lane.cards.length > 0 && valuedDeals.length === 0) {
+                          return "Value unavailable";
+                        }
+                        const sum = valuedDeals.reduce(
+                          (acc, deal) => acc + (deal.expected_value ?? 0),
+                          0,
+                        );
+                        return valuedDeals.length < lane.cards.length
+                          ? `${formatCrmCurrency(sum)} · ${valuedDeals.length} valued`
+                          : formatCrmCurrency(sum);
+                      })()}
                 </p>
               )}
             </header>

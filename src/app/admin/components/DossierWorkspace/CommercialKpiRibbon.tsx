@@ -3,12 +3,9 @@
 /**
  * @file CommercialKpiRibbon.tsx
  * @description Commercial KPI Ribbon presenting 3 Minimalist Stat Pods for the Client 360° Workspace.
- *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
- *              1. Expected Valuation in Indian Rupees with full digits and tabular numeric stabilization
- *                 and 44px circular Emerald icon chip (#ecfdf5).
- *              2. Priority SLA Badge with semantic radar dot indicator and 44px Amber icon chip (#fffbeb).
- *              3. Win Probability & Deal Momentum index derived from current funnel stage mechanics
- *                 and 44px Slate icon chip (#f1f5f9).
+ *              1. Expected Valuation in Indian Rupees with tabular numeric stabilization.
+ *              2. Priority SLA Badge with accessible high-contrast indicator copy.
+ *              3. Win Probability & Deal Momentum index derived from current funnel stage mechanics.
  * @module components/DossierWorkspace/CommercialKpiRibbon
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -50,10 +47,10 @@ function calculateStageMomentum(bucket: FunnelBucket, statusName: string): Momen
   const normalizedName = statusName.toLowerCase();
 
   if (bucket === 'converted') {
-    return { percentage: 100, label: 'Closed Won', colorCss: 'var(--admin-status-emerald-dot, #10b981)' };
+    return { percentage: 100, label: 'Closed Won', colorCss: 'var(--admin-status-emerald-dot, #047857)' };
   }
   if (bucket === 'lost') {
-    return { percentage: 0, label: 'Closed Lost', colorCss: 'var(--admin-status-rose-dot, #ef4444)' };
+    return { percentage: 0, label: 'Closed Lost', colorCss: 'var(--admin-status-rose-dot, #b91c1c)' };
   }
   if (normalizedName.includes('contract') || normalizedName.includes('closing')) {
     return { percentage: 85, label: 'High Velocity', colorCss: 'var(--admin-border-strong, #1f242f)' };
@@ -62,17 +59,17 @@ function calculateStageMomentum(bucket: FunnelBucket, statusName: string): Momen
     return { percentage: 70, label: 'Strong Traction', colorCss: 'var(--admin-border-strong, #1f242f)' };
   }
   if (bucket === 'potential') {
-    return { percentage: 50, label: 'Active Evaluation', colorCss: 'var(--admin-status-amber-dot, #f59e0b)' };
+    return { percentage: 50, label: 'Active Evaluation', colorCss: 'var(--admin-status-amber-dot, #b45309)' };
   }
   if (normalizedName.includes('discovery') || normalizedName.includes('contact')) {
-    return { percentage: 35, label: 'Inbound Discovery', colorCss: 'var(--admin-status-amber-dot, #f59e0b)' };
+    return { percentage: 35, label: 'Inbound Discovery', colorCss: 'var(--admin-status-amber-dot, #b45309)' };
   }
-  return { percentage: 20, label: 'Initial Ingestion', colorCss: 'var(--admin-status-slate-dot, #64748b)' };
+  return { percentage: 20, label: 'Initial Ingestion', colorCss: 'var(--admin-status-slate-dot, #475569)' };
 }
 
 /**
  * Returns strict SLA turnaround expectation guidelines mapped from commercial priority
- * using semantic CSS variables.
+ * using WCAG AA accessible ink colors.
  */
 function getPrioritySlaDetails(priority: LeadPriority): {
   slaTarget: string;
@@ -83,20 +80,20 @@ function getPrioritySlaDetails(priority: LeadPriority): {
     case 'High':
       return {
         slaTarget: '2h SLA Response Target',
-        dotColorCss: 'var(--admin-status-rose-dot, #ef4444)',
+        dotColorCss: 'var(--admin-status-rose-dot, #b91c1c)',
         slaTag: 'Critical SLA',
       };
     case 'Medium':
       return {
         slaTarget: '6h SLA Response Target',
-        dotColorCss: 'var(--admin-status-amber-dot, #f59e0b)',
+        dotColorCss: 'var(--admin-status-amber-dot, #b45309)',
         slaTag: 'Standard SLA',
       };
     case 'Low':
     default:
       return {
         slaTarget: '24h SLA Response Target',
-        dotColorCss: 'var(--admin-status-slate-dot, #64748b)',
+        dotColorCss: 'var(--admin-status-slate-dot, #475569)',
         slaTag: 'Extended SLA',
       };
   }

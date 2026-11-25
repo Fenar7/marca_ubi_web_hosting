@@ -27,13 +27,11 @@ import type {
   FunnelStatus,
   CrmUserRole,
   FunnelBucket,
-  LeadPriority,
   LeadActivityType,
   LeadDetailPayload,
 } from '@/types/crm';
 import type { LeadDossierData } from '../DossierDrawer/ClientDossierDrawer';
 import {
-  formatDossierCurrency,
   sanitizeTelUri,
   createWhatsAppUri,
   getDossierInitials,
@@ -127,6 +125,7 @@ function normalizeToDossier(
     revisit_date: raw.revisit_date,
     notes: raw.notes,
     brief_payload: raw.brief_payload || null,
+    inquiry_count: raw.inquiry_count || 1,
     created_at: raw.created_at,
     converted_at: raw.converted_at,
     updated_at: raw.updated_at,
@@ -256,6 +255,19 @@ export function LeadDossierWorkspaceClient({
   const [isConvertToDealOpen, setIsConvertToDealOpen] = useState<boolean>(false);
   const [isGuardedTransitionOpen, setIsGuardedTransitionOpen] = useState<boolean>(false);
   const [guardedTargetStatus, setGuardedTargetStatus] = useState<FunnelStatus | null>(null);
+
+  // Synchronize client cache when Next.js router.refresh() delivers updated server props
+  useEffect(() => {
+    setCurrentLead(normalizeToDossier(initialLeadInput, funnelStatuses, teamAssignees));
+  }, [initialLeadInput, funnelStatuses, teamAssignees]);
+
+  useEffect(() => {
+    setActivities(initialActivities);
+  }, [initialActivities]);
+
+  useEffect(() => {
+    setCurrentLinkedWork(linkedWork);
+  }, [linkedWork]);
 
   // Synchronize dynamic lead reference code (e.g. 'LD-10343') with top shell breadcrumbs
   useEffect(() => {
@@ -555,8 +567,11 @@ export function LeadDossierWorkspaceClient({
           health_status: 'on_track',
         });
       }
-      setIsGuardedTransitionOpen(false);
-      setGuardedTargetStatus(null);
+      // Keep ConvertedCelebrationModal mounted so confetti and Client Works CTA remain visible until dismissed
+      if (payload.bucket !== 'converted') {
+        setIsGuardedTransitionOpen(false);
+        setGuardedTargetStatus(null);
+      }
       router.refresh();
     },
     [router]
@@ -675,14 +690,17 @@ export function LeadDossierWorkspaceClient({
           </div>
           <Link href="/admin/works" className={styles.linkedWorkCta}>
             <span>View Project in Client Works</span>
-            <span aria-hidden="true">→</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
           </Link>
         </div>
       )}
 
       {/* Global Status Mutation Error Feedback */}
       {statusErrorMessage && (
-        <div className={styles.composerErrorBanner} style={{ marginBottom: 16 }}>
+        <div className={`${styles.composerErrorBanner} ${styles.statusErrorSpacing}`}>
           {statusErrorMessage}
         </div>
       )}
@@ -694,7 +712,7 @@ export function LeadDossierWorkspaceClient({
         priority={currentLead.priority}
         statusBucket={currentLead.bucket}
         statusName={currentLead.status_name}
-        inquiryCount={1}
+        inquiryCount={currentLead.inquiry_count || 1}
         canViewFinancials={canViewFinancials}
       />
 
@@ -713,7 +731,7 @@ export function LeadDossierWorkspaceClient({
                 </svg>
                 <span>Organization & Client Intelligence</span>
               </h2>
-              <span className={styles.badgePill}>{currentLead.industry || 'Commercial / Luxury'}</span>
+              <span className={styles.badgePill}>{currentLead.industry || 'Sector Unspecified'}</span>
             </div>
 
             <div className={styles.keyValueGrid}>
@@ -790,13 +808,12 @@ export function LeadDossierWorkspaceClient({
                 </div>
               </div>
 
-              <div className={styles.keyValuePair} style={{ gridColumn: '1 / -1' }}>
+              <div className={`${styles.keyValuePair} ${styles.fullGridSpan}`}>
                 <span className={styles.fieldLabel}>Direct Email</span>
                 {currentLead.email ? (
                   <a
                     href={`mailto:${currentLead.email}`}
-                    className={styles.coordinateDeepLink}
-                    style={{ width: 'fit-content' }}
+                    className={`${styles.coordinateDeepLink} ${styles.fitContentLink}`}
                     title={`Dispatch email to ${currentLead.email}`}
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -831,13 +848,15 @@ export function LeadDossierWorkspaceClient({
                 </svg>
                 <span>Executive Deal Notes</span>
               </h2>
-              <button
-                type="button"
-                onClick={() => setIsEditScopeOpen(true)}
-                className={styles.btnRescheduleMini}
-              >
-                Edit Notes
-              </button>
+              {userRole !== 'viewer' && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditScopeOpen(true)}
+                  className={styles.btnRescheduleMini}
+                >
+                  Edit Notes
+                </button>
+              )}
             </div>
 
             {currentLead.notes ? (
@@ -935,13 +954,17 @@ export function LeadDossierWorkspaceClient({
                             Boolean(metadata.outcome) ||
                             Boolean(metadata.meeting_type) ||
                             Boolean(metadata.message_category) ||
+                            Boolean(metadata.subject) ||
                             item.deltaPills.length > 0) && (
-                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                            <div className={styles.timelineMetaPillsRow}>
                               {item.deltaPills.map((pill, pillIdx) => (
                                 <span key={`delta-${pillIdx}`} className={styles.badgePill}>
                                   {pill}
                                 </span>
                               ))}
+                              {typeof metadata.subject === 'string' && metadata.subject.trim() && (
+                                <span className={styles.badgePill}>Subject: {metadata.subject}</span>
+                              )}
                               {typeof metadata.duration_seconds === 'number' && (
                                 <span className={styles.badgePill}>
                                   Duration: {formatCallDuration(metadata.duration_seconds)}
@@ -1016,7 +1039,7 @@ export function LeadDossierWorkspaceClient({
                                 <div className={styles.systemDeltaNarrative}>
                                   <div>{ev.narrative}</div>
                                   {ev.deltaPills.length > 0 && (
-                                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 3 }}>
+                                    <div className={styles.systemDeltaPillsRow}>
                                       {ev.deltaPills.map((pill, pIdx) => (
                                         <span key={pIdx} className={styles.deltaFieldPill}>
                                           {pill}
@@ -1052,7 +1075,7 @@ export function LeadDossierWorkspaceClient({
 
           {/* Component 2: Commercial Assignment & Deal Routing */}
           <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader} style={{ marginBottom: 14 }}>
+            <div className={`${styles.sectionHeader} ${styles.sectionHeaderCompact}`}>
               <h2 className={styles.sectionTitle}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -1065,13 +1088,16 @@ export function LeadDossierWorkspaceClient({
 
             <div className={styles.metaCardList}>
               <div className={styles.metaCardRow}>
-                <span className={styles.fieldLabel}>Designated Lead Owner</span>
+                <label htmlFor="dossier-owner-select" className={styles.fieldLabel}>
+                  Designated Lead Owner
+                </label>
                 {userRole === 'admin' || userRole === 'sales_manager' ? (
                   <select
+                    id="dossier-owner-select"
+                    aria-label="Designated Lead Owner"
                     value={currentLead.assigned_to || ''}
                     onChange={(e) => handleAssigneeChange(e.target.value)}
-                    className={styles.composerSelect}
-                    style={{ width: 'auto', minWidth: 160 }}
+                    className={`${styles.composerSelect} ${styles.ownerSelectCompact}`}
                   >
                     <option value="" disabled>Unassigned</option>
                     {teamAssignees.map((member) => (
@@ -1112,7 +1138,7 @@ export function LeadDossierWorkspaceClient({
 
           {/* Component 3: Next Precision Follow-Up Schedule Card */}
           <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader} style={{ marginBottom: 12 }}>
+            <div className={`${styles.sectionHeader} ${styles.sectionHeaderTight}`}>
               <h2 className={styles.sectionTitle}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <circle cx="12" cy="12" r="10" />
@@ -1137,25 +1163,28 @@ export function LeadDossierWorkspaceClient({
                     Due {formatRelativeTime(currentLead.next_follow_up)}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsSchedulerOpen(true)}
-                  className={styles.btnRescheduleMini}
-                >
-                  Reschedule
-                </button>
+                {userRole !== 'viewer' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSchedulerOpen(true)}
+                    className={styles.btnRescheduleMini}
+                  >
+                    Reschedule
+                  </button>
+                )}
               </div>
             ) : (
-              <div className={styles.briefEmptyBanner} style={{ padding: 16 }}>
-                <p style={{ margin: '0 0 10px 0' }}>No future follow-up commitment scheduled.</p>
-                <button
-                  type="button"
-                  onClick={() => setIsSchedulerOpen(true)}
-                  className={styles.btnSecondaryAction}
-                  style={{ width: '100%' }}
-                >
-                  Schedule Touchpoint Now
-                </button>
+              <div className={`${styles.briefEmptyBanner} ${styles.followUpEmptyCard}`}>
+                <p className={styles.followUpEmptyCopy}>No future follow-up commitment scheduled.</p>
+                {userRole !== 'viewer' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSchedulerOpen(true)}
+                    className={`${styles.btnSecondaryAction} ${styles.fullWidthBtn}`}
+                  >
+                    Schedule Touchpoint Now
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1230,6 +1259,7 @@ export function LeadDossierWorkspaceClient({
           isOpen={isEditScopeOpen}
           onClose={() => setIsEditScopeOpen(false)}
           lead={currentLead}
+          canViewFinancials={canViewFinancials}
           onSuccess={handleEditScopeSuccess}
         />
       )}

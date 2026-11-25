@@ -1,7 +1,6 @@
 // SCSS Module: EditLeadModal.module.scss
-// Aesthetic: Accordion Executive Advisory & Sypher Light Controls
-// Dials: ENERGY 2 / RHYTHM 2 / MOTION 1
-// Strict Anti-AI-Slop: Zero generic blue, zero drop shadows, 44px touch targets, tabular-nums
+// Aesthetic: Marca Ubi Editorial Light Controls
+// Strict Anti-AI-Slop: Zero generic blue, 44px touch targets, tabular-nums
 
 $backdrop-bg: rgba(0, 0, 0, 0.6);
 $modal-bg: #ffffff;
@@ -10,8 +9,9 @@ $border-strong: var(--admin-border-strong, #1f242f);
 $text-primary: var(--admin-text-primary, #1f242f);
 $text-secondary: var(--admin-text-secondary, #525965);
 $surface-muted: var(--admin-surface-muted, #f8fafc);
-$accent-lemon: var(--admin-btn-primary-bg, #ea002a);
-$accent-lemon-hover: var(--admin-btn-primary-hover, #c40023);
+$btn-primary-bg: var(--admin-btn-primary-bg, #ea002a);
+$btn-primary-hover: var(--admin-btn-primary-hover, #c40023);
+$btn-primary-ink: var(--admin-btn-primary-text, #ffffff);
 
 .modalOverlay {
   position: fixed;
@@ -273,12 +273,12 @@ $accent-lemon-hover: var(--admin-btn-primary-hover, #c40023);
 
 .saveButton {
   position: relative;
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 1.25rem;
   border-radius: 8px;
-  border: 1px solid $border-strong;
-  background: $accent-lemon;
-  color: var(--admin-accent-lemon-ink, #1f242f);
+  border: 1px solid $btn-primary-hover;
+  background: $btn-primary-bg;
+  color: $btn-primary-ink;
   font-family: var(--font-admin-btn, sans-serif);
   font-size: 0.82rem;
   font-weight: 700;
@@ -301,7 +301,7 @@ $accent-lemon-hover: var(--admin-btn-primary-hover, #c40023);
   }
 
   &:hover:not(:disabled) {
-    background: $accent-lemon-hover;
+    background: $btn-primary-hover;
     transform: translateY(-1px);
   }
 

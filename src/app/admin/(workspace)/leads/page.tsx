@@ -13,7 +13,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import { ROLE_DEFAULT_FEATURES, ROLE_DEFAULT_TABS, type CrmUserRole, type FunnelBucket } from '@/types/crm';
+import { ROLE_DEFAULT_TABS, type CrmUserRole, type FunnelBucket } from '@/types/crm';
 import { dashboardAmount, foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
 import { buildCommercialSearchFilter } from '@/app/admin/lib/commercialSearch';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
@@ -31,6 +31,25 @@ export const metadata: Metadata = {
   },
 };
 
+interface FilterableLeadQuery<TSelf> {
+  eq(column: string, value: string): TSelf;
+  ilike(column: string, pattern: string): TSelf;
+  in(column: string, values: readonly string[]): TSelf;
+  not(column: string, operator: string, value: null): TSelf;
+  lt(column: string, value: string): TSelf;
+  or(filters: string): TSelf;
+}
+
+const SORTABLE_LEAD_COLUMNS: Record<string, string> = {
+  lead_id: 'lead_id',
+  name: 'name',
+  service_category: 'service_category',
+  expected_value: 'expected_value',
+  priority: 'priority',
+  next_follow_up: 'next_follow_up',
+  created_at: 'created_at',
+};
+
 interface AdminLeadsPageProps {
   searchParams?: Promise<{
     id?: string;
@@ -43,6 +62,9 @@ interface AdminLeadsPageProps {
     search?: string;
     q?: string;
     action?: string;
+    sort?: string;
+    dir?: string;
+    error?: string;
     page?: string;
   }>;
 }
@@ -102,36 +124,51 @@ export default async function AdminLeadsPage(
     || Boolean(bucket && !['all', 'open', 'potential', 'converted', 'lost', 'overdue'].includes(bucket));
 
   const nowIso = new Date().toISOString();
+  const requestNowMs = Date.parse(nowIso);
   const todayDate = nowIso.slice(0, 10);
-  const permissions = profile?.feature_permissions as Record<string, unknown> | null;
-  const rawFinancialPerm = permissions?.can_view_financials;
-  const canViewFinancials =
-    typeof rawFinancialPerm === 'boolean'
-      ? rawFinancialPerm
-      : Boolean(ROLE_DEFAULT_FEATURES[role]?.can_view_financials);
+  const { dashboardFeature } = await import('@/app/admin/lib/dashboardContracts');
+  const canViewFinancials = dashboardFeature(role, profile.feature_permissions, 'can_view_financials');
+  const requestedSort = resolvedSearchParams?.sort;
+  const resolvedSortColumn =
+    requestedSort &&
+    SORTABLE_LEAD_COLUMNS[requestedSort] &&
+    (canViewFinancials || requestedSort !== 'expected_value')
+      ? SORTABLE_LEAD_COLUMNS[requestedSort]
+      : 'created_at';
+  const sortAscending = resolvedSearchParams?.dir === 'asc';
+  const hasErrorBanner = Boolean(resolvedSearchParams?.error);
 
-  const applyBaseLeadFilters = <T,>(q: any, includeBucket = true): any => {
+  const syntheticExclusion = 'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true';
+
+  const applyBaseLeadFilters = <T extends FilterableLeadQuery<T>>(q: T, includeBucket = true): T => {
     let query = q;
     if (!invalidFilter) {
       if (stage) query = query.eq('status_id', stage);
       if (assignedTo) query = query.eq('assigned_to', assignedTo);
       if (source) query = query.eq('lead_source_id', source);
       if (priority) query = query.ilike('priority', priority);
+
+      const orGroups: string[] = [`or(${syntheticExclusion})`];
       if (search.filter) {
-        query = query.or(search.filter);
-      } else {
-        query = query.or('brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true');
+        orGroups.push(`or(${search.filter})`);
       }
+
       if (includeBucket && bucket && bucket !== 'all') {
         if (bucket === 'overdue') {
           query = query
             .in('funnel_statuses.bucket', ['open', 'potential'])
             .not('next_follow_up', 'is', null)
-            .lt('next_follow_up', nowIso)
-            .or(`revisit_date.is.null,revisit_date.lte.${todayDate}`);
+            .lt('next_follow_up', nowIso);
+          orGroups.push(`or(revisit_date.is.null,revisit_date.lte.${todayDate})`);
         } else {
           query = query.eq('funnel_statuses.bucket', bucket);
         }
+      }
+
+      if (orGroups.length === 1) {
+        query = query.or(syntheticExclusion);
+      } else {
+        query = query.or(`and(${orGroups.join(',')})`);
       }
     }
     return query;
@@ -147,18 +184,33 @@ export default async function AdminLeadsPage(
   );
 
   const countBucketHead = async (targetBucket: 'all' | 'open' | 'potential' | 'converted' | 'lost' | 'overdue'): Promise<number | null> => {
-    if (invalidFilter) return null;
+    if (invalidFilter || hasErrorBanner) return null;
+    if (targetBucket === 'overdue') {
+      const orGroups = [
+        `or(${syntheticExclusion})`,
+        ...(search.filter ? [`or(${search.filter})`] : []),
+        `or(revisit_date.is.null,revisit_date.lte.${todayDate})`,
+      ];
+      let oq = supabase
+        .from('leads')
+        .select('id, funnel_statuses!inner(bucket)', { count: 'exact', head: true })
+        .in('funnel_statuses.bucket', ['open', 'potential'])
+        .not('next_follow_up', 'is', null)
+        .lt('next_follow_up', nowIso);
+      if (stage) oq = oq.eq('status_id', stage);
+      if (assignedTo) oq = oq.eq('assigned_to', assignedTo);
+      if (source) oq = oq.eq('lead_source_id', source);
+      if (priority) oq = oq.ilike('priority', priority);
+      oq = oq.or(`and(${orGroups.join(',')})`);
+      const res = await oq;
+      return res.error ? null : res.count;
+    }
+
     let q = applyBaseLeadFilters(
       supabase.from('leads').select('id, funnel_statuses!inner(bucket)', { count: 'exact', head: true }),
       false
     );
-    if (targetBucket === 'overdue') {
-      q = q
-        .in('funnel_statuses.bucket', ['open', 'potential'])
-        .not('next_follow_up', 'is', null)
-        .lt('next_follow_up', nowIso)
-        .or(`revisit_date.is.null,revisit_date.lte.${todayDate}`);
-    } else if (targetBucket !== 'all') {
+    if (targetBucket !== 'all') {
       q = q.eq('funnel_statuses.bucket', targetBucket);
     }
     const res = await q;
@@ -166,7 +218,7 @@ export default async function AdminLeadsPage(
   };
 
   const pipelineFoldPromise =
-    invalidFilter || !canViewFinancials
+    invalidFilter || hasErrorBanner || !canViewFinancials
       ? Promise.resolve(null)
       : foldDashboardPages<{ expected_value?: number | string }, { total: number }>(
           async (from, to) => {
@@ -218,7 +270,7 @@ export default async function AdminLeadsPage(
       .eq('is_active', true)
       .order('sort_order', { ascending: true }),
     leadsQuery
-      .order('created_at', { ascending: false })
+      .order(resolvedSortColumn, { ascending: sortAscending, nullsFirst: false })
       .order('id', { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1),
     countBucketHead('all'),
@@ -354,7 +406,7 @@ export default async function AdminLeadsPage(
     leads.filter(
       (l) =>
         l.next_follow_up &&
-        new Date(l.next_follow_up).getTime() < Date.now() &&
+        new Date(l.next_follow_up).getTime() < requestNowMs &&
         l.bucket !== 'converted' &&
         l.bucket !== 'lost'
     ).length;

@@ -51,7 +51,7 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       // Col 1: Lead ID
       assert.ok(tsx.includes('<span>Lead ID</span>'), 'Header must contain Lead ID');
       // Col 2: Client & Org
-      assert.ok(tsx.includes('<span>Client & Org</span>'), 'Header must contain Client & Org');
+      assert.ok(tsx.includes('<span>Client &amp; Org</span>'), 'Header must contain Client & Org');
       // Col 3: Service Scope
       assert.ok(tsx.includes('<span>Service Scope</span>'), 'Header must contain Service Scope');
       // Col 4: Funnel Stage
@@ -103,7 +103,7 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
         'Must define precise 9-column layout metrics'
       );
       assert.ok(
-        scss.includes('$grid-min-width:') && scss.includes('1200px;'),
+        scss.includes('$grid-min-width:') && scss.includes('1240px;'),
         'Desktop grid must retain its minimum width while mobile uses the dedicated card view'
       );
 
@@ -113,16 +113,16 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       assert.ok(scss.includes('overflow-x: auto;'));
     });
 
-    it('verifies rowConvertBtn and rowInspectBtn prevent flex shrink and wrapping', () => {
+    it('verifies drawerInspectBtn and directPageLink enforce accessible non-wrapping layout', () => {
       const scss = fs.readFileSync(dataGridScssPath, 'utf8');
 
       assert.ok(
-        scss.includes('.rowConvertBtn') && scss.includes('white-space: nowrap;') && scss.includes('flex-shrink: 0;'),
-        '.rowConvertBtn must enforce white-space: nowrap and flex-shrink: 0'
+        scss.includes('.drawerInspectBtn') && scss.includes('min-height: 44px;'),
+        '.drawerInspectBtn must enforce 44px tap target'
       );
       assert.ok(
-        scss.includes('.rowInspectBtn') && scss.includes('white-space: nowrap;') && scss.includes('flex-shrink: 0;'),
-        '.rowInspectBtn must enforce white-space: nowrap and flex-shrink: 0'
+        scss.includes('.directPageLink') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
+        '.directPageLink must enforce 44px tap target'
       );
     });
   });
@@ -168,12 +168,12 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
       );
 
       // Verify Priority, Next SLA, and Actions in row skeleton
-      assert.ok(tsx.includes('styles.priorityPill'), 'Row skeleton must include priorityPill');
+      assert.ok(tsx.includes('styles.priorityBadgeSkeleton'), 'Row skeleton must include priorityBadgeSkeleton');
       assert.ok(tsx.includes('styles.touchpointBar'), 'Row skeleton must include touchpointBar');
-      assert.ok(tsx.includes('styles.actionButtonSkeleton'), 'Row skeleton must include actionButtonSkeleton');
+      assert.ok(tsx.includes('styles.inspectBtnSkeleton'), 'Row skeleton must include inspectBtnSkeleton');
     });
 
-    it('verifies LeadsTableSkeleton.module.scss shares the identical 9-column grid metrics', () => {
+    it('verifies LeadsTableSkeleton.module.scss shares the identical 10-column grid metrics', () => {
       const scss = fs.readFileSync(skeletonScssPath, 'utf8');
       const grid = fs.readFileSync(dataGridScssPath, 'utf8');
 
@@ -183,12 +183,12 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
         'Loading and loaded grids must use the same column tracks'
       );
       assert.ok(
-        scss.includes('$grid-min-width: 1200px;'),
-        'Skeleton must share identical 1200px min-width'
+        scss.includes('$grid-min-width: 1240px;'),
+        'Skeleton must share identical 1240px min-width'
       );
       assert.ok(
-        scss.includes('min-height: 53px;') && scss.includes('height: 53px;'),
-        'Skeleton header must have 53px height matching tableHeader'
+        scss.includes('height: 44px;'),
+        'Skeleton header must have 44px height matching tableHeader'
       );
     });
   });
@@ -229,18 +229,14 @@ describe('Phase 4 Brand Upgrade: Inbound Discovery & 9-Column DataGrid Suite', (
         scss.includes('.touchpointDate') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
         '.touchpointDate must expand to 44px tap target via ::after'
       );
-      // Action buttons have min 44px click expansion
+      // Action buttons have min 44px touch targets
       assert.ok(
-        scss.includes('.actionBtn') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
-        'Action buttons must expand to 44px tap target via ::after'
+        scss.includes('.drawerInspectBtn') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
+        'Drawer inspect button must enforce >= 44px tap target'
       );
       assert.ok(
-        scss.includes('.rowConvertBtn') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
-        'Row convert button must expand to 44px tap target via ::after'
-      );
-      assert.ok(
-        scss.includes('.rowInspectBtn') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
-        'Row inspect button must expand to 44px tap target via ::after'
+        scss.includes('.directPageLink') && scss.includes('min-width: 44px;') && scss.includes('min-height: 44px;'),
+        'Direct page link must enforce >= 44px tap target'
       );
     });
 

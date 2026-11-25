@@ -44,7 +44,31 @@ export function BatchStageModal({
   onClose,
   onSuccess,
 }: BatchStageModalProps): React.ReactElement | null {
-  const [selectedStatusId, setSelectedStatusId] = useState<string>('');
+  if (!isOpen) return null;
+
+  return (
+    <BatchStageModalInner
+      key={availableStatuses[0]?.id || 'stage'}
+      isOpen={isOpen}
+      selectedLeadIds={selectedLeadIds}
+      availableStatuses={availableStatuses}
+      onClose={onClose}
+      onSuccess={onSuccess}
+    />
+  );
+}
+
+function BatchStageModalInner({
+  isOpen,
+  selectedLeadIds,
+  availableStatuses,
+  onClose,
+  onSuccess,
+}: BatchStageModalProps): React.ReactElement {
+  const batchAllowedStatuses = availableStatuses.filter((s) => s.bucket !== 'converted');
+  const [selectedStatusId, setSelectedStatusId] = useState<string>(
+    () => batchAllowedStatuses[0]?.id || ''
+  );
   const [lostReason, setLostReason] = useState<string>('');
   const [customLostReason, setCustomLostReason] = useState<string>('');
   const [note, setNote] = useState<string>('');
@@ -52,21 +76,6 @@ export function BatchStageModal({
   const [isPending, startTransition] = useTransition();
 
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const batchAllowedStatuses = availableStatuses.filter((s) => s.bucket !== 'converted');
-
-  // Reset state whenever modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setErrorMessage(null);
-      setLostReason('');
-      setCustomLostReason('');
-      setNote('');
-      if (batchAllowedStatuses.length > 0) {
-        setSelectedStatusId(batchAllowedStatuses[0].id);
-      }
-    }
-  }, [isOpen, availableStatuses]);
 
   // Selected stage object
   const targetStage = batchAllowedStatuses.find((s) => s.id === selectedStatusId);
@@ -97,8 +106,6 @@ export function BatchStageModal({
       focusable[0].focus();
     }
   }, [isOpen]);
-
-  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
@@ -263,6 +270,7 @@ export function BatchStageModal({
                 {lostReason === 'Other' && (
                   <input
                     type="text"
+                    aria-label="Custom lost reason"
                     className={styles.textInput}
                     placeholder="Enter specific lost reason rationale..."
                     value={customLostReason}

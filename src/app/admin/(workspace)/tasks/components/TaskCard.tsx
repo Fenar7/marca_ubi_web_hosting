@@ -16,6 +16,7 @@ import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { clearLeadFollowUp, updateLeadAssignee } from '@/app/actions/leads';
+import { logLeadActivityAction } from '@/app/actions/leadActivityActions';
 import { scheduleFollowUpAction } from '@/app/actions/schedulerActions';
 import { FollowUpScheduler } from '@/app/admin/components/Scheduler';
 import type { LeadPriority } from '@/types/crm';
@@ -91,10 +92,21 @@ function initialsFor(name: string | undefined): string {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
+function toLocalDateTimeInput(dt: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+
 function defaultNextFollowUpInput(): string {
   const dt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
   dt.setHours(11, 0, 0, 0);
-  return dt.toISOString().slice(0, 16);
+  return toLocalDateTimeInput(dt);
+}
+
+function tomorrowTenAmInput(): string {
+  const dt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  dt.setHours(10, 0, 0, 0);
+  return toLocalDateTimeInput(dt);
 }
 
 export function TaskCard({
@@ -126,7 +138,7 @@ export function TaskCard({
       ? styles.priorityMedium
       : styles.priorityLow;
 
-  function dispatchToast(type: 'success' | 'error', message: string): void {
+  function dispatchToast(type: 'success' | 'info' | 'error', message: string): void {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('crm-toast', { detail: { type, message } }));
     }
@@ -142,14 +154,20 @@ export function TaskCard({
           return;
         }
         const trimmedNote = outcomeNote.trim() || undefined;
-        const result = await clearLeadFollowUp(lead.id, lead.next_follow_up, trimmedNote);
-        if (!result.success) {
-          setError(result.error || 'Could not complete this follow-up. Refresh and try again.');
-          return;
-        }
 
-        if (nextStepMode === 'schedule' && nextFollowUpValue) {
-          const parsedIso = new Date(nextFollowUpValue).toISOString();
+        if (nextStepMode === 'schedule') {
+          if (!nextFollowUpValue) {
+            setError('Choose a future date and time for the next follow-up.');
+            return;
+          }
+          const scheduledMs = new Date(nextFollowUpValue).getTime();
+          if (!Number.isFinite(scheduledMs) || scheduledMs <= Date.now()) {
+            setError('Next follow-up time must be in the future.');
+            return;
+          }
+
+          // Schedule the successor touchpoint first so failures never leave the lead orphaned without a date
+          const parsedIso = new Date(scheduledMs).toISOString();
           const schedRes = await scheduleFollowUpAction({
             leadId: lead.id,
             scheduledFor: parsedIso,
@@ -158,12 +176,29 @@ export function TaskCard({
             sendCalendarInvite: false,
           });
           if (!schedRes.success) {
-            setError(schedRes.error || 'Completed follow-up, but could not schedule next step.');
-            router.refresh();
+            setError(schedRes.error || 'Could not schedule next follow-up step.');
             return;
+          }
+
+          if (trimmedNote && trimmedNote.length >= 3) {
+            await logLeadActivityAction({
+              leadId: lead.id,
+              activityType: 'call_logged',
+              description: trimmedNote,
+              metadata: {
+                source: 'follow_up_queue_completion',
+                completed_follow_up: lead.next_follow_up,
+                next_follow_up: parsedIso,
+              },
+            });
           }
           dispatchToast('success', `Follow-up completed & next step scheduled for ${lead.name}.`);
         } else {
+          const result = await clearLeadFollowUp(lead.id, lead.next_follow_up, trimmedNote);
+          if (!result.success) {
+            setError(result.error || 'Could not complete this follow-up. Refresh and try again.');
+            return;
+          }
           dispatchToast('success', `Follow-up completed for ${lead.name}.`);
         }
 
@@ -225,7 +260,10 @@ export function TaskCard({
         </span>
 
         <span className={styles.dueLine}>
-          <span className={styles.scheduleIcon} aria-hidden="true">⏱</span>
+          <svg className={styles.scheduleIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
           {lead.next_follow_up ? formatFollowUp(lead.next_follow_up) : 'No follow-up scheduled'}
         </span>
 
@@ -236,6 +274,7 @@ export function TaskCard({
               <a
                 href={`tel:${safePhone}`}
                 className={styles.telephonyAction}
+                onClick={() => dispatchToast('info', `Dialing ${lead.name} — log your call outcome once finished.`)}
                 aria-label={`Direct telephone call to ${lead.name} at ${safePhone}`}
                 title={`Call ${safePhone}`}
               >
@@ -252,6 +291,7 @@ export function TaskCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.telephonyAction}
+                onClick={() => dispatchToast('info', `Opened WhatsApp for ${lead.name} — log your outcome once finished.`)}
                 aria-label={`Direct WhatsApp conversation with ${lead.name}`}
                 title="Open WhatsApp chat"
               >
@@ -266,6 +306,7 @@ export function TaskCard({
               <a
                 href={`mailto:${lead.email}`}
                 className={styles.telephonyAction}
+                onClick={() => dispatchToast('info', `Opened email composer for ${lead.name} — log your outcome once sent.`)}
                 aria-label={`Dispatch email correspondence to ${lead.email}`}
                 title={`Email ${lead.email}`}
               >
@@ -333,6 +374,16 @@ export function TaskCard({
         </Link>
 
         {allowCompletion && (
+          <Link
+            href={`/admin/deals/${lead.id}`}
+            className={styles.openButton}
+            aria-label={`Advance pipeline stage for ${lead.name}`}
+          >
+            Advance stage
+          </Link>
+        )}
+
+        {allowCompletion && (
           <button
             type="button"
             className={styles.rescheduleButton}
@@ -353,7 +404,18 @@ export function TaskCard({
             aria-expanded={isOutcomeOpen}
             aria-label={isDone ? `Follow-up completed for ${lead.name}` : `Complete follow-up for ${lead.name}`}
           >
-            {isPending ? 'Saving…' : isDone ? 'Completed ✓' : 'Complete'}
+            {isPending ? (
+              'Saving…'
+            ) : isDone ? (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Completed</span>
+              </>
+            ) : (
+              'Complete'
+            )}
           </button>
         )}
 
@@ -386,14 +448,25 @@ export function TaskCard({
               <option value="clear">Complete without scheduling next</option>
             </select>
             {nextStepMode === 'schedule' && (
-              <input
-                type="datetime-local"
-                value={nextFollowUpValue}
-                onChange={(e) => setNextFollowUpValue(e.target.value)}
-                required
-                className={styles.outcomeDateInput}
-                aria-label="Next follow-up date and time"
-              />
+              <>
+                <input
+                  type="datetime-local"
+                  value={nextFollowUpValue}
+                  min={toLocalDateTimeInput(new Date())}
+                  onChange={(e) => setNextFollowUpValue(e.target.value)}
+                  required
+                  className={styles.outcomeDateInput}
+                  aria-label="Next follow-up date and time"
+                />
+                <button
+                  type="button"
+                  className={styles.quickPresetChip}
+                  onClick={() => setNextFollowUpValue(tomorrowTenAmInput())}
+                  disabled={isPending}
+                >
+                  Tomorrow 10am
+                </button>
+              </>
             )}
           </div>
           <div className={styles.outcomeActions}>

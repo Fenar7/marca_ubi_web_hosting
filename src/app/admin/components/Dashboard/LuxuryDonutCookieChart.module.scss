@@ -45,16 +45,36 @@
 }
 
 .infoButton {
+  position: relative;
   background: none;
   border: none;
   padding: 0;
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
   cursor: pointer;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+  }
 
   &:hover {
-    color: #475569;
+    color: #111827;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
@@ -73,18 +93,28 @@
 }
 
 .tabPill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   background: transparent;
   border: none;
-  padding: 5px 12px;
+  padding: 6px 14px;
   font-size: 11px;
   font-weight: 500;
-  color: #64748b;
+  color: #475569;
   border-radius: 9999px;
   cursor: pointer;
   transition: all 0.18s ease;
 
   &:hover {
     color: #0f172a;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ea002a;
+    outline-offset: 1px;
   }
 }
 

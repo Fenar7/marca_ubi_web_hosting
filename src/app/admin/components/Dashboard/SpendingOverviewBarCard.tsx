@@ -18,13 +18,29 @@ import {
   type CardTimeframe,
   CARD_TIMEFRAME_OPTIONS,
   type SpendingCategoryData,
-  computeSpendingBreakdownForCadence,
+  type TimeframeSlug,
 } from "@/app/admin/lib/timeframeUtils";
 import styles from "./SpendingOverviewBarCard.module.scss";
+
+function toCardTimeframe(slug?: TimeframeSlug): CardTimeframe | undefined {
+  switch (slug) {
+    case "7d":
+      return "this_week";
+    case "30d":
+      return "this_month";
+    case "quarter":
+      return "this_quarter";
+    case "year":
+      return "this_year";
+    default:
+      return undefined;
+  }
+}
 
 export interface SpendingOverviewBarCardProps {
   totalValue?: number | null;
   dealCount?: number | null;
+  timeframe?: TimeframeSlug;
   timeframeLabel?: string;
   categories?: { name: string; value: number; count: number }[];
   financials?: boolean;
@@ -34,6 +50,7 @@ export interface SpendingOverviewBarCardProps {
 export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = ({
   totalValue = null,
   dealCount = 0,
+  timeframe,
   categories,
   financials = true,
   onTimeframeChange,
@@ -42,8 +59,8 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Decoupled interactive timeframe state
-  const [selectedTimeframe, setSelectedTimeframe] = useState<CardTimeframe>("this_month");
+  const [localTimeframe, setLocalTimeframe] = useState<CardTimeframe>("this_month");
+  const selectedTimeframe = toCardTimeframe(timeframe) ?? localTimeframe;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Click outside and keyboard event handlers
@@ -72,7 +89,7 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
   }, [isDropdownOpen]);
 
   const handleSelectTimeframe = (slug: CardTimeframe) => {
-    setSelectedTimeframe(slug);
+    setLocalTimeframe(slug);
     setIsDropdownOpen(false);
     triggerRef.current?.focus();
     if (onTimeframeChange) {
@@ -134,13 +151,12 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
       };
     }
 
-    const computed = computeSpendingBreakdownForCadence(selectedTimeframe, rawTotal, rawDeals);
     return {
-      activeTotal: computed.totalValue,
-      activeDeals: computed.dealCount,
-      resolvedList: computed.categories,
+      activeTotal: rawTotal,
+      activeDeals: rawDeals,
+      resolvedList: [],
     };
-  }, [selectedTimeframe, totalValue, dealCount, categories, financials]);
+  }, [totalValue, dealCount, categories, financials]);
 
   const displayTotal =
     financials && activeTotal !== null ? formatCrmCurrency(activeTotal) : "Confidential";
@@ -165,7 +181,11 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
             title="Categorical allocation and volume distribution across active advisory accounts"
             aria-label="Information regarding practice allocation"
           >
-            ⓘ
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
           </span>
         </div>
 
@@ -221,7 +241,9 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
                       <span className={styles.optionSubtext}>{opt.subLabel}</span>
                     </div>
                     {selectedTimeframe === opt.slug && (
-                      <span className={styles.activeCheck} aria-hidden="true">✓</span>
+                      <svg className={styles.activeCheck} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     )}
                   </button>
                 </li>
@@ -241,7 +263,10 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
           aria-label={`${activeDeals} active deals, inspect in deals ledger`}
         >
           <span>{activeDeals} Active Deals</span>
-          <span className={styles.trendArrow} aria-hidden="true">↗</span>
+          <svg className={styles.trendArrow} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+            <line x1="7" y1="17" x2="17" y2="7" />
+            <polyline points="7 7 17 7 17 17" />
+          </svg>
         </button>
       </div>
 
@@ -249,6 +274,10 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
       <div className={styles.breakdownSection}>
         <h3 className={styles.breakdownTitle}>Practice Breakdown</h3>
 
+        {resolvedList.length === 0 ? (
+          <p className={styles.emptyNotice}>No active deals allocated across practices.</p>
+        ) : (
+        <>
         {/* Horizontal Legend */}
         <div className={styles.legendRow}>
           {resolvedList.map((item) => (
@@ -256,7 +285,7 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
               key={item.name}
               type="button"
               className={styles.legendItem}
-              onClick={() => router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`)}
+              onClick={() => router.push(`/admin/deals?service_category=${encodeURIComponent(item.name)}`)}
               aria-label={`View deals for ${item.name}`}
             >
               <div className={styles.legendHeader}>
@@ -291,10 +320,10 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
                 className={styles.gradientSegment}
                 role="button"
                 tabIndex={0}
-                onClick={() => router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`)}
+                onClick={() => router.push(`/admin/deals?service_category=${encodeURIComponent(item.name)}`)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`);
+                    router.push(`/admin/deals?service_category=${encodeURIComponent(item.name)}`);
                   }
                 }}
                 aria-label={`Filter deals by ${item.name}`}
@@ -304,12 +333,14 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
                 }}
               >
                 <div className={styles.segmentTooltip}>
-                  {item.name}: {financials ? formatCrmCurrency(item.value) : "Confidential"} ({Math.round((item.value / totalSum) * 100)}%) ↗
+                  {item.name}: {financials ? formatCrmCurrency(item.value) : "Confidential"} ({Math.round((item.value / totalSum) * 100)}%)
                 </div>
               </div>
             );
           })}
         </div>
+        </>
+        )}
       </div>
     </article>
   );

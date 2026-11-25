@@ -45,11 +45,40 @@ export function NewLeadModal({
     exitDurationMs: 180,
   });
 
+  if (!shouldRender) {
+    return null;
+  }
+
+  return (
+    <NewLeadModalInner
+      key={isOpen ? 'open' : 'closing'}
+      isOpen={isOpen}
+      isClosing={isClosing}
+      handleAnimationEnd={handleAnimationEnd}
+      onClose={onClose}
+      currentUser={currentUser}
+    />
+  );
+}
+
+interface NewLeadModalInnerProps extends NewLeadModalProps {
+  isClosing: boolean;
+  handleAnimationEnd: (e: React.AnimationEvent<HTMLDivElement>) => void;
+}
+
+function NewLeadModalInner({
+  isOpen,
+  isClosing,
+  handleAnimationEnd,
+  onClose,
+  currentUser,
+}: NewLeadModalInnerProps): React.ReactElement {
   const [isPending, startTransition] = useTransition();
   const nameInputRef = useRef<HTMLInputElement>(null);
   const modalDialogRef = useRef<HTMLDivElement>(null);
   const promptKeepBtnRef = useRef<HTMLButtonElement>(null);
   const promptDiscardBtnRef = useRef<HTMLButtonElement>(null);
+  const promptFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Form Field State
   const [name, setName] = useState('');
@@ -80,55 +109,47 @@ export function NewLeadModal({
 
   // Fetch active team assignees & lead sources concurrently when opening modal
   useEffect(() => {
-    if (isOpen) {
-      Promise.all([getActiveTeamAssignees(), getActiveLeadSourcesAction()])
-        .then(([options, sources]) => {
-          setAssigneeOptions(options);
-          setSourceOptions(sources);
-        })
-        .catch((err) => {
-          console.error('[ASSIGN_FETCH_ERROR] Failed to load form options:', err);
-          setAssigneeOptions([
-            { id: currentUser.id, fullName: currentUser.name || 'Current User', role: currentUser.role, email: currentUser.email || '' },
-          ]);
-        });
-    }
-  }, [isOpen, currentUser.id, currentUser.name, currentUser.role]);
+    if (!isOpen) return;
+    let active = true;
+    Promise.all([getActiveTeamAssignees(), getActiveLeadSourcesAction()])
+      .then(([options, sources]) => {
+        if (!active) return;
+        setAssigneeOptions(options);
+        setSourceOptions(sources);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error('[ASSIGN_FETCH_ERROR] Failed to load form options:', err);
+        setAssigneeOptions([
+          {
+            id: currentUser.id,
+            fullName: currentUser.name || 'Current User',
+            role: currentUser.role,
+            email: currentUser.email || '',
+          },
+        ]);
+      });
 
-  // Reset form upon opening
-  useEffect(() => {
-    if (isOpen) {
-      setName('');
-      setCompany('');
-      setCompanyWebsite('');
-      setIndustry('');
-      setLeadSourceId('');
-      setEmail('');
-      setPhone('');
-      setPreferredChannel('Phone');
-      setServiceCategory('Web & Digital');
-      setBudgetBracket('₹5L - ₹15L');
-      setExpectedValue(500000);
-      setPriority('Medium');
-      setAssignedTo(currentUser.id);
-      setNotes('');
-      setFormErrors({});
-      setGeneralError(null);
-      setShowDiscardPrompt(false);
+    const timer = setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 100);
 
-      // Autofocus client name input
-      const timer = setTimeout(() => {
-        nameInputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, currentUser.id]);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      if (promptFocusTimerRef.current) {
+        clearTimeout(promptFocusTimerRef.current);
+      }
+    };
+  }, [isOpen, currentUser.id, currentUser.name, currentUser.role, currentUser.email]);
 
   // Check if form contains modified data
   const isDirty = Boolean(
     name.trim().length > 0 ||
     company.trim().length > 0 ||
     companyWebsite.trim().length > 0 ||
+    industry.trim().length > 0 ||
+    leadSourceId.trim().length > 0 ||
     email.trim().length > 0 ||
     phone.trim().length > 0 ||
     notes.trim().length > 0 ||
@@ -143,7 +164,10 @@ export function NewLeadModal({
   const requestClose = useCallback(() => {
     if (isDirty) {
       setShowDiscardPrompt(true);
-      setTimeout(() => {
+      if (promptFocusTimerRef.current) {
+        clearTimeout(promptFocusTimerRef.current);
+      }
+      promptFocusTimerRef.current = setTimeout(() => {
         promptKeepBtnRef.current?.focus();
       }, 50);
     } else {
@@ -196,10 +220,6 @@ export function NewLeadModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, showDiscardPrompt, requestClose]);
-
-  if (!shouldRender) {
-    return null;
-  }
 
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

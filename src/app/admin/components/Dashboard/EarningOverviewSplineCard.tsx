@@ -17,7 +17,7 @@ import {
   type CardTimeframe,
   CARD_TIMEFRAME_OPTIONS,
   type SplineDataPoint,
-  computeSplinePointsForCadence,
+  type TimeframeSlug,
   type DynamicRevenueSplinePoint,
 } from "@/app/admin/lib/timeframeUtils";
 import styles from "./EarningOverviewSplineCard.module.scss";
@@ -26,9 +26,25 @@ import styles from "./EarningOverviewSplineCard.module.scss";
 export type SplineMonthPoint = SplineDataPoint;
 export type { SplineDataPoint };
 
+function toCardTimeframe(slug?: TimeframeSlug): CardTimeframe | undefined {
+  switch (slug) {
+    case "7d":
+      return "this_week";
+    case "30d":
+      return "this_month";
+    case "quarter":
+      return "this_quarter";
+    case "year":
+      return "this_year";
+    default:
+      return undefined;
+  }
+}
+
 export interface EarningOverviewSplineCardProps {
   totalValue?: number | null;
   growthPercentage?: number | null;
+  timeframe?: TimeframeSlug;
   timeframeLabel?: string;
   points?: SplineDataPoint[] | DynamicRevenueSplinePoint[];
   financials?: boolean;
@@ -38,6 +54,7 @@ export interface EarningOverviewSplineCardProps {
 export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps> = ({
   totalValue = null,
   growthPercentage: externalGrowth = null,
+  timeframe,
   financials = true,
   points: incomingPoints,
   onTimeframeChange,
@@ -46,8 +63,8 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Decoupled interactive timeframe state
-  const [selectedTimeframe, setSelectedTimeframe] = useState<CardTimeframe>("this_month");
+  const [localTimeframe, setLocalTimeframe] = useState<CardTimeframe>("this_month");
+  const selectedTimeframe = toCardTimeframe(timeframe) ?? localTimeframe;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Active selected point defaults to peak or current
@@ -80,7 +97,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
 
   // Handle timeframe change
   const handleSelectTimeframe = (slug: CardTimeframe) => {
-    setSelectedTimeframe(slug);
+    setLocalTimeframe(slug);
     setIsDropdownOpen(false);
     triggerRef.current?.focus();
     if (onTimeframeChange) {
@@ -88,7 +105,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
     }
   };
 
-  // Resolve real spline telemetry without fabricating synthetic percentages
+  // Resolve real spline telemetry without fabricating synthetic series when empty
   const { points, activeTotal, growthPercentage } = useMemo(() => {
     const resolvedDelta =
       typeof externalGrowth === "number" && Number.isFinite(externalGrowth) ? externalGrowth : null;
@@ -111,13 +128,12 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
       };
     }
     const rawTotal = typeof totalValue === "number" ? totalValue : 0;
-    const computed = computeSplinePointsForCadence(selectedTimeframe, rawTotal);
     return {
-      points: computed.points,
+      points: [],
       activeTotal: rawTotal,
       growthPercentage: resolvedDelta,
     };
-  }, [selectedTimeframe, totalValue, incomingPoints, externalGrowth]);
+  }, [totalValue, incomingPoints, externalGrowth]);
 
   // Clamp activeIndex within points bounds to prevent runtime coordinate crashes
   const safeActiveIndex = Math.min(activeIndex, Math.max(0, points.length - 1));
@@ -186,7 +202,11 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
             title="Consolidated closed revenue across advisory cadences"
             aria-label="Information regarding earning overview"
           >
-            ⓘ
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
           </span>
           <Link
             href="/admin/analytics"
@@ -262,7 +282,9 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
                       <span className={styles.optionSubtext}>{opt.subLabel}</span>
                     </div>
                     {selectedTimeframe === opt.slug && (
-                      <span className={styles.activeCheck} aria-hidden="true">✓</span>
+                      <svg className={styles.activeCheck} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     )}
                   </button>
                 </li>
@@ -280,12 +302,35 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
             className={styles.trendBadge}
             aria-label={`${growthPercentage >= 0 ? "+" : ""}${growthPercentage}% change this period`}
           >
-            {growthPercentage > 0 ? `+${growthPercentage}% ↑` : growthPercentage < 0 ? `${growthPercentage}% ↓` : "0.0%"}
+            {growthPercentage > 0 ? (
+              <>
+                <span>+{growthPercentage}%</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <line x1="12" y1="19" x2="12" y2="5" />
+                  <polyline points="5 12 12 5 19 12" />
+                </svg>
+              </>
+            ) : growthPercentage < 0 ? (
+              <>
+                <span>{growthPercentage}%</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <polyline points="19 12 12 19 5 12" />
+                </svg>
+              </>
+            ) : (
+              "0.0%"
+            )}
           </span>
         )}
       </div>
 
-      {/* Interactive Spline Chart */}
+      {/* Interactive Spline Chart or Honest Empty State */}
+      {points.length === 0 ? (
+        <div className={styles.emptyChartState} role="status">
+          No closed conversions recorded in this cadence window.
+        </div>
+      ) : (
       <div className={styles.chartContainer}>
         {/* Floating Tooltip Card */}
         {activeCoord && activeCoord.point && (
@@ -403,6 +448,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
           ))}
         </div>
       </div>
+      )}
     </article>
   );
 };

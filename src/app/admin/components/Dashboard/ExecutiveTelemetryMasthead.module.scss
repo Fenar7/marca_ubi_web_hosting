@@ -55,7 +55,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 16px;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -137,9 +137,7 @@
   }
 }
 
-/* ==========================================================================
-   Base Scorecard Container (Cards 2-4)
-   ========================================================================== */
+/* Base Scorecard Container (Cards 2-4) */
 .scorecard {
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -210,12 +208,12 @@
 
 .infoDot {
   font-size: 11px;
-  color: #94a3b8;
+  color: #64748b;
   cursor: help;
   line-height: 1;
 
   &:hover {
-    color: #475569;
+    color: #0f172a;
   }
 }
 
@@ -243,7 +241,7 @@
 }
 
 .targetPill {
-  color: #64748b;
+  color: #475569;
   letter-spacing: 0.02em;
 }
 
@@ -262,25 +260,23 @@
 
 .trendPositive {
   background: #ecfdf5;
-  color: #059669;
+  color: #047857;
   border: 1px solid #a7f3d0;
 }
 
 .trendNegative {
   background: #fee2e2;
-  color: #dc2626;
+  color: #b91c1c;
   border: 1px solid #fca5a5;
 }
 
 .trendNeutral {
   background: #f1f5f9;
-  color: #64748b;
+  color: #475569;
   border: 1px solid #e2e8f0;
 }
 
-/* ==========================================================================
-   Primary Metric Numerals
-   ========================================================================== */
+/* Primary Metric Numerals */
 .primaryMetric {
   font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: clamp(1.75rem, 2.2vw, 2.25rem);
@@ -307,9 +303,7 @@
   vertical-align: baseline;
 }
 
-/* ==========================================================================
-   Card Footers
-   ========================================================================== */
+/* Card Footers */
 .cardFooter {
   border-top: 1px solid #f1f5f9;
   padding-top: 10px;

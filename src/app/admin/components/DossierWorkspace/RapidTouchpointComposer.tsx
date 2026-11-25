@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useRef, useTransition } from 'react';
+import React, { useState, useRef, useTransition, useId } from 'react';
 import { logLeadActivityAction } from '@/app/actions/leadActivityActions';
 import type { LeadActivityWithActor, LeadActivityType } from '@/types/crm';
 import styles from './LeadDossierWorkspace.module.scss';
@@ -65,6 +65,7 @@ export function RapidTouchpointComposer({
   className,
   readOnly = false,
 }: RapidTouchpointComposerProps): React.ReactElement {
+  const fieldPrefix = useId();
   const [activeTab, setActiveTab] = useState<TouchpointTab>('call');
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -299,8 +300,11 @@ export function RapidTouchpointComposer({
         {activeTab === 'call' && (
           <>
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Call Outcome</label>
+              <label htmlFor={`${fieldPrefix}-call-outcome`} className={styles.fieldLabel}>
+                Call Outcome
+              </label>
               <select
+                id={`${fieldPrefix}-call-outcome`}
                 value={callOutcome}
                 onChange={(e) => setCallOutcome(e.target.value as typeof CALL_OUTCOMES[number])}
                 className={styles.composerSelect}
@@ -315,13 +319,19 @@ export function RapidTouchpointComposer({
 
             <div className={styles.composerField}>
               <div className={styles.durationHeaderRow}>
-                <label className={styles.fieldLabel}>Call Duration</label>
+                <span id={`${fieldPrefix}-call-duration`} className={styles.fieldLabel}>
+                  Call Duration
+                </span>
                 <span className={styles.durationActiveBadge}>
                   {Math.round(callDurationSeconds / 60)} min
                 </span>
               </div>
               {/* Single-line duration buttons with grid-template-columns: repeat(5, 1fr) */}
-              <div className={styles.presetGroup}>
+              <div
+                className={styles.presetGroup}
+                role="group"
+                aria-labelledby={`${fieldPrefix}-call-duration`}
+              >
                 {DURATION_PRESETS.map((p) => (
                   <button
                     key={p.label}
@@ -338,8 +348,11 @@ export function RapidTouchpointComposer({
             </div>
 
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Discussion Summary</label>
+              <label htmlFor={`${fieldPrefix}-call-notes`} className={styles.fieldLabel}>
+                Discussion Summary
+              </label>
               <textarea
+                id={`${fieldPrefix}-call-notes`}
                 value={callNotes}
                 onChange={(e) => setCallNotes(e.target.value)}
                 placeholder="Log executive discussion notes, client commitments, next steps..."
@@ -354,8 +367,11 @@ export function RapidTouchpointComposer({
         {activeTab === 'whatsapp' && (
           <>
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Message Classification</label>
+              <label htmlFor={`${fieldPrefix}-wa-type`} className={styles.fieldLabel}>
+                Message Classification
+              </label>
               <select
+                id={`${fieldPrefix}-wa-type`}
                 value={whatsAppType}
                 onChange={(e) => setWhatsAppType(e.target.value as typeof WHATSAPP_TYPES[number])}
                 className={styles.composerSelect}
@@ -369,8 +385,11 @@ export function RapidTouchpointComposer({
             </div>
 
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Message Summary</label>
+              <label htmlFor={`${fieldPrefix}-wa-notes`} className={styles.fieldLabel}>
+                Message Summary
+              </label>
               <textarea
+                id={`${fieldPrefix}-wa-notes`}
                 value={whatsAppNotes}
                 onChange={(e) => setWhatsAppNotes(e.target.value)}
                 placeholder="Dispatched proposal link, received design feedback via WhatsApp..."
@@ -385,8 +404,11 @@ export function RapidTouchpointComposer({
         {activeTab === 'email' && (
           <>
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Email Subject</label>
+              <label htmlFor={`${fieldPrefix}-email-subject`} className={styles.fieldLabel}>
+                Email Subject
+              </label>
               <input
+                id={`${fieldPrefix}-email-subject`}
                 type="text"
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
@@ -396,8 +418,11 @@ export function RapidTouchpointComposer({
             </div>
 
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Email Summary</label>
+              <label htmlFor={`${fieldPrefix}-email-notes`} className={styles.fieldLabel}>
+                Email Summary
+              </label>
               <textarea
+                id={`${fieldPrefix}-email-notes`}
                 value={emailNotes}
                 onChange={(e) => setEmailNotes(e.target.value)}
                 placeholder="Summarize email thread, attachments shared, or client reply..."
@@ -412,8 +437,11 @@ export function RapidTouchpointComposer({
         {activeTab === 'meeting' && (
           <>
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Meeting Type</label>
+              <label htmlFor={`${fieldPrefix}-meeting-type`} className={styles.fieldLabel}>
+                Meeting Type
+              </label>
               <select
+                id={`${fieldPrefix}-meeting-type`}
                 value={meetingType}
                 onChange={(e) => setMeetingType(e.target.value as typeof MEETING_TYPES[number])}
                 className={styles.composerSelect}
@@ -427,8 +455,11 @@ export function RapidTouchpointComposer({
             </div>
 
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Attendees</label>
+              <label htmlFor={`${fieldPrefix}-meeting-attendees`} className={styles.fieldLabel}>
+                Attendees
+              </label>
               <input
+                id={`${fieldPrefix}-meeting-attendees`}
                 type="text"
                 value={meetingAttendees}
                 onChange={(e) => setMeetingAttendees(e.target.value)}
@@ -438,8 +469,11 @@ export function RapidTouchpointComposer({
             </div>
 
             <div className={styles.composerField}>
-              <label className={styles.fieldLabel}>Meeting Minutes & Action Items</label>
+              <label htmlFor={`${fieldPrefix}-meeting-notes`} className={styles.fieldLabel}>
+                Meeting Minutes & Action Items
+              </label>
               <textarea
+                id={`${fieldPrefix}-meeting-notes`}
                 value={meetingNotes}
                 onChange={(e) => setMeetingNotes(e.target.value)}
                 placeholder="Document key meeting agreements, deliverable timelines, scope consensus..."
@@ -454,7 +488,10 @@ export function RapidTouchpointComposer({
         {activeTab === 'note' && (
           <>
             <div className={styles.composerField}>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+              <label htmlFor={`${fieldPrefix}-internal-note`} className={styles.fieldLabel}>
+                Internal Note
+              </label>
+              <div className={styles.tagPillRow}>
                 {NOTE_TAGS.map((tag) => (
                   <button
                     key={tag}
@@ -467,6 +504,7 @@ export function RapidTouchpointComposer({
                 ))}
               </div>
               <textarea
+                id={`${fieldPrefix}-internal-note`}
                 value={internalNote}
                 onChange={(e) => setInternalNote(e.target.value)}
                 placeholder="Add confidential internal team note, tag teammates with @name, tag topics with #tag..."

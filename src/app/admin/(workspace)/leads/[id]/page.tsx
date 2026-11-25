@@ -9,10 +9,11 @@
  */
 
 import React, { cache } from 'react';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
+import { getCachedCallerProfile } from '@/app/lib/supabase/server';
 import { getLeadDetails } from '@/app/actions/leads';
-import { createClient } from '@/app/lib/supabase/server';
 import { type CrmUserRole, ROLE_DEFAULT_TABS } from '@/types/crm';
 import { LeadDossierWorkspaceClient } from '@/app/admin/components/DossierWorkspace/LeadDossierWorkspaceClient';
 import styles from './page.module.scss';
@@ -27,12 +28,37 @@ interface LeadDossierPageProps {
 }
 
 /**
- * Dynamically resolves document title and OpenGraph metadata based on the verified deal record.
+ * Dynamically resolves document title and OpenGraph metadata only after verifying session,
+ * active status, and leads tab access so unauthorized callers never see deal identity metadata.
  */
 export async function generateMetadata(
   props: LeadDossierPageProps
 ): Promise<Metadata> {
   const { id } = await props.params;
+  const { user, profile } = await getCachedCallerProfile();
+
+  if (!user || !profile || profile.status !== 'active') {
+    return {
+      title: 'Client 360° Dossier | Marca Ubi Enterprise CRM',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const role = profile.role as CrmUserRole;
+  const allowedTabs = profile.allowed_tabs as string[] | undefined;
+  const hasLeadsAccess =
+    role === 'admin' ||
+    (Array.isArray(allowedTabs) && allowedTabs.length > 0
+      ? allowedTabs.includes('leads')
+      : Boolean(ROLE_DEFAULT_TABS[role]?.leads));
+
+  if (!hasLeadsAccess) {
+    return {
+      title: 'Client 360° Dossier | Marca Ubi Enterprise CRM',
+      robots: { index: false, follow: false },
+    };
+  }
+
   const result = await loadDossier(id);
 
   if (!result.success || !result.data?.lead) {
@@ -58,20 +84,11 @@ export default async function LeadDossierPage(
   const { id } = await props.params;
 
   // 1. Session verification & tab access guard
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, profile } = await getCachedCallerProfile();
 
   if (!user) {
     redirect(`/admin/login?next=%2Fadmin%2Fleads%2F${encodeURIComponent(id)}`);
   }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, status, allowed_tabs')
-    .eq('id', user.id)
-    .maybeSingle();
 
   if (!profile || profile.status !== 'active') {
     redirect('/admin/login?error=account_suspended');
@@ -104,9 +121,9 @@ export default async function LeadDossierPage(
               Your executive account is restricted to commercial engagements assigned to your active
               portfolio. This lead is assigned to another representative or unassigned.
             </p>
-            <a href="/admin/leads" className={styles.returnBtn}>
-              ← Return to Inbound Leads
-            </a>
+            <Link href="/admin/leads" className={styles.returnBtn}>
+              Return to Inbound Leads
+            </Link>
           </div>
         </div>
       );

@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
 import {
@@ -151,6 +151,8 @@ function LeadsWorkspaceContent({
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assigneeParam);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
   const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestedQueryRef = useRef<string | null>(null);
 
 
 
@@ -267,6 +269,8 @@ function LeadsWorkspaceContent({
       }
 
       url.searchParams.delete('page');
+      const nextSearchString = url.search ? url.search.slice(1) : '';
+      requestedQueryRef.current = nextSearchString;
       router.replace(url.pathname + (url.search ? url.search : ''), { scroll: false });
     },
     [
@@ -280,8 +284,21 @@ function LeadsWorkspaceContent({
     ]
   );
 
-  // Sync state if URL changes externally
   useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, []);
+
+  // Sync state if URL changes externally without clobbering active typing
+  useEffect(() => {
+    const currentParamsString = searchParams.toString();
+    if (requestedQueryRef.current === currentParamsString) {
+      requestedQueryRef.current = null;
+    }
+
     const rawBucket = searchParams.get('bucket');
     if (VALID_BUCKETS.includes(rawBucket as BucketTabId)) {
       setSelectedBucket(rawBucket as BucketTabId);
@@ -289,14 +306,15 @@ function LeadsWorkspaceContent({
       setSelectedBucket('all');
     }
 
-    setSearchQuery(searchParams.get('search') || searchParams.get('q') || '');
+    if (!searchDebounceRef.current && requestedQueryRef.current === null) {
+      setSearchQuery(searchParams.get('search') || searchParams.get('q') || '');
+    }
     setSelectedSourceId(searchParams.get('source_id') || searchParams.get('source') || null);
     setSelectedAssigneeId(
       searchParams.get('assigned_to') || searchParams.get('assignee_id') || null
     );
     setSelectedPriority(searchParams.get('priority') || null);
     setSelectedStageId(searchParams.get('stage') || null);
-
   }, [searchParams]);
 
   // Available sources list
@@ -711,7 +729,7 @@ function LeadsWorkspaceContent({
         router.refresh();
       }
     },
-    [resolvedStatuses, selectedLeadIds]
+    [resolvedStatuses, selectedLeadIds, router]
   );
 
   // Batch CSV Export Callback
@@ -733,8 +751,16 @@ function LeadsWorkspaceContent({
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      } else {
-        alert(result.error || 'Failed to export selected leads.');
+      } else if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('crm-toast', {
+            detail: {
+              type: 'error',
+              title: 'Export Failed',
+              description: result.error || 'Failed to export selected leads.',
+            },
+          })
+        );
       }
     } catch (err: unknown) {
       console.error('[leads-workspace] CSV export error:', err);
@@ -808,7 +834,13 @@ function LeadsWorkspaceContent({
 
   const handleSearchChange = (query: string): void => {
     setSearchQuery(query);
-    updateUrlParams({ search: query });
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    searchDebounceRef.current = setTimeout(() => {
+      searchDebounceRef.current = null;
+      updateUrlParams({ search: query });
+    }, 300);
   };
 
   const handleSourceChange = (sourceId: string | null): void => {

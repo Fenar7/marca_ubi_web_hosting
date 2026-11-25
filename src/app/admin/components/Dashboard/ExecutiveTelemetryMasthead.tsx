@@ -95,7 +95,7 @@ export function ExecutiveTelemetryMasthead({
     revenueDelta !== null
       ? revenueDelta === 0
         ? "0.0% (flat)"
-        : `${revenueDelta > 0 ? "↗ +" : "↘ "}${revenueDelta}%`
+        : `${revenueDelta > 0 ? "+" : ""}${revenueDelta}%`
       : "0.0% (flat)";
 
   const trendClass =
@@ -179,7 +179,18 @@ export function ExecutiveTelemetryMasthead({
                   >
                     <span>{option.label}</span>
                     {timeframe === slug && (
-                      <span className={styles.activeCheck}>✓</span>
+                      <svg
+                        className={styles.activeCheck}
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        aria-hidden="true"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     )}
                   </button>
                 ))}
@@ -245,7 +256,10 @@ export function ExecutiveTelemetryMasthead({
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>CLOSED REVENUE</span>
-              <span className={styles.cardArrow} aria-hidden="true">↗</span>
+              <svg className={styles.cardArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
             </div>
             <span className={`${styles.trendPill} ${trendClass}`}>
               {revenueDeltaStr}
@@ -295,7 +309,10 @@ export function ExecutiveTelemetryMasthead({
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>WEIGHTED VALUE</span>
-              <span className={styles.cardArrow} aria-hidden="true">↗</span>
+              <svg className={styles.cardArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
             </div>
             <span className={styles.ratioPill}>
               {pipelineValue && weightedPotential && pipelineValue > 0
@@ -333,7 +350,10 @@ export function ExecutiveTelemetryMasthead({
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>AVG. SALES CYCLE</span>
-              <span className={styles.cardArrow} aria-hidden="true">↗</span>
+              <svg className={styles.cardArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
             </div>
             <span className={styles.targetPill}>Target &lt; 21d</span>
           </div>

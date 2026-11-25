@@ -12,6 +12,7 @@
  */
 
 import React, { useMemo, useState, useDeferredValue } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./CommercialDealsLedger.module.scss";
@@ -246,11 +247,11 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
   records = [],
   recordsReady = true,
   financials = true,
-  stages = [],
   onAdvanceStage,
   onOpenDossier,
 }) => {
   const router = useRouter();
+  const [referenceNowMs] = useState<number>(() => Date.now());
   const [activeTab, setActiveTab] = useState<LedgerFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStageFilter, setSelectedStageFilter] = useState<string | null>(null);
@@ -293,7 +294,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
       "negotiation",
     ];
 
-    const now = Date.now();
+    const now = referenceNowMs;
 
     return STAGE_KEYS.map((key) => {
       const spec = STAGE_COLOR_SYSTEM[key];
@@ -334,7 +335,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
         spec,
       };
     });
-  }, [records, totalPipelineValue]);
+  }, [records, totalPipelineValue, referenceNowMs]);
 
   // Multi-tier filtering pipeline (Tab + Stage Radar Filter + Deferred Search)
   const filteredRecords = useMemo(() => {
@@ -419,7 +420,10 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             aria-label="View all deals in commercial pipeline"
           >
             <span>View All Deals</span>
-            <span className={styles.linkArrow} aria-hidden="true">↗</span>
+            <svg className={styles.linkArrow} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
           </button>
 
           {/* 60fps Search Trigger */}
@@ -456,7 +460,10 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                 onClick={() => setSearchQuery("")}
                 aria-label="Clear search input"
               >
-                ×
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             )}
           </div>
@@ -526,6 +533,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             <span
               className={styles.activeFilterDot}
               style={{ backgroundColor: activeFilteredStageSpec.primary }}
+              aria-hidden="true"
             />
             <span>Stage: <strong>{activeFilteredStageSpec.name}</strong></span>
             <button
@@ -534,7 +542,10 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
               onClick={() => setSelectedStageFilter(null)}
               aria-label="Remove stage filter"
             >
-              ×
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
         )}
@@ -599,17 +610,6 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                   <article
                     key={record.id}
                     className={`${styles.dealCardlet} ${isSelected ? styles.selectedCardlet : ""}`}
-                    onClick={() => {
-                      setSelectedDealId(record.id);
-                      if (onOpenDossier) {
-                        onOpenDossier(record);
-                      } else {
-                        router.push(record.href || `/admin/deals/${record.id}`);
-                      }
-                    }}
-                    tabIndex={0}
-                    role="button"
-                    aria-selected={isSelected}
                     style={
                       {
                         "--stage-primary": stageSpec.primary,
@@ -620,21 +620,6 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                         "--stage-text": stageSpec.text,
                       } as React.CSSProperties
                     }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setSelectedDealId(record.id);
-                        if (onOpenDossier) {
-                          onOpenDossier(record);
-                        } else if (typeof window !== "undefined") {
-                          window.dispatchEvent(
-                            new CustomEvent("open-lead-drawer", {
-                              detail: { leadId: record.id, id: record.id, fullPage: false },
-                            })
-                          );
-                        }
-                      }
-                    }}
                   >
                     {/* Left Cluster: Squircle Monogram & Identity */}
                     <div className={styles.cardletLeftCluster}>
@@ -651,9 +636,14 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                       </div>
                       <div className={styles.dealIdentity}>
                         <div className={styles.dealTitleRow}>
-                          <span className={styles.dealTitle} title={displayName}>
+                          <Link
+                            href={record.href || `/admin/deals/${record.id}`}
+                            className={styles.dealTitle}
+                            title={displayName}
+                            onClick={() => setSelectedDealId(record.id)}
+                          >
                             {displayName}
-                          </span>
+                          </Link>
                           {record.serviceCategory && (
                             <span
                               className={styles.serviceTag}

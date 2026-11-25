@@ -3,12 +3,11 @@
 /**
  * @file DossierHeaderBar.tsx
  * @description Master navigation and primary action header bar for the Client 360° Workspace.
- *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
  *              - Back navigation targeting /admin/leads or /admin/deals based on operational context.
  *              - Raycast monospace copy token chip alongside clean ghost back button.
- *              - Editorial entity heading with mandatory trailing period (e.g. 'Morar Group 8500.').
- *              - Status selector pill with semantic radar dot and elevated dropdown menu.
- *              - Accordion Lemon Yellow primary action button meeting WCAG 44px minimum tap targets.
+ *              - Editorial entity heading without trailing punctuation.
+ *              - Status selector pill with vertical indicator rule and elevated dropdown menu.
+ *              - Marca Ubi Crimson primary action button meeting WCAG 44px minimum tap targets.
  * @module components/DossierWorkspace/DossierHeaderBar
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */

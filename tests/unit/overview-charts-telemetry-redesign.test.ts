@@ -106,7 +106,7 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
 
     for (const cadence of cadences) {
       const spline = computeSplinePointsForCadence(cadence, 6540000);
-      assert.ok(spline.points.length >= 3, `${cadence} must have at least 3 points`);
+      assert.ok(Array.isArray(spline.points) && spline.points.length === 0, `${cadence} must never fabricate fake spline points without database events`);
       assert.ok(spline.totalValue >= 0, `${cadence} totalValue must be >= 0`);
       assert.ok(Number.isFinite(spline.growthPercentage), `${cadence} growthPercentage must be finite`);
 

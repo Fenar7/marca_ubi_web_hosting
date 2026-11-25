@@ -512,6 +512,7 @@ export default async function AdminDashboardPage({
     canFinancial && outcome?.valid && priorOutcome?.valid
       ? calculateMetricDelta(outcome.value, priorOutcome.value)
       : null;
+  const wonStageRow = stages.find((stage) => stage.bucket === "converted") ?? null;
   const data: OverviewData = {
     userName,
     generatedAt: now.toISOString(),
@@ -546,6 +547,9 @@ export default async function AdminDashboardPage({
             ? (pipeline.stages.get(stage.id)?.value ?? 0)
             : null,
       })),
+    wonStage: wonStageRow
+      ? { id: wonStageRow.id, name: wonStageRow.name }
+      : null,
     pipelineReady: pipeline !== null,
     queue: selectedQueue ?? "overdue",
     queueCounts: {

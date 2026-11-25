@@ -67,4 +67,20 @@ describe('Core Tabs Conversion Engine & Multi-Color Luxury Remediation', () => {
     assert.ok(leadsPage.includes('countBucketHead') && leadsPage.includes('globalBucketCounts'));
     assert.ok(dealsPage.includes('laneTotals') && dealsPage.includes('foldDashboardPages'));
   });
+
+  it('Round 1 audit hardening eliminates any types, alert/50% dot violations, and enforces atomic completion + auth guards', () => {
+    const leadsPage = read('src/app/admin/(workspace)/leads/page.tsx');
+    const dealsPage = read('src/app/admin/(workspace)/deals/page.tsx');
+    const leadsClient = read('src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx');
+    const taskCard = read('src/app/admin/(workspace)/tasks/components/TaskCard.tsx');
+    const leadsAction = read('src/app/actions/leads.ts');
+    const dpwClient = read('src/app/admin/components/DossierWorkspace/LeadDossierWorkspaceClient.tsx');
+
+    assert.ok(!/\bany\b/.test(leadsPage), 'leads/page.tsx must contain zero any types');
+    assert.ok(!/\bany\b/.test(dealsPage), 'deals/page.tsx must contain zero any types');
+    assert.ok(!leadsClient.includes('alert('), 'LeadsWorkspaceClient must dispatch crm-toast instead of alert()');
+    assert.ok(taskCard.includes('tomorrowTenAmInput') && taskCard.includes('logLeadActivityAction'), 'TaskCard must schedule successor before clearing/logging');
+    assert.ok(leadsAction.includes('canViewFinancials') && leadsAction.includes("'[Restricted]'"), 'leads actions enforce server-side financial gating');
+    assert.ok(!dpwClient.includes('lucide-react'), 'Dossier workspace must use inline SVG rather than uninstalled lucide-react');
+  });
 });

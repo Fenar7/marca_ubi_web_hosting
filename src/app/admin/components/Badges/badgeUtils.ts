@@ -149,8 +149,8 @@ export function getOverdueBadgeTheme(tier: OverdueTier): {
     case 'orange':
       return {
         colorCode: '#f97316',
-        bgCode: 'rgba(255, 97, 0, 0.14)',
-        borderColor: 'rgba(255, 97, 0, 0.35)',
+        bgCode: 'rgba(249, 115, 22, 0.14)',
+        borderColor: 'rgba(249, 115, 22, 0.35)',
       };
     case 'red_pulse':
       return {

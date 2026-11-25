@@ -41,6 +41,14 @@ export const metadata: Metadata = {
   },
 };
 
+interface FilterableDealQuery<TResult = unknown> {
+  eq(column: string, value: string): FilterableDealQuery<TResult>;
+  ilike(column: string, pattern: string): FilterableDealQuery<TResult>;
+  or?: (filters: string) => FilterableDealQuery<TResult>;
+  order(column: string, opts?: { ascending?: boolean }): FilterableDealQuery<TResult>;
+  range(from: number, to: number): PromiseLike<TResult>;
+}
+
 interface AdminDealsPageProps {
   searchParams?: Promise<{
     id?: string;
@@ -50,6 +58,7 @@ interface AdminDealsPageProps {
     assigned_to?: string;
     source?: string;
     priority?: string;
+    service_category?: string;
     search?: string;
     q?: string;
     bucket?: string;
@@ -149,6 +158,7 @@ export default async function AdminDealsPage(
     assigned_to: assignedTo,
     source,
     priority,
+    service_category: serviceCategory,
   } = resolvedSearchParams ?? {};
   const searchTerm = resolvedSearchParams?.search ?? resolvedSearchParams?.q;
   const search = buildCommercialSearchFilter(
@@ -156,7 +166,7 @@ export default async function AdminDealsPage(
   );
   // Next may supply arrays for repeated parameters. Reject them before parsing filters.
   const invalidFilter =
-    [bucket, stage, assignedTo, source, priority, searchTerm].some(
+    [bucket, stage, assignedTo, source, priority, serviceCategory, searchTerm].some(
       (value) => value !== undefined && typeof value !== "string",
     ) ||
     [stage, assignedTo, source].some((value) => value && !uuid.test(value)) ||
@@ -168,35 +178,47 @@ export default async function AdminDealsPage(
       !["all", "open", "potential", "converted", "lost"].includes(bucket),
     );
 
-  const applyDealFilters = <T extends ReturnType<typeof supabase.from>>(q: any): any => {
+  const syntheticExclusion =
+    "brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true";
+
+  function applyDealFilters<TResult>(
+    q: FilterableDealQuery<TResult>,
+  ): FilterableDealQuery<TResult> {
     let query = q;
     if (!invalidFilter) {
       if (stage) query = query.eq("status_id", stage);
       if (assignedTo) query = query.eq("assigned_to", assignedTo);
       if (source) query = query.eq("lead_source_id", source);
       if (priority) query = query.ilike("priority", priority);
+      if (serviceCategory) query = query.eq("service_category", serviceCategory);
       if (bucket && bucket !== "all") query = query.eq("funnel_status.bucket", bucket);
       if (typeof query.or === "function") {
         if (search.filter) {
-          query = query.or(search.filter);
-        } else {
           query = query.or(
-            "brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true",
+            `and(or(${syntheticExclusion}),or(${search.filter}))`,
           );
+        } else {
+          query = query.or(syntheticExclusion);
         }
       }
     }
     return query;
   };
 
-  const dealsQuery = applyDealFilters(
+  interface DealSelectResponse {
+    data: unknown[] | null;
+    error: { code?: string; message: string } | null;
+    count: number | null;
+  }
+
+  const dealsQuery = applyDealFilters<DealSelectResponse>(
     supabase
       .from("leads")
-      .select(dealSelectColumns(canViewFinancials), { count: "exact" }),
+      .select(dealSelectColumns(canViewFinancials), { count: "exact" }) as unknown as FilterableDealQuery<DealSelectResponse>,
   );
 
   interface LaneSummaryAccumulator {
-    lanes: Record<string, { count: number; value: number; valid: boolean }>;
+    lanes: Record<string, { count: number; value: number; valuedCount: number; unvaluedCount: number }>;
   }
 
   const laneSummaryPromise = invalidFilter
@@ -209,8 +231,8 @@ export default async function AdminDealsPage(
           const cols = canViewFinancials
             ? "id, status_id, expected_value, funnel_status:funnel_statuses!leads_status_id_fkey!inner(bucket)"
             : "id, status_id, funnel_status:funnel_statuses!leads_status_id_fkey!inner(bucket)";
-          const q = applyDealFilters(
-            supabase.from("leads").select(cols),
+          const q = applyDealFilters<DealSelectResponse>(
+            supabase.from("leads").select(cols) as unknown as FilterableDealQuery<DealSelectResponse>,
           )
             .order("id")
             .range(from, to);
@@ -221,20 +243,23 @@ export default async function AdminDealsPage(
               status_id: string;
               expected_value?: number | string;
             }> | null,
-            error: res.error,
+            error: res.error ? { code: res.error.code, message: res.error.message } : null,
           };
         },
         { lanes: {} },
         (acc, row) => {
           const key = row.status_id || "unlisted";
           if (!acc.lanes[key]) {
-            acc.lanes[key] = { count: 0, value: 0, valid: true };
+            acc.lanes[key] = { count: 0, value: 0, valuedCount: 0, unvaluedCount: 0 };
           }
           acc.lanes[key].count += 1;
           if (canViewFinancials) {
             const amt = dashboardAmount(row.expected_value);
-            if (amt === null) acc.lanes[key].valid = false;
-            else acc.lanes[key].value += amt;
+            if (amt === null) acc.lanes[key].unvaluedCount += 1;
+            else {
+              acc.lanes[key].valuedCount += 1;
+              acc.lanes[key].value += amt;
+            }
           }
         },
       );
@@ -253,14 +278,20 @@ export default async function AdminDealsPage(
     laneSummaryPromise,
   ]);
 
-  const laneTotals: Record<string, { count: number; value: number | null }> | undefined =
+  const laneTotals: Record<string, { count: number; value: number | null; valuedCount?: number }> | undefined =
     laneSummary
       ? Object.fromEntries(
           Object.entries(laneSummary.lanes).map(([k, v]) => [
             k,
             {
               count: v.count,
-              value: canViewFinancials && v.valid ? v.value : null,
+              value:
+                !canViewFinancials || v.valuedCount === 0
+                  ? v.count === 0
+                    ? 0
+                    : null
+                  : v.value,
+              valuedCount: v.valuedCount,
             },
           ]),
         )

@@ -169,18 +169,17 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
   const router = useRouter();
   const gradientId = useId();
 
-  // Aggregate metrics calculation with business invariants and cold-start resilience
+  // Aggregate metrics calculation with honest empty states when no milestones exist
   const metrics: SlaVelocityMetrics = useMemo(() => {
     if (!records || records.length === 0) {
-      const defaultDelta = 3.2;
       return {
         totalMilestones: 0,
         onTimeCount: 0,
         overdueCount: 0,
         dueTodayCount: 0,
-        onTimePercentage: 98.4,
-        averageTurnaroundDeltaDays: defaultDelta,
-        turnaround: resolveTurnaroundTelemetry(defaultDelta),
+        onTimePercentage: 0,
+        averageTurnaroundDeltaDays: 0,
+        turnaround: resolveTurnaroundTelemetry(0),
         totalCommittedValue: 0,
         nextCriticalRecord: null,
       };
@@ -235,12 +234,12 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
     const calculatedPercentage =
       recordsWithValidDue > 0
         ? Math.min(100, Math.max(0, ((recordsWithValidDue - overdue) / recordsWithValidDue) * 100))
-        : 98.4;
+        : 0;
 
     const avgDelta =
       recordsWithValidDue > 0
         ? Math.round((totalDaysDelta / recordsWithValidDue) * 10) / 10
-        : 3.2;
+        : 0;
 
     return {
       totalMilestones: records.length,
@@ -345,7 +344,9 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           title={metrics.overdueCount > 0 ? "Requires Executive Action" : "Commitments On Target"}
           aria-label={metrics.overdueCount > 0 ? "View overdue tasks" : "View all tasks"}
         >
-          {metrics.overdueCount > 0
+          {metrics.totalMilestones === 0
+            ? "No Active Commitments"
+            : metrics.overdueCount > 0
             ? `${metrics.overdueCount} Critical Overdue`
             : metrics.onTimePercentage < 90
             ? "Cadence Caution"
@@ -436,10 +437,12 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
         {/* Center Readout Telemetry */}
         <div className={styles.centerTelemetry}>
           <span className={styles.metricValue}>
-            {metrics.onTimePercentage.toFixed(1)}
-            <span className={styles.percentSymbol}>%</span>
+            {metrics.totalMilestones === 0 ? "—" : metrics.onTimePercentage.toFixed(1)}
+            {metrics.totalMilestones > 0 && <span className={styles.percentSymbol}>%</span>}
           </span>
-          <span className={styles.metricLabel}>ON-TIME COMMITMENT</span>
+          <span className={styles.metricLabel}>
+            {metrics.totalMilestones === 0 ? "NO SLA COMMITMENTS" : "ON-TIME COMMITMENT"}
+          </span>
           <span
             className={`${styles.turnaroundDelta} ${
               metrics.turnaround.category === "ahead"

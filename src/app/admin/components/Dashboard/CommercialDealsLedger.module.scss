@@ -24,9 +24,7 @@
   }
 }
 
-/* ==========================================================================
-   Header & Search Bar
-   ========================================================================== */
+/* Header & Search Bar */
 
 .ledgerHeader {
   display: flex;
@@ -177,32 +175,37 @@
 }
 
 .clearSearchBtn {
+  position: relative;
   position: absolute;
-  right: 8px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: #e7e7e4;
-  border-radius: 50%;
+  border-radius: 6px;
   color: #454542;
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
   transition: background 0.15s ease;
 
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
   &:hover {
     background: #111111;
     color: #ffffff;
   }
 }
-
-/* ==========================================================================
-   Recessed Segmented Filter Toolbar
-   ========================================================================== */
 
 .filterToolbar {
   display: flex;
@@ -226,21 +229,29 @@
 }
 
 .segmentBtn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
+  min-height: 36px;
   padding: 0 12px;
   border: none;
   background: transparent;
   border-radius: 6px;
-  color: #696965;
+  color: #525965;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -4px 0;
+    min-height: 44px;
+  }
 
   &:hover {
     color: #111111;
@@ -285,33 +296,40 @@
 }
 
 .activeFilterDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
   flex-shrink: 0;
 }
 
 .clearStageBtn {
+  position: relative;
   display: inline-grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
   border: none;
   background: rgba(0, 0, 0, 0.08);
-  border-radius: 50%;
+  border-radius: 4px;
   font-size: 11px;
   color: inherit;
   cursor: pointer;
   transition: background 0.15s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -11px;
+    min-width: 44px;
+    min-height: 44px;
+  }
 
   &:hover {
     background: rgba(0, 0, 0, 0.2);
   }
 }
 
-/* ==========================================================================
-   Asymmetric 60% / 40% Command Desk Grid
-   ========================================================================== */
+/* Asymmetric 60% / 40% Command Desk Grid */
 
 .commandDeskGrid {
   display: grid;
@@ -321,9 +339,7 @@
   align-items: start;
 }
 
-/* ==========================================================================
-   Left 60%: Deal Action Deck (Channel Architecture)
-   ========================================================================== */
+/* Left 60%: Deal Action Deck (Channel Architecture) */
 
 .actionDeckColumn {
   display: flex;
@@ -356,7 +372,7 @@
 .columnHeaderHint {
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.72rem;
-  color: #8c8c88;
+  color: #525965;
 }
 
 .cardListStack {
@@ -517,7 +533,7 @@
 }
 
 .stagePercentText {
-  color: #8c8c88;
+  color: #525965;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-helvetica-neue), sans-serif;
   font-weight: 400;
@@ -563,7 +579,7 @@
 }
 
 .urgencyTrack {
-  color: #059669;
+  color: #047857;
 }
 
 .urgencyOverdue {
@@ -614,7 +630,7 @@
 .currencyMasked {
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.76rem;
-  color: #8c8c88;
+  color: #525965;
 }
 
 .actionsGroup {
@@ -627,11 +643,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 28px;
-  padding: 0 10px;
+  min-height: 44px;
+  padding: 0 12px;
   border: 1px solid #dcdcd8;
   background: #ffffff;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #111111;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.74rem;
@@ -650,11 +666,11 @@
 .openDossierBtn {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  min-width: 44px;
+  min-height: 44px;
   border: 1px solid #dcdcd8;
   background: #ffffff;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #454542;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -666,9 +682,7 @@
   }
 }
 
-/* ==========================================================================
-   Right 40%: Live Stage Velocity Radar
-   ========================================================================== */
+/* Right 40%: Live Stage Velocity Radar */
 
 .velocityRadarColumn {
   display: flex;
@@ -772,7 +786,7 @@
   margin: 0;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.72rem;
-  color: #8c8c88;
+  color: #525965;
   line-height: 1.35;
 }
 
@@ -823,9 +837,9 @@
 }
 
 .stageDotIndicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
   flex-shrink: 0;
   transition: transform 0.2s ease;
 }
@@ -881,7 +895,7 @@
   justify-content: space-between;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.68rem;
-  color: #8c8c88;
+  color: #525965;
 }
 
 .stageDwellText {
@@ -917,9 +931,7 @@
   line-height: 1.4;
 }
 
-/* ==========================================================================
-   Empty & Skeleton States
-   ========================================================================== */
+/* Empty & Skeleton States */
 
 .emptyStateContainer {
   display: flex;
@@ -985,9 +997,7 @@
   }
 }
 
-/* ==========================================================================
-   Responsive Reflow (Tablet & Mobile Breakpoints)
-   ========================================================================== */
+/* Responsive Reflow (Tablet & Mobile Breakpoints) */
 
 @media (max-width: 1179px) {
   .commandDeskGrid {

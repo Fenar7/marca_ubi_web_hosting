@@ -36,10 +36,10 @@ export interface LuxuryDonutCookieChartProps {
 const LUXURY_PALETTE = [
   "#111111", // Obsidian Ink (Dominant / Primary Service)
   "#ea002a", // Marca Ubi Signature Crimson (Flagship Advisory)
-  "#f97316", // Vibrant Flame Orange (Brand Experience)
-  "#4f46e5", // Deep Indigo (Design & Digital Architecture)
-  "#10b981", // Emerald Mint (Retainer & Ongoing)
-  "#d97706", // Warm Amber (Strategy & Advisory)
+  "#c2410c", // Burnt Flame Orange (AA 5.2:1 contrast with #ffffff)
+  "#4338ca", // Deep Indigo (Design & Digital Architecture)
+  "#047857", // Forest Emerald (AA 5.5:1 contrast with #ffffff)
+  "#b45309", // Deep Amber (AA 5.0:1 contrast with #ffffff)
 ];
 
 export const LuxuryDonutCookieChart: React.FC<LuxuryDonutCookieChartProps> = ({
@@ -156,7 +156,11 @@ export const LuxuryDonutCookieChart: React.FC<LuxuryDonutCookieChartProps> = ({
               aria-label="About Pipeline Allocation telemetry"
               title="Pipeline Allocation distribution by service category or funnel stage"
             >
-              ⓘ
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
             </button>
           </div>
           <span className={styles.cardSubtitle}>Active deal value distribution</span>
@@ -255,7 +259,7 @@ export const LuxuryDonutCookieChart: React.FC<LuxuryDonutCookieChartProps> = ({
             <span className={styles.centerSubtext}>
               {activeFocus
                 ? `${activeFocus.label} (${activeFocus.percentage}%)`
-                : `${records.length > 0 ? records.length : 36} Active Deals`}
+                : `${records.length} Active Deals`}
             </span>
           </div>
         </div>

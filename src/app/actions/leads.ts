@@ -15,8 +15,8 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
 import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import { normalizeEmail, normalizePhone, sanitizeHtml } from '@/app/lib/normalization';
-import { ROLE_DEFAULT_FEATURES } from '@/types/crm';
 import {
   createManualLeadSchema,
   updateLeadAssigneeSchema,
@@ -79,7 +79,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -97,12 +97,18 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
       };
     }
 
-    if (callerProfile.role === 'viewer') {
+    if (!['admin', 'sales_manager', 'sales_executive'].includes(callerProfile.role || '')) {
       return {
         success: false,
-        error: 'Privilege Violation: Read-only personnel cannot create client records.',
+        error: 'Privilege Violation: Caller role is not permitted to create client records.',
       };
     }
+
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
 
     const validationResult = createManualLeadSchema.safeParse(input);
     if (!validationResult.success) {
@@ -124,7 +130,8 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
     const sanitizedWebsite = sanitizeHtml(data.companyWebsite);
     const sanitizedIndustry = sanitizeHtml(data.industry);
     const sanitizedNotes = sanitizeHtml(data.notes);
-    const sanitizedBudget = sanitizeHtml(data.budgetBracket);
+    const sanitizedBudget = canViewFinancials ? sanitizeHtml(data.budgetBracket) : null;
+    const initialExpectedValue = canViewFinancials ? data.expectedValue : 0;
 
     let targetAssigneeId: string | null = null;
     if (callerProfile.role === 'sales_executive') {
@@ -134,6 +141,25 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
         data.assignedTo && data.assignedTo.trim().length > 0
           ? data.assignedTo
           : user.id;
+
+      if (targetAssigneeId !== user.id) {
+        const { data: assigneeProfile } = await supabase
+          .from('profiles')
+          .select('id, role, status')
+          .eq('id', targetAssigneeId)
+          .maybeSingle();
+
+        if (
+          !assigneeProfile ||
+          assigneeProfile.status !== 'active' ||
+          !['admin', 'sales_manager', 'sales_executive'].includes(assigneeProfile.role || '')
+        ) {
+          return {
+            success: false,
+            error: 'Invalid assignee: Target representative must be an active commercial team member.',
+          };
+        }
+      }
     }
 
     const defaultSourceId =
@@ -159,7 +185,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
         priority: data.priority,
         status_id: DEFAULT_NEW_FUNNEL_STATUS_ID,
         assigned_to: targetAssigneeId,
-        expected_value: data.expectedValue,
+        expected_value: initialExpectedValue,
         notes: sanitizedNotes,
         brief_payload: {
           created_via: 'manual_workspace_drawer',
@@ -213,12 +239,6 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
   }
 }
 
-/**
- * Queries active commercial personnel to populate representative selectors.
- * Gated to active authenticated staff.
- *
- * @returns {Promise<AssigneeOption[]>} List of active commercial personnel.
- */
 /**
  * Returns active acquisition sources for manual lead creation and attribution selectors.
  */
@@ -319,47 +339,80 @@ export async function getLeadDetails(
     }
 
     const callerRole = (callerProfile.role as CrmUserRole) || 'viewer';
-    const rawFinancialPerm = (callerProfile.feature_permissions as Record<string, unknown> | null)
-      ?.can_view_financials;
-    const canViewFinancials =
-      typeof rawFinancialPerm === 'boolean'
-        ? rawFinancialPerm
-        : (ROLE_DEFAULT_FEATURES[callerRole]?.can_view_financials ?? false);
+    const canViewFinancials = dashboardFeature(
+      callerRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
 
-    const { data: leadRecord, error: leadError } = await supabase
+    const leadSelectColumns = [
+      'id',
+      'lead_id',
+      'name',
+      'company',
+      'company_website',
+      'industry',
+      'phone',
+      'email',
+      'preferred_channel',
+      'lead_source_id',
+      'source_detail',
+      'service_category',
+      ...(canViewFinancials ? ['budget_bracket', 'expected_value'] : []),
+      'priority',
+      'status_id',
+      'assigned_to',
+      'next_follow_up',
+      'lost_reason',
+      'revisit_date',
+      'notes',
+      'brief_payload',
+      'inquiry_count',
+      'created_at',
+      'converted_at',
+      'updated_at',
+      'funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at)',
+      'lead_sources(id, name, color_code, is_active, created_at)',
+    ].join(',\n        ');
+
+    const { data: rawLeadRecord, error: leadError } = await supabase
       .from('leads')
-      .select(`
-        id,
-        lead_id,
-        name,
-        company,
-        company_website,
-        industry,
-        phone,
-        email,
-        preferred_channel,
-        lead_source_id,
-        source_detail,
-        service_category,
-        budget_bracket,
-        priority,
-        status_id,
-        assigned_to,
-        expected_value,
-        next_follow_up,
-        lost_reason,
-        revisit_date,
-        notes,
-        brief_payload,
-        inquiry_count,
-        created_at,
-        converted_at,
-        updated_at,
-        funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at),
-        lead_sources(id, name, color_code, is_active, created_at)
-      `)
+      .select(leadSelectColumns)
       .eq('id', leadId)
       .maybeSingle();
+
+    interface LeadQueryRow {
+      id: string;
+      lead_id: string;
+      name: string;
+      company: string | null;
+      company_website: string | null;
+      industry: string | null;
+      phone: string | null;
+      email: string | null;
+      preferred_channel: string | null;
+      lead_source_id: string | null;
+      source_detail: string | null;
+      service_category: string | null;
+      budget_bracket?: string | null;
+      expected_value?: number | string | null;
+      priority: string | null;
+      status_id: string;
+      assigned_to: string | null;
+      next_follow_up: string | null;
+      lost_reason: string | null;
+      revisit_date: string | null;
+      notes: string | null;
+      brief_payload: Record<string, unknown> | null;
+      inquiry_count: number | null;
+      created_at: string;
+      converted_at: string | null;
+      updated_at: string;
+      funnel_statuses: FunnelStatus | null;
+      lead_sources: LeadSource | null;
+    }
+
+    const leadRecord = rawLeadRecord as unknown as LeadQueryRow | null;
 
     if (leadError || !leadRecord) {
       return {
@@ -425,6 +478,53 @@ export async function getLeadDetails(
     const extraNamesById =
       missingIds.length > 0 ? await getCrmDirectoryMap(supabase, missingIds) : new Map<string, string>();
 
+    const FINANCIAL_KEYS = new Set([
+      'expected_value',
+      'final_revenue',
+      'budget',
+      'budget_amount',
+      'budget_bracket',
+      'estimated_budget',
+      'contract_value',
+    ]);
+
+    const sanitizeBriefPayload = (raw: Record<string, unknown> | null): Record<string, unknown> => {
+      if (!raw || typeof raw !== 'object') return {};
+      if (canViewFinancials) return raw;
+      const sanitized: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(raw)) {
+        if (FINANCIAL_KEYS.has(k.toLowerCase())) continue;
+        sanitized[k] = v;
+      }
+      return sanitized;
+    };
+
+    const sanitizeActivityMeta = (raw: unknown): Record<string, unknown> => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      if (canViewFinancials) return raw as Record<string, unknown>;
+      const sanitized: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+        if (FINANCIAL_KEYS.has(k.toLowerCase())) continue;
+        if ((k === 'changes' || k === 'deltas') && v && typeof v === 'object' && !Array.isArray(v)) {
+          const nested: Record<string, unknown> = {};
+          for (const [ck, cv] of Object.entries(v as Record<string, unknown>)) {
+            nested[ck] = FINANCIAL_KEYS.has(ck.toLowerCase()) ? '[Restricted]' : cv;
+          }
+          sanitized[k] = nested;
+        } else {
+          sanitized[k] = v;
+        }
+      }
+      return sanitized;
+    };
+
+    const sanitizeMonetaryCopy = (text: string): string => {
+      if (canViewFinancials) return text;
+      return text
+        .replace(/₹\s?[\d,]+(?:\.\d+)?/g, '[Restricted]')
+        .replace(/(\bexpected valuation of\b|\bcontract value of\b)[^.]+/gi, '$1 [Restricted]');
+    };
+
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
       const actorMeta = act.actor_id ? rosterById.get(act.actor_id) : undefined;
       const fallbackName = act.actor_id ? extraNamesById.get(act.actor_id) : undefined;
@@ -438,8 +538,8 @@ export async function getLeadDetails(
         actor_name: resolvedName,
         actor_role: resolvedRole,
         activity_type: act.activity_type as LeadActivityType,
-        description: act.description,
-        metadata: (act.metadata as Record<string, unknown>) || {},
+        description: sanitizeMonetaryCopy(act.description),
+        metadata: sanitizeActivityMeta(act.metadata),
         created_at: act.created_at,
         actor: act.actor_id
           ? {
@@ -468,10 +568,10 @@ export async function getLeadDetails(
       phone: leadRecord.phone,
       email: leadRecord.email,
       preferred_channel: (leadRecord.preferred_channel as PreferredChannel) || 'Phone',
-      lead_source_id: leadRecord.lead_source_id,
+      lead_source_id: leadRecord.lead_source_id || '',
       source_detail: leadRecord.source_detail,
       service_category: (leadRecord.service_category as ServiceCategory) || 'Web & Digital',
-      budget_bracket: canViewFinancials ? leadRecord.budget_bracket : null,
+      budget_bracket: canViewFinancials ? (leadRecord.budget_bracket ?? null) : null,
       priority: (leadRecord.priority as LeadPriority) || 'Medium',
       status_id: leadRecord.status_id,
       assigned_to: leadRecord.assigned_to,
@@ -480,13 +580,13 @@ export async function getLeadDetails(
       lost_reason: leadRecord.lost_reason,
       revisit_date: leadRecord.revisit_date,
       notes: leadRecord.notes,
-      brief_payload: (leadRecord.brief_payload as Record<string, unknown>) || {},
+      brief_payload: sanitizeBriefPayload(leadRecord.brief_payload),
       inquiry_count: Number(leadRecord.inquiry_count) || 1,
       created_at: leadRecord.created_at,
       converted_at: leadRecord.converted_at,
       updated_at: leadRecord.updated_at,
-      status: (leadRecord.funnel_statuses as unknown as FunnelStatus) || undefined,
-      lead_source: (leadRecord.lead_sources as unknown as LeadSource) || undefined,
+      status: leadRecord.funnel_statuses || undefined,
+      lead_source: leadRecord.lead_sources || undefined,
       assignee:
         leadRecord.assigned_to && (assigneeMeta || assigneeFallbackName)
           ? ({
@@ -502,7 +602,7 @@ export async function getLeadDetails(
       id: s.id,
       name: s.name,
       bucket: s.bucket,
-      color_code: s.color_code || '#ffffff',
+      color_code: s.color_code || '#475569',
       sort_order: s.sort_order || 0,
       is_active: s.is_active,
       created_at: s.created_at,
@@ -789,7 +889,7 @@ export async function updateLeadDealParameters(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -811,6 +911,19 @@ export async function updateLeadDealParameters(
       return {
         success: false,
         error: 'Privilege Violation: Read-only personnel cannot modify deal parameters.',
+      };
+    }
+
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
+
+    if (data.expectedValue !== undefined && !canViewFinancials) {
+      return {
+        success: false,
+        error: 'Privilege Violation: Financial view permission is required to modify deal valuation.',
       };
     }
 
@@ -1014,7 +1127,7 @@ export async function convertInboundLeadToDealAction(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -1040,10 +1153,16 @@ export async function convertInboundLeadToDealAction(
       };
     }
 
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
+
     // Verify existing lead
     const { data: lead, error: leadError } = await supabase
       .from('leads')
-      .select('id, lead_id, name, company, status_id, assigned_to, funnel_statuses(id, name, bucket)')
+      .select('id, lead_id, name, company, status_id, assigned_to, converted_at, expected_value, funnel_statuses(id, name, bucket)')
       .eq('id', leadId)
       .maybeSingle();
 
@@ -1051,6 +1170,14 @@ export async function convertInboundLeadToDealAction(
       return {
         success: false,
         error: 'Inbound inquiry not found or inaccessible under security boundaries.',
+      };
+    }
+
+    const currentBucket = (lead.funnel_statuses as { bucket?: string } | null)?.bucket || '';
+    if (lead.converted_at || currentBucket === 'converted') {
+      return {
+        success: false,
+        error: 'Invalid transition: Converted deals cannot be downgraded back to pipeline deals via inbound conversion.',
       };
     }
 
@@ -1099,20 +1226,37 @@ export async function convertInboundLeadToDealAction(
       targetStatusName = statusObj.name;
     }
 
-    // Determine assignee
+    // Determine and validate assignee
     let finalAssignee = lead.assigned_to;
     if (assignedTo && isValidUuid(assignedTo)) {
+      const { data: assigneeProfile } = await supabase
+        .from('profiles')
+        .select('id, role, status')
+        .eq('id', assignedTo)
+        .maybeSingle();
+
+      if (
+        !assigneeProfile ||
+        assigneeProfile.status !== 'active' ||
+        !['admin', 'sales_manager', 'sales_executive'].includes(assigneeProfile.role || '')
+      ) {
+        return {
+          success: false,
+          error: 'Invalid assignee: Target representative must hold an active commercial role.',
+        };
+      }
       finalAssignee = assignedTo;
     }
 
     const cleanNotes = notes ? sanitizeHtml(notes) ?? notes : null;
+    const effectiveValuation = canViewFinancials ? expectedValue : Number(lead.expected_value) || 0;
 
     // Execute atomic update with row verification
     const { data: updatedRows, error: updateError } = await supabase
       .from('leads')
       .update({
         status_id: resolvedStatusId,
-        expected_value: expectedValue,
+        expected_value: effectiveValuation,
         priority,
         assigned_to: finalAssignee,
         updated_at: new Date().toISOString(),
@@ -1130,7 +1274,9 @@ export async function convertInboundLeadToDealAction(
     }
 
     // Log conversion activity
-    const activityDesc = `Inbound lead converted to active deal (${targetStatusName}) with expected valuation ₹${expectedValue.toLocaleString('en-IN')} by ${callerProfile.full_name}.${cleanNotes ? ` Notes: ${cleanNotes}` : ''}`;
+    const activityDesc = canViewFinancials
+      ? `Inbound lead converted to active deal (${targetStatusName}) with expected valuation ₹${effectiveValuation.toLocaleString('en-IN')} by ${callerProfile.full_name}.${cleanNotes ? ` Notes: ${cleanNotes}` : ''}`
+      : `Inbound lead converted to active deal (${targetStatusName}) by ${callerProfile.full_name}.${cleanNotes ? ` Notes: ${cleanNotes}` : ''}`;
 
     await supabase.from('lead_activities').insert({
       lead_id: leadId,
@@ -1141,7 +1287,7 @@ export async function convertInboundLeadToDealAction(
         converted_to_deal: true,
         previous_status_id: lead.status_id,
         new_status_id: resolvedStatusId,
-        expected_value: expectedValue,
+        ...(canViewFinancials ? { expected_value: effectiveValuation } : {}),
         priority,
         assigned_to: finalAssignee,
       },
@@ -1201,7 +1347,7 @@ export async function updateLeadDetailsAction(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -1225,6 +1371,12 @@ export async function updateLeadDetailsAction(
         error: 'Privilege Violation: Read-only personnel cannot modify lead parameters.',
       };
     }
+
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
 
     const { data: currentLead, error: leadError } = await supabase
       .from('leads')
@@ -1297,11 +1449,13 @@ export async function updateLeadDetailsAction(
     if (data.serviceCategory !== undefined) {
       updatePayload.service_category = data.serviceCategory;
     }
-    if (data.budgetBracket !== undefined) {
-      updatePayload.budget_bracket = data.budgetBracket && data.budgetBracket.trim().length > 0 ? sanitizeHtml(data.budgetBracket.trim()) : null;
-    }
-    if (data.expectedValue !== undefined) {
-      updatePayload.expected_value = data.expectedValue;
+    if (canViewFinancials) {
+      if (data.budgetBracket !== undefined) {
+        updatePayload.budget_bracket = data.budgetBracket && data.budgetBracket.trim().length > 0 ? sanitizeHtml(data.budgetBracket.trim()) : null;
+      }
+      if (data.expectedValue !== undefined) {
+        updatePayload.expected_value = data.expectedValue;
+      }
     }
     if (data.priority !== undefined) {
       updatePayload.priority = data.priority;

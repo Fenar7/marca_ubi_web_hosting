@@ -45,6 +45,7 @@ export interface LeadDossierData {
   revisit_date: string | null;
   notes: string | null;
   brief_payload: Record<string, unknown> | null;
+  inquiry_count?: number;
   created_at: string;
   converted_at: string | null;
   updated_at: string;

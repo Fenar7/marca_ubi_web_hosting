@@ -229,7 +229,7 @@
 .optionSubtext {
   display: block;
   font-size: 0.66rem;
-  color: #8c8c88;
+  color: #525965;
   font-weight: 400;
   margin-top: 1px;
 }
@@ -269,12 +269,28 @@
   border-radius: 9999px;
   background: #ecfdf5;
   border: 1px solid #a7f3d0;
-  color: #059669;
+  color: #047857;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
+}
+
+.emptyChartState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fafaf8;
+  border: 1px dashed #dcdcd8;
+  color: #525965;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.82rem;
+  text-align: center;
+  margin-top: auto;
 }
 
 /* Spline Area */
@@ -343,7 +359,7 @@
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #8c8c88;
+  color: #525965;
   background: transparent;
   border: none;
   cursor: pointer;

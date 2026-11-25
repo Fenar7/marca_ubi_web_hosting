@@ -86,7 +86,21 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
       >
         <div className={styles.balanceHeaderRow}>
           <span className={styles.balanceLabel}>Active Commercial Balance</span>
-          <span className={styles.cardArrow} aria-hidden="true">↗</span>
+          <svg
+            className={styles.cardArrow}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="7" y1="17" x2="17" y2="7" />
+            <polyline points="7 7 17 7 17 17" />
+          </svg>
         </div>
         <div className={styles.balanceRow}>
           <span className={styles.balanceAmount}>{displayBalance}</span>
@@ -118,7 +132,7 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
           aria-label={`View ${dealCount ?? 0} active deals in pipeline`}
         >
           <span className={styles.metaLabel}>ACTIVE</span>
-          <span className={styles.metaValue}>{dealCount ?? 0} DEALS ↗</span>
+          <span className={styles.metaValue}>{dealCount ?? 0} DEALS</span>
         </div>
       </footer>
     </article>

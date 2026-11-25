@@ -14,9 +14,9 @@ import Link from 'next/link';
 import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import { ROLE_DEFAULT_FEATURES, ROLE_DEFAULT_TABS, type CrmUserRole, type LeadPriority } from '@/types/crm';
+import { ROLE_DEFAULT_TABS, type CrmUserRole, type LeadPriority } from '@/types/crm';
 import { getUtcDayWindow, parseFollowUpPage, parseFollowUpQueue, type FollowUpQueue } from '@/app/admin/lib/followUpQueue';
-import { foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
+import { dashboardFeature, foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
 import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { TaskCard, type TaskLeadItem } from './components/TaskCard';
@@ -126,15 +126,16 @@ async function fetchQueueLeads(
   page: number,
   start: string,
   end: string,
-  today: string
+  today: string,
+  canViewFinancials: boolean
 ) {
+  const selectCols = canViewFinancials
+    ? `id, lead_id, name, company, phone, email, preferred_channel, priority, expected_value, next_follow_up, revisit_date, assigned_to, created_at, funnel_statuses!inner(name, bucket)`
+    : `id, lead_id, name, company, phone, email, preferred_channel, priority, next_follow_up, revisit_date, assigned_to, created_at, funnel_statuses!inner(name, bucket)`;
+
   const baseRows = supabase
     .from('leads')
-    .select(`
-      id, lead_id, name, company, phone, email, preferred_channel, priority,
-      expected_value, next_follow_up, revisit_date, assigned_to, created_at,
-      funnel_statuses!inner(name, bucket)
-    `)
+    .select(selectCols)
     .in('funnel_statuses.bucket', ['open', 'potential'])
     .or(`and(or(revisit_date.is.null,revisit_date.lte.${today}),or(${SYNTHETIC_EXCLUSION}))`);
 
@@ -226,13 +227,13 @@ export default async function AdminTasksPage({
     : Boolean(ROLE_DEFAULT_TABS[role]?.tasks));
   if (!hasTasksAccess) redirect('/admin?error=unauthorized_role_access');
 
-  const rawFinancialPerm = (profile.feature_permissions as Record<string, unknown> | null)
-    ?.can_view_financials;
-  const canViewFinancials =
-    typeof rawFinancialPerm === 'boolean'
-      ? rawFinancialPerm
-      : Boolean(ROLE_DEFAULT_FEATURES[role]?.can_view_financials);
+  const canViewFinancials = dashboardFeature(
+    role,
+    profile.feature_permissions,
+    'can_view_financials'
+  );
   const canAssign = role === 'admin' || role === 'sales_manager';
+  const showUnassignedQueue = role !== 'sales_executive';
 
   const { start, end, date: today } = getUtcDayWindow(new Date());
 
@@ -251,9 +252,11 @@ export default async function AdminTasksPage({
     countQueue(supabase, 'overdue', start, end, today),
     countQueue(supabase, 'today', start, end, today),
     countQueue(supabase, 'upcoming', start, end, today),
-    countQueue(supabase, 'unassigned', start, end, today),
+    showUnassignedQueue
+      ? countQueue(supabase, 'unassigned', start, end, today)
+      : Promise.resolve({ count: 0, code: null }),
     fetchOverdueExposure(supabase, start, today, canViewFinancials),
-    fetchQueueLeads(supabase, queue, page, start, end, today),
+    fetchQueueLeads(supabase, queue, page, start, end, today, canViewFinancials),
     getCrmDirectoryMap(supabase),
     canAssign ? getCrmDirectoryList(supabase, ['admin', 'sales_manager', 'sales_executive']) : Promise.resolve([]),
     supabase.from('agency_settings').select('lead_response_sla_minutes, followup_grace_period_hours').limit(1).maybeSingle(),
@@ -279,7 +282,21 @@ export default async function AdminTasksPage({
     return <WorkspaceError reference={reference} queue={queue} page={page} message="Follow-ups could not be loaded." />;
   }
 
-  const leads: TaskLeadItem[] = rawLeads.map((lead) => ({
+  const leads: TaskLeadItem[] = (rawLeads as unknown as Array<{
+    id: string;
+    lead_id: string;
+    name: string;
+    company: string | null;
+    phone: string | null;
+    email: string | null;
+    preferred_channel: string | null;
+    priority: string | null;
+    expected_value?: number | string | null;
+    next_follow_up: string | null;
+    revisit_date: string | null;
+    assigned_to: string | null;
+    funnel_statuses?: { name?: string } | null;
+  }>).map((lead) => ({
     id: lead.id,
     lead_id: lead.lead_id,
     name: lead.name,
@@ -293,7 +310,7 @@ export default async function AdminTasksPage({
     revisit_date: lead.revisit_date,
     assigned_to: lead.assigned_to,
     assignee_name: (lead.assigned_to && ownerNameById.get(lead.assigned_to)) || 'Unassigned',
-    status_name: (lead.funnel_statuses as { name?: string } | null)?.name || 'Active',
+    status_name: lead.funnel_statuses?.name || 'Active',
   }));
 
   const queueIndices: Record<QueueKey, number> = {
@@ -315,7 +332,11 @@ export default async function AdminTasksPage({
     (overdueCount.count ?? 0) +
     (todayCount.count ?? 0) +
     (upcomingCount.count ?? 0) +
-    (unassignedCount.count ?? 0);
+    (showUnassignedQueue ? (unassignedCount.count ?? 0) : 0);
+
+  const visibleQueues: QueueKey[] = showUnassignedQueue
+    ? (['overdue', 'today', 'upcoming', 'unassigned'] as QueueKey[])
+    : (['overdue', 'today', 'upcoming'] as QueueKey[]);
 
   return (
     <main className={styles.container}>
@@ -341,7 +362,7 @@ export default async function AdminTasksPage({
         </div>
 
         <nav className={styles.queueTabs} aria-label="Follow-up timing">
-          {(Object.keys(QUEUES) as QueueKey[]).map((key) => {
+          {visibleQueues.map((key) => {
             const count = groupCounts[key];
             const isSelected = queue === key;
             return (
@@ -429,7 +450,7 @@ export default async function AdminTasksPage({
                 <span>Stage</span>
                 <span>Account Executive</span>
                 <span>Expected Scope</span>
-                <span style={{ textAlign: 'right' }}>Actions</span>
+                <span className={styles.tableActionsColHeader}>Actions</span>
               </div>
               <ol className={styles.taskList} aria-label={`${QUEUES[queue].label} client follow-ups`}>
                 {leads.map((lead) => (

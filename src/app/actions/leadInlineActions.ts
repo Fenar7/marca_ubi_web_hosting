@@ -16,8 +16,6 @@ import type { LeadActionResult, LeadPriority, FunnelBucket } from '@/types/crm';
 import {
   inlineStatusSchema,
   inlinePrioritySchema,
-  type InlineStatusInput,
-  type InlinePriorityInput,
   type InlineMutationResultPayload,
 } from '@/app/lib/lead-inline-schemas';
 

@@ -72,6 +72,7 @@ export interface OverviewData {
   averageCycleDays: number | null;
   pipelineReady: boolean;
   stages: { id: string; name: string; count: number; value: number | null }[];
+  wonStage?: { id: string; name: string } | null;
   queue: OverviewQueue;
   queueCounts: Record<OverviewQueue, number | null>;
   records: OverviewRecord[];
@@ -147,13 +148,22 @@ export function OverviewWorkspace({
   }
 
   const resolveNextStage = (record: OverviewRecord) => {
-    const idx = data.stages.findIndex(
+    const forwardStages = data.stages.filter(
+      (s) => !s.name.toLowerCase().includes("hold")
+    );
+    const idx = forwardStages.findIndex(
       (s) => s.name.toLowerCase() === record.stage.toLowerCase() || s.id === record.stage
     );
-    if (idx >= 0 && idx < data.stages.length - 1) {
-      return data.stages[idx + 1];
+    if (idx >= 0 && idx < forwardStages.length - 1) {
+      return forwardStages[idx + 1];
     }
-    return data.stages[data.stages.length - 1] || null;
+    if (idx === forwardStages.length - 1 && data.wonStage) {
+      return { id: data.wonStage.id, name: data.wonStage.name, count: 0, value: null };
+    }
+    if (record.stage.toLowerCase().includes("negotiat") && data.wonStage) {
+      return { id: data.wonStage.id, name: data.wonStage.name, count: 0, value: null };
+    }
+    return forwardStages[0] || null;
   };
 
   const handleAdvanceStage = (record: OverviewRecord) => {
@@ -165,8 +175,7 @@ export function OverviewWorkspace({
       lower.includes("negotiat") ||
       lower.includes("won") ||
       lower.includes("converted") ||
-      lower.includes("lost") ||
-      lower.includes("hold");
+      lower.includes("lost");
 
     if (isGuarded) {
       setTargetTransitionRecord(record);
@@ -235,6 +244,7 @@ export function OverviewWorkspace({
             totalValue={data.convertedValue}
             growthPercentage={data.revenueDelta}
             points={data.chart}
+            timeframe={data.timeframe}
             financials={data.financials}
             onTimeframeChange={(tf) => {
               const slugMap: Record<string, TimeframeSlug> = {
@@ -252,6 +262,7 @@ export function OverviewWorkspace({
             totalValue={data.pipelineValue}
             dealCount={data.pipelineCount}
             categories={data.categories}
+            timeframe={data.timeframe}
             financials={data.financials}
             onTimeframeChange={(tf) => {
               const slugMap: Record<string, TimeframeSlug> = {

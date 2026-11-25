@@ -47,7 +47,7 @@ function getStageBadgeStyle(stageName: string): { bg: string; text: string; bord
     return { bg: "rgba(99, 102, 241, 0.10)", text: "#4f46e5", border: "#c7d2fe" };
   }
   if (norm.includes("qualified") || norm.includes("discovery")) {
-    return { bg: "rgba(13, 148, 136, 0.10)", text: "#0d9488", border: "#99f6e4" };
+    return { bg: "rgba(13, 148, 136, 0.10)", text: "#0f766e", border: "#99f6e4" };
   }
   if (norm.includes("proposal") || norm.includes("pitch")) {
     return { bg: "rgba(217, 119, 6, 0.10)", text: "#b45309", border: "#fde68a" };
@@ -56,36 +56,41 @@ function getStageBadgeStyle(stageName: string): { bg: string; text: string; bord
     return { bg: "rgba(234, 0, 42, 0.09)", text: "#ea002a", border: "#fecdd3" };
   }
   if (norm.includes("won") || norm.includes("converted")) {
-    return { bg: "rgba(5, 150, 105, 0.10)", text: "#059669", border: "#a7f3d0" };
+    return { bg: "rgba(5, 150, 105, 0.10)", text: "#047857", border: "#a7f3d0" };
   }
   return { bg: "rgba(113, 113, 122, 0.10)", text: "#52525b", border: "#d4d4d8" };
 }
 
-/** Computes days in stage and urgency interval from dates */
-function getUrgencyTelemetry(due: string | null, createdAt: string): { text: string; isUrgent: boolean } {
-  const now = Date.now();
+type UrgencyKind = "overdue" | "today" | "upcoming" | "stage" | "normal";
+
+/** Computes days in stage and urgency interval relative to a stable mount timestamp. */
+function getUrgencyTelemetry(
+  due: string | null,
+  createdAt: string,
+  referenceNowMs: number
+): { kind: UrgencyKind; text: string; isUrgent: boolean } {
   if (due) {
     const dueTime = new Date(due).getTime();
     if (Number.isFinite(dueTime)) {
-      const diffMs = dueTime - now;
+      const diffMs = dueTime - referenceNowMs;
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
       if (diffDays < 0) {
-        return { text: `⚠️ ${Math.abs(diffDays)}d overdue`, isUrgent: true };
+        return { kind: "overdue", text: `${Math.abs(diffDays)}d overdue`, isUrgent: true };
       }
       if (diffDays === 0) {
-        return { text: "• Due today", isUrgent: false };
+        return { kind: "today", text: "Due today", isUrgent: false };
       }
-      return { text: `• Due in ${diffDays}d`, isUrgent: false };
+      return { kind: "upcoming", text: `Due in ${diffDays}d`, isUrgent: false };
     }
   }
 
   const createdTime = new Date(createdAt).getTime();
   if (Number.isFinite(createdTime)) {
-    const days = Math.max(1, Math.floor((now - createdTime) / (1000 * 60 * 60 * 24)));
-    return { text: `⏳ ${days}d in stage`, isUrgent: days > 14 };
+    const days = Math.max(1, Math.floor((referenceNowMs - createdTime) / (1000 * 60 * 60 * 24)));
+    return { kind: "stage", text: `${days}d in stage`, isUrgent: days > 14 };
   }
 
-  return { text: "• Normal cadence", isUrgent: false };
+  return { kind: "normal", text: "Normal cadence", isUrgent: false };
 }
 
 export function CommercialActionDesk({
@@ -97,8 +102,8 @@ export function CommercialActionDesk({
   financials,
   canTasks,
   onAdvanceStage,
-  onOpenDossier,
 }: CommercialActionDeskProps): React.ReactElement {
+  const [referenceNowMs] = useState<number>(() => Date.now());
   const [activeTab, setActiveTab] = useState<DeskFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -124,7 +129,7 @@ export function CommercialActionDesk({
       if (activeTab === "high_value") {
         if (!rec.expectedValue || rec.expectedValue < 1000000) return false;
       } else if (activeTab === "stalled") {
-        const urgency = getUrgencyTelemetry(rec.due, rec.createdAt);
+        const urgency = getUrgencyTelemetry(rec.due, rec.createdAt, referenceNowMs);
         if (!urgency.isUrgent) return false;
       }
 
@@ -142,7 +147,7 @@ export function CommercialActionDesk({
 
       return true;
     });
-  }, [records, activeStageObject, activeTab, searchQuery]);
+  }, [records, activeStageObject, activeTab, searchQuery, referenceNowMs]);
 
   return (
     <section
@@ -194,7 +199,10 @@ export function CommercialActionDesk({
               onClick={() => setSearchQuery("")}
               aria-label="Clear search input"
             >
-              ✕
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           )}
         </div>
@@ -243,7 +251,7 @@ export function CommercialActionDesk({
             <span>Stalled / Follow-up</span>
             <span className={styles.countBadge}>
               {
-                records.filter((r) => getUrgencyTelemetry(r.due, r.createdAt).isUrgent)
+                records.filter((r) => getUrgencyTelemetry(r.due, r.createdAt, referenceNowMs).isUrgent)
                   .length
               }
             </span>
@@ -259,7 +267,10 @@ export function CommercialActionDesk({
               onClick={() => onSelectStage(null)}
               aria-label="Remove stage filter"
             >
-              ✕
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
         )}
@@ -330,7 +341,7 @@ export function CommercialActionDesk({
           <div className={styles.rowsList} role="feed">
             {filteredRecords.map((record) => {
               const stageBadge = getStageBadgeStyle(record.stage);
-              const urgency = getUrgencyTelemetry(record.due, record.createdAt);
+              const urgency = getUrgencyTelemetry(record.due, record.createdAt, referenceNowMs);
 
               return (
                 <article
@@ -398,9 +409,22 @@ export function CommercialActionDesk({
                           urgency.isUrgent ? styles.urgencyCritical : styles.urgencyNormal
                         }`}
                       >
-                        {urgency.text}
+                        {urgency.kind === "overdue" && (
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                        )}
+                        {urgency.kind === "stage" && (
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                          </svg>
+                        )}
+                        <span>{urgency.text}</span>
                       </span>
-                      <span className={styles.separatorDot}>•</span>
+                      <span className={styles.separatorDot} aria-hidden="true">•</span>
                       <span className={styles.ownerText}>
                         Lead: <strong>{record.owner || "Unassigned"}</strong>
                       </span>
@@ -408,19 +432,24 @@ export function CommercialActionDesk({
 
                     <div className={styles.actionButtonsCluster}>
                       {/* Advance Stage Trigger */}
-                      <button
-                        type="button"
-                        className={styles.advanceStageBtn}
-                        onClick={() => {
-                          if (onAdvanceStage) {
-                            onAdvanceStage(record);
-                          }
-                        }}
-                        aria-label={`Advance stage for ${record.name}`}
-                      >
-                        <span>Advance Stage</span>
-                        <span className={styles.btnArrow}>→</span>
-                      </button>
+                      {canTasks && (
+                        <button
+                          type="button"
+                          className={styles.advanceStageBtn}
+                          onClick={() => {
+                            if (onAdvanceStage) {
+                              onAdvanceStage(record);
+                            }
+                          }}
+                          aria-label={`Advance stage for ${record.name}`}
+                        >
+                          <span>Advance Stage</span>
+                          <svg className={styles.btnArrow} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
+                        </button>
+                      )}
 
                       {/* Open Dossier Trigger */}
                         <Link
@@ -429,7 +458,10 @@ export function CommercialActionDesk({
                           aria-label={`Open full dossier for ${record.name}`}
                         >
                           <span>Open Dossier</span>
-                          <span className={styles.btnArrow}>↗</span>
+                          <svg className={styles.btnArrow} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <line x1="7" y1="17" x2="17" y2="7" />
+                            <polyline points="7 7 17 7 17 17" />
+                          </svg>
                         </Link>
                     </div>
                   </div>

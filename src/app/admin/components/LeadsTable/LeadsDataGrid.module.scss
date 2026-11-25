@@ -289,7 +289,7 @@ $grid-min-width: 1240px;
 .repAvatar {
   width: 22px;
   height: 22px;
-  border-radius: 50%;
+  border-radius: 7px;
   background-color: #111111;
   color: #ffffff;
   font-size: 0.5625rem;
@@ -313,6 +313,11 @@ $grid-min-width: 1240px;
 }
 
 .touchpointDate {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
   background: transparent;
   border: none;
   padding: 0;
@@ -339,10 +344,13 @@ $grid-min-width: 1240px;
 }
 
 .drawerInspectBtn {
+  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  height: 28px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0 10px;
   background-color: var(--admin-card-quiet, #efefed);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
@@ -374,14 +382,15 @@ $grid-min-width: 1240px;
 }
 
 .directPageLink {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 6px;
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  color: var(--admin-text-muted, #696965);
+  color: var(--admin-text-secondary, #454542);
   text-decoration: none;
   font-size: 0.8125rem;
   transition: all 0.12s ease;
@@ -436,7 +445,7 @@ $grid-min-width: 1240px;
 .inlineRepSelect {
   width: 100%;
   max-width: 152px;
-  min-height: 32px;
+  min-height: 44px;
   padding: 0 8px;
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 6px;

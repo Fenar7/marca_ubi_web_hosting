@@ -80,6 +80,9 @@ export default async function AdminAnalyticsPage(
     redirect('/admin?error=unauthorized_role_access');
   }
 
+  const { dashboardFeature } = await import('@/app/admin/lib/dashboardContracts');
+  const canViewFinancials = dashboardFeature(role, profile.feature_permissions, 'can_view_financials');
+
   const parsedQuery = analyticsQuerySchema.safeParse({
     timeframe: resolvedParams?.timeframe || '30d',
     assigneeId: resolvedParams?.assignee_id || null,
@@ -94,6 +97,7 @@ export default async function AdminAnalyticsPage(
   // Compute precise date bounds for the selected timeframe
   const now = new Date();
   let startDate: Date;
+  let endDate: Date = now;
   let periodLabel = 'Last 30 Days';
 
   if (timeframe === '7d') {
@@ -106,26 +110,29 @@ export default async function AdminAnalyticsPage(
     startDate = new Date(now.getTime() - 90 * 86400000);
     periodLabel = 'Last 90 Days';
   } else if (timeframe === 'q1') {
-    startDate = new Date(now.getFullYear(), 0, 1);
-    periodLabel = `Q1 ${now.getFullYear()}`;
+    startDate = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+    endDate = new Date(Date.UTC(now.getUTCFullYear(), 3, 1) - 1);
+    periodLabel = `Q1 ${now.getUTCFullYear()}`;
   } else if (timeframe === 'q2') {
-    startDate = new Date(now.getFullYear(), 3, 1);
-    periodLabel = `Q2 ${now.getFullYear()}`;
+    startDate = new Date(Date.UTC(now.getUTCFullYear(), 3, 1));
+    endDate = new Date(Date.UTC(now.getUTCFullYear(), 6, 1) - 1);
+    periodLabel = `Q2 ${now.getUTCFullYear()}`;
   } else if (timeframe === 'q3') {
-    startDate = new Date(now.getFullYear(), 6, 1);
-    periodLabel = `Q3 ${now.getFullYear()}`;
+    startDate = new Date(Date.UTC(now.getUTCFullYear(), 6, 1));
+    endDate = new Date(Date.UTC(now.getUTCFullYear(), 9, 1) - 1);
+    periodLabel = `Q3 ${now.getUTCFullYear()}`;
   } else if (timeframe === 'q4') {
-    startDate = new Date(now.getFullYear(), 9, 1);
-    periodLabel = `Q4 ${now.getFullYear()}`;
-  } else if (timeframe === 'ytd') {
-    startDate = new Date(now.getFullYear(), 0, 1);
-    periodLabel = `YTD ${now.getFullYear()}`;
+    startDate = new Date(Date.UTC(now.getUTCFullYear(), 9, 1));
+    endDate = new Date(Date.UTC(now.getUTCFullYear() + 1, 0, 1) - 1);
+    periodLabel = `Q4 ${now.getUTCFullYear()}`;
+  } else if (timeframe === 'ytd' || timeframe === 'year') {
+    startDate = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+    periodLabel = `${timeframe.toUpperCase()} ${now.getUTCFullYear()}`;
   } else {
     startDate = new Date(now.getTime() - 30 * 86400000);
     periodLabel = 'Last 30 Days';
   }
 
-  // Concurrently execute database telemetry stored procedures & baseline queries
   const [
     funnelDropoffRes,
     stageDwellRes,
@@ -137,7 +144,7 @@ export default async function AdminAnalyticsPage(
   ] = await Promise.all([
     supabase.rpc('get_funnel_conversion_dropoff', {
       p_start_date: startDate.toISOString(),
-      p_end_date: now.toISOString(),
+      p_end_date: endDate.toISOString(),
       p_assignee_id: parsedQuery.success ? parsedQuery.data.assigneeId || null : null,
       p_source_id: parsedQuery.success ? parsedQuery.data.sourceId || null : null,
     }),
@@ -145,17 +152,32 @@ export default async function AdminAnalyticsPage(
     supabase.rpc('get_timeframe_revenue_spline', { p_timeframe: timeframe }),
     supabase.rpc('get_service_category_distribution', { p_lookback_days: 90 }),
     supabase.rpc('get_cohort_win_rates', { p_cohort_months: 12 }),
-    supabase
-      .from('leads')
-      .select('expected_value, status_id, funnel_statuses!inner(bucket)')
-      .or(SYNTHETIC_EXCLUSION)
-      .in('funnel_statuses.bucket', ['open', 'potential']),
-    supabase
-      .from('leads')
-      .select('expected_value, converted_at')
-      .or(SYNTHETIC_EXCLUSION)
-      .not('converted_at', 'is', null)
-      .gte('converted_at', startDate.toISOString()),
+    canViewFinancials
+      ? supabase
+          .from('leads')
+          .select('expected_value, status_id, service_category, funnel_statuses!inner(bucket)')
+          .or(SYNTHETIC_EXCLUSION)
+          .in('funnel_statuses.bucket', ['open', 'potential'])
+      : supabase
+          .from('leads')
+          .select('status_id, service_category, funnel_statuses!inner(bucket)')
+          .or(SYNTHETIC_EXCLUSION)
+          .in('funnel_statuses.bucket', ['open', 'potential']),
+    canViewFinancials
+      ? supabase
+          .from('leads')
+          .select('expected_value, converted_at')
+          .or(SYNTHETIC_EXCLUSION)
+          .not('converted_at', 'is', null)
+          .gte('converted_at', startDate.toISOString())
+          .lte('converted_at', endDate.toISOString())
+      : supabase
+          .from('leads')
+          .select('converted_at')
+          .or(SYNTHETIC_EXCLUSION)
+          .not('converted_at', 'is', null)
+          .gte('converted_at', startDate.toISOString())
+          .lte('converted_at', endDate.toISOString()),
   ]);
 
   // Log all query errors cleanly for telemetry auditing without swallowing exceptions
@@ -227,7 +249,7 @@ export default async function AdminAnalyticsPage(
 
     totalIntake = rawLeads?.length || 0;
 
-    funnelStages = (rawStatuses || []).map((s, idx) => {
+    funnelStages = (rawStatuses || []).map((s) => {
       const inStage = countsByStatus.get(s.id) || 0;
       return {
         stageId: s.id,
@@ -301,7 +323,9 @@ export default async function AdminAnalyticsPage(
   } else {
     // Sum real converted leads directly from table fallback
     (convertedLeadsRes.data || []).forEach((c) => {
-      totalConvertedRevenue += Number(c.expected_value) || 0;
+      if (canViewFinancials && 'expected_value' in c) {
+        totalConvertedRevenue += Number(c.expected_value) || 0;
+      }
     });
     revenueSplinePoints = [];
   }
@@ -326,16 +350,20 @@ export default async function AdminAnalyticsPage(
     (activePipelineRes.data || []).forEach((l) => {
       const cat = (l as { service_category?: string }).service_category || 'Creative Agency';
       const existing = practiceMap.get(cat) || { count: 0, value: 0 };
+      const val =
+        canViewFinancials && 'expected_value' in l ? Number(l.expected_value) || 0 : 0;
       practiceMap.set(cat, {
         count: existing.count + 1,
-        value: existing.value + (Number(l.expected_value) || 0),
+        value: existing.value + val,
       });
     });
 
     const activeSum = Array.from(practiceMap.values()).reduce((sum, p) => sum + p.value, 0);
+    const activeCountSum = Array.from(practiceMap.values()).reduce((sum, p) => sum + p.count, 0);
     const colorMap: Record<string, string> = {
       'Web & Digital': '#111111',
       'UI/UX Design': '#454542',
+      'Branding': '#ea002a',
       'Brand Identity': '#ea002a',
       'Full-Suite Advisory': '#696965',
       'Creative Agency': '#111111',
@@ -344,11 +372,13 @@ export default async function AdminAnalyticsPage(
     practiceCategories = Array.from(practiceMap.entries()).map(([name, data]) => ({
       categoryName: name,
       activeDealsCount: data.count,
-      activePipelineValue: data.value,
+      activePipelineValue: canViewFinancials ? data.value : 0,
       convertedDealsCount: 0,
       convertedRevenueValue: 0,
       winRatePercentage: 0,
-      portfolioSharePercentage: activeSum > 0 ? (data.value / activeSum) * 100 : 0,
+      portfolioSharePercentage: canViewFinancials
+        ? (activeSum > 0 ? (data.value / activeSum) * 100 : 0)
+        : (activeCountSum > 0 ? (data.count / activeCountSum) * 100 : 0),
       colorCode: colorMap[name] || '#111111',
     }));
   }
@@ -358,10 +388,12 @@ export default async function AdminAnalyticsPage(
   let activeDealsCount = 0;
   if (activePipelineRes.data) {
     activeDealsCount = activePipelineRes.data.length;
-    totalPipelineValue = activePipelineRes.data.reduce(
-      (sum, l) => sum + (Number(l.expected_value) || 0),
-      0
-    );
+    totalPipelineValue = canViewFinancials
+      ? activePipelineRes.data.reduce(
+          (sum, l) => sum + (Number((l as { expected_value?: number | null }).expected_value) || 0),
+          0
+        )
+      : 0;
   }
 
   // 6. Cohort Win Rate & Sales Cycle Metrics (Authentic Database Telemetry)

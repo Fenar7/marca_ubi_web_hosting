@@ -188,7 +188,7 @@ export function ConyestTransactionsTable({
                 className={`${styles.queueTab} ${selectedQueue === q ? styles.activeQueueTab : ""}`}
                 onClick={() => onSelectQueue(q)}
               >
-                <span style={{ textTransform: "capitalize" }}>{q}</span>
+                <span className={styles.queueTabLabel}>{q}</span>
                 <span
                   className={`${styles.tabCountPill} ${isOverdueTab ? styles.tabCountOverdue : ""}`}
                 >
@@ -260,7 +260,11 @@ export function ConyestTransactionsTable({
                         }}
                         aria-label={`Open dossier for ${row.name}`}
                       >
-                        Open ↗
+                        <span>Open</span>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                          <line x1="7" y1="17" x2="17" y2="7" />
+                          <polyline points="7 7 17 7 17 17" />
+                        </svg>
                       </button>
                     </div>
                   </td>

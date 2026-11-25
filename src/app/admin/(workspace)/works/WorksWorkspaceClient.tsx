@@ -46,6 +46,7 @@ interface WorksWorkspaceClientProps {
   userId?: string;
   sample?: boolean;
   canOpenDeals?: boolean;
+  canViewFinancials?: boolean;
 }
 
 const STAGE_OPTIONS: Array<{ key: ClientWorkDeliveryStage; label: string }> = [
@@ -147,6 +148,7 @@ export function WorksWorkspaceClient({
   userId,
   sample = false,
   canOpenDeals = false,
+  canViewFinancials = true,
 }: WorksWorkspaceClientProps): React.ReactElement {
   const [works, setWorks] = useState<ClientWorkItem[]>(initialWorks);
   const [searchTerm, setSearchTerm] = useState('');
@@ -872,7 +874,7 @@ export function WorksWorkspaceClient({
                             </div>
                             <div>
                               <dt>Contract value</dt>
-                              <dd>{formatCrmCurrency(work.contract_value)}</dd>
+                              <dd>{canViewFinancials ? formatCrmCurrency(work.contract_value) : 'Restricted'}</dd>
                             </div>
                           </dl>
                           {editable && (

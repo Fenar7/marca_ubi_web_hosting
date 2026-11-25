@@ -47,8 +47,7 @@ export function AdminRootClientProvider({
   return (
     <div
       data-admin-root="true"
-      className={fontVariables}
-      style={{ minHeight: '100vh', width: '100%' }}
+      className={fontVariables ? `min-h-screen w-full ${fontVariables}` : 'min-h-screen w-full'}
     >
       {children}
       <CrmToastHost />

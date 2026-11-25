@@ -203,77 +203,20 @@ export interface SpendingTimeframeData {
   categories: SpendingCategoryData[];
 }
 
-/** Harmonic cadence multipliers ensuring mathematical continuity for all card timeframes */
+/**
+ * Returns zeroed baseline points for a card cadence when no database events exist,
+ * ensuring zero synthetic valuation multipliers or fabricated revenue figures.
+ */
 export function computeSplinePointsForCadence(
-  cadence: CardTimeframe,
-  baseTotal: number,
-  referenceYear = 2026
+  _cadence: CardTimeframe,
+  baseTotal: number
 ): { points: SplineDataPoint[]; totalValue: number; growthPercentage: number } {
-  const safeTotal = baseTotal > 0 ? baseTotal : 6540000;
-
-  switch (cadence) {
-    case 'this_week': {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const weights = [0.10, 0.14, 0.22, 0.24, 0.18, 0.08, 0.04];
-      const scaledTotal = Math.round(safeTotal * 0.25);
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 2.8,
-        points: days.map((d, i) => ({
-          month: d,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${d}, Nov ${17 + i}`,
-        })),
-      };
-    }
-    case 'this_quarter': {
-      const months = ['Oct', 'Nov', 'Dec'];
-      const weights = [0.28, 0.38, 0.34];
-      const scaledTotal = Math.round(safeTotal * 2.4);
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 4.2,
-        points: months.map((m, i) => ({
-          month: m,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${m} ${referenceYear}`,
-        })),
-      };
-    }
-    case 'this_year': {
-      const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const weights = [0.05, 0.06, 0.08, 0.09, 0.11, 0.08, 0.07, 0.09, 0.10, 0.12, 0.10, 0.05];
-      const scaledTotal = Math.round(safeTotal * 8.5);
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 12.4,
-        points: allMonths.map((m, i) => ({
-          month: m,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${m} ${referenceYear}`,
-        })),
-      };
-    }
-    case 'this_month':
-    default: {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-      const weights = [0.08, 0.14, 0.11, 0.18, 0.22, 0.14];
-      const scaledTotal = safeTotal;
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 1.5,
-        points: months.map((m, i) => ({
-          month: m,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${m} ${referenceYear}`,
-        })),
-      };
-    }
-  }
+  const safeTotal = baseTotal > 0 ? baseTotal : 0;
+  return {
+    totalValue: safeTotal,
+    growthPercentage: 0,
+    points: [],
+  };
 }
 
 /** Computes spending categorical allocations using real pipeline totals without synthetic multipliers */

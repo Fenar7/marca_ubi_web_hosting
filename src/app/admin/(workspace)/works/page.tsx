@@ -15,9 +15,9 @@ import { createClient } from '@/app/lib/supabase/server';
 import {
   type ClientWorkItem,
   type CrmUserRole,
-  ROLE_DEFAULT_FEATURES,
   ROLE_DEFAULT_TABS,
 } from '@/types/crm';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import {
   getCrmDirectoryList,
   getCrmDirectoryMap,
@@ -116,34 +116,39 @@ export default async function AdminWorksPage({
   }
   if (samplePreference === '1') return renderSamplePortfolio();
 
-  // Query active client works with decoupled directory resolution
+  const canViewFinancials = dashboardFeature(
+    role,
+    profile.feature_permissions,
+    'can_view_financials',
+  );
+
+  // Query active client works with decoupled directory resolution (conditional financial column)
+  const worksSelect = [
+    'id',
+    'project_code',
+    'lead_id',
+    'client_name',
+    'company',
+    'service_scope',
+    ...(canViewFinancials ? ['contract_value'] : []),
+    'delivery_stage',
+    'health_status',
+    'creative_lead_id',
+    'tech_lead_id',
+    'milestones',
+    'target_delivery_date',
+    'kickoff_date',
+    'created_at',
+    'updated_at',
+  ].join(',\n      ');
+
   const {
     data: rawWorks,
     error: queryError,
     count,
   } = await supabase
     .from('client_works')
-    .select(
-      `
-      id,
-      project_code,
-      lead_id,
-      client_name,
-      company,
-      service_scope,
-      contract_value,
-      delivery_stage,
-      health_status,
-      creative_lead_id,
-      tech_lead_id,
-      milestones,
-      target_delivery_date,
-      kickoff_date,
-      created_at,
-      updated_at
-    `,
-      { count: 'exact' },
-    )
+    .select(worksSelect, { count: 'exact' })
     .order('created_at', { ascending: false });
 
   const error =
@@ -186,12 +191,6 @@ export default async function AdminWorksPage({
       ]),
     ),
   ];
-  const rawFinancialPerm = (profile.feature_permissions as Record<string, unknown> | null)
-    ?.can_view_financials;
-  const canViewFinancials =
-    typeof rawFinancialPerm === 'boolean'
-      ? rawFinancialPerm
-      : Boolean(ROLE_DEFAULT_FEATURES[role]?.can_view_financials);
   const mayAssignDirectors = role === 'admin' || role === 'sales_manager';
   const [directorNameById, teamProfiles] = await Promise.all([
     getCrmDirectoryMap(supabase, directorIds),
@@ -266,6 +265,7 @@ export default async function AdminWorksPage({
         userRole={role}
         userId={user.id}
         canOpenDeals={canOpenDeals}
+        canViewFinancials={canViewFinancials}
         profiles={teamProfiles}
         directoryAvailable={directoryAvailable}
       />

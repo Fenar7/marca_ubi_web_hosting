@@ -354,6 +354,7 @@ export async function transitionToOnHoldAction(
       metadata: {
         previous_status_id: existingLead.status_id,
         new_status: 'On Hold',
+        new_status_name: 'On Hold',
         revisit_date: revisitDate,
         parking_reason: sanitizedReason,
         parking_notes: sanitizedNotes,
