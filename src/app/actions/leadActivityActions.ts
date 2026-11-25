@@ -305,38 +305,45 @@ export async function getLeadActivitiesAction(
         ? await getCrmDirectoryMap(supabase, missingActorIds)
         : new Map<string, string>();
 
-    const FINANCIAL_METADATA_KEYS = new Set([
-      'expected_value',
-      'final_revenue',
+    const NORMALIZED_FINANCIAL_KEYS = new Set([
+      'expectedvalue',
+      'finalrevenue',
       'budget',
-      'budget_amount',
-      'budget_bracket',
-      'estimated_budget',
-      'contract_value',
+      'budgetamount',
+      'budgetbracket',
+      'estimatedbudget',
+      'contractvalue',
     ]);
+
+    const isFinancialKey = (key: string): boolean =>
+      NORMALIZED_FINANCIAL_KEYS.has(key.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+    const redactMonetaryText = (text: string): string =>
+      text
+        .replace(/(?:₹|INR|\$)\s?[\d,]+(?:\.\d+)?(?:\s?[kKlLmMbB])?/g, '[Restricted]')
+        .replace(/(\bexpected valuation of\b|\bcontract value of\b|\bbudget(?: bracket)? of\b)[^.\n]+/gi, '$1 [Restricted]');
+
+    const redactUnknownValue = (val: unknown): unknown => {
+      if (val === null || val === undefined) return val;
+      if (typeof val === 'string') return redactMonetaryText(val);
+      if (typeof val !== 'object') return val;
+      if (Array.isArray(val)) return val.map((item) => redactUnknownValue(item));
+      const nested: Record<string, unknown> = {};
+      for (const [ck, cv] of Object.entries(val as Record<string, unknown>)) {
+        nested[ck] = isFinancialKey(ck) ? '[Restricted]' : redactUnknownValue(cv);
+      }
+      return nested;
+    };
 
     const redactActivityMetadata = (raw: unknown): Record<string, unknown> => {
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
       const out: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
-        if (FINANCIAL_METADATA_KEYS.has(k.toLowerCase())) continue;
-        if ((k === 'changes' || k === 'deltas') && v && typeof v === 'object' && !Array.isArray(v)) {
-          const nested: Record<string, unknown> = {};
-          for (const [ck, cv] of Object.entries(v as Record<string, unknown>)) {
-            nested[ck] = FINANCIAL_METADATA_KEYS.has(ck.toLowerCase()) ? '[Restricted]' : cv;
-          }
-          out[k] = nested;
-        } else {
-          out[k] = v;
-        }
+        if (isFinancialKey(k)) continue;
+        out[k] = redactUnknownValue(v);
       }
       return out;
     };
-
-    const redactMonetaryText = (text: string): string =>
-      text
-        .replace(/₹\s?[\d,]+(?:\.\d+)?/g, '[Restricted]')
-        .replace(/(\bexpected valuation of\b|\bcontract value of\b)[^.]+/gi, '$1 [Restricted]');
 
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
       const actorMeta = act.actor_id ? rosterById.get(act.actor_id) : undefined;

@@ -22,7 +22,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useId, useMemo } from "react";
+import React, { useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
@@ -47,6 +47,7 @@ export interface TurnaroundDeltaTelemetry {
 
 export interface SlaVelocityMetrics {
   totalMilestones: number;
+  monitoredDueCount: number;
   onTimeCount: number;
   overdueCount: number;
   dueTodayCount: number;
@@ -168,6 +169,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
 }) => {
   const router = useRouter();
   const gradientId = useId();
+  const [referenceNowMs] = useState<number>(() => Date.now());
 
   // Aggregate metrics calculation with honest empty states when no milestones exist
   const metrics: SlaVelocityMetrics = useMemo(() => {
@@ -178,6 +180,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
         overdueCount: 0,
         dueTodayCount: 0,
         onTimePercentage: 0,
+        monitoredDueCount: 0,
         averageTurnaroundDeltaDays: 0,
         turnaround: resolveTurnaroundTelemetry(0),
         totalCommittedValue: 0,
@@ -185,9 +188,10 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
       };
     }
 
-    const now = Date.now();
-    const startOfToday = new Date().setHours(0, 0, 0, 0);
-    const endOfToday = new Date().setHours(23, 59, 59, 999);
+    const now = referenceNowMs;
+    const refDate = new Date(referenceNowMs);
+    const startOfToday = new Date(refDate).setHours(0, 0, 0, 0);
+    const endOfToday = new Date(refDate).setHours(23, 59, 59, 999);
 
     let overdue = 0;
     let dueToday = 0;
@@ -243,6 +247,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
 
     return {
       totalMilestones: records.length,
+      monitoredDueCount: recordsWithValidDue,
       onTimeCount: onTime,
       overdueCount: overdue,
       dueTodayCount: dueToday,
@@ -252,7 +257,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
       totalCommittedValue: totalCommitted,
       nextCriticalRecord: sortedByUrgency[0] || null,
     };
-  }, [records]);
+  }, [records, referenceNowMs]);
 
   // Swiss Horology Gauge Geometry: 220° open arc, radius 64, center (100, 84), stroke 9
   const arcRadius = 64;
@@ -344,7 +349,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           title={metrics.overdueCount > 0 ? "Requires Executive Action" : "Commitments On Target"}
           aria-label={metrics.overdueCount > 0 ? "View overdue tasks" : "View all tasks"}
         >
-          {metrics.totalMilestones === 0
+          {metrics.monitoredDueCount === 0
             ? "No Active Commitments"
             : metrics.overdueCount > 0
             ? `${metrics.overdueCount} Critical Overdue`
@@ -437,11 +442,11 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
         {/* Center Readout Telemetry */}
         <div className={styles.centerTelemetry}>
           <span className={styles.metricValue}>
-            {metrics.totalMilestones === 0 ? "—" : metrics.onTimePercentage.toFixed(1)}
-            {metrics.totalMilestones > 0 && <span className={styles.percentSymbol}>%</span>}
+            {metrics.monitoredDueCount === 0 ? "—" : metrics.onTimePercentage.toFixed(1)}
+            {metrics.monitoredDueCount > 0 && <span className={styles.percentSymbol}>%</span>}
           </span>
           <span className={styles.metricLabel}>
-            {metrics.totalMilestones === 0 ? "NO SLA COMMITMENTS" : "ON-TIME COMMITMENT"}
+            {metrics.monitoredDueCount === 0 ? "NO SLA COMMITMENTS" : "ON-TIME COMMITMENT"}
           </span>
           <span
             className={`${styles.turnaroundDelta} ${
@@ -571,20 +576,21 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
             className={styles.dispatchBtn}
             aria-label="Review SLA Delivery Log in analytics"
           >
-            <span>Review SLA Delivery Log ↗</span>
+            <span>Review SLA Delivery Log</span>
             <svg
               className={styles.btnChevron}
-              width="14"
-              height="14"
+              width="13"
+              height="13"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <polyline points="9 18 15 12 9 6" />
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
             </svg>
           </button>
         )}

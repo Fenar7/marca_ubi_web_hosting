@@ -167,6 +167,7 @@ export function OverviewWorkspace({
   };
 
   const handleAdvanceStage = (record: OverviewRecord) => {
+    if (!data.canTasks) return;
     const nextStage = resolveNextStage(record);
     if (!nextStage) return;
 
@@ -178,6 +179,23 @@ export function OverviewWorkspace({
       lower.includes("lost");
 
     if (isGuarded) {
+      if (
+        !data.financials &&
+        (lower.includes("negotiat") || lower.includes("won") || lower.includes("converted"))
+      ) {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("crm-toast", {
+              detail: {
+                type: "error",
+                message:
+                  "A colleague with financial access must complete this stage because it requires contract valuation.",
+              },
+            })
+          );
+        }
+        return;
+      }
       setTargetTransitionRecord(record);
       setIsStageModalOpen(true);
       return;
@@ -250,7 +268,7 @@ export function OverviewWorkspace({
               const slugMap: Record<string, TimeframeSlug> = {
                 this_week: "7d",
                 this_month: "30d",
-                this_quarter: "90d",
+                this_quarter: "quarter",
                 this_year: "year",
               };
               handleTimeframeChange(slugMap[tf] || "30d");
@@ -268,7 +286,7 @@ export function OverviewWorkspace({
               const slugMap: Record<string, TimeframeSlug> = {
                 this_week: "7d",
                 this_month: "30d",
-                this_quarter: "90d",
+                this_quarter: "quarter",
                 this_year: "year",
               };
               handleTimeframeChange(slugMap[tf] || "30d");
@@ -324,7 +342,7 @@ export function OverviewWorkspace({
           records={data.records}
           recordsReady={data.recordsReady}
           financials={data.financials}
-          stages={data.stages}
+          canTasks={data.canTasks}
           onAdvanceStage={handleAdvanceStage}
           onOpenDossier={handleOpenDossier}
         />
@@ -332,20 +350,12 @@ export function OverviewWorkspace({
 
       {/* Guarded Stage Advancement Modal Integration */}
       {isStageModalOpen && targetTransitionRecord && (() => {
-        const currentStageIndex = data.stages.findIndex(
-          (s) =>
-            s.name.toLowerCase() === targetTransitionRecord.stage.toLowerCase() ||
-            s.id === targetTransitionRecord.stage
-        );
-        const resolvedNext =
-          currentStageIndex >= 0 && currentStageIndex < data.stages.length - 1
-            ? data.stages[currentStageIndex + 1]
-            : data.stages[data.stages.length - 1] || {
-                id: "next-stage",
-                name: "Negotiation",
-                count: 0,
-                value: null,
-              };
+        const resolvedNext = resolveNextStage(targetTransitionRecord) || {
+          id: "next-stage",
+          name: "Negotiation",
+          count: 0,
+          value: null,
+        };
 
         const targetBucket: FunnelBucket =
           resolvedNext.name.toLowerCase().includes("won") ||
@@ -365,7 +375,9 @@ export function OverviewWorkspace({
             }}
             leadId={targetTransitionRecord.id}
             dealName={targetTransitionRecord.name}
-            currentExpectedValue={targetTransitionRecord.expectedValue ?? 0}
+            currentExpectedValue={
+              data.financials ? (targetTransitionRecord.expectedValue ?? 0) : undefined
+            }
             targetStatus={{
               id: resolvedNext.id,
               name: resolvedNext.name,

@@ -45,8 +45,10 @@ interface TaskCardProps {
   isUrgent?: boolean;
   allowCompletion: boolean;
   canViewFinancials?: boolean;
+  canAccessDeals?: boolean;
   canAssign?: boolean;
   teamAssignees?: Array<{ id: string; full_name: string }>;
+  referenceNowMs?: number | null;
 }
 
 /** Formats ISO follow-up timestamps in UTC canonical representation for commercial auditing. */
@@ -65,13 +67,12 @@ function formatFollowUp(iso: string): string {
 }
 
 /** Computes human-readable overdue duration badge (e.g. "Overdue by 18d" or "Due <1h ago"). */
-function getUrgencyBadgeText(iso: string | null): string | null {
-  if (!iso) return null;
+function getUrgencyBadgeText(iso: string | null, referenceNowMs: number | null): string | null {
+  if (!iso || referenceNowMs === null || !Number.isFinite(referenceNowMs)) return null;
   const timestamp = Date.parse(iso);
   if (!Number.isFinite(timestamp)) return null;
 
-  const now = Date.now();
-  const diffMs = now - timestamp;
+  const diffMs = referenceNowMs - timestamp;
   if (diffMs <= 0) return null;
 
   const hours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -97,8 +98,9 @@ function toLocalDateTimeInput(dt: Date): string {
   return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
 }
 
-function defaultNextFollowUpInput(): string {
-  const dt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+function defaultNextFollowUpInput(referenceNowMs?: number | null): string {
+  const anchor = referenceNowMs ?? Date.UTC(2026, 0, 1, 11, 0, 0);
+  const dt = new Date(anchor + 3 * 24 * 60 * 60 * 1000);
   dt.setHours(11, 0, 0, 0);
   return toLocalDateTimeInput(dt);
 }
@@ -114,8 +116,10 @@ export function TaskCard({
   isUrgent = false,
   allowCompletion,
   canViewFinancials = true,
+  canAccessDeals = true,
   canAssign = false,
   teamAssignees = [],
+  referenceNowMs = null,
 }: TaskCardProps): React.ReactElement {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -125,12 +129,14 @@ export function TaskCard({
   const [isOutcomeOpen, setIsOutcomeOpen] = useState(false);
   const [outcomeNote, setOutcomeNote] = useState('');
   const [nextStepMode, setNextStepMode] = useState<'schedule' | 'clear'>('schedule');
-  const [nextFollowUpValue, setNextFollowUpValue] = useState<string>(defaultNextFollowUpInput);
+  const [nextFollowUpValue, setNextFollowUpValue] = useState<string>(() =>
+    defaultNextFollowUpInput(referenceNowMs)
+  );
   const [assignedOwnerId, setAssignedOwnerId] = useState<string>(lead.assigned_to || '');
 
   const safePhone = lead.phone?.replace(/[^\d+*#]/g, '') ?? '';
   const whatsappPhone = lead.phone?.replace(/\D/g, '') ?? '';
-  const overdueBadge = isUrgent ? getUrgencyBadgeText(lead.next_follow_up) : null;
+  const overdueBadge = isUrgent ? getUrgencyBadgeText(lead.next_follow_up, referenceNowMs) : null;
 
   const priorityClass = lead.priority === 'High'
     ? styles.priorityHigh
@@ -373,7 +379,7 @@ export function TaskCard({
           Open dossier
         </Link>
 
-        {allowCompletion && (
+        {allowCompletion && canAccessDeals && (
           <Link
             href={`/admin/deals/${lead.id}`}
             className={styles.openButton}

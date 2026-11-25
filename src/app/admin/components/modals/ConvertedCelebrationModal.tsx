@@ -103,8 +103,10 @@ function ConvertedCelebrationModalInner({
   const [paymentTerms, setPaymentTerms] = useState<string>('50% upfront, 50% upon milestone completion');
   const [notes, setNotes] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isConvertedSuccess, setIsConvertedSuccess] = useState<boolean>(false);
   const [isCelebrationActive, setIsCelebrationActive] = useState<boolean>(false);
   const [spawnedProjectCode, setSpawnedProjectCode] = useState<string | null>(null);
+  const [spawnedWorkId, setSpawnedWorkId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -266,7 +268,9 @@ function ConvertedCelebrationModalInner({
             return;
           }
 
+          setIsConvertedSuccess(true);
           setSpawnedProjectCode(result.data.projectCode || null);
+          setSpawnedWorkId(result.data.workId || null);
           // Trigger celebratory confetti animation
           triggerConfetti();
 
@@ -470,16 +474,19 @@ function ConvertedCelebrationModalInner({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Include commercial stipulations, kickoff milestones, or executive handover instructions..."
                 className={styles.textareaInput}
-                disabled={isPending || isCelebrationActive}
+                disabled={isPending || isConvertedSuccess}
               />
             </div>
 
-            {isCelebrationActive && (
+            {isConvertedSuccess && (
               <div className={styles.infoBanner} role="status">
                 <span>
                   <strong>Client Work Provisioned{spawnedProjectCode ? ` (${spawnedProjectCode})` : ''}:</strong>{' '}
                   Project board initialized cleanly.{' '}
-                  <Link href="/admin/works" className={styles.celebrationWorksLink}>
+                  <Link
+                    href={spawnedWorkId ? `/admin/works?workId=${encodeURIComponent(spawnedWorkId)}` : '/admin/works'}
+                    className={styles.celebrationWorksLink}
+                  >
                     <span>View Project in Client Works</span>
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                       <line x1="5" y1="12" x2="19" y2="12" />
@@ -498,7 +505,7 @@ function ConvertedCelebrationModalInner({
           </div>
 
           <footer className={styles.modalFooter}>
-            {isCelebrationActive ? (
+            {isConvertedSuccess ? (
               <button
                 type="button"
                 onClick={onClose}

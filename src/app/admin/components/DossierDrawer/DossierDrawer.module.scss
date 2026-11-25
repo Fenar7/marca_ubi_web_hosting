@@ -20,7 +20,7 @@ $btn-primary-hover: var(--admin-btn-primary-hover, #c40023);
 $btn-primary-ink: var(--admin-btn-primary-text, #ffffff);
 $text-primary: var(--admin-text-primary, #1f242f);
 $text-secondary: var(--admin-text-secondary, #525965);
-$text-muted: var(--admin-text-muted, #8a92a0);
+$text-muted: var(--admin-text-muted, #525965);
 $font-mono: var(--font-admin-code, 'SF Mono', 'Fira Code', Menlo, Consolas, Monaco, monospace);
 $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -971,7 +971,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:hover:not(.disabled) {
-    background: $accent-lemon-hover;
+    background: $btn-primary-hover;
     transform: translateY(-1px);
   }
 

@@ -478,23 +478,49 @@ export async function getLeadDetails(
     const extraNamesById =
       missingIds.length > 0 ? await getCrmDirectoryMap(supabase, missingIds) : new Map<string, string>();
 
-    const FINANCIAL_KEYS = new Set([
-      'expected_value',
-      'final_revenue',
+    const NORMALIZED_FINANCIAL_KEYS = new Set([
+      'expectedvalue',
+      'finalrevenue',
       'budget',
-      'budget_amount',
-      'budget_bracket',
-      'estimated_budget',
-      'contract_value',
+      'budgetamount',
+      'budgetbracket',
+      'estimatedbudget',
+      'contractvalue',
     ]);
+
+    const isFinancialKey = (key: string): boolean =>
+      NORMALIZED_FINANCIAL_KEYS.has(key.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+    const sanitizeMonetaryCopy = (text: string): string => {
+      if (canViewFinancials) return text;
+      return text
+        .replace(/(?:₹|INR|\$)\s?[\d,]+(?:\.\d+)?(?:\s?[kKlLmMbB])?/g, '[Restricted]')
+        .replace(/(\bexpected valuation of\b|\bcontract value of\b|\bbudget(?: bracket)? of\b)[^.\n]+/gi, '$1 [Restricted]');
+    };
+
+    const sanitizeUnknownValue = (val: unknown, maskSensitive = false): unknown => {
+      if (val === null || val === undefined) return val;
+      if (typeof val === 'string') return sanitizeMonetaryCopy(val);
+      if (typeof val !== 'object') return maskSensitive ? '[Restricted]' : val;
+      if (Array.isArray(val)) return val.map((item) => sanitizeUnknownValue(item, maskSensitive));
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+        if (isFinancialKey(k)) {
+          out[k] = '[Restricted]';
+        } else {
+          out[k] = sanitizeUnknownValue(v, maskSensitive);
+        }
+      }
+      return out;
+    };
 
     const sanitizeBriefPayload = (raw: Record<string, unknown> | null): Record<string, unknown> => {
       if (!raw || typeof raw !== 'object') return {};
       if (canViewFinancials) return raw;
       const sanitized: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(raw)) {
-        if (FINANCIAL_KEYS.has(k.toLowerCase())) continue;
-        sanitized[k] = v;
+        if (isFinancialKey(k)) continue;
+        sanitized[k] = sanitizeUnknownValue(v);
       }
       return sanitized;
     };
@@ -504,25 +530,10 @@ export async function getLeadDetails(
       if (canViewFinancials) return raw as Record<string, unknown>;
       const sanitized: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
-        if (FINANCIAL_KEYS.has(k.toLowerCase())) continue;
-        if ((k === 'changes' || k === 'deltas') && v && typeof v === 'object' && !Array.isArray(v)) {
-          const nested: Record<string, unknown> = {};
-          for (const [ck, cv] of Object.entries(v as Record<string, unknown>)) {
-            nested[ck] = FINANCIAL_KEYS.has(ck.toLowerCase()) ? '[Restricted]' : cv;
-          }
-          sanitized[k] = nested;
-        } else {
-          sanitized[k] = v;
-        }
+        if (isFinancialKey(k)) continue;
+        sanitized[k] = sanitizeUnknownValue(v);
       }
       return sanitized;
-    };
-
-    const sanitizeMonetaryCopy = (text: string): string => {
-      if (canViewFinancials) return text;
-      return text
-        .replace(/₹\s?[\d,]+(?:\.\d+)?/g, '[Restricted]')
-        .replace(/(\bexpected valuation of\b|\bcontract value of\b)[^.]+/gi, '$1 [Restricted]');
     };
 
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {

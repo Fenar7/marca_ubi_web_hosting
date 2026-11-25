@@ -16,7 +16,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { ROLE_DEFAULT_TABS, type CrmUserRole, type LeadPriority } from '@/types/crm';
 import { getUtcDayWindow, parseFollowUpPage, parseFollowUpQueue, type FollowUpQueue } from '@/app/admin/lib/followUpQueue';
-import { dashboardFeature, foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
+import { dashboardFeature, dashboardTab, foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
 import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { TaskCard, type TaskLeadItem } from './components/TaskCard';
@@ -232,10 +232,13 @@ export default async function AdminTasksPage({
     profile.feature_permissions,
     'can_view_financials'
   );
+  const canAccessDeals = dashboardTab(role, allowedTabs, 'deals');
   const canAssign = role === 'admin' || role === 'sales_manager';
   const showUnassignedQueue = role !== 'sales_executive';
 
-  const { start, end, date: today } = getUtcDayWindow(new Date());
+  const requestNow = new Date();
+  const referenceNowMs = requestNow.getTime();
+  const { start, end, date: today } = getUtcDayWindow(requestNow);
 
   // Waterfall Elimination: Execute queue counts, paginated overdue exposure, SLA settings, lead rows, and directory in parallel
   const [
@@ -460,8 +463,10 @@ export default async function AdminTasksPage({
                     isUrgent={queue === 'overdue'}
                     allowCompletion={role !== 'viewer'}
                     canViewFinancials={canViewFinancials}
+                    canAccessDeals={canAccessDeals}
                     canAssign={canAssign}
                     teamAssignees={teamAssignees}
+                    referenceNowMs={referenceNowMs}
                   />
                 ))}
               </ol>

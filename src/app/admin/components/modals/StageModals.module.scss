@@ -252,7 +252,7 @@
   transition: all 140ms ease;
 
   &::placeholder {
-    color: var(--admin-text-muted, #8a92a0);
+    color: var(--admin-text-muted, #525965);
   }
 
   &:focus {
@@ -530,5 +530,6 @@
   text-decoration: underline;
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: 4px;
 }

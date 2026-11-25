@@ -285,7 +285,13 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
               key={item.name}
               type="button"
               className={styles.legendItem}
-              onClick={() => router.push(`/admin/deals?service_category=${encodeURIComponent(item.name)}`)}
+              onClick={() =>
+                router.push(
+                  item.name === "Others"
+                    ? "/admin/deals"
+                    : `/admin/deals?service_category=${encodeURIComponent(item.name)}`,
+                )
+              }
               aria-label={`View deals for ${item.name}`}
             >
               <div className={styles.legendHeader}>
@@ -320,10 +326,20 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
                 className={styles.gradientSegment}
                 role="button"
                 tabIndex={0}
-                onClick={() => router.push(`/admin/deals?service_category=${encodeURIComponent(item.name)}`)}
+                onClick={() =>
+                  router.push(
+                    item.name === "Others"
+                      ? "/admin/deals"
+                      : `/admin/deals?service_category=${encodeURIComponent(item.name)}`,
+                  )
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    router.push(`/admin/deals?service_category=${encodeURIComponent(item.name)}`);
+                    router.push(
+                      item.name === "Others"
+                        ? "/admin/deals"
+                        : `/admin/deals?service_category=${encodeURIComponent(item.name)}`,
+                    );
                   }
                 }}
                 aria-label={`Filter deals by ${item.name}`}

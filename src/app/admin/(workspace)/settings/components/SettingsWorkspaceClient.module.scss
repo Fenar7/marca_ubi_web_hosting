@@ -347,7 +347,7 @@
   svg {
     position: absolute;
     left: 0.85rem;
-    color: var(--admin-text-muted, #8a92a0);
+    color: var(--admin-text-muted, #525965);
     pointer-events: none;
   }
 
@@ -368,7 +368,7 @@
   transition: all 0.15s ease;
 
   &::placeholder {
-    color: var(--admin-text-muted, #8a92a0);
+    color: var(--admin-text-muted, #525965);
   }
 
   &:focus {

@@ -31,13 +31,24 @@ export const metadata: Metadata = {
   },
 };
 
-interface FilterableLeadQuery<TSelf> {
-  eq(column: string, value: string): TSelf;
-  ilike(column: string, pattern: string): TSelf;
-  in(column: string, values: readonly string[]): TSelf;
-  not(column: string, operator: string, value: null): TSelf;
-  lt(column: string, value: string): TSelf;
-  or(filters: string): TSelf;
+interface FilterableLeadQuery<TResult = unknown> {
+  eq(column: string, value: string): FilterableLeadQuery<TResult>;
+  ilike(column: string, pattern: string): FilterableLeadQuery<TResult>;
+  in(column: string, values: readonly string[]): FilterableLeadQuery<TResult>;
+  not(column: string, operator: string, value: null): FilterableLeadQuery<TResult>;
+  lt(column: string, value: string): FilterableLeadQuery<TResult>;
+  or(filters: string): FilterableLeadQuery<TResult>;
+  order(
+    column: string,
+    opts?: { ascending?: boolean; nullsFirst?: boolean }
+  ): FilterableLeadQuery<TResult>;
+  range(from: number, to: number): PromiseLike<TResult>;
+}
+
+interface LeadQueryResponse {
+  data: unknown[] | null;
+  error: { code?: string; message: string } | null;
+  count: number | null;
 }
 
 const SORTABLE_LEAD_COLUMNS: Record<string, string> = {
@@ -140,7 +151,10 @@ export default async function AdminLeadsPage(
 
   const syntheticExclusion = 'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true';
 
-  const applyBaseLeadFilters = <T extends FilterableLeadQuery<T>>(q: T, includeBucket = true): T => {
+  function applyBaseLeadFilters<TResult>(
+    q: FilterableLeadQuery<TResult>,
+    includeBucket = true
+  ): FilterableLeadQuery<TResult> {
     let query = q;
     if (!invalidFilter) {
       if (stage) query = query.eq('status_id', stage);
@@ -172,14 +186,14 @@ export default async function AdminLeadsPage(
       }
     }
     return query;
-  };
+  }
 
   const leadColumns = canViewFinancials
     ? `id, lead_id, name, company, phone, email, preferred_channel, service_category, expected_value, priority, status_id, assigned_to, lead_source_id, next_follow_up, revisit_date, created_at, funnel_statuses!inner(id, name, bucket, color_code, sort_order)`
     : `id, lead_id, name, company, phone, email, preferred_channel, service_category, priority, status_id, assigned_to, lead_source_id, next_follow_up, revisit_date, created_at, funnel_statuses!inner(id, name, bucket, color_code, sort_order)`;
 
-  const leadsQuery = applyBaseLeadFilters(
-    supabase.from('leads').select(leadColumns, { count: 'exact' }),
+  const leadsQuery = applyBaseLeadFilters<LeadQueryResponse>(
+    supabase.from('leads').select(leadColumns, { count: 'exact' }) as unknown as FilterableLeadQuery<LeadQueryResponse>,
     true
   );
 
@@ -206,14 +220,14 @@ export default async function AdminLeadsPage(
       return res.error ? null : res.count;
     }
 
-    let q = applyBaseLeadFilters(
-      supabase.from('leads').select('id, funnel_statuses!inner(bucket)', { count: 'exact', head: true }),
+    let q = applyBaseLeadFilters<{ count: number | null; error: { code?: string; message: string } | null }>(
+      supabase.from('leads').select('id, funnel_statuses!inner(bucket)', { count: 'exact', head: true }) as unknown as FilterableLeadQuery<{ count: number | null; error: { code?: string; message: string } | null }>,
       false
     );
     if (targetBucket !== 'all') {
       q = q.eq('funnel_statuses.bucket', targetBucket);
     }
-    const res = await q;
+    const res = await (q as unknown as PromiseLike<{ count: number | null; error: { code?: string; message: string } | null }>);
     return res.error ? null : res.count;
   };
 
@@ -222,15 +236,16 @@ export default async function AdminLeadsPage(
       ? Promise.resolve(null)
       : foldDashboardPages<{ expected_value?: number | string }, { total: number }>(
           async (from, to) => {
-            const res = await applyBaseLeadFilters(
+            const q = applyBaseLeadFilters<LeadQueryResponse>(
               supabase
                 .from('leads')
                 .select('id, expected_value, funnel_statuses!inner(bucket)')
-                .in('funnel_statuses.bucket', ['open', 'potential']),
+                .in('funnel_statuses.bucket', ['open', 'potential']) as unknown as FilterableLeadQuery<LeadQueryResponse>,
               false
             )
               .order('id')
               .range(from, to);
+            const res = await q;
             return {
               data: res.data as unknown as Array<{ expected_value?: number | string }> | null,
               error: res.error,

@@ -12,7 +12,7 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCachedCallerProfile } from '@/app/lib/supabase/server';
-import { ROLE_DEFAULT_TABS, type CrmUserRole } from '@/types/crm';
+import { type CrmUserRole } from '@/types/crm';
 import {
   analyticsQuerySchema,
   type AnalyticsTimeframeSlug,
@@ -68,19 +68,13 @@ export default async function AdminAnalyticsPage(
   }
 
   const role = profile.role as CrmUserRole;
-  const allowedTabs = profile.allowed_tabs as string[] | undefined;
-  const hasAnalyticsAccess =
-    role === 'admin' ||
-    role === 'sales_manager' ||
-    (Array.isArray(allowedTabs) && allowedTabs.length > 0
-      ? allowedTabs.includes('analytics')
-      : Boolean(ROLE_DEFAULT_TABS[role]?.analytics));
+  const { dashboardFeature, dashboardTab } = await import('@/app/admin/lib/dashboardContracts');
+  const hasAnalyticsAccess = dashboardTab(role, profile.allowed_tabs, 'analytics');
 
   if (!hasAnalyticsAccess) {
     redirect('/admin?error=unauthorized_role_access');
   }
 
-  const { dashboardFeature } = await import('@/app/admin/lib/dashboardContracts');
   const canViewFinancials = dashboardFeature(role, profile.feature_permissions, 'can_view_financials');
 
   const parsedQuery = analyticsQuerySchema.safeParse({

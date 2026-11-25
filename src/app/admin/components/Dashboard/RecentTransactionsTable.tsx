@@ -98,9 +98,20 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
           aria-label="Filter recent transactions"
         >
           <span>Filter</span>
-          <span className={styles.filterIcon} aria-hidden="true">
-            ☷
-          </span>
+          <svg
+            className={styles.filterIcon}
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
         </button>
       </header>
 
@@ -113,7 +124,11 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
               <th scope="col">Total Amount</th>
               <th scope="col">Status</th>
               <th scope="col" aria-label="Actions">
-                ···
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="5" cy="12" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="19" cy="12" r="2" />
+                </svg>
               </th>
             </tr>
           </thead>
@@ -185,7 +200,11 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
                           setOpenMenuId((prev) => (prev === item.id ? null : item.id));
                         }}
                       >
-                        ···
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <circle cx="5" cy="12" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="19" cy="12" r="2" />
+                        </svg>
                       </button>
                       {openMenuId === item.id && (
                         <div
@@ -209,7 +228,7 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
                             className={styles.popoverItem}
                             onClick={() => {
                               setOpenMenuId(null);
-                              router.push(`/admin/deals/${item.id}`);
+                              router.push(matchedRecord?.href || `/admin/deals/${item.id}`);
                             }}
                           >
                             <span>Open Full Page</span>

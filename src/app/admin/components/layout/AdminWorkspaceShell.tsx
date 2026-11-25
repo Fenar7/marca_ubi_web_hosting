@@ -9,7 +9,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useCallback, useSyncExternalStore, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
@@ -64,6 +64,26 @@ export function AdminWorkspaceShell(
   return <AdminWorkspaceShellState key={pathname} {...props} />;
 }
 
+const SIDEBAR_SYNC_EVENT = "marca-sidebar-collapse-sync";
+
+function subscribeSidebarCollapse(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", callback);
+  window.addEventListener(SIDEBAR_SYNC_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(SIDEBAR_SYNC_EVENT, callback);
+  };
+}
+
+function getSidebarCollapsedSnapshot(): boolean {
+  try {
+    return localStorage.getItem("marca_crm_sidebar_collapsed") === "true";
+  } catch {
+    return false;
+  }
+}
+
 function AdminWorkspaceShellState({
   currentUser,
   children,
@@ -72,7 +92,11 @@ function AdminWorkspaceShellState({
   const router = useRouter();
   const pathname = usePathname();
   const isOverview = pathname === "/admin";
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const isCollapsed = useSyncExternalStore(
+    subscribeSidebarCollapse,
+    getSidebarCollapsedSnapshot,
+    () => false,
+  );
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const closeMobileNav = useCallback(() => setIsMobileOpen(false), []);
   // A launcher opened from the account menu replaces mobile navigation rather than nesting focus traps.
@@ -98,29 +122,14 @@ function AdminWorkspaceShellState({
     };
   }, []);
 
-  // Restore sidebar collapse preference from localStorage upon client hydration
-  useEffect(() => {
+  const toggleSidebar = useCallback((): void => {
+    const next = !getSidebarCollapsedSnapshot();
     try {
-      const stored = localStorage.getItem("marca_crm_sidebar_collapsed");
-      if (stored !== null) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- Browser storage is unavailable during SSR; hydrate the persisted preference after mount.
-        setIsCollapsed(stored === "true");
-      }
+      localStorage.setItem("marca_crm_sidebar_collapsed", String(next));
+      window.dispatchEvent(new Event(SIDEBAR_SYNC_EVENT));
     } catch {
       // Invariant: gracefully fall back in restricted incognito or embedded iframe contexts
     }
-  }, []);
-
-  const toggleSidebar = useCallback((): void => {
-    setIsCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("marca_crm_sidebar_collapsed", String(next));
-      } catch {
-        // Storage access fallback
-      }
-      return next;
-    });
   }, []);
 
   const navigateToLeadCommandPage = useCallback(

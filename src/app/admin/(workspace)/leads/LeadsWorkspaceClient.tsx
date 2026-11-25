@@ -124,35 +124,30 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('lead-created', handleLeadCreated);
   }, [router]);
 
-  // Local state initialized with server-hydrated leads for optimistic in-memory reconciliation
+  // Local state synchronized cleanly when server-hydrated leads change via router.refresh()
+  const [prevInitialLeads, setPrevInitialLeads] = useState<HydratedLeadItem[]>(initialLeads);
   const [leads, setLeads] = useState<HydratedLeadItem[]>(initialLeads);
-
-  useEffect(() => {
+  if (initialLeads !== prevInitialLeads) {
+    setPrevInitialLeads(initialLeads);
     setLeads(initialLeads);
-  }, [initialLeads]);
+  }
 
-  // Read initial filter values from URL search parameters
+  // Derive active filter values directly from URL search parameters
+  const currentQueryKey = searchParams.toString();
   const bucketParam = searchParams.get('bucket');
-  const searchParam = searchParams.get('search') || searchParams.get('q') || '';
-  const sourceParam = searchParams.get('source');
-  const assigneeParam = searchParams.get('assigned_to');
-  const priorityParam = searchParams.get('priority');
-  const stageParam = searchParams.get('stage');
-
-
-
-  const initialBucket: BucketTabId = VALID_BUCKETS.includes(bucketParam as BucketTabId)
+  const selectedBucket: BucketTabId = VALID_BUCKETS.includes(bucketParam as BucketTabId)
     ? (bucketParam as BucketTabId)
     : 'all';
-
-  const [selectedBucket, setSelectedBucket] = useState<BucketTabId>(initialBucket);
-  const [searchQuery, setSearchQuery] = useState<string>(searchParam);
-  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(sourceParam);
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assigneeParam);
-  const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
-  const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
+  const urlSearchParam = searchParams.get('search') || searchParams.get('q') || '';
+  const [searchDraft, setSearchDraft] = useState<{ queryKey: string; value: string } | null>(null);
+  const searchQuery =
+    searchDraft && searchDraft.queryKey === currentQueryKey ? searchDraft.value : urlSearchParam;
+  const selectedSourceId = searchParams.get('source_id') || searchParams.get('source') || null;
+  const selectedAssigneeId =
+    searchParams.get('assigned_to') || searchParams.get('assignee_id') || null;
+  const selectedPriority = searchParams.get('priority') || null;
+  const selectedStageId = searchParams.get('stage') || null;
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const requestedQueryRef = useRef<string | null>(null);
 
 
 
@@ -269,8 +264,6 @@ function LeadsWorkspaceContent({
       }
 
       url.searchParams.delete('page');
-      const nextSearchString = url.search ? url.search.slice(1) : '';
-      requestedQueryRef.current = nextSearchString;
       router.replace(url.pathname + (url.search ? url.search : ''), { scroll: false });
     },
     [
@@ -291,31 +284,6 @@ function LeadsWorkspaceContent({
       }
     };
   }, []);
-
-  // Sync state if URL changes externally without clobbering active typing
-  useEffect(() => {
-    const currentParamsString = searchParams.toString();
-    if (requestedQueryRef.current === currentParamsString) {
-      requestedQueryRef.current = null;
-    }
-
-    const rawBucket = searchParams.get('bucket');
-    if (VALID_BUCKETS.includes(rawBucket as BucketTabId)) {
-      setSelectedBucket(rawBucket as BucketTabId);
-    } else {
-      setSelectedBucket('all');
-    }
-
-    if (!searchDebounceRef.current && requestedQueryRef.current === null) {
-      setSearchQuery(searchParams.get('search') || searchParams.get('q') || '');
-    }
-    setSelectedSourceId(searchParams.get('source_id') || searchParams.get('source') || null);
-    setSelectedAssigneeId(
-      searchParams.get('assigned_to') || searchParams.get('assignee_id') || null
-    );
-    setSelectedPriority(searchParams.get('priority') || null);
-    setSelectedStageId(searchParams.get('stage') || null);
-  }, [searchParams]);
 
   // Available sources list
   const availableSources = useMemo<FilterDropdownOption[]>(() => {
@@ -826,14 +794,13 @@ function LeadsWorkspaceContent({
     handleClearSelection,
   ]);
 
-  // Action handlers updating local state and URL parameters
+  // Action handlers updating URL query parameters directly
   const handleBucketChange = (bucket: BucketTabId): void => {
-    setSelectedBucket(bucket);
     updateUrlParams({ bucket });
   };
 
   const handleSearchChange = (query: string): void => {
-    setSearchQuery(query);
+    setSearchDraft({ queryKey: currentQueryKey, value: query });
     if (searchDebounceRef.current) {
       clearTimeout(searchDebounceRef.current);
     }
@@ -844,32 +811,27 @@ function LeadsWorkspaceContent({
   };
 
   const handleSourceChange = (sourceId: string | null): void => {
-    setSelectedSourceId(sourceId);
     updateUrlParams({ source: sourceId });
   };
 
   const handleAssigneeChange = (assigneeId: string | null): void => {
-    setSelectedAssigneeId(assigneeId);
     updateUrlParams({ assigned_to: assigneeId });
   };
 
   const handlePriorityChange = (priority: string | null): void => {
-    setSelectedPriority(priority);
     updateUrlParams({ priority });
   };
 
   const handleStageClear = (): void => {
-    setSelectedStageId(null);
     updateUrlParams({ stage: null });
   };
 
   const handleClearAll = (): void => {
-    setSelectedBucket('all');
-    setSearchQuery('');
-    setSelectedSourceId(null);
-    setSelectedAssigneeId(null);
-    setSelectedPriority(null);
-    setSelectedStageId(null);
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    setSearchDraft({ queryKey: currentQueryKey, value: '' });
     updateUrlParams({
       bucket: 'all',
       search: '',

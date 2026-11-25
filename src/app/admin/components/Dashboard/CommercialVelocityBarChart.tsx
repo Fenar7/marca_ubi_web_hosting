@@ -36,34 +36,6 @@ export interface CommercialVelocityBarChartProps {
 export type CashFlowPerspective = "intake" | "realized" | "net";
 
 /**
- * Calibrated cadence distribution weights for common telemetry intervals.
- * All weight arrays strictly sum to 1.000 (100% of pipeline allocation).
- */
-const CADENCE_INTERVAL_PRESETS: Record<number, number[]> = {
-  // 5 intervals: Smooth ramp up to W4 crest
-  5: [0.14, 0.22, 0.18, 0.26, 0.20],
-  // 7 intervals: Weekly view with mid-week surge
-  7: [0.10, 0.12, 0.18, 0.16, 0.22, 0.14, 0.08],
-  // 8 intervals: 30-day view (3.75d intervals) with organic commercial wave
-  8: [0.08, 0.14, 0.11, 0.18, 0.15, 0.21, 0.16, 0.12],
-};
-
-/**
- * Universal harmonic cadence generator for arbitrary interval counts (N).
- * Uses a compound sine wave to model natural commercial deal velocity,
- * preventing robotic flat monolith bars even for custom or non-standard timeframes.
- */
-function getCadenceWeights(count: number): number[] {
-  if (count <= 0) return [];
-  if (CADENCE_INTERVAL_PRESETS[count]) {
-    return CADENCE_INTERVAL_PRESETS[count];
-  }
-  const raw = Array.from({ length: count }, (_, i) => 0.6 + 0.8 * Math.sin(((i + 0.5) / count) * Math.PI));
-  const sum = raw.reduce((a, b) => a + b, 0);
-  return raw.map((w) => w / sum);
-}
-
-/**
  * Generates an SVG path for a grounded vertical pill bar:
  * Flat bottom anchored flush to the baseline with rounded top shoulders.
  */
@@ -116,29 +88,14 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
     }
   };
 
-  // Derive column data directly from bucketed CRM events or calibrated pipeline trajectory
+  // Derive column data strictly from real persisted bucketed CRM events (zero fabricated cadence weights)
   const monthlyData = useMemo<MonthlyBarData[]>(() => {
     if (chart && chart.length > 0) {
-      const hasRealIntakeEvents = chart.some((pt) => typeof pt.intakeVal === "number" && pt.intakeVal > 0);
-
-      if (hasRealIntakeEvents) {
-        return chart.map((pt) => ({
-          month: pt.month,
-          fullPeriod: pt.fullPeriod,
-          intake: pt.intakeVal || 0,
-          realized: pt.cashVal || 0,
-        }));
-      }
-
-      const baseIntake = totalIntake && totalIntake > 0 ? totalIntake : 0;
-      const pointCount = chart.length;
-      const cadenceWeights = getCadenceWeights(pointCount);
-
-      return chart.map((pt, idx) => ({
+      return chart.map((pt) => ({
         month: pt.month,
         fullPeriod: pt.fullPeriod,
-        intake: Math.round(baseIntake * (cadenceWeights[idx] || 1 / pointCount)),
-        realized: pt.cashVal || 0,
+        intake: typeof pt.intakeVal === "number" ? pt.intakeVal : 0,
+        realized: typeof pt.cashVal === "number" ? pt.cashVal : 0,
       }));
     }
 
@@ -149,7 +106,7 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
       intake: 0,
       realized: 0,
     }));
-  }, [chart, totalIntake]);
+  }, [chart]);
 
   // Aggregate Perspective Values
   const totalIntakeVal = useMemo(() => {

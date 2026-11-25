@@ -190,16 +190,22 @@ export default async function AdminDealsPage(
       if (assignedTo) query = query.eq("assigned_to", assignedTo);
       if (source) query = query.eq("lead_source_id", source);
       if (priority) query = query.ilike("priority", priority);
-      if (serviceCategory) query = query.eq("service_category", serviceCategory);
+      if (serviceCategory && serviceCategory !== "Full-Suite Advisory") {
+        query = query.eq("service_category", serviceCategory);
+      }
       if (bucket && bucket !== "all") query = query.eq("funnel_status.bucket", bucket);
       if (typeof query.or === "function") {
+        const orGroups = [`or(${syntheticExclusion})`];
         if (search.filter) {
-          query = query.or(
-            `and(or(${syntheticExclusion}),or(${search.filter}))`,
-          );
-        } else {
-          query = query.or(syntheticExclusion);
+          orGroups.push(`or(${search.filter})`);
         }
+        if (serviceCategory === "Full-Suite Advisory") {
+          orGroups.push("or(service_category.eq.Full-Suite Advisory,service_category.is.null)");
+        }
+        query =
+          orGroups.length === 1
+            ? query.or(syntheticExclusion)
+            : query.or(`and(${orGroups.join(",")})`);
       }
     }
     return query;

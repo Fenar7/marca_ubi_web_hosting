@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { SERVICE_CATEGORIES } from "@/app/lib/lead-schemas";
 import type { FunnelStatusItem } from "./DealsWorkspaceClient";
 import { DealIcon } from "./DealIcon";
 import styles from "./DealsWorkspaceClient.module.scss";
@@ -53,6 +54,11 @@ export function DealsToolbar({
         id: name.toLowerCase(),
         name,
       })),
+    },
+    {
+      key: "service_category",
+      label: "Practice",
+      values: SERVICE_CATEGORIES.map((name) => ({ id: name, name })),
     },
   ];
   const selected = options.filter((option) => current.has(option.key));
@@ -200,6 +206,7 @@ export function DealsToolbar({
                 assigned_to: null,
                 source: null,
                 priority: null,
+                service_category: null,
                 bucket: null,
                 search: null,
               })
@@ -258,6 +265,7 @@ export function DealsToolbar({
                   assigned_to: null,
                   source: null,
                   priority: null,
+                  service_category: null,
                 });
                 dialog.current?.close();
               }}

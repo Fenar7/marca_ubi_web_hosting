@@ -35,6 +35,7 @@ import styles from './WorksWorkspaceClient.module.scss';
 
 interface WorksWorkspaceClientProps {
   initialWorks: ClientWorkItem[];
+  initialWorkId?: string;
   userRole?: string;
   profiles?: Array<{
     id: string;
@@ -142,6 +143,7 @@ function canEditProject(
 
 export function WorksWorkspaceClient({
   initialWorks,
+  initialWorkId,
   userRole,
   profiles = [],
   directoryAvailable = true,
@@ -150,11 +152,18 @@ export function WorksWorkspaceClient({
   canOpenDeals = false,
   canViewFinancials = true,
 }: WorksWorkspaceClientProps): React.ReactElement {
+  const [prevInitialWorks, setPrevInitialWorks] = useState<ClientWorkItem[]>(initialWorks);
   const [works, setWorks] = useState<ClientWorkItem[]>(initialWorks);
+  if (initialWorks !== prevInitialWorks) {
+    setPrevInitialWorks(initialWorks);
+    setWorks(initialWorks);
+  }
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedHealth, setSelectedHealth] = useState<string>('all');
   const [selectedStage, setSelectedStage] = useState<string>('all');
-  const [expandedWorkId, setExpandedWorkId] = useState<string | null>(null);
+  const [expandedWorkId, setExpandedWorkId] = useState<string | null>(
+    () => (initialWorkId && initialWorks.some((w) => w.id === initialWorkId) ? initialWorkId : null),
+  );
 
   // Directorial Assignment Dialog State
   const [assigningWork, setAssigningWork] = useState<ClientWorkItem | null>(
@@ -180,11 +189,6 @@ export function WorksWorkspaceClient({
     pendingRef.current.delete(workId);
     setPendingWorks(new Set(pendingRef.current));
   }, []);
-
-  // Synchronize state when server hydration updates
-  useEffect(() => {
-    setWorks(initialWorks);
-  }, [initialWorks]);
 
   const directorDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {

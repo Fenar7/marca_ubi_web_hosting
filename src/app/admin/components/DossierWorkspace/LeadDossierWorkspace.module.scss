@@ -5,7 +5,7 @@
  *              - Anti-glare light canvas foundation (var(--admin-canvas-bg, #f7f8fa))
  *              - Crisp pure white card surfaces (var(--admin-card-bg, #ffffff)) with 1px hairline border
  *              - 7:5 asymmetric operational grid (desktop) collapsing to a fluid stack (< 768px)
- *              - Signature Accordion Lemon Pill primary action (#ea002a) with high-contrast charcoal border
+ *              - Signature Marca Ubi Crimson pill primary action (#ea002a) with high-contrast charcoal border
  *              - Zero text truncation on contact coordinates (emails, phones, domains)
  *              - Single-line duration buttons with grid-template-columns: repeat(5, 1fr)
  *              - Light Notion-callout aesthetic for Original Ingestion Briefs and Executive Deal Notes
@@ -31,7 +31,7 @@ $brand-accent: var(--admin-accent-brand, #ea002a);
 
 $text-primary: var(--admin-text-primary, #1f242f);
 $text-secondary: var(--admin-text-secondary, #525965);
-$text-muted: var(--admin-text-muted, #6b7280);
+$text-muted: var(--admin-text-muted, #475569);
 
 $font-sans: var(--font-admin-primary, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
 $font-mono: var(--font-admin-code, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
@@ -959,7 +959,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .composerSelect {
   width: 100%;
-  height: 40px;
+  min-height: 44px;
   background: $surface-card;
   border: $border-hairline;
   border-radius: 8px;

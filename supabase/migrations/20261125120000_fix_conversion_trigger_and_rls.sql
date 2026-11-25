@@ -177,10 +177,8 @@ DECLARE
     v_lead_id UUID;
     v_reassigned_count INT := 0;
 BEGIN
-    IF auth.uid() IS NULL OR (auth.uid() != p_admin_id AND NOT EXISTS (
-        SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin' AND status = 'active'
-    )) THEN
-        RAISE EXCEPTION 'UNAUTHORIZED: Invoking user is not authorized to execute administrative reassignment.'
+    IF auth.uid() IS NULL OR auth.uid() != p_admin_id THEN
+        RAISE EXCEPTION 'UNAUTHORIZED: Caller identity must match p_admin_id for reassignment audit attribution.'
             USING ERRCODE = '42501';
     END IF;
 
@@ -584,7 +582,7 @@ BEGIN
   END IF;
 
   FOR v_lead IN
-    SELECT l.id, l.status_id, l.assigned_to, l.converted_at, fs.name AS current_stage_name
+    SELECT l.id, l.status_id, l.assigned_to, l.converted_at, fs.name AS current_stage_name, fs.bucket AS current_bucket
     FROM public.leads l
     JOIN public.funnel_statuses fs ON fs.id = l.status_id
     WHERE l.id = ANY(p_lead_ids)
@@ -595,8 +593,8 @@ BEGIN
       RAISE EXCEPTION 'Privilege Violation: Sales executives may only update deals assigned to their portfolio. Deal ID: %', v_lead.id USING ERRCODE = '42501';
     END IF;
 
-    IF v_lead.converted_at IS NOT NULL AND v_actor_role != 'admin' THEN
-      RAISE EXCEPTION 'Forbidden: Converted deals are locked from non-administrative modification. Deal ID: %', v_lead.id USING ERRCODE = '42501';
+    IF v_lead.converted_at IS NOT NULL OR v_lead.current_bucket = 'converted' THEN
+      RAISE EXCEPTION 'Forbidden: Converted deals must be explicitly unlocked via Unlock & Revert before stage changes. Deal ID: %', v_lead.id USING ERRCODE = '42501';
     END IF;
 
     PERFORM set_config('app.skip_audit_trigger', 'true', true);
@@ -1146,7 +1144,7 @@ BEGIN
     WHEN v_role = 'admin' THEN true
     WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'true' THEN true
     WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'false' THEN false
-    ELSE v_role IN ('sales_manager', 'viewer')
+    ELSE false
   END
   INTO v_can_view_financials
   FROM public.profiles p
@@ -1244,7 +1242,7 @@ BEGIN
     WHEN v_role = 'admin' THEN true
     WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'true' THEN true
     WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'false' THEN false
-    ELSE v_role IN ('sales_manager', 'viewer')
+    ELSE false
   END
   INTO v_can_view_financials
   FROM public.profiles p
@@ -1335,7 +1333,7 @@ BEGIN
     WHEN v_role = 'admin' THEN true
     WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'true' THEN true
     WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'false' THEN false
-    ELSE v_role IN ('sales_manager', 'viewer')
+    ELSE false
   END
   INTO v_can_view_financials
   FROM public.profiles p
@@ -1426,7 +1424,7 @@ BEGIN
       WHEN caller_role = 'admin' THEN true
       WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'true' THEN true
       WHEN lower(COALESCE(p.feature_permissions->>'can_view_financials', '')) = 'false' THEN false
-      ELSE caller_role IN ('sales_manager', 'viewer')
+      ELSE false
     END
     INTO v_can_view_financials
     FROM public.profiles p

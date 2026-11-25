@@ -96,7 +96,7 @@ export function ExecutiveTelemetryMasthead({
       ? revenueDelta === 0
         ? "0.0% (flat)"
         : `${revenueDelta > 0 ? "+" : ""}${revenueDelta}%`
-      : "0.0% (flat)";
+      : "No baseline";
 
   const trendClass =
     resolveTrendSemanticType(revenueDeltaStr) === "positive"

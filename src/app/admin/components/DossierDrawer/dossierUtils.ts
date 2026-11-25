@@ -307,10 +307,21 @@ export function formatAuditDeltaNarrative(
 
   // 2. Valuation delta
   if (changes.expected_value) {
-    const newVal = Number(changes.expected_value.new);
-    const formatted = formatDossierCurrency(newVal);
-    parts.push(`Valuation adjusted to ${formatted}`);
-    deltaPills.push(`Valuation: ${formatted}`);
+    const rawNew = changes.expected_value.new;
+    const rawOld = changes.expected_value.old;
+    if (
+      rawNew === '[Restricted]' ||
+      rawOld === '[Restricted]' ||
+      (rawNew !== null && rawNew !== undefined && !Number.isFinite(Number(rawNew)))
+    ) {
+      parts.push('Valuation adjusted ([Restricted])');
+      deltaPills.push('Valuation: [Restricted]');
+    } else {
+      const newVal = Number(rawNew);
+      const formatted = formatDossierCurrency(newVal);
+      parts.push(`Valuation adjusted to ${formatted}`);
+      deltaPills.push(`Valuation: ${formatted}`);
+    }
   }
 
   // 3. Next follow-up commitment

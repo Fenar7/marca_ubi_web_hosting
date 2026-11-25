@@ -241,14 +241,22 @@ export async function exportLeadsCsvAction(
       'lead_sources(name)',
     ].join(',\n        ');
 
+    const syntheticExclusion =
+      'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true';
+    const { buildCommercialSearchFilter } = await import('@/app/admin/lib/commercialSearch');
+    const searchResult = buildCommercialSearchFilter(parsed.data.search ?? undefined);
+
     let query = supabase
       .from('leads')
       .select(baseColumns)
-      .or(
-        'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true'
-      )
       .order('created_at', { ascending: false })
       .limit(5000);
+
+    if (searchResult.filter) {
+      query = query.or(`and(or(${syntheticExclusion}),or(${searchResult.filter}))`);
+    } else {
+      query = query.or(syntheticExclusion);
+    }
 
     if (parsed.data.leadIds && parsed.data.leadIds.length > 0) {
       query = query.in('id', parsed.data.leadIds);
@@ -258,14 +266,6 @@ export async function exportLeadsCsvAction(
     }
     if (parsed.data.bucket && parsed.data.bucket !== 'all') {
       query = query.eq('funnel_statuses.bucket', parsed.data.bucket);
-    }
-    if (parsed.data.search && parsed.data.search.trim().length > 0) {
-      const sanitizedTerm = parsed.data.search.trim().replace(/[,().*\\]/g, '').slice(0, 80);
-      if (sanitizedTerm.length > 0) {
-        query = query.or(
-          `name.ilike.%${sanitizedTerm}%,company.ilike.%${sanitizedTerm}%,email.ilike.%${sanitizedTerm}%,lead_id.ilike.%${sanitizedTerm}%`
-        );
-      }
     }
     if (parsed.data.assignedTo) {
       query = query.eq('assigned_to', parsed.data.assignedTo);

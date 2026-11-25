@@ -24,6 +24,7 @@ import {
 } from '@/app/lib/lead-schemas';
 import { formatDealValuation } from '@/app/lib/team-utils';
 import type { CurrentUserSession } from '@/app/admin/components/layout/UserProfileDropdown';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import type { PreferredChannel, ServiceCategory, LeadPriority } from '@/types/crm';
 import { useModalAnimation } from './useModalAnimation';
 import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
@@ -288,6 +289,11 @@ function NewLeadModalInner({
   };
 
   const isExecutive = currentUser.role === 'sales_executive';
+  const canViewFinancials = dashboardFeature(
+    currentUser.role,
+    currentUser.feature_permissions,
+    'can_view_financials'
+  );
 
   return (
     <div
@@ -522,52 +528,54 @@ function NewLeadModalInner({
             </div>
           </div>
 
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="modal-lead-budget">
-                Budget Bracket
-              </label>
-              <select
-                id="modal-lead-budget"
-                className={styles.select}
-                value={budgetBracket}
-                onChange={(e) => setBudgetBracket(e.target.value)}
-                disabled={isPending}
-              >
-                {BUDGET_TIERS.map((tier) => (
-                  <option key={tier} value={tier}>
-                    {formatBudgetTierLabel(tier)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="modal-lead-expected-value">
-                <span>Valuation (₹ INR)</span>
-              </label>
-              <div className={styles.inputWithBadge}>
-                <input
-                  id="modal-lead-expected-value"
-                  type="number"
-                  min="0"
-                  step="50000"
-                  className={`${styles.input} ${formErrors.expectedValue ? styles.inputError : ''}`}
-                  value={expectedValue}
-                  onChange={(e) =>
-                    setExpectedValue(e.target.value === '' ? '' : Number(e.target.value))
-                  }
+          {canViewFinancials && (
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="modal-lead-budget">
+                  Budget Bracket
+                </label>
+                <select
+                  id="modal-lead-budget"
+                  className={styles.select}
+                  value={budgetBracket}
+                  onChange={(e) => setBudgetBracket(e.target.value)}
                   disabled={isPending}
-                />
-                <span className={styles.valuationBadge}>
-                  {formatDealValuation(Number(expectedValue) || 0)}
-                </span>
+                >
+                  {BUDGET_TIERS.map((tier) => (
+                    <option key={tier} value={tier}>
+                      {formatBudgetTierLabel(tier)}
+                    </option>
+                  ))}
+                </select>
               </div>
-              {formErrors.expectedValue && (
-                <p className={styles.fieldError}>{formErrors.expectedValue}</p>
-              )}
+
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="modal-lead-expected-value">
+                  <span>Valuation (₹ INR)</span>
+                </label>
+                <div className={styles.inputWithBadge}>
+                  <input
+                    id="modal-lead-expected-value"
+                    type="number"
+                    min="0"
+                    step="50000"
+                    className={`${styles.input} ${formErrors.expectedValue ? styles.inputError : ''}`}
+                    value={expectedValue}
+                    onChange={(e) =>
+                      setExpectedValue(e.target.value === '' ? '' : Number(e.target.value))
+                    }
+                    disabled={isPending}
+                  />
+                  <span className={styles.valuationBadge}>
+                    {formatDealValuation(Number(expectedValue) || 0)}
+                  </span>
+                </div>
+                {formErrors.expectedValue && (
+                  <p className={styles.fieldError}>{formErrors.expectedValue}</p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>

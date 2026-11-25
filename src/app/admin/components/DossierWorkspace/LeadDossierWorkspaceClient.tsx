@@ -240,12 +240,30 @@ export function LeadDossierWorkspaceClient({
   canViewFinancials = true,
 }: LeadDossierWorkspaceClientProps): React.ReactElement {
   const router = useRouter();
-  // 1. Normalized State Model
+  // 1. Normalized State Model synced cleanly when server props refresh
+  const [prevInitialLeadInput, setPrevInitialLeadInput] = useState(initialLeadInput);
   const [currentLead, setCurrentLead] = useState<LeadDossierData>(() =>
     normalizeToDossier(initialLeadInput, funnelStatuses, teamAssignees)
   );
+  if (initialLeadInput !== prevInitialLeadInput) {
+    setPrevInitialLeadInput(initialLeadInput);
+    setCurrentLead(normalizeToDossier(initialLeadInput, funnelStatuses, teamAssignees));
+  }
+
+  const [prevLinkedWork, setPrevLinkedWork] = useState<LeadDetailPayload['linkedWork']>(linkedWork);
   const [currentLinkedWork, setCurrentLinkedWork] = useState<LeadDetailPayload['linkedWork']>(linkedWork);
+  if (linkedWork !== prevLinkedWork) {
+    setPrevLinkedWork(linkedWork);
+    setCurrentLinkedWork(linkedWork);
+  }
+
+  const [prevInitialActivities, setPrevInitialActivities] = useState<LeadActivityWithActor[]>(initialActivities);
   const [activities, setActivities] = useState<LeadActivityWithActor[]>(initialActivities);
+  if (initialActivities !== prevInitialActivities) {
+    setPrevInitialActivities(initialActivities);
+    setActivities(initialActivities);
+  }
+
   const [isPending, startTransition] = useTransition();
   const [statusErrorMessage, setStatusErrorMessage] = useState<string | null>(null);
 
@@ -255,19 +273,6 @@ export function LeadDossierWorkspaceClient({
   const [isConvertToDealOpen, setIsConvertToDealOpen] = useState<boolean>(false);
   const [isGuardedTransitionOpen, setIsGuardedTransitionOpen] = useState<boolean>(false);
   const [guardedTargetStatus, setGuardedTargetStatus] = useState<FunnelStatus | null>(null);
-
-  // Synchronize client cache when Next.js router.refresh() delivers updated server props
-  useEffect(() => {
-    setCurrentLead(normalizeToDossier(initialLeadInput, funnelStatuses, teamAssignees));
-  }, [initialLeadInput, funnelStatuses, teamAssignees]);
-
-  useEffect(() => {
-    setActivities(initialActivities);
-  }, [initialActivities]);
-
-  useEffect(() => {
-    setCurrentLinkedWork(linkedWork);
-  }, [linkedWork]);
 
   // Synchronize dynamic lead reference code (e.g. 'LD-10343') with top shell breadcrumbs
   useEffect(() => {
@@ -412,7 +417,8 @@ export function LeadDossierWorkspaceClient({
 
   const handleActivityLogged = useCallback((newActivity: LeadActivityWithActor) => {
     setActivities((prev) => [newActivity, ...prev]);
-  }, []);
+    router.refresh();
+  }, [router]);
 
   const handleStatusSelect = useCallback(
     (targetStatusId: string) => {
@@ -421,8 +427,12 @@ export function LeadDossierWorkspaceClient({
 
       setStatusErrorMessage(null);
 
-      // Guarded transition check: converted transitions require final contract terms & Client Work auto-spawn confirmation
+      // Guarded transition check: converted transitions require financial permission and final contract confirmation
       if (target.bucket === 'converted') {
+        if (!canViewFinancials) {
+          setStatusErrorMessage('Financial permission is required to finalize contract valuation and convert deals.');
+          return;
+        }
         setGuardedTargetStatus(target);
         setIsGuardedTransitionOpen(true);
         return;
@@ -433,6 +443,10 @@ export function LeadDossierWorkspaceClient({
         target.name.toLowerCase().includes('negotiat') ||
         target.name.toLowerCase().includes('hold')
       ) {
+        if (!canViewFinancials && target.name.toLowerCase().includes('negotiat')) {
+          setStatusErrorMessage('Financial permission is required to set Negotiation valuation.');
+          return;
+        }
         setGuardedTargetStatus(target);
         setIsGuardedTransitionOpen(true);
         return;
@@ -477,6 +491,8 @@ export function LeadDossierWorkspaceClient({
             setCurrentLead(previousLead);
             setActivities((prev) => prev.filter((a) => a.id !== syntheticActivity.id));
             setStatusErrorMessage(result.error || 'Failed to update deal stage. Reverted to previous status.');
+          } else {
+            router.refresh();
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);
@@ -486,12 +502,13 @@ export function LeadDossierWorkspaceClient({
         }
       });
     },
-    [funnelStatuses, currentLead, userRole]
+    [funnelStatuses, currentLead, userRole, canViewFinancials, router]
   );
 
   const handleEditScopeSuccess = useCallback((updated: Partial<LeadDossierData>) => {
     setCurrentLead((prev) => ({ ...prev, ...updated }));
     setIsEditScopeOpen(false);
+    router.refresh();
 
     const auditLog: LeadActivityWithActor = {
       id: `edit-${Date.now()}`,
@@ -505,11 +522,12 @@ export function LeadDossierWorkspaceClient({
       actor_role: userRole,
     };
     setActivities((prev) => [auditLog, ...prev]);
-  }, [currentLead.id, userRole]);
+  }, [currentLead.id, userRole, router]);
 
   const handleScheduleSuccess = useCallback((newFollowUpIso: string) => {
     setCurrentLead((prev) => ({ ...prev, next_follow_up: newFollowUpIso }));
     setIsSchedulerOpen(false);
+    router.refresh();
 
     const scheduleLog: LeadActivityWithActor = {
       id: `schedule-${Date.now()}`,
@@ -523,7 +541,7 @@ export function LeadDossierWorkspaceClient({
       actor_role: userRole,
     };
     setActivities((prev) => [scheduleLog, ...prev]);
-  }, [currentLead.id, userRole]);
+  }, [currentLead.id, userRole, router]);
 
   const handleConvertToDealSuccess = useCallback(() => {
     const qualifiedStatus =
@@ -660,6 +678,7 @@ export function LeadDossierWorkspaceClient({
         onMarkWon={
           !isConverted &&
           userRole !== 'viewer' &&
+          canViewFinancials &&
           currentLead.bucket !== 'open' &&
           currentLead.bucket !== 'lost'
             ? () => {
@@ -688,7 +707,14 @@ export function LeadDossierWorkspaceClient({
                 : ' · Delivery board active'}
             </span>
           </div>
-          <Link href="/admin/works" className={styles.linkedWorkCta}>
+          <Link
+            href={
+              currentLinkedWork?.id
+                ? `/admin/works?workId=${encodeURIComponent(currentLinkedWork.id)}`
+                : '/admin/works'
+            }
+            className={styles.linkedWorkCta}
+          >
             <span>View Project in Client Works</span>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
               <line x1="5" y1="12" x2="19" y2="12" />
@@ -1206,7 +1232,7 @@ export function LeadDossierWorkspaceClient({
             <span>Convert</span>
           </button>
         )}
-        {!isConverted && currentLead.bucket !== 'open' && currentLead.bucket !== 'lost' && (
+        {!isConverted && canViewFinancials && currentLead.bucket !== 'open' && currentLead.bucket !== 'lost' && (
           <button
             type="button"
             onClick={() => {
@@ -1315,7 +1341,7 @@ export function LeadDossierWorkspaceClient({
           }}
           dealIdCode={currentLead.lead_id}
           dealName={currentLead.company || currentLead.name}
-          currentExpectedValue={currentLead.expected_value}
+          currentExpectedValue={canViewFinancials ? currentLead.expected_value : undefined}
           onSuccess={(res) =>
             handleGuardedTransitionSuccess({
               statusId: res.newStatusId,

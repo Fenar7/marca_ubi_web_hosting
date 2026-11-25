@@ -67,8 +67,10 @@
 }
 
 .drawerCloseButton {
-  height: 36px;
-  width: 36px;
+  min-height: 44px;
+  min-width: 44px;
+  height: 44px;
+  width: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,7 +163,7 @@
   &:focus {
     outline: none;
     border-color: #ea002a;
-    box-shadow: 0 0 0 2px rgba(255, 97, 0, 0.15);
+    box-shadow: 0 0 0 2px rgba(234, 0, 42, 0.18);
   }
 }
 
@@ -191,9 +193,9 @@
 .valuationBadge {
   position: absolute;
   right: 0.75rem;
-  background: rgba(234, 0, 42, 0.12);
-  border: 1px solid rgba(255, 97, 0, 0.35);
-  color: #ea002a;
+  background: rgba(234, 0, 42, 0.16);
+  border: 1px solid rgba(234, 0, 42, 0.45);
+  color: #ff8598;
   font-size: 0.72rem;
   font-weight: 700;
   padding: 0.2rem 0.5rem;
@@ -361,7 +363,7 @@
 }
 
 .promptKeepBtn {
-  height: 40px;
+  min-height: 44px;
   padding: 0 1.25rem;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -379,7 +381,7 @@
 }
 
 .promptDiscardBtn {
-  height: 40px;
+  min-height: 44px;
   padding: 0 1.25rem;
   background: #ef4444;
   border: 1px solid #ef4444;

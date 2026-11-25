@@ -85,8 +85,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 36px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 14px;
   border-radius: var(--admin-radius-control, 8px);
   background: #ffffff;
   border: 1px solid var(--admin-border-subtle, #ebebe8);
@@ -163,7 +163,7 @@
   transition: all 0.15s ease;
 
   &::placeholder {
-    color: #8c8c88;
+    color: #525965;
   }
 
   &:focus {
@@ -268,7 +268,7 @@
 .segmentCount {
   display: inline-block;
   font-size: 0.72rem;
-  color: #8c8c88;
+  color: #525965;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-helvetica-neue), sans-serif;
   font-weight: 500;
@@ -963,8 +963,8 @@
 }
 
 .resetFilterBtn {
-  height: 28px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 16px;
   border: 1px solid #111111;
   background: #111111;
   color: #ffffff;

@@ -1,8 +1,14 @@
-import { describe, it } from 'node:test';
+import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { build } from 'esbuild';
 import { buildCommercialSearchFilter } from '@/app/admin/lib/commercialSearch';
+import { dashboardFeature, dashboardTab } from '@/app/admin/lib/dashboardContracts';
+import { formatAuditDeltaNarrative } from '@/app/admin/components/DossierDrawer/dossierUtils';
 
 const root = process.cwd();
 const read = (rel: string) => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -82,5 +88,236 @@ describe('Core Tabs Conversion Engine & Multi-Color Luxury Remediation', () => {
     assert.ok(taskCard.includes('tomorrowTenAmInput') && taskCard.includes('logLeadActivityAction'), 'TaskCard must schedule successor before clearing/logging');
     assert.ok(leadsAction.includes('canViewFinancials') && leadsAction.includes("'[Restricted]'"), 'leads actions enforce server-side financial gating');
     assert.ok(!dpwClient.includes('lucide-react'), 'Dossier workspace must use inline SVG rather than uninstalled lucide-react');
+  });
+
+  it('Redacted audit deltas preserve [Restricted] / non-numeric labels instead of rendering ₹0', () => {
+    const restrictedRecord = formatAuditDeltaNarrative('Deal valuation adjusted', {
+      changes: { expected_value: { old: '[Restricted]', new: '[Restricted]' } },
+    });
+    const combinedRestricted = `${restrictedRecord.narrative} ${restrictedRecord.deltaPills.join(' ')}`;
+    assert.ok(!combinedRestricted.includes('₹0'), 'redacted valuation must never format as ₹0');
+    assert.ok(combinedRestricted.includes('Restricted'), 'redacted valuation must surface Restricted state');
+
+    const nonNumericRecord = formatAuditDeltaNarrative('Budget updated', {
+      changes: { expected_value: { old: 'N/A', new: 'Pending' } },
+    });
+    const combinedNonNumeric = `${nonNumericRecord.narrative} ${nonNumericRecord.deltaPills.join(' ')}`;
+    assert.ok(!combinedNonNumeric.includes('₹0') && !combinedNonNumeric.includes('NaN'));
+  });
+
+  it('Dashboard contract enforces fail-closed financials and allowed_tabs overrides across roles', () => {
+    assert.equal(dashboardTab('sales_manager', ['overview', 'leads'], 'analytics'), false);
+    assert.equal(dashboardTab('sales_manager', ['overview', 'analytics'], 'analytics'), true);
+    assert.equal(dashboardFeature('sales_manager', {}, 'can_view_financials'), false);
+    assert.equal(dashboardFeature('sales_manager', 'malformed', 'can_view_financials'), false);
+    assert.equal(
+      dashboardFeature('sales_manager', { can_view_financials: false }, 'can_view_financials'),
+      false
+    );
+    assert.equal(
+      dashboardFeature('sales_manager', { can_view_financials: true }, 'can_view_financials'),
+      true
+    );
+  });
+});
+
+interface StageMockState {
+  canViewFinancials: boolean;
+  leadBucket: 'open' | 'potential' | 'converted' | 'lost';
+  convertedAt: string | null;
+  selectedColumns: string[];
+}
+
+const LEAD_UUID = '00000000-0000-4000-8000-000000000010';
+const STATUS_UUID = '00000000-0000-4000-8000-000000000020';
+
+describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrency: false }, () => {
+  let tempDir = '';
+  const mockState: StageMockState = {
+    canViewFinancials: false,
+    leadBucket: 'potential',
+    convertedAt: null,
+    selectedColumns: [],
+  };
+  let actions: {
+    transitionToNegotiationAction: (
+      input: {
+        leadId: string;
+        expectedValue: number;
+        anticipatedCloseDate: string;
+        notes?: string;
+      },
+      targetStatusId: string
+    ) => Promise<{ success: boolean; error?: string }>;
+    transitionToConvertedAction: (
+      input: {
+        leadId: string;
+        finalRevenue: number;
+        signedContractDate: string;
+        paymentTerms: string;
+        notes?: string;
+      },
+      targetStatusId: string
+    ) => Promise<{ success: boolean; error?: string }>;
+  };
+
+  class MockStageQuery {
+    constructor(private readonly table: string) {}
+    select(columns: string): this {
+      if (this.table === 'leads') mockState.selectedColumns.push(columns);
+      return this;
+    }
+    eq(): this {
+      return this;
+    }
+    maybeSingle(): this {
+      return this;
+    }
+    single(): this {
+      return this;
+    }
+    then(resolve: (value: unknown) => unknown) {
+      if (this.table === 'profiles') {
+        return Promise.resolve({
+          data: {
+            role: 'sales_manager',
+            status: 'active',
+            feature_permissions: { can_view_financials: mockState.canViewFinancials },
+          },
+          error: null,
+        }).then(resolve);
+      }
+      if (this.table === 'leads') {
+        return Promise.resolve({
+          data: {
+            id: LEAD_UUID,
+            lead_id: 'LD-900',
+            name: 'Enterprise Client',
+            assigned_to: '00000000-0000-4000-8000-000000000001',
+            status_id: STATUS_UUID,
+            ...(mockState.canViewFinancials ? { expected_value: 250000 } : {}),
+            converted_at: mockState.convertedAt,
+            revisit_date: null,
+            funnel_statuses: { name: 'Negotiation', bucket: mockState.leadBucket },
+          },
+          error: null,
+        }).then(resolve);
+      }
+      return Promise.resolve({ data: null, error: null }).then(resolve);
+    }
+  }
+
+  const globals = globalThis as typeof globalThis & { __stageTestClient?: unknown };
+
+  before(async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'stage-guards-'));
+    const outfile = path.join(tempDir, 'stage-actions.cjs');
+    await build({
+      entryPoints: ['src/app/actions/stageTransitionActions.ts'],
+      outfile,
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      plugins: [
+        {
+          name: 'mock-next-and-supabase',
+          setup(builder) {
+            builder.onResolve({ filter: /^@\/app\/lib\/supabase\/server$/ }, () => ({
+              path: 'supabase-server',
+              namespace: 'stub',
+            }));
+            builder.onResolve({ filter: /^next\/cache$/ }, () => ({
+              path: 'next-cache',
+              namespace: 'stub',
+            }));
+            builder.onLoad({ filter: /.*/, namespace: 'stub' }, (args) => ({
+              contents:
+                args.path === 'supabase-server'
+                  ? 'export const createClient = async () => globalThis.__stageTestClient;'
+                  : 'export const revalidatePath = () => {};',
+            }));
+          },
+        },
+      ],
+    });
+    globals.__stageTestClient = {
+      auth: {
+        getUser: async () => ({
+          data: { user: { id: '00000000-0000-4000-8000-000000000001' } },
+          error: null,
+        }),
+      },
+      from: (table: string) => new MockStageQuery(table),
+    };
+    actions = createRequire(path.join(process.cwd(), 'package.json'))(outfile);
+  });
+
+  after(async () => {
+    delete globals.__stageTestClient;
+    if (tempDir) await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it('rejects financially restricted callers and never selects expected_value on guarded transitions', async () => {
+    mockState.canViewFinancials = false;
+    mockState.leadBucket = 'potential';
+    mockState.convertedAt = null;
+    mockState.selectedColumns.length = 0;
+
+    const negResult = await actions.transitionToNegotiationAction(
+      {
+        leadId: LEAD_UUID,
+        expectedValue: 500000,
+        anticipatedCloseDate: '2026-12-31',
+      },
+      STATUS_UUID
+    );
+    assert.equal(negResult.success, false);
+    assert.match(negResult.error || '', /restricted|financial/i);
+
+    const convResult = await actions.transitionToConvertedAction(
+      {
+        leadId: LEAD_UUID,
+        finalRevenue: 500000,
+        signedContractDate: '2026-12-01',
+        paymentTerms: 'Net 30 retainer milestone schedule',
+      },
+      STATUS_UUID
+    );
+    assert.equal(convResult.success, false);
+    assert.match(convResult.error || '', /restricted|financial/i);
+    assert.equal(
+      mockState.selectedColumns.some((cols) => cols.includes('expected_value')),
+      false,
+      'must omit expected_value from lead SELECT for restricted callers'
+    );
+  });
+
+  it('blocks converted deals from re-entering negotiation or re-converting without unlock', async () => {
+    mockState.canViewFinancials = true;
+    mockState.leadBucket = 'converted';
+    mockState.convertedAt = '2026-11-24T10:00:00Z';
+
+    const negLocked = await actions.transitionToNegotiationAction(
+      {
+        leadId: LEAD_UUID,
+        expectedValue: 300000,
+        anticipatedCloseDate: '2026-12-31',
+      },
+      STATUS_UUID
+    );
+    assert.equal(negLocked.success, false);
+    assert.match(negLocked.error || '', /converted|unlock/i);
+
+    const convLocked = await actions.transitionToConvertedAction(
+      {
+        leadId: LEAD_UUID,
+        finalRevenue: 300000,
+        signedContractDate: '2026-12-01',
+        paymentTerms: 'Net 30 retainer milestone schedule',
+      },
+      STATUS_UUID
+    );
+    assert.equal(convLocked.success, false);
+    assert.match(convLocked.error || '', /converted|unlock/i);
   });
 });

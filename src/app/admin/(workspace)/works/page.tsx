@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 interface AdminWorksPageProps {
-  searchParams: Promise<{ sample?: string | string[] }>;
+  searchParams: Promise<{ sample?: string | string[]; workId?: string | string[] }>;
 }
 
 /** Sample mode is authenticated, development-only and read-only. Real projects keep their existing access checks. */
@@ -81,9 +81,13 @@ export default async function AdminWorksPage({
       : Boolean(ROLE_DEFAULT_TABS[role]?.deals));
   const sampleAvailable =
     process.env.NODE_ENV === 'development' && role === 'admin';
+  const resolvedWorksParams = await searchParams;
   const samplePreference = sampleAvailable
-    ? (await searchParams).sample
+    ? resolvedWorksParams.sample
     : undefined;
+  const rawWorkId = typeof resolvedWorksParams.workId === 'string' ? resolvedWorksParams.workId.trim() : undefined;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const initialWorkId = rawWorkId && uuidRegex.test(rawWorkId) ? rawWorkId : undefined;
   const renderHeader = (showPreviewLink: boolean) => (
     <header className={styles.header}>
       <div>
@@ -262,6 +266,7 @@ export default async function AdminWorksPage({
       <WorksWorkspaceClient
         key="live"
         initialWorks={clientWorks}
+        initialWorkId={initialWorkId}
         userRole={role}
         userId={user.id}
         canOpenDeals={canOpenDeals}

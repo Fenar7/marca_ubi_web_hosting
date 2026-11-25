@@ -84,10 +84,33 @@ export function DealsWorkspaceClient({
   const searchParams = useSearchParams();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [deals, setDeals] = useState(initialDeals);
-  const [searchTerm, setSearchTerm] = useState(
-    searchParams.get("search") || searchParams.get("q") || "",
-  );
+  const [dealsState, setDealsState] = useState<{
+    base: typeof initialDeals;
+    items: typeof initialDeals;
+  }>(() => ({ base: initialDeals, items: initialDeals }));
+  const deals =
+    dealsState.base === initialDeals ? dealsState.items : initialDeals;
+  const setDeals = (
+    updater: (prev: typeof initialDeals) => typeof initialDeals,
+  ): void => {
+    setDealsState((previous) => ({
+      base: initialDeals,
+      items: updater(
+        previous.base === initialDeals ? previous.items : initialDeals,
+      ),
+    }));
+  };
+  const currentQueryKey = searchParams.toString();
+  const urlSearchTerm =
+    searchParams.get("search") || searchParams.get("q") || "";
+  const [searchDraft, setSearchDraft] = useState<{
+    queryKey: string;
+    value: string;
+  } | null>(null);
+  const searchTerm =
+    searchDraft && searchDraft.queryKey === currentQueryKey
+      ? searchDraft.value
+      : urlSearchTerm;
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestedQuery = useRef<string | null>(null);
   const moveLock = useRef(false);
@@ -113,15 +136,6 @@ export function DealsWorkspaceClient({
   );
 
   useEffect(() => {
-    setDeals(initialDeals);
-  }, [initialDeals]);
-  useEffect(() => {
-    if (requestedQuery.current === searchParams.toString())
-      requestedQuery.current = null;
-    if (!searchTimer.current && requestedQuery.current === null)
-      setSearchTerm(searchParams.get("search") || searchParams.get("q") || "");
-  }, [searchParams]);
-  useEffect(() => {
     const start = window.setTimeout(() => setNowMs(Date.now()), 0);
     const clock = window.setInterval(() => setNowMs(Date.now()), 60_000);
     function restoreHistorySearch(): void {
@@ -130,8 +144,7 @@ export function DealsWorkspaceClient({
         clearTimeout(searchTimer.current);
         searchTimer.current = null;
       }
-      const restored = new URLSearchParams(window.location.search);
-      setSearchTerm(restored.get("search") || restored.get("q") || "");
+      setSearchDraft(null);
     }
     window.addEventListener("popstate", restoreHistorySearch);
     return () => {
@@ -149,7 +162,7 @@ export function DealsWorkspaceClient({
         clearTimeout(searchTimer.current);
         searchTimer.current = null;
       }
-      setSearchTerm(changes.search || "");
+      setSearchDraft({ queryKey: currentQueryKey, value: changes.search || "" });
     }
     const current = new URLSearchParams(window.location.search).toString();
     const previous = requestedQuery.current ?? current;
@@ -164,7 +177,7 @@ export function DealsWorkspaceClient({
     );
   }
   function updateSearch(value: string): void {
-    setSearchTerm(value);
+    setSearchDraft({ queryKey: currentQueryKey, value });
     if (searchTimer.current) clearTimeout(searchTimer.current);
     searchTimer.current = setTimeout(() => {
       searchTimer.current = null;

@@ -96,11 +96,13 @@ export async function updateLeadStatusInlineAction(
       };
     }
 
-    // Enforce post-conversion record locking: non-admins cannot mutate converted deals
-    if (existingLead.converted_at && profile.role !== 'admin') {
+    // Enforce post-conversion record locking: converted deals require explicit Unlock & Revert workflow
+    const existingBucket =
+      (existingLead.funnel_statuses as { bucket?: string } | null)?.bucket ?? null;
+    if (existingLead.converted_at || existingBucket === 'converted') {
       return {
         success: false,
-        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
+        error: 'Forbidden: Converted deals are locked. Use "Unlock & Revert" if stage rollback is required.',
       };
     }
 
@@ -290,7 +292,7 @@ export async function updateLeadPriorityInlineAction(
     // 3. Inspect target lead and verify role isolation
     const { data: existingLead, error: leadFetchError } = await supabase
       .from('leads')
-      .select('id, lead_id, assigned_to, priority, converted_at')
+      .select('id, lead_id, assigned_to, priority, converted_at, funnel_statuses(bucket)')
       .eq('id', leadId)
       .maybeSingle();
 
@@ -301,11 +303,13 @@ export async function updateLeadPriorityInlineAction(
       };
     }
 
-    // Enforce post-conversion record locking: non-admins cannot mutate converted deals
-    if (existingLead.converted_at && profile.role !== 'admin') {
+    // Enforce post-conversion record locking: converted deals require explicit Unlock & Revert workflow
+    const existingBucket =
+      (existingLead.funnel_statuses as { bucket?: string } | null)?.bucket ?? null;
+    if (existingLead.converted_at || existingBucket === 'converted') {
       return {
         success: false,
-        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
+        error: 'Forbidden: Converted deals are locked. Use "Unlock & Revert" if stage rollback is required.',
       };
     }
 

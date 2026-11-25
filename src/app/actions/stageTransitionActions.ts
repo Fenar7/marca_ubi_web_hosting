@@ -13,7 +13,8 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/app/lib/supabase/server';
-import type { LeadActionResult, FunnelBucket } from '@/types/crm';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
+import type { LeadActionResult, FunnelBucket, CrmUserRole } from '@/types/crm';
 import {
   LOST_REASON_OPTIONS,
   LOST_REASON_ALIASES,
@@ -60,7 +61,7 @@ async function authenticateAndAuthorizeCaller(
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, role, status, full_name')
+    .select('id, role, status, full_name, feature_permissions')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -85,11 +86,32 @@ async function authenticateAndAuthorizeCaller(
     };
   }
 
-  const { data: lead, error: leadError } = await supabase
+  const canViewFinancials = dashboardFeature(
+    profile.role as CrmUserRole,
+    profile.feature_permissions,
+    'can_view_financials'
+  );
+
+  const leadSelect = canViewFinancials
+    ? 'id, lead_id, assigned_to, status_id, expected_value, notes, converted_at, funnel_statuses(id, name, bucket)'
+    : 'id, lead_id, assigned_to, status_id, notes, converted_at, funnel_statuses(id, name, bucket)';
+
+  const { data: leadRaw, error: leadError } = await supabase
     .from('leads')
-    .select('id, lead_id, assigned_to, status_id, expected_value, notes, converted_at, funnel_statuses(id, name, bucket)')
+    .select(leadSelect)
     .eq('id', leadId)
     .maybeSingle();
+
+  const lead = leadRaw as unknown as {
+    id: string;
+    lead_id: string;
+    assigned_to: string | null;
+    status_id: string;
+    expected_value?: number | null;
+    notes: string | null;
+    converted_at: string | null;
+    funnel_statuses?: { id: string; name: string; bucket: string } | null;
+  } | null;
 
   if (leadError || !lead) {
     return {
@@ -98,11 +120,12 @@ async function authenticateAndAuthorizeCaller(
     };
   }
 
-  // Enforce post-conversion record locking: non-admins are blocked from editing converted records
-  if (lead.converted_at && profile.role !== 'admin') {
+  // Converted deals cannot be downgraded via inline/guarded transitions; require Unlock & Revert
+  const currentBucket = lead.funnel_statuses?.bucket ?? null;
+  if (lead.converted_at || currentBucket === 'converted') {
     return {
       authorized: false as const,
-      error: 'Forbidden: Converted deals are locked from non-admin modifications.',
+      error: 'Forbidden: Converted deals are locked. Administrators must use Unlock & Revert before moving stages.',
     };
   }
 
@@ -119,6 +142,7 @@ async function authenticateAndAuthorizeCaller(
     supabase,
     user,
     profile,
+    canViewFinancials,
     lead,
   };
 }
@@ -147,7 +171,14 @@ export async function transitionToNegotiationAction(
       return { success: false, error: auth.error };
     }
 
-    const { supabase, profile, lead } = auth;
+    const { supabase, profile, lead, canViewFinancials } = auth;
+
+    if (!canViewFinancials) {
+      return {
+        success: false,
+        error: 'Forbidden: Financial visibility permission is required to set Negotiation valuation.',
+      };
+    }
 
     // Locate Negotiation status from catalog
     const { data: targetStatus, error: statusError } = await supabase
@@ -266,7 +297,14 @@ export async function transitionToLostAction(
       return { success: false, error: auth.error };
     }
 
-    const { supabase, profile, lead } = auth;
+    const { supabase, profile, lead, canViewFinancials } = auth;
+
+    if (!canViewFinancials) {
+      return {
+        success: false,
+        error: 'Forbidden: Financial visibility permission is required to set Negotiation valuation.',
+      };
+    }
 
     // Locate Lost status in catalog
     const { data: targetStatus, error: statusError } = await supabase
@@ -379,12 +417,26 @@ export async function transitionToConvertedAction(
       return { success: false, error: auth.error };
     }
 
-    const { supabase, profile, lead } = auth;
+    const { supabase, profile, lead, canViewFinancials } = auth;
+
+    if (!canViewFinancials) {
+      return {
+        success: false,
+        error: 'Forbidden: Financial visibility permission is required to record contract revenue and convert deals.',
+      };
+    }
 
     // Enforce state machine linear progression:
-    // Direct jumps from New, Contacted, or Lost to Converted are strictly forbidden (PRD §5)
+    // Direct jumps from New, Contacted, Lost, or already Converted are strictly forbidden
     const currentStatusName = (lead.funnel_statuses as { name?: string; bucket?: string } | null)?.name || '';
     const currentBucket = (lead.funnel_statuses as { name?: string; bucket?: string } | null)?.bucket || '';
+
+    if (currentBucket === 'converted' || lead.converted_at) {
+      return {
+        success: false,
+        error: 'Already Converted: This deal is already converted and locked.',
+      };
+    }
 
     if (currentStatusName === 'New' || currentStatusName === 'Contacted') {
       return {

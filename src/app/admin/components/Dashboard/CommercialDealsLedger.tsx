@@ -30,6 +30,7 @@ export interface CommercialDealsLedgerProps {
   records?: OverviewRecord[];
   recordsReady?: boolean;
   financials?: boolean;
+  canTasks?: boolean;
   stages?: StageSummary[];
   onAdvanceStage?: (record: OverviewRecord) => void;
   onOpenDossier?: (record: OverviewRecord) => void;
@@ -247,6 +248,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
   records = [],
   recordsReady = true,
   financials = true,
+  canTasks = true,
   onAdvanceStage,
   onOpenDossier,
 }) => {
@@ -725,31 +727,33 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                       </div>
 
                       <div className={styles.actionsGroup}>
-                        <button
-                          type="button"
-                          className={styles.advanceBtn}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onAdvanceStage?.(record);
-                          }}
-                          aria-label={`Advance stage for ${displayName}`}
-                        >
-                          <span>Advance</span>
-                          <svg
-                            width="11"
-                            height="11"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
+                        {canTasks && (
+                          <button
+                            type="button"
+                            className={styles.advanceBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAdvanceStage?.(record);
+                            }}
+                            aria-label={`Advance stage for ${displayName}`}
                           >
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                          </svg>
-                        </button>
+                            <span>Advance</span>
+                            <svg
+                              width="11"
+                              height="11"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <line x1="5" y1="12" x2="19" y2="12" />
+                              <polyline points="12 5 19 12 12 19" />
+                            </svg>
+                          </button>
+                        )}
 
                         <button
                           type="button"
