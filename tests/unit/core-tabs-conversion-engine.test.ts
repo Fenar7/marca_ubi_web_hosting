@@ -149,6 +149,11 @@ describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrenc
       },
       targetStatusId: string
     ) => Promise<{ success: boolean; error?: string }>;
+    transitionToLostAction: (input: {
+      leadId: string;
+      lostReason: string;
+      lostNotes?: string;
+    }) => Promise<{ success: boolean; error?: string }>;
     transitionToConvertedAction: (
       input: {
         leadId: string;
@@ -319,5 +324,19 @@ describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrenc
     );
     assert.equal(convLocked.success, false);
     assert.match(convLocked.error || '', /converted|unlock/i);
+  });
+
+  it('allows non-financial callers to proceed to lost status catalog lookup without financial gate rejection', async () => {
+    mockState.canViewFinancials = false;
+    mockState.leadBucket = 'potential';
+    mockState.convertedAt = null;
+
+    const lostResult = await actions.transitionToLostAction({
+      leadId: LEAD_UUID,
+      lostReason: 'Selected Competitor',
+    });
+    // MockStageQuery returns null for funnel_statuses; verifying it reaches catalog lookup rather than financial rejection
+    assert.equal(lostResult.success, false);
+    assert.doesNotMatch(lostResult.error || '', /financial|negotiation/i);
   });
 });

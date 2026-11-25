@@ -1,7 +1,7 @@
 # Graph Report - marca_ubi_web_hosting  (2026-11-25)
 
 ## Corpus Check
-- 1054 files · ~1,083,954 words
+- 1054 files · ~1,084,011 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 227 file(s) not represented in the graph (top: .scss 163, .ttf 42, .otf 10)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2b8bf078`
+- Built from commit: `d2c1c09a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -566,16 +566,16 @@
 10. `dotenv` - 34 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Sprint 7.2: Virtualized Data Grid, Inline Dropdowns with React 19 `useOptimistic` & Responsive Breakpoints` --references--> `updateLeadStatusInlineAction()`  [INFERRED]
-  docs/sales_funnel/research_modules/pr_phase_7_body.md → src/app/actions/leadInlineActions.ts
-- `Marca Ubi Enterprise CRM — Tier 4 Architectural Transformation` --references--> `CommercialDealsLedger()`  [INFERRED]
-  docs/luxury_dashboard_redesign/COMMERCIAL_DEALS_CONCEPTUAL_REDESIGN_PLAN.md → src/app/admin/components/Dashboard/CommercialDealsLedger.tsx
-- `Marca Ubi Commercial Desk — Tier 4 Workspace Transformation` --references--> `CommercialDealsLedger()`  [INFERRED]
-  docs/sales_funnel/deals_cockpit_redesign/DEALS_OPPORTUNITIES_ARCHITECTURAL_REDESIGN_PLAN.md → src/app/admin/components/Dashboard/CommercialDealsLedger.tsx
-- `Root Cause 1.1: Query Parameter Key Divergence (`id` vs `leadId`)` --references--> `LeadUrlSync()`  [INFERRED]
-  docs/sales_funnel/user_management_and_lead_dossier_routing_remediation/user_management_and_lead_dossier_routing_remediation_plan.md → src/app/admin/components/layout/AdminWorkspaceShell.tsx
-- `Phase 3: Harden `src/app/admin/(workspace)/team/[id]/page.tsx` & Elevate `not-found.tsx`` --references--> `AdminWorkspaceShell()`  [INFERRED]
-  docs/personnel_profile_workspace/personnel_profile_404_root_cause_and_remediation_plan.md → src/app/admin/components/layout/AdminWorkspaceShell.tsx
+- `Sprint 8.3: Guarded Stage Transition Modals, Input Validation & State Machine Record Locking` --references--> `unlockConvertedLeadAction()`  [INFERRED]
+  docs/sales_funnel/research_modules/pr_phase_8_body.md → src/app/actions/stageTransitionActions.ts
+- `Agent 5 — The real intake contract in this codebase (internal) ⚠️ **plan-changing**` --references--> `ProjectFormData`  [INFERRED]
+  docs/chat_pod/02-research-findings.md → src/app/components/ProjectForm/types.ts
+- `8. Parity test (required before M5 sign-off)` --references--> `ProjectFormData`  [INFERRED]
+  docs/chat_pod/04-intake-data-contract.md → src/app/components/ProjectForm/types.ts
+- `Complete Restored Field Matrix:` --references--> `ProjectFormData`  [INFERRED]
+  docs/project_form_restoration/master_form_restoration_plan.md → src/app/components/ProjectForm/types.ts
+- `A. State Management & Data Schema` --references--> `ProjectFormData`  [INFERRED]
+  docs/project_form_restoration/multi_select_services_plan.md → src/app/components/ProjectForm/types.ts
 
 ## Import Cycles
 - 4-file cycle: `src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx -> src/app/admin/components/modals/index.ts -> src/app/admin/components/modals/LeadDetailModal.tsx -> src/app/admin/components/DossierDrawer/index.ts -> src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx`
@@ -2575,7 +2575,7 @@ Cohesion: 0.50
 Nodes (3): 1. Key Architectural Deliverables, 2. Verification & Quality Gates, Session Context Register: 2026-11-19 21:15:00
 
 ## Knowledge Gaps
-- **20 isolated node(s):** `RFC-4180`, `RFC-3966`, `FIGMA_PERSONAL_ACCESS_TOKEN`, `npx`, `@smithery/figma-mcp` (+15 more)
+- **20 isolated node(s):** `FIGMA_PERSONAL_ACCESS_TOKEN`, `npx`, `@smithery/figma-mcp`, `RFC-3986`, `RFC-3966` (+15 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 4772 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **39 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -2583,16 +2583,16 @@ Nodes (3): 1. Key Architectural Deliverables, 2. Verification & Quality Gates, S
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `react` connect `react` to `Dashboard/index.ts`, `AnalyticsWorkspaceClient.tsx`, `stageTransitionActions.ts`, `reassignment.ts`, `admin/layout.tsx`, `useIntakeFlow.ts`, `ClientDossierDrawer`, `ShortcutHint.tsx`, `RevenueDynamicsCard`, `context.ts`, `getCachedCallerProfile`, `formatCrmCurrency`, `LeadsWorkspaceClient.tsx`, `server.ts`, `content.ts`, `ClientHomeExperience.tsx`, `kpi/KpiCard.tsx`, `package.json`, `chartGeometry.ts`, `workloadActions.ts`, `1. Executive Summary & Root Cause Matrix`, `AdminWorkspaceShell.tsx`, `ROLE_DEFAULT_TABS`, `ActivityRowItem.tsx`, `(workspace)/page.tsx`, `CrmUserRole`, `match.ts`, `CompanyProfileModal.tsx`, `ClientHeader.tsx`, `4. 5-Phase Implementation Strategy`, `leads/page.tsx`, `ExecutiveSlaVelocityGauge.tsx`, `LeadDossierWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `TeamWorkspaceClient.tsx`, `CommercialVelocityBarChart`, `AdminRootClientProvider`, `shouldUseMobileMotion`, `slots.ts`, `Completed Implementations`, `TaskCard.tsx`, `settings.ts`, `next`, `CommercialDealsLedger.tsx`, `CommercialDealsLedger.tsx`, `ClientHeader`, `schedulerActions.ts`, `2. Detailed Technical Remediation Blueprint`, `Sprint 7.1 Architectural Specification: Multi-Filter Action Bar, Pipeline Bucket Tabs & Suspense Skeletons`, `blog/page.tsx`, `ChatPod.tsx`, `StatementCurtain`, `app/layout.tsx`, `overlayScrollLock.ts`, `lead-schemas.ts`, `DealsTable.tsx`, `dependencies`, `kpi/KpiRibbon.tsx`, `ingestion/[id]/page.tsx`, `signupAction`, `Dashboard/ExecutiveMasthead.tsx`, `leads/page.tsx`, `contact/page.tsx`, `createClient`, `Hero.tsx`, `avatarActions.ts`, `ClientHomeExperience.tsx`, `dashboard-server-assembly.test.ts`, `AdminBreadcrumbs.tsx`, `analytics/page.tsx`, `CommercialDealsTable.tsx`, `tasks/page.tsx`, `blog/[slug]/page.tsx`, `BatchStageModal.tsx`, `crm.ts`, `InitialLoader.tsx`?**
-  _High betweenness centrality (0.171) - this node is a cross-community bridge._
+  _High betweenness centrality (0.177) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `formatCrmCurrency()` (e.g. with `2. Invariants & Rules Preserved` and `2. Invariants & Guardrails`) actually correct?**
   _`formatCrmCurrency()` has 6 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `RFC-4180`, `RFC-3966`, `FIGMA_PERSONAL_ACCESS_TOKEN` to the rest of the system?**
+- **What connects `FIGMA_PERSONAL_ACCESS_TOKEN`, `npx`, `@smithery/figma-mcp` to the rest of the system?**
   _20 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `⚡ UI UX Pro Max — Design Intelligence & Reference Engine` be split into smaller, more focused modules?**
   _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
 - **Why does `next` connect `next` to `Dashboard/index.ts`, `AnalyticsWorkspaceClient.tsx`, `reassignment.ts`, `stageTransitionActions.ts`, `admin/layout.tsx`, `zod`, `useIntakeFlow.ts`, `server.ts`, `formatCrmCurrency`, `LeadsWorkspaceClient.tsx`, `getCachedCallerProfile`, `content.ts`, `ClientHomeExperience.tsx`, `kpi/KpiCard.tsx`, `package.json`, `AdminWorkspaceShell.tsx`, `workloadActions.ts`, `(workspace)/page.tsx`, `ROLE_DEFAULT_TABS`, `ActivityRowItem.tsx`, `middleware_and_login.test.ts`, `match.ts`, `CrmUserRole`, `CompanyProfileModal.tsx`, `e4a7c8b9d1024f5a8923bcde14567890.txt/route.ts`, `ClientHeader.tsx`, `robots.ts`, `admin.ts`, `leads/page.tsx`, `ExecutiveSlaVelocityGauge.tsx`, `LeadDossierWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `TeamWorkspaceClient.tsx`, `CommercialVelocityBarChart`, `shouldUseMobileMotion`, `slots.ts`, `TaskCard.tsx`, `settings.ts`, `CommercialDealsLedger.tsx`, `CommercialDealsLedger.tsx`, `ClientHeader`, `schedulerActions.ts`, `2. Detailed Technical Remediation Blueprint`, `blog/page.tsx`, `ChatPod.tsx`, `app/layout.tsx`, `overlayScrollLock.ts`, `DealsTable.tsx`, `dependencies`, `kpi/KpiRibbon.tsx`, `ingestion/[id]/page.tsx`, `signupAction`, `inquiryView.ts`, `ref_path`, `Dashboard/ExecutiveMasthead.tsx`, `leads/page.tsx`, `collect.ts`, `contact/page.tsx`, `createClient`, `Hero.tsx`, `avatarActions.ts`, `ClientHomeExperience.tsx`, `FunnelBucket`, `AdminBreadcrumbs.tsx`, `analytics/page.tsx`, `CommercialDealsTable.tsx`, `ingest/route.ts`, `tasks/page.tsx`, `blog/[slug]/page.tsx`, `crm.ts`, `Footer.tsx`, `3. Four-Phase Architectural Remediation Strategy`, `zod`?**
-  _High betweenness centrality (0.148) - this node is a cross-community bridge._
+  _High betweenness centrality (0.149) - this node is a cross-community bridge._
 - **Should `stageTransitionActions.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.10668563300142248 - nodes in this community are weakly interconnected._
-- **Why does `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform` connect `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform` to `2.4 Team Management Dashboard (`/admin/team`) Specification`, `7. Security Architecture, Authentication & Row Level Security (RLS) Policies`, `1.4 Commit Message & Version Control Standards`, `4.1 Sprint 10.1: Test Harness & Automated Suites`, `13. Client 360° Dossier & Omnichannel Touchpoint Studio`, `5. Granular Sprint Work Breakdown Structure (Phases 6–9)`, `5. Granular Sprint Work Breakdown Structure (Phases 2, 3, 4, and 5)`, `2.5 End-to-End User Journeys (Playwright Suite)`, `17. Production Deployment, Disaster Recovery & Incident Runbooks`, `3.3 Referential Integrity Architecture: Cascades vs Restraints`, `10. Public Webhook Ingestion Engine & Deduplication Pipeline`, `12. Interactive Leads Workspace, Data Grid & Optimistic State Machine`, `2. Sprint Work Breakdown Structure for Phase 1 (Database Architecture & Stored Logic)`, `9. Offboarding Protocol & Automated Lead Reassignment Wizard`, `6. PostgreSQL Database Architecture, Relational Schema & Stored Logic`, `1.1 Mathematical Formulas and Dynamic Aggregation Logic`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **Why does `ClientHeader()` connect `ClientHeader` to `1. Motion spec`, `content.ts`, `Dedicated Works Showcase: 3D Stacking Card Scroll Experience PRD`, `ClientHomeExperience.tsx`, `AdminWorkspaceShell.tsx`, `blog/[slug]/page.tsx`, `ClientHeader.tsx`, `Master Implementation Plan: 3-Line Rounded Pill Hamburger Icon`, `4. 5-Phase Implementation Strategy`, `00 — Chat Pod Master Plan`, `blog/page.tsx`, `1. Deep Technical Audit by Criteria`, `overlayScrollLock.ts`, `Phase 14: Blog Redesign — Homepage Dispatches, Listing & Article Detail (Plan)`, `Master Remediation & Full-Content Integration Plan: 160over90 Architecture`, `contact/page.tsx`, `Master Architectural Plan: Scroll-Activated Frosted Glass Adaptive Header HUD`, `Master PRD & UI/UX Design Architecture: Contact Page (`/contact`)`, `ClientHomeExperience.tsx`, `Minimalist Clean Aesthetic & Clutter Eradication PRD`?**
+  _High betweenness centrality (0.058) - this node is a cross-community bridge._

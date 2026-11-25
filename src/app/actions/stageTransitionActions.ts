@@ -297,14 +297,7 @@ export async function transitionToLostAction(
       return { success: false, error: auth.error };
     }
 
-    const { supabase, profile, lead, canViewFinancials } = auth;
-
-    if (!canViewFinancials) {
-      return {
-        success: false,
-        error: 'Forbidden: Financial visibility permission is required to set Negotiation valuation.',
-      };
-    }
+    const { supabase, profile, lead } = auth;
 
     // Locate Lost status in catalog
     const { data: targetStatus, error: statusError } = await supabase

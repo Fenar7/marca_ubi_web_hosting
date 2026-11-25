@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "src/app/actions/stageTransitionActions.ts": {
-    "mtime": 1795595492.2191095,
-    "seen": 1795596214.2416096,
-    "ast_hash": "e0bd65ff10ccbbf68f443324e30b311e",
+    "mtime": 1795597417.8668697,
+    "seen": 1795598912.4379737,
+    "ast_hash": "0144bf2cdb786eec8664c61e0782ac09",
     "semantic_hash": ""
   },
   "src/app/actions/team.ts": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/ConvertedCelebrationModal.tsx": {
-    "mtime": 1795595178.816438,
-    "seen": 1795596214.2826257,
-    "ast_hash": "dfc92398ed1a390f8a9a0964a0d8d13e",
+    "mtime": 1795597421.3110604,
+    "seen": 1795598912.4762533,
+    "ast_hash": "bfdedd3a9a15d916d4c9445336f292a3",
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/EditLeadModal.tsx": {
@@ -7242,9 +7242,9 @@
     "semantic_hash": ""
   },
   "tests/unit/core-tabs-conversion-engine.test.ts": {
-    "mtime": 1795596409.851613,
-    "seen": 1795596592.6041179,
-    "ast_hash": "f1d6a67dd53415332454fb3557d77a51",
+    "mtime": 1795597428.122043,
+    "seen": 1795598912.5462139,
+    "ast_hash": "c302f87877989af59f5fadc03021bd4a",
     "semantic_hash": ""
   },
   "docs/sales_funnel/core_tabs_redesign/AUDIT_REPORT_FEATURES_AND_SECURITY.md": {

@@ -420,7 +420,7 @@ function ConvertedCelebrationModalInner({
                   className={`${styles.textInput} ${styles.hasPrefix} ${
                     numericRev <= 0 ? styles.hasError : ''
                   }`}
-                  disabled={isPending || isCelebrationActive}
+                  disabled={isPending || isConvertedSuccess}
                   required
                 />
               </div>
@@ -439,7 +439,7 @@ function ConvertedCelebrationModalInner({
                 value={signedContractDate}
                 onChange={(e) => setSignedContractDate(e.target.value)}
                 className={styles.textInput}
-                disabled={isPending || isCelebrationActive}
+                disabled={isPending || isConvertedSuccess}
                 required
               />
             </div>
@@ -455,7 +455,7 @@ function ConvertedCelebrationModalInner({
                 onChange={(e) => setPaymentTerms(e.target.value)}
                 placeholder="e.g. 50% upfront retainer, 50% upon deployment"
                 className={styles.textInput}
-                disabled={isPending || isCelebrationActive}
+                disabled={isPending || isConvertedSuccess}
                 required
               />
               <span className={styles.fieldHint}>
