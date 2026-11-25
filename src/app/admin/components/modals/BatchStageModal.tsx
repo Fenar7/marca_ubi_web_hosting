@@ -53,6 +53,8 @@ export function BatchStageModal({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const batchAllowedStatuses = availableStatuses.filter((s) => s.bucket !== 'converted');
+
   // Reset state whenever modal opens
   useEffect(() => {
     if (isOpen) {
@@ -60,14 +62,14 @@ export function BatchStageModal({
       setLostReason('');
       setCustomLostReason('');
       setNote('');
-      if (availableStatuses.length > 0) {
-        setSelectedStatusId(availableStatuses[0].id);
+      if (batchAllowedStatuses.length > 0) {
+        setSelectedStatusId(batchAllowedStatuses[0].id);
       }
     }
   }, [isOpen, availableStatuses]);
 
   // Selected stage object
-  const targetStage = availableStatuses.find((s) => s.id === selectedStatusId);
+  const targetStage = batchAllowedStatuses.find((s) => s.id === selectedStatusId);
   const isLostStage = targetStage?.bucket === 'lost' || targetStage?.name.toLowerCase() === 'lost';
 
   // Handle keyboard dismiss (Escape)
@@ -205,7 +207,7 @@ export function BatchStageModal({
                 Target Funnel Stage <span className={styles.requiredMark}>*</span>
               </span>
               <div className={styles.stageGrid} role="radiogroup" aria-label="Target funnel stages">
-                {availableStatuses.map((status) => {
+                {batchAllowedStatuses.map((status) => {
                   const isSelected = status.id === selectedStatusId;
                   return (
                     <button
@@ -217,8 +219,15 @@ export function BatchStageModal({
                       onClick={() => setSelectedStatusId(status.id)}
                     >
                       <span
-                        className={styles.stageDot}
-                        style={{ backgroundColor: status.color_code || '#111111' }}
+                        aria-hidden="true"
+                        style={{
+                          width: 3,
+                          height: 14,
+                          borderRadius: 2,
+                          backgroundColor: status.color_code || '#111111',
+                          display: 'inline-block',
+                          flexShrink: 0,
+                        }}
                       />
                       <span className={styles.stageName}>{status.name}</span>
                       <span className={styles.stageBucket}>{status.bucket}</span>
@@ -226,6 +235,9 @@ export function BatchStageModal({
                   );
                 })}
               </div>
+              <p style={{ fontSize: 11, color: '#666663', margin: '6px 0 0' }}>
+                Converting deals to Won requires individual signed contract values and payment terms on the Deal Dossier page.
+              </p>
             </div>
 
             {isLostStage && (

@@ -65,6 +65,7 @@ interface DealsWorkspaceClientProps {
   userRole?: string;
   canViewFinancials?: boolean;
   canCreate?: boolean;
+  laneTotals?: Record<string, { count: number; value: number | null }>;
 }
 
 /** Query changes stay URL-owned; the local record copy changes only after confirmed mutations. */
@@ -78,6 +79,7 @@ export function DealsWorkspaceClient({
   userRole,
   canViewFinancials = true,
   canCreate = false,
+  laneTotals,
 }: DealsWorkspaceClientProps): React.ReactElement {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -364,6 +366,7 @@ export function DealsWorkspaceClient({
             movingDealId={movingLeadId}
             onMove={handleMoveStage}
             canViewFinancials={canViewFinancials}
+            laneTotals={laneTotals}
           />
         ) : (
           <DealsTable

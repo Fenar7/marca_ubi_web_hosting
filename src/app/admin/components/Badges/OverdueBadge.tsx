@@ -5,7 +5,7 @@
  * @description Tiered visual alert badge for overdue prospect touchpoints.
  *              Dynamically adjusts color, typography, and animation based on elapsed overdue duration:
  *              - < 24 Hours: Amber warning pill (#f59e0b)
- *              - 24 to 72 Hours: Vivid orange warning pill (#ff6100)
+ *              - 24 to 72 Hours: Vivid orange warning pill (#f97316)
  *              - > 72 Hours: Pulsing red critical alert pill (#ef4444)
  *              Strictly suppresses rendering for terminal stages and 'On Hold' accounts.
  * @module admin/components/Badges/OverdueBadge

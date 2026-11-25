@@ -15,7 +15,9 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { clearLeadFollowUp } from '@/app/actions/leads';
+import { clearLeadFollowUp, updateLeadAssignee } from '@/app/actions/leads';
+import { scheduleFollowUpAction } from '@/app/actions/schedulerActions';
+import { FollowUpScheduler } from '@/app/admin/components/Scheduler';
 import type { LeadPriority } from '@/types/crm';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from '../tasks.module.scss';
@@ -41,6 +43,9 @@ interface TaskCardProps {
   lead: TaskLeadItem;
   isUrgent?: boolean;
   allowCompletion: boolean;
+  canViewFinancials?: boolean;
+  canAssign?: boolean;
+  teamAssignees?: Array<{ id: string; full_name: string }>;
 }
 
 /** Formats ISO follow-up timestamps in UTC canonical representation for commercial auditing. */
@@ -86,11 +91,30 @@ function initialsFor(name: string | undefined): string {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
-export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardProps): React.ReactElement {
+function defaultNextFollowUpInput(): string {
+  const dt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  dt.setHours(11, 0, 0, 0);
+  return dt.toISOString().slice(0, 16);
+}
+
+export function TaskCard({
+  lead,
+  isUrgent = false,
+  allowCompletion,
+  canViewFinancials = true,
+  canAssign = false,
+  teamAssignees = [],
+}: TaskCardProps): React.ReactElement {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDone, setIsDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSchedulerOpen, setIsSchedulerOpen] = useState(false);
+  const [isOutcomeOpen, setIsOutcomeOpen] = useState(false);
+  const [outcomeNote, setOutcomeNote] = useState('');
+  const [nextStepMode, setNextStepMode] = useState<'schedule' | 'clear'>('schedule');
+  const [nextFollowUpValue, setNextFollowUpValue] = useState<string>(defaultNextFollowUpInput);
+  const [assignedOwnerId, setAssignedOwnerId] = useState<string>(lead.assigned_to || '');
 
   const safePhone = lead.phone?.replace(/[^\d+*#]/g, '') ?? '';
   const whatsappPhone = lead.phone?.replace(/\D/g, '') ?? '';
@@ -102,12 +126,14 @@ export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardPr
       ? styles.priorityMedium
       : styles.priorityLow;
 
-  function handleOpenDrawer(e: React.MouseEvent): void {
-    e.preventDefault();
-    window.dispatchEvent(new CustomEvent('open-lead-drawer', { detail: { leadId: lead.id } }));
+  function dispatchToast(type: 'success' | 'error', message: string): void {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('crm-toast', { detail: { type, message } }));
+    }
   }
 
-  function completeFollowUp(): void {
+  function submitOutcomeCompletion(e: React.FormEvent): void {
+    e.preventDefault();
     setError(null);
     startTransition(async () => {
       try {
@@ -115,11 +141,33 @@ export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardPr
           setError('Schedule a follow-up before marking this lead complete.');
           return;
         }
-        const result = await clearLeadFollowUp(lead.id, lead.next_follow_up);
+        const trimmedNote = outcomeNote.trim() || undefined;
+        const result = await clearLeadFollowUp(lead.id, lead.next_follow_up, trimmedNote);
         if (!result.success) {
           setError(result.error || 'Could not complete this follow-up. Refresh and try again.');
           return;
         }
+
+        if (nextStepMode === 'schedule' && nextFollowUpValue) {
+          const parsedIso = new Date(nextFollowUpValue).toISOString();
+          const schedRes = await scheduleFollowUpAction({
+            leadId: lead.id,
+            scheduledFor: parsedIso,
+            actionType: 'call',
+            agenda: trimmedNote || 'Next follow-up milestone scheduled on completion.',
+            sendCalendarInvite: false,
+          });
+          if (!schedRes.success) {
+            setError(schedRes.error || 'Completed follow-up, but could not schedule next step.');
+            router.refresh();
+            return;
+          }
+          dispatchToast('success', `Follow-up completed & next step scheduled for ${lead.name}.`);
+        } else {
+          dispatchToast('success', `Follow-up completed for ${lead.name}.`);
+        }
+
+        setIsOutcomeOpen(false);
         setIsDone(true);
         router.refresh();
       } catch (cause: unknown) {
@@ -131,6 +179,25 @@ export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardPr
     });
   }
 
+  function handleInlineAssign(targetUserId: string): void {
+    if (!targetUserId || !canAssign) return;
+    setError(null);
+    const prevOwner = assignedOwnerId;
+    setAssignedOwnerId(targetUserId);
+    startTransition(async () => {
+      const res = await updateLeadAssignee(lead.id, targetUserId);
+      if (!res.success) {
+        setAssignedOwnerId(prevOwner);
+        setError(res.error || 'Failed to assign account.');
+        dispatchToast('error', res.error || 'Failed to assign account.');
+        return;
+      }
+      const matchedName = teamAssignees.find((m) => m.id === targetUserId)?.full_name || 'representative';
+      dispatchToast('success', `Assigned ${lead.name} to ${matchedName}.`);
+      router.refresh();
+    });
+  }
+
   return (
     <li className={`${styles.taskItem} ${isDone ? styles.taskItemDone : ''}`}>
       {/* Primary Client Entity Coordinates */}
@@ -138,7 +205,6 @@ export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardPr
         <div className={styles.clientHeading}>
           <Link
             href={`/admin/leads/${lead.id}`}
-            onClick={handleOpenDrawer}
             className={styles.leadOpenButton}
             aria-label={`Open dossier for ${lead.name}`}
           >
@@ -220,22 +286,39 @@ export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardPr
         <span className={styles.stagePill}>{lead.status_name || 'Active Ingestion'}</span>
       </div>
 
-      {/* Designated Rep / Account Owner */}
+      {/* Designated Rep / Account Owner (with Inline Assignment on Unassigned Leads) */}
       <div className={styles.ownerCell}>
         <span className={styles.cellLabel}>Account Executive</span>
-        <div className={styles.ownerValue}>
-          <span className={styles.ownerInitials} aria-hidden="true">
-            {initialsFor(lead.assignee_name)}
-          </span>
-          <span className={styles.ownerNameText}>{lead.assignee_name || 'Unassigned'}</span>
-        </div>
+        {!lead.assigned_to && canAssign && teamAssignees.length > 0 ? (
+          <select
+            aria-label={`Assign account executive for ${lead.name}`}
+            value={assignedOwnerId}
+            disabled={isPending}
+            onChange={(e) => handleInlineAssign(e.target.value)}
+            className={styles.inlineAssignSelect}
+          >
+            <option value="" disabled>Assign Rep…</option>
+            {teamAssignees.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.full_name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div className={styles.ownerValue}>
+            <span className={styles.ownerInitials} aria-hidden="true">
+              {initialsFor(lead.assignee_name)}
+            </span>
+            <span className={styles.ownerNameText}>{lead.assignee_name || 'Unassigned'}</span>
+          </div>
+        )}
       </div>
 
       {/* Institutional Valuation */}
       <div className={styles.valueCell}>
         <span className={styles.cellLabel}>Expected Scope</span>
         <strong className={styles.monetaryValuation}>
-          {formatCrmCurrency(lead.expected_value)}
+          {canViewFinancials ? formatCrmCurrency(lead.expected_value) : 'Restricted'}
         </strong>
       </div>
 
@@ -243,22 +326,34 @@ export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardPr
       <div className={styles.actionsCell}>
         <Link
           href={`/admin/leads/${lead.id}`}
-          onClick={handleOpenDrawer}
           className={styles.openButton}
           aria-label={`View 360 dossier for ${lead.name}`}
         >
-          View dossier
+          Open dossier
         </Link>
+
+        {allowCompletion && (
+          <button
+            type="button"
+            className={styles.rescheduleButton}
+            onClick={() => setIsSchedulerOpen(true)}
+            disabled={isPending}
+            aria-label={`Schedule or reschedule follow-up for ${lead.name}`}
+          >
+            {lead.next_follow_up ? 'Reschedule' : 'Schedule'}
+          </button>
+        )}
 
         {allowCompletion && lead.next_follow_up && (
           <button
             type="button"
             className={`${styles.completeButton} ${isDone ? styles.completeButtonDone : ''}`}
-            onClick={completeFollowUp}
+            onClick={() => setIsOutcomeOpen((prev) => !prev)}
             disabled={isPending || isDone}
-            aria-label={isDone ? `Follow-up completed for ${lead.name}` : `Mark follow-up complete for ${lead.name}`}
+            aria-expanded={isOutcomeOpen}
+            aria-label={isDone ? `Follow-up completed for ${lead.name}` : `Complete follow-up for ${lead.name}`}
           >
-            {isPending ? 'Saving…' : isDone ? 'Completed ✓' : 'Mark complete'}
+            {isPending ? 'Saving…' : isDone ? 'Completed ✓' : 'Complete'}
           </button>
         )}
 
@@ -268,6 +363,65 @@ export function TaskCard({ lead, isUrgent = false, allowCompletion }: TaskCardPr
           </p>
         )}
       </div>
+
+      {/* Outcome & Next-Step Completion Panel (Prevents Orphaning Leads) */}
+      {isOutcomeOpen && allowCompletion && lead.next_follow_up && (
+        <form onSubmit={submitOutcomeCompletion} className={styles.outcomePanel}>
+          <div className={styles.outcomeFieldRow}>
+            <input
+              type="text"
+              value={outcomeNote}
+              onChange={(e) => setOutcomeNote(e.target.value)}
+              placeholder="Log call/conversation outcome (optional)…"
+              className={styles.outcomeInput}
+              aria-label="Follow-up outcome note"
+            />
+            <select
+              value={nextStepMode}
+              onChange={(e) => setNextStepMode(e.target.value as 'schedule' | 'clear')}
+              className={styles.outcomeSelect}
+              aria-label="Next action after completion"
+            >
+              <option value="schedule">Schedule next follow-up</option>
+              <option value="clear">Complete without scheduling next</option>
+            </select>
+            {nextStepMode === 'schedule' && (
+              <input
+                type="datetime-local"
+                value={nextFollowUpValue}
+                onChange={(e) => setNextFollowUpValue(e.target.value)}
+                required
+                className={styles.outcomeDateInput}
+                aria-label="Next follow-up date and time"
+              />
+            )}
+          </div>
+          <div className={styles.outcomeActions}>
+            <button type="button" className={styles.outcomeCancelBtn} onClick={() => setIsOutcomeOpen(false)} disabled={isPending}>
+              Cancel
+            </button>
+            <button type="submit" className={styles.outcomeConfirmBtn} disabled={isPending}>
+              {isPending ? 'Saving…' : 'Confirm Completion'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {isSchedulerOpen && (
+        <FollowUpScheduler
+          isOpen={isSchedulerOpen}
+          leadId={lead.id}
+          leadName={lead.name}
+          company={lead.company}
+          currentFollowUpDate={lead.next_follow_up}
+          onClose={() => setIsSchedulerOpen(false)}
+          onSuccess={() => {
+            setIsSchedulerOpen(false);
+            dispatchToast('success', `Follow-up scheduled for ${lead.name}.`);
+            router.refresh();
+          }}
+        />
+      )}
     </li>
   );
 }

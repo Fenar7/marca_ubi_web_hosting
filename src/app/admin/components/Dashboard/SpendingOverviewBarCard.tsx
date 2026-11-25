@@ -32,8 +32,8 @@ export interface SpendingOverviewBarCardProps {
 }
 
 export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = ({
-  totalValue = 6540000,
-  dealCount = 39,
+  totalValue = null,
+  dealCount = 0,
   categories,
   financials = true,
   onTimeframeChange,
@@ -80,52 +80,67 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
     }
   };
 
-  // Dynamically compute spending allocations for the selected cadence
+  // Dynamically compute real pipeline category allocations using the multi-color Marca Ubi palette
   const { activeTotal, activeDeals, resolvedList } = useMemo(() => {
-    const rawTotal = typeof totalValue === "number" ? totalValue : 6540000;
-    const rawDeals = typeof dealCount === "number" ? dealCount : 39;
-    const computed = computeSpendingBreakdownForCadence(selectedTimeframe, rawTotal, rawDeals);
+    const rawTotal = typeof totalValue === "number" ? totalValue : 0;
+    const rawDeals = typeof dealCount === "number" ? dealCount : 0;
 
-    // If custom non-empty categories were provided by props for default view, preserve their names
-    if (categories && categories.length > 0 && selectedTimeframe === "this_month") {
-      const BLUE_PALETTE = [
+    if (categories && categories.length > 0) {
+      const MULTI_PALETTE = [
         {
-          color: "#2563eb",
-          gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
+          color: "#f97316",
+          gradient: "linear-gradient(90deg, #ea580c 0%, #fb923c 100%)",
         },
         {
-          color: "#60a5fa",
-          gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
+          color: "#ea002a",
+          gradient: "linear-gradient(90deg, #c40023 0%, #ff4d6d 100%)",
+        },
+        {
+          color: "#4f46e5",
+          gradient: "linear-gradient(90deg, #4338ca 0%, #818cf8 100%)",
+        },
+        {
+          color: "#10b981",
+          gradient: "linear-gradient(90deg, #059669 0%, #34d399 100%)",
         },
       ];
-      const topItems: SpendingCategoryData[] = categories.slice(0, 2).map((cat, idx) => ({
+      const topItems: SpendingCategoryData[] = categories.slice(0, 4).map((cat, idx) => ({
         name: cat.name,
-        value: cat.value,
-        color: BLUE_PALETTE[idx]?.color ?? "#2563eb",
+        value: financials ? cat.value : cat.count,
+        color: MULTI_PALETTE[idx]?.color ?? "#4f46e5",
         gradient:
-          BLUE_PALETTE[idx]?.gradient ??
-          "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
+          MULTI_PALETTE[idx]?.gradient ??
+          "linear-gradient(90deg, #4338ca 0%, #818cf8 100%)",
       }));
-      const othersSum = categories.slice(2).reduce((sum, c) => sum + c.value, 0);
-      const othersItem: SpendingCategoryData = {
-        name: "Others",
-        value: othersSum > 0 ? othersSum : Math.max(0, rawTotal - topItems.reduce((s, i) => s + i.value, 0)),
-        color: "#cbd5e1",
-        gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
-      };
+      const remainderSum = categories
+        .slice(4)
+        .reduce((sum, c) => sum + (financials ? c.value : c.count), 0);
+      const list =
+        remainderSum > 0
+          ? [
+              ...topItems,
+              {
+                name: "Others",
+                value: remainderSum,
+                color: "#cbd5e1",
+                gradient: "linear-gradient(90deg, #cbd5e1 0%, #e2e8f0 100%)",
+              },
+            ]
+          : topItems;
       return {
         activeTotal: rawTotal,
         activeDeals: rawDeals,
-        resolvedList: [...topItems, othersItem],
+        resolvedList: list,
       };
     }
 
+    const computed = computeSpendingBreakdownForCadence(selectedTimeframe, rawTotal, rawDeals);
     return {
       activeTotal: computed.totalValue,
       activeDeals: computed.dealCount,
       resolvedList: computed.categories,
     };
-  }, [selectedTimeframe, totalValue, dealCount, categories]);
+  }, [selectedTimeframe, totalValue, dealCount, categories, financials]);
 
   const displayTotal =
     financials && activeTotal !== null ? formatCrmCurrency(activeTotal) : "Confidential";

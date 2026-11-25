@@ -153,7 +153,7 @@ describe('Sprint 9.2: Overdue Escalation Engine & Badge Math', () => {
       assert.equal(amberTheme.colorCode, '#f59e0b');
 
       const orangeTheme = getOverdueBadgeTheme('orange');
-      assert.equal(orangeTheme.colorCode, '#ff6100');
+      assert.equal(orangeTheme.colorCode, '#f97316');
 
       const redTheme = getOverdueBadgeTheme('red_pulse');
       assert.equal(redTheme.colorCode, '#ef4444');

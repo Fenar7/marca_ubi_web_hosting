@@ -11,6 +11,7 @@
  */
 
 import React, { useEffect } from 'react';
+import { CrmToastHost } from './CrmToastHost';
 
 interface AdminRootClientProviderProps {
   children: React.ReactNode;
@@ -24,8 +25,9 @@ export function AdminRootClientProvider({
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    // Flag documentElement to disable public custom orange cursor and enforce system native cursors
+    // Flag documentElement & body so portaled modals/drawers inherit --admin-* tokens without escape
     document.documentElement.setAttribute('data-admin-route', 'true');
+    document.body.setAttribute('data-admin-root', 'true');
 
     // Purge any residual Lenis smooth-scroll class names that could impact admin scroll containers
     document.documentElement.classList.remove(
@@ -38,6 +40,7 @@ export function AdminRootClientProvider({
     return () => {
       if (typeof document === 'undefined') return;
       document.documentElement.removeAttribute('data-admin-route');
+      document.body.removeAttribute('data-admin-root');
     };
   }, []);
 
@@ -48,6 +51,7 @@ export function AdminRootClientProvider({
       style={{ minHeight: '100vh', width: '100%' }}
     >
       {children}
+      <CrmToastHost />
     </div>
   );
 }

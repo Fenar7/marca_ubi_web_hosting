@@ -12,6 +12,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
+import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import type {
   LeadActionResult,
   LeadActivityType,
@@ -169,9 +170,11 @@ export async function logLeadActivityAction(
       console.warn(`[WARN] Failed to update lead updated_at timestamp: ${updateError.message}`);
     }
 
-    // 7. Revalidate leads workspace cache
+    // 7. Revalidate CRM workspace caches
+    revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/admin/leads/${leadId}`);
     revalidatePath(`/admin/deals/${leadId}`);
 
@@ -253,33 +256,30 @@ export async function getLeadActivitiesAction(
       };
     }
 
-    if (callerProfile.status === 'suspended') {
+    if (callerProfile.status !== 'active') {
       return {
         success: false,
-        error: 'Forbidden: Account has been suspended by an enterprise administrator.',
+        error: 'Forbidden: Account is inactive or has been suspended by an enterprise administrator.',
       };
     }
 
-    // Fetch activities joined with profiles
-    const { data: rawActivities, error: activitiesError } = await supabase
-      .from('lead_activities')
-      .select(`
-        id,
-        lead_id,
-        actor_id,
-        activity_type,
-        description,
-        metadata,
-        created_at,
-        profiles:profiles!lead_activities_actor_id_fkey (
+    // Fetch chronological activities and resolve actor metadata via crm_team_directory
+    const [{ data: rawActivities, error: activitiesError }, directoryRoster] = await Promise.all([
+      supabase
+        .from('lead_activities')
+        .select(`
           id,
-          full_name,
-          role,
-          avatar_url
-        )
-      `)
-      .eq('lead_id', leadId)
-      .order('created_at', { ascending: false });
+          lead_id,
+          actor_id,
+          activity_type,
+          description,
+          metadata,
+          created_at
+        `)
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false }),
+      getCrmDirectoryList(supabase),
+    ]);
 
     if (activitiesError) {
       return {
@@ -288,30 +288,37 @@ export async function getLeadActivitiesAction(
       };
     }
 
+    const rosterById = new Map(directoryRoster.map((member) => [member.id, member]));
+    const missingActorIds = Array.from(
+      new Set((rawActivities || []).map((a) => a.actor_id).filter(Boolean) as string[])
+    ).filter((id) => !rosterById.has(id));
+    const fallbackNamesById =
+      missingActorIds.length > 0
+        ? await getCrmDirectoryMap(supabase, missingActorIds)
+        : new Map<string, string>();
+
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
-      const actProfile = act.profiles as {
-        id?: string;
-        full_name?: string;
-        role?: CrmUserRole;
-        avatar_url?: string | null;
-      } | null;
+      const actorMeta = act.actor_id ? rosterById.get(act.actor_id) : undefined;
+      const fallbackName = act.actor_id ? fallbackNamesById.get(act.actor_id) : undefined;
+      const resolvedName = actorMeta?.full_name || fallbackName || 'System Staff';
+      const resolvedRole = (actorMeta?.role as CrmUserRole) || 'viewer';
 
       return {
         id: act.id,
         lead_id: act.lead_id,
         actor_id: act.actor_id,
-        actor_name: actProfile?.full_name || 'System Staff',
-        actor_role: actProfile?.role || 'viewer',
+        actor_name: resolvedName,
+        actor_role: resolvedRole,
         activity_type: act.activity_type as LeadActivityType,
         description: act.description,
         metadata: (act.metadata as Record<string, unknown>) || {},
         created_at: act.created_at,
-        actor: actProfile
+        actor: act.actor_id
           ? {
-              id: actProfile.id || act.actor_id || '',
-              full_name: actProfile.full_name || 'System Staff',
-              role: (actProfile.role as CrmUserRole) || 'viewer',
-              avatar_url: actProfile.avatar_url || null,
+              id: act.actor_id,
+              full_name: resolvedName,
+              role: resolvedRole,
+              avatar_url: actorMeta?.avatar_url || null,
               email: null,
             }
           : null,

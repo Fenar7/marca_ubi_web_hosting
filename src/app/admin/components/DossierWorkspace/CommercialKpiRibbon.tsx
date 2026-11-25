@@ -32,6 +32,8 @@ export interface CommercialKpiRibbonProps {
   statusName: string;
   /** Cumulative incoming inquiries recorded from this client coordinate */
   inquiryCount?: number;
+  /** Whether the authenticated operator holds financial visibility permission */
+  canViewFinancials?: boolean;
 }
 
 interface MomentumMetrics {
@@ -107,6 +109,7 @@ export function CommercialKpiRibbon({
   statusBucket,
   statusName,
   inquiryCount = 1,
+  canViewFinancials = true,
 }: CommercialKpiRibbonProps): React.ReactElement {
   const momentum = useMemo(
     () => calculateStageMomentum(statusBucket, statusName),
@@ -147,11 +150,15 @@ export function CommercialKpiRibbon({
         </div>
 
         <div className={styles.scorecardValue}>
-          {formattedValuation}
+          {canViewFinancials ? formattedValuation : 'Restricted'}
         </div>
 
         <div className={styles.scorecardMetaRow}>
-          <span>Scope Basis: Initial Scoping Estimate · Institutional FX Peg: 1 USD = 83.50 INR</span>
+          <span>
+            {canViewFinancials
+              ? 'Scope Basis: Initial Scoping Estimate'
+              : 'Financial valuation restricted by workspace role policy'}
+          </span>
           <span>{inquiryCount > 1 ? `${inquiryCount} Inbound Touchpoints` : 'Calculated Scope'}</span>
         </div>
       </div>

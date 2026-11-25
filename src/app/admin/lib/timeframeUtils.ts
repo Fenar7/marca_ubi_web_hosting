@@ -276,55 +276,24 @@ export function computeSplinePointsForCadence(
   }
 }
 
-/** Computes spending categorical allocations restoring the vibrant multi-tone blue palette */
+/** Computes spending categorical allocations using real pipeline totals without synthetic multipliers */
 export function computeSpendingBreakdownForCadence(
-  cadence: CardTimeframe,
+  _cadence: CardTimeframe,
   baseTotal: number,
-  baseDeals = 39
+  baseDeals = 0
 ): SpendingTimeframeData {
-  const safeTotal = baseTotal > 0 ? baseTotal : 6540000;
-  const safeDeals = baseDeals > 0 ? baseDeals : 39;
-
-  let multiplier = 1;
-  let dealCount = safeDeals;
-
-  if (cadence === 'this_week') {
-    multiplier = 0.25;
-    dealCount = Math.max(4, Math.round(safeDeals * 0.22));
-  } else if (cadence === 'this_quarter') {
-    multiplier = 2.4;
-    dealCount = Math.round(safeDeals * 2.2);
-  } else if (cadence === 'this_year') {
-    multiplier = 8.5;
-    dealCount = Math.round(safeDeals * 6.5);
-  }
-
-  const scaledTotal = Math.round(safeTotal * multiplier);
-  const webVal = Math.round(scaledTotal * 0.44);
-  const advisoryVal = Math.round(scaledTotal * 0.31);
-  const othersVal = Math.max(0, scaledTotal - webVal - advisoryVal);
+  const safeTotal = baseTotal > 0 ? Math.round(baseTotal) : 0;
+  const safeDeals = baseDeals > 0 ? Math.round(baseDeals) : 0;
 
   return {
-    totalValue: scaledTotal,
-    dealCount,
+    totalValue: safeTotal,
+    dealCount: safeDeals,
     categories: [
       {
-        name: 'Web & Digital',
-        value: webVal,
-        color: '#2563eb',
-        gradient: 'linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)',
-      },
-      {
-        name: 'Full-Suite Advisory',
-        value: advisoryVal,
-        color: '#60a5fa',
-        gradient: 'linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)',
-      },
-      {
-        name: 'Others',
-        value: othersVal,
-        color: '#cbd5e1',
-        gradient: 'linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)',
+        name: 'No Allocation Recorded',
+        value: safeTotal,
+        color: '#f97316',
+        gradient: 'linear-gradient(90deg, #ea580c 0%, #fb923c 100%)',
       },
     ],
   };

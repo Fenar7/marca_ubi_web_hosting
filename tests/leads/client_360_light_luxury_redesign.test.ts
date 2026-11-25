@@ -112,8 +112,8 @@ describe('Phase 8.3: Client 360° Accordion Light Luxury Design System Audit', (
         'must enforce single-line 5 equal columns'
       );
       assert.ok(
-        content.includes('--admin-accent-lemon'),
-        '.activePreset must use --admin-accent-lemon'
+        content.includes('--admin-accent-brand'),
+        '.activePreset must use --admin-accent-brand'
       );
     });
 

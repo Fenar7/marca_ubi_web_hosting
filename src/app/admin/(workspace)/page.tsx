@@ -420,7 +420,7 @@ export default async function AdminDashboardPage({
               { ascending: true },
             )
             .order("id")
-            .limit(25)
+            .limit(100)
         : await supabase
             .from("leads")
             .select(dashboardPreviewSelect(canFinancial))
@@ -428,7 +428,7 @@ export default async function AdminDashboardPage({
             .or(SYNTHETIC_EXCLUSION)
             .order("created_at", { ascending: false })
             .order("id")
-            .limit(25);
+            .limit(100);
   if (previewResult.error)
     console.error("[dashboard] Preview failed", previewResult.error.message);
   else if (!previewResult.data)

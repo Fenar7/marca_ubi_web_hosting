@@ -19,6 +19,8 @@
  */
 
 import React, { useState, useEffect, useTransition, useCallback, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type {
   LeadWithRelations,
   LeadActivityWithActor,
@@ -27,6 +29,7 @@ import type {
   FunnelBucket,
   LeadPriority,
   LeadActivityType,
+  LeadDetailPayload,
 } from '@/types/crm';
 import type { LeadDossierData } from '../DossierDrawer/ClientDossierDrawer';
 import {
@@ -63,6 +66,10 @@ export interface LeadDossierWorkspaceClientProps {
   userRole: CrmUserRole;
   /** Active workspace operational mode */
   workspaceMode: 'leads' | 'deals';
+  /** Auto-spawned post-conversion Client Work project summary when converted */
+  linkedWork?: LeadDetailPayload['linkedWork'];
+  /** Whether caller holds permission to inspect commercial valuations */
+  canViewFinancials?: boolean;
 }
 
 /**
@@ -141,6 +148,13 @@ function renderTimelineGlyph(type: LeadActivityType): React.ReactElement {
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+        </svg>
+      );
+    case 'email_sent':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
         </svg>
       );
     case 'meeting_notes':
@@ -223,11 +237,15 @@ export function LeadDossierWorkspaceClient({
   teamAssignees,
   userRole,
   workspaceMode,
+  linkedWork = null,
+  canViewFinancials = true,
 }: LeadDossierWorkspaceClientProps): React.ReactElement {
+  const router = useRouter();
   // 1. Normalized State Model
   const [currentLead, setCurrentLead] = useState<LeadDossierData>(() =>
     normalizeToDossier(initialLeadInput, funnelStatuses, teamAssignees)
   );
+  const [currentLinkedWork, setCurrentLinkedWork] = useState<LeadDetailPayload['linkedWork']>(linkedWork);
   const [activities, setActivities] = useState<LeadActivityWithActor[]>(initialActivities);
   const [isPending, startTransition] = useTransition();
   const [statusErrorMessage, setStatusErrorMessage] = useState<string | null>(null);
@@ -391,9 +409,10 @@ export function LeadDossierWorkspaceClient({
 
       setStatusErrorMessage(null);
 
-      // Guarded transition check: converted or lost or complex transitions require dialog disclosures
+      // Guarded transition check: converted transitions require final contract terms & Client Work auto-spawn confirmation
       if (target.bucket === 'converted') {
-        setIsConvertToDealOpen(true);
+        setGuardedTargetStatus(target);
+        setIsGuardedTransitionOpen(true);
         return;
       }
 
@@ -495,64 +514,109 @@ export function LeadDossierWorkspaceClient({
   }, [currentLead.id, userRole]);
 
   const handleConvertToDealSuccess = useCallback(() => {
-    const convertedStatus = funnelStatuses.find((s) => s.bucket === 'converted');
+    const qualifiedStatus =
+      funnelStatuses.find((s) => s.bucket === 'potential') ||
+      funnelStatuses.find((s) => s.id === currentLead.status_id);
     setCurrentLead((prev) => ({
       ...prev,
-      bucket: 'converted',
-      converted_at: new Date().toISOString(),
-      status_id: convertedStatus?.id || prev.status_id,
-      status_name: convertedStatus?.name || 'Deal Converted',
-      status_color: convertedStatus?.color_code || 'var(--admin-status-emerald-dot, #10b981)',
+      bucket: qualifiedStatus?.bucket || 'potential',
+      status_id: qualifiedStatus?.id || prev.status_id,
+      status_name: qualifiedStatus?.name || prev.status_name,
+      status_color: qualifiedStatus?.color_code || prev.status_color,
     }));
     setIsConvertToDealOpen(false);
-  }, [funnelStatuses]);
+    router.refresh();
+  }, [funnelStatuses, currentLead.status_id, router]);
 
   const handleGuardedTransitionSuccess = useCallback(
-    (payload: { statusId: string; statusName: string; bucket: FunnelBucket }) => {
+    (payload: {
+      statusId: string;
+      statusName: string;
+      bucket: FunnelBucket;
+      convertedAt?: string | null;
+      expectedValue?: number;
+      workId?: string | null;
+      projectCode?: string | null;
+    }) => {
       setCurrentLead((prev) => ({
         ...prev,
         status_id: payload.statusId,
         status_name: payload.statusName,
         bucket: payload.bucket,
+        converted_at: payload.convertedAt !== undefined ? payload.convertedAt : prev.converted_at,
+        expected_value:
+          typeof payload.expectedValue === 'number' ? payload.expectedValue : prev.expected_value,
       }));
+      if (payload.workId && payload.projectCode) {
+        setCurrentLinkedWork({
+          id: payload.workId,
+          project_code: payload.projectCode,
+          delivery_stage: 'kickoff',
+          health_status: 'on_track',
+        });
+      }
       setIsGuardedTransitionOpen(false);
       setGuardedTargetStatus(null);
+      router.refresh();
     },
-    []
+    [router]
   );
 
   const handleAssigneeChange = useCallback(
     (newAssigneeId: string) => {
       if (userRole !== 'admin' && userRole !== 'sales_manager') return;
+      if (!newAssigneeId) return;
 
       const previousAssignee = currentLead.assigned_to;
+      const previousAssigneeName = currentLead.assigned_to_name;
       const targetAssignee = teamAssignees.find((a) => a.id === newAssigneeId);
 
+      setStatusErrorMessage(null);
       setCurrentLead((prev) => ({
         ...prev,
-        assigned_to: newAssigneeId || null,
-        assigned_to_name: targetAssignee?.full_name || 'Unassigned',
+        assigned_to: newAssigneeId,
+        assigned_to_name: targetAssignee?.full_name || previousAssigneeName,
       }));
 
       startTransition(async () => {
         try {
-          const res = await updateLeadAssignee(currentLead.id, newAssigneeId || undefined);
+          const res = await updateLeadAssignee(currentLead.id, newAssigneeId);
           if (!res.success) {
             setCurrentLead((prev) => ({
               ...prev,
               assigned_to: previousAssignee,
+              assigned_to_name: previousAssigneeName,
             }));
-            setStatusErrorMessage(res.error || 'Failed to reassign deal.');
+            const errMsg = res.error || 'Failed to reassign deal.';
+            setStatusErrorMessage(errMsg);
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('crm-toast', { detail: { type: 'error', message: errMsg } }));
+            }
+          } else {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(
+                new CustomEvent('crm-toast', {
+                  detail: {
+                    type: 'success',
+                    message: `Assigned to ${targetAssignee?.full_name || 'team representative'}.`,
+                  },
+                })
+              );
+            }
+            router.refresh();
           }
-        } catch {
+        } catch (err: unknown) {
           setCurrentLead((prev) => ({
             ...prev,
             assigned_to: previousAssignee,
+            assigned_to_name: previousAssigneeName,
           }));
+          const errMsg = err instanceof Error ? err.message : 'Network error updating assignee.';
+          setStatusErrorMessage(errMsg);
         }
       });
     },
-    [currentLead.id, currentLead.assigned_to, userRole, teamAssignees]
+    [currentLead.id, currentLead.assigned_to, currentLead.assigned_to_name, userRole, teamAssignees, router]
   );
 
   return (
@@ -566,12 +630,55 @@ export function LeadDossierWorkspaceClient({
         funnelStatuses={funnelStatuses}
         workspaceMode={workspaceMode}
         isConverted={isConverted}
+        isReadOnly={userRole === 'viewer'}
         onStatusSelect={handleStatusSelect}
         onOpenEditScope={() => setIsEditScopeOpen(true)}
         onOpenScheduler={() => setIsSchedulerOpen(true)}
-        onOpenConvertToDeal={!isConverted ? () => setIsConvertToDealOpen(true) : undefined}
+        onOpenConvertToDeal={
+          !isConverted &&
+          workspaceMode === 'leads' &&
+          currentLead.bucket === 'open' &&
+          (userRole === 'admin' || userRole === 'sales_manager')
+            ? () => setIsConvertToDealOpen(true)
+            : undefined
+        }
+        onMarkWon={
+          !isConverted &&
+          userRole !== 'viewer' &&
+          currentLead.bucket !== 'open' &&
+          currentLead.bucket !== 'lost'
+            ? () => {
+                const wonStatus = funnelStatuses.find((st) => st.bucket === 'converted');
+                if (wonStatus) {
+                  setGuardedTargetStatus(wonStatus);
+                  setIsGuardedTransitionOpen(true);
+                }
+              }
+            : undefined
+        }
         isPending={isPending}
       />
+
+      {/* Post-Conversion Client Works Delivery Banner */}
+      {isConverted && (
+        <div className={styles.linkedWorkBanner} role="region" aria-label="Converted Delivery Project">
+          <div className={styles.linkedWorkMeta}>
+            <span className={styles.linkedWorkCode}>
+              {currentLinkedWork?.project_code || 'PROJECT SPAWNED'}
+            </span>
+            <span className={styles.linkedWorkSummary}>
+              Deal converted to Won client work
+              {currentLinkedWork
+                ? ` · Stage: ${currentLinkedWork.delivery_stage.replace(/_/g, ' ').toUpperCase()} · Health: ${currentLinkedWork.health_status.replace(/_/g, ' ').toUpperCase()}`
+                : ' · Delivery board active'}
+            </span>
+          </div>
+          <Link href="/admin/works" className={styles.linkedWorkCta}>
+            <span>View Project in Client Works</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      )}
 
       {/* Global Status Mutation Error Feedback */}
       {statusErrorMessage && (
@@ -588,6 +695,7 @@ export function LeadDossierWorkspaceClient({
         statusBucket={currentLead.bucket}
         statusName={currentLead.status_name}
         inquiryCount={1}
+        canViewFinancials={canViewFinancials}
       />
 
       {/* 3. 7:5 Asymmetric Operational Grid */}
@@ -939,6 +1047,7 @@ export function LeadDossierWorkspaceClient({
           <RapidTouchpointComposer
             leadId={currentLead.id}
             onActivityLogged={handleActivityLogged}
+            readOnly={userRole === 'viewer'}
           />
 
           {/* Component 2: Commercial Assignment & Deal Routing */}
@@ -964,7 +1073,7 @@ export function LeadDossierWorkspaceClient({
                     className={styles.composerSelect}
                     style={{ width: 'auto', minWidth: 160 }}
                   >
-                    <option value="">Unassigned</option>
+                    <option value="" disabled>Unassigned</option>
                     {teamAssignees.map((member) => (
                       <option key={member.id} value={member.id}>
                         {member.full_name}
@@ -1054,8 +1163,9 @@ export function LeadDossierWorkspaceClient({
       </div>
 
       {/* 4. Sticky Bottom Action Dock (Mobile < 768px, 44px tap targets) */}
+      {userRole !== 'viewer' && (
       <nav className={styles.mobileActionDock} aria-label="Mobile deal actions">
-        {!isConverted && (
+        {!isConverted && currentLead.bucket === 'open' && (userRole === 'admin' || userRole === 'sales_manager') && (
           <button
             type="button"
             onClick={() => setIsConvertToDealOpen(true)}
@@ -1065,6 +1175,24 @@ export function LeadDossierWorkspaceClient({
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
             <span>Convert</span>
+          </button>
+        )}
+        {!isConverted && currentLead.bucket !== 'open' && currentLead.bucket !== 'lost' && (
+          <button
+            type="button"
+            onClick={() => {
+              const wonStatus = funnelStatuses.find((st) => st.bucket === 'converted');
+              if (wonStatus) {
+                setGuardedTargetStatus(wonStatus);
+                setIsGuardedTransitionOpen(true);
+              }
+            }}
+            className={`${styles.mobileDockBtn} ${styles.mobilePrimary}`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 14, height: 14 }}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Mark Won</span>
           </button>
         )}
 
@@ -1094,6 +1222,7 @@ export function LeadDossierWorkspaceClient({
           <span>Schedule</span>
         </button>
       </nav>
+      )}
 
       {/* 5. Modals Suite */}
       {isEditScopeOpen && (
@@ -1162,6 +1291,10 @@ export function LeadDossierWorkspaceClient({
               statusId: res.newStatusId,
               statusName: guardedTargetStatus.name,
               bucket: guardedTargetStatus.bucket,
+              convertedAt: res.convertedAt ?? null,
+              expectedValue: res.expectedValue,
+              workId: res.workId ?? null,
+              projectCode: res.projectCode ?? null,
             })
           }
         />

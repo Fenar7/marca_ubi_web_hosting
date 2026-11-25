@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useEffect, useRef, useTransition, useCallback } from 'react';
+import Link from 'next/link';
 import { transitionToConvertedAction } from '@/app/actions/stageTransitionActions';
 import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
 import { useModalAnimation } from './useModalAnimation';
@@ -67,6 +68,7 @@ export function ConvertedCelebrationModal({
   const [notes, setNotes] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCelebrationActive, setIsCelebrationActive] = useState<boolean>(false);
+  const [spawnedProjectCode, setSpawnedProjectCode] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -133,7 +135,7 @@ export function ConvertedCelebrationModal({
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const colors = ['#eefb87', '#10b981', '#fbbf24', '#ffffff', '#38bdf8'];
+    const colors = ['#ea002a', '#10b981', '#f97316', '#4f46e5', '#d97706'];
     const particles: Particle[] = [];
     const count = 75;
 
@@ -230,6 +232,7 @@ export function ConvertedCelebrationModal({
             return;
           }
 
+          setSpawnedProjectCode(result.data.projectCode || null);
           // Trigger celebratory confetti animation
           triggerConfetti();
 
@@ -238,7 +241,9 @@ export function ConvertedCelebrationModal({
               new CustomEvent('crm-toast', {
                 detail: {
                   type: 'success',
-                  message: `Celebration: Deal Won for ${formatCurrency(numRevenue)}! Record locked.`,
+                  message: result.data.projectCode
+                    ? `Deal Won for ${formatCurrency(numRevenue)}! Spawned Project ${result.data.projectCode}.`
+                    : `Deal Won for ${formatCurrency(numRevenue)}! Record locked.`,
                 },
               })
             );
@@ -259,10 +264,10 @@ export function ConvertedCelebrationModal({
 
           onSuccess?.(result.data);
 
-          // Allow the user to see the confetti burst before closing modal
+          // Keep celebration overlay briefly so user can jump directly to Client Works if desired
           setTimeout(() => {
             onClose();
-          }, 850);
+          }, 2600);
         } catch (err) {
           setErrorMessage(
             err instanceof Error ? err.message : 'An unexpected exception occurred during conversion.'
@@ -433,6 +438,18 @@ export function ConvertedCelebrationModal({
                 disabled={isPending || isCelebrationActive}
               />
             </div>
+
+            {isCelebrationActive && (
+              <div className={styles.infoBanner} role="status" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', color: '#065f46' }}>
+                <span>
+                  <strong>Client Work Provisioned{spawnedProjectCode ? ` (${spawnedProjectCode})` : ''}:</strong>{' '}
+                  Project board initialized cleanly.{' '}
+                  <Link href="/admin/works" style={{ fontWeight: 700, color: '#065f46', textDecoration: 'underline' }}>
+                    View Project in Client Works →
+                  </Link>
+                </span>
+              </div>
+            )}
 
             {errorMessage && (
               <div className={styles.fieldError} role="alert">

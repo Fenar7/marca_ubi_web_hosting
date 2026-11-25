@@ -118,7 +118,7 @@ describe('Phase 8.2: Client 360° Full-Page Dedicated Workspace Architecture', (
 
       assert.ok(content.includes('grid-template-columns: 7fr 5fr'), 'must define 7:5 asymmetric columns');
       assert.ok(!content.includes('#2563eb'), 'must strictly prohibit generic AI blue (#2563eb)');
-      assert.ok(content.includes('#ff6100'), 'must enforce authentic Marca Orange (#ff6100)');
+      assert.ok(content.includes('#ea002a'), 'must enforce authentic Marca Crimson (#ea002a)');
     });
 
     it('verifies RapidTouchpointComposer enforces single-line duration presets', () => {

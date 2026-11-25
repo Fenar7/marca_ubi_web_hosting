@@ -14,8 +14,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/server";
 import { ROLE_DEFAULT_TABS, type CrmUserRole } from "@/types/crm";
 import {
+  dashboardAmount,
   dashboardFeature,
   dashboardTab,
+  foldDashboardPages,
 } from "@/app/admin/lib/dashboardContracts";
 import {
   dealSelectColumns,
@@ -166,20 +168,78 @@ export default async function AdminDealsPage(
       !["all", "open", "potential", "converted", "lost"].includes(bucket),
     );
 
-  let dealsQuery = supabase
-    .from("leads")
-    .select(dealSelectColumns(canViewFinancials), { count: "exact" });
-  if (!invalidFilter) {
-    if (stage) dealsQuery = dealsQuery.eq("status_id", stage);
-    if (assignedTo) dealsQuery = dealsQuery.eq("assigned_to", assignedTo);
-    if (source) dealsQuery = dealsQuery.eq("lead_source_id", source);
-    if (priority) dealsQuery = dealsQuery.ilike("priority", priority);
-    if (bucket && bucket !== "all")
-      dealsQuery = dealsQuery.eq("funnel_status.bucket", bucket);
-    if (search.filter) dealsQuery = dealsQuery.or(search.filter);
+  const applyDealFilters = <T extends ReturnType<typeof supabase.from>>(q: any): any => {
+    let query = q;
+    if (!invalidFilter) {
+      if (stage) query = query.eq("status_id", stage);
+      if (assignedTo) query = query.eq("assigned_to", assignedTo);
+      if (source) query = query.eq("lead_source_id", source);
+      if (priority) query = query.ilike("priority", priority);
+      if (bucket && bucket !== "all") query = query.eq("funnel_status.bucket", bucket);
+      if (typeof query.or === "function") {
+        if (search.filter) {
+          query = query.or(search.filter);
+        } else {
+          query = query.or(
+            "brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true",
+          );
+        }
+      }
+    }
+    return query;
+  };
+
+  const dealsQuery = applyDealFilters(
+    supabase
+      .from("leads")
+      .select(dealSelectColumns(canViewFinancials), { count: "exact" }),
+  );
+
+  interface LaneSummaryAccumulator {
+    lanes: Record<string, { count: number; value: number; valid: boolean }>;
   }
 
-  const [sourcesRes, statusesRes, owners, dealsRes] = await Promise.all([
+  const laneSummaryPromise = invalidFilter
+    ? Promise.resolve(null)
+    : foldDashboardPages<
+        { id: string; status_id: string; expected_value?: number | string },
+        LaneSummaryAccumulator
+      >(
+        async (from, to) => {
+          const cols = canViewFinancials
+            ? "id, status_id, expected_value, funnel_status:funnel_statuses!leads_status_id_fkey!inner(bucket)"
+            : "id, status_id, funnel_status:funnel_statuses!leads_status_id_fkey!inner(bucket)";
+          const q = applyDealFilters(
+            supabase.from("leads").select(cols),
+          )
+            .order("id")
+            .range(from, to);
+          const res = await q;
+          return {
+            data: res.data as unknown as Array<{
+              id: string;
+              status_id: string;
+              expected_value?: number | string;
+            }> | null,
+            error: res.error,
+          };
+        },
+        { lanes: {} },
+        (acc, row) => {
+          const key = row.status_id || "unlisted";
+          if (!acc.lanes[key]) {
+            acc.lanes[key] = { count: 0, value: 0, valid: true };
+          }
+          acc.lanes[key].count += 1;
+          if (canViewFinancials) {
+            const amt = dashboardAmount(row.expected_value);
+            if (amt === null) acc.lanes[key].valid = false;
+            else acc.lanes[key].value += amt;
+          }
+        },
+      );
+
+  const [sourcesRes, statusesRes, owners, dealsRes, laneSummary] = await Promise.all([
     supabase.from("lead_sources").select("id, name").order("name"),
     supabase
       .from("funnel_statuses")
@@ -190,7 +250,21 @@ export default async function AdminDealsPage(
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1),
+    laneSummaryPromise,
   ]);
+
+  const laneTotals: Record<string, { count: number; value: number | null }> | undefined =
+    laneSummary
+      ? Object.fromEntries(
+          Object.entries(laneSummary.lanes).map(([k, v]) => [
+            k,
+            {
+              count: v.count,
+              value: canViewFinancials && v.valid ? v.value : null,
+            },
+          ]),
+        )
+      : undefined;
 
   if (dealsRes.error)
     console.error("[deals-workspace] Failed to load deals:", {
@@ -319,6 +393,7 @@ export default async function AdminDealsPage(
               userRole={role}
               canViewFinancials={canViewFinancials}
               canCreate={canCreate}
+              laneTotals={laneTotals}
               owners={owners.rows.map((owner) => ({
                 id: owner.id,
                 name: owner.full_name || "Name unavailable",
@@ -331,7 +406,7 @@ export default async function AdminDealsPage(
                     pageSize={pageSize}
                     loadedCount={deals.length}
                     totalCount={dealsRes.count}
-                    scopeDescription="Stage totals apply to the deals on this page."
+                    scopeDescription="Lane totals reflect the full matching pipeline; cards show up to 100 deals per page."
                   />
                 )
               }

@@ -7,6 +7,7 @@ export interface QuickMetricsRibbonProps {
   activeTriageCount: number;
   overdueCount: number;
   totalPipelineValue: number;
+  canViewFinancials?: boolean;
 }
 
 export const QuickMetricsRibbon: React.FC<QuickMetricsRibbonProps> = ({
@@ -14,11 +15,12 @@ export const QuickMetricsRibbon: React.FC<QuickMetricsRibbonProps> = ({
   activeTriageCount,
   overdueCount,
   totalPipelineValue,
+  canViewFinancials = true,
 }) => {
   return (
     <div className={styles.ribbonContainer} aria-label="Inbound Lead Telemetry Overview">
       {/* Pod 1: Total Captured Inquiries */}
-      <div className={styles.kpiPod}>
+      <div className={`${styles.kpiPod} ${styles.podIndigo}`}>
         <span className={styles.kpiLabel}>Total Inquiries</span>
         <strong className={styles.kpiValue}>
           {totalInquiries.toLocaleString('en-IN')}
@@ -27,7 +29,7 @@ export const QuickMetricsRibbon: React.FC<QuickMetricsRibbonProps> = ({
       </div>
 
       {/* Pod 2: Active Triage */}
-      <div className={styles.kpiPod}>
+      <div className={`${styles.kpiPod} ${styles.podOrange}`}>
         <span className={styles.kpiLabel}>Active Triage</span>
         <strong className={styles.kpiValue}>
           {activeTriageCount.toLocaleString('en-IN')}
@@ -36,7 +38,7 @@ export const QuickMetricsRibbon: React.FC<QuickMetricsRibbonProps> = ({
       </div>
 
       {/* Pod 3: Overdue SLAs */}
-      <div className={`${styles.kpiPod} ${overdueCount > 0 ? styles.overdueActivePod : ''}`}>
+      <div className={`${styles.kpiPod} ${styles.podCrimson} ${overdueCount > 0 ? styles.overdueActivePod : ''}`}>
         <span className={styles.kpiLabel}>Overdue Commitments</span>
         <strong className={`${styles.kpiValue} ${overdueCount > 0 ? styles.overdueText : ''}`}>
           {overdueCount.toLocaleString('en-IN')}
@@ -47,12 +49,14 @@ export const QuickMetricsRibbon: React.FC<QuickMetricsRibbonProps> = ({
       </div>
 
       {/* Pod 4: Active Pipeline Valuation */}
-      <div className={styles.kpiPod}>
+      <div className={`${styles.kpiPod} ${styles.podEmerald}`}>
         <span className={styles.kpiLabel}>Active Pipeline</span>
         <strong className={styles.kpiValue}>
-          {formatCrmCurrency(totalPipelineValue)}
+          {canViewFinancials ? formatCrmCurrency(totalPipelineValue) : 'Restricted'}
         </strong>
-        <span className={styles.kpiSub}>Unweighted portfolio valuation</span>
+        <span className={styles.kpiSub}>
+          {canViewFinancials ? 'Unweighted portfolio valuation' : 'Financial scope hidden by role policy'}
+        </span>
       </div>
     </div>
   );

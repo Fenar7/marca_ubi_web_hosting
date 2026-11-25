@@ -54,7 +54,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ff6100;
+  color: #ea002a;
   margin-bottom: 0.25rem;
 }
 
@@ -86,7 +86,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid #ea002a;
   }
 }
 
@@ -138,7 +138,7 @@
 }
 
 .requiredStar {
-  color: #ff6100;
+  color: #ea002a;
   margin-left: 0.2rem;
 }
 
@@ -160,7 +160,7 @@
 
   &:focus {
     outline: none;
-    border-color: #ff6100;
+    border-color: #ea002a;
     box-shadow: 0 0 0 2px rgba(255, 97, 0, 0.15);
   }
 }
@@ -191,9 +191,9 @@
 .valuationBadge {
   position: absolute;
   right: 0.75rem;
-  background: rgba(255, 97, 0, 0.12);
+  background: rgba(234, 0, 42, 0.12);
   border: 1px solid rgba(255, 97, 0, 0.35);
-  color: #ff6100;
+  color: #ea002a;
   font-size: 0.72rem;
   font-weight: 700;
   padding: 0.2rem 0.5rem;
@@ -267,15 +267,15 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ff6100;
+    outline: 2px solid #ea002a;
   }
 }
 
 .submitButton {
   flex: 2;
   height: 44px;
-  background: #ff6100;
-  border: 1px solid #ff6100;
+  background: #ea002a;
+  border: 1px solid #ea002a;
   border-radius: 6px;
   color: #ffffff;
   font-size: 0.82rem;
@@ -290,7 +290,7 @@
   transition: background-color 0.15s ease, opacity 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #e05500;
+    background: #c40023;
   }
 
   &:disabled {

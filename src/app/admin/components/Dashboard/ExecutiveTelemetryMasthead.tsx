@@ -114,7 +114,7 @@ export function ExecutiveTelemetryMasthead({
       <div className={styles.topControlRow}>
         <div className={styles.identityGroup}>
           <h1 className={styles.deskTitle}>
-            Welcome back, {displayGreetingName} 👋
+            Welcome back, {displayGreetingName}
           </h1>
           <p className={styles.deskSubtitle}>
             Commercial operations, live pipeline, and cash velocity.
@@ -223,7 +223,7 @@ export function ExecutiveTelemetryMasthead({
           userName={displayGreetingName.toUpperCase()}
           balance={pipelineValue}
           dealCount={pipelineCount}
-          winRate={84}
+          winRate={null}
           periodLabel={periodLabel}
           cohort={cohort}
           financials={financials}
@@ -300,7 +300,7 @@ export function ExecutiveTelemetryMasthead({
             <span className={styles.ratioPill}>
               {pipelineValue && weightedPotential && pipelineValue > 0
                 ? `${((weightedPotential / pipelineValue) * 100).toFixed(1)}%`
-                : "36.0%"}
+                : "0.0%"}
             </span>
           </div>
           <div className={styles.primaryMetric}>
@@ -344,7 +344,7 @@ export function ExecutiveTelemetryMasthead({
                 <span className={styles.metricUnit}>Days</span>
               </>
             ) : (
-              "14 Days"
+              "— Days"
             )}
           </div>
           <div className={styles.cardFooter}>

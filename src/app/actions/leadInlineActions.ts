@@ -157,13 +157,19 @@ export async function updateLeadStatusInlineAction(
     }
 
     // 5. Execute atomic lead record status mutation
+    // Clear On-Hold revisit_date when moving into an active funnel stage.
     const nowIso = new Date().toISOString();
+    const updatePayload: Record<string, unknown> = {
+      status_id: targetStatus.id,
+      updated_at: nowIso,
+    };
+    if (targetStatus.name !== 'On Hold') {
+      updatePayload.revisit_date = null;
+    }
+
     const { error: updateError } = await supabase
       .from('leads')
-      .update({
-        status_id: targetStatus.id,
-        updated_at: nowIso,
-      })
+      .update(updatePayload)
       .eq('id', leadId);
 
     if (updateError) {
@@ -196,8 +202,10 @@ export async function updateLeadStatusInlineAction(
       console.warn('[AUDIT_LEDGER] Activity log advisory:', activityError.message);
     }
 
+    revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/admin/leads/${leadId}`);
     revalidatePath(`/admin/deals/${leadId}`);
 
@@ -365,8 +373,10 @@ export async function updateLeadPriorityInlineAction(
       console.warn('[AUDIT_LEDGER] Activity log advisory:', activityError.message);
     }
 
+    revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/admin/leads/${leadId}`);
     revalidatePath(`/admin/deals/${leadId}`);
 

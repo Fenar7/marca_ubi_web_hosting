@@ -164,3 +164,20 @@
     transition: none !important;
   }
 }
+
+/* Multi-Color Kanban Bucket Header Accents */
+.lane {
+  border-top: 3px solid #d8d8d4;
+  &[data-bucket="open"] {
+    border-top-color: #4f46e5;
+  }
+  &[data-bucket="potential"] {
+    border-top-color: #f97316;
+  }
+  &[data-bucket="converted"] {
+    border-top-color: #10b981;
+  }
+  &[data-bucket="lost"] {
+    border-top-color: #ea002a;
+  }
+}

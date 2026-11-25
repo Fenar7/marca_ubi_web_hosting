@@ -25,7 +25,6 @@ import {
   type InlineStatusOption,
 } from '@/app/admin/components/LeadsTable';
 import { QuickMetricsRibbon } from './components/QuickMetricsRibbon/QuickMetricsRibbon';
-import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
 import {
   BatchReassignModal,
@@ -80,6 +79,8 @@ export interface LeadsWorkspaceClientProps {
     overdueCount: number;
     totalPipelineValue: number;
   };
+  globalBucketCounts?: BucketCounts;
+  canViewFinancials?: boolean;
 }
 
 const VALID_BUCKETS: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
@@ -106,8 +107,10 @@ function LeadsWorkspaceContent({
   availableSources: initialSources,
   availableAssignees: initialAssignees,
   availableStatuses: initialStatuses,
-  userRole,
+  userRole = 'viewer',
   telemetryMetrics,
+  globalBucketCounts,
+  canViewFinancials = true,
 }: LeadsWorkspaceClientProps): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -136,8 +139,7 @@ function LeadsWorkspaceContent({
   const priorityParam = searchParams.get('priority');
   const stageParam = searchParams.get('stage');
 
-  // Deep-link query param resolution: supports both canonical ?id=<uuid> and legacy ?leadId=<uuid>
-  const leadIdParam = searchParams.get('id') || searchParams.get('leadId');
+
 
   const initialBucket: BucketTabId = VALID_BUCKETS.includes(bucketParam as BucketTabId)
     ? (bucketParam as BucketTabId)
@@ -150,9 +152,7 @@ function LeadsWorkspaceContent({
   const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
   const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
 
-  // Client 360 Slide-over Drawer State: hydrated from URL search parameter upon deep-link navigation
-  const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(leadIdParam);
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(Boolean(leadIdParam));
+
 
   // Multi-select batch operations state
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
@@ -198,59 +198,7 @@ function LeadsWorkspaceContent({
     lead: null,
   });
 
-  // Shallow URL Synchronizer for Client 360 drawer: preserves ?id=<uuid> for bookmarking & persistence
-  const handleOpenDrawer = useCallback((id: string) => {
-    setActiveDrawerLeadId(id);
-    setIsDrawerOpen(true);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('id') !== id && url.searchParams.get('leadId') !== id) {
-        url.searchParams.set('id', id);
-        url.searchParams.delete('leadId');
-        window.history.replaceState({}, '', url.pathname + url.search);
-      }
-    }
-  }, []);
 
-  const handleCloseDrawer = useCallback(() => {
-    setIsDrawerOpen(false);
-    setActiveDrawerLeadId(null);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      let changed = false;
-      if (url.searchParams.has('leadId')) {
-        url.searchParams.delete('leadId');
-        changed = true;
-      }
-      if (url.searchParams.has('id')) {
-        url.searchParams.delete('id');
-        changed = true;
-      }
-      if (url.searchParams.has('action')) {
-        url.searchParams.delete('action');
-        changed = true;
-      }
-      if (changed) {
-        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleOpenDrawerEvent = (e: Event): void => {
-      const customEvt = e as CustomEvent<{ leadId?: string; id?: string } | string>;
-      const id =
-        typeof customEvt.detail === 'string'
-          ? customEvt.detail
-          : customEvt.detail?.id || customEvt.detail?.leadId;
-      if (id) {
-        handleOpenDrawer(id);
-      }
-    };
-
-    window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
-    return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
-  }, [handleOpenDrawer]);
 
   /**
    * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
@@ -349,12 +297,7 @@ function LeadsWorkspaceContent({
     setSelectedPriority(searchParams.get('priority') || null);
     setSelectedStageId(searchParams.get('stage') || null);
 
-    const currentParamId = searchParams.get('id') || searchParams.get('leadId');
-    if (currentParamId && currentParamId !== activeDrawerLeadId) {
-      setActiveDrawerLeadId(currentParamId);
-      setIsDrawerOpen(true);
-    }
-  }, [searchParams, activeDrawerLeadId]);
+  }, [searchParams]);
 
   // Available sources list
   const availableSources = useMemo<FilterDropdownOption[]>(() => {
@@ -649,12 +592,13 @@ function LeadsWorkspaceContent({
     }
     setSelectedLeadIds(new Set());
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('popstate'));
+      router.refresh();
     }
   };
 
-  // Real-time record counts per bucket
+  // Use exact server-computed workspace bucket counts whenever available
   const counts = useMemo<BucketCounts>(() => {
+    if (globalBucketCounts) return globalBucketCounts;
     return {
       all: leads.length,
       open: leads.filter((l) => l.bucket === 'open').length,
@@ -663,7 +607,7 @@ function LeadsWorkspaceContent({
       lost: leads.filter((l) => l.bucket === 'lost').length,
       overdue: leads.filter(isLeadOverdue).length,
     };
-  }, [leads]);
+  }, [globalBucketCounts, leads]);
 
   // Quick Telemetry KPIs for the header ribbon
   const quickTelemetry = useMemo(() => {
@@ -764,7 +708,7 @@ function LeadsWorkspaceContent({
       );
       setSelectedLeadIds(new Set());
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('popstate'));
+        router.refresh();
       }
     },
     [resolvedStatuses, selectedLeadIds]
@@ -835,7 +779,7 @@ function LeadsWorkspaceContent({
       } else if (e.key === 'Enter') {
         if (focusedRowIndex >= 0 && focusedRowIndex < filteredLeads.length) {
           e.preventDefault();
-          handleOpenDrawer(filteredLeads[focusedRowIndex].id);
+          router.push(`/admin/leads/${filteredLeads[focusedRowIndex].id}`);
         }
       } else if (e.key === 'Escape') {
         if (selectedLeadIds.size > 0) {
@@ -851,7 +795,7 @@ function LeadsWorkspaceContent({
     filteredLeads,
     focusedRowIndex,
     handleToggleSelect,
-    handleOpenDrawer,
+    router,
     selectedLeadIds.size,
     handleClearSelection,
   ]);
@@ -996,6 +940,7 @@ function LeadsWorkspaceContent({
         activeTriageCount={quickTelemetry.activeTriageCount}
         overdueCount={quickTelemetry.overdueCount}
         totalPipelineValue={quickTelemetry.totalPipelineValue}
+        canViewFinancials={canViewFinancials}
       />
 
       <div className={styles.inboxControls}>
@@ -1072,6 +1017,18 @@ function LeadsWorkspaceContent({
           focusedRowIndex={focusedRowIndex}
           onStatusChange={handleInlineStatusChange}
           onPriorityChange={handleInlinePriorityChange}
+          availableAssignees={availableAssignees}
+          canViewFinancials={canViewFinancials}
+          onAssigneeChange={(leadId, newAssigneeId, newAssigneeName) => {
+            setLeads((prev) =>
+              prev.map((l) =>
+                l.id === leadId
+                  ? { ...l, assigned_to: newAssigneeId, assigned_to_name: newAssigneeName }
+                  : l
+              )
+            );
+            router.refresh();
+          }}
           userRole={userRole}
         />
       </div>
@@ -1097,17 +1054,7 @@ function LeadsWorkspaceContent({
         onSuccess={handleBatchStageSuccess}
       />
 
-      {/* Slide-over Client 360 Degree Dossier Drawer */}
-      <ClientDossierDrawer
-        leadId={activeDrawerLeadId}
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        onLeadUpdated={() => {
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('popstate'));
-          }
-        }}
-      />
+
 
       {/* Guarded Pipeline Stage Transition Modal (Negotiation, Lost, Converted, On Hold) */}
       {stageModalState.isOpen && stageModalState.leadId && stageModalState.targetStatus && (
@@ -1177,7 +1124,7 @@ function LeadsWorkspaceContent({
           onSuccess={() => {
             setConvertModalState({ isOpen: false, lead: null });
             if (typeof window !== 'undefined') {
-              window.dispatchEvent(new Event('popstate'));
+              router.refresh();
             }
           }}
         />

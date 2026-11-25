@@ -34,12 +34,12 @@ export interface LuxuryDonutCookieChartProps {
 }
 
 const LUXURY_PALETTE = [
-  "#111827", // Obsidian Ink (Dominant / Primary Service)
+  "#111111", // Obsidian Ink (Dominant / Primary Service)
   "#ea002a", // Marca Ubi Signature Crimson (Flagship Advisory)
-  "#2563eb", // Royal Navy (Design & Digital Architecture)
-  "#d97706", // Warm Amber (Brand Strategy)
-  "#64748b", // Slate Grey (Technology & Media)
-  "#94a3b8", // Soft Slate (Ancillary)
+  "#f97316", // Vibrant Flame Orange (Brand Experience)
+  "#4f46e5", // Deep Indigo (Design & Digital Architecture)
+  "#10b981", // Emerald Mint (Retainer & Ongoing)
+  "#d97706", // Warm Amber (Strategy & Advisory)
 ];
 
 export const LuxuryDonutCookieChart: React.FC<LuxuryDonutCookieChartProps> = ({

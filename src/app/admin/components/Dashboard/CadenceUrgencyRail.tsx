@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./CadenceUrgencyRail.module.scss";
@@ -36,6 +37,7 @@ export function CadenceUrgencyRail({
   onEmailAction,
   onSnoozeAction,
 }: CadenceUrgencyRailProps): React.ReactElement {
+  const router = useRouter();
   // Revenue Realization Target Math (Guarding against fabricated defaults)
   const isConvertedAvailable = convertedValue !== null;
   const realizedRevenue = convertedValue ?? 0;
@@ -252,16 +254,7 @@ export function CadenceUrgencyRail({
                       if (onCallAction) {
                         onCallAction({ id: item.id, name: item.name });
                       } else {
-                        window.dispatchEvent(
-                          new CustomEvent("open-lead-drawer", {
-                            detail: {
-                              leadId: item.leadId || item.id,
-                              id: item.id,
-                              tab: "activity",
-                              intent: "call",
-                            },
-                          })
-                        );
+                        router.push(`/admin/leads/${item.leadId || item.id}`);
                       }
                     }}
                     aria-label={`Call ${item.name}`}
@@ -288,16 +281,7 @@ export function CadenceUrgencyRail({
                       if (onEmailAction) {
                         onEmailAction({ id: item.id, name: item.name });
                       } else {
-                        window.dispatchEvent(
-                          new CustomEvent("open-lead-drawer", {
-                            detail: {
-                              leadId: item.leadId || item.id,
-                              id: item.id,
-                              tab: "activity",
-                              intent: "email",
-                            },
-                          })
-                        );
+                        router.push(`/admin/leads/${item.leadId || item.id}`);
                       }
                     }}
                     aria-label={`Email ${item.name}`}

@@ -14,8 +14,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
-import { getCrmDirectoryList } from '@/app/admin/lib/crmDirectory';
+import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import { normalizeEmail, normalizePhone, sanitizeHtml } from '@/app/lib/normalization';
+import { ROLE_DEFAULT_FEATURES } from '@/types/crm';
 import {
   createManualLeadSchema,
   updateLeadAssigneeSchema,
@@ -25,6 +26,8 @@ import {
   type UpdateLeadDetailsInput,
 } from '@/app/lib/lead-schemas';
 import type {
+  ClientWorkDeliveryStage,
+  ClientWorkHealthStatus,
   CrmUserRole,
   AssigneeOption,
   LeadActionResult,
@@ -119,6 +122,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
     const sanitizedName = sanitizeHtml(data.name) ?? data.name;
     const sanitizedCompany = sanitizeHtml(data.company);
     const sanitizedWebsite = sanitizeHtml(data.companyWebsite);
+    const sanitizedIndustry = sanitizeHtml(data.industry);
     const sanitizedNotes = sanitizeHtml(data.notes);
     const sanitizedBudget = sanitizeHtml(data.budgetBracket);
 
@@ -144,6 +148,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
         name: sanitizedName,
         company: sanitizedCompany,
         company_website: sanitizedWebsite,
+        industry: sanitizedIndustry,
         email: normalizedEmail,
         phone: normalizedPhone,
         preferred_channel: data.preferredChannel,
@@ -190,6 +195,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/analytics');
 
@@ -213,6 +219,32 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
  *
  * @returns {Promise<AssigneeOption[]>} List of active commercial personnel.
  */
+/**
+ * Returns active acquisition sources for manual lead creation and attribution selectors.
+ */
+export async function getActiveLeadSourcesAction(): Promise<Array<{ id: string; name: string; color_code: string | null }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) return [];
+
+  const { data, error } = await supabase
+    .from('lead_sources')
+    .select('id, name, color_code')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+
+  if (error || !data) return [];
+  return data.map((s) => ({
+    id: s.id,
+    name: s.name,
+    color_code: s.color_code ?? null,
+  }));
+}
+
 export async function getActiveTeamAssignees(): Promise<AssigneeOption[]> {
   const supabase = await createClient();
   const {
@@ -268,7 +300,7 @@ export async function getLeadDetails(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -285,6 +317,14 @@ export async function getLeadDetails(
         error: 'Account suspended: Inactive personnel cannot access commercial dossiers.',
       };
     }
+
+    const callerRole = (callerProfile.role as CrmUserRole) || 'viewer';
+    const rawFinancialPerm = (callerProfile.feature_permissions as Record<string, unknown> | null)
+      ?.can_view_financials;
+    const canViewFinancials =
+      typeof rawFinancialPerm === 'boolean'
+        ? rawFinancialPerm
+        : (ROLE_DEFAULT_FEATURES[callerRole]?.can_view_financials ?? false);
 
     const { data: leadRecord, error: leadError } = await supabase
       .from('leads')
@@ -316,8 +356,7 @@ export async function getLeadDetails(
         converted_at,
         updated_at,
         funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at),
-        lead_sources(id, name, color_code, is_active, created_at),
-        profiles:profiles!leads_assigned_to_fkey(id, full_name, role, avatar_url)
+        lead_sources(id, name, color_code, is_active, created_at)
       `)
       .eq('id', leadId)
       .maybeSingle();
@@ -329,15 +368,15 @@ export async function getLeadDetails(
       };
     }
 
-    if (callerProfile.role === 'sales_executive' && leadRecord.assigned_to !== user.id) {
+    if (callerRole === 'sales_executive' && leadRecord.assigned_to !== user.id) {
       return {
         success: false,
         error: 'Privilege Violation: Sales executives may only access deals assigned to their portfolio.',
       };
     }
 
-    // These reads share the authorized lead but do not depend on each other.
-    const [activitiesResult, statusesResult, staffResult] = await Promise.all([
+    // Parallelize dossier enrichments via security-barrier crm_team_directory so all roles see actor names.
+    const [activitiesResult, statusesResult, directoryRoster, linkedWorkResult] = await Promise.all([
       supabase
         .from('lead_activities')
         .select(`
@@ -347,8 +386,7 @@ export async function getLeadDetails(
           activity_type,
           description,
           metadata,
-          created_at,
-          profiles:profiles!lead_activities_actor_id_fkey(id, full_name, role, avatar_url)
+          created_at
         `)
         .eq('lead_id', leadId)
         .order('created_at', { ascending: false }),
@@ -359,54 +397,66 @@ export async function getLeadDetails(
         .eq('is_active', true)
         .order('sort_order', { ascending: true }),
 
+      getCrmDirectoryList(supabase),
+
       supabase
-        .from('profiles')
-        .select('id, full_name, email, role')
-        .eq('status', 'active')
-        .in('role', ['admin', 'sales_manager', 'sales_executive'])
-        .order('full_name', { ascending: true }),
+        .from('client_works')
+        .select('id, project_code, delivery_stage, health_status')
+        .eq('lead_id', leadId)
+        .maybeSingle(),
     ]);
     const { data: rawActivities } = activitiesResult;
     const { data: rawStatuses } = statusesResult;
-    const { data: rawStaff } = staffResult;
     for (const [source, result] of [
       ['activities', activitiesResult],
       ['stages', statusesResult],
-      ['staff', staffResult],
     ] as const) {
       if (result.error) console.error('[lead-details] Lookup failed', { source, code: result.error.code });
     }
 
+    const rosterById = new Map(directoryRoster.map((member) => [member.id, member]));
+    const missingIds = Array.from(
+      new Set([
+        ...(leadRecord.assigned_to ? [leadRecord.assigned_to] : []),
+        ...((rawActivities || []).map((act) => act.actor_id).filter(Boolean) as string[]),
+      ])
+    ).filter((id) => !rosterById.has(id));
+
+    const extraNamesById =
+      missingIds.length > 0 ? await getCrmDirectoryMap(supabase, missingIds) : new Map<string, string>();
+
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
-      const actProfile = act.profiles as {
-        id?: string;
-        full_name?: string;
-        role?: CrmUserRole;
-        avatar_url?: string | null;
-        email?: string | null;
-      } | null;
+      const actorMeta = act.actor_id ? rosterById.get(act.actor_id) : undefined;
+      const fallbackName = act.actor_id ? extraNamesById.get(act.actor_id) : undefined;
+      const resolvedName = actorMeta?.full_name || fallbackName || 'System Staff';
+      const resolvedRole = (actorMeta?.role as CrmUserRole) || 'viewer';
 
       return {
         id: act.id,
         lead_id: act.lead_id,
         actor_id: act.actor_id,
-        actor_name: actProfile?.full_name || 'System Staff',
-        actor_role: actProfile?.role || 'viewer',
+        actor_name: resolvedName,
+        actor_role: resolvedRole,
         activity_type: act.activity_type as LeadActivityType,
         description: act.description,
         metadata: (act.metadata as Record<string, unknown>) || {},
         created_at: act.created_at,
-        actor: actProfile
+        actor: act.actor_id
           ? {
-              id: actProfile.id || act.actor_id || '',
-              full_name: actProfile.full_name || 'System Staff',
-              role: (actProfile.role as CrmUserRole) || 'viewer',
-              avatar_url: actProfile.avatar_url || null,
-              email: actProfile.email || null,
+              id: act.actor_id,
+              full_name: resolvedName,
+              role: resolvedRole,
+              avatar_url: actorMeta?.avatar_url || null,
+              email: null,
             }
           : null,
       };
     });
+
+    const assigneeMeta = leadRecord.assigned_to ? rosterById.get(leadRecord.assigned_to) : undefined;
+    const assigneeFallbackName = leadRecord.assigned_to
+      ? extraNamesById.get(leadRecord.assigned_to)
+      : undefined;
 
     const lead: LeadWithRelations = {
       id: leadRecord.id,
@@ -421,11 +471,11 @@ export async function getLeadDetails(
       lead_source_id: leadRecord.lead_source_id,
       source_detail: leadRecord.source_detail,
       service_category: (leadRecord.service_category as ServiceCategory) || 'Web & Digital',
-      budget_bracket: leadRecord.budget_bracket,
+      budget_bracket: canViewFinancials ? leadRecord.budget_bracket : null,
       priority: (leadRecord.priority as LeadPriority) || 'Medium',
       status_id: leadRecord.status_id,
       assigned_to: leadRecord.assigned_to,
-      expected_value: Number(leadRecord.expected_value) || 0,
+      expected_value: canViewFinancials ? Number(leadRecord.expected_value) || 0 : 0,
       next_follow_up: leadRecord.next_follow_up,
       lost_reason: leadRecord.lost_reason,
       revisit_date: leadRecord.revisit_date,
@@ -437,7 +487,15 @@ export async function getLeadDetails(
       updated_at: leadRecord.updated_at,
       status: (leadRecord.funnel_statuses as unknown as FunnelStatus) || undefined,
       lead_source: (leadRecord.lead_sources as unknown as LeadSource) || undefined,
-      assignee: (leadRecord.profiles as unknown as Profile) || null,
+      assignee:
+        leadRecord.assigned_to && (assigneeMeta || assigneeFallbackName)
+          ? ({
+              id: leadRecord.assigned_to,
+              full_name: assigneeMeta?.full_name || assigneeFallbackName || 'Team Member',
+              role: (assigneeMeta?.role as CrmUserRole) || 'sales_executive',
+              avatar_url: assigneeMeta?.avatar_url || null,
+            } as unknown as Profile)
+          : null,
     };
 
     const availableStatuses: FunnelStatus[] = (rawStatuses || []).map((s) => ({
@@ -450,12 +508,23 @@ export async function getLeadDetails(
       created_at: s.created_at,
     }));
 
-    const availableAssignees: AssigneeOption[] = (rawStaff || []).map((p) => ({
-      id: p.id,
-      fullName: p.full_name,
-      email: p.email,
-      role: p.role as CrmUserRole,
-    }));
+    const availableAssignees: AssigneeOption[] = directoryRoster
+      .filter((p) => ['admin', 'sales_manager', 'sales_executive'].includes(p.role || ''))
+      .map((p) => ({
+        id: p.id,
+        fullName: p.full_name,
+        email: '',
+        role: (p.role as CrmUserRole) || 'sales_executive',
+      }));
+
+    const linkedWork = linkedWorkResult.data
+      ? {
+          id: linkedWorkResult.data.id,
+          project_code: linkedWorkResult.data.project_code,
+          delivery_stage: linkedWorkResult.data.delivery_stage as ClientWorkDeliveryStage,
+          health_status: linkedWorkResult.data.health_status as ClientWorkHealthStatus,
+        }
+      : null;
 
     const payload: LeadDetailPayload = {
       lead,
@@ -464,6 +533,8 @@ export async function getLeadDetails(
       availableAssignees,
       funnelStatuses: availableStatuses,
       teamAssignees: availableAssignees,
+      linkedWork,
+      canViewFinancials,
     };
 
     return {
@@ -643,8 +714,11 @@ export async function updateLeadAssignee(
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/team');
+    revalidatePath(`/admin/leads/${data.leadId}`);
+    revalidatePath(`/admin/deals/${data.leadId}`);
 
     return {
       success: true,
@@ -807,8 +881,11 @@ export async function updateLeadDealParameters(
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/analytics');
+    revalidatePath(`/admin/leads/${data.leadId}`);
+    revalidatePath(`/admin/deals/${data.leadId}`);
 
     return {
       success: true,
@@ -882,6 +959,9 @@ export async function clearLeadFollowUp(
     revalidatePath('/admin');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return { success: true, id: leadId };
   } catch (err: unknown) {
@@ -1070,6 +1150,9 @@ export async function convertInboundLeadToDealAction(
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -1258,6 +1341,9 @@ export async function updateLeadDetailsAction(
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${data.leadId}`);
+    revalidatePath(`/admin/deals/${data.leadId}`);
 
     return {
       success: true,

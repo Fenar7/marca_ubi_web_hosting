@@ -12,7 +12,8 @@
  */
 
 import React, { useState, useEffect, useTransition, useCallback, useRef } from 'react';
-import { createManualLead, getActiveTeamAssignees } from '@/app/actions/leads';
+import { createManualLead, getActiveLeadSourcesAction, getActiveTeamAssignees } from '@/app/actions/leads';
+import type { LeadSourceOption } from '@/app/lib/lead-schemas';
 import {
   createManualLeadSchema,
   SERVICE_CATEGORIES,
@@ -54,6 +55,8 @@ export function NewLeadModal({
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [leadSourceId, setLeadSourceId] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [preferredChannel, setPreferredChannel] = useState<PreferredChannel>('Phone');
@@ -64,8 +67,9 @@ export function NewLeadModal({
   const [assignedTo, setAssignedTo] = useState<string>(currentUser.id);
   const [notes, setNotes] = useState('');
 
-  // Assignee options loaded from database
+  // Assignee & source options loaded from database
   const [assigneeOptions, setAssigneeOptions] = useState<AssigneeOption[]>([]);
+  const [sourceOptions, setSourceOptions] = useState<LeadSourceOption[]>([]);
 
   // Validation & Error State
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -74,15 +78,16 @@ export function NewLeadModal({
   // Unsaved changes modal state
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
 
-  // Fetch active team assignees when opening modal with error fallback
+  // Fetch active team assignees & lead sources concurrently when opening modal
   useEffect(() => {
     if (isOpen) {
-      getActiveTeamAssignees()
-        .then((options) => {
+      Promise.all([getActiveTeamAssignees(), getActiveLeadSourcesAction()])
+        .then(([options, sources]) => {
           setAssigneeOptions(options);
+          setSourceOptions(sources);
         })
         .catch((err) => {
-          console.error('[ASSIGN_FETCH_ERROR] Failed to load assignees:', err);
+          console.error('[ASSIGN_FETCH_ERROR] Failed to load form options:', err);
           setAssigneeOptions([
             { id: currentUser.id, fullName: currentUser.name || 'Current User', role: currentUser.role, email: currentUser.email || '' },
           ]);
@@ -96,6 +101,8 @@ export function NewLeadModal({
       setName('');
       setCompany('');
       setCompanyWebsite('');
+      setIndustry('');
+      setLeadSourceId('');
       setEmail('');
       setPhone('');
       setPreferredChannel('Phone');
@@ -203,6 +210,8 @@ export function NewLeadModal({
       name,
       company: company || undefined,
       companyWebsite: companyWebsite || undefined,
+      industry: industry || undefined,
+      leadSourceId: leadSourceId || undefined,
       email: email || undefined,
       phone: phone || undefined,
       preferredChannel,
@@ -280,7 +289,7 @@ export function NewLeadModal({
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>Commercial Intake</span>
             <h2 id="new-lead-modal-title" className={styles.modalTitle}>
-              New Prospective Commercial Lead.
+              New Prospective Commercial Lead
             </h2>
           </div>
           <button
@@ -373,6 +382,21 @@ export function NewLeadModal({
               {formErrors.company && (
                 <p className={styles.fieldError}>{formErrors.company}</p>
               )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-lead-industry">
+                Industry / Sector
+              </label>
+              <input
+                id="modal-lead-industry"
+                type="text"
+                className={styles.input}
+                placeholder="e.g. FinTech, Real Estate, Luxury Retail"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                disabled={isPending}
+              />
             </div>
 
             <div className={styles.formGroup}>
@@ -577,6 +601,26 @@ export function NewLeadModal({
                 </select>
               )}
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="modal-lead-source">
+              Acquisition Source
+            </label>
+            <select
+              id="modal-lead-source"
+              className={styles.select}
+              value={leadSourceId}
+              onChange={(e) => setLeadSourceId(e.target.value)}
+              disabled={isPending}
+            >
+              <option value="">Default Source (Auto-Attributed)</option>
+              {sourceOptions.map((src) => (
+                <option key={src.id} value={src.id}>
+                  {src.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Section 3: Notes & Engagement Brief */}

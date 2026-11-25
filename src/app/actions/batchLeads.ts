@@ -10,6 +10,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
+import { getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import {
   batchUpdateLeadStatusSchema,
   batchReassignLeadsSchema,
@@ -71,6 +72,8 @@ export async function batchUpdateLeadStatusAction(
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/works');
     revalidatePath('/admin/analytics');
 
     return {
@@ -138,6 +141,8 @@ export async function batchReassignLeadsAction(
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath('/admin/team');
 
     return {
@@ -221,9 +226,9 @@ export async function exportLeadsCsvAction(
         next_follow_up,
         created_at,
         converted_at,
+        assigned_to,
         funnel_statuses(name, bucket),
-        lead_sources(name),
-        profiles!leads_assigned_to_fkey(full_name)
+        lead_sources(name)
       `)
       .or(
         'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true'
@@ -275,12 +280,17 @@ export async function exportLeadsCsvAction(
       'Converted Date',
     ];
 
+    const assigneeIds = Array.from(
+      new Set(rows.map((r) => r.assigned_to).filter(Boolean) as string[])
+    );
+    const ownerNameById = await getCrmDirectoryMap(supabase, assigneeIds);
+
     const lines: string[] = [headers.map((h) => dashboardCsvCell(h)).join(',')];
 
     for (const row of rows) {
       const statusData = row.funnel_statuses as { name?: string; bucket?: string } | null;
       const sourceData = row.lead_sources as { name?: string } | null;
-      const ownerData = row.profiles as { full_name?: string } | null;
+      const ownerName = row.assigned_to ? ownerNameById.get(row.assigned_to) : null;
 
       const cells = [
         dashboardCsvCell(row.lead_id || ''),
@@ -292,7 +302,7 @@ export async function exportLeadsCsvAction(
         dashboardCsvCell(row.service_category || ''),
         dashboardCsvCell(statusData?.name || ''),
         dashboardCsvCell(statusData?.bucket || ''),
-        dashboardCsvCell(ownerData?.full_name || 'Unassigned'),
+        dashboardCsvCell(ownerName || 'Unassigned'),
         dashboardCsvCell(sourceData?.name || 'Direct / Organic'),
         dashboardCsvCell(row.priority || ''),
         dashboardCsvCell(

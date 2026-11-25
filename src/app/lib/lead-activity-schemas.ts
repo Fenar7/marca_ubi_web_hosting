@@ -23,6 +23,7 @@ export const leadActivityInputSchema = z.object({
   activityType: z.enum(
     [
       'call_logged',
+      'email_sent',
       'whatsapp_sent',
       'meeting_notes',
       'meeting_held',

@@ -28,7 +28,7 @@ export type { SplineDataPoint };
 
 export interface EarningOverviewSplineCardProps {
   totalValue?: number | null;
-  growthPercentage?: number;
+  growthPercentage?: number | null;
   timeframeLabel?: string;
   points?: SplineDataPoint[] | DynamicRevenueSplinePoint[];
   financials?: boolean;
@@ -37,6 +37,7 @@ export interface EarningOverviewSplineCardProps {
 
 export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps> = ({
   totalValue = null,
+  growthPercentage: externalGrowth = null,
   financials = true,
   points: incomingPoints,
   onTimeframeChange,
@@ -87,8 +88,10 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
     }
   };
 
-  // Dynamically compute spline data for the selected cadence or real database points
+  // Resolve real spline telemetry without fabricating synthetic percentages
   const { points, activeTotal, growthPercentage } = useMemo(() => {
+    const resolvedDelta =
+      typeof externalGrowth === "number" && Number.isFinite(externalGrowth) ? externalGrowth : null;
     if (incomingPoints && incomingPoints.length > 0) {
       const realPoints: SplineDataPoint[] = incomingPoints.map((p) => {
         const cashVal = "cashVal" in p ? p.cashVal : p.value;
@@ -103,18 +106,18 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
       });
       return {
         points: realPoints,
-        activeTotal: typeof totalValue === "number" && totalValue > 0 ? totalValue : realPoints.reduce((s, p) => s + p.value, 0),
-        growthPercentage: 18,
+        activeTotal: typeof totalValue === "number" ? totalValue : realPoints.reduce((s, p) => s + p.value, 0),
+        growthPercentage: resolvedDelta,
       };
     }
     const rawTotal = typeof totalValue === "number" ? totalValue : 0;
     const computed = computeSplinePointsForCadence(selectedTimeframe, rawTotal);
     return {
       points: computed.points,
-      activeTotal: computed.totalValue,
-      growthPercentage: computed.growthPercentage,
+      activeTotal: rawTotal,
+      growthPercentage: resolvedDelta,
     };
-  }, [selectedTimeframe, totalValue, incomingPoints]);
+  }, [selectedTimeframe, totalValue, incomingPoints, externalGrowth]);
 
   // Clamp activeIndex within points bounds to prevent runtime coordinate crashes
   const safeActiveIndex = Math.min(activeIndex, Math.max(0, points.length - 1));
@@ -272,9 +275,14 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
       {/* Hero Metric & Emerald Growth Pill */}
       <div className={styles.heroRow}>
         <span className={styles.heroValuation}>{displayTotal}</span>
-        <span className={styles.trendBadge} aria-label={`${growthPercentage}% increase this period`}>
-          +{growthPercentage}% ↑
-        </span>
+        {growthPercentage !== null && (
+          <span
+            className={styles.trendBadge}
+            aria-label={`${growthPercentage >= 0 ? "+" : ""}${growthPercentage}% change this period`}
+          >
+            {growthPercentage > 0 ? `+${growthPercentage}% ↑` : growthPercentage < 0 ? `${growthPercentage}% ↓` : "0.0%"}
+          </span>
+        )}
       </div>
 
       {/* Interactive Spline Chart */}
@@ -303,12 +311,12 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
             <defs>
               {/* Restored Electric Blue Gradient Area Fill */}
               <linearGradient id={`earning-gradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.20" />
-                <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.06" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
+                <stop offset="0%" stopColor="#f97316" stopOpacity="0.20" />
+                <stop offset="60%" stopColor="#fb923c" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#fb923c" stopOpacity="0.00" />
               </linearGradient>
               <filter id={`beacon-glow-${gradientId}`} x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2563eb" floodOpacity="0.4" />
+                <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#f97316" floodOpacity="0.4" />
               </filter>
             </defs>
 
@@ -320,7 +328,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
               <path
                 d={linePath}
                 fill="none"
-                stroke="#2563eb"
+                stroke="#f97316"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -334,7 +342,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
                 y1={activeCoord.y}
                 x2={activeCoord.x}
                 y2={baselineY}
-                stroke="#93c5fd"
+                stroke="#fdba74"
                 strokeWidth="1.5"
                 strokeDasharray="3 3"
               />
@@ -347,7 +355,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
                   cx={activeCoord.x}
                   cy={activeCoord.y}
                   r="8"
-                  fill="#2563eb"
+                  fill="#f97316"
                   fillOpacity="0.18"
                 />
                 <circle
@@ -355,7 +363,7 @@ export const EarningOverviewSplineCard: React.FC<EarningOverviewSplineCardProps>
                   cy={activeCoord.y}
                   r="4.5"
                   fill="#ffffff"
-                  stroke="#2563eb"
+                  stroke="#f97316"
                   strokeWidth="2.5"
                   filter={`url(#beacon-glow-${gradientId})`}
                 />

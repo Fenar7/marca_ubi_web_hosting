@@ -14,9 +14,10 @@ import Link from 'next/link';
 import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
-import { ROLE_DEFAULT_TABS, type CrmUserRole, type LeadPriority } from '@/types/crm';
+import { ROLE_DEFAULT_FEATURES, ROLE_DEFAULT_TABS, type CrmUserRole, type LeadPriority } from '@/types/crm';
 import { getUtcDayWindow, parseFollowUpPage, parseFollowUpQueue, type FollowUpQueue } from '@/app/admin/lib/followUpQueue';
-import { getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
+import { foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
+import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { TaskCard, type TaskLeadItem } from './components/TaskCard';
 import styles from './tasks.module.scss';
@@ -82,25 +83,39 @@ async function countQueue(
   }
 }
 
-/** Calculates total at-risk pipeline monetary valuation across all overdue follow-ups. */
+/** Calculates total at-risk pipeline monetary valuation across all overdue follow-ups via pagination. */
 async function fetchOverdueExposure(
   supabase: Awaited<ReturnType<typeof createClient>>,
   start: string,
-  today: string
-): Promise<number> {
+  today: string,
+  canViewFinancials: boolean
+): Promise<number | null> {
+  if (!canViewFinancials) return null;
   try {
-    const { data, error } = await supabase
-      .from('leads')
-      .select('expected_value, funnel_statuses!inner(bucket)')
-      .in('funnel_statuses.bucket', ['open', 'potential'])
-      .or(`and(or(revisit_date.is.null,revisit_date.lte.${today}),or(${SYNTHETIC_EXCLUSION}))`)
-      .not('next_follow_up', 'is', null)
-      .lt('next_follow_up', start);
-
-    if (error || !data) return 0;
-    return data.reduce((sum, row) => sum + (Number(row.expected_value) || 0), 0);
+    const summary = await foldDashboardPages<{ expected_value?: number | string }, { total: number }>(
+      async (from, to) => {
+        const res = await supabase
+          .from('leads')
+          .select('id, expected_value, funnel_statuses!inner(bucket)')
+          .in('funnel_statuses.bucket', ['open', 'potential'])
+          .or(`and(or(revisit_date.is.null,revisit_date.lte.${today}),or(${SYNTHETIC_EXCLUSION}))`)
+          .not('next_follow_up', 'is', null)
+          .lt('next_follow_up', start)
+          .order('id')
+          .range(from, to);
+        return {
+          data: res.data as unknown as Array<{ expected_value?: number | string }> | null,
+          error: res.error,
+        };
+      },
+      { total: 0 },
+      (acc, row) => {
+        acc.total += Number(row.expected_value) || 0;
+      }
+    );
+    return summary ? summary.total : null;
   } catch {
-    return 0;
+    return null;
   }
 }
 
@@ -193,7 +208,7 @@ export default async function AdminTasksPage({
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, status, allowed_tabs')
+    .select('role, status, allowed_tabs, feature_permissions')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -211,9 +226,17 @@ export default async function AdminTasksPage({
     : Boolean(ROLE_DEFAULT_TABS[role]?.tasks));
   if (!hasTasksAccess) redirect('/admin?error=unauthorized_role_access');
 
+  const rawFinancialPerm = (profile.feature_permissions as Record<string, unknown> | null)
+    ?.can_view_financials;
+  const canViewFinancials =
+    typeof rawFinancialPerm === 'boolean'
+      ? rawFinancialPerm
+      : Boolean(ROLE_DEFAULT_FEATURES[role]?.can_view_financials);
+  const canAssign = role === 'admin' || role === 'sales_manager';
+
   const { start, end, date: today } = getUtcDayWindow(new Date());
 
-  // Waterfall Elimination: Execute all queue counts, exposure metrics, lead rows, and directory lookup in parallel
+  // Waterfall Elimination: Execute queue counts, paginated overdue exposure, SLA settings, lead rows, and directory in parallel
   const [
     overdueCount,
     todayCount,
@@ -222,15 +245,27 @@ export default async function AdminTasksPage({
     overdueExposure,
     leadsResult,
     ownerNameById,
+    teamDirectory,
+    slaSettingsResult,
   ] = await Promise.all([
     countQueue(supabase, 'overdue', start, end, today),
     countQueue(supabase, 'today', start, end, today),
     countQueue(supabase, 'upcoming', start, end, today),
     countQueue(supabase, 'unassigned', start, end, today),
-    fetchOverdueExposure(supabase, start, today),
+    fetchOverdueExposure(supabase, start, today, canViewFinancials),
     fetchQueueLeads(supabase, queue, page, start, end, today),
     getCrmDirectoryMap(supabase),
+    canAssign ? getCrmDirectoryList(supabase, ['admin', 'sales_manager', 'sales_executive']) : Promise.resolve([]),
+    supabase.from('agency_settings').select('lead_response_sla_minutes, followup_grace_period_hours').limit(1).maybeSingle(),
   ]);
+
+  const teamAssignees = teamDirectory.map((m) => ({ id: m.id, full_name: m.full_name }));
+  const slaMinutes = slaSettingsResult.data?.lead_response_sla_minutes ?? 60;
+  const graceHours = slaSettingsResult.data?.followup_grace_period_hours ?? 4;
+  const slaDisplay =
+    slaMinutes >= 60
+      ? `${(slaMinutes / 60).toFixed(slaMinutes % 60 === 0 ? 0 : 1)}h First-Touch · ${graceHours}h Grace`
+      : `${slaMinutes}m First-Touch · ${graceHours}h Grace`;
 
   const queueCounts: QueueCount[] = [overdueCount, todayCount, upcomingCount, unassignedCount];
   const { data: rawLeads, error: leadsError } = leadsResult;
@@ -253,7 +288,7 @@ export default async function AdminTasksPage({
     email: lead.email,
     preferred_channel: lead.preferred_channel || 'Email',
     priority: (lead.priority as LeadPriority) || 'Medium',
-    expected_value: Number(lead.expected_value) || 0,
+    expected_value: canViewFinancials ? Number(lead.expected_value) || 0 : 0,
     next_follow_up: lead.next_follow_up,
     revisit_date: lead.revisit_date,
     assigned_to: lead.assigned_to,
@@ -313,6 +348,7 @@ export default async function AdminTasksPage({
               <Link
                 key={key}
                 href={pageHref(key, 1)}
+                data-queue={key}
                 className={`${styles.queueTab} ${isSelected ? styles.queueTabActive : ''}`}
                 aria-current={isSelected ? 'page' : undefined}
               >
@@ -333,14 +369,24 @@ export default async function AdminTasksPage({
 
           <div className={styles.kpiCard}>
             <span className={styles.kpiLabel}>At-Risk Overdue Exposure</span>
-            <span className={styles.kpiValue}>{formatCrmCurrency(overdueExposure)}</span>
-            <span className={styles.kpiHint}>Valuation tied to overdue touchpoints</span>
+            <span className={styles.kpiValue}>
+              {canViewFinancials
+                ? overdueExposure !== null
+                  ? formatCrmCurrency(overdueExposure)
+                  : '—'
+                : 'Restricted'}
+            </span>
+            <span className={styles.kpiHint}>
+              {canViewFinancials
+                ? 'Paginated total valuation tied to overdue touchpoints'
+                : 'Financial figures restricted by workspace role policy'}
+            </span>
           </div>
 
           <div className={styles.kpiCard}>
-            <span className={styles.kpiLabel}>Turnaround Standard</span>
-            <span className={styles.kpiValue}>Sub-24h Target SLA</span>
-            <span className={styles.kpiHint}>Institutional cadence benchmark</span>
+            <span className={styles.kpiLabel}>Agency Turnaround SLA</span>
+            <span className={styles.kpiValue}>{slaDisplay}</span>
+            <span className={styles.kpiHint}>Configured live via Agency Settings</span>
           </div>
         </div>
 
@@ -367,9 +413,11 @@ export default async function AdminTasksPage({
               <div>
                 <h3>{totalCount === 0 ? `No ${QUEUES[queue].label.toLowerCase()} follow-ups` : 'No records on this page'}</h3>
                 <p>
-                  {totalCount === 0
-                    ? 'There are no scheduled client touchpoints in this time range.'
-                    : 'Return to the first page or try another queue.'}
+                  {queue === 'unassigned' && role === 'sales_executive'
+                    ? 'Unassigned inbound triage is restricted to Administrators and Sales Managers.'
+                    : totalCount === 0
+                      ? 'There are no scheduled client touchpoints in this time range.'
+                      : 'Return to the first page or try another queue.'}
                 </p>
               </div>
               {page > 1 && <Link href={pageHref(queue, 1)}>Return to first page</Link>}
@@ -390,6 +438,9 @@ export default async function AdminTasksPage({
                     lead={lead}
                     isUrgent={queue === 'overdue'}
                     allowCompletion={role !== 'viewer'}
+                    canViewFinancials={canViewFinancials}
+                    canAssign={canAssign}
+                    teamAssignees={teamAssignees}
                   />
                 ))}
               </ol>

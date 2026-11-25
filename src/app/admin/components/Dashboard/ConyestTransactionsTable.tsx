@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewQueue } from "@/app/admin/lib/dashboardContracts";
 import type { OverviewRecord } from "./OverviewWorkspace";
@@ -62,6 +63,7 @@ export function ConyestTransactionsTable({
   canTasks = true,
   financials = true,
 }: ConyestTransactionsTableProps): React.ReactElement {
+  const router = useRouter();
   // Convert CRM OverviewRecords into hydrated TransactionRows
   const rows: TransactionRow[] =
     records && records.length > 0
@@ -121,15 +123,7 @@ export function ConyestTransactionsTable({
       : [];
 
   const handleRowClick = (row: TransactionRow): void => {
-    if (row.href) {
-      window.location.href = row.href;
-    } else {
-      window.dispatchEvent(
-        new CustomEvent("open-lead-drawer", {
-          detail: { leadId: row.id, id: row.id },
-        }),
-      );
-    }
+    router.push(row.href || `/admin/leads/${row.id}`);
   };
 
   const getStatusBadgeClass = (status: TransactionStatus): string => {

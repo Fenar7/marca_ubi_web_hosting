@@ -81,6 +81,12 @@ export const createManualLeadSchema = z
       .max(255, { message: 'Website URL must not exceed 255 characters' })
       .optional()
       .or(z.literal('')),
+    industry: z
+      .string()
+      .trim()
+      .max(100, { message: 'Industry must not exceed 100 characters' })
+      .optional()
+      .or(z.literal('')),
     email: z
       .string()
       .trim()
@@ -158,6 +164,12 @@ export const createManualLeadSchema = z
 export type CreateManualLeadInput = z.infer<typeof createManualLeadSchema>;
 
 export type { AssigneeOption, LeadActionResult } from '@/types/crm';
+
+export interface LeadSourceOption {
+  id: string;
+  name: string;
+  color_code: string | null;
+}
 
 /**
  * Omnichannel touchpoint activity types supported by the fast logger.

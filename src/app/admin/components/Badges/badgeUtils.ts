@@ -35,7 +35,7 @@ export interface OverdueCalculationResult {
  * - Leads in 'On Hold' status are suppressed while CURRENT_DATE < revisit_date.
  * - Tiers:
  *   - < 24 Hours: 'amber' (#f59e0b) -> "Overdue: Due Xh ago"
- *   - 24 to 72 Hours: 'orange' (#ff6100) -> "Urgent: Due Xd ago"
+ *   - 24 to 72 Hours: 'orange' (#f97316) -> "Urgent: Due Xd ago"
  *   - > 72 Hours: 'red_pulse' (#ef4444) -> "Critical: Xd Overdue"
  *
  * @param {string | null | undefined} nextFollowUp - Scheduled follow-up ISO string.
@@ -148,7 +148,7 @@ export function getOverdueBadgeTheme(tier: OverdueTier): {
       };
     case 'orange':
       return {
-        colorCode: '#ff6100',
+        colorCode: '#f97316',
         bgCode: 'rgba(255, 97, 0, 0.14)',
         borderColor: 'rgba(255, 97, 0, 0.35)',
       };

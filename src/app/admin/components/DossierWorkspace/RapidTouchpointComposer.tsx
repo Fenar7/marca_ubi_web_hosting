@@ -15,7 +15,7 @@ import { logLeadActivityAction } from '@/app/actions/leadActivityActions';
 import type { LeadActivityWithActor, LeadActivityType } from '@/types/crm';
 import styles from './LeadDossierWorkspace.module.scss';
 
-export type TouchpointTab = 'call' | 'whatsapp' | 'meeting' | 'note';
+export type TouchpointTab = 'call' | 'whatsapp' | 'email' | 'meeting' | 'note';
 
 export interface RapidTouchpointComposerProps {
   /** Database primary key UUID of the commercial lead */
@@ -24,6 +24,8 @@ export interface RapidTouchpointComposerProps {
   onActivityLogged: (activity: LeadActivityWithActor) => void;
   /** Optional custom class name */
   className?: string;
+  /** Disable logging controls for read-only roles */
+  readOnly?: boolean;
 }
 
 const CALL_OUTCOMES = [
@@ -61,6 +63,7 @@ export function RapidTouchpointComposer({
   leadId,
   onActivityLogged,
   className,
+  readOnly = false,
 }: RapidTouchpointComposerProps): React.ReactElement {
   const [activeTab, setActiveTab] = useState<TouchpointTab>('call');
   const [isPending, startTransition] = useTransition();
@@ -77,6 +80,10 @@ export function RapidTouchpointComposer({
   const [whatsAppType, setWhatsAppType] = useState<typeof WHATSAPP_TYPES[number]>('Follow-up');
   const [whatsAppNotes, setWhatsAppNotes] = useState<string>('');
 
+  // Email state
+  const [emailSubject, setEmailSubject] = useState<string>('');
+  const [emailNotes, setEmailNotes] = useState<string>('');
+
   // Meeting state
   const [meetingType, setMeetingType] = useState<typeof MEETING_TYPES[number]>('Executive Discovery');
   const [meetingAttendees, setMeetingAttendees] = useState<string>('');
@@ -90,6 +97,8 @@ export function RapidTouchpointComposer({
       ? callNotes
       : activeTab === 'whatsapp'
       ? whatsAppNotes
+      : activeTab === 'email'
+      ? emailNotes
       : activeTab === 'meeting'
       ? meetingNotes
       : internalNote;
@@ -120,6 +129,12 @@ export function RapidTouchpointComposer({
       activityType = 'whatsapp_sent';
       description = whatsAppNotes.trim();
       metadata.message_category = whatsAppType;
+    } else if (activeTab === 'email') {
+      activityType = 'email_sent';
+      description = emailNotes.trim();
+      if (emailSubject.trim()) {
+        metadata.subject = emailSubject.trim();
+      }
     } else if (activeTab === 'meeting') {
       activityType = 'meeting_notes';
       description = meetingNotes.trim();
@@ -146,6 +161,10 @@ export function RapidTouchpointComposer({
           // Clear active form field
           if (activeTab === 'call') setCallNotes('');
           else if (activeTab === 'whatsapp') setWhatsAppNotes('');
+          else if (activeTab === 'email') {
+            setEmailSubject('');
+            setEmailNotes('');
+          }
           else if (activeTab === 'meeting') {
             setMeetingNotes('');
             setMeetingAttendees('');
@@ -180,6 +199,12 @@ export function RapidTouchpointComposer({
         </h2>
       </div>
 
+      {readOnly ? (
+        <div className={styles.briefEmptyBanner} style={{ padding: 14 }}>
+          Read-only workspace access. Activity logging is disabled for Viewer accounts.
+        </div>
+      ) : (
+        <>
       {/* 1. Omnichannel Tabs */}
       <div className={styles.composerTabsRow} role="tablist" aria-label="Touchpoint logging channels">
         <button
@@ -212,6 +237,23 @@ export function RapidTouchpointComposer({
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
           </svg>
           <span>WhatsApp</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'email'}
+          className={`${styles.composerTabBtn} ${activeTab === 'email' ? styles.activeTab : ''}`}
+          onClick={() => {
+            setActiveTab('email');
+            setErrorMessage(null);
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          <span>Email</span>
         </button>
 
         <button
@@ -339,6 +381,33 @@ export function RapidTouchpointComposer({
           </>
         )}
 
+        {/* Email Fields */}
+        {activeTab === 'email' && (
+          <>
+            <div className={styles.composerField}>
+              <label className={styles.fieldLabel}>Email Subject</label>
+              <input
+                type="text"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="e.g. Updated commercial scope & timeline"
+                className={styles.composerSelect}
+              />
+            </div>
+
+            <div className={styles.composerField}>
+              <label className={styles.fieldLabel}>Email Summary</label>
+              <textarea
+                value={emailNotes}
+                onChange={(e) => setEmailNotes(e.target.value)}
+                placeholder="Summarize email thread, attachments shared, or client reply..."
+                className={styles.composerTextarea}
+                rows={3}
+              />
+            </div>
+          </>
+        )}
+
         {/* Tab 3: Meeting Fields */}
         {activeTab === 'meeting' && (
           <>
@@ -424,11 +493,13 @@ export function RapidTouchpointComposer({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 14, height: 14 }}>
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>Log {activeTab === 'call' ? 'Call' : activeTab === 'whatsapp' ? 'WhatsApp' : activeTab === 'meeting' ? 'Meeting' : 'Note'}</span>
+              <span>Log {activeTab === 'call' ? 'Call' : activeTab === 'whatsapp' ? 'WhatsApp' : activeTab === 'email' ? 'Email' : activeTab === 'meeting' ? 'Meeting' : 'Note'}</span>
             </>
           )}
         </button>
       </form>
+        </>
+      )}
     </div>
   );
 }

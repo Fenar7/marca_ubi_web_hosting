@@ -232,10 +232,10 @@ export function BatchReassignModal({
           <div className={styles.headerTitleGroup}>
             <span className={styles.eyebrow}>Workload Rebalancing</span>
             <h2 id="batch-reassign-modal-title" className={styles.modalTitle}>
-              Reassign Active Pipeline Leads.
+              Batch Reassign Accounts
             </h2>
             <p className={styles.modalSubtitle}>
-              Transfer stalled prospect accounts to active representatives to prevent deal stagnation.
+              Transfer selected accounts to an active team representative with full audit logging.
             </p>
           </div>
           <button

@@ -27,9 +27,9 @@ export interface LuxuryVirtualCardProps {
 export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   userName = "MARCA UBI DESK",
   balance = null,
-  dealCount = 39,
-  winRate = 84,
-  periodLabel = "Q4 2026",
+  dealCount = 0,
+  winRate = null,
+  periodLabel = "Last 30 Days",
   cohort,
   financials = true,
 }) => {
@@ -40,7 +40,9 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   const resolvedWinRate =
     cohort && cohort.eligible > 0
       ? Math.round((cohort.won / cohort.eligible) * 100)
-      : winRate;
+      : typeof winRate === "number"
+        ? winRate
+        : null;
 
   return (
     <article
@@ -99,7 +101,9 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
         </div>
         <div className={styles.metaChip}>
           <span className={styles.metaLabel}>WIN RATE</span>
-          <span className={styles.metaValue}>{resolvedWinRate}%</span>
+          <span className={styles.metaValue}>
+            {resolvedWinRate !== null ? `${resolvedWinRate}%` : "--"}
+          </span>
         </div>
         <div
           className={`${styles.metaChip} ${styles.interactiveChip}`}

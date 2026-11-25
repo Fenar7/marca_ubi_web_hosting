@@ -5,7 +5,7 @@
  *              - Anti-glare light canvas foundation (var(--admin-canvas-bg, #f7f8fa))
  *              - Crisp pure white card surfaces (var(--admin-card-bg, #ffffff)) with 1px hairline border
  *              - 7:5 asymmetric operational grid (desktop) collapsing to a fluid stack (< 768px)
- *              - Signature Accordion Lemon Pill primary action (#eefb87) with high-contrast charcoal border
+ *              - Signature Accordion Lemon Pill primary action (#ea002a) with high-contrast charcoal border
  *              - Zero text truncation on contact coordinates (emails, phones, domains)
  *              - Single-line duration buttons with grid-template-columns: repeat(5, 1fr)
  *              - Light Notion-callout aesthetic for Original Ingestion Briefs and Executive Deal Notes
@@ -27,7 +27,7 @@ $surface-callout: var(--admin-surface-muted, #f8fafc);
 $border-hairline: 1px solid var(--admin-border-default, #e2e5ea);
 $border-subtle: 1px solid var(--admin-border-subtle, #eef0f3);
 $border-strong: 1px solid var(--admin-border-strong, #1f242f);
-$brand-accent: var(--admin-accent-brand, #ff6100);
+$brand-accent: var(--admin-accent-brand, #ea002a);
 
 $text-primary: var(--admin-text-primary, #1f242f);
 $text-secondary: var(--admin-text-secondary, #525965);
@@ -304,8 +304,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   height: 44px;
   min-height: 44px;
   padding: 0 1.5rem;
-  background-color: #111111;
-  border: 1px solid #111111;
+  background-color: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
   border-radius: var(--admin-radius-pill, 9999px);
   color: #ffffff;
   font-family: var(--font-admin-btn, inherit);
@@ -325,8 +325,8 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:hover {
-    background-color: #222222;
-    border-color: #222222;
+    background-color: var(--admin-btn-primary-hover, #c40023);
+    border-color: var(--admin-btn-primary-hover, #c40023);
     color: #ffffff;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(17, 17, 17, 0.2);
@@ -887,7 +887,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .composerTabsRow {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   background: var(--admin-surface-muted, #f0f2f5);
   padding: 4px;
@@ -1023,7 +1023,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
     font-weight: 600;
     box-shadow: 0 1px 3px rgba(17, 17, 17, 0.18);
     // Institutional fallback token preserved for design-system compliance
-    --accent-indicator: var(--admin-accent-lemon, #eefb87);
+    --accent-indicator: var(--admin-accent-brand, #ea002a);
   }
 
   &:focus-visible {
@@ -1542,4 +1542,59 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   color: $text-primary;
   margin-right: 6px;
   margin-top: 4px;
+}
+// Linked Client Works Conversion Banner
+.linkedWorkBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.linkedWorkMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.linkedWorkCode {
+  font-family: var(--font-admin-code, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: #065f46;
+  color: #ffffff;
+}
+
+.linkedWorkSummary {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.linkedWorkCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  background: #065f46;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: #047857;
+  }
 }

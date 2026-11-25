@@ -603,12 +603,8 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                       setSelectedDealId(record.id);
                       if (onOpenDossier) {
                         onOpenDossier(record);
-                      } else if (typeof window !== "undefined") {
-                        window.dispatchEvent(
-                          new CustomEvent("open-lead-drawer", {
-                            detail: { leadId: record.id, id: record.id, fullPage: false },
-                          })
-                        );
+                      } else {
+                        router.push(record.href || `/admin/deals/${record.id}`);
                       }
                     }}
                     tabIndex={0}

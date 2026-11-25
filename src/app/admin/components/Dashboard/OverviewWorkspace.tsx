@@ -33,6 +33,7 @@ import { UpcomingSlaCard } from "./UpcomingSlaCard";
 import { ExecutiveSlaVelocityGauge } from "./ExecutiveSlaVelocityGauge";
 import { CommercialDealsLedger } from "./CommercialDealsLedger";
 import { StageTransitionModal } from "@/app/admin/components/modals/StageTransitionModal";
+import { updateLeadStatusInlineAction } from "@/app/actions/leadInlineActions";
 import styles from "./OverviewWorkspace.module.scss";
 
 export interface OverviewRecord {
@@ -145,20 +146,60 @@ export function OverviewWorkspace({
     URL.revokeObjectURL(url);
   }
 
-  const handleAdvanceStage = (record: OverviewRecord) => {
-    setTargetTransitionRecord(record);
-    setIsStageModalOpen(true);
+  const resolveNextStage = (record: OverviewRecord) => {
+    const idx = data.stages.findIndex(
+      (s) => s.name.toLowerCase() === record.stage.toLowerCase() || s.id === record.stage
+    );
+    if (idx >= 0 && idx < data.stages.length - 1) {
+      return data.stages[idx + 1];
+    }
+    return data.stages[data.stages.length - 1] || null;
   };
 
-  const handleOpenDossier = (record: OverviewRecord, options?: { fullPage?: boolean }) => {
-    if (options?.fullPage && record.href) {
+  const handleAdvanceStage = (record: OverviewRecord) => {
+    const nextStage = resolveNextStage(record);
+    if (!nextStage) return;
+
+    const lower = nextStage.name.toLowerCase();
+    const isGuarded =
+      lower.includes("negotiat") ||
+      lower.includes("won") ||
+      lower.includes("converted") ||
+      lower.includes("lost") ||
+      lower.includes("hold");
+
+    if (isGuarded) {
+      setTargetTransitionRecord(record);
+      setIsStageModalOpen(true);
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await updateLeadStatusInlineAction(record.id, nextStage.id);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("crm-toast", {
+            detail: res.success
+              ? { type: "success", message: `Moved ${record.name} to ${nextStage.name}.` }
+              : { type: "error", message: res.error || "Unable to advance stage." },
+          })
+        );
+      }
+      if (res.success) {
+        router.refresh();
+      }
+    });
+  };
+
+  const handleOpenDossier = (record: OverviewRecord) => {
+    if (record.href) {
       router.push(record.href);
     } else {
-      window.dispatchEvent(
-        new CustomEvent("open-lead-drawer", {
-          detail: { leadId: record.id, id: record.id, fullPage: false },
-        })
-      );
+      const targetBase =
+        typeof window !== "undefined" && window.location.pathname.startsWith("/admin/deals")
+          ? "/admin/deals/"
+          : "/admin/leads/";
+      router.push(`${targetBase}${record.id}`);
     }
   };
 
@@ -192,8 +233,18 @@ export function OverviewWorkspace({
         <div className={styles.rowOneColumn}>
           <EarningOverviewSplineCard
             totalValue={data.convertedValue}
+            growthPercentage={data.revenueDelta}
             points={data.chart}
             financials={data.financials}
+            onTimeframeChange={(tf) => {
+              const slugMap: Record<string, TimeframeSlug> = {
+                this_week: "7d",
+                this_month: "30d",
+                this_quarter: "90d",
+                this_year: "year",
+              };
+              handleTimeframeChange(slugMap[tf] || "30d");
+            }}
           />
         </div>
         <div className={styles.rowOneColumn}>
@@ -202,6 +253,15 @@ export function OverviewWorkspace({
             dealCount={data.pipelineCount}
             categories={data.categories}
             financials={data.financials}
+            onTimeframeChange={(tf) => {
+              const slugMap: Record<string, TimeframeSlug> = {
+                this_week: "7d",
+                this_month: "30d",
+                this_quarter: "90d",
+                this_year: "year",
+              };
+              handleTimeframeChange(slugMap[tf] || "30d");
+            }}
           />
         </div>
       </section>

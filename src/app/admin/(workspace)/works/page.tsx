@@ -15,6 +15,7 @@ import { createClient } from '@/app/lib/supabase/server';
 import {
   type ClientWorkItem,
   type CrmUserRole,
+  ROLE_DEFAULT_FEATURES,
   ROLE_DEFAULT_TABS,
 } from '@/types/crm';
 import {
@@ -52,7 +53,7 @@ export default async function AdminWorksPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, status, allowed_tabs')
+    .select('role, status, allowed_tabs, feature_permissions')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -185,6 +186,12 @@ export default async function AdminWorksPage({
       ]),
     ),
   ];
+  const rawFinancialPerm = (profile.feature_permissions as Record<string, unknown> | null)
+    ?.can_view_financials;
+  const canViewFinancials =
+    typeof rawFinancialPerm === 'boolean'
+      ? rawFinancialPerm
+      : Boolean(ROLE_DEFAULT_FEATURES[role]?.can_view_financials);
   const mayAssignDirectors = role === 'admin' || role === 'sales_manager';
   const [directorNameById, teamProfiles] = await Promise.all([
     getCrmDirectoryMap(supabase, directorIds),
@@ -207,7 +214,7 @@ export default async function AdminWorksPage({
           typeof item.service_scope === 'string' && item.service_scope.trim()
             ? item.service_scope
             : 'Not recorded',
-        contract_value: Number(item.contract_value) || 0,
+        contract_value: canViewFinancials ? Number(item.contract_value) || 0 : 0,
         delivery_stage:
           (item.delivery_stage as ClientWorkItem['delivery_stage']) ||
           'kickoff',

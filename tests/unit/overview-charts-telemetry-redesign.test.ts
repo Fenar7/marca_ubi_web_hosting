@@ -25,11 +25,10 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
   const velocitySource = fs.readFileSync(velocityChartPath, 'utf8');
   const velocityStyles = fs.readFileSync(velocityChartStylesPath, 'utf8');
 
-  it('Gate 1: EarningOverviewSplineCard - Restored electric blue palette and exact coordinate alignment', () => {
-    // Restored electric blue tokens
-    assert.ok(splineSource.includes('#2563eb'), 'Source must use electric blue #2563eb');
-    assert.ok(splineSource.includes('#3b82f6'), 'Source must use blue gradient stop #3b82f6');
-    assert.ok(splineStyles.includes('rgba(37, 99, 235'), 'Styles must use rgba(37, 99, 235) tooltip border');
+  it('Gate 1: EarningOverviewSplineCard - Marca Ubi Vibrant Orange palette and exact coordinate alignment', () => {
+    assert.ok(!splineSource.includes('#2563eb'), 'Source must forbid generic blue #2563eb');
+    assert.ok(splineSource.includes('#f97316'), 'Source must use Marca Ubi Vibrant Orange #f97316');
+    assert.ok(splineStyles.includes('rgba(249, 115, 22'), 'Styles must use rgba(249, 115, 22) tooltip border');
 
     // Exact coordinate stem alignment (35/500 = 7.0%)
     assert.ok(
@@ -63,11 +62,10 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
     assert.ok(splineStyles.includes('width: 12px'), 'Chevron icon must be 12px width');
   });
 
-  it('Gate 3: SpendingOverviewBarCard - Restored vibrant blue palette and dynamic continuous gradient bar', () => {
-    // Restored multi-tone blue tokens
-    assert.ok(spendingSource.includes('#2563eb'), 'Source must use vibrant blue #2563eb');
-    assert.ok(spendingSource.includes('#60a5fa'), 'Source must use sky blue #60a5fa');
-    assert.ok(spendingSource.includes('#cbd5e1'), 'Source must use light blue/neutral #cbd5e1');
+  it('Gate 3: SpendingOverviewBarCard - Marca Ubi multi-color luxury palette and dynamic gradient bar', () => {
+    assert.ok(!spendingSource.includes('#2563eb'), 'Source must forbid generic blue #2563eb');
+    assert.ok(spendingSource.includes('#f97316') && spendingSource.includes('#ea002a'), 'Source must use multi-color orange & crimson palette');
+    assert.ok(spendingSource.includes('#cbd5e1'), 'Source must include neutral remainder segment #cbd5e1');
 
     // Accessible dropdown listbox
     assert.ok(spendingSource.includes('role="listbox"'));
@@ -109,8 +107,8 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
     for (const cadence of cadences) {
       const spline = computeSplinePointsForCadence(cadence, 6540000);
       assert.ok(spline.points.length >= 3, `${cadence} must have at least 3 points`);
-      assert.ok(spline.totalValue > 0, `${cadence} totalValue must be > 0`);
-      assert.ok(spline.growthPercentage > 0, `${cadence} growthPercentage must be > 0`);
+      assert.ok(spline.totalValue >= 0, `${cadence} totalValue must be >= 0`);
+      assert.ok(Number.isFinite(spline.growthPercentage), `${cadence} growthPercentage must be finite`);
 
       for (const pt of spline.points) {
         assert.ok(pt.month.length > 0, 'Point month must not be empty');
@@ -118,9 +116,9 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
       }
 
       const spending = computeSpendingBreakdownForCadence(cadence, 6540000, 39);
-      assert.ok(spending.totalValue > 0);
-      assert.ok(spending.dealCount > 0);
-      assert.equal(spending.categories.length, 3);
+      assert.equal(spending.totalValue, 6540000, `${cadence} must never apply synthetic multipliers`);
+      assert.equal(spending.dealCount, 39);
+      assert.ok(spending.categories.length >= 1);
 
       const categorySum = spending.categories.reduce((s, c) => s + c.value, 0);
       assert.equal(categorySum, spending.totalValue, `${cadence} categories must sum to totalValue`);

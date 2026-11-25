@@ -17,7 +17,6 @@ import { AdminMobileDrawer } from "./AdminMobileDrawer";
 import { WorkspaceLauncher } from "./WorkspaceLauncher";
 import { isTabAuthorized } from "./navigationConfig";
 import { NewLeadModal } from "@/app/admin/components/modals/NewLeadModal";
-import { ClientDossierDrawer } from "@/app/admin/components/DossierDrawer";
 import { AddTeamMemberModal } from "@/app/admin/components/modals/AddTeamMemberModal";
 import {
   CredentialRevealModal,
@@ -51,20 +50,7 @@ function LeadUrlSync({
   useEffect(() => {
     const leadId = searchParams.get("id") || searchParams.get("leadId");
     if (leadId) {
-      if (
-        typeof window !== "undefined" &&
-        (window.location.pathname.startsWith("/admin/leads") ||
-          window.location.pathname.startsWith("/admin/deals"))
-      ) {
-        // Leads and Deals workspaces mount ClientDossierDrawer directly; dispatch open-lead-drawer
-        window.dispatchEvent(
-          new CustomEvent("open-lead-drawer", {
-            detail: { leadId, id: leadId },
-          }),
-        );
-      } else {
-        onLeadIdFound(leadId);
-      }
+      onLeadIdFound(leadId);
     }
   }, [searchParams, onLeadIdFound]);
 
@@ -98,10 +84,6 @@ function AdminWorkspaceShellState({
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState<boolean>(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] =
     useState<boolean>(false);
-  const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(
-    null,
-  );
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [revealedCredentials, setRevealedCredentials] =
     useState<ProvisionedCredentialsPayload | null>(null);
   const [isCredentialModalOpen, setIsCredentialModalOpen] =
@@ -141,57 +123,27 @@ function AdminWorkspaceShellState({
     });
   }, []);
 
-  const handleOpenDrawer = useCallback((id: string) => {
-    setActiveDrawerLeadId(id);
-    setIsDrawerOpen(true);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("leadId") !== id) {
-        url.searchParams.set("leadId", id);
-        window.history.replaceState({}, "", url.pathname + url.search);
-      }
-    }
-  }, []);
+  const navigateToLeadCommandPage = useCallback(
+    (id: string) => {
+      const isDeals =
+        typeof window !== "undefined" &&
+        window.location.pathname.startsWith("/admin/deals");
+      const targetRoute = isDeals ? `/admin/deals/${id}` : `/admin/leads/${id}`;
+      router.push(targetRoute);
+    },
+    [router],
+  );
 
-  const handleCloseDrawer = useCallback(() => {
-    setIsDrawerOpen(false);
-    setActiveDrawerLeadId(null);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (url.searchParams.has("leadId")) {
-        url.searchParams.delete("leadId");
-        window.history.replaceState(
-          {},
-          "",
-          url.pathname + (url.search ? url.search : ""),
-        );
-      }
-    }
-  }, []);
-
-  // Listen to open-lead-modal and open-lead-drawer custom events dispatched across any workspace
+  // Route open-lead-modal / open-lead-drawer events directly to the full-page dossier workspace
   useEffect(() => {
     const handleOpenLeadEvent = (e: Event): void => {
-      const customEvt = e as CustomEvent<{ leadId?: string; fullPage?: boolean } | string>;
+      const customEvt = e as CustomEvent<{ leadId?: string; id?: string } | string>;
       const id =
         typeof customEvt.detail === "string"
           ? customEvt.detail
-          : customEvt.detail?.leadId;
-      const fullPage =
-        typeof customEvt.detail === "object" && customEvt.detail?.fullPage;
+          : customEvt.detail?.leadId || customEvt.detail?.id;
       if (id) {
-        if (fullPage) {
-          const isDeals =
-            typeof window !== "undefined" &&
-            window.location.pathname.startsWith("/admin/deals");
-          const targetRoute = isDeals
-            ? "/admin/deals/" + id
-            : "/admin/leads/" + id;
-          router.push(targetRoute);
-        } else {
-          // Open in-context ClientDossierDrawer on current workspace
-          handleOpenDrawer(id);
-        }
+        navigateToLeadCommandPage(id);
       }
     };
 
@@ -201,7 +153,7 @@ function AdminWorkspaceShellState({
       window.removeEventListener("open-lead-modal", handleOpenLeadEvent);
       window.removeEventListener("open-lead-drawer", handleOpenLeadEvent);
     };
-  }, [router]);
+  }, [navigateToLeadCommandPage]);
 
   // Listen to open-new-lead-modal and open-new-lead-drawer custom events dispatched by quick action buttons
   useEffect(() => {
@@ -354,26 +306,10 @@ function AdminWorkspaceShellState({
         }}
       />
 
-      {/* URL Synchronization Bridge for Client 360 Dossier */}
+      {/* URL Synchronization Bridge redirecting legacy deep links to the Command Page */}
       <Suspense fallback={null}>
-        <LeadUrlSync onLeadIdFound={handleOpenDrawer} />
+        <LeadUrlSync onLeadIdFound={navigateToLeadCommandPage} />
       </Suspense>
-
-      {/* Slide-over Client 360 Degree Dossier Drawer (Unified across all CRM workspaces) */}
-      <ClientDossierDrawer
-        leadId={activeDrawerLeadId}
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        onLeadUpdated={() => {
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(
-              new CustomEvent("lead-data-mutated", {
-                detail: activeDrawerLeadId,
-              }),
-            );
-          }
-        }}
-      />
     </div>
   );
 }

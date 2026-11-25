@@ -153,7 +153,6 @@ export function CommercialActionDesk({
       <header className={styles.deskHeader}>
         <div className={styles.headerLeft}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.statusDot} aria-hidden="true" />
             <h2 id="commercial-action-desk-title" className={styles.deskTitle}>
               Commercial Action Desk
             </h2>
@@ -424,36 +423,14 @@ export function CommercialActionDesk({
                       </button>
 
                       {/* Open Dossier Trigger */}
-                      {record.href ? (
                         <Link
-                          href={record.href}
+                          href={record.href || `/admin/leads/${record.id}`}
                           className={styles.openDossierBtn}
                           aria-label={`Open full dossier for ${record.name}`}
                         >
                           <span>Open Dossier</span>
                           <span className={styles.btnArrow}>↗</span>
                         </Link>
-                      ) : (
-                        <button
-                          type="button"
-                          className={styles.openDossierBtn}
-                          onClick={() => {
-                            if (onOpenDossier) {
-                              onOpenDossier(record);
-                            } else {
-                              window.dispatchEvent(
-                                new CustomEvent("open-lead-drawer", {
-                                  detail: { leadId: record.id, id: record.id },
-                                })
-                              );
-                            }
-                          }}
-                          aria-label={`Open preview dossier for ${record.name}`}
-                        >
-                          <span>Open Dossier</span>
-                          <span className={styles.btnArrow}>↗</span>
-                        </button>
-                      )}
                     </div>
                   </div>
                 </article>

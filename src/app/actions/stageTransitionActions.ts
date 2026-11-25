@@ -170,13 +170,14 @@ export async function transitionToNegotiationAction(
       ? `${existingNotes}[Negotiation Scope]: ${sanitizedNotes}`.trim()
       : lead.notes;
 
-    // Atomic update of lead coordinates
+    // Atomic update of lead coordinates (clearing revisit_date if exiting On Hold)
     const { error: updateError } = await supabase
       .from('leads')
       .update({
         status_id: targetStatus.id,
         expected_value: expectedValue,
         next_follow_up: new Date(anticipatedCloseDate).toISOString(),
+        revisit_date: null,
         notes: updatedNotes,
         updated_at: nowIso,
       })
@@ -289,6 +290,7 @@ export async function transitionToLostAction(
       .update({
         status_id: targetStatus.id,
         lost_reason: normalizedReason,
+        revisit_date: null,
         notes: updatedNotes,
         updated_at: nowIso,
       })
@@ -423,6 +425,7 @@ export async function transitionToConvertedAction(
         status_id: targetStatus.id,
         expected_value: finalRevenue,
         converted_at: nowIso,
+        revisit_date: null,
         notes: updatedNotes,
         updated_at: nowIso,
       })
@@ -438,30 +441,43 @@ export async function transitionToConvertedAction(
     const previousStatusName =
       (lead.funnel_statuses as { name?: string } | null)?.name || 'Previous Stage';
 
-    const { error: activityError } = await supabase.from('lead_activities').insert({
-      lead_id: leadId,
-      actor_id: profile.id,
-      activity_type: 'status_change',
-      description: `Deal converted to Won with signed contract value of ₹${finalRevenue.toLocaleString('en-IN')}. Record locked from non-admin modifications.`,
-      metadata: {
-        previous_status_id: lead.status_id,
-        previous_status_name: previousStatusName,
-        new_status_id: targetStatus.id,
-        new_status_name: targetStatus.name,
-        final_revenue: finalRevenue,
-        signed_contract_date: signedContractDate,
-        payment_terms: sanitizedTerms,
-        is_converted: true,
-        transition_type: 'guarded_converted',
-      },
-    });
+    const [{ error: activityError }, { data: spawnedWork }] = await Promise.all([
+      supabase.from('lead_activities').insert({
+        lead_id: leadId,
+        actor_id: profile.id,
+        activity_type: 'status_change',
+        description: `Deal converted to Won with signed contract value of ₹${finalRevenue.toLocaleString('en-IN')}. Record locked from non-admin modifications.`,
+        metadata: {
+          previous_status_id: lead.status_id,
+          previous_status_name: previousStatusName,
+          new_status_id: targetStatus.id,
+          new_status_name: targetStatus.name,
+          final_revenue: finalRevenue,
+          signed_contract_date: signedContractDate,
+          payment_terms: sanitizedTerms,
+          is_converted: true,
+          transition_type: 'guarded_converted',
+        },
+      }),
+      supabase
+        .from('client_works')
+        .select('id, project_code')
+        .eq('lead_id', leadId)
+        .maybeSingle(),
+    ]);
 
     if (activityError) {
       console.warn('[STAGE_TRANSITION] Activity ledger logging warning:', activityError.message);
     }
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/works');
+    revalidatePath('/admin/analytics');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -475,6 +491,8 @@ export async function transitionToConvertedAction(
         updatedAt: nowIso,
         convertedAt: nowIso,
         expectedValue: finalRevenue,
+        workId: spawnedWork?.id || null,
+        projectCode: spawnedWork?.project_code || null,
       },
     };
   } catch (err) {

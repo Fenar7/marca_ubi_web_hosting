@@ -227,8 +227,12 @@ export async function scheduleFollowUpAction(
       });
     }
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -357,8 +361,12 @@ export async function transitionToOnHoldAction(
       },
     });
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -415,8 +423,11 @@ export async function reactivateExpiredOnHoldLeadsAction(): Promise<
       };
     }
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/analytics');
 
     return {
       success: true,

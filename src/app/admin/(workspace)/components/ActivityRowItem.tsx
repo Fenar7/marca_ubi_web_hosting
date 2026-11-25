@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import styles from '../page.module.scss';
 
 export interface ActivityRowItemProps {
@@ -38,11 +39,10 @@ export function ActivityRowItem({
       ? styles.badgeOrange
       : styles.badgeNeutral;
 
+  const router = useRouter();
   const handleClick = (): void => {
-    if (leadId && typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', { detail: { leadId } })
-      );
+    if (leadId) {
+      router.push(`/admin/leads/${leadId}`);
     }
   };
 

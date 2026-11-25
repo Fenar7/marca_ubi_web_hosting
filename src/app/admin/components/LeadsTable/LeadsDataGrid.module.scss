@@ -82,6 +82,7 @@ $grid-min-width: 1240px;
 }
 
 .sortableHeaderCol {
+  min-height: 44px;
   background: transparent;
   border: none;
   height: 44px;
@@ -429,5 +430,29 @@ $grid-min-width: 1240px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+}
+
+.inlineRepSelect {
+  width: 100%;
+  max-width: 152px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--admin-border-subtle, #e7e7e4);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--admin-text-primary, #111111);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
   }
 }
