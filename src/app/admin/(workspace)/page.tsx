@@ -8,6 +8,7 @@ import {
   timeframeToSlug,
   aggregateTimeframeRevenue,
   calculateMetricDelta,
+  type IntakeEvent,
 } from "@/app/admin/lib/timeframeUtils";
 import { getUtcDayWindow } from "@/app/admin/lib/followUpQueue";
 import {
@@ -61,8 +62,13 @@ interface PreviewRow {
   assigned_to: string | null;
   next_follow_up: string | null;
   created_at?: string;
+  updated_at?: string | null;
   service_category?: string | null;
   expected_value?: number | string;
+}
+interface StageActivityRow {
+  lead_id: string;
+  created_at: string;
 }
 interface DirectoryRow {
   id: string;
@@ -273,13 +279,60 @@ export default async function AdminDashboardPage({
             }
             if (amount === null) summary.valid = false;
             summary.value += amount ?? 0;
-            if (canFinancial)
-              summary.events.push({
-                convertedAt: row.converted_at,
-                amount: amount ?? 0,
-              });
+            summary.events.push({
+              convertedAt: row.converted_at,
+              amount: canFinancial ? (amount ?? 0) : 0,
+            });
           },
         );
+
+  /** Period intake counts all non-synthetic leads created inside [currentStart, currentEnd] across all statuses. */
+  const intakePromise = stagesUnavailable
+    ? Promise.resolve(null)
+    : foldPages<
+        PipelineRow,
+        {
+          count: number;
+          value: number;
+          valid: boolean;
+          events: IntakeEvent[];
+        }
+      >(
+        async (from, to) => {
+          const result = await supabase
+            .from("leads")
+            .select(dashboardSelect(canFinancial, "pipeline"))
+            .gte("created_at", bounds.currentStart.toISOString())
+            .lte("created_at", bounds.currentEnd.toISOString())
+            .or(SYNTHETIC_EXCLUSION)
+            .order("id")
+            .range(from, to);
+          return {
+            data: result.data as unknown as PipelineRow[] | null,
+            error: result.error,
+          };
+        },
+        {
+          count: 0,
+          value: 0,
+          valid: true,
+          events: [],
+        },
+        (summary, row) => {
+          const amount = canFinancial
+            ? dashboardAmount(row.expected_value)
+            : 0;
+          if (amount === null) summary.valid = false;
+          summary.count += 1;
+          summary.value += amount ?? 0;
+          if (row.created_at) {
+            summary.events.push({
+              createdAt: row.created_at,
+              amount: canFinancial ? (amount ?? 0) : 0,
+            });
+          }
+        },
+      );
 
   const priorOutcomePromise = stagesUnavailable
     ? Promise.resolve(null)
@@ -398,13 +451,15 @@ export default async function AdminDashboardPage({
     }),
   );
 
-  const [pipeline, outcome, priorOutcome, cohort, counts] = await Promise.all([
-    pipelinePromise,
-    outcomePromise,
-    priorOutcomePromise,
-    cohortPromise,
-    countsPromise,
-  ]);
+  const [pipeline, outcome, priorOutcome, cohort, counts, periodIntake] =
+    await Promise.all([
+      pipelinePromise,
+      outcomePromise,
+      priorOutcomePromise,
+      cohortPromise,
+      countsPromise,
+      intakePromise,
+    ]);
 
   const selectedQueue: OverviewQueue | null = params?.queue
     ? overviewQueue(params.queue, counts[0])
@@ -434,40 +489,75 @@ export default async function AdminDashboardPage({
   else if (!previewResult.data)
     console.error("[dashboard] Preview returned no payload");
   const preview = (previewResult.data ?? []) as unknown as PreviewRow[];
+  const previewIds = preview.map((row) => row.id);
   const ownerIds = [
     ...new Set(
       preview.flatMap((row) => (row.assigned_to ? [row.assigned_to] : [])),
     ),
   ];
-  let directory: DirectoryRow[] = [];
-  let directoryFailed = false;
-  if (ownerIds.length) {
-    const primary = await supabase
-      .from("crm_team_directory")
-      .select("id, full_name")
-      .in("id", ownerIds);
-    if (!primary.error && primary.data)
-      directory = primary.data as DirectoryRow[];
-    else {
-      console.warn(
-        "[dashboard] Directory view unavailable, using profiles",
-        primary.error?.message,
-      );
-      const fallback = await supabase
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", ownerIds);
-      if (!fallback.error && fallback.data)
-        directory = fallback.data as DirectoryRow[];
-      else {
-        directoryFailed = true;
+  const directoryTask = ownerIds.length
+    ? (async (): Promise<{
+        directory: DirectoryRow[];
+        directoryFailed: boolean;
+      }> => {
+        const primary = await supabase
+          .from("crm_team_directory")
+          .select("id, full_name")
+          .in("id", ownerIds);
+        if (!primary.error && primary.data)
+          return {
+            directory: primary.data as DirectoryRow[],
+            directoryFailed: false,
+          };
+        console.warn(
+          "[dashboard] Directory view unavailable, using profiles",
+          primary.error?.message,
+        );
+        const fallback = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", ownerIds);
+        if (!fallback.error && fallback.data)
+          return {
+            directory: fallback.data as DirectoryRow[],
+            directoryFailed: false,
+          };
         console.error(
           "[dashboard] Directory fallback failed",
           fallback.error?.message,
         );
-      }
-    }
-  }
+        return { directory: [], directoryFailed: true };
+      })()
+    : Promise.resolve({ directory: [] as DirectoryRow[], directoryFailed: false });
+
+  const stageActivityTask = previewIds.length
+    ? (async (): Promise<Map<string, string>> => {
+        const result = new Map<string, string>();
+        const activityResult = await supabase
+          .from("lead_activities")
+          .select("lead_id, created_at")
+          .in("lead_id", previewIds)
+          .eq("activity_type", "status_change")
+          .order("created_at", { ascending: false });
+        if (activityResult.error) {
+          console.warn(
+            "[dashboard] Stage activity lookup failed",
+            activityResult.error.message,
+          );
+          return result;
+        }
+        for (const act of (activityResult.data ?? []) as StageActivityRow[]) {
+          if (act.lead_id && act.created_at && !result.has(act.lead_id)) {
+            result.set(act.lead_id, act.created_at);
+          }
+        }
+        return result;
+      })()
+    : Promise.resolve(new Map<string, string>());
+
+  const [{ directory, directoryFailed }, stageEnteredByLeadId] =
+    await Promise.all([directoryTask, stageActivityTask]);
+
   const ownerById = new Map(directory.map((row) => [row.id, row.full_name]));
   const records: OverviewRecord[] = preview.map((row) => ({
     id: row.id,
@@ -475,15 +565,22 @@ export default async function AdminDashboardPage({
     name: row.name,
     company: row.company,
     stage: stageById.get(row.status_id)?.name ?? "Unknown stage",
+    stageId: row.status_id,
     stageBucket: stageById.get(row.status_id)?.bucket ?? "open",
     due: row.next_follow_up,
     createdAt: row.created_at ?? now.toISOString(),
+    stageEnteredAt:
+      stageEnteredByLeadId.get(row.id) ??
+      row.updated_at ??
+      row.created_at ??
+      null,
     serviceCategory: row.service_category ?? null,
     expectedValue: canFinancial ? dashboardAmount(row.expected_value) : null,
     owner: !row.assigned_to
       ? "Unassigned"
       : (ownerById.get(row.assigned_to) ??
         (directoryFailed ? "Owner unavailable" : "Name unavailable")),
+    assignedToId: row.assigned_to,
     href: recordRoute ? `${recordRoute}/${encodeURIComponent(row.id)}` : null,
   }));
   const potentialStages = stages.filter(
@@ -515,6 +612,7 @@ export default async function AdminDashboardPage({
   const wonStageRow = stages.find((stage) => stage.bucket === "converted") ?? null;
   const data: OverviewData = {
     userName,
+    userRole: role,
     generatedAt: now.toISOString(),
     timeframe: bounds.slug,
     periodLabel: bounds.label,
@@ -526,10 +624,15 @@ export default async function AdminDashboardPage({
     periodEnd: bounds.currentEnd.toISOString(),
     canCreate,
     canTasks,
+    canAdvance: canTasks && role !== "viewer",
     canExport,
     recordRoute,
     pipelineCount: pipeline?.count ?? null,
     pipelineValue: canFinancial && pipeline?.valid ? pipeline.value : null,
+    periodIntakeValue:
+      canFinancial && periodIntake?.valid ? periodIntake.value : null,
+    periodIntakeCount: periodIntake?.count ?? null,
+    intakeReady: periodIntake !== null,
     weightedPotential,
     averageCycleDays:
       outcome && outcome.cycleCount > 0
@@ -548,7 +651,7 @@ export default async function AdminDashboardPage({
             : null,
       })),
     wonStage: wonStageRow
-      ? { id: wonStageRow.id, name: wonStageRow.name }
+      ? { id: wonStageRow.id, name: wonStageRow.name, bucket: wonStageRow.bucket }
       : null,
     pipelineReady: pipeline !== null,
     queue: selectedQueue ?? "overdue",
@@ -563,12 +666,22 @@ export default async function AdminDashboardPage({
     convertedCount: outcome?.count ?? null,
     convertedValue: canFinancial && outcome?.valid ? outcome.value : null,
     chart:
-      canFinancial && outcome?.valid
+      !stagesUnavailable && (outcome !== null || periodIntake !== null)
         ? aggregateTimeframeRevenue(
             bounds.slug,
             bounds,
-            outcome.events,
-            pipeline?.intakeEvents,
+            canFinancial
+              ? (outcome?.valid ? outcome.events : [])
+              : (outcome?.events.map((event) => ({
+                  convertedAt: event.convertedAt,
+                  amount: 0,
+                })) ?? []),
+            canFinancial
+              ? (periodIntake?.valid ? periodIntake.events : [])
+              : (periodIntake?.events.map((event) => ({
+                  createdAt: event.createdAt,
+                  amount: 0,
+                })) ?? []),
           )
         : [],
     categories:

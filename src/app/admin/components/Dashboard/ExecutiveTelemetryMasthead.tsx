@@ -28,6 +28,7 @@ export interface ExecutiveTelemetryMastheadProps {
   cadenceLabel: string;
   pipelineValue: number | null;
   pipelineCount: number | null;
+  pipelineReady?: boolean;
   weightedPotential: number | null;
   convertedValue: number | null;
   convertedCount: number | null;
@@ -36,6 +37,7 @@ export interface ExecutiveTelemetryMastheadProps {
   averageCycleDays: number | null;
   financials: boolean;
   canExport: boolean;
+  recordRoute?: string | null;
   cohort?: { eligible: number; won: number } | null;
   onExportSummary?: () => void;
 }
@@ -47,6 +49,7 @@ export function ExecutiveTelemetryMasthead({
   cadenceLabel,
   pipelineValue,
   pipelineCount,
+  pipelineReady = true,
   weightedPotential,
   convertedValue,
   convertedCount,
@@ -55,6 +58,7 @@ export function ExecutiveTelemetryMasthead({
   averageCycleDays,
   financials,
   canExport,
+  recordRoute = "/admin/deals",
   cohort,
   onExportSummary,
 }: ExecutiveTelemetryMastheadProps): React.ReactElement {
@@ -234,10 +238,12 @@ export function ExecutiveTelemetryMasthead({
           userName={displayGreetingName.toUpperCase()}
           balance={pipelineValue}
           dealCount={pipelineCount}
+          pipelineReady={pipelineReady}
           winRate={null}
           periodLabel={periodLabel}
           cohort={cohort}
           financials={financials}
+          recordRoute={recordRoute}
         />
 
         {/* Card 2: Converted Contract Value */}

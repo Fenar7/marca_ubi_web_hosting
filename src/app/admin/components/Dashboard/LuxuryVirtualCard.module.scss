@@ -1,175 +1,147 @@
 /**
  * @file LuxuryVirtualCard.module.scss
- * @description Pure SCSS module for the Executive VIP Virtual Card Widget.
- *              Strictly compliant with Next.js pure selector rules.
+ * @description Light editorial styling for the Visible Pipeline snapshot card.
+ *              Adheres to Marca Ubi Editorial Luxury tokens: #ffffff surface, #d8d8d4 hairline,
+ *              3px #ea002a left accent, zero persistent shadows, and >=44px touch targets.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .virtualCard {
-  position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 180px;
-  padding: 24px 26px;
-  background: linear-gradient(135deg, #111827 0%, #1a2234 50%, #0f172a 100%);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px -6px rgba(15, 23, 42, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
-  color: #ffffff;
-}
-
-.watermarkSvg {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 220px;
-  height: 160px;
-  pointer-events: none;
-  z-index: 1;
+  gap: 16px;
+  min-width: 0;
+  padding: 20px 22px;
+  background: #ffffff;
+  border: 1px solid #d8d8d4;
+  border-left: 3px solid #ea002a;
+  border-radius: 12px;
+  box-shadow: none;
+  color: #111111;
 }
 
 .cardHeader {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.monikerGroup {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
-.monikerPrefix {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+.eyebrow {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: #595955;
+  line-height: 1.3;
 }
 
-.monikerTitle {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #f8fafc;
+.scopeSubtitle {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #595955;
+  line-height: 1.4;
 }
 
 .cardBody {
-  position: relative;
-  z-index: 2;
-  margin: 16px 0 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  cursor: pointer;
-  padding: 6px 8px;
-  margin-left: -8px;
-  border-radius: 10px;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.04);
-
-    .cardArrow {
-      opacity: 1;
-      transform: translate(2px, -2px);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid #ea002a;
-    outline-offset: 2px;
-  }
-}
-
-.balanceHeaderRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cardArrow {
-  font-size: 14px;
-  color: #ea002a;
-  opacity: 0.6;
-  transition: transform 0.15s ease, opacity 0.15s ease;
-}
-
-.balanceLabel {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: #94a3b8;
-}
-
-.balanceRow {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+  min-width: 0;
 }
 
-.balanceAmount {
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 26px;
-  font-weight: 300;
-  letter-spacing: -0.035em;
-  color: #ffffff;
+.heroFigure {
+  margin: 0;
+  font-family: var(--font-circular), sans-serif;
+  font-size: clamp(28px, 2.2vw, 32px);
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.15;
+  color: #111111;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
-  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.unavailableText {
+  margin: 0;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #595955;
 }
 
 .cardFooter {
-  position: relative;
-  z-index: 2;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #e7e7e4;
 }
 
-.metaChip {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.dealsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 2px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111111;
+  text-decoration: none;
   border-radius: 6px;
-}
-
-.interactiveChip {
-  cursor: pointer;
-  transition: all 0.15s ease;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
+    color: #c40023;
   }
 
   &:focus-visible {
-    outline: 2px solid #ea002a;
+    outline: 2px solid #9c001e;
     outline-offset: 2px;
   }
 }
 
-.metaLabel {
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: #94a3b8;
+.linkChevron {
+  flex-shrink: 0;
+  color: #595955;
+  transition: transform 0.15s ease, color 0.15s ease;
 }
 
-.metaValue {
-  font-size: 10px;
-  font-weight: 600;
-  color: #f1f5f9;
+.dealsLink:hover .linkChevron {
+  color: #c40023;
+  transform: translateX(2px);
+}
+
+.dealsText {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #454542;
   font-variant-numeric: tabular-nums;
+}
+
+.cohortText {
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #454542;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dealsLink,
+  .linkChevron {
+    transition: none;
+  }
 }

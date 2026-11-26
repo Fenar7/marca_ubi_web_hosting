@@ -82,21 +82,16 @@ describe('Overview Charts & Telemetry Redesign Delivery Gate Tests', () => {
     assert.ok(spendingStyles.includes('transition: width 0.35s'));
   });
 
-  it('Gate 4: CommercialVelocityBarChart - Height scaling to 400px, snug layout, and zero-baseline preservation', () => {
-    // Scaled SVG viewBox (svgHeight = 400, chartHeight = 326)
-    assert.ok(velocitySource.includes('const svgHeight = 400;'), 'svgHeight must be scaled to 400');
-    assert.ok(velocitySource.includes('const chartHeight = svgHeight - paddingTop - paddingBottom; // 326'));
-    assert.ok(velocitySource.includes('viewBox={`0 0 ${svgWidth} ${svgHeight}`}'));
-
-    // Snug alignment eliminating dead space canyon
-    assert.ok(velocityStyles.includes('padding: 24px 26px 20px;'));
-    assert.ok(velocityStyles.includes('min-height: 320px;'));
-    assert.ok(velocityStyles.includes('align-items: stretch;'));
-
-    // Preservation of core visual archetypes & zero pedestals
-    assert.ok(velocitySource.includes('fundoraCrimsonGradient'), 'Must preserve crimson spotlight gradient');
-    assert.ok(velocitySource.includes('barPedestalZero'), 'Must preserve tactile instrument zero pedestal');
-    assert.ok(velocitySource.includes('beaconRing'), 'Must preserve tactile apex beacon ring');
+  it('Gate 4: CommercialVelocityBarChart - Editorial Luxury layout, real period scope, full en-IN formatting & accessibility', () => {
+    assert.ok(!velocitySource.includes('Net Delta'), 'Must not include fabricated Net Delta subtraction');
+    assert.ok(!velocitySource.includes('toFixed(1)}Cr') && !velocitySource.includes('toFixed(0)}L'), 'Must never abbreviate Crore/Lakh');
+    assert.ok(!velocitySource.includes('W1'), 'Must not fabricate W1..W8 placeholder buckets');
+    assert.ok(velocitySource.includes('formatCrmCurrency'), 'Must use full en-IN currency formatting');
+    assert.ok(velocitySource.includes('aria-pressed'), 'Perspective toggles must expose aria-pressed');
+    assert.ok(velocitySource.includes('role="listbox"') && velocitySource.includes('Escape'), 'Dropdown must expose accessible listbox with Escape handling');
+    assert.ok(velocitySource.includes('<details'), 'Must provide collapsible interval breakdown table for screen-reader & zoom parity');
+    assert.ok(velocityStyles.includes('min-height: 44px'), 'Interactive controls must meet 44px minimum touch height');
+    assert.ok(velocityStyles.includes('#9c001e'), 'Focus ring must use accessible #9c001e token');
   });
 
   it('Gate 5: Timeframe harmonic math models and option catalog', () => {

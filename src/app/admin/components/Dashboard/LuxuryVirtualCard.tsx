@@ -2,15 +2,15 @@
 
 /**
  * @file LuxuryVirtualCard.tsx
- * @description Master Executive VIP Virtual Card Widget modeled 1:1 after the Conyest/Finlo luxury archetype.
- *              Features dark obsidian/forest backdrop, concentric SVG watermark arcs,
- *              large tabular valuation, and executive metadata chips.
+ * @description Light editorial pipeline snapshot card for the Marca Ubi Commercial Desk.
+ *              Displays visible open pipeline valuation (or active deal count when financials
+ *              are restricted), cohort win summary, and an accessible drill-down link.
  * @module admin/components/Dashboard/LuxuryVirtualCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import styles from "./LuxuryVirtualCard.module.scss";
 
@@ -22,118 +22,77 @@ export interface LuxuryVirtualCardProps {
   periodLabel?: string;
   cohort?: { eligible: number; won: number } | null;
   financials?: boolean;
+  pipelineReady?: boolean;
+  recordRoute?: string | null;
 }
 
 export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   userName = "MARCA UBI DESK",
   balance = null,
   dealCount = 0,
-  winRate = null,
   periodLabel = "Last 30 Days",
   cohort,
   financials = true,
+  pipelineReady = true,
+  recordRoute,
 }) => {
-  const router = useRouter();
-  const displayBalance =
-    financials && balance !== null ? formatCrmCurrency(balance) : "Confidential";
+  const safeDealCount = dealCount ?? 0;
+  const isPipelineUnavailable =
+    pipelineReady === false || (financials && balance === null);
 
-  const resolvedWinRate =
-    cohort && cohort.eligible > 0
-      ? Math.round((cohort.won / cohort.eligible) * 100)
-      : typeof winRate === "number"
-        ? winRate
-        : null;
+  const canNavigateToDeals = recordRoute !== null;
+  const resolvedDealsHref = `${recordRoute ?? "/admin/deals"}?bucket=open`;
+
+  const cohortText = cohort
+    ? cohort.eligible > 0
+      ? `Cohort (${periodLabel}): ${cohort.won} of ${cohort.eligible} won (${Math.round((cohort.won / cohort.eligible) * 100)}%)`
+      : `Cohort (${periodLabel}): No new leads`
+    : null;
 
   return (
     <article
       className={styles.virtualCard}
-      aria-label="Executive Commercial Desk Virtual Balance Card"
+      aria-label={`Visible Pipeline snapshot for ${userName}`}
     >
-      {/* Subtle Concentric Luxury Vector Watermark */}
-      <svg
-        className={styles.watermarkSvg}
-        viewBox="0 0 320 200"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <circle cx="280" cy="40" r="140" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="1.5" />
-        <circle cx="280" cy="40" r="100" stroke="rgba(255, 255, 255, 0.04)" strokeWidth="1.5" />
-        <circle cx="280" cy="40" r="60" stroke="rgba(234, 0, 42, 0.12)" strokeWidth="1.5" />
-        <circle cx="280" cy="40" r="24" fill="rgba(234, 0, 42, 0.08)" />
-      </svg>
+      <header className={styles.cardHeader}>
+        <span className={styles.eyebrow}>VISIBLE PIPELINE</span>
+        <span className={styles.scopeSubtitle}>Current open &amp; potential deals</span>
+      </header>
 
-      {/* Top Header: Moniker Only (Toggle Removed) */}
-      <div className={styles.cardHeader}>
-        <div className={styles.monikerGroup}>
-          <span className={styles.monikerPrefix}>EXECUTIVE DESK</span>
-          <h2 className={styles.monikerTitle}>{userName}</h2>
-        </div>
+      <div className={styles.cardBody}>
+        {isPipelineUnavailable ? (
+          <p className={styles.unavailableText}>Pipeline unavailable</p>
+        ) : financials && balance !== null ? (
+          <p className={styles.heroFigure}>{formatCrmCurrency(balance)}</p>
+        ) : (
+          <p className={styles.heroFigure}>{safeDealCount} Active Deals</p>
+        )}
       </div>
 
-      {/* Mid Body: Clickable Balance Drill-Down with Arrow Icon */}
-      <div
-        className={styles.cardBody}
-        role="button"
-        tabIndex={0}
-        onClick={() => router.push("/admin/deals?bucket=open")}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            router.push("/admin/deals?bucket=open");
-          }
-        }}
-        aria-label={`Active Commercial Balance ${displayBalance}. Click to inspect active pipeline deals.`}
-      >
-        <div className={styles.balanceHeaderRow}>
-          <span className={styles.balanceLabel}>Active Commercial Balance</span>
-          <svg
-            className={styles.cardArrow}
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="7" y1="17" x2="17" y2="7" />
-            <polyline points="7 7 17 7 17 17" />
-          </svg>
-        </div>
-        <div className={styles.balanceRow}>
-          <span className={styles.balanceAmount}>{displayBalance}</span>
-        </div>
-      </div>
-
-      {/* Bottom Footer: Executive Metadata Chips */}
       <footer className={styles.cardFooter}>
-        <div className={styles.metaChip}>
-          <span className={styles.metaLabel}>PERIOD</span>
-          <span className={styles.metaValue}>{periodLabel}</span>
-        </div>
-        <div className={styles.metaChip}>
-          <span className={styles.metaLabel}>WIN RATE</span>
-          <span className={styles.metaValue}>
-            {resolvedWinRate !== null ? `${resolvedWinRate}%` : "--"}
-          </span>
-        </div>
-        <div
-          className={`${styles.metaChip} ${styles.interactiveChip}`}
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/admin/deals?bucket=open")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              router.push("/admin/deals?bucket=open");
-            }
-          }}
-          aria-label={`View ${dealCount ?? 0} active deals in pipeline`}
-        >
-          <span className={styles.metaLabel}>ACTIVE</span>
-          <span className={styles.metaValue}>{dealCount ?? 0} DEALS</span>
-        </div>
+        {canNavigateToDeals ? (
+          <Link href={resolvedDealsHref} className={styles.dealsLink}>
+            <span>Active Deals: {safeDealCount}</span>
+            <svg
+              className={styles.linkChevron}
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
+        ) : (
+          <span className={styles.dealsText}>Active Deals: {safeDealCount}</span>
+        )}
+
+        {cohortText && <span className={styles.cohortText}>{cohortText}</span>}
       </footer>
     </article>
   );

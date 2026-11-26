@@ -25,7 +25,7 @@ export function dashboardSelect(
  */
 export function dashboardPreviewSelect(financial: boolean): string {
   const columns =
-    "id, lead_id, name, company, status_id, assigned_to, next_follow_up, created_at, service_category";
+    "id, lead_id, name, company, status_id, assigned_to, next_follow_up, created_at, updated_at, service_category";
   return columns + (financial ? ", expected_value" : "");
 }
 

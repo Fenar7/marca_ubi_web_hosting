@@ -19,7 +19,7 @@ import {
   type OverviewQueue,
 } from "@/app/admin/lib/dashboardContracts";
 import type { CadenceLabel } from "@/app/admin/lib/timeframeUtils";
-import type { FunnelBucket } from "@/types/crm";
+import type { CrmUserRole, FunnelBucket } from "@/types/crm";
 import {
   type DynamicRevenueSplinePoint,
   type TimeframeSlug,
@@ -42,17 +42,21 @@ export interface OverviewRecord {
   name: string;
   company: string | null;
   stage: string;
+  stageId?: string;
   stageBucket: FunnelBucket;
   due: string | null;
   createdAt: string;
+  stageEnteredAt?: string | null;
   serviceCategory: string | null;
   expectedValue: number | null;
   owner: string;
+  assignedToId?: string | null;
   href: string | null;
 }
 
 export interface OverviewData {
   userName: string;
+  userRole?: CrmUserRole;
   generatedAt: string;
   timeframe: TimeframeSlug;
   periodLabel: string;
@@ -63,16 +67,20 @@ export interface OverviewData {
   periodEnd: string;
   canCreate: boolean;
   canTasks: boolean;
+  canAdvance?: boolean;
   canExport: boolean;
   financials: boolean;
   recordRoute: string | null;
   pipelineCount: number | null;
   pipelineValue: number | null;
+  periodIntakeValue?: number | null;
+  periodIntakeCount?: number | null;
+  intakeReady?: boolean;
   weightedPotential: number | null;
   averageCycleDays: number | null;
   pipelineReady: boolean;
   stages: { id: string; name: string; count: number; value: number | null }[];
-  wonStage?: { id: string; name: string } | null;
+  wonStage?: { id: string; name: string; bucket?: FunnelBucket } | null;
   queue: OverviewQueue;
   queueCounts: Record<OverviewQueue, number | null>;
   records: OverviewRecord[];
@@ -92,7 +100,8 @@ export function OverviewWorkspace({
 }): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
+  const [pendingRecordId, setPendingRecordId] = useState<string | null>(null);
 
   // Guarded Stage Transition Modal State
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
@@ -151,23 +160,40 @@ export function OverviewWorkspace({
     const forwardStages = data.stages.filter(
       (s) => !s.name.toLowerCase().includes("hold")
     );
+    if (record.stage.toLowerCase().includes("hold")) {
+      return (
+        forwardStages.find((s) => s.name.toLowerCase().includes("qualified")) ||
+        forwardStages[1] ||
+        forwardStages[0] ||
+        null
+      );
+    }
     const idx = forwardStages.findIndex(
-      (s) => s.name.toLowerCase() === record.stage.toLowerCase() || s.id === record.stage
+      (s) =>
+        (record.stageId && s.id === record.stageId) ||
+        s.name.toLowerCase() === record.stage.toLowerCase() ||
+        s.id === record.stage
     );
     if (idx >= 0 && idx < forwardStages.length - 1) {
       return forwardStages[idx + 1];
     }
-    if (idx === forwardStages.length - 1 && data.wonStage) {
-      return { id: data.wonStage.id, name: data.wonStage.name, count: 0, value: null };
+    if (
+      (idx === forwardStages.length - 1 ||
+        record.stage.toLowerCase().includes("negotiat")) &&
+      data.wonStage
+    ) {
+      return {
+        id: data.wonStage.id,
+        name: data.wonStage.name,
+        count: 0,
+        value: null,
+      };
     }
-    if (record.stage.toLowerCase().includes("negotiat") && data.wonStage) {
-      return { id: data.wonStage.id, name: data.wonStage.name, count: 0, value: null };
-    }
-    return forwardStages[0] || null;
+    return null;
   };
 
   const handleAdvanceStage = (record: OverviewRecord) => {
-    if (!data.canTasks) return;
+    if (!(data.canAdvance ?? data.canTasks) || pendingRecordId === record.id) return;
     const nextStage = resolveNextStage(record);
     if (!nextStage) return;
 
@@ -201,19 +227,24 @@ export function OverviewWorkspace({
       return;
     }
 
+    setPendingRecordId(record.id);
     startTransition(async () => {
-      const res = await updateLeadStatusInlineAction(record.id, nextStage.id);
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(
-          new CustomEvent("crm-toast", {
-            detail: res.success
-              ? { type: "success", message: `Moved ${record.name} to ${nextStage.name}.` }
-              : { type: "error", message: res.error || "Unable to advance stage." },
-          })
-        );
-      }
-      if (res.success) {
-        router.refresh();
+      try {
+        const res = await updateLeadStatusInlineAction(record.id, nextStage.id);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("crm-toast", {
+              detail: res.success
+                ? { type: "success", message: `Moved ${record.name} to ${nextStage.name}.` }
+                : { type: "error", message: res.error || "Unable to advance stage." },
+            })
+          );
+        }
+        if (res.success) {
+          router.refresh();
+        }
+      } finally {
+        setPendingRecordId(null);
       }
     });
   };
@@ -221,18 +252,14 @@ export function OverviewWorkspace({
   const handleOpenDossier = (record: OverviewRecord) => {
     if (record.href) {
       router.push(record.href);
-    } else {
-      const targetBase =
-        typeof window !== "undefined" && window.location.pathname.startsWith("/admin/deals")
-          ? "/admin/deals/"
-          : "/admin/leads/";
-      router.push(`${targetBase}${record.id}`);
+    } else if (data.recordRoute) {
+      router.push(`${data.recordRoute}/${encodeURIComponent(record.id)}`);
     }
   };
 
   return (
     <div className={styles.overview}>
-      {/* Tier 1: Executive Telemetry Masthead (Obsidian VIP Card + 3 White Companion Scorecards) */}
+      {/* Tier 1: Executive Telemetry Masthead */}
       <ExecutiveTelemetryMasthead
         userName={data.userName || "MARCA UBI DESK"}
         timeframe={data.timeframe}
@@ -240,6 +267,7 @@ export function OverviewWorkspace({
         cadenceLabel={data.cadenceLabel}
         pipelineValue={data.pipelineValue}
         pipelineCount={data.pipelineCount}
+        pipelineReady={data.pipelineReady}
         weightedPotential={data.weightedPotential}
         convertedValue={data.convertedValue}
         convertedCount={data.convertedCount}
@@ -248,6 +276,7 @@ export function OverviewWorkspace({
         averageCycleDays={data.averageCycleDays}
         financials={data.financials}
         canExport={data.canExport}
+        recordRoute={data.recordRoute}
         cohort={data.cohort}
         onExportSummary={exportSummary}
       />
@@ -305,10 +334,17 @@ export function OverviewWorkspace({
           <CommercialVelocityBarChart
             chart={data.chart}
             totalIntake={data.pipelineValue}
+            periodIntakeValue={data.periodIntakeValue}
+            periodIntakeCount={data.periodIntakeCount}
             totalRealized={data.convertedValue}
+            convertedCount={data.convertedCount}
+            intakeReady={data.intakeReady}
+            outcomesReady={data.outcomesReady}
             periodLabel={data.periodLabel}
             timeframe={data.timeframe}
             financials={data.financials}
+            recordRoute={data.recordRoute}
+            isPending={isPending}
             onTimeframeChange={handleTimeframeChange}
           />
           <RecentTransactionsTable
@@ -341,8 +377,15 @@ export function OverviewWorkspace({
         <CommercialDealsLedger
           records={data.records}
           recordsReady={data.recordsReady}
+          pipelineReady={data.pipelineReady}
+          pipelineCount={data.pipelineCount}
+          pipelineValue={data.pipelineValue}
+          stages={data.stages}
+          generatedAt={data.generatedAt}
           financials={data.financials}
-          canTasks={data.canTasks}
+          canTasks={data.canAdvance ?? data.canTasks}
+          recordRoute={data.recordRoute}
+          pendingRecordId={pendingRecordId}
           onAdvanceStage={handleAdvanceStage}
           onOpenDossier={handleOpenDossier}
         />
@@ -358,13 +401,14 @@ export function OverviewWorkspace({
         };
 
         const targetBucket: FunnelBucket =
-          resolvedNext.name.toLowerCase().includes("won") ||
-          resolvedNext.name.toLowerCase().includes("converted")
-            ? "converted"
-            : resolvedNext.name.toLowerCase().includes("lost") ||
-              resolvedNext.name.toLowerCase().includes("hold")
-            ? "lost"
-            : "potential";
+          data.wonStage && resolvedNext.id === data.wonStage.id
+            ? (data.wonStage.bucket ?? "converted")
+            : resolvedNext.name.toLowerCase().includes("won") ||
+                resolvedNext.name.toLowerCase().includes("converted")
+              ? "converted"
+              : resolvedNext.name.toLowerCase().includes("lost")
+                ? "lost"
+                : "potential";
 
         return (
           <StageTransitionModal

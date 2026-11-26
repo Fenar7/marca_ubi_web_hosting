@@ -2,18 +2,18 @@
 
 /**
  * @file CommercialDealsLedger.tsx
- * @description Master Commercial Deals Command Desk & Live Stage Velocity Matrix.
- *              Implements the Marca Ubi Editorial Luxury Standard with harmonic multi-hue
- *              chromatic telemetry, tactile 3-tier card elevation, Fundora-style macro
- *              distribution ribbons, and luminous gradient milestone progress tracks.
- *              Strictly zero AI-slop pill-and-dot badges, zero monochrome sterilization.
+ * @description Commercial Deals Queue & Live Pipeline Stage Summary for Marca Ubi CRM.
+ *              Implements a flat, unboxed editorial layout (single container with hairline-divided
+ *              rows and an aligned monochrome stage rail), UTC-reconciled follow-up urgency,
+ *              real database stage counts/ages, and full en-IN INR formatting.
  * @module admin/components/Dashboard/CommercialDealsLedger
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useMemo, useState, useDeferredValue } from "react";
+import React, { useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { formatCrmCurrency } from "@/app/admin/lib/currency";
+import { getUtcDayWindow, isFollowUpInQueue } from "@/app/admin/lib/followUpQueue";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./CommercialDealsLedger.module.scss";
 
@@ -32,405 +32,315 @@ export interface CommercialDealsLedgerProps {
   financials?: boolean;
   canTasks?: boolean;
   stages?: StageSummary[];
+  pipelineReady?: boolean;
+  pipelineCount?: number | null;
+  pipelineValue?: number | null;
+  generatedAt?: string;
+  recordRoute?: string | null;
+  pendingRecordId?: string | null;
   onAdvanceStage?: (record: OverviewRecord) => void;
   onOpenDossier?: (record: OverviewRecord) => void;
 }
 
-export interface StageColorSpec {
-  key: "new" | "contacted" | "qualified" | "proposal" | "negotiation";
-  name: string;
-  primary: string;
-  secondary: string;
-  bg: string;
-  border: string;
-  glow: string;
-  text: string;
-  percentage: number;
-}
-
-export interface ServiceCategorySpec {
-  name: string;
-  bg: string;
-  border: string;
-  text: string;
-  avatarBg: string;
-}
-
-export interface StageMatrixItem {
-  id: string;
+interface ComputedStageRow {
+  key: string;
   name: string;
   count: number;
-  value: number;
-  percentage: number;
-  avgDwellDays: number;
-  spec: StageColorSpec;
+  value: number | null;
+  proportion: number;
+  avgStageAgeDays: number | null;
 }
 
-/**
- * Strict, type-safe chromatic stage telemetry palette.
- * Curated high-contrast editorial hues with distinct visual identity across pipeline stages.
- * All text tokens achieve >= 7:1 contrast on corresponding 50-tint backgrounds.
- */
-export const STAGE_COLOR_SYSTEM: Record<string, StageColorSpec> = {
-  new: {
-    key: "new",
-    name: "New Inquiries",
-    primary: "#0284c7",
-    secondary: "#38bdf8",
-    bg: "#f0f9ff",
-    border: "#bae6fd",
-    glow: "rgba(2, 132, 199, 0.22)",
-    text: "#0369a1",
-    percentage: 20,
-  },
-  contacted: {
-    key: "contacted",
-    name: "Contacted",
-    primary: "#4f46e5",
-    secondary: "#818cf8",
-    bg: "#eef2ff",
-    border: "#c7d2fe",
-    glow: "rgba(79, 70, 229, 0.22)",
-    text: "#3730a3",
-    percentage: 40,
-  },
-  qualified: {
-    key: "qualified",
-    name: "Qualified Scope",
-    primary: "#7c3aed",
-    secondary: "#a78bfa",
-    bg: "#f5f3ff",
-    border: "#ddd6fe",
-    glow: "rgba(124, 58, 237, 0.22)",
-    text: "#5b21b6",
-    percentage: 60,
-  },
-  proposal: {
-    key: "proposal",
-    name: "Proposal / Pitch",
-    primary: "#d97706",
-    secondary: "#fbbf24",
-    bg: "#fffbeb",
-    border: "#fde68a",
-    glow: "rgba(217, 119, 6, 0.22)",
-    text: "#92400e",
-    percentage: 80,
-  },
-  negotiation: {
-    key: "negotiation",
-    name: "Negotiation & Close",
-    primary: "#ea002a",
-    secondary: "#059669",
-    bg: "#fff1f2",
-    border: "#fecdd3",
-    glow: "rgba(234, 0, 42, 0.22)",
-    text: "#9f1239",
-    percentage: 95,
-  },
-};
+interface UrgencyState {
+  text: string;
+  tone: "overdue" | "today" | "track";
+  isOverdue: boolean;
+  isToday: boolean;
+}
 
-/**
- * Service Category mineral palette ensuring distinct domain identity and WCAG AA contrast.
- * Replaces identical cement-gray tags with purposeful agency vertical badges.
- */
-export const SERVICE_CATEGORY_MAP: Record<string, ServiceCategorySpec> = {
-  "web & digital": {
-    name: "Web & Digital",
-    bg: "#f0f9ff",
-    border: "#bae6fd",
-    text: "#0369a1",
-    avatarBg: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)",
-  },
-  branding: {
-    name: "Branding",
-    bg: "#fff7ed",
-    border: "#fed7aa",
-    text: "#9a3412",
-    avatarBg: "linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)",
-  },
-  "mobile apps": {
-    name: "Mobile Apps",
-    bg: "#f0fdf4",
-    border: "#bbf7d0",
-    text: "#047857",
-    avatarBg: "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
-  },
-  "full-suite advisory": {
-    name: "Full-Suite Advisory",
-    bg: "#faf5ff",
-    border: "#e9d5ff",
-    text: "#6b21a8",
-    avatarBg: "linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)",
-  },
-};
+const HIGH_VALUE_THRESHOLD_INR = 1_000_000;
+const MS_PER_DAY = 86_400_000;
 
-/** Extracts clean uppercase initials for squircle monograms */
+/** Extracts clean uppercase initials for uniform squircle monograms. */
 function getInitials(name: string): string {
-  if (!name) return "CL";
-  const parts = name.trim().split(/\s+/);
+  const trimmed = name.trim();
+  if (!trimmed) return "CL";
+  const parts = trimmed.split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }
 
-/** Resolves service category specification with robust case-insensitive fallback */
-function getServiceCategorySpec(category: string | null): ServiceCategorySpec {
-  if (!category) {
+/**
+ * Matches a deal record to a database stage summary by ID first,
+ * falling back to case-insensitive stage name comparison.
+ */
+function recordMatchesStage(record: OverviewRecord, stage: { id: string; name: string }): boolean {
+  if (record.stageId && stage.id && record.stageId === stage.id) {
+    return true;
+  }
+  return record.stage.trim().toLowerCase() === stage.name.trim().toLowerCase();
+}
+
+/**
+ * Computes UTC-aligned urgency status matching `/admin/tasks` day boundaries.
+ * Never calls `Date.now()` or `new Date()` without a deterministic anchor.
+ */
+function getUtcUrgencyStatus(due: string | null, utcStartIso: string, utcEndIso: string): UrgencyState {
+  if (!due) {
+    return { text: "On track", tone: "track", isOverdue: false, isToday: false };
+  }
+
+  const window = { start: utcStartIso, end: utcEndIso, date: utcStartIso.slice(0, 10) };
+  const isOverdue = isFollowUpInQueue("overdue", due, window);
+  const isToday = isFollowUpInQueue("today", due, window);
+
+  const dueDate = new Date(due);
+  const startMs = Date.parse(utcStartIso);
+  if (!Number.isFinite(dueDate.getTime()) || !Number.isFinite(startMs)) {
+    return { text: "On track", tone: "track", isOverdue: false, isToday: false };
+  }
+
+  const dueUtcDayMs = Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate());
+  const dayDelta = Math.round((dueUtcDayMs - startMs) / MS_PER_DAY);
+
+  if (isOverdue) {
+    const overdueDays = Math.max(1, Math.abs(dayDelta));
     return {
-      name: "Commercial",
-      bg: "#f8f9fa",
-      border: "#e9ecef",
-      text: "#495057",
-      avatarBg: "linear-gradient(135deg, #f1f3f5 0%, #e9ecef 100%)",
+      text: `Overdue · ${overdueDays}d ago`,
+      tone: "overdue",
+      isOverdue: true,
+      isToday: false,
     };
   }
-  const norm = category.trim().toLowerCase();
-  for (const [key, spec] of Object.entries(SERVICE_CATEGORY_MAP)) {
-    if (norm.includes(key)) return spec;
+
+  if (isToday) {
+    return {
+      text: "Due today",
+      tone: "today",
+      isOverdue: false,
+      isToday: true,
+    };
   }
+
+  const upcomingDays = Math.max(1, dayDelta);
   return {
-    name: category,
-    bg: "#f8f9fa",
-    border: "#e9ecef",
-    text: "#495057",
-    avatarBg: "linear-gradient(135deg, #f1f3f5 0%, #e9ecef 100%)",
+    text: `Due in ${upcomingDays}d`,
+    tone: "track",
+    isOverdue: false,
+    isToday: false,
   };
 }
 
-/** Resolves milestone stage chromatic profile and progression percentage */
-function resolveStageSpec(stageName: string): StageColorSpec {
-  const norm = (stageName || "").trim().toLowerCase();
-  if (norm.includes("won") || norm.includes("converted") || norm.includes("negotiation") || norm.includes("review")) {
-    return STAGE_COLOR_SYSTEM.negotiation;
-  }
-  if (norm.includes("proposal") || norm.includes("pitch")) {
-    return STAGE_COLOR_SYSTEM.proposal;
-  }
-  if (norm.includes("qualified") || norm.includes("discovery")) {
-    return STAGE_COLOR_SYSTEM.qualified;
-  }
-  if (norm.includes("contacted") || norm.includes("follow")) {
-    return STAGE_COLOR_SYSTEM.contacted;
-  }
-  return STAGE_COLOR_SYSTEM.new;
-}
-
-/** Formats numeric currency values using the standard Indian numbering system */
-function formatIndianNumber(num: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(num);
-}
-
 /**
- * Determines SLA urgency intervals with calendar-normalized day boundaries.
- * Returns high-contrast editorial status copy (strictly NO pill-and-dot badges).
+ * Computes average days in current stage from `record.stageEnteredAt`
+ * anchored to `generatedAt`. Returns `null` if no valid timestamps exist.
  */
-function getUrgencyStatus(due: string | null): { text: string; isOverdue: boolean; isToday: boolean } {
-  if (!due) return { text: "On track", isOverdue: false, isToday: false };
-  const target = new Date(due);
-  if (!Number.isFinite(target.getTime())) return { text: "On track", isOverdue: false, isToday: false };
+function computeAvgStageAgeDays(matchingRecords: OverviewRecord[], anchorMs: number): number | null {
+  if (!Number.isFinite(anchorMs)) return null;
 
-  const now = new Date();
-  const targetMidnight = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
-  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const diffDays = Math.round((targetMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+  let totalDays = 0;
+  let validCount = 0;
 
-  if (diffDays < 0) {
-    return { text: `Follow-up ${Math.abs(diffDays)}d ago`, isOverdue: true, isToday: false };
+  for (const record of matchingRecords) {
+    if (!record.stageEnteredAt) continue;
+    const enteredMs = Date.parse(record.stageEnteredAt);
+    if (!Number.isFinite(enteredMs)) continue;
+    const days = Math.max(0, Math.round((anchorMs - enteredMs) / MS_PER_DAY));
+    totalDays += days;
+    validCount += 1;
   }
-  if (diffDays === 0) {
-    return { text: "Due today", isOverdue: false, isToday: true };
-  }
-  return { text: `Due in ${diffDays}d`, isOverdue: false, isToday: false };
+
+  if (validCount === 0) return null;
+  return Math.round(totalDays / validCount);
 }
 
 export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
   records = [],
-  recordsReady = true,
+  recordsReady,
   financials = true,
   canTasks = true,
+  stages,
+  pipelineReady = true,
+  pipelineCount,
+  pipelineValue,
+  generatedAt,
+  recordRoute = "/admin/deals",
+  pendingRecordId = null,
   onAdvanceStage,
   onOpenDossier,
 }) => {
-  const router = useRouter();
-  const [referenceNowMs] = useState<number>(() => Date.now());
   const [activeTab, setActiveTab] = useState<LedgerFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStageFilter, setSelectedStageFilter] = useState<string | null>(null);
-  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+  const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
 
-  // React 19 concurrent search value to maintain 60fps typing velocity
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
-  // Tab counts calculated in a single memoized pass
+  // Deterministic UTC day window anchored to server `generatedAt` (or epoch 0 if omitted)
+  const utcWindow = useMemo(() => {
+    const anchorDate = generatedAt ? new Date(generatedAt) : new Date(0);
+    return getUtcDayWindow(Number.isFinite(anchorDate.getTime()) ? anchorDate : new Date(0));
+  }, [generatedAt]);
+
+  const anchorMs = useMemo(() => {
+    if (!generatedAt) return NaN;
+    return Date.parse(generatedAt);
+  }, [generatedAt]);
+
+  // Single-pass urgency & filter tab counts
   const tabCounts = useMemo(() => {
     let highValue = 0;
     let overdue = 0;
     let today = 0;
-    for (const r of records) {
-      if ((r.expectedValue ?? 0) >= 1000000) highValue++;
-      const urg = getUrgencyStatus(r.due);
-      if (urg.isOverdue) overdue++;
-      if (urg.isToday) today++;
+
+    for (const record of records) {
+      if (financials && record.expectedValue !== null && record.expectedValue > HIGH_VALUE_THRESHOLD_INR) {
+        highValue += 1;
+      }
+      const urgency = getUtcUrgencyStatus(record.due, utcWindow.start, utcWindow.end);
+      if (urgency.isOverdue) overdue += 1;
+      if (urgency.isToday) today += 1;
     }
+
     return {
       all: records.length,
       highValue,
       overdue,
       today,
     };
-  }, [records]);
+  }, [records, financials, utcWindow]);
 
-  // Total active pipeline valuation
-  const totalPipelineValue = useMemo(() => {
-    return records.reduce((sum, r) => sum + (r.expectedValue ?? 0), 0);
-  }, [records]);
+  // Build real DB stage summary list (preserving all configured stages including "On Hold")
+  const stageRows: ComputedStageRow[] = useMemo(() => {
+    const baseStages: StageSummary[] =
+      stages && stages.length > 0
+        ? stages
+        : (() => {
+            const grouped = new Map<string, StageSummary>();
+            for (const record of records) {
+              const key = record.stageId || record.stage || "New";
+              const existing = grouped.get(key);
+              const val = financials ? (record.expectedValue ?? 0) : null;
+              if (existing) {
+                existing.count += 1;
+                if (financials && existing.value !== null && val !== null) {
+                  existing.value += val;
+                }
+              } else {
+                grouped.set(key, {
+                  id: key,
+                  name: record.stage || "New",
+                  count: 1,
+                  value: val,
+                });
+              }
+            }
+            return Array.from(grouped.values());
+          })();
 
-  // Stage Matrix Radar Data: calculates real distribution, value, dwell velocity, and chromatic specs
-  const stageMatrixData: StageMatrixItem[] = useMemo(() => {
-    const STAGE_KEYS: ("new" | "contacted" | "qualified" | "proposal" | "negotiation")[] = [
-      "new",
-      "contacted",
-      "qualified",
-      "proposal",
-      "negotiation",
-    ];
+    const resolvedTotalCount =
+      pipelineCount !== undefined && pipelineCount !== null
+        ? pipelineCount
+        : baseStages.reduce((sum, s) => sum + s.count, 0);
 
-    const now = referenceNowMs;
+    const resolvedTotalValue =
+      pipelineValue !== undefined && pipelineValue !== null
+        ? pipelineValue
+        : baseStages.reduce((sum, s) => sum + (s.value ?? 0), 0);
 
-    return STAGE_KEYS.map((key) => {
-      const spec = STAGE_COLOR_SYSTEM[key];
+    return baseStages.map((stage) => {
+      const key = stage.id || stage.name;
+      const matching = records.filter((r) => recordMatchesStage(r, stage));
+      const avgStageAgeDays = computeAvgStageAgeDays(matching, anchorMs);
 
-      // Find matching records
-      const matching = records.filter((r) => {
-        const norm = (r.stage || "").toLowerCase();
-        if (key === "negotiation") {
-          return norm.includes("negotiation") || norm.includes("won") || norm.includes("review");
-        }
-        return norm.includes(key);
-      });
-
-      const count = matching.length;
-      const val = matching.reduce((sum, r) => sum + (r.expectedValue ?? 0), 0);
-      const percentage = totalPipelineValue > 0 ? Math.round((val / totalPipelineValue) * 100) : 0;
-
-      // Calculate real dwell time based on record creation timestamp
-      let totalDwellDays = 0;
-      for (const r of matching) {
-        const createdMs = new Date(r.createdAt).getTime();
-        if (Number.isFinite(createdMs)) {
-          const days = Math.max(1, Math.round((now - createdMs) / (1000 * 60 * 60 * 24)));
-          totalDwellDays += days;
-        } else {
-          totalDwellDays += 3;
-        }
+      let proportion = 0;
+      if (financials && resolvedTotalValue > 0 && stage.value !== null) {
+        proportion = Math.min(100, Math.max(0, Math.round((stage.value / resolvedTotalValue) * 100)));
+      } else if (resolvedTotalCount > 0) {
+        proportion = Math.min(100, Math.max(0, Math.round((stage.count / resolvedTotalCount) * 100)));
       }
-      const avgDwellDays = count > 0 ? Math.round((totalDwellDays / count) * 10) / 10 : 0;
 
       return {
-        id: key,
-        name: spec.name,
-        count,
-        value: val,
-        percentage,
-        avgDwellDays,
-        spec,
+        key,
+        name: stage.name,
+        count: stage.count,
+        value: stage.value,
+        proportion,
+        avgStageAgeDays,
       };
     });
-  }, [records, totalPipelineValue, referenceNowMs]);
+  }, [stages, records, financials, pipelineCount, pipelineValue, anchorMs]);
 
-  // Multi-tier filtering pipeline (Tab + Stage Radar Filter + Deferred Search)
+  const totalSummaryCount = useMemo(() => {
+    if (pipelineCount !== undefined && pipelineCount !== null) return pipelineCount;
+    return stageRows.reduce((sum, s) => sum + s.count, 0);
+  }, [pipelineCount, stageRows]);
+
+  const totalSummaryValue = useMemo(() => {
+    if (pipelineValue !== undefined && pipelineValue !== null) return pipelineValue;
+    return stageRows.reduce((sum, s) => sum + (s.value ?? 0), 0);
+  }, [pipelineValue, stageRows]);
+
+  const selectedStageObj = useMemo(() => {
+    if (!selectedStageKey) return null;
+    return stageRows.find((s) => s.key === selectedStageKey) ?? null;
+  }, [selectedStageKey, stageRows]);
+
+  // Multi-tier filtering: Tab + Stage Cross-Filter + Deferred Search
   const filteredRecords = useMemo(() => {
     let list = records;
 
-    // 1. Recessed Segmented Tab Filter
-    if (activeTab === "high_value") {
-      list = list.filter((r) => (r.expectedValue ?? 0) >= 1000000);
+    if (activeTab === "high_value" && financials) {
+      list = list.filter((r) => r.expectedValue !== null && r.expectedValue > HIGH_VALUE_THRESHOLD_INR);
     } else if (activeTab === "overdue") {
-      list = list.filter((r) => getUrgencyStatus(r.due).isOverdue);
+      list = list.filter((r) => getUtcUrgencyStatus(r.due, utcWindow.start, utcWindow.end).isOverdue);
     } else if (activeTab === "today") {
-      list = list.filter((r) => getUrgencyStatus(r.due).isToday);
+      list = list.filter((r) => getUtcUrgencyStatus(r.due, utcWindow.start, utcWindow.end).isToday);
     }
 
-    // 2. Interactive Stage Radar Cross-Filter
-    if (selectedStageFilter) {
-      list = list.filter((r) => {
-        const norm = (r.stage || "").toLowerCase();
-        if (selectedStageFilter === "negotiation") {
-          return norm.includes("negotiation") || norm.includes("won") || norm.includes("review");
-        }
-        return norm.includes(selectedStageFilter);
-      });
+    if (selectedStageObj) {
+      list = list.filter((r) =>
+        recordMatchesStage(r, { id: selectedStageObj.key, name: selectedStageObj.name })
+      );
     }
 
-    // 3. Search Query Filter across company, name, leadId, service, owner, and stage
     const q = deferredSearchQuery.trim().toLowerCase();
     if (q) {
       list = list.filter((r) =>
-        [r.name, r.company, r.leadId, r.serviceCategory, r.owner, r.stage].some(
-          (val) => val?.toLowerCase().includes(q)
+        [r.name, r.company, r.leadId, r.serviceCategory, r.owner, r.stage].some((val) =>
+          val?.toLowerCase().includes(q)
         )
       );
     }
 
     return list;
-  }, [records, activeTab, selectedStageFilter, deferredSearchQuery]);
+  }, [records, activeTab, financials, utcWindow, selectedStageObj, deferredSearchQuery]);
 
-  // Stage filter toggle handler
-  const handleToggleStageFilter = (stageId: string) => {
-    setSelectedStageFilter((prev) => (prev === stageId ? null : stageId));
-  };
+  const hasActiveFilters = Boolean(searchQuery.trim() || selectedStageKey || activeTab !== "all");
 
-  // Resolve active stage filter label for clear badge
-  const activeFilteredStageSpec = useMemo(() => {
-    if (!selectedStageFilter) return null;
-    return stageMatrixData.find((s) => s.id === selectedStageFilter)?.spec ?? null;
-  }, [selectedStageFilter, stageMatrixData]);
-
-  // Insight narrative for pipeline velocity
-  const dominantStageInsight = useMemo(() => {
-    if (!stageMatrixData.length) return "Pipeline telemetry synchronized.";
-    const highestCountStage = [...stageMatrixData].sort((a, b) => b.count - a.count)[0];
-    if (!highestCountStage || highestCountStage.count === 0) {
-      return "All active opportunities are pacing according to target SLA windows.";
-    }
-    return `Highest concentration in ${highestCountStage.name} (${highestCountStage.count} deals, avg. dwell ${highestCountStage.avgDwellDays}d).`;
-  }, [stageMatrixData]);
+  function handleResetFilters(): void {
+    setSearchQuery("");
+    setSelectedStageKey(null);
+    setActiveTab("all");
+  }
 
   return (
     <section className={styles.ledgerCard} aria-labelledby="commercial-ledger-title">
-      {/* Executive Command Header */}
+      {/* Header */}
       <header className={styles.ledgerHeader}>
         <div className={styles.headerTitleBlock}>
-          <div className={styles.eyebrowRow}>
-            <p className={styles.eyebrow}>Commercial Opportunities</p>
-          </div>
+          <p className={styles.eyebrow}>Commercial Opportunities</p>
           <h2 className={styles.title} id="commercial-ledger-title">
             Deals &amp; Opportunities
           </h2>
           <p className={styles.subtitle}>
-            Active pipeline opportunities, stage dwell velocity, and instant executive triage.
+            Active follow-up queue and live stage distribution across open pipeline.
           </p>
         </div>
 
-        {/* Search & Global Deals Action */}
         <div className={styles.headerRightActions}>
-          <button
-            type="button"
-            className={styles.viewAllDealsLink}
-            onClick={() => router.push("/admin/deals")}
-            aria-label="View all deals in commercial pipeline"
-          >
-            <span>View All Deals</span>
-            <svg className={styles.linkArrow} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-              <line x1="7" y1="17" x2="17" y2="7" />
-              <polyline points="7 7 17 7 17 17" />
-            </svg>
-          </button>
-
-          {/* 60fps Search Trigger */}
-          <div className={styles.searchWrapper}>
-            <label className={styles.searchLabel} htmlFor="ledger-search-input">
+          {recordRoute && (
+            <Link href={recordRoute} className={styles.viewAllDealsLink}>
+              <span>View All Deals</span>
               <svg
                 width="14"
                 height="14"
@@ -441,7 +351,25 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
-                className={styles.searchIcon}
+              >
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
+            </Link>
+          )}
+
+          <div className={styles.searchWrapper}>
+            <label className={styles.searchLabel} htmlFor="ledger-search-input">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -450,6 +378,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
             </label>
             <input
               id="ledger-search-input"
+              type="search"
               className={styles.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -462,7 +391,17 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                 onClick={() => setSearchQuery("")}
                 aria-label="Clear search input"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -472,79 +411,80 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
         </div>
       </header>
 
-      {/* Recessed Segmented Filter Control Rail */}
+      {/* Filter Bar */}
       <div className={styles.filterToolbar}>
-        <div className={styles.segmentedControl} role="tablist" aria-label="Filter opportunities by situation">
+        <div className={styles.filterGroup} role="group" aria-label="Filter opportunities">
           <button
             type="button"
-            role="tab"
-            aria-selected={activeTab === "all"}
-            className={`${styles.segmentBtn} ${activeTab === "all" ? styles.segmentBtnActive : ""}`}
+            aria-pressed={activeTab === "all"}
+            className={`${styles.filterBtn} ${activeTab === "all" ? styles.filterBtnActive : ""}`}
             onClick={() => setActiveTab("all")}
           >
             <span>All Deals</span>
-            <span className={styles.segmentCount}>{tabCounts.all}</span>
+            <span className={styles.filterCount}>{tabCounts.all}</span>
           </button>
 
           <button
             type="button"
-            role="tab"
-            aria-selected={activeTab === "overdue"}
-            className={`${styles.segmentBtn} ${activeTab === "overdue" ? styles.segmentBtnActive : ""}`}
+            aria-pressed={activeTab === "overdue"}
+            className={`${styles.filterBtn} ${activeTab === "overdue" ? styles.filterBtnActive : ""}`}
             onClick={() => setActiveTab("overdue")}
           >
             <span>Needs Follow-up</span>
-            <span className={`${styles.segmentCount} ${tabCounts.overdue > 0 ? styles.segmentCountAlert : ""}`}>
+            <span
+              className={`${styles.filterCount} ${
+                tabCounts.overdue > 0 && activeTab !== "overdue" ? styles.filterCountAlert : ""
+              }`}
+            >
               {tabCounts.overdue}
             </span>
           </button>
 
           <button
             type="button"
-            role="tab"
-            aria-selected={activeTab === "high_value"}
-            className={`${styles.segmentBtn} ${activeTab === "high_value" ? styles.segmentBtnActive : ""}`}
-            onClick={() => setActiveTab("high_value")}
-          >
-            <span>High Value (&gt; ₹10L)</span>
-            <span className={styles.segmentCount}>{tabCounts.highValue}</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "today"}
-            className={`${styles.segmentBtn} ${activeTab === "today" ? styles.segmentBtnActive : ""}`}
+            aria-pressed={activeTab === "today"}
+            className={`${styles.filterBtn} ${activeTab === "today" ? styles.filterBtnActive : ""}`}
             onClick={() => setActiveTab("today")}
           >
             <span>Scheduled Today</span>
-            <span className={styles.segmentCount}>{tabCounts.today}</span>
+            <span className={styles.filterCount}>{tabCounts.today}</span>
           </button>
+
+          {financials && (
+            <button
+              type="button"
+              aria-pressed={activeTab === "high_value"}
+              className={`${styles.filterBtn} ${activeTab === "high_value" ? styles.filterBtnActive : ""}`}
+              onClick={() => setActiveTab("high_value")}
+            >
+              <span>Over ₹ 10,00,000</span>
+              <span className={styles.filterCount}>{tabCounts.highValue}</span>
+            </button>
+          )}
         </div>
 
-        {/* Active Stage Cross-Filter Indicator with Tone Matching */}
-        {activeFilteredStageSpec && (
-          <div
-            className={styles.activeFilterPill}
-            style={{
-              backgroundColor: activeFilteredStageSpec.bg,
-              borderColor: activeFilteredStageSpec.border,
-              color: activeFilteredStageSpec.text,
-            }}
-          >
-            <span
-              className={styles.activeFilterDot}
-              style={{ backgroundColor: activeFilteredStageSpec.primary }}
-              aria-hidden="true"
-            />
-            <span>Stage: <strong>{activeFilteredStageSpec.name}</strong></span>
+        {selectedStageObj && (
+          <div className={styles.activeStageChip}>
+            <span>
+              Stage: <strong>{selectedStageObj.name}</strong>
+            </span>
             <button
               type="button"
               className={styles.clearStageBtn}
-              onClick={() => setSelectedStageFilter(null)}
-              aria-label="Remove stage filter"
+              onClick={() => setSelectedStageKey(null)}
+              aria-label={`Clear stage filter ${selectedStageObj.name}`}
             >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -553,225 +493,162 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
         )}
       </div>
 
-      {/* Asymmetric 60% / 40% Command Desk Grid */}
+      {/* Main Two-Column Unboxed Split */}
       <div className={styles.commandDeskGrid}>
-        {/* Left Column (60% Width): Deal Action Deck */}
-        <div className={styles.actionDeckColumn} aria-label="Commercial Deal Action Deck">
+        {/* Left Column: Active Deal Queue */}
+        <div className={styles.queueColumn} aria-label="Active Deal Queue">
           <div className={styles.columnHeaderBar}>
-            <span className={styles.columnHeaderLabel}>
-              ACTIVE DEAL FLOW ({filteredRecords.length})
-            </span>
-            <span className={styles.columnHeaderHint}>
-              1-Click advance &amp; milestone velocity
-            </span>
+            <h3 className={styles.columnHeaderLabel}>
+              Active Deal Queue ({filteredRecords.length})
+            </h3>
+            <span className={styles.columnHeaderHint}>UTC follow-up priority</span>
           </div>
 
-          {!recordsReady ? (
-            /* Layout-Matched Zero-CLS Skeletons */
-            <div className={styles.cardListStack}>
+          {recordsReady === undefined ? (
+            <div className={styles.skeletonList} aria-busy="true" aria-label="Loading active deals">
               {[1, 2, 3, 4, 5].map((idx) => (
-                <div key={idx} className={styles.cardSkeleton} />
+                <div key={idx} className={styles.rowSkeleton} />
               ))}
             </div>
+          ) : recordsReady === false ? (
+            <div className={styles.unavailableBanner} role="alert">
+              <div className={styles.unavailableCopy}>
+                <p className={styles.unavailableTitle}>Deal queue unavailable</p>
+                <p className={styles.unavailableSubtitle}>
+                  Unable to load active opportunities right now. Please refresh or open the full deals workspace.
+                </p>
+              </div>
+              {recordRoute && (
+                <Link href={recordRoute} className={styles.unavailableLink}>
+                  Open Deals
+                </Link>
+              )}
+            </div>
           ) : filteredRecords.length === 0 ? (
-            /* Refined Editorial Empty State */
             <div className={styles.emptyStateContainer}>
-              <p className={styles.emptyTitle}>No matching opportunities found</p>
+              <p className={styles.emptyTitle}>No matching opportunities</p>
               <p className={styles.emptySubtitle}>
-                {searchQuery || selectedStageFilter || activeTab !== "all"
-                  ? "Adjust search terms, clear active stage spotlight, or reset tab filters."
-                  : "All current deals have been progressed. New incoming inquiries will appear here."}
+                {hasActiveFilters
+                  ? "No active deals match your current filter or search selection."
+                  : "No active deals are currently in the queue."}
               </p>
-              {(searchQuery || selectedStageFilter || activeTab !== "all") && (
+              {hasActiveFilters && (
                 <button
                   type="button"
                   className={styles.resetFilterBtn}
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedStageFilter(null);
-                    setActiveTab("all");
-                  }}
+                  onClick={handleResetFilters}
                 >
-                  Reset all filters
+                  Reset filters
                 </button>
               )}
             </div>
           ) : (
-            /* Discrete Tactile Cardlet Deck with Editorial Color Tokens */
-            <div className={styles.cardListStack}>
+            <ul className={styles.dealList}>
               {filteredRecords.map((record) => {
                 const displayName = record.company || record.name || "Client Engagement";
                 const initials = getInitials(displayName);
-                const categorySpec = getServiceCategorySpec(record.serviceCategory);
-                const stageSpec = resolveStageSpec(record.stage);
-                const urgency = getUrgencyStatus(record.due);
-                const isSelected = selectedDealId === record.id;
-                const stageDisplay = record.stage || "New";
+                const urgency = getUtcUrgencyStatus(record.due, utcWindow.start, utcWindow.end);
+                const isAdvancing = pendingRecordId === record.id;
 
                 return (
-                  <article
-                    key={record.id}
-                    className={`${styles.dealCardlet} ${isSelected ? styles.selectedCardlet : ""}`}
-                    style={
-                      {
-                        "--stage-primary": stageSpec.primary,
-                        "--stage-secondary": stageSpec.secondary,
-                        "--stage-bg": stageSpec.bg,
-                        "--stage-border": stageSpec.border,
-                        "--stage-glow": stageSpec.glow,
-                        "--stage-text": stageSpec.text,
-                      } as React.CSSProperties
-                    }
-                  >
-                    {/* Left Cluster: Squircle Monogram & Identity */}
-                    <div className={styles.cardletLeftCluster}>
-                      <div
-                        className={styles.monogramAvatar}
-                        style={{
-                          background: categorySpec.avatarBg,
-                          color: categorySpec.text,
-                          borderColor: categorySpec.border,
-                        }}
-                        aria-hidden="true"
-                      >
+                  <li key={record.id} className={styles.dealRow}>
+                    {/* Identity & Metadata */}
+                    <div className={styles.rowIdentity}>
+                      <div className={styles.monogramAvatar} aria-hidden="true">
                         {initials}
                       </div>
-                      <div className={styles.dealIdentity}>
-                        <div className={styles.dealTitleRow}>
-                          <Link
-                            href={record.href || `/admin/deals/${record.id}`}
-                            className={styles.dealTitle}
-                            title={displayName}
-                            onClick={() => setSelectedDealId(record.id)}
-                          >
-                            {displayName}
-                          </Link>
-                          {record.serviceCategory && (
-                            <span
-                              className={styles.serviceTag}
-                              style={{
-                                backgroundColor: categorySpec.bg,
-                                borderColor: categorySpec.border,
-                                color: categorySpec.text,
-                              }}
+                      <div className={styles.identityContent}>
+                        <div className={styles.titleLine}>
+                          {record.href ? (
+                            <Link
+                              href={record.href}
+                              className={styles.dealTitleLink}
+                              title={displayName}
+                              onClick={() => onOpenDossier?.(record)}
                             >
-                              {categorySpec.name}
+                              {displayName}
+                            </Link>
+                          ) : (
+                            <span className={styles.dealTitleText} title={displayName}>
+                              {displayName}
+                            </span>
+                          )}
+                          {record.serviceCategory && (
+                            <span className={styles.serviceCategoryText}>
+                              · {record.serviceCategory}
                             </span>
                           )}
                         </div>
-                        <div className={styles.dealMetaRow}>
+                        <div className={styles.metaLine}>
                           <span className={styles.leadId}>{record.leadId || "LD-1000"}</span>
-                          <span className={styles.metaDivider}>•</span>
+                          <span aria-hidden="true">·</span>
+                          <span className={styles.stageLabel}>{record.stage}</span>
+                          <span aria-hidden="true">·</span>
                           <span className={styles.ownerText}>{record.owner || "Unassigned"}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Center Cluster: 4-Tick Continuous Milestone Track & Urgency */}
-                    <div className={styles.cardletCenterCluster}>
-                      <div className={styles.milestoneTrackWrapper}>
-                        <div className={styles.milestoneHeader}>
-                          <span
-                            className={styles.stageNameText}
-                            style={{ color: stageSpec.text }}
-                          >
-                            {stageDisplay}
-                          </span>
-                          <span className={styles.stagePercentText}>
-                            {stageSpec.percentage}%
-                          </span>
-                        </div>
-                        <div className={styles.milestoneRail}>
-                          <div
-                            className={styles.milestoneFill}
-                            style={{
-                              width: `${stageSpec.percentage}%`,
-                              background: `linear-gradient(90deg, ${stageSpec.primary} 0%, ${stageSpec.secondary} 100%)`,
-                              boxShadow: `0 0 8px ${stageSpec.glow}`,
-                            }}
-                          />
-                          <div className={styles.milestoneTick} style={{ left: "20%" }} />
-                          <div className={styles.milestoneTick} style={{ left: "40%" }} />
-                          <div className={styles.milestoneTick} style={{ left: "60%" }} />
-                          <div className={styles.milestoneTick} style={{ left: "80%" }} />
-                        </div>
-                      </div>
-                      <div className={styles.urgencyTextRow}>
-                        <span
-                          className={`${styles.urgencyText} ${
-                            urgency.isOverdue
-                              ? styles.urgencyOverdue
-                              : urgency.isToday
-                              ? styles.urgencyToday
-                              : styles.urgencyTrack
-                          }`}
-                        >
-                          {urgency.text}
+                    {/* Urgency & Monetary Value */}
+                    <div className={styles.rowStatusAndValue}>
+                      <span
+                        className={`${styles.urgencyBadge} ${
+                          urgency.tone === "overdue"
+                            ? styles.urgencyOverdue
+                            : urgency.tone === "today"
+                            ? styles.urgencyToday
+                            : styles.urgencyTrack
+                        }`}
+                      >
+                        {urgency.text}
+                      </span>
+
+                      {financials && (
+                        <span className={styles.dealValue}>
+                          {record.expectedValue !== null
+                            ? formatCrmCurrency(record.expectedValue)
+                            : "—"}
                         </span>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Right Cluster: Swiss Tabular Valuation & Quick Actions */}
-                    <div className={styles.cardletRightCluster}>
-                      <div className={styles.valuationBox}>
-                        {financials ? (
-                          <span className={styles.currencyDisplay}>
-                            <span className={styles.currencyGlyph}>₹</span>
-                            <span className={styles.currencyDigits}>
-                              {formatIndianNumber(record.expectedValue ?? 0)}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className={styles.currencyMasked}>Confidential</span>
-                        )}
-                      </div>
-
-                      <div className={styles.actionsGroup}>
-                        {canTasks && (
-                          <button
-                            type="button"
-                            className={styles.advanceBtn}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAdvanceStage?.(record);
-                            }}
-                            aria-label={`Advance stage for ${displayName}`}
-                          >
-                            <span>Advance</span>
-                            <svg
-                              width="11"
-                              height="11"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true"
-                            >
-                              <line x1="5" y1="12" x2="19" y2="12" />
-                              <polyline points="12 5 19 12 12 19" />
-                            </svg>
-                          </button>
-                        )}
-
+                    {/* Actions */}
+                    <div className={styles.rowActions}>
+                      {canTasks && (
                         <button
                           type="button"
-                          className={styles.openDossierBtn}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenDossier?.(record);
-                          }}
-                          title="Open Lead Dossier"
-                          aria-label={`Open dossier for ${displayName}`}
+                          className={styles.advanceBtn}
+                          disabled={isAdvancing}
+                          aria-busy={isAdvancing}
+                          onClick={() => onAdvanceStage?.(record)}
+                          aria-label={`Advance stage for ${displayName}`}
                         >
+                          {isAdvancing ? (
+                            <>
+                              <span className={styles.spinner} aria-hidden="true" />
+                              <span>Advancing…</span>
+                            </>
+                          ) : (
+                            <span>Advance</span>
+                          )}
+                        </button>
+                      )}
+
+                      {record.href && (
+                        <Link
+                          href={record.href}
+                          className={styles.openLink}
+                          aria-label={`Open ${displayName}`}
+                          onClick={() => onOpenDossier?.(record)}
+                        >
+                          <span>Open</span>
                           <svg
-                            width="12"
-                            height="12"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2.2"
+                            strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             aria-hidden="true"
@@ -779,163 +656,86 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                             <line x1="7" y1="17" x2="17" y2="7" />
                             <polyline points="7 7 17 7 17 17" />
                           </svg>
-                        </button>
-                      </div>
+                        </Link>
+                      )}
                     </div>
-                  </article>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </div>
 
-        {/* Right Column (40% Width): Live Stage Velocity Radar */}
-        <aside className={styles.velocityRadarColumn} aria-label="Pipeline Stage Velocity Matrix">
-          <div className={styles.radarHeaderBlock}>
-            <div className={styles.radarEyebrowRow}>
-              <span className={styles.radarEyebrow}>PIPELINE STAGE VELOCITY</span>
-              <span className={styles.radarLiveBadge}>INTERACTIVE</span>
-            </div>
-            <div className={styles.radarHeroMetricRow}>
-              <div className={styles.radarHeroValuation}>
-                {financials ? (
-                  <span className={styles.heroCurrencyDisplay}>
-                    <span className={styles.heroCurrencyGlyph}>₹</span>
-                    <span className={styles.heroCurrencyDigits}>
-                      {formatIndianNumber(totalPipelineValue)}
-                    </span>
+        {/* Right Column: Pipeline Now · Stage Summary */}
+        <aside className={styles.stageSummaryColumn} aria-label="Pipeline Now Stage Summary">
+          <div className={styles.summaryHeader}>
+            <p className={styles.summaryEyebrow}>Pipeline Now · Stage Summary</p>
+            <div className={styles.summaryHeroRow}>
+              {!pipelineReady ? (
+                <p className={styles.summaryUnavailable}>Pipeline unavailable</p>
+              ) : financials ? (
+                <>
+                  <p className={styles.summaryHeroValue}>
+                    {formatCrmCurrency(totalSummaryValue)}
+                  </p>
+                  <span className={styles.summaryHeroCount}>
+                    {totalSummaryCount} {totalSummaryCount === 1 ? "active deal" : "active deals"}
                   </span>
-                ) : (
-                  <span className={styles.heroCurrencyDigits}>Pipeline Protected</span>
-                )}
-              </div>
-              <div className={styles.radarSubMetric}>
-                <span>{records.length} Active Deals</span>
-              </div>
+                </>
+              ) : (
+                <p className={styles.summaryHeroValue}>
+                  {totalSummaryCount} {totalSummaryCount === 1 ? "Active Deal" : "Active Deals"}
+                </p>
+              )}
             </div>
-
-            {/* Fundora-Style Macro Distribution Segmented Ribbon Bar */}
-            <div
-              className={styles.macroRibbonTrack}
-              title="Continuous Stage Distribution across total pipeline"
-              aria-label="Proportional stage volume allocation"
-            >
-              {stageMatrixData.map((stage) => {
-                if (stage.percentage <= 0) return null;
-                return (
-                  <div
-                    key={stage.id}
-                    className={styles.macroRibbonSegment}
-                    style={{
-                      width: `${stage.percentage}%`,
-                      background: `linear-gradient(90deg, ${stage.spec.primary} 0%, ${stage.spec.secondary} 100%)`,
-                    }}
-                    title={`${stage.name}: ${stage.percentage}% volume`}
-                  />
-                );
-              })}
-            </div>
-
-            <p className={styles.radarInstruction}>
-              Click any stage to isolate bottlenecks &amp; cross-filter the action deck.
+            <p className={styles.summaryHint}>
+              Select a stage below to filter the active queue.
             </p>
           </div>
 
-          {/* Interactive Luminous Stage Rows */}
-          <div className={styles.stageMatrixList}>
-            {stageMatrixData.map((stage) => {
-              const isFilterActive = selectedStageFilter === stage.id;
-              const { spec } = stage;
+          <div className={styles.stageList}>
+            {stageRows.map((stage) => {
+              const isSelected = selectedStageKey === stage.key;
 
               return (
                 <button
-                  key={stage.id}
+                  key={stage.key}
                   type="button"
-                  className={`${styles.stageMatrixRow} ${isFilterActive ? styles.stageMatrixRowActive : ""}`}
-                  onClick={() => handleToggleStageFilter(stage.id)}
-                  aria-pressed={isFilterActive}
-                  style={
-                    {
-                      "--stage-primary": spec.primary,
-                      "--stage-secondary": spec.secondary,
-                      "--stage-bg": spec.bg,
-                      "--stage-border": spec.border,
-                      "--stage-glow": spec.glow,
-                      "--stage-text": spec.text,
-                    } as React.CSSProperties
+                  aria-pressed={isSelected}
+                  className={`${styles.stageButton} ${isSelected ? styles.stageButtonSelected : ""}`}
+                  onClick={() =>
+                    setSelectedStageKey((prev) => (prev === stage.key ? null : stage.key))
                   }
                 >
-                  <div className={styles.stageRowTopLine}>
-                    <div className={styles.stageTitleGroup}>
-                      <span
-                        className={styles.stageDotIndicator}
-                        style={{
-                          backgroundColor: spec.primary,
-                          boxShadow: `0 0 6px ${spec.glow}`,
-                        }}
-                      />
-                      <span className={styles.stageNameLabel}>{stage.name}</span>
-                      <span
-                        className={styles.stageCountPill}
-                        style={{
-                          backgroundColor: spec.bg,
-                          borderColor: spec.border,
-                          color: spec.text,
-                        }}
-                      >
-                        {stage.count} deals
-                      </span>
+                  <div className={styles.stageTopRow}>
+                    <div className={styles.stageNameGroup}>
+                      <span className={styles.stageName}>{stage.name}</span>
+                      <span className={styles.stageCount}>{stage.count} deals</span>
                     </div>
-                    <div className={styles.stageValuationGroup}>
-                      <span className={styles.stageValueText}>
-                        {financials ? `₹ ${formatIndianNumber(stage.value)}` : "—"}
+                    {financials && (
+                      <span className={styles.stageValue}>
+                        {stage.value !== null ? formatCrmCurrency(stage.value) : "—"}
                       </span>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Luminous Proportional Gradient Distribution Bar */}
-                  <div className={styles.stageDistributionTrack}>
+                  <div className={styles.stageTrack} aria-hidden="true">
                     <div
-                      className={styles.stageDistributionBar}
-                      style={{
-                        width: `${stage.percentage}%`,
-                        background: `linear-gradient(90deg, ${spec.primary} 0%, ${spec.secondary} 100%)`,
-                        boxShadow: `0 1px 6px ${spec.glow}`,
-                      }}
+                      className={`${styles.stageFill} ${isSelected ? styles.stageFillSelected : ""}`}
+                      style={{ width: `${stage.proportion}%` }}
                     />
                   </div>
 
-                  <div className={styles.stageRowBottomLine}>
-                    <span className={styles.stageDwellText}>Avg. dwell {stage.avgDwellDays}d</span>
-                    <span
-                      className={styles.stageShareText}
-                      style={{ color: spec.text, fontWeight: 600 }}
-                    >
-                      {stage.percentage}% volume
-                    </span>
-                  </div>
+                  {stage.avgStageAgeDays !== null && (
+                    <div className={styles.stageMetaRow}>
+                      <span className={styles.stageAgeText}>
+                        Avg. stage age: {stage.avgStageAgeDays}d
+                      </span>
+                    </div>
+                  )}
                 </button>
               );
             })}
-          </div>
-
-          {/* Contextual Velocity Insight Banner */}
-          <div className={styles.velocityInsightBox}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className={styles.insightIcon}
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-            <p className={styles.velocityInsightText}>{dominantStageInsight}</p>
           </div>
         </aside>
       </div>

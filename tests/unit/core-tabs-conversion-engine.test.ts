@@ -9,6 +9,10 @@ import { build } from 'esbuild';
 import { buildCommercialSearchFilter } from '@/app/admin/lib/commercialSearch';
 import { dashboardFeature, dashboardTab } from '@/app/admin/lib/dashboardContracts';
 import { formatAuditDeltaNarrative } from '@/app/admin/components/DossierDrawer/dossierUtils';
+import {
+  aggregateTimeframeRevenue,
+  resolveTimeframeBounds,
+} from '@/app/admin/lib/timeframeUtils';
 
 const root = process.cwd();
 const read = (rel: string) => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -338,5 +342,42 @@ describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrenc
     // MockStageQuery returns null for funnel_statuses; verifying it reaches catalog lookup rather than financial rejection
     assert.equal(lostResult.success, false);
     assert.doesNotMatch(lostResult.error || '', /financial|negotiation/i);
+  });
+
+  it('Overview timeframe bounds avoid boundary overlap, track real intake/conversion counts, and enforce Editorial Luxury contracts', () => {
+    const ref = new Date('2026-11-26T12:00:00Z');
+    const bounds = resolveTimeframeBounds('30d', ref);
+    assert.equal(
+      bounds.priorEnd.getTime(),
+      bounds.currentStart.getTime() - 1,
+      'priorEnd must end 1ms before currentStart to prevent boundary double-counting'
+    );
+
+    const chart = aggregateTimeframeRevenue(
+      '30d',
+      bounds,
+      [{ convertedAt: '2026-11-25T10:00:00Z', amount: 250000 }],
+      [
+        { createdAt: '2026-11-25T09:00:00Z', amount: 100000 },
+        { createdAt: '2026-10-01T09:00:00Z', amount: 900000 },
+      ]
+    );
+    assert.equal(chart.length, 8);
+    assert.equal(chart.reduce((s, p) => s + (p.cashCount ?? 0), 0), 1);
+    assert.equal(chart.reduce((s, p) => s + (p.intakeCount ?? 0), 0), 1);
+    assert.equal(chart.reduce((s, p) => s + (p.intakeVal ?? 0), 0), 100000);
+    assert.ok(chart[7].month.includes('26 Nov'), 'final rolling bucket label must show horizon end date');
+
+    const root = process.cwd();
+    const read = (rel: string) => fs.readFileSync(path.join(root, rel), 'utf8');
+    const vcard = read('src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx');
+    const vcardCss = read('src/app/admin/components/Dashboard/LuxuryVirtualCard.module.scss');
+    const ledger = read('src/app/admin/components/Dashboard/CommercialDealsLedger.tsx');
+    const ledgerCss = read('src/app/admin/components/Dashboard/CommercialDealsLedger.module.scss');
+
+    assert.ok(!vcardCss.includes('#111827') && !vcardCss.includes('#0f172a'), 'LuxuryVirtualCard must use light DESIGN.md surface');
+    assert.ok(!vcard.includes('watermarkSvg') && vcard.includes('Pipeline unavailable'));
+    assert.ok(!ledger.includes('10L') && !ledger.includes('macroRibbonTrack') && ledger.includes('getUtcDayWindow'));
+    assert.ok(!ledgerCss.includes('overflow-x: auto'), 'CommercialDealsLedger filter strip must wrap instead of clipping scrollbars');
   });
 });

@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/page.tsx": {
-    "mtime": 1795592661.772603,
-    "seen": 1795594373.458381,
-    "ast_hash": "476d645ff410938fbf62cfdc8be5037e",
+    "mtime": 1795687113.4272442,
+    "seen": 1795687830.023912,
+    "ast_hash": "4b2e4a39876882ea34497318bd5adb24",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/settings/components/SettingsWorkspaceClient.tsx": {
@@ -1248,9 +1248,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/timeframeUtils.ts": {
-    "mtime": 1795594180.7742264,
-    "seen": 1795594373.4938006,
-    "ast_hash": "3fe4639f45590759215c986a60f804ba",
+    "mtime": 1795686934.4708133,
+    "seen": 1795687830.102251,
+    "ast_hash": "857e3d9537f44bc96041d94e68af5da5",
     "semantic_hash": ""
   },
   "src/app/admin/login/LoginForm.tsx": {
@@ -5640,9 +5640,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/OverviewWorkspace.tsx": {
-    "mtime": 1795595151.0410664,
-    "seen": 1795596214.2677696,
-    "ast_hash": "58c5ea6d64345308059255a436d6eb6d",
+    "mtime": 1795687306.8883538,
+    "seen": 1795687830.038926,
+    "ast_hash": "d9b81073b261bd5e16b6e9b16c085a94",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/ShortcutHint.tsx": {
@@ -5658,9 +5658,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/lib/dashboardContracts.ts": {
-    "mtime": 1794764218.818508,
-    "seen": 1794764899.0990756,
-    "ast_hash": "2812dd77ffbdae17803eb2f07bed7bed",
+    "mtime": 1795686936.5845728,
+    "seen": 1795687830.1012511,
+    "ast_hash": "e6ef3407fd736b6bab07a304f1c7cdf6",
     "semantic_hash": ""
   },
   "tests/unit/dashboard-server-assembly.test.ts": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1795595240.559403,
-    "seen": 1795596214.2677696,
-    "ast_hash": "fe70f8d7fd27fa39f1a75d75211de0b6",
+    "mtime": 1795687247.5722675,
+    "seen": 1795687830.0379255,
+    "ast_hash": "f50142182ac7c85701338e4763d592d8",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6024,15 +6024,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1795596382.3027525,
-    "seen": 1795596592.4905922,
-    "ast_hash": "1316d0ad90422e42eca2cf300b444b7b",
+    "mtime": 1795686957.0755215,
+    "seen": 1795687830.0349123,
+    "ast_hash": "16621cf83eaf3ccc9a60317ae1ba2741",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1795595170.1449058,
-    "seen": 1795596214.265672,
-    "ast_hash": "1475917c1d523a9cf6aef559c275708d",
+    "mtime": 1795686976.930236,
+    "seen": 1795687830.0349123,
+    "ast_hash": "96d00f042d4e23cf0f7a6e4aecff9a8f",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
@@ -6210,9 +6210,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx": {
-    "mtime": 1795592454.523126,
-    "seen": 1795594373.472667,
-    "ast_hash": "dcd08eaa25ca50c530e16e2de6e7415f",
+    "mtime": 1795686909.0352523,
+    "seen": 1795687830.038926,
+    "ast_hash": "cd47f19a0e4cf6dd1c6ebb9f5152361a",
     "semantic_hash": ""
   },
   "docs/LuxuryDashboard/LUXURY_DASHBOARD_GREENFIELD_PLAN.md": {
@@ -6984,9 +6984,9 @@
     "semantic_hash": ""
   },
   "tests/unit/overview-charts-telemetry-redesign.test.ts": {
-    "mtime": 1795594041.387913,
-    "seen": 1795594373.563133,
-    "ast_hash": "20db2339595e421b2273807bae2d715c",
+    "mtime": 1795687250.642334,
+    "seen": 1795687830.265021,
+    "ast_hash": "d0195c17cec0b9791a94f9e6f7112cd7",
     "semantic_hash": ""
   },
   "docs/context/2026-11-24_15-31-26.md": {
@@ -7242,9 +7242,9 @@
     "semantic_hash": ""
   },
   "tests/unit/core-tabs-conversion-engine.test.ts": {
-    "mtime": 1795597428.122043,
-    "seen": 1795598912.5462139,
-    "ast_hash": "c302f87877989af59f5fadc03021bd4a",
+    "mtime": 1795687256.074196,
+    "seen": 1795687830.2630186,
+    "ast_hash": "82c89e29ebea0a449cdb2fcc515d2304",
     "semantic_hash": ""
   },
   "docs/sales_funnel/core_tabs_redesign/AUDIT_REPORT_FEATURES_AND_SECURITY.md": {
