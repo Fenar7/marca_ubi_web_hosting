@@ -386,7 +386,11 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
               }}
               onKeyDown={(e) => handlePerspectiveKeyDown(e, 0)}
             >
-              {financials ? "New Intake" : "New Leads"}
+              <span
+                className={`${styles.perspectiveDot} ${styles.perspectiveDotIntake}`}
+                aria-hidden="true"
+              />
+              <span>{financials ? "New Intake" : "New Leads"}</span>
             </button>
             <button
               ref={(el) => {
@@ -403,7 +407,11 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
               }}
               onKeyDown={(e) => handlePerspectiveKeyDown(e, 1)}
             >
-              {financials ? "Converted Value" : "Converted Deals"}
+              <span
+                className={`${styles.perspectiveDot} ${styles.perspectiveDotRealized}`}
+                aria-hidden="true"
+              />
+              <span>{financials ? "Converted Value" : "Converted Deals"}</span>
             </button>
           </div>
         </div>
@@ -578,7 +586,13 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
                         {val > 0 ? (
                           <span
                             className={`${styles.barFill} ${
-                              isSelected ? styles.barFillActive : styles.barFillIdle
+                              perspective === "realized"
+                                ? isSelected
+                                  ? styles.barFillRealizedActive
+                                  : styles.barFillRealizedIdle
+                                : isSelected
+                                  ? styles.barFillIntakeActive
+                                  : styles.barFillIntakeIdle
                             }`}
                             style={{ height: `${heightPct}%` }}
                           />
@@ -601,8 +615,23 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
           </div>
 
           {spotlightItem && (
-            <div className={styles.selectedIntervalStrip} aria-live="polite">
+            <div
+              className={`${styles.selectedIntervalStrip} ${
+                perspective === "realized"
+                  ? styles.selectedIntervalStripRealized
+                  : styles.selectedIntervalStripIntake
+              }`}
+              aria-live="polite"
+            >
               <div className={styles.selectedIntervalMeta}>
+                <span
+                  className={`${styles.selectedDot} ${
+                    perspective === "realized"
+                      ? styles.selectedDotRealized
+                      : styles.selectedDotIntake
+                  }`}
+                  aria-hidden="true"
+                />
                 <span className={styles.selectedPeriodLabel}>
                   {spotlightItem.fullPeriod || spotlightItem.month}
                 </span>

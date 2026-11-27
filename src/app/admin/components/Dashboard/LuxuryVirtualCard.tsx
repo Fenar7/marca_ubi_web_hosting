@@ -2,7 +2,7 @@
 
 /**
  * @file LuxuryVirtualCard.tsx
- * @description Light editorial pipeline snapshot card for the Marca Ubi Commercial Desk.
+ * @description Obsidian Executive anchor card for the Marca Ubi Commercial Desk.
  *              Displays visible open pipeline valuation (or active deal count when financials
  *              are restricted), cohort win summary, and an accessible drill-down link.
  * @module admin/components/Dashboard/LuxuryVirtualCard
@@ -26,6 +26,10 @@ export interface LuxuryVirtualCardProps {
   recordRoute?: string | null;
 }
 
+/**
+ * Renders the Obsidian Executive Visible Pipeline card with 1:1 sibling numeral
+ * typography and explicit unavailable / restricted-financials states.
+ */
 export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   userName = "MARCA UBI DESK",
   balance = null,
@@ -37,7 +41,7 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   recordRoute,
 }) => {
   const safeDealCount = dealCount ?? 0;
-  const isPipelineUnavailable =
+  const isUnavailable =
     pipelineReady === false || (financials && balance === null);
 
   const canNavigateToDeals = recordRoute !== null;
@@ -55,12 +59,21 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
       aria-label={`Visible Pipeline snapshot for ${userName}`}
     >
       <header className={styles.cardHeader}>
-        <span className={styles.eyebrow}>VISIBLE PIPELINE</span>
-        <span className={styles.scopeSubtitle}>Current open &amp; potential deals</span>
+        <div className={styles.headerTitleGroup}>
+          <div className={styles.eyebrowRow}>
+            <span className={styles.statusDot} aria-hidden="true" />
+            <span className={styles.eyebrow}>VISIBLE PIPELINE</span>
+          </div>
+          <span className={styles.scopeSubtitle}>Current open &amp; potential deals</span>
+        </div>
+
+        <span className={styles.dealsCapsule}>
+          {safeDealCount} {safeDealCount === 1 ? "Deal" : "Deals"}
+        </span>
       </header>
 
       <div className={styles.cardBody}>
-        {isPipelineUnavailable ? (
+        {isUnavailable ? (
           <p className={styles.unavailableText}>Pipeline unavailable</p>
         ) : financials && balance !== null ? (
           <p className={styles.heroFigure}>{formatCrmCurrency(balance)}</p>
@@ -72,7 +85,7 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
       <footer className={styles.cardFooter}>
         {canNavigateToDeals ? (
           <Link href={resolvedDealsHref} className={styles.dealsLink}>
-            <span>Active Deals: {safeDealCount}</span>
+            <span>Open pipeline</span>
             <svg
               className={styles.linkChevron}
               width="16"
@@ -89,7 +102,7 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
             </svg>
           </Link>
         ) : (
-          <span className={styles.dealsText}>Active Deals: {safeDealCount}</span>
+          <span className={styles.dealsText}>Active deals summary</span>
         )}
 
         {cohortText && <span className={styles.cohortText}>{cohortText}</span>}

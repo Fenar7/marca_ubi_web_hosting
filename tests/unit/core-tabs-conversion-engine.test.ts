@@ -372,12 +372,16 @@ describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrenc
     const read = (rel: string) => fs.readFileSync(path.join(root, rel), 'utf8');
     const vcard = read('src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx');
     const vcardCss = read('src/app/admin/components/Dashboard/LuxuryVirtualCard.module.scss');
+    const chartSource = read('src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx');
+    const chartCss = read('src/app/admin/components/Dashboard/CommercialVelocityBarChart.module.scss');
     const ledger = read('src/app/admin/components/Dashboard/CommercialDealsLedger.tsx');
     const ledgerCss = read('src/app/admin/components/Dashboard/CommercialDealsLedger.module.scss');
 
-    assert.ok(!vcardCss.includes('#111827') && !vcardCss.includes('#0f172a'), 'LuxuryVirtualCard must use light DESIGN.md surface');
+    assert.ok(vcardCss.includes('#111318') && vcardCss.includes('helvetica-neue'), 'LuxuryVirtualCard must render Obsidian anchor with Helvetica Neue light numerals');
     assert.ok(!vcard.includes('watermarkSvg') && vcard.includes('Pipeline unavailable'));
-    assert.ok(!ledger.includes('10L') && !ledger.includes('macroRibbonTrack') && ledger.includes('getUtcDayWindow'));
+    assert.ok(chartCss.includes('#ea580c') && chartCss.includes('#059669') && chartCss.includes('helvetica-neue'), 'CommercialVelocityBarChart must use multi-color semantic series & Helvetica Neue numerals');
+    assert.ok(chartSource.includes('Outcomes & Pipeline Intake'));
+    assert.ok(ledger.includes('stagePipelineStrip') && ledger.includes('dealsTable') && !ledger.includes('10L') && ledger.includes('getUtcDayWindow'));
     assert.ok(!ledgerCss.includes('overflow-x: auto'), 'CommercialDealsLedger filter strip must wrap instead of clipping scrollbars');
   });
 });

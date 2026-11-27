@@ -6024,15 +6024,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1795686957.0755215,
-    "seen": 1795687830.0349123,
-    "ast_hash": "16621cf83eaf3ccc9a60317ae1ba2741",
+    "mtime": 1795760630.8612483,
+    "seen": 1795762110.5304618,
+    "ast_hash": "9d8a4d29222e10e9266bbd55ef5ec8cc",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
-    "mtime": 1795686976.930236,
-    "seen": 1795687830.0349123,
-    "ast_hash": "96d00f042d4e23cf0f7a6e4aecff9a8f",
+    "mtime": 1795760568.0448503,
+    "seen": 1795762110.5339768,
+    "ast_hash": "43bb6cf8cb3bf5898847ab363568de13",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineDonutChart.tsx": {
@@ -6210,9 +6210,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx": {
-    "mtime": 1795686909.0352523,
-    "seen": 1795687830.038926,
-    "ast_hash": "cd47f19a0e4cf6dd1c6ebb9f5152361a",
+    "mtime": 1795760602.902515,
+    "seen": 1795762110.5355072,
+    "ast_hash": "8fb7a2d73415164c9fedec0610ddd17b",
     "semantic_hash": ""
   },
   "docs/LuxuryDashboard/LUXURY_DASHBOARD_GREENFIELD_PLAN.md": {
@@ -7242,9 +7242,9 @@
     "semantic_hash": ""
   },
   "tests/unit/core-tabs-conversion-engine.test.ts": {
-    "mtime": 1795687256.074196,
-    "seen": 1795687830.2630186,
-    "ast_hash": "82c89e29ebea0a449cdb2fcc515d2304",
+    "mtime": 1795761106.4279516,
+    "seen": 1795762110.631525,
+    "ast_hash": "debe97e26c7695378888485e7a52ad23",
     "semantic_hash": ""
   },
   "docs/sales_funnel/core_tabs_redesign/AUDIT_REPORT_FEATURES_AND_SECURITY.md": {

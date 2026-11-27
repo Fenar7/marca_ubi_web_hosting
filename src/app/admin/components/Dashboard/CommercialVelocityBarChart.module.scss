@@ -1,8 +1,9 @@
 /**
  * @file CommercialVelocityBarChart.module.scss
  * @description Editorial Luxury styling for Outcomes & Pipeline Intake Bar Chart.
- *              Uses #ffffff surface, #d8d8d4 hairline, #595955 idle bars, #ea002a selected bar,
- *              #8c8c86 2px baseline, zero gradients/shadows, and >=44px touch targets.
+ *              Uses #ffffff surface, 20px radius, subtle ambient shadow, Helvetica Neue 300
+ *              tabular numerals, semantic multi-color series (Orange intake, Emerald converted),
+ *              and >=44px touch targets.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -11,10 +12,10 @@
   width: 100%;
   flex: 1 1 auto;
   background: #ffffff;
-  border: 1px solid #d8d8d4;
-  border-radius: 12px;
-  box-shadow: none;
-  padding: 20px 22px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -2px rgba(12, 12, 13, 0.03), 0 1px 3px rgba(12, 12, 13, 0.02);
+  padding: 24px 26px 20px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -56,12 +57,12 @@
 
 .heroValuation {
   margin: 6px 0 4px;
-  font-family: var(--font-circular), sans-serif;
-  font-size: 28px;
-  font-weight: 500;
-  letter-spacing: normal;
-  line-height: 1.15;
-  color: #111111;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(1.85rem, 2.3vw, 2.35rem);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: #111827;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
   overflow-wrap: anywhere;
@@ -88,6 +89,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 44px;
   padding: 0 14px;
   border-radius: 8px;
@@ -109,6 +111,21 @@
     outline: 2px solid #9c001e;
     outline-offset: 2px;
   }
+}
+
+.perspectiveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.perspectiveDotIntake {
+  background: #f97316;
+}
+
+.perspectiveDotRealized {
+  background: #059669;
 }
 
 .perspectiveBtnActive {
@@ -400,27 +417,39 @@
 .barFill {
   display: block;
   width: min(28px, 80%);
-  border-radius: 4px 4px 0 0;
-  transition: background-color 0.15s ease, height 0.2s ease;
+  border-radius: 5px 5px 0 0;
+  transition: background 0.15s ease, height 0.2s ease;
 }
 
-.barFillIdle {
-  background: #595955;
+.barFillIntakeIdle {
+  background: #fed7aa;
 }
 
-.barColumnBtn:hover .barFillIdle {
-  background: #454542;
+.barColumnBtn:hover .barFillIntakeIdle {
+  background: #fdba74;
 }
 
-.barFillActive {
-  background: #ea002a;
+.barFillIntakeActive {
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+}
+
+.barFillRealizedIdle {
+  background: #a7f3d0;
+}
+
+.barColumnBtn:hover .barFillRealizedIdle {
+  background: #6ee7b7;
+}
+
+.barFillRealizedActive {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
 }
 
 .barZeroTick {
   display: block;
   width: min(28px, 80%);
   height: 3px;
-  background: #d8d8d4;
+  background: #cbd5e1;
   border-radius: 2px 2px 0 0;
 }
 
@@ -452,16 +481,63 @@
   gap: 8px 16px;
   min-height: 44px;
   padding: 8px 14px;
-  background: #efefed;
-  border: 1px solid #d8d8d4;
-  border-radius: 8px;
+  border-radius: 10px;
+}
+
+.selectedIntervalStripIntake {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+
+  .selectedPeriodLabel {
+    color: #9a3412;
+  }
+
+  .stripActionLink {
+    color: #9a3412;
+
+    &:hover {
+      color: #7c2d12;
+    }
+  }
+}
+
+.selectedIntervalStripRealized {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+
+  .selectedPeriodLabel {
+    color: #065f46;
+  }
+
+  .stripActionLink {
+    color: #065f46;
+
+    &:hover {
+      color: #064e3b;
+    }
+  }
 }
 
 .selectedIntervalMeta {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: 8px 10px;
+}
+
+.selectedDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.selectedDotIntake {
+  background: #ea580c;
+}
+
+.selectedDotRealized {
+  background: #059669;
 }
 
 .selectedPeriodLabel {
@@ -472,11 +548,14 @@
 }
 
 .selectedPeriodValue {
-  font-family: var(--font-circular), sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: #111111;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: #111827;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 .stripActionLink {
