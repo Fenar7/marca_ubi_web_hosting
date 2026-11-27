@@ -66,10 +66,9 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: var(--admin-bg-canvas, #fbfbfa);
+  background: #fbfbfa;
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
-  border-left: 3px solid #4338ca;
-  border-radius: 6px;
+  border-radius: 8px;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.75rem;
 }

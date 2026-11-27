@@ -2,10 +2,9 @@
 
 /**
  * @file ExecutiveTelemetryMasthead.tsx
- * @description Executive Overview Masthead and 4-Pod Telemetry Grid for the Commercial Desk.
- *              Synthesized 1:1 from the Conyest, Fundora, and Finlo Flash luxury archetypes.
- *              Integrates Executive Virtual VIP Card, pure-white floating scorecards,
- *              timeframe scope dropdown, and CSV export.
+ * @description Executive Overview Masthead and 4-Card KPI Grid for the Marca Ubi CRM.
+ *              Integrates the Visible Pipeline summary card, white floating scorecards,
+ *              timeframe scope dropdown, and CSV export trigger.
  * @module admin/components/Dashboard/ExecutiveTelemetryMasthead
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -132,7 +131,7 @@ export function ExecutiveTelemetryMasthead({
             Welcome back, {displayGreetingName}
           </h1>
           <p className={styles.deskSubtitle}>
-            Commercial operations, live pipeline, and cash velocity.
+            Open pipeline, closed revenue, and sales cycle summary.
           </p>
         </div>
 

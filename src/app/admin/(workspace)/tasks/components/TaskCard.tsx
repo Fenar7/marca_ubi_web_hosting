@@ -1,11 +1,8 @@
 /**
  * @file TaskCard.tsx
- * @description Executive workstation row component for follow-up queue tasks.
- *              Enforces Marca Ubi editorial design standards:
- *              - Dignified outline action controls (zero screaming flat-red button spam).
- *              - Accessible 44px minimum touch targets for direct telephony actions (tel:, WhatsApp, mailto:).
- *              - Typographic urgency micro-badges replacing legacy inset colored stripes.
- *              - RFC 3966 telephone coordinate sanitization and WhatsApp deep linking.
+ * @description Follow-up row component for `/admin/tasks`.
+ *              Supports direct contact actions (tel:, WhatsApp, mailto:), inline owner assignment,
+ *              follow-up completion with mandatory next-step choice, and rescheduling via FollowUpScheduler.
  * @module admin/tasks/components/TaskCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -36,8 +33,10 @@ export interface TaskLeadItem {
   next_follow_up: string | null;
   revisit_date?: string | null;
   assigned_to: string | null;
+  created_at?: string | null;
   assignee_name?: string;
   status_name?: string;
+  status_bucket?: string;
 }
 
 interface TaskCardProps {
@@ -49,9 +48,10 @@ interface TaskCardProps {
   canAssign?: boolean;
   teamAssignees?: Array<{ id: string; full_name: string }>;
   referenceNowMs?: number | null;
+  slaMinutes?: number;
 }
 
-/** Formats ISO follow-up timestamps in UTC canonical representation for commercial auditing. */
+/** Formats ISO follow-up timestamps in UTC for consistent scheduling across time zones. */
 function formatFollowUp(iso: string): string {
   const timestamp = Date.parse(iso);
   if (!Number.isFinite(timestamp)) return 'Time unavailable';
@@ -87,9 +87,58 @@ function getUrgencyBadgeText(iso: string | null, referenceNowMs: number | null):
   return 'Due <1h ago';
 }
 
-/** Extracts uppercase initials for representative coin avatar. */
+/** Computes an SLA breach badge for unassigned leads waiting longer than the configured response SLA. */
+function getSlaBreachBadgeText(
+  createdAt: string | null | undefined,
+  referenceNowMs: number | null,
+  slaMinutes: number | undefined
+): string | null {
+  if (!createdAt || referenceNowMs === null || !Number.isFinite(referenceNowMs) || !slaMinutes || slaMinutes <= 0) {
+    return null;
+  }
+  const createdMs = Date.parse(createdAt);
+  if (!Number.isFinite(createdMs)) return null;
+
+  const diffMs = referenceNowMs - createdMs;
+  if (diffMs <= slaMinutes * 60 * 1000) return null;
+
+  const totalMins = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(totalMins / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days >= 1) return `Unclaimed ${days}d`;
+  if (hours >= 1) return `Unclaimed ${hours}h`;
+  return `Unclaimed ${totalMins}m`;
+}
+
+/** Maps lead stage bucket/name to a semantic soft-tinted badge tone. */
+function getStageTone(statusName?: string, statusBucket?: string): 'positive' | 'progress' | 'neutral' {
+  const normalized = (statusName || '').toLowerCase();
+  if (
+    statusBucket === 'potential' ||
+    statusBucket === 'converted' ||
+    normalized.includes('won') ||
+    normalized.includes('qualified') ||
+    normalized.includes('hot')
+  ) {
+    return 'positive';
+  }
+  if (
+    normalized.includes('proposal') ||
+    normalized.includes('negotiat') ||
+    normalized.includes('contact') ||
+    normalized.includes('meeting') ||
+    normalized.includes('discovery') ||
+    normalized.includes('follow')
+  ) {
+    return 'progress';
+  }
+  return 'neutral';
+}
+
+/** Extracts uppercase initials for owner avatar. */
 function initialsFor(name: string | undefined): string {
-  if (!name?.trim()) return '—';
+  if (!name?.trim()) return '--';
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
@@ -120,6 +169,7 @@ export function TaskCard({
   canAssign = false,
   teamAssignees = [],
   referenceNowMs = null,
+  slaMinutes,
 }: TaskCardProps): React.ReactElement {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -137,6 +187,11 @@ export function TaskCard({
   const safePhone = lead.phone?.replace(/[^\d+*#]/g, '') ?? '';
   const whatsappPhone = lead.phone?.replace(/\D/g, '') ?? '';
   const overdueBadge = isUrgent ? getUrgencyBadgeText(lead.next_follow_up, referenceNowMs) : null;
+  const slaBreachBadge = !lead.assigned_to && !lead.next_follow_up
+    ? getSlaBreachBadgeText(lead.created_at, referenceNowMs, slaMinutes)
+    : null;
+  const statusBadgeText = overdueBadge || slaBreachBadge;
+  const stageTone = getStageTone(lead.status_name, lead.status_bucket);
 
   const priorityClass = lead.priority === 'High'
     ? styles.priorityHigh
@@ -198,7 +253,7 @@ export function TaskCard({
               },
             });
           }
-          dispatchToast('success', `Follow-up completed & next step scheduled for ${lead.name}.`);
+          dispatchToast('success', `Follow-up completed and next step scheduled for ${lead.name}.`);
         } else {
           const result = await clearLeadFollowUp(lead.id, lead.next_follow_up, trimmedNote);
           if (!result.success) {
@@ -241,28 +296,27 @@ export function TaskCard({
 
   return (
     <li className={`${styles.taskItem} ${isDone ? styles.taskItemDone : ''}`}>
-      {/* Primary Client Entity Coordinates */}
       <div className={styles.clientCell}>
         <div className={styles.clientHeading}>
           <Link
             href={`/admin/leads/${lead.id}`}
             className={styles.leadOpenButton}
-            aria-label={`Open dossier for ${lead.name}`}
+            aria-label={`View lead ${lead.name}`}
           >
             {lead.name}
           </Link>
           <span className={`${styles.priorityChip} ${priorityClass}`}>
-            {lead.priority} priority
+            {lead.priority}
           </span>
-          {overdueBadge && (
+          {statusBadgeText && (
             <span className={styles.urgencyBadge} role="status">
-              {overdueBadge}
+              {statusBadgeText}
             </span>
           )}
         </div>
 
         <span className={styles.companyName}>
-          {lead.company || 'Enterprise entity not provided'}
+          {lead.company || 'No company listed'}
         </span>
 
         <span className={styles.dueLine}>
@@ -273,15 +327,14 @@ export function TaskCard({
           {lead.next_follow_up ? formatFollowUp(lead.next_follow_up) : 'No follow-up scheduled'}
         </span>
 
-        {/* 44px Minimum Accessible Telephony & Omnichannel Dock */}
         {(lead.phone || lead.email) && (
-          <div className={styles.telephonyDock} aria-label={`Contact coordinates for ${lead.name}`}>
+          <div className={styles.telephonyDock} aria-label={`Contact options for ${lead.name}`}>
             {safePhone && (
               <a
                 href={`tel:${safePhone}`}
                 className={styles.telephonyAction}
-                onClick={() => dispatchToast('info', `Dialing ${lead.name} — log your call outcome once finished.`)}
-                aria-label={`Direct telephone call to ${lead.name} at ${safePhone}`}
+                onClick={() => dispatchToast('info', `Dialing ${lead.name}. Log your call outcome once finished.`)}
+                aria-label={`Call ${lead.name} at ${safePhone}`}
                 title={`Call ${safePhone}`}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -297,8 +350,8 @@ export function TaskCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.telephonyAction}
-                onClick={() => dispatchToast('info', `Opened WhatsApp for ${lead.name} — log your outcome once finished.`)}
-                aria-label={`Direct WhatsApp conversation with ${lead.name}`}
+                onClick={() => dispatchToast('info', `Opened WhatsApp for ${lead.name}. Log your outcome once finished.`)}
+                aria-label={`Message ${lead.name} on WhatsApp`}
                 title="Open WhatsApp chat"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -312,8 +365,8 @@ export function TaskCard({
               <a
                 href={`mailto:${lead.email}`}
                 className={styles.telephonyAction}
-                onClick={() => dispatchToast('info', `Opened email composer for ${lead.name} — log your outcome once sent.`)}
-                aria-label={`Dispatch email correspondence to ${lead.email}`}
+                onClick={() => dispatchToast('info', `Opened email composer for ${lead.name}. Log your outcome once sent.`)}
+                aria-label={`Email ${lead.email}`}
                 title={`Email ${lead.email}`}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -327,18 +380,18 @@ export function TaskCard({
         )}
       </div>
 
-      {/* Commercial Stage */}
       <div className={styles.stageCell}>
         <span className={styles.cellLabel}>Stage</span>
-        <span className={styles.stagePill}>{lead.status_name || 'Active Ingestion'}</span>
+        <span className={styles.stagePill} data-stage-tone={stageTone}>
+          {lead.status_name || 'New Lead'}
+        </span>
       </div>
 
-      {/* Designated Rep / Account Owner (with Inline Assignment on Unassigned Leads) */}
       <div className={styles.ownerCell}>
-        <span className={styles.cellLabel}>Account Executive</span>
+        <span className={styles.cellLabel}>Owner</span>
         {!lead.assigned_to && canAssign && teamAssignees.length > 0 ? (
           <select
-            aria-label={`Assign account executive for ${lead.name}`}
+            aria-label={`Assign owner for ${lead.name}`}
             value={assignedOwnerId}
             disabled={isPending}
             onChange={(e) => handleInlineAssign(e.target.value)}
@@ -361,46 +414,14 @@ export function TaskCard({
         )}
       </div>
 
-      {/* Institutional Valuation */}
       <div className={styles.valueCell}>
-        <span className={styles.cellLabel}>Expected Scope</span>
+        <span className={styles.cellLabel}>Deal Value</span>
         <strong className={styles.monetaryValuation}>
           {canViewFinancials ? formatCrmCurrency(lead.expected_value) : 'Restricted'}
         </strong>
       </div>
 
-      {/* Workstation Actions: Editorial Ghost / Outline Controls */}
       <div className={styles.actionsCell}>
-        <Link
-          href={`/admin/leads/${lead.id}`}
-          className={styles.openButton}
-          aria-label={`View 360 dossier for ${lead.name}`}
-        >
-          Open dossier
-        </Link>
-
-        {allowCompletion && canAccessDeals && (
-          <Link
-            href={`/admin/deals/${lead.id}`}
-            className={styles.openButton}
-            aria-label={`Advance pipeline stage for ${lead.name}`}
-          >
-            Advance stage
-          </Link>
-        )}
-
-        {allowCompletion && (
-          <button
-            type="button"
-            className={styles.rescheduleButton}
-            onClick={() => setIsSchedulerOpen(true)}
-            disabled={isPending}
-            aria-label={`Schedule or reschedule follow-up for ${lead.name}`}
-          >
-            {lead.next_follow_up ? 'Reschedule' : 'Schedule'}
-          </button>
-        )}
-
         {allowCompletion && lead.next_follow_up && (
           <button
             type="button"
@@ -412,17 +433,43 @@ export function TaskCard({
           >
             {isPending ? (
               'Saving…'
-            ) : isDone ? (
+            ) : (
               <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <span>Completed</span>
+                <span>{isDone ? 'Completed' : 'Complete'}</span>
               </>
-            ) : (
-              'Complete'
             )}
           </button>
+        )}
+
+        {allowCompletion && (
+          <button
+            type="button"
+            className={styles.rescheduleButton}
+            onClick={() => setIsSchedulerOpen(true)}
+            disabled={isPending}
+            aria-label={`Schedule or reschedule follow-up for ${lead.name}`}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect width="18" height="18" x="3" y="4" rx="2" />
+              <path d="M16 2v4" />
+              <path d="M8 2v4" />
+              <path d="M3 10h18" />
+            </svg>
+            <span>{lead.next_follow_up ? 'Reschedule' : 'Schedule'}</span>
+          </button>
+        )}
+
+        {allowCompletion && canAccessDeals && (
+          <Link
+            href={`/admin/deals/${lead.id}`}
+            className={styles.dealLink}
+            aria-label={`View deal for ${lead.name}`}
+          >
+            Deal →
+          </Link>
         )}
 
         {error && (
@@ -432,7 +479,6 @@ export function TaskCard({
         )}
       </div>
 
-      {/* Outcome & Next-Step Completion Panel (Prevents Orphaning Leads) */}
       {isOutcomeOpen && allowCompletion && lead.next_follow_up && (
         <form onSubmit={submitOutcomeCompletion} className={styles.outcomePanel}>
           <div className={styles.outcomeFieldRow}>
@@ -440,7 +486,7 @@ export function TaskCard({
               type="text"
               value={outcomeNote}
               onChange={(e) => setOutcomeNote(e.target.value)}
-              placeholder="Log call/conversation outcome (optional)…"
+              placeholder="Log call or conversation outcome (optional)…"
               className={styles.outcomeInput}
               aria-label="Follow-up outcome note"
             />

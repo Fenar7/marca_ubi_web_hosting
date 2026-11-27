@@ -52,7 +52,7 @@ function getInitials(name: string): string {
  * - Humanized two-tier client rows (client avatar + name + domain/scope subtitle).
  * - Subtle relative urgency indicators instead of screaming red blocks.
  * - Tabular currency numerals in full Indian Rupees (en-IN).
- * - Click-through navigation to full deal dossier or preview drawer.
+ * - Click-through navigation to the full lead or deal view.
  */
 export function ConyestTransactionsTable({
   records,
@@ -109,7 +109,7 @@ export function ConyestTransactionsTable({
           return {
             id: rec.id,
             name: rec.name,
-            type: rec.serviceCategory || rec.company || "Enterprise Scope",
+            type: rec.serviceCategory || rec.company || "General",
             date: dateStr,
             time: timeStr,
             amount: amountDisplay,
@@ -144,20 +144,20 @@ export function ConyestTransactionsTable({
   return (
     <article
       className={styles.transactionsCard}
-      aria-label="Commercial engagements and operational queue"
+      aria-label="Follow-up queue and active deals"
     >
       <header className={styles.cardHeader}>
         <div className={styles.titleArea}>
-          <h3 className={styles.cardTitle}>Commercial Engagements</h3>
+          <h3 className={styles.cardTitle}>Active Deals</h3>
         </div>
 
         <div className={styles.headerControls}>
           <button
             type="button"
             className={styles.periodDropdown}
-            aria-label="Filter transaction period"
+            aria-label="Filter period"
           >
-            <span>Current Scope</span>
+            <span>Current Period</span>
             <svg
               width="12"
               height="12"
@@ -210,7 +210,7 @@ export function ConyestTransactionsTable({
           <table className={styles.table}>
             <thead>
               <tr>
-                <th scope="col">Client &amp; Scope</th>
+                <th scope="col">Client &amp; Service</th>
                 <th scope="col">Schedule</th>
                 <th scope="col">Expected Value</th>
                 <th scope="col">Stage &amp; Owner</th>
@@ -258,9 +258,9 @@ export function ConyestTransactionsTable({
                           e.stopPropagation();
                           handleRowClick(row);
                         }}
-                        aria-label={`Open dossier for ${row.name}`}
+                        aria-label={`View lead for ${row.name}`}
                       >
-                        <span>Open</span>
+                        <span>View</span>
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                           <line x1="7" y1="17" x2="17" y2="7" />
                           <polyline points="7 7 17 7 17 17" />

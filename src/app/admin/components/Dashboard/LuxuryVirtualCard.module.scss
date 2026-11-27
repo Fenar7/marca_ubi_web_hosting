@@ -35,20 +35,6 @@
   min-width: 0;
 }
 
-.eyebrowRow {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.statusDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: #ea002a;
-  flex-shrink: 0;
-}
-
 .eyebrow {
   font-family: var(--font-circular), -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 11px;

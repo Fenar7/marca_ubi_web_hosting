@@ -2,7 +2,7 @@
 
 /**
  * @file LuxuryVirtualCard.tsx
- * @description Obsidian Executive anchor card for the Marca Ubi Commercial Desk.
+ * @description Obsidian Executive anchor card for the Marca Ubi CRM overview.
  *              Displays visible open pipeline valuation (or active deal count when financials
  *              are restricted), cohort win summary, and an accessible drill-down link.
  * @module admin/components/Dashboard/LuxuryVirtualCard
@@ -30,7 +30,7 @@ export interface LuxuryVirtualCardProps {
  * typography and explicit unavailable / restricted-financials states.
  */
 export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
-  userName = "MARCA UBI DESK",
+  userName = "MARCA UBI CRM",
   balance = null,
   dealCount = 0,
   periodLabel = "Last 30 Days",
@@ -59,10 +59,7 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
     >
       <header className={styles.cardHeader}>
         <div className={styles.headerTitleGroup}>
-          <div className={styles.eyebrowRow}>
-            <span className={styles.statusDot} aria-hidden="true" />
-            <span className={styles.eyebrow}>VISIBLE PIPELINE</span>
-          </div>
+          <span className={styles.eyebrow}>VISIBLE PIPELINE</span>
           <span className={styles.scopeSubtitle}>Current open &amp; potential deals</span>
         </div>
 

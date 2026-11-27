@@ -2,10 +2,9 @@
 
 /**
  * @file AttentionQueue.tsx
- * @description High-Priority Operational Triage Queue for the Marca Ubi Commercial Desk.
- *              Inspired by the Rillo queue archetype: features interactive filter tabs
- *              (All, Overdue, Today), client initials avatars, Raycast status tokens,
- *              and direct dossier action triggers.
+ * @description Priority follow-up queue for the Marca Ubi CRM overview.
+ *              Features interactive filter tabs (All, Overdue, Today), client initials avatars,
+ *              status badges, and direct lead navigation links.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -87,14 +86,13 @@ export function AttentionQueue({
       <div className={styles.queueHeader}>
         <div className={styles.titleBlock}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.pulseDot} aria-hidden="true" />
-            <p className={styles.eyebrow}>High-Priority Triage</p>
+            <p className={styles.eyebrow}>Priority Follow-ups</p>
           </div>
           <h2 id="attention-heading" className={styles.heading}>
             Attention Queue
           </h2>
           <p className={styles.description}>
-            Overdue and scheduled commercial touchpoints requiring action.
+            Overdue and scheduled follow-ups requiring action.
           </p>
         </div>
 
@@ -217,8 +215,8 @@ export function AttentionQueue({
                 <Link
                   href={`/admin/leads?id=${encodeURIComponent(item.id)}`}
                   className={styles.actionTrigger}
-                  title="Open Client Dossier"
-                  aria-label={`Open dossier for ${item.name}`}
+                  title={`View lead for ${item.name}`}
+                  aria-label={`View lead for ${item.name}`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <line x1="7" y1="17" x2="17" y2="7" />

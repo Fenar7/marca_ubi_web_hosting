@@ -2,9 +2,9 @@
 
 /**
  * @file CommercialDealsTable.tsx
- * @description Master Commercial Deals & Opportunities Ledger for Marca Ubi Commercial Desk.
- *              Inspired by Amirul Islam's table archetype: features client initials avatars,
- *              Raycast monospace token badges, tabular currency values, and direct dossier navigation.
+ * @description Recent Deals & Opportunities Table for Marca Ubi CRM.
+ *              Displays client initials avatars, stage badges, tabular currency values,
+ *              and direct deal/lead navigation.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -70,8 +70,7 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
       <header className={styles.tableHeader}>
         <div className={styles.headerTitleBlock}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.dot} aria-hidden="true" />
-            <p className={styles.eyebrow}>Active Pipeline Ledger</p>
+            <p className={styles.eyebrow}>Active Pipeline</p>
           </div>
           <h2 className={styles.title} id="recent-opportunities-title">
             Recent Opportunities
@@ -195,8 +194,8 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                     <Link
                       href={`/admin/leads/${deal.id}`}
                       className={styles.actionBtn}
-                      title={`Open dossier for ${deal.name}`}
-                      aria-label={`Open dossier for ${deal.name}`}
+                      title={`View deal for ${deal.name}`}
+                      aria-label={`View deal for ${deal.name}`}
                     >
                       <svg
                         width="13"

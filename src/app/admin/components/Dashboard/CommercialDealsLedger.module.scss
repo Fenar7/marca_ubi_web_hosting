@@ -84,8 +84,9 @@
   color: #111111;
 }
 
-.summaryDot {
-  color: #8c8c86;
+.summarySeparator {
+  color: #696965;
+  padding: 0 2px;
 }
 
 .summaryUnavailable {
@@ -285,7 +286,7 @@
 .stageCardBtnSelected {
   background: var(--stage-bg, #f1f5f9);
   border-color: var(--stage-accent, #454542);
-  box-shadow: inset 0 3px 0 0 var(--stage-accent, #111111);
+  box-shadow: 0 0 0 1px var(--stage-accent, #111111);
 
   &:hover {
     background: var(--stage-bg, #f1f5f9);
@@ -295,17 +296,10 @@
 .stageCardTop {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
   min-width: 0;
-}
-
-.stageDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--stage-accent, #64748b);
-  flex-shrink: 0;
 }
 
 .stageCardName {
@@ -698,7 +692,6 @@
 .stagePill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   padding: 4px 10px;
   border-radius: 9999px;
   font-family: var(--font-graphik), sans-serif;
@@ -708,14 +701,6 @@
   white-space: nowrap;
   background: var(--pill-bg, #f1f5f9);
   color: var(--pill-text, #334155);
-}
-
-.stagePillDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--pill-dot, #64748b);
-  flex-shrink: 0;
 }
 
 .stagePillNew {

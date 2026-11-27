@@ -388,4 +388,28 @@ describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrenc
     );
     assert.ok(filterGroupSection.includes('flex-wrap: wrap') && !filterGroupSection.includes('overflow-x: auto'), 'CommercialDealsLedger filter strip must wrap instead of clipping scrollbars');
   });
+
+  it('Follow-ups, Leads KPI Ribbon, Analytics & Shared Shell enforce SaaS Light UI without 3px stripes or AI jargon', () => {
+    const root = process.cwd();
+    const read = (rel: string) => fs.readFileSync(path.join(root, rel), 'utf8');
+
+    const tasksPage = read('src/app/admin/(workspace)/tasks/page.tsx');
+    const tasksCss = read('src/app/admin/(workspace)/tasks/tasks.module.scss');
+    const taskCard = read('src/app/admin/(workspace)/tasks/components/TaskCard.tsx');
+    const leadsRibbon = read('src/app/admin/(workspace)/leads/components/QuickMetricsRibbon/QuickMetricsRibbon.tsx');
+    const leadsRibbonCss = read('src/app/admin/(workspace)/leads/components/QuickMetricsRibbon/QuickMetricsRibbon.module.scss');
+    const analyticsMasthead = read('src/app/admin/(workspace)/analytics/components/AnalyticsMasthead/AnalyticsMasthead.tsx');
+    const analyticsMastheadCss = read('src/app/admin/(workspace)/analytics/components/AnalyticsMasthead/AnalyticsMasthead.module.scss');
+    const stageDwellCss = read('src/app/admin/(workspace)/analytics/components/StageDwellMatrix/StageDwellMatrix.module.scss');
+    const practiceCss = read('src/app/admin/(workspace)/analytics/components/PracticeMatrix/PracticeMatrix.module.scss');
+    const funnelCss = read('src/app/admin/(workspace)/analytics/components/FunnelVisualizer/FunnelVisualizer.module.scss');
+    const enclaveCss = read('src/app/admin/(workspace)/team/[id]/components/PersonnelSecurityEnclave.module.scss');
+
+    assert.ok(tasksPage.includes('>Follow-ups<') && !tasksPage.includes('Workload Telemetry') && !tasksPage.includes('Commercial Desk / Client relationships') && !tasksPage.includes('Agency Turnaround SLA'), 'tasks page must use plain human headings and omit telemetry/SLA boilerplate');
+    assert.ok(!taskCard.includes('Open dossier') && !taskCard.includes('Expected Scope') && taskCard.includes('Deal Value'), 'TaskCard must avoid duplicate dossier button and jargon');
+    assert.ok(!/border-top:\s*3px/i.test(tasksCss) && !/border-top:\s*3px/i.test(leadsRibbonCss) && !/border-top:\s*3px/i.test(analyticsMastheadCss), 'KPI cards must use tinted icon badges rather than 3px top border stripes');
+    assert.ok(!/border-left:\s*3px/i.test(stageDwellCss) && !/border-left:\s*3px/i.test(practiceCss) && !/border-left:\s*3px/i.test(funnelCss) && !/border-left:\s*3px/i.test(enclaveCss), 'Rows and matrices must not use 3px left border stripes');
+    assert.ok(leadsRibbon.includes('All Leads') && !leadsRibbon.includes('Active Triage'), 'QuickMetricsRibbon must use plain English labels');
+    assert.ok(analyticsMasthead.includes('Sales Analytics') && !analyticsMasthead.includes('Commercial Intelligence'), 'AnalyticsMasthead must use plain English headings');
+  });
 });

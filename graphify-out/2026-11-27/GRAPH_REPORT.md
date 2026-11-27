@@ -1,12 +1,12 @@
 # Graph Report - marca_ubi_web_hosting  (2026-11-27)
 
 ## Corpus Check
-- 1054 files · ~1,085,101 words
+- 1054 files · ~1,085,104 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 227 file(s) not represented in the graph (top: .scss 163, .ttf 42, .otf 10)
 
 ## Summary
-- 8866 nodes · 14825 edges · 550 communities (506 shown, 44 thin omitted)
+- 8866 nodes · 14831 edges · 548 communities (504 shown, 44 thin omitted)
 - Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 1240 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
@@ -158,7 +158,7 @@
 - Subsystem 139: scripts_redesign_execution_watcher
 - Admin CRM Dashboard Data Integrity Audit
 - CISO & Principal AppSec Security Audit Report: Pull Request #50
-- currency.ts
+- formatCrmCurrency
 - 4. Section-by-Section Component Blueprint (8 Views)
 - 2.5 End-to-End User Journeys (Playwright Suite)
 - transitionToOnHoldAction
@@ -484,7 +484,6 @@
 - Context Register: Authentic Luxury Commercial Desk & Executive Sidebar Recomposition
 - 2. Accessibility contract
 - Editorial Metallic Luxury Architecture & Cockpit Harmonization Specification
-- 7. Phased Implementation Plan
 - Audit Log: Deals & Opportunities Dashboard Redesign
 - 3. Granular Component Specifications
 - eslint.config.mjs
@@ -547,7 +546,6 @@
 - Architectural Overview & Summary
 - DIRECTORY_AND_DOSSIER_DIAGNOSIS.md
 - 2026-11-23_15-45-00.md
-- Browser verification evidence
 - 1. Executive Overview & Strategic Business Objectives
 - 4. Task Management, Follow-up Scheduler & Overdue Escalations (Phase 9)
 - Session Context Register: 2026-11-19 21:15:00
@@ -563,7 +561,7 @@
 ## God Nodes (most connected - your core abstractions)
 1. `react` - 230 edges
 2. `next` - 176 edges
-3. `formatCrmCurrency()` - 90 edges
+3. `formatCrmCurrency()` - 91 edges
 4. `createClient()` - 85 edges
 5. `CrmUserRole` - 61 edges
 6. `ClientHeader()` - 48 edges
@@ -573,21 +571,21 @@
 10. `FunnelBucket` - 34 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Marca Ubi Enterprise CRM — Tier 4 Architectural Transformation` --references--> `CommercialDealsLedger()`  [INFERRED]
-  docs/luxury_dashboard_redesign/COMMERCIAL_DEALS_CONCEPTUAL_REDESIGN_PLAN.md → src/app/admin/components/Dashboard/CommercialDealsLedger.tsx
-- `Tab 1: Overview (`/admin`)` --references--> `CommercialDealsLedger()`  [INFERRED]
-  docs/sales_funnel/core_tabs_redesign/AUDIT_REPORT_FEATURES_AND_SECURITY.md → src/app/admin/components/Dashboard/CommercialDealsLedger.tsx
-- `Marca Ubi Commercial Desk — Tier 4 Workspace Transformation` --references--> `CommercialDealsLedger()`  [INFERRED]
-  docs/sales_funnel/deals_cockpit_redesign/DEALS_OPPORTUNITIES_ARCHITECTURAL_REDESIGN_PLAN.md → src/app/admin/components/Dashboard/CommercialDealsLedger.tsx
-- `3.2 Extended `OverviewRecord` Interface` --references--> `OverviewRecord`  [INFERRED]
-  docs/crm_conyest_redesign/MARCA_UBI_AUTHENTIC_CRM_REMEDIATION_PLAN.md → src/app/admin/components/Dashboard/OverviewWorkspace.tsx
-- `Block 3: Anti-AI-Slop & Design Token Audit` --references--> `OverviewRecord`  [INFERRED]
-  docs/sales_funnel/dashboard_redesign_2026_11/SENIOR_CTO_PR_122_AUDIT_REPORT.md → src/app/admin/components/Dashboard/OverviewWorkspace.tsx
+- `5. Independent audit round (A1-A10, second fix pass)` --references--> `PostSummary`  [INFERRED]
+  docs/blog_redesign/detail-fixes-plan.md → src/sanity/types/blog.ts
+- `Agent 5 — The real intake contract in this codebase (internal) ⚠️ **plan-changing**` --references--> `ProjectFormData`  [INFERRED]
+  docs/chat_pod/02-research-findings.md → src/app/components/ProjectForm/types.ts
+- `8. Parity test (required before M5 sign-off)` --references--> `ProjectFormData`  [INFERRED]
+  docs/chat_pod/04-intake-data-contract.md → src/app/components/ProjectForm/types.ts
+- `Complete Restored Field Matrix:` --references--> `ProjectFormData`  [INFERRED]
+  docs/project_form_restoration/master_form_restoration_plan.md → src/app/components/ProjectForm/types.ts
+- `A. State Management & Data Schema` --references--> `ProjectFormData`  [INFERRED]
+  docs/project_form_restoration/multi_select_services_plan.md → src/app/components/ProjectForm/types.ts
 
 ## Import Cycles
 - 4-file cycle: `src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx -> src/app/admin/components/modals/index.ts -> src/app/admin/components/modals/LeadDetailModal.tsx -> src/app/admin/components/DossierDrawer/index.ts -> src/app/admin/components/DossierDrawer/ClientDossierDrawer.tsx`
 
-## Communities (550 total, 44 thin omitted)
+## Communities (548 total, 44 thin omitted)
 
 ### Community 0 - "⚡ UI UX Pro Max — Design Intelligence & Reference Engine"
 Cohesion: 0.09
@@ -606,8 +604,8 @@ Cohesion: 0.04
 Nodes (42): CRM Commercial Desk Redesign — Delivery Register, Outstanding verification and runtime evidence, Scope delivered, Verification on the current implementation, 10. Reference research, 11. Execution decisions and remaining dependencies, 1. Product and design intent, 2. Current evidence and investigation gates (+34 more)
 
 ### Community 4 - "OverviewWorkspace.tsx"
-Cohesion: 0.09
-Nodes (28): CashFlowPerspective, CommercialVelocityBarChartProps, computeCleanQuarter(), INR_STEP_UNITS, MonthlyBarData, TIMEFRAME_OPTIONS, VelocityChartPoint, EarningOverviewSplineCardProps (+20 more)
+Cohesion: 0.10
+Nodes (27): CashFlowPerspective, CommercialVelocityBarChartProps, computeCleanQuarter(), INR_STEP_UNITS, MonthlyBarData, TIMEFRAME_OPTIONS, VelocityChartPoint, EarningOverviewSplineCardProps (+19 more)
 
 ### Community 5 - "ChatPod.tsx"
 Cohesion: 0.06
@@ -674,8 +672,8 @@ Cohesion: 0.13
 Nodes (15): devDependencies, dotenv@^18.0.8, @playwright/test@^1.64.1, tailwindcss@^4, @tailwindcss/postcss@^4, tsx@^4.23.15, @types/node@^20, @types/pg@^8.23.1 (+7 more)
 
 ### Community 21 - "chartGeometry.ts"
-Cohesion: 0.03
-Nodes (65): 1. Executive Summary, 2. Forensic Pathology & Purge Summary, 3. Files Modified, Context Register — 2026-11-11 05:15:00, 1. What was Completed in this Phase, Session Context Register: 2026-11-11 23:15:00, 1. Executive Summary, 2. Root Cause Analysis & Visual Remediation (Screenshot uploaded_media_1794421349182.jpg) (+57 more)
+Cohesion: 0.04
+Nodes (57): 1. What was Completed in this Phase, Session Context Register: 2026-11-11 23:15:00, 1. Executive Summary, 2. Root Cause Analysis & Visual Remediation (Screenshot uploaded_media_1794421349182.jpg), 3. Verification & Compliance, Session Context Register: 2026-11-12 00:45:00, 1. Executive Summary & Problem Resolution, 2. Implemented & Modified Files (+49 more)
 
 ### Community 22 - "1. Executive Summary & Root Cause Matrix"
 Cohesion: 0.11
@@ -770,8 +768,8 @@ Cohesion: 0.04
 Nodes (44): 10. Identical wording has different meanings when typed and tapped, 11. Error recovery and clarification need a product review, 12. Secondary chrome competes with the active task, 1. A services answer is deliberately replaced with qualification, 2. Polite wording still breaks recognition, 3. Continue is visually indistinguishable from an answer, 4. Ordinary actions are incorrectly exposed as toggles, 5. A long list separates the question from its answers (+36 more)
 
 ### Community 45 - "CommercialVelocityBarChart"
-Cohesion: 0.06
-Nodes (48): 2. Key Transformations Implemented, 1. Key Architectural Decisions & Visual Remediations, 1. Spline Chart Month Label Clipping Fixed (`EarningOverviewSplineCard`), 2. Cash Flow Bar Chart Height Scaled to 400px (`CommercialVelocityBarChart`), 3. Interactive Decoupled Timeframe Dropdowns (`EarningOverviewSplineCard` & `SpendingOverviewBarCard`), Work Completed in this Iteration, Active Git State, Architecture & Ground Truth (+40 more)
+Cohesion: 0.05
+Nodes (52): 2. Key Transformations Implemented, 1. Key Architectural Decisions & Visual Remediations, 1. Spline Chart Month Label Clipping Fixed (`EarningOverviewSplineCard`), 2. Cash Flow Bar Chart Height Scaled to 400px (`CommercialVelocityBarChart`), 3. Interactive Decoupled Timeframe Dropdowns (`EarningOverviewSplineCard` & `SpendingOverviewBarCard`), Work Completed in this Iteration, Active Git State, Architecture & Ground Truth (+44 more)
 
 ### Community 46 - "AboutSection.tsx"
 Cohesion: 0.14
@@ -830,8 +828,8 @@ Cohesion: 0.24
 Nodes (10): 2. Line-by-Line Deliverable Inspection & Compliance Matrix, DateTimePicker(), DateTimePickerProps, FollowUpScheduler(), FollowUpSchedulerProps, applyTimeStep(), calculatePresetDate(), formatTimezoneOffset() (+2 more)
 
 ### Community 60 - "ExecutiveKpiGrid.tsx"
-Cohesion: 0.05
-Nodes (35): 1. Root Cause Forensics & Direct Fixes, 2. Invariants & Rules Preserved, A. Sass Compilation Error in `ExecutiveKpiGrid.module.scss`, B. Complete Eradication of the Pitch-Black Boxes ("That Black Box is Same"), C. Live Active Deals Restoration ("Recent Opportunity Data is Unavailable"), D. Ground-Up Layout Restructuring (Amirul Islam 2-Column Archetype), Session Context Register: 2026-11-09 14:15:00 (Updated 15:05:00), 3. CONYEST Hero Card & Amirul Islam Elevated Scorecards (`ExecutiveKpiGrid`) (+27 more)
+Cohesion: 0.08
+Nodes (24): 3. CONYEST Hero Card & Amirul Islam Elevated Scorecards (`ExecutiveKpiGrid`), 1. Eradicate Isolated Generic Blue `#1d4ed8`, 1. Fix `SEC-API-01`: Public CDN Cache-Control on Confidential Financial Metrics, 1. Itemized Overview of All Discovered Defects & Inefficiencies, 1. Purge Superseded Admin Dashboard Components (~3,300 Lines), 2. Detailed Technical Remediation Blueprint, 2. Fix `SEC-DB-01`: Missing Caller Identity Assertion in Batch Reassignment Stored Procedure, 2. Upgrade Sub-44px Search & Filter Targets in Deals Table (+16 more)
 
 ### Community 61 - "@playwright/test"
 Cohesion: 0.05
@@ -1045,9 +1043,9 @@ Nodes (8): Admin CRM Dashboard Data Integrity Audit, Authorization and audit dat
 Cohesion: 0.07
 Nodes (27): 1.1 Scope of Audited Artifacts, 1. Executive Summary & Audit Mandate, 2. Deep-Dive Threat Model & Security Vector Analysis, 3.1 Invariant Defense & Administrator Lockout Protection, 3.2 Check Constraints & Tamper Resistance, 3.3 Stored Function Security & Search Path Hardening, 3.4 Multi-Role Row Level Security (RLS) Isolation Matrix, 3.5 Zod Boundary Invariants & Type Validation (+19 more)
 
-### Community 142 - "currency.ts"
-Cohesion: 0.17
-Nodes (10): Phase 1: Database & Currency Reconciliation Engine, formatBudgetTierLabel(), formatIndianUnit(), INSTITUTIONAL_USD_TO_INR_PEG, reconcileBudgetBracket(), reconcileBudgetTier, ReconciledBudgetTier, QuickMetricsRibbonProps (+2 more)
+### Community 142 - "formatCrmCurrency"
+Cohesion: 0.06
+Nodes (36): 1. Root Cause Forensics & Direct Fixes, 2. Invariants & Rules Preserved, A. Sass Compilation Error in `ExecutiveKpiGrid.module.scss`, B. Complete Eradication of the Pitch-Black Boxes ("That Black Box is Same"), C. Live Active Deals Restoration ("Recent Opportunity Data is Unavailable"), D. Ground-Up Layout Restructuring (Amirul Islam 2-Column Archetype), Session Context Register: 2026-11-09 14:15:00 (Updated 15:05:00), 1. Executive Summary (+28 more)
 
 ### Community 143 - "4. Section-by-Section Component Blueprint (8 Views)"
 Cohesion: 0.09
@@ -2333,10 +2331,6 @@ Nodes (9): 05 — Motion & Accessibility Specification, 2.1 ARIA structure, 2.2 
 Cohesion: 0.22
 Nodes (8): 1.1 The User's Directive & Aesthetic Intent, 1.2 Decoding the Creative Paradox: "Multi-Hue Harmony Without Rainbow Slop", 1. Executive Summary & Creative Brief Alignment, 2. Forensic Audit of the Current Dashboard, 3. The 7-Tone "Editorial Metallic Luxury" Alloy Specification, 5. Architectural Implementation Phasing, 6. Strict Compliance Checklist, Editorial Metallic Luxury Architecture & Cockpit Harmonization Specification
 
-### Community 468 - "7. Phased Implementation Plan"
-Cohesion: 0.22
-Nodes (10): 7. Phased Implementation Plan, Phase 1: Invariant Logic & State Machine Helper, Phase 2: Clockwise SVG Trigonometry Engine, Phase 3: JSX Restructuring, Phase 4: SCSS Module Refactor, Phase 5: Verification & Delivery Gates, describeClockwiseArc(), polarToCartesian() (+2 more)
-
 ### Community 470 - "3. Granular Component Specifications"
 Cohesion: 0.18
 Nodes (10): 1. What Changed Based on Your Feedback, 2. Complete Visual Layout Map, 3. Granular Component Specifications, 4. Implementation Steps (To be executed directly by coordinator upon approval), A. The Donut ("Cookie") Chart Card (`ConyestStatisticDonutCard.tsx`), B. Top Row: Virtual VIP Executive Card (`ConyestVirtualCard.tsx`) + 3 Companion Cards, C. Middle Left: Cash Flow Velocity Bar Chart (`CommercialVelocityBarChart.tsx`), D. New Widget Row: Quick Dispatch Pod & Upcoming SLA Feed (+2 more)
@@ -2350,8 +2344,8 @@ Cohesion: 0.17
 Nodes (8): 1. Sticky rail: measured root cause, 2. Wording: what is actually wrong (all strings verified in source), 3. Naming decision - **RESOLVED: "Journal"**, 4. Fix plan, 5. Gates, 6. Delivery decision - **RESOLVED: both surfaces, one push**, Phase 14c: Homepage rail sticky pin + "Dispatch" wording (Plan), Read
 
 ### Community 473 - "Commercial Desk Dashboard: 100% Real-Data Interactivity, Drill-Down & Telemetry Architecture Plan"
-Cohesion: 0.18
-Nodes (10): 1. Executive Summary & Production Directives, 2. Real Database Telemetry Mapping (Zero-Mock Invariant), 3. Real Database Seeding Architecture (Idempotent Supabase SQL), 4. Two-Tier SaaS Drill-Down & Navigation Architecture, 5. Technical Implementation Blueprint, 6. Verification & Quality Gates, Commercial Desk Dashboard: 100% Real-Data Interactivity, Drill-Down & Telemetry Architecture Plan, Step 1: Database Seed & Telemetry Enhancement (+2 more)
+Cohesion: 0.17
+Nodes (11): 1. Executive Summary & Production Directives, 2. Real Database Telemetry Mapping (Zero-Mock Invariant), 3. Real Database Seeding Architecture (Idempotent Supabase SQL), 4. Two-Tier SaaS Drill-Down & Navigation Architecture, 5. Technical Implementation Blueprint, 6. Verification & Quality Gates, Commercial Desk Dashboard: 100% Real-Data Interactivity, Drill-Down & Telemetry Architecture Plan, Step 1: Database Seed & Telemetry Enhancement (+3 more)
 
 ### Community 474 - "2. Complete Architectural Remediation Blueprint"
 Cohesion: 0.22
@@ -2502,8 +2496,8 @@ Cohesion: 0.33
 Nodes (6): 10.1 Server Action Contracts, 10. Internal API & Server Actions Contract, 1. `getLeads(filters: LeadFilterParams): Promise<LeadTableResponse>`, 2. `createTeamUser(payload: CreateTeamUserInput): Promise<UserProfile>`, 3. `deactivateUser(targetUserId: string, reassignmentUserId?: string): Promise<DeactivateResult>`, 4. `updateLeadStatus(leadId: string, newStatusId: string, metadata?: { lostReason?: string, expectedValue?: number }): Promise<Result>`
 
 ### Community 512 - "Dashboard/index.ts"
-Cohesion: 0.05
-Nodes (58): 2. Clutter & Slop Elimination (The 5 Excisions), 4. Component-by-Component Remediation Blueprint, B. Middle Asymmetric Row: Pipeline Velocity & Stage Distribution, C. Bottom Section: Commercial Engagements Queue (`ConyestTransactionsTable`), 2.3 Type Safety & Engineering Standards, AttentionQueue(), AttentionQueueItem, AttentionQueueProps (+50 more)
+Cohesion: 0.04
+Nodes (63): 2. Clutter & Slop Elimination (The 5 Excisions), 7. Phased Implementation Plan, Phase 1: Invariant Logic & State Machine Helper, Phase 2: Clockwise SVG Trigonometry Engine, Phase 3: JSX Restructuring, Phase 4: SCSS Module Refactor, Phase 5: Verification & Delivery Gates, 2.3 Type Safety & Engineering Standards (+55 more)
 
 ### Community 513 - "team.ts"
 Cohesion: 0.13
@@ -2577,10 +2571,6 @@ Nodes (3): Verification, Where the dossier time went, Why the directory error re
 Cohesion: 0.40
 Nodes (3): Deals board hand-off, Deals board redesign, Delivery checks
 
-### Community 532 - "Browser verification evidence"
-Cohesion: 0.40
-Nodes (4): Browser verification evidence, Limits requiring authenticated staging review, Repeatable result, Scope
-
 ### Community 533 - "1. Executive Overview & Strategic Business Objectives"
 Cohesion: 0.40
 Nodes (5): 1.1 The Agency Problem Statement: The Cost of Fragmented Pipelines, 1.2 The Core Value Proposition: A Dedicated In-House Agency CRM, 1.3 Key Architectural Pillars for the Enterprise MVP, 1.4 MVP vs Post-MVP Scope Boundaries, 1. Executive Overview & Strategic Business Objectives
@@ -2615,23 +2605,23 @@ Nodes (3): 1. Executive Summary, 3. Automated Verification Matrix, Phase 9 Miles
 
 ## Knowledge Gaps
 - **20 isolated node(s):** `FIGMA_PERSONAL_ACCESS_TOKEN`, `npx`, `@smithery/figma-mcp`, `RFC-3986`, `RFC-3966` (+15 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 4781 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 4779 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **44 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `react` connect `react` to `Dashboard/index.ts`, `AnalyticsWorkspaceClient.tsx`, `StageTransitionModal.tsx`, `WorksWorkspaceClient.tsx`, `OverviewWorkspace.tsx`, `ChatPod.tsx`, `useIntakeFlow.ts`, `review.ts`, `ShortcutHint.tsx`, `RevenueDynamicsCard`, `context.ts`, `LeadsWorkspaceClient.tsx`, `DealsToolbar.tsx`, `content.ts`, `CommercialDealsLedger.tsx`, `ClientHomeExperience.tsx`, `AdminWorkspaceShell.tsx`, `chartGeometry.ts`, `1. Executive Summary & Root Cause Matrix`, `AdminAuthShell.tsx`, `src_app_admin_components_dashboard_overviewworkspace_module`, `collect.ts`, `RoutePlaceholder.tsx`, `ClientHeader.tsx`, `ActivityRowItem.tsx`, `deals/[id]/loading.tsx`, `leads/[id]/loading.tsx`, `leads/[id]/not-found.tsx`, `LeadsWorkspaceClient.tsx`, `team/[id]/loading.tsx`, `team/loading.tsx`, `LeadDossierWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `CommercialDirectoryTable.tsx`, `tasks/page.tsx`, `CommercialVelocityBarChart`, `AboutSection.tsx`, `settings.ts`, `CommercialDealsLedger.tsx`, `ClientHeader`, `schedulerActions.ts`, `ExecutiveKpiGrid.tsx`, `overlayScrollLock.ts`, `lead-schemas.ts`, `DealsTable.tsx`, `TeamMemberRosterItem`, `createClient`, `dashboard-server-assembly.test.ts`, `avatarActions.ts`, `WorksSectionClient.tsx`, `TeamWorkspaceClient.tsx`, `blog.ts`, `analytics/page.tsx`, `currency.ts`, `workloadActions.ts`, `Badges/index.ts`, `ingestion/[id]/page.tsx`, `CompanyProfileModal.tsx`, `slots.ts`, `team/page.tsx`, `next`, `Dashboard/types.ts`, `schedulerActions.ts`, `blog/[slug]/page.tsx`, `match.ts`, `package.json`, `StatementCurtain`, `AddTeamMemberModal.tsx`, `InquiryComposer.tsx`, `DealsKanbanBoard.tsx`, `crm.ts`, `SlotId`, `Revenue & Pipeline Analytics (`/admin/analytics`) Editorial Redesign Plan`, `shouldUseMobileMotion`, `app/layout.tsx`, `AdminRootClientProvider`, `DealsWorkspaceClient.tsx`, `admin/layout.tsx`, `dependencies`, `AdminBreadcrumbs.tsx`, `(workspace)/page.tsx`, `kpiFormatters.ts`, `InitialLoader.tsx`?**
-  _High betweenness centrality (0.180) - this node is a cross-community bridge._
+- **Why does `react` connect `react` to `Dashboard/index.ts`, `AnalyticsWorkspaceClient.tsx`, `StageTransitionModal.tsx`, `WorksWorkspaceClient.tsx`, `OverviewWorkspace.tsx`, `ChatPod.tsx`, `useIntakeFlow.ts`, `review.ts`, `ShortcutHint.tsx`, `RevenueDynamicsCard`, `context.ts`, `LeadsWorkspaceClient.tsx`, `DealsToolbar.tsx`, `content.ts`, `CommercialDealsLedger.tsx`, `ClientHomeExperience.tsx`, `AdminWorkspaceShell.tsx`, `chartGeometry.ts`, `1. Executive Summary & Root Cause Matrix`, `AdminAuthShell.tsx`, `src_app_admin_components_dashboard_overviewworkspace_module`, `collect.ts`, `RoutePlaceholder.tsx`, `ClientHeader.tsx`, `ActivityRowItem.tsx`, `deals/[id]/loading.tsx`, `leads/[id]/loading.tsx`, `leads/[id]/not-found.tsx`, `LeadsWorkspaceClient.tsx`, `team/[id]/loading.tsx`, `team/loading.tsx`, `LeadDossierWorkspaceClient.tsx`, `chatpod-knowledge-coverage.test.ts`, `CommercialDirectoryTable.tsx`, `tasks/page.tsx`, `AboutSection.tsx`, `settings.ts`, `CommercialDealsLedger.tsx`, `ClientHeader`, `schedulerActions.ts`, `ExecutiveKpiGrid.tsx`, `overlayScrollLock.ts`, `lead-schemas.ts`, `DealsTable.tsx`, `TeamMemberRosterItem`, `createClient`, `dashboard-server-assembly.test.ts`, `avatarActions.ts`, `WorksSectionClient.tsx`, `TeamWorkspaceClient.tsx`, `blog.ts`, `analytics/page.tsx`, `formatCrmCurrency`, `workloadActions.ts`, `Badges/index.ts`, `ingestion/[id]/page.tsx`, `CompanyProfileModal.tsx`, `slots.ts`, `team/page.tsx`, `next`, `Dashboard/types.ts`, `schedulerActions.ts`, `blog/[slug]/page.tsx`, `match.ts`, `package.json`, `StatementCurtain`, `AddTeamMemberModal.tsx`, `InquiryComposer.tsx`, `DealsKanbanBoard.tsx`, `crm.ts`, `SlotId`, `Revenue & Pipeline Analytics (`/admin/analytics`) Editorial Redesign Plan`, `shouldUseMobileMotion`, `app/layout.tsx`, `AdminRootClientProvider`, `DealsWorkspaceClient.tsx`, `admin/layout.tsx`, `dependencies`, `AdminBreadcrumbs.tsx`, `(workspace)/page.tsx`, `kpiFormatters.ts`, `InitialLoader.tsx`?**
+  _High betweenness centrality (0.157) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `formatCrmCurrency()` (e.g. with `2. Invariants & Rules Preserved` and `2. Invariants & Guardrails`) actually correct?**
   _`formatCrmCurrency()` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `FIGMA_PERSONAL_ACCESS_TOKEN`, `npx`, `@smithery/figma-mcp` to the rest of the system?**
   _20 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `⚡ UI UX Pro Max — Design Intelligence & Reference Engine` be split into smaller, more focused modules?**
   _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
-- **Why does `next` connect `next` to `Dashboard/index.ts`, `team.ts`, `StageTransitionModal.tsx`, `WorksWorkspaceClient.tsx`, `OverviewWorkspace.tsx`, `react`, `AnalyticsWorkspaceClient.tsx`, `zod`, `ChatPod.tsx`, `review.ts`, `server.ts`, `LeadsWorkspaceClient.tsx`, `content.ts`, `CommercialDealsLedger.tsx`, `ClientHomeExperience.tsx`, `AdminWorkspaceShell.tsx`, `blog/[slug]/page.tsx`, `workloadActions.ts`, `SlotId`, `ingestion/[id]/page.tsx`, `AdminAuthShell.tsx`, `middleware_and_login.test.ts`, `match.ts`, `CompanyProfileModal.tsx`, `collect.ts`, `RoutePlaceholder.tsx`, `ActivityRowItem.tsx`, `ClientHeader.tsx`, `leads/[id]/not-found.tsx`, `LeadsWorkspaceClient.tsx`, `admin.ts`, `chatpod-knowledge-coverage.test.ts`, `LeadDossierWorkspaceClient.tsx`, `Revenue & Pipeline Analytics (`/admin/analytics`) Editorial Redesign Plan`, `tasks/page.tsx`, `CommercialDirectoryTable.tsx`, `CommercialVelocityBarChart`, `shouldUseMobileMotion`, `AboutSection.tsx`, `slots.ts`, `app/layout.tsx`, `team/page.tsx`, `settings.ts`, `CommercialDealsLedger.tsx`, `package.json`, `DealsWorkspaceClient.tsx`, `ClientHeader`, `ExecutiveKpiGrid.tsx`, `admin/layout.tsx`, `overlayScrollLock.ts`, `DealsTable.tsx`, `dependencies`, `AddTeamMemberModal.tsx`, `TeamMemberRosterItem`, `inquiryView.ts`, `AdminBreadcrumbs.tsx`, `Dashboard/types.ts`, `(workspace)/page.tsx`, `InquiryComposer.tsx`, `schedulerActions.ts`, `createClient`, `avatarActions.ts`, `WorksSectionClient.tsx`, `TeamWorkspaceClient.tsx`, `kpiFormatters.ts`, `blog.ts`, `analytics/page.tsx`, `ingest/route.ts`, `crm.ts`, `zod`?**
-  _High betweenness centrality (0.144) - this node is a cross-community bridge._
+- **Why does `next` connect `next` to `Dashboard/index.ts`, `team.ts`, `StageTransitionModal.tsx`, `WorksWorkspaceClient.tsx`, `OverviewWorkspace.tsx`, `react`, `AnalyticsWorkspaceClient.tsx`, `zod`, `ChatPod.tsx`, `review.ts`, `server.ts`, `LeadsWorkspaceClient.tsx`, `formatCrmCurrency`, `content.ts`, `CommercialDealsLedger.tsx`, `ClientHomeExperience.tsx`, `AdminWorkspaceShell.tsx`, `blog/[slug]/page.tsx`, `workloadActions.ts`, `SlotId`, `ingestion/[id]/page.tsx`, `AdminAuthShell.tsx`, `middleware_and_login.test.ts`, `match.ts`, `CompanyProfileModal.tsx`, `collect.ts`, `RoutePlaceholder.tsx`, `ActivityRowItem.tsx`, `ClientHeader.tsx`, `leads/[id]/not-found.tsx`, `LeadsWorkspaceClient.tsx`, `admin.ts`, `chatpod-knowledge-coverage.test.ts`, `LeadDossierWorkspaceClient.tsx`, `Revenue & Pipeline Analytics (`/admin/analytics`) Editorial Redesign Plan`, `tasks/page.tsx`, `CommercialDirectoryTable.tsx`, `shouldUseMobileMotion`, `AboutSection.tsx`, `slots.ts`, `app/layout.tsx`, `team/page.tsx`, `settings.ts`, `CommercialDealsLedger.tsx`, `package.json`, `DealsWorkspaceClient.tsx`, `ClientHeader`, `ExecutiveKpiGrid.tsx`, `admin/layout.tsx`, `overlayScrollLock.ts`, `DealsTable.tsx`, `dependencies`, `AddTeamMemberModal.tsx`, `TeamMemberRosterItem`, `inquiryView.ts`, `AdminBreadcrumbs.tsx`, `Dashboard/types.ts`, `(workspace)/page.tsx`, `InquiryComposer.tsx`, `schedulerActions.ts`, `createClient`, `avatarActions.ts`, `WorksSectionClient.tsx`, `TeamWorkspaceClient.tsx`, `kpiFormatters.ts`, `blog.ts`, `analytics/page.tsx`, `ingest/route.ts`, `crm.ts`, `zod`?**
+  _High betweenness centrality (0.157) - this node is a cross-community bridge._
 - **Should `AnalyticsWorkspaceClient.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.14130434782608695 - nodes in this community are weakly interconnected._
-- **Why does `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform` connect `Marca Ubi — Enterprise Agency CRM & Sales Intelligence Platform` to `2.4 Team Management Dashboard (`/admin/team`) Specification`, `7. Security Architecture, Authentication & Row Level Security (RLS) Policies`, `1.4 Commit Message & Version Control Standards`, `4.1 Sprint 10.1: Test Harness & Automated Suites`, `13. Client 360° Dossier & Omnichannel Touchpoint Studio`, `5. Granular Sprint Work Breakdown Structure (Phases 6–9)`, `5. Granular Sprint Work Breakdown Structure (Phases 2, 3, 4, and 5)`, `2.5 End-to-End User Journeys (Playwright Suite)`, `17. Production Deployment, Disaster Recovery & Incident Runbooks`, `3.3 Referential Integrity Architecture: Cascades vs Restraints`, `10. Public Webhook Ingestion Engine & Deduplication Pipeline`, `12. Interactive Leads Workspace, Data Grid & Optimistic State Machine`, `2. Sprint Work Breakdown Structure for Phase 1 (Database Architecture & Stored Logic)`, `9. Offboarding Protocol & Automated Lead Reassignment Wizard`, `CompanyProfileModal`, `6. PostgreSQL Database Architecture, Relational Schema & Stored Logic`, `1.1 Mathematical Formulas and Dynamic Aggregation Logic`?**
-  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Why does `ClientHeader()` connect `ClientHeader` to `1. Motion spec`, `23-one-column-one-lock-and-the-typed-message.md`, `Full Engineering Context Register — 2026-10-30 14:19:25 IST`, `content.ts`, `Dedicated Works Showcase: 3D Stacking Card Scroll Experience PRD`, `ClientHomeExperience.tsx`, `AdminWorkspaceShell.tsx`, `blog/[slug]/page.tsx`, `ClientHeader.tsx`, `Master Implementation Plan: 3-Line Rounded Pill Hamburger Icon`, `4. 5-Phase Implementation Strategy`, `00 — Chat Pod Master Plan`, `1. Deep Technical Audit by Criteria`, `overlayScrollLock.ts`, `Master Remediation & Full-Content Integration Plan: 160over90 Architecture`, `Master PRD & UI/UX Design Architecture: Contact Page (`/contact`)`, `WorksSectionClient.tsx`, `Minimalist Clean Aesthetic & Clutter Eradication PRD`, `blog.ts`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._

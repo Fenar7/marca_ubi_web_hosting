@@ -464,7 +464,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
       {/* Tier A: Single-Row Editorial Header */}
       <header className={styles.ledgerHeader}>
         <div className={styles.headerTitleBlock}>
-          <p className={styles.eyebrow}>Commercial Opportunities</p>
+          <p className={styles.eyebrow}>Active Pipeline</p>
           <div className={styles.titleSummaryRow}>
             <h2 className={styles.title} id="commercial-ledger-title">
               Deals &amp; Opportunities
@@ -479,7 +479,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                   <span className={styles.summaryFigure}>
                     {formatCrmCurrency(totalSummaryValue)}
                   </span>
-                  <span aria-hidden="true" className={styles.summaryDot}>
+                  <span aria-hidden="true" className={styles.summarySeparator}>
                     ·
                   </span>
                   <span>
@@ -514,7 +514,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <span className={styles.srOnly}>Search opportunities</span>
+              <span className={styles.srOnly}>Search deals</span>
             </label>
             <input
               id="ledger-search-input"
@@ -609,7 +609,6 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                   }
                 >
                   <div className={styles.stageCardTop}>
-                    <span className={styles.stageDot} aria-hidden="true" />
                     <span className={styles.stageCardName}>{stage.name}</span>
                     <span className={styles.stageCardCount}>{stage.count}</span>
                   </div>
@@ -636,7 +635,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
 
       {/* Tier C: Quick Filter Toolbar */}
       <div className={styles.filterToolbar}>
-        <div className={styles.filterGroup} role="group" aria-label="Filter opportunities">
+        <div className={styles.filterGroup} role="group" aria-label="Filter deals">
           <button
             type="button"
             aria-pressed={activeTab === "all"}
@@ -727,7 +726,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
           )}
 
           <span className={styles.queueCountHint}>
-            Showing {filteredRecords.length} of {records.length} · UTC follow-up priority
+            Showing {filteredRecords.length} of {records.length} · Sorted by follow-up due (UTC)
           </span>
         </div>
       </div>
@@ -761,7 +760,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
           </div>
         ) : filteredRecords.length === 0 ? (
           <div className={styles.emptyStateContainer}>
-            <p className={styles.emptyTitle}>No matching opportunities</p>
+            <p className={styles.emptyTitle}>No matching deals</p>
             <p className={styles.emptySubtitle}>
               {hasActiveFilters
                 ? "No active deals match your current filter or search selection."
@@ -861,8 +860,7 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                       <span
                         className={`${styles.stagePill} ${STAGE_TONE_PILL_CLASS[stageTone]}`}
                       >
-                        <span className={styles.stagePillDot} aria-hidden="true" />
-                        <span>{record.stage}</span>
+                        {record.stage}
                       </span>
                     </td>
 

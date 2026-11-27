@@ -654,15 +654,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/components/TaskCard.tsx": {
-    "mtime": 1795595880.6442785,
-    "seen": 1795596214.2534597,
-    "ast_hash": "6bb7e865f7a5f453471e14f0bdb1eaed",
+    "mtime": 1795773220.493397,
+    "seen": 1795775188.7574794,
+    "ast_hash": "df90be6f54143808297752a95fdf2d0e",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/page.tsx": {
-    "mtime": 1795595871.333657,
-    "seen": 1795596214.2549508,
-    "ast_hash": "cbc6ffd99029c562b34d128248e246d4",
+    "mtime": 1795773149.556181,
+    "seen": 1795775188.7574794,
+    "ast_hash": "98dd79e1331fbcd82aaa89caf2dc7e5a",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/team/[id]/components/CommercialVelocityScorecards.tsx": {
@@ -858,9 +858,9 @@
     "semantic_hash": "8a2ed095664376694ac694301b5475e5"
   },
   "src/app/admin/components/Dashboard/CommercialDealsTable.tsx": {
-    "mtime": 1795595237.9899044,
-    "seen": 1795596214.265672,
-    "ast_hash": "940ccf11420875f3b9352d1a53108a58",
+    "mtime": 1795773239.1338706,
+    "seen": 1795775188.7710798,
+    "ast_hash": "b80db78d73decbaf37bc40dcbaf363b2",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveKpiGrid.tsx": {
@@ -1122,9 +1122,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminMobileDrawer.tsx": {
-    "mtime": 1795376585.8101273,
-    "seen": 1795376619.7261283,
-    "ast_hash": "b0794c77d497b2fc9556a72b0c87ee38",
+    "mtime": 1795773138.40133,
+    "seen": 1795775188.8158386,
+    "ast_hash": "70e95bab836538051d82ec55ed81300c",
     "semantic_hash": ""
   },
   "src/app/admin/components/layout/AdminRootClientProvider.tsx": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1795588471.7197716,
-    "seen": 1795588513.3888311,
-    "ast_hash": "718c2377407a59cd69388f98309cd01d",
+    "mtime": 1795773844.7929626,
+    "seen": 1795775189.0624712,
+    "ast_hash": "c257cea9693042e8e33f31575af4e24b",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -5418,15 +5418,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/tasks/loading.tsx": {
-    "mtime": 1795166504.3933697,
-    "seen": 1795167376.1348324,
-    "ast_hash": "21707eb497390ab356f340814b286cad",
+    "mtime": 1795773158.4739168,
+    "seen": 1795775188.7574794,
+    "ast_hash": "88dacdf4ca4f2442ad09bb6fdd06ec21",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/AttentionQueue.tsx": {
-    "mtime": 1794203528.3027365,
-    "seen": 1794205709.790258,
-    "ast_hash": "8b4d3215710d1ec09fb84f228e70610c",
+    "mtime": 1795773233.8870378,
+    "seen": 1795775188.7710798,
+    "ast_hash": "85ddd68c441c2247854620dc8d98da3f",
     "semantic_hash": ""
   },
   "src/app/admin/components/auth/AdminAuthShell.tsx": {
@@ -5784,9 +5784,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ConyestTransactionsTable.tsx": {
-    "mtime": 1795592460.918663,
-    "seen": 1795594373.472667,
-    "ast_hash": "165e4e36fbca249bac017b0d3ac09cd1",
+    "mtime": 1795773227.3858268,
+    "seen": 1795775188.7710798,
+    "ast_hash": "935165e2f3dbf27de575f0880e0f0e82",
     "semantic_hash": ""
   },
   "docs/crm_conyest_redesign/CONYEST_LUXURY_DASHBOARD_REDESIGN_PLAN.md": {
@@ -6000,9 +6000,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/ExecutiveTelemetryMasthead.tsx": {
-    "mtime": 1795767296.4452496,
-    "seen": 1795767545.712658,
-    "ast_hash": "1ea37379d8facc77c8b7464654fddbf1",
+    "mtime": 1795773161.3549485,
+    "seen": 1795775188.7710798,
+    "ast_hash": "1958799369c378624c6d00de322a3cd4",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/PipelineStageFlowBar.tsx": {
@@ -6024,9 +6024,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialDealsLedger.tsx": {
-    "mtime": 1795767225.769231,
-    "seen": 1795767545.71115,
-    "ast_hash": "a8ff5a04872f37235651b207f886c82d",
+    "mtime": 1795773192.4855227,
+    "seen": 1795775188.7710798,
+    "ast_hash": "24913a52f4f9102451b0135cbe369559",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/CommercialVelocityBarChart.tsx": {
@@ -6204,15 +6204,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxurySlaFeedCard.tsx": {
-    "mtime": 1794926051.2067294,
-    "seen": 1794927174.086485,
-    "ast_hash": "b86f8e1cf2bf2a9b7e467c38c2f4f13e",
+    "mtime": 1795773219.154245,
+    "seen": 1795775188.7710798,
+    "ast_hash": "c677135396d2b04b24bcdd361bda4a6f",
     "semantic_hash": ""
   },
   "src/app/admin/components/Dashboard/LuxuryVirtualCard.tsx": {
-    "mtime": 1795762575.2192025,
-    "seen": 1795766952.0627956,
-    "ast_hash": "34edee83560b964561c88e829f7faa18",
+    "mtime": 1795773143.2098,
+    "seen": 1795775188.7710798,
+    "ast_hash": "2c4286fbd294f0c49e541b419bb937e3",
     "semantic_hash": ""
   },
   "docs/LuxuryDashboard/LUXURY_DASHBOARD_GREENFIELD_PLAN.md": {
@@ -7056,9 +7056,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/AnalyticsMasthead/AnalyticsMasthead.tsx": {
-    "mtime": 1795553282.6943421,
-    "seen": 1795553292.6017783,
-    "ast_hash": "668df893cb60f0c65903eeebc74b8208",
+    "mtime": 1795773142.6940954,
+    "seen": 1795775188.7419264,
+    "ast_hash": "8c98eddcfd11c860e1afcd171fb5d12e",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/AnalyticsSkeleton/AnalyticsSkeleton.tsx": {
@@ -7068,15 +7068,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/FunnelVisualizer/FunnelVisualizer.tsx": {
-    "mtime": 1795553282.6968725,
-    "seen": 1795553292.6017783,
-    "ast_hash": "7aede3719a402973f42f9f29a62a27c3",
+    "mtime": 1795773190.4334154,
+    "seen": 1795775188.7439983,
+    "ast_hash": "5c5967a39aff8c4e110be7a4e83b1b6c",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/PracticeMatrix/PracticeMatrix.tsx": {
-    "mtime": 1795553282.6988537,
-    "seen": 1795553292.6017783,
-    "ast_hash": "080a93ec087c75e30c435ffe6cf2965b",
+    "mtime": 1795773187.1153395,
+    "seen": 1795775188.7439983,
+    "ast_hash": "3e53915d4dfa8b7e0a57e2eb8d4cb3ca",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/RevenueSpline/RevenueSpline.tsx": {
@@ -7086,15 +7086,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/analytics/components/StageDwellMatrix/StageDwellMatrix.tsx": {
-    "mtime": 1795553282.7785025,
-    "seen": 1795553292.6017783,
-    "ast_hash": "561a74102e2d6d431c300a39b06b4f1d",
+    "mtime": 1795773183.4946897,
+    "seen": 1795775188.7454019,
+    "ast_hash": "a68e00fb0bdef53f69f5a0d12a7128f0",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/leads/components/QuickMetricsRibbon/QuickMetricsRibbon.tsx": {
-    "mtime": 1795587392.577664,
-    "seen": 1795588357.3978536,
-    "ast_hash": "71a91dc96a0d327a888ee6332fe9b29d",
+    "mtime": 1795773138.0407627,
+    "seen": 1795775188.7569695,
+    "ast_hash": "65844706c5fc08365e8a00511c169a95",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/team/components/AddMemberHeaderButton.tsx": {
@@ -7242,9 +7242,9 @@
     "semantic_hash": ""
   },
   "tests/unit/core-tabs-conversion-engine.test.ts": {
-    "mtime": 1795763105.8334923,
-    "seen": 1795766952.1518018,
-    "ast_hash": "68d5d2b6266802d65376c58df1311fa6",
+    "mtime": 1795773826.6690896,
+    "seen": 1795775188.984951,
+    "ast_hash": "60f37ba3877dc47e35bee456ae89b2c1",
     "semantic_hash": ""
   },
   "docs/sales_funnel/core_tabs_redesign/AUDIT_REPORT_FEATURES_AND_SECURITY.md": {
@@ -7263,6 +7263,18 @@
     "mtime": 1795588465.8368297,
     "seen": 1795588513.3888311,
     "ast_hash": "87ad8702cecb21aeac9c97dc21f0abee",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-27_15-30-00.md": {
+    "mtime": 1795773838.2643147,
+    "seen": 1795775189.0624712,
+    "ast_hash": "1a9048600703ad9af4c3b38de8463580",
+    "semantic_hash": ""
+  },
+  "docs/sales_funnel/core_tabs_redesign/TASKS_AND_WORKSPACE_REDESIGN_PLAN.md": {
+    "mtime": 1795773855.2447395,
+    "seen": 1795775189.0931897,
+    "ast_hash": "040d77e7fd24b9c499256eadd3b1eb94",
     "semantic_hash": ""
   },
   "package-lock.json": {
