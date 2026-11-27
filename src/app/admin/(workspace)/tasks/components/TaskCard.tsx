@@ -471,13 +471,13 @@ export function TaskCard({
             Deal →
           </Link>
         )}
-
-        {error && (
-          <p className={styles.actionError} role="alert">
-            {error}
-          </p>
-        )}
       </div>
+
+      {error && (
+        <p className={styles.actionError} role="alert">
+          {error}
+        </p>
+      )}
 
       {isOutcomeOpen && allowCompletion && lead.next_follow_up && (
         <form onSubmit={submitOutcomeCompletion} className={styles.outcomePanel}>

@@ -750,8 +750,8 @@
 }
 
 .actionError {
-  flex-basis: 100%;
-  margin: 4px 0 0;
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
   color: #9f1239;
   font-size: 12px;
   font-weight: 500;
@@ -1122,6 +1122,10 @@
     flex-wrap: wrap;
     padding-top: 12px;
     border-top: 1px solid var(--queue-border);
+  }
+  .actionError {
+    text-align: left;
+    margin-top: 0;
   }
   .emptyState,
   .errorState {
