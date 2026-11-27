@@ -41,7 +41,6 @@ export interface CommercialDealsLedgerProps {
   recordRoute?: string | null;
   pendingRecordId?: string | null;
   onAdvanceStage?: (record: OverviewRecord) => void;
-  onOpenDossier?: (record: OverviewRecord) => void;
 }
 
 type StageToneKey =

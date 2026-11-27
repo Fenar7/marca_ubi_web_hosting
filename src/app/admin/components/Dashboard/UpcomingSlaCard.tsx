@@ -29,12 +29,16 @@ export interface UpcomingSlaItem {
 export interface UpcomingSlaCardProps {
   records?: OverviewRecord[];
   financials?: boolean;
+  canCreate?: boolean;
+  canTasks?: boolean;
   onOpenRecord?: (record: OverviewRecord) => void;
 }
 
 export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
   records,
   financials = true,
+  canCreate = false,
+  canTasks = false,
   onOpenRecord,
 }) => {
   const router = useRouter();
@@ -115,18 +119,20 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
           </p>
         </div>
 
-        <button
-          type="button"
-          className={styles.addButton}
-          onClick={() => {
-            if (typeof window !== "undefined") {
-              window.dispatchEvent(new CustomEvent("open-new-lead-modal"));
-            }
-          }}
-          aria-label="Add new milestone or SLA commitment"
-        >
-          +
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            className={styles.addButton}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("open-new-lead-modal"));
+              }
+            }}
+            aria-label="Add new milestone or SLA commitment"
+          >
+            +
+          </button>
+        )}
       </header>
 
       <div className={styles.itemsList}>
@@ -206,17 +212,19 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
         })}
       </div>
 
-      <button
-        type="button"
-        className={styles.viewAllButton}
-        onClick={() => router.push("/admin/tasks?queue=upcoming")}
-      >
-        <span>View All Milestone Commitments</span>
-        <svg className={styles.btnArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-          <line x1="7" y1="17" x2="17" y2="7" />
-          <polyline points="7 7 17 7 17 17" />
-        </svg>
-      </button>
+      {canTasks && (
+        <button
+          type="button"
+          className={styles.viewAllButton}
+          onClick={() => router.push("/admin/tasks?queue=upcoming")}
+        >
+          <span>View All Milestone Commitments</span>
+          <svg className={styles.btnArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+            <line x1="7" y1="17" x2="17" y2="7" />
+            <polyline points="7 7 17 7 17 17" />
+          </svg>
+        </button>
+      )}
     </article>
   );
 };

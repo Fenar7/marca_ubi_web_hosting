@@ -30,12 +30,14 @@ export interface TransactionItem {
 export interface RecentTransactionsTableProps {
   records?: OverviewRecord[];
   financials?: boolean;
+  recordRoute?: string | null;
   onOpenRecord?: (record: OverviewRecord) => void;
 }
 
 export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = ({
   records,
   financials = true,
+  recordRoute = null,
   onOpenRecord,
 }) => {
   const router = useRouter();
@@ -91,28 +93,30 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
       <header className={styles.tableHeader}>
         <h2 className={styles.title}>Recent Transaction</h2>
 
-        <button
-          type="button"
-          className={styles.filterButton}
-          onClick={() => router.push("/admin/deals?bucket=converted")}
-          aria-label="Filter recent transactions"
-        >
-          <span>Filter</span>
-          <svg
-            className={styles.filterIcon}
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {recordRoute && (
+          <button
+            type="button"
+            className={styles.filterButton}
+            onClick={() => router.push(`${recordRoute}?bucket=converted`)}
+            aria-label="Filter recent transactions"
+          >
+            <span>Filter</span>
+            <svg
+              className={styles.filterIcon}
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             aria-hidden="true"
           >
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
           </svg>
         </button>
+        )}
       </header>
 
       <div className={styles.tableWrapper}>
@@ -223,20 +227,27 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
                           >
                             Inspect Dossier
                           </button>
-                          <button
-                            type="button"
-                            className={styles.popoverItem}
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              router.push(matchedRecord?.href || `/admin/deals/${item.id}`);
-                            }}
-                          >
-                            <span>Open Full Page</span>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                              <line x1="7" y1="17" x2="17" y2="7" />
-                              <polyline points="7 7 17 7 17 17" />
-                            </svg>
-                          </button>
+                          {(() => {
+                            const fullHref =
+                              matchedRecord?.href ??
+                              (recordRoute ? `${recordRoute}/${item.id}` : null);
+                            return fullHref ? (
+                              <button
+                                type="button"
+                                className={styles.popoverItem}
+                                onClick={() => {
+                                  setOpenMenuId(null);
+                                  router.push(fullHref);
+                                }}
+                              >
+                                <span>Open Full Page</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                                  <line x1="7" y1="17" x2="17" y2="7" />
+                                  <polyline points="7 7 17 7 17 17" />
+                                </svg>
+                              </button>
+                            ) : null;
+                          })()}
                         </div>
                       )}
                     </div>
@@ -248,19 +259,21 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
         </table>
       </div>
 
-      <footer className={styles.tableFooter}>
-        <button
-          type="button"
-          className={styles.viewAllTransactionsBtn}
-          onClick={() => router.push("/admin/deals")}
-        >
-          <span>View All Pipeline Transactions &amp; Ledger</span>
-          <svg className={styles.btnArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-            <line x1="7" y1="17" x2="17" y2="7" />
-            <polyline points="7 7 17 7 17 17" />
-          </svg>
-        </button>
-      </footer>
+      {recordRoute && (
+        <footer className={styles.tableFooter}>
+          <button
+            type="button"
+            className={styles.viewAllTransactionsBtn}
+            onClick={() => router.push(recordRoute)}
+          >
+            <span>View All Pipeline Transactions &amp; Ledger</span>
+            <svg className={styles.btnArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </button>
+        </footer>
+      )}
     </article>
   );
 };

@@ -41,7 +41,6 @@ export interface SpendingOverviewBarCardProps {
   totalValue?: number | null;
   dealCount?: number | null;
   timeframe?: TimeframeSlug;
-  timeframeLabel?: string;
   categories?: { name: string; value: number; count: number }[];
   financials?: boolean;
   recordRoute?: string | null;
@@ -326,13 +325,10 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
           })}
         </div>
 
-        {/* 38px Continuous Rounded Gradient Pill Bar (Marca Ubi Editorial Palette) */}
+        {/* 44px Continuous Rounded Gradient Pill Bar (Marca Ubi Editorial Palette) */}
         <div
           className={styles.gradientPillTrack}
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={100}
+          role="group"
           aria-label="Spending breakdown proportions"
         >
           {resolvedList.map((item) => {

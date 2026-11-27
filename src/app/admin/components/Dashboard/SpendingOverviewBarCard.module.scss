@@ -163,6 +163,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  min-height: 44px;
   padding: 8px 12px;
   border-radius: 6px;
   background: transparent;
@@ -231,11 +232,23 @@
 }
 
 .trendPill {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   height: 24px;
   padding: 0 10px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    transform: translate(-50%, -50%);
+  }
   border-radius: 9999px;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
@@ -365,25 +378,40 @@
   padding-left: 13px;
 }
 
-/* 38px Continuous Rounded Gradient Pill Bar */
+/* 44px Continuous Rounded Gradient Pill Bar (overflow visible so segment tooltips render unclipped) */
 .gradientPillTrack {
   position: relative;
   display: flex;
   width: 100%;
-  height: 38px;
+  height: 44px;
   border-radius: 10px;
-  overflow: hidden;
   background: #f1f5f9;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .gradientSegment {
   height: 100%;
+  min-height: 44px;
   position: relative;
   transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, filter 0.2s ease;
   cursor: pointer;
 
-  &:hover {
+  &:first-child {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }
+
+  &:last-child {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  &:only-child {
+    border-radius: 10px;
+  }
+
+  &:hover,
+  &:focus-visible {
     filter: brightness(1.06);
     z-index: 2;
   }
@@ -394,6 +422,7 @@
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
+  z-index: 10;
   background: #111827;
   color: #ffffff;
   padding: 4px 8px;
@@ -407,6 +436,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.gradientSegment:hover .segmentTooltip {
+.gradientSegment:hover .segmentTooltip,
+.gradientSegment:focus-visible .segmentTooltip {
   opacity: 1;
 }

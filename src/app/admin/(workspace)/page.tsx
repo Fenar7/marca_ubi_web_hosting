@@ -538,7 +538,8 @@ export default async function AdminDashboardPage({
           .select("lead_id, created_at")
           .in("lead_id", previewIds)
           .eq("activity_type", "status_change")
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .limit(5000);
         if (activityResult.error) {
           console.warn(
             "[dashboard] Stage activity lookup failed",

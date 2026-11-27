@@ -373,6 +373,7 @@ export function OverviewWorkspace({
           <RecentTransactionsTable
             records={data.records}
             financials={data.financials}
+            recordRoute={data.recordRoute}
             onOpenRecord={handleOpenDossier}
           />
         </div>
@@ -382,11 +383,15 @@ export function OverviewWorkspace({
           <UpcomingSlaCard
             records={data.records}
             financials={data.financials}
+            canCreate={data.canCreate}
+            canTasks={data.canTasks}
             onOpenRecord={handleOpenDossier}
           />
           <ExecutiveSlaVelocityGauge
             records={data.records}
             financials={data.financials}
+            canTasks={data.canTasks}
+            canAnalytics={data.canAnalytics}
             onOpenRecord={handleOpenDossier}
           />
         </div>
@@ -410,7 +415,6 @@ export function OverviewWorkspace({
           recordRoute={data.recordRoute}
           pendingRecordId={pendingRecordId}
           onAdvanceStage={handleAdvanceStage}
-          onOpenDossier={handleOpenDossier}
         />
       </section>
 

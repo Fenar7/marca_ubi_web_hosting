@@ -70,6 +70,7 @@ export function ExecutiveTelemetryMasthead({
 
   const [isTimeframeOpen, setIsTimeframeOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -80,11 +81,19 @@ export function ExecutiveTelemetryMasthead({
         setIsTimeframeOpen(false);
       }
     }
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsTimeframeOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
     if (isTimeframeOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [isTimeframeOpen]);
 
@@ -129,8 +138,17 @@ export function ExecutiveTelemetryMasthead({
 
         <div className={styles.controlsCluster}>
           {/* Timeframe Scope Dropdown */}
-          <div className={styles.dropdownRelative} ref={dropdownRef}>
+          <div
+            className={styles.dropdownRelative}
+            ref={dropdownRef}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setIsTimeframeOpen(false);
+              }
+            }}
+          >
             <button
+              ref={triggerRef}
               type="button"
               className={styles.timeframeButton}
               onClick={() => setIsTimeframeOpen((prev) => !prev)}

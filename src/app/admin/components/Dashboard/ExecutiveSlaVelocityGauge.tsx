@@ -33,6 +33,10 @@ export interface ExecutiveSlaVelocityGaugeProps {
   records?: OverviewRecord[];
   /** Whether the active user role possesses financial ledger permissions */
   financials?: boolean;
+  /** Whether the active user role can access /admin/tasks */
+  canTasks?: boolean;
+  /** Whether the active user role can access /admin/analytics */
+  canAnalytics?: boolean;
   /** Navigation or drawer callback for record inspection */
   onOpenRecord?: (record: OverviewRecord) => void;
 }
@@ -165,6 +169,8 @@ function describeClockwiseArc(
 export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps> = ({
   records,
   financials = true,
+  canTasks = false,
+  canAnalytics = false,
   onOpenRecord,
 }) => {
   const router = useRouter();
@@ -332,46 +338,74 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            router.push(
-              metrics.overdueCount > 0 ? "/admin/tasks?queue=overdue" : "/admin/tasks"
-            )
-          }
-          className={
-            metrics.overdueCount > 0
-              ? styles.alertBadge
+        {canTasks ? (
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                metrics.overdueCount > 0 ? "/admin/tasks?queue=overdue" : "/admin/tasks"
+              )
+            }
+            className={
+              metrics.overdueCount > 0
+                ? styles.alertBadge
+                : metrics.onTimePercentage < 90
+                ? styles.cautionBadge
+                : styles.healthyBadge
+            }
+            title={metrics.overdueCount > 0 ? "Requires Executive Action" : "Commitments On Target"}
+            aria-label={metrics.overdueCount > 0 ? "View overdue tasks" : "View all tasks"}
+          >
+            {metrics.monitoredDueCount === 0
+              ? "No Active Commitments"
+              : metrics.overdueCount > 0
+              ? `${metrics.overdueCount} Critical Overdue`
               : metrics.onTimePercentage < 90
-              ? styles.cautionBadge
-              : styles.healthyBadge
-          }
-          title={metrics.overdueCount > 0 ? "Requires Executive Action" : "Commitments On Target"}
-          aria-label={metrics.overdueCount > 0 ? "View overdue tasks" : "View all tasks"}
-        >
-          {metrics.monitoredDueCount === 0
-            ? "No Active Commitments"
-            : metrics.overdueCount > 0
-            ? `${metrics.overdueCount} Critical Overdue`
-            : metrics.onTimePercentage < 90
-            ? "Cadence Caution"
-            : "Cadence Optimal"}
-        </button>
+              ? "Cadence Caution"
+              : "Cadence Optimal"}
+          </button>
+        ) : (
+          <span
+            className={
+              metrics.overdueCount > 0
+                ? styles.alertBadge
+                : metrics.onTimePercentage < 90
+                ? styles.cautionBadge
+                : styles.healthyBadge
+            }
+          >
+            {metrics.monitoredDueCount === 0
+              ? "No Active Commitments"
+              : metrics.overdueCount > 0
+              ? `${metrics.overdueCount} Critical Overdue`
+              : metrics.onTimePercentage < 90
+              ? "Cadence Caution"
+              : "Cadence Optimal"}
+          </span>
+        )}
       </header>
 
       {/* 220° Clockwise Radial Horology Instrument Gauge */}
       <div
         className={styles.gaugeStage}
-        role="button"
-        tabIndex={0}
-        onClick={() => router.push("/admin/analytics")}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            router.push("/admin/analytics");
-          }
-        }}
-        title="View SLA Delivery Analytics"
-        aria-label="SLA delivery gauge, click to view analytics"
+        role={canAnalytics ? "button" : undefined}
+        tabIndex={canAnalytics ? 0 : undefined}
+        onClick={canAnalytics ? () => router.push("/admin/analytics") : undefined}
+        onKeyDown={
+          canAnalytics
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push("/admin/analytics");
+                }
+              }
+            : undefined
+        }
+        title={canAnalytics ? "View SLA Delivery Analytics" : undefined}
+        aria-label={
+          canAnalytics ? "SLA delivery gauge, click to view analytics" : "SLA delivery gauge"
+        }
+        style={canAnalytics ? undefined : { cursor: "default" }}
       >
         <svg
           viewBox="0 0 200 120"
@@ -510,15 +544,22 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
 
       {/* Borderless Tabular Telemetry Matrix (Commandment 1: Anti-Bento Inception) */}
       <div className={styles.metricsStrip}>
-        <button
-          type="button"
-          className={styles.metricCellBtn}
-          onClick={() => router.push("/admin/tasks")}
-          aria-label="View active scope in tasks"
-        >
-          <span className={styles.cellLabel}>Active Scope</span>
-          <span className={styles.cellVal}>{metrics.totalMilestones} Milestones</span>
-        </button>
+        {canTasks ? (
+          <button
+            type="button"
+            className={styles.metricCellBtn}
+            onClick={() => router.push("/admin/tasks")}
+            aria-label="View active scope in tasks"
+          >
+            <span className={styles.cellLabel}>Active Scope</span>
+            <span className={styles.cellVal}>{metrics.totalMilestones} Milestones</span>
+          </button>
+        ) : (
+          <div className={styles.metricCell}>
+            <span className={styles.cellLabel}>Active Scope</span>
+            <span className={styles.cellVal}>{metrics.totalMilestones} Milestones</span>
+          </div>
+        )}
         <div className={styles.metricDivider} aria-hidden="true" />
         <div className={styles.metricCell}>
           <span className={styles.cellLabel}>Committed Value</span>
@@ -527,19 +568,30 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           </span>
         </div>
         <div className={styles.metricDivider} aria-hidden="true" />
-        <button
-          type="button"
-          className={styles.metricCellBtn}
-          onClick={() => router.push("/admin/tasks?queue=overdue")}
-          aria-label="View critical overdue tasks"
-        >
-          <span className={styles.cellLabel}>Critical Overdue</span>
-          <span
-            className={metrics.overdueCount > 0 ? styles.cellValAlert : styles.cellValHealthy}
+        {canTasks ? (
+          <button
+            type="button"
+            className={styles.metricCellBtn}
+            onClick={() => router.push("/admin/tasks?queue=overdue")}
+            aria-label="View critical overdue tasks"
           >
-            {metrics.overdueCount} Items
-          </span>
-        </button>
+            <span className={styles.cellLabel}>Critical Overdue</span>
+            <span
+              className={metrics.overdueCount > 0 ? styles.cellValAlert : styles.cellValHealthy}
+            >
+              {metrics.overdueCount} Items
+            </span>
+          </button>
+        ) : (
+          <div className={styles.metricCell}>
+            <span className={styles.cellLabel}>Critical Overdue</span>
+            <span
+              className={metrics.overdueCount > 0 ? styles.cellValAlert : styles.cellValHealthy}
+            >
+              {metrics.overdueCount} Items
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Interactive Milestone Dispatch CTA */}
@@ -569,7 +621,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-        ) : (
+        ) : canAnalytics ? (
           <button
             type="button"
             onClick={() => router.push("/admin/analytics")}
@@ -593,7 +645,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
               <polyline points="7 7 17 7 17 17" />
             </svg>
           </button>
-        )}
+        ) : null}
       </footer>
     </article>
   );
