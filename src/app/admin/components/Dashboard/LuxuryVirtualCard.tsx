@@ -18,7 +18,6 @@ export interface LuxuryVirtualCardProps {
   userName?: string;
   balance?: number | null;
   dealCount?: number | null;
-  winRate?: number | null;
   periodLabel?: string;
   cohort?: { eligible: number; won: number } | null;
   financials?: boolean;
@@ -44,7 +43,7 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
   const isUnavailable =
     pipelineReady === false || (financials && balance === null);
 
-  const canNavigateToDeals = recordRoute !== null;
+  const canNavigateToDeals = Boolean(recordRoute);
   const resolvedDealsHref = `${recordRoute ?? "/admin/deals"}?bucket=open`;
 
   const cohortText = cohort
@@ -78,7 +77,9 @@ export const LuxuryVirtualCard: React.FC<LuxuryVirtualCardProps> = ({
         ) : financials && balance !== null ? (
           <p className={styles.heroFigure}>{formatCrmCurrency(balance)}</p>
         ) : (
-          <p className={styles.heroFigure}>{safeDealCount} Active Deals</p>
+          <p className={styles.heroFigure}>
+            {safeDealCount} Active {safeDealCount === 1 ? "Deal" : "Deals"}
+          </p>
         )}
       </div>
 

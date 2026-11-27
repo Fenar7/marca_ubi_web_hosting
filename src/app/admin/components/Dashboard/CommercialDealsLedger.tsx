@@ -267,7 +267,6 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
   recordRoute = "/admin/deals",
   pendingRecordId = null,
   onAdvanceStage,
-  onOpenDossier,
 }) => {
   const [activeTab, setActiveTab] = useState<LedgerFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -827,7 +826,6 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                               href={record.href}
                               className={styles.dealTitleLink}
                               title={displayName}
-                              onClick={() => onOpenDossier?.(record)}
                             >
                               {displayName}
                             </Link>
@@ -923,7 +921,6 @@ export const CommercialDealsLedger: React.FC<CommercialDealsLedgerProps> = ({
                             href={record.href}
                             className={styles.openLink}
                             aria-label={`Open ${displayName}`}
-                            onClick={() => onOpenDossier?.(record)}
                           >
                             <span>Open</span>
                             <svg

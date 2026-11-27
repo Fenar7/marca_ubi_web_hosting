@@ -37,6 +37,7 @@ export interface ExecutiveTelemetryMastheadProps {
   averageCycleDays: number | null;
   financials: boolean;
   canExport: boolean;
+  canAnalytics?: boolean;
   recordRoute?: string | null;
   cohort?: { eligible: number; won: number } | null;
   onExportSummary?: () => void;
@@ -58,6 +59,7 @@ export function ExecutiveTelemetryMasthead({
   averageCycleDays,
   financials,
   canExport,
+  canAnalytics = true,
   recordRoute = "/admin/deals",
   cohort,
   onExportSummary,
@@ -239,7 +241,6 @@ export function ExecutiveTelemetryMasthead({
           balance={pipelineValue}
           dealCount={pipelineCount}
           pipelineReady={pipelineReady}
-          winRate={null}
           periodLabel={periodLabel}
           cohort={cohort}
           financials={financials}
@@ -249,15 +250,28 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 2: Converted Contract Value */}
         <article
           className={`${styles.scorecard} ${styles.cardClosedRevenue}`}
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/admin/deals?bucket=converted")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              router.push("/admin/deals?bucket=converted");
-            }
-          }}
-          aria-label={`Closed Revenue ${financials && convertedValue !== null ? formatCrmCurrency(convertedValue) : "Confidential"}. Click to inspect won contracts.`}
+          role={recordRoute ? "button" : undefined}
+          tabIndex={recordRoute ? 0 : undefined}
+          onClick={
+            recordRoute
+              ? () => router.push(`${recordRoute}?bucket=converted`)
+              : undefined
+          }
+          onKeyDown={
+            recordRoute
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`${recordRoute}?bucket=converted`);
+                  }
+                }
+              : undefined
+          }
+          aria-label={
+            recordRoute
+              ? `Closed Revenue ${financials && convertedValue !== null ? formatCrmCurrency(convertedValue) : "Confidential"}. Click to inspect won contracts.`
+              : undefined
+          }
         >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
@@ -302,15 +316,28 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 3: Weighted Pipeline Potential */}
         <article
           className={`${styles.scorecard} ${styles.cardWeightedValue}`}
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/admin/deals?bucket=potential")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              router.push("/admin/deals?bucket=potential");
-            }
-          }}
-          aria-label={`Weighted Value ${financials && weightedPotential !== null ? formatCrmCurrency(weightedPotential) : "Confidential"}. Click to inspect weighted pipeline.`}
+          role={recordRoute ? "button" : undefined}
+          tabIndex={recordRoute ? 0 : undefined}
+          onClick={
+            recordRoute
+              ? () => router.push(`${recordRoute}?bucket=potential`)
+              : undefined
+          }
+          onKeyDown={
+            recordRoute
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`${recordRoute}?bucket=potential`);
+                  }
+                }
+              : undefined
+          }
+          aria-label={
+            recordRoute
+              ? `Weighted Value ${financials && weightedPotential !== null ? formatCrmCurrency(weightedPotential) : "Confidential"}. Click to inspect weighted pipeline.`
+              : undefined
+          }
         >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
@@ -343,15 +370,24 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 4: Commercial Velocity */}
         <article
           className={`${styles.scorecard} ${styles.cardSalesCycle}`}
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/admin/analytics")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              router.push("/admin/analytics");
-            }
-          }}
-          aria-label="Average Sales Cycle. Click to inspect velocity analytics."
+          role={canAnalytics ? "button" : undefined}
+          tabIndex={canAnalytics ? 0 : undefined}
+          onClick={canAnalytics ? () => router.push("/admin/analytics") : undefined}
+          onKeyDown={
+            canAnalytics
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push("/admin/analytics");
+                  }
+                }
+              : undefined
+          }
+          aria-label={
+            canAnalytics
+              ? "Average Sales Cycle. Click to inspect velocity analytics."
+              : undefined
+          }
         >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>

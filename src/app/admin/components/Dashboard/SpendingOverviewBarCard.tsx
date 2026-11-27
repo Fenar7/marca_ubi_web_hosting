@@ -44,6 +44,7 @@ export interface SpendingOverviewBarCardProps {
   timeframeLabel?: string;
   categories?: { name: string; value: number; count: number }[];
   financials?: boolean;
+  recordRoute?: string | null;
   onTimeframeChange?: (timeframe: CardTimeframe) => void;
 }
 
@@ -53,6 +54,7 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
   timeframe,
   categories,
   financials = true,
+  recordRoute = "/admin/deals",
   onTimeframeChange,
 }) => {
   const router = useRouter();
@@ -256,18 +258,22 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
       {/* Hero Metric & Dynamic Deal Count Badge */}
       <div className={styles.heroRow}>
         <span className={styles.heroValuation}>{displayTotal}</span>
-        <button
-          type="button"
-          className={styles.trendPill}
-          onClick={() => router.push("/admin/deals")}
-          aria-label={`${activeDeals} active deals, inspect in deals ledger`}
-        >
-          <span>{activeDeals} Active Deals</span>
-          <svg className={styles.trendArrow} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-            <line x1="7" y1="17" x2="17" y2="7" />
-            <polyline points="7 7 17 7 17 17" />
-          </svg>
-        </button>
+        {recordRoute !== null ? (
+          <button
+            type="button"
+            className={styles.trendPill}
+            onClick={() => router.push(recordRoute ?? "/admin/deals")}
+            aria-label={`${activeDeals} active deals, inspect in deals ledger`}
+          >
+            <span>{activeDeals} Active Deals</span>
+            <svg className={styles.trendArrow} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </button>
+        ) : (
+          <span className={styles.trendPill}>{activeDeals} Active Deals</span>
+        )}
       </div>
 
       {/* Breakdown Section: Horizontal Legend + Continuous Capsule Bar */}
@@ -280,33 +286,44 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
         <>
         {/* Horizontal Legend */}
         <div className={styles.legendRow}>
-          {resolvedList.map((item) => (
-            <button
-              key={item.name}
-              type="button"
-              className={styles.legendItem}
-              onClick={() =>
-                router.push(
-                  item.name === "Others"
-                    ? "/admin/deals"
-                    : `/admin/deals?service_category=${encodeURIComponent(item.name)}`,
-                )
-              }
-              aria-label={`View deals for ${item.name}`}
-            >
-              <div className={styles.legendHeader}>
-                <span
-                  className={styles.legendDot}
-                  style={{ backgroundColor: item.color }}
-                  aria-hidden="true"
-                />
-                <span className={styles.legendLabel}>{item.name}</span>
+          {resolvedList.map((item) => {
+            const targetHref =
+              recordRoute === null
+                ? null
+                : item.name === "Others"
+                  ? recordRoute
+                  : `${recordRoute}?service_category=${encodeURIComponent(item.name)}`;
+            const legendBody = (
+              <>
+                <div className={styles.legendHeader}>
+                  <span
+                    className={styles.legendDot}
+                    style={{ backgroundColor: item.color }}
+                    aria-hidden="true"
+                  />
+                  <span className={styles.legendLabel}>{item.name}</span>
+                </div>
+                <span className={styles.legendAmount}>
+                  {financials ? formatCrmCurrency(item.value) : "Confidential"}
+                </span>
+              </>
+            );
+            return targetHref ? (
+              <button
+                key={item.name}
+                type="button"
+                className={styles.legendItem}
+                onClick={() => router.push(targetHref)}
+                aria-label={`View deals for ${item.name}`}
+              >
+                {legendBody}
+              </button>
+            ) : (
+              <div key={item.name} className={styles.legendItem}>
+                {legendBody}
               </div>
-              <span className={styles.legendAmount}>
-                {financials ? formatCrmCurrency(item.value) : "Confidential"}
-              </span>
-            </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* 38px Continuous Rounded Gradient Pill Bar (Marca Ubi Editorial Palette) */}
@@ -320,32 +337,34 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
         >
           {resolvedList.map((item) => {
             const pct = Math.max(8, (item.value / totalSum) * 100);
+            const targetHref =
+              recordRoute === null
+                ? null
+                : item.name === "Others"
+                  ? recordRoute
+                  : `${recordRoute}?service_category=${encodeURIComponent(item.name)}`;
             return (
               <div
                 key={item.name}
                 className={styles.gradientSegment}
-                role="button"
-                tabIndex={0}
-                onClick={() =>
-                  router.push(
-                    item.name === "Others"
-                      ? "/admin/deals"
-                      : `/admin/deals?service_category=${encodeURIComponent(item.name)}`,
-                  )
+                role={targetHref ? "button" : undefined}
+                tabIndex={targetHref ? 0 : undefined}
+                onClick={targetHref ? () => router.push(targetHref) : undefined}
+                onKeyDown={
+                  targetHref
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          router.push(targetHref);
+                        }
+                      }
+                    : undefined
                 }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    router.push(
-                      item.name === "Others"
-                        ? "/admin/deals"
-                        : `/admin/deals?service_category=${encodeURIComponent(item.name)}`,
-                    );
-                  }
-                }}
-                aria-label={`Filter deals by ${item.name}`}
+                aria-label={targetHref ? `Filter deals by ${item.name}` : `${item.name} allocation`}
                 style={{
                   width: `${pct}%`,
                   background: item.gradient,
+                  cursor: targetHref ? "pointer" : "default",
                 }}
               >
                 <div className={styles.segmentTooltip}>

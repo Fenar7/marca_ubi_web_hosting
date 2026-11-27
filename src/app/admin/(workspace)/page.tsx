@@ -625,6 +625,7 @@ export default async function AdminDashboardPage({
     canCreate,
     canTasks,
     canAdvance: canTasks && role !== "viewer",
+    canAnalytics: dashboardTab(role, profile.allowed_tabs, "analytics"),
     canExport,
     recordRoute,
     pipelineCount: pipeline?.count ?? null,

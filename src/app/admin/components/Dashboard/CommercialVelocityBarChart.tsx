@@ -27,7 +27,6 @@ export interface MonthlyBarData {
 
 export interface CommercialVelocityBarChartProps {
   chart?: DynamicRevenueSplinePoint[];
-  totalIntake?: number | null;
   totalRealized?: number | null;
   periodLabel?: string;
   timeframe?: TimeframeSlug;
@@ -344,6 +343,18 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
       const prev = (idx - 1 + monthlyData.length) % monthlyData.length;
       setSelectedIndex(prev);
       barRefs.current[prev]?.focus();
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setSelectedIndex(0);
+      barRefs.current[0]?.focus();
+    } else if (e.key === "End") {
+      e.preventDefault();
+      const last = Math.max(0, monthlyData.length - 1);
+      setSelectedIndex(last);
+      barRefs.current[last]?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setSelectedIndex(null);
     }
   };
 
@@ -417,7 +428,15 @@ export const CommercialVelocityBarChart: React.FC<CommercialVelocityBarChartProp
         </div>
 
         <div className={styles.controlsGroup}>
-          <div className={styles.dropdownContainer} ref={dropdownRef}>
+          <div
+            className={styles.dropdownContainer}
+            ref={dropdownRef}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setIsTimeframeOpen(false);
+              }
+            }}
+          >
             <button
               ref={triggerRef}
               type="button"

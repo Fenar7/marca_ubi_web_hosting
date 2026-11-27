@@ -334,7 +334,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding-bottom: 28px;
+  padding: 6px 0 34px;
   text-align: right;
   font-family: var(--font-graphik), sans-serif;
   font-size: 12px;
@@ -358,10 +358,10 @@
 
 .gridlinesLayer {
   position: absolute;
-  top: 0;
+  top: 6px;
   left: 0;
   right: 0;
-  bottom: 28px;
+  bottom: 34px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -422,11 +422,13 @@
 }
 
 .barFillIntakeIdle {
-  background: #fed7aa;
+  background: #fdba74;
+  border: 1px solid #c2410c;
+  border-bottom: none;
 }
 
 .barColumnBtn:hover .barFillIntakeIdle {
-  background: #fdba74;
+  background: #fb923c;
 }
 
 .barFillIntakeActive {
@@ -435,6 +437,8 @@
 
 .barFillRealizedIdle {
   background: #a7f3d0;
+  border: 1px solid #047857;
+  border-bottom: none;
 }
 
 .barColumnBtn:hover .barFillRealizedIdle {
@@ -449,7 +453,7 @@
   display: block;
   width: min(28px, 80%);
   height: 3px;
-  background: #cbd5e1;
+  background: #8c8c86;
   border-radius: 2px 2px 0 0;
 }
 
@@ -644,8 +648,23 @@
     padding: 16px;
   }
 
+  .dropdownMenu {
+    left: 0;
+    right: auto;
+    min-width: min(220px, calc(100vw - 48px));
+  }
+
+  .plotArea {
+    overflow-x: auto;
+  }
+
   .columnsRow {
-    gap: 3px;
+    gap: 4px;
+    min-width: max-content;
+  }
+
+  .barColumnBtn {
+    min-width: 44px;
   }
 }
 

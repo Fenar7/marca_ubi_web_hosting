@@ -382,6 +382,10 @@ describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrenc
     assert.ok(chartCss.includes('#ea580c') && chartCss.includes('#059669') && chartCss.includes('helvetica-neue'), 'CommercialVelocityBarChart must use multi-color semantic series & Helvetica Neue numerals');
     assert.ok(chartSource.includes('Outcomes & Pipeline Intake'));
     assert.ok(ledger.includes('stagePipelineStrip') && ledger.includes('dealsTable') && !ledger.includes('10L') && ledger.includes('getUtcDayWindow'));
-    assert.ok(!ledgerCss.includes('overflow-x: auto'), 'CommercialDealsLedger filter strip must wrap instead of clipping scrollbars');
+    const filterGroupSection = ledgerCss.slice(
+      ledgerCss.indexOf('.filterGroup'),
+      ledgerCss.indexOf('.filterBtn')
+    );
+    assert.ok(filterGroupSection.includes('flex-wrap: wrap') && !filterGroupSection.includes('overflow-x: auto'), 'CommercialDealsLedger filter strip must wrap instead of clipping scrollbars');
   });
 });

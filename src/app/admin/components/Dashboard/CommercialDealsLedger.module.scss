@@ -105,7 +105,7 @@
   align-items: center;
   min-height: 44px;
   width: clamp(200px, 22vw, 260px);
-  border: 1px solid #d8d8d4;
+  border: 1px solid #8c8c86;
   border-radius: 10px;
   background: #ffffff;
   transition: border-color 140ms ease;
@@ -410,7 +410,7 @@
   gap: 8px;
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid #d8d8d4;
+  border: 1px solid #8c8c86;
   background: #ffffff;
   border-radius: 10px;
   color: #454542;
@@ -490,8 +490,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
+  min-width: 44px;
+  min-height: 44px;
   border: none;
   background: transparent;
   border-radius: 6px;
@@ -521,6 +521,7 @@
 .tableRegion {
   width: 100%;
   min-width: 0;
+  overflow-x: auto;
 }
 
 .dealsTable {
@@ -598,6 +599,9 @@
 }
 
 .dealTitleLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
@@ -819,7 +823,7 @@
   min-height: 44px;
   min-width: 44px;
   padding: 0 14px;
-  border: 1px solid #d8d8d4;
+  border: 1px solid #8c8c86;
   background: #ffffff;
   border-radius: 10px;
   color: #111111;
@@ -1075,6 +1079,12 @@
   .stageCell,
   .urgencyCell {
     flex: 0 0 auto;
+    max-width: 100%;
+
+    span {
+      white-space: normal;
+      word-break: break-word;
+    }
   }
 
   .valueCell {
@@ -1094,12 +1104,14 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .ledgerHeader {
     flex-wrap: wrap;
     align-items: flex-start;
   }
+}
 
+@media (max-width: 767px) {
   .headerRightActions {
     width: 100%;
     flex-wrap: wrap;

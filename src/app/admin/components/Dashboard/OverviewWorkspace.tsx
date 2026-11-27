@@ -12,7 +12,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useTransition } from "react";
+import React, { useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   dashboardCsvCell,
@@ -68,6 +68,7 @@ export interface OverviewData {
   canCreate: boolean;
   canTasks: boolean;
   canAdvance?: boolean;
+  canAnalytics?: boolean;
   canExport: boolean;
   financials: boolean;
   recordRoute: string | null;
@@ -102,6 +103,7 @@ export function OverviewWorkspace({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [pendingRecordId, setPendingRecordId] = useState<string | null>(null);
+  const advanceLockRef = useRef<boolean>(false);
 
   // Guarded Stage Transition Modal State
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
@@ -193,9 +195,27 @@ export function OverviewWorkspace({
   };
 
   const handleAdvanceStage = (record: OverviewRecord) => {
-    if (!(data.canAdvance ?? data.canTasks) || pendingRecordId === record.id) return;
+    if (
+      !(data.canAdvance ?? data.canTasks) ||
+      advanceLockRef.current ||
+      pendingRecordId !== null
+    ) {
+      return;
+    }
     const nextStage = resolveNextStage(record);
-    if (!nextStage) return;
+    if (!nextStage) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("crm-toast", {
+            detail: {
+              type: "info",
+              message: "No further active stage is configured for this deal.",
+            },
+          })
+        );
+      }
+      return;
+    }
 
     const lower = nextStage.name.toLowerCase();
     const isGuarded =
@@ -227,6 +247,7 @@ export function OverviewWorkspace({
       return;
     }
 
+    advanceLockRef.current = true;
     setPendingRecordId(record.id);
     startTransition(async () => {
       try {
@@ -244,6 +265,7 @@ export function OverviewWorkspace({
           router.refresh();
         }
       } finally {
+        advanceLockRef.current = false;
         setPendingRecordId(null);
       }
     });
@@ -276,6 +298,7 @@ export function OverviewWorkspace({
         averageCycleDays={data.averageCycleDays}
         financials={data.financials}
         canExport={data.canExport}
+        canAnalytics={data.canAnalytics}
         recordRoute={data.recordRoute}
         cohort={data.cohort}
         onExportSummary={exportSummary}
@@ -311,6 +334,7 @@ export function OverviewWorkspace({
             categories={data.categories}
             timeframe={data.timeframe}
             financials={data.financials}
+            recordRoute={data.recordRoute}
             onTimeframeChange={(tf) => {
               const slugMap: Record<string, TimeframeSlug> = {
                 this_week: "7d",
@@ -333,7 +357,6 @@ export function OverviewWorkspace({
         <div className={styles.cockpitLeftStack}>
           <CommercialVelocityBarChart
             chart={data.chart}
-            totalIntake={data.pipelineValue}
             periodIntakeValue={data.periodIntakeValue}
             periodIntakeCount={data.periodIntakeCount}
             totalRealized={data.convertedValue}
@@ -393,12 +416,8 @@ export function OverviewWorkspace({
 
       {/* Guarded Stage Advancement Modal Integration */}
       {isStageModalOpen && targetTransitionRecord && (() => {
-        const resolvedNext = resolveNextStage(targetTransitionRecord) || {
-          id: "next-stage",
-          name: "Negotiation",
-          count: 0,
-          value: null,
-        };
+        const resolvedNext = resolveNextStage(targetTransitionRecord);
+        if (!resolvedNext) return null;
 
         const targetBucket: FunnelBucket =
           data.wonStage && resolvedNext.id === data.wonStage.id
