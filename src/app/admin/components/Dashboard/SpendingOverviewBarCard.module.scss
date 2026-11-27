@@ -238,6 +238,16 @@
   gap: 4px;
   height: 24px;
   padding: 0 10px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: all 0.15s ease;
 
   &::after {
     content: "";
@@ -249,16 +259,6 @@
     width: 100%;
     transform: translate(-50%, -50%);
   }
-  border-radius: 9999px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  color: #475569;
-  font-family: var(--font-graphik), sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  transition: all 0.15s ease;
 
   &:hover {
     background: #e2e8f0;

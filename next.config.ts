@@ -59,6 +59,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion", "gsap"],
+    // Prevent Turbopack persistent dev LSM cache from cross-contaminating CSS Modules with globals.css Preflight selectors
+    turbopackFileSystemCacheForDev: false,
   },
   images: {
     qualities: [75, 82],
