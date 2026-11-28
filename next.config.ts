@@ -6,12 +6,51 @@
  */
 
 import type { NextConfig } from "next";
+import path from "node:path";
 import { validateEnv } from "./src/app/lib/env";
 
 // Stop a Vercel production build before it can publish a login page with missing public configuration.
 if (process.env.VERCEL_ENV === "production") {
   validateEnv();
 }
+
+/**
+ * Resolves an optional workspace-relative Next.js build output directory for
+ * isolated tool runs (such as Playwright E2E) while forcing Vercel deployments
+ * to keep the standard `.next` output path.
+ */
+function resolveDistDir(): string | undefined {
+  if (process.env.VERCEL) {
+    return undefined;
+  }
+
+  const candidate = process.env.NEXT_DIST_DIR?.trim();
+  if (!candidate) {
+    return undefined;
+  }
+
+  if (
+    path.isAbsolute(candidate) ||
+    path.win32.isAbsolute(candidate) ||
+    /^[A-Za-z]:/.test(candidate)
+  ) {
+    throw new Error(
+      `Invalid NEXT_DIST_DIR "${candidate}": must be a relative workspace directory.`
+    );
+  }
+
+  const normalized = path.posix.normalize(candidate.replace(/\\/g, "/"));
+  const segments = normalized.split("/").filter(Boolean);
+  if (segments.length === 0 || segments[0] === "." || segments.includes("..")) {
+    throw new Error(
+      `Invalid NEXT_DIST_DIR "${candidate}": path traversal or root references are not permitted.`
+    );
+  }
+
+  return normalized;
+}
+
+const distDir = resolveDistDir();
 
 /**
  * Enterprise Defense-in-Depth Security Headers.
@@ -56,7 +95,19 @@ const securityHeaders = [
   },
 ];
 
+const isProductionBuild =
+  process.argv.includes("build") || process.env.npm_lifecycle_event === "build";
+
 const nextConfig: NextConfig = {
+  ...(distDir ? { distDir } : {}),
+  ...(isProductionBuild || Boolean(distDir)
+    ? {
+        // Isolate production builds and isolated distDir sessions (e.g. `.next-e2e`) from transient dev types and `tsconfig.json` auto-rewrites
+        typescript: {
+          tsconfigPath: "./tsconfig.typecheck.json",
+        },
+      }
+    : {}),
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion", "gsap"],
     // Prevent Turbopack persistent dev LSM cache from cross-contaminating CSS Modules with globals.css Preflight selectors

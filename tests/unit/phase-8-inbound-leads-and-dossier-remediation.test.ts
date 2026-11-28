@@ -405,14 +405,20 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(code.includes('import "./globals.scss";'), 'layout.tsx must import globals.scss');
     });
 
-    it('verifies canonical root not-found.tsx exists and provides dark luxury 404 boundary', () => {
+    it('verifies canonical root not-found.tsx exists and provides resilient Editorial Light 404 boundary', () => {
       const notFoundPath = path.resolve(process.cwd(), 'src/app/not-found.tsx');
+      const notFoundScssPath = path.resolve(process.cwd(), 'src/app/not-found.module.scss');
       assert.ok(fs.existsSync(notFoundPath), 'src/app/not-found.tsx must exist');
+      assert.ok(fs.existsSync(notFoundScssPath), 'src/app/not-found.module.scss must exist');
       const code = fs.readFileSync(notFoundPath, 'utf8');
+      const scss = fs.readFileSync(notFoundScssPath, 'utf8');
       assert.ok(code.includes('RootNotFound'), 'Root not-found must export RootNotFound');
-      assert.ok(code.includes('404 • Resource Not Found'), 'Must render high-contrast 404 message');
-      assert.ok(code.includes('href="/"'), 'Must link to Studio Home');
-      assert.ok(code.includes('href="/admin"'), 'Must link to Workspace');
+      assert.ok(code.includes('404: Page not found'), 'Must render plain human 404 status label');
+      assert.ok(code.includes("display: 'flex'") && code.includes("justifyContent: 'center'"), 'Must keep inline flexbox centering fallback');
+      assert.ok(code.includes('#f5f5f3') && scss.includes('#ea002a') && scss.includes('#9c001e'), 'Must enforce Marca Ubi Editorial Light tokens');
+      assert.ok(!code.includes('#ff6100') && !code.includes('#111318') && !code.includes('Studio Home'), 'Must purge legacy dark-orange slop');
+      assert.ok(code.includes('href="/"') && code.includes('Go to homepage'), 'Must link to homepage');
+      assert.ok(code.includes('href="/admin"') && code.includes('Open CRM'), 'Must link to CRM');
     });
   });
 

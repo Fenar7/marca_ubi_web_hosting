@@ -412,4 +412,40 @@ describe('Round 2 Server Action Financial & Converted Lock Guards', { concurrenc
     assert.ok(leadsRibbon.includes('All Leads') && !leadsRibbon.includes('Active Triage'), 'QuickMetricsRibbon must use plain English labels');
     assert.ok(analyticsMasthead.includes('Sales Analytics') && !analyticsMasthead.includes('Commercial Intelligence'), 'AnalyticsMasthead must use plain English headings');
   });
+
+  it('Root, /admin, (workspace), and ingestion/[id] not-found boundaries enforce Editorial Light tokens and shell alignment', () => {
+    const rootTsx = read('src/app/not-found.tsx');
+    const rootScss = read('src/app/not-found.module.scss');
+    const adminTsx = read('src/app/admin/not-found.tsx');
+    const adminScss = read('src/app/admin/not-found.module.scss');
+    const workspaceTsx = read('src/app/admin/(workspace)/not-found.tsx');
+    const workspaceScss = read('src/app/admin/(workspace)/not-found.module.scss');
+    const ingestionTsx = read('src/app/admin/(workspace)/ingestion/[id]/not-found.tsx');
+    const ingestionScss = read('src/app/admin/(workspace)/ingestion/[id]/not-found.module.scss');
+
+    for (const [label, tsx, scss] of [
+      ['root', rootTsx, rootScss],
+      ['admin', adminTsx, adminScss],
+      ['workspace', workspaceTsx, workspaceScss],
+      ['ingestion', ingestionTsx, ingestionScss],
+    ]) {
+      assert.ok(!tsx.includes('#ff6100') && !tsx.includes('#111318'), `${label} tsx must purge dark-orange tokens`);
+      assert.ok(!tsx.includes('lucide-react') && !tsx.includes('—') && !tsx.includes('•'), `${label} tsx must omit lucide-react, em dashes, and decorative bullet dots`);
+      assert.ok(scss.includes('#ea002a') && scss.includes('#9c001e') && scss.includes('#8c8c86') && scss.includes('min-height: 44px'), `${label} scss must enforce Editorial Light accent, focus ring, border, and 44px touch targets`);
+    }
+
+    assert.ok(rootTsx.includes("minHeight: '100vh'") && rootTsx.includes("maxWidth: '460px'"));
+    assert.ok(adminTsx.includes('href="/admin"') && adminTsx.includes('Back to CRM Overview'));
+    assert.ok(adminTsx.includes('href="/admin/tasks"') && adminTsx.includes('Open Follow-ups'));
+    assert.ok(adminTsx.includes("minHeight: '100vh'") && adminTsx.includes("display: 'flex'"));
+
+    assert.ok(workspaceScss.includes('min-height: 60vh;') && !workspaceScss.includes('100vh'), '(workspace)/not-found must use min-height: 60vh inside AdminWorkspaceShell');
+    assert.ok(!workspaceTsx.includes('<main'), '(workspace)/not-found must not nest <main> inside AdminWorkspaceShell');
+    assert.ok(workspaceTsx.includes('href="/admin"') && workspaceTsx.includes('Back to Overview'));
+    assert.ok(workspaceTsx.includes('href="/admin/tasks"') && workspaceTsx.includes('Open Follow-ups'));
+
+    assert.ok(ingestionScss.includes('min-height: 60vh;') && !ingestionScss.includes('100vh'), 'ingestion/[id]/not-found must use min-height: 60vh inside AdminWorkspaceShell');
+    assert.ok(!ingestionTsx.includes('<main'), 'ingestion/[id]/not-found must not nest <main> inside AdminWorkspaceShell');
+    assert.ok(ingestionTsx.includes('href="/admin/ingestion"') && ingestionTsx.includes('Back to Inquiries'));
+  });
 });
