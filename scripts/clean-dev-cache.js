@@ -34,44 +34,89 @@ function parseArgs(argv) {
 }
 
 /**
- * Inspects OS TCP socket tables for processes actively listening on the Next.js dev port.
- * Uses `netstat -ano -p TCP` on Windows and `lsof` on POSIX hosts.
+ * Parses `netstat -ano` TCP/TCPv6 output lines for LISTENING sockets bound to `port`.
+ * @param {string} output
  * @param {number} port
  * @returns {string[]}
  */
-function findListeningPidsOnPort(port = DEFAULT_DEV_PORT) {
-  try {
-    if (process.platform === "win32") {
-      const output = execFileSync("netstat", ["-ano", "-p", "TCP"], {
-        encoding: "utf8",
-        windowsHide: true,
-      });
-      const pids = new Set();
-      const pattern = new RegExp(
-        `^\\s*TCP\\s+\\S+:${port}\\s+\\S+\\s+LISTENING\\s+(\\d+)\\s*$`,
-        "i"
-      );
-      for (const line of output.split(/\r?\n/)) {
-        const match = line.match(pattern);
-        if (match && match[1]) {
-          pids.add(match[1]);
-        }
-      }
-      return Array.from(pids);
+function parseNetstatPids(output, port) {
+  const pids = new Set();
+  const pattern = new RegExp(
+    `^\\s*TCP\\s+\\S+:${port}\\s+\\S+\\s+LISTENING\\s+(\\d+)\\s*$`,
+    "i"
+  );
+  for (const line of output.split(/\r?\n/)) {
+    const match = line.match(pattern);
+    if (match && match[1]) {
+      pids.add(match[1]);
     }
+  }
+  return Array.from(pids);
+}
 
+/**
+ * Probes OS TCP/TCPv6 socket tables for active listeners on the Next.js dev port.
+ * Fails closed (`error` set) on unexpected command failures so Windows/POSIX OS
+ * restrictions never masquerade as a free port.
+ * @param {number} port
+ * @returns {{ pids: string[], error: string | null }}
+ */
+function probeListeningPidsOnPort(port = DEFAULT_DEV_PORT) {
+  if (process.platform === "win32") {
+    const pids = new Set();
+    const errors = [];
+    for (const protocol of ["TCP", "TCPv6"]) {
+      try {
+        const output = execFileSync("netstat", ["-ano", "-p", protocol], {
+          encoding: "utf8",
+          windowsHide: true,
+        });
+        for (const pid of parseNetstatPids(output, port)) {
+          pids.add(pid);
+        }
+      } catch (err) {
+        errors.push(`${protocol}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+    return {
+      pids: Array.from(pids),
+      // Only treat the probe as failed if both TCP and TCPv6 socket queries failed.
+      error: errors.length === 2 ? errors.join("; ") : null,
+    };
+  }
+
+  try {
     const output = execFileSync(
       "lsof",
       [`-iTCP:${port}`, "-sTCP:LISTEN", "-t"],
       { encoding: "utf8" }
     );
-    return output
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-  } catch {
-    return [];
+    return {
+      pids: output
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean),
+      error: null,
+    };
+  } catch (err) {
+    // POSIX `lsof` exits with code 1 when zero sockets match the query.
+    if (typeof err === "object" && err !== null && err.status === 1) {
+      return { pids: [], error: null };
+    }
+    return {
+      pids: [],
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
+}
+
+/**
+ * Convenience helper returning active listener PIDs for the specified port.
+ * @param {number} port
+ * @returns {string[]}
+ */
+function findListeningPidsOnPort(port = DEFAULT_DEV_PORT) {
+  return probeListeningPidsOnPort(port).pids;
 }
 
 /**
@@ -86,15 +131,18 @@ function hasActiveDevLock(rootDir = ROOT_DIR) {
 
 /**
  * Evaluates pre-flight safety conditions to avoid corrupting an active Next.js dev server.
+ * Fails closed when port probing fails so unexpected OS errors never trigger unsafe purges.
  * @param {string} rootDir
  * @param {number} port
  * @returns {{ active: boolean, reasons: string[] }}
  */
 function checkActiveDevServer(rootDir = ROOT_DIR, port = DEFAULT_DEV_PORT) {
   const reasons = [];
-  const pids = findListeningPidsOnPort(port);
-  if (pids.length > 0) {
-    reasons.push(`Port ${port} has an active TCP LISTENING process (PID: ${pids.join(", ")}).`);
+  const probe = probeListeningPidsOnPort(port);
+  if (probe.pids.length > 0) {
+    reasons.push(`Port ${port} has an active TCP LISTENING process (PID: ${probe.pids.join(", ")}).`);
+  } else if (probe.error) {
+    reasons.push(`Port ${port} status probe failed (${probe.error}); aborting to avoid corrupting a running dev server.`);
   }
   if (hasActiveDevLock(rootDir)) {
     reasons.push("Active Next.js dev lock detected at .next/dev/lock.");
@@ -112,9 +160,8 @@ function checkActiveDevServer(rootDir = ROOT_DIR, port = DEFAULT_DEV_PORT) {
  * @returns {{ aborted: boolean, cleaned: boolean, target: string }}
  */
 function cleanDevCache(options = {}) {
-  const cliFlags = parseArgs(process.argv.slice(2));
-  const all = options.all ?? cliFlags.all;
-  const force = options.force ?? cliFlags.force;
+  const all = options.all ?? false;
+  const force = options.force ?? false;
   const rootDir = options.rootDir ?? ROOT_DIR;
   const port = options.port ?? DEFAULT_DEV_PORT;
   const exitOnActive = options.exitOnActive ?? true;
@@ -169,8 +216,11 @@ function cleanDevCache(options = {}) {
             retryDelay: 150,
           });
           console.log(`[Cache Orchestrator] Evicted orphaned trash: ${entry}`);
-        } catch {
-          // Non-blocking: subsequent runs retry cleanup if Windows still holds a handle.
+        } catch (sweepErr) {
+          console.warn(
+            `[Cache Orchestrator] Deferred cleanup of locked trash folder ${entry}:`,
+            sweepErr instanceof Error ? sweepErr.message : String(sweepErr)
+          );
         }
       }
     }
@@ -231,13 +281,14 @@ function cleanDevCache(options = {}) {
 }
 
 if (require.main === module) {
-  cleanDevCache();
+  cleanDevCache(parseArgs(process.argv.slice(2)));
 }
 
 module.exports = {
   cleanDevCache,
   checkActiveDevServer,
   findListeningPidsOnPort,
+  probeListeningPidsOnPort,
   hasActiveDevLock,
   parseArgs,
 };

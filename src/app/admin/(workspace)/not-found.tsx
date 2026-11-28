@@ -29,7 +29,6 @@ export default function WorkspaceNotFound(): React.ReactElement {
       }}
     >
       <div
-        role="alert"
         className={styles.card}
         style={{
           width: '100%',
@@ -37,7 +36,7 @@ export default function WorkspaceNotFound(): React.ReactElement {
           boxSizing: 'border-box',
         }}
       >
-        <span className={styles.statusTag}>
+        <span className={styles.statusTag} role="status">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -54,12 +53,38 @@ export default function WorkspaceNotFound(): React.ReactElement {
           The requested workspace record or route could not be found, or you do not have access to view it.
         </p>
 
-        <div className={styles.actions}>
-          <Link href="/admin" className={styles.primaryAction}>
+        <div
+          className={styles.actions}
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '12px',
+            marginTop: '8px',
+          }}
+        >
+          <Link
+            href="/admin"
+            className={styles.primaryAction}
+            style={{
+              minHeight: '44px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             Back to Overview
           </Link>
 
-          <Link href="/admin/tasks" className={styles.secondaryAction}>
+          <Link
+            href="/admin/tasks"
+            className={styles.secondaryAction}
+            style={{
+              minHeight: '44px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             Open Follow-ups
           </Link>
         </div>

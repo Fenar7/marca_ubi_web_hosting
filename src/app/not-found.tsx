@@ -27,14 +27,13 @@ export default function RootNotFound(): React.ReactElement {
         justifyContent: 'center',
         minHeight: '100vh',
         width: '100%',
-        padding: '24px',
+        padding: '24px 16px',
         boxSizing: 'border-box',
         backgroundColor: '#f5f5f3',
         color: '#111111',
       }}
     >
       <div
-        role="alert"
         className={styles.card}
         style={{
           width: '100%',
@@ -43,10 +42,10 @@ export default function RootNotFound(): React.ReactElement {
           backgroundColor: '#ffffff',
           border: '1px solid #e5e5e1',
           borderRadius: '12px',
-          padding: '32px',
+          padding: 'clamp(20px, 4vw, 32px)',
         }}
       >
-        <span className={styles.statusTag}>
+        <span className={styles.statusTag} role="status">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -63,7 +62,15 @@ export default function RootNotFound(): React.ReactElement {
           The page you requested does not exist or may have moved.
         </p>
 
-        <div className={styles.actions}>
+        <div
+          className={styles.actions}
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '12px',
+            marginTop: '8px',
+          }}
+        >
           <Link
             href="/"
             className={styles.primaryAction}

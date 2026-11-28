@@ -30,9 +30,9 @@
     "semantic_hash": "6c4307ffa009658f5c97f5629094c0c2"
   },
   "next.config.ts": {
-    "mtime": 1795855856.157045,
-    "seen": 1795857025.0798311,
-    "ast_hash": "e6b5739d05ec02e97ad403f37f54c2bf",
+    "mtime": 1795857839.5223486,
+    "seen": 1795858185.034722,
+    "ast_hash": "19d69d01d6a76d29d7b879edd04a819c",
     "semantic_hash": ""
   },
   "package.json": {
@@ -3066,8 +3066,8 @@
     "semantic_hash": ""
   },
   "tsconfig.json": {
-    "mtime": 1791350129.0274324,
-    "seen": 1793862052.6850302,
+    "mtime": 1795857822.9273667,
+    "seen": 1795858185.2131255,
     "ast_hash": "0a2f4ed9289b65cd3feb4fb4ab3a4fcd",
     "semantic_hash": "0a2f4ed9289b65cd3feb4fb4ab3a4fcd"
   },
@@ -7302,15 +7302,21 @@
     "semantic_hash": ""
   },
   "docs/context/2026-11-28_13-45-00.md": {
-    "mtime": 1795855859.3752365,
-    "seen": 1795857025.2647915,
-    "ast_hash": "f5fac43760a000b6dfcf996e128d50c5",
+    "mtime": 1795857093.5996797,
+    "seen": 1795857488.9464886,
+    "ast_hash": "b42bb702644b18edd503e9869da06a26",
     "semantic_hash": ""
   },
   "docs/sales_funnel/core_tabs_redesign/DEV_INFRA_AND_404_FIX_PLAN.md": {
     "mtime": 1795853642.9537961,
     "seen": 1795854125.9569094,
     "ast_hash": "43da1457e292b403122752c47a21ed81",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20261125120000_fix_conversion_trigger_and_rls.sql": {
+    "mtime": 1795595360.3283923,
+    "seen": 1795858589.1296523,
+    "ast_hash": "10148f0c5a411bb009a13f04f242fd09",
     "semantic_hash": ""
   },
   "package-lock.json": {
