@@ -16,6 +16,7 @@ import {
   type LeadMatch,
   type OwnerOption,
 } from '../inquiryView';
+import { CountryPhoneInput } from '@/app/components/ui/CountryPhoneInput';
 import styles from './IngestionWorkspaceClient.module.scss';
 
 type LinkMode = 'review' | 'link' | 'create';
@@ -314,18 +315,19 @@ function AddInquiryForm({
               }}
             />
           </label>
-          <label>
+          <label htmlFor="add-inquiry-phone">
             Phone
-            <input
-              type="tel"
+            <CountryPhoneInput
+              id="add-inquiry-phone"
               name="phone"
-              autoComplete="tel"
-              maxLength={50}
               value={phone}
-              onChange={(event) => {
-                setPhone(event.target.value);
+              onChange={(nextPhone) => {
+                setPhone(nextPhone);
                 selection.reset();
               }}
+              defaultCountry="AE"
+              variant="admin"
+              disabled={pending}
             />
           </label>
           <label>

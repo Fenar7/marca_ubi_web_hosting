@@ -21,6 +21,7 @@ import type { LeadDossierData } from '@/app/admin/components/DossierDrawer/Clien
 import { formatBudgetTierLabel, formatCrmCurrency } from '@/app/admin/lib/currency';
 import type { PreferredChannel, ServiceCategory, LeadPriority } from '@/types/crm';
 import { useModalAnimation } from './useModalAnimation';
+import { CountryPhoneInput } from '@/app/components/ui/CountryPhoneInput';
 import styles from './EditLeadModal.module.scss';
 
 export interface EditLeadModalProps {
@@ -304,13 +305,13 @@ function EditLeadModalInner({
               <label className={styles.fieldLabel} htmlFor="edit-phone">
                 Direct Phone
               </label>
-              <input
+              <CountryPhoneInput
                 id="edit-phone"
-                type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={styles.inputField}
-                placeholder="+971 50 123 4567"
+                onChange={setPhone}
+                defaultCountry="AE"
+                variant="admin"
+                disabled={isPending}
               />
             </div>
 

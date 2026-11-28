@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import styles from "./Step.module.scss";
 import { ProjectFormData } from "../types";
+import { CountryPhoneInput } from "@/app/components/ui/CountryPhoneInput";
 import {
   INTAKE_AGENCY_STATUS_OPTIONS,
   INTAKE_INDUSTRIES,
@@ -103,13 +104,12 @@ export default function Step2Business({
             <span>Phone Number</span>
             <span className={styles.optionalTag}>Optional</span>
           </label>
-          <input
+          <CountryPhoneInput
             id="field-phone"
-            type="tel"
-            className={styles.textInput}
-            placeholder="e.g. +971 50 123 4567"
             value={formData.phone}
-            onChange={(e) => updateFormData("phone", e.target.value)}
+            onChange={(val) => updateFormData("phone", val)}
+            defaultCountry="AE"
+            variant="publicLight"
           />
         </div>
 

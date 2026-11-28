@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import Link from "next/link";
 import type { CareerPosting } from "@/sanity/lib/career-queries";
+import { CountryPhoneInput } from "@/app/components/ui/CountryPhoneInput";
 import styles from "./JobDetail.module.scss";
 
 export interface JobDetailClientProps {
@@ -282,14 +283,13 @@ export function JobDetailClient({ career }: JobDetailClientProps) {
                   <label htmlFor="careers-phone" className={styles.fieldLabel}>
                     Phone Number <span className={styles.requiredMark}>*</span>
                   </label>
-                  <input
+                  <CountryPhoneInput
                     id="careers-phone"
-                    type="tel"
-                    required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className={styles.underlineInput}
-                    placeholder="+91 98765 43210"
+                    onChange={setPhone}
+                    defaultCountry="IN"
+                    variant="underline"
+                    required
                   />
                 </div>
 

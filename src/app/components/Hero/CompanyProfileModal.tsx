@@ -5,6 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import { useOverlayScrollLock } from "@/app/lib/overlayScrollLock";
+import { CountryPhoneInput } from "@/app/components/ui/CountryPhoneInput";
 import {
   COMPANY_PROFILE_SUBMISSION_FIELD_ORDER,
   EMPTY_COMPANY_PROFILE_SUBMISSION,
@@ -503,19 +504,30 @@ export default function CompanyProfileModal({ isOpen, onClose }: CompanyProfileM
                     ) : null}
                   </label>
 
-                  <label className={styles.field}>
+                  <label className={styles.field} htmlFor="company-profile-phone">
                     <span className={styles.fieldLabel}>
                       Phone number <span className={styles.requiredMark}>*</span>
                     </span>
-                    <input
-                      autoComplete="tel"
-                      className={styles.fieldControl}
+                    <CountryPhoneInput
                       id="company-profile-phone"
                       name="phone"
-                      onChange={handleInputChange("phone")}
-                      placeholder="+91 7012 052 472"
-                      type="tel"
                       value={formData.phone}
+                      onChange={(nextPhone) => {
+                        setFormData((prev) => ({ ...prev, phone: nextPhone }));
+                        setFormErrors((currentErrors) => {
+                          if (!currentErrors.phone) return currentErrors;
+                          const nextErrors = { ...currentErrors };
+                          delete nextErrors.phone;
+                          return nextErrors;
+                        });
+                        if (submitError) {
+                          setSubmitError(null);
+                        }
+                      }}
+                      defaultCountry="IN"
+                      variant="publicDark"
+                      hasError={Boolean(formErrors.phone)}
+                      required
                     />
                     {formErrors.phone ? <span className={styles.fieldError}>{formErrors.phone}</span> : null}
                   </label>

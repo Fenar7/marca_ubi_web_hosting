@@ -1170,9 +1170,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/AddTeamMemberModal.tsx": {
-    "mtime": 1795553285.63403,
-    "seen": 1795553292.6305482,
-    "ast_hash": "16cc9da9430cc81a900dde6217b5f822",
+    "mtime": 1795868591.1601343,
+    "seen": 1795869237.9696217,
+    "ast_hash": "1180141609d1ee17fc96167c756caebc",
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/BatchReassignModal.tsx": {
@@ -1194,9 +1194,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/EditLeadModal.tsx": {
-    "mtime": 1795594273.0328538,
-    "seen": 1795594373.4878094,
-    "ast_hash": "a5571ed2583a11ffc0aee28889a336cc",
+    "mtime": 1795868583.3588696,
+    "seen": 1795869237.9696217,
+    "ast_hash": "162819c4d3ebaded2439cdc9f688fe64",
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/LeadDetailModal.tsx": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": "afd24adb8c5a74f5c10ce67df0107443"
   },
   "src/app/admin/components/modals/NewLeadModal.tsx": {
-    "mtime": 1795595851.4182215,
-    "seen": 1795596214.2826257,
-    "ast_hash": "f994d4d55c3514322fe4bdc82de5abd4",
+    "mtime": 1795868575.9491656,
+    "seen": 1795869237.9696217,
+    "ast_hash": "c353195a302438f8b5ab1ecbce9fd227",
     "semantic_hash": ""
   },
   "src/app/admin/components/modals/StageTransitionModal.tsx": {
@@ -1386,10 +1386,10 @@
     "semantic_hash": "3fac67e675c8b29ca26c8e2709ad4fc8"
   },
   "src/app/careers/[slug]/JobDetailClient.tsx": {
-    "mtime": 1793267127.4215055,
-    "seen": 1793862052.6850302,
-    "ast_hash": "f1c4f43b83bd2779154893f376245f72",
-    "semantic_hash": "f1c4f43b83bd2779154893f376245f72"
+    "mtime": 1795868653.4971266,
+    "seen": 1795869237.9696217,
+    "ast_hash": "aef7a4072f71cbe33e91438f35ab39a4",
+    "semantic_hash": ""
   },
   "src/app/careers/[slug]/page.tsx": {
     "mtime": 1793791003.935145,
@@ -1620,9 +1620,9 @@
     "semantic_hash": "311122e595fd7b737958bf3279cc22ab"
   },
   "src/app/components/Hero/CompanyProfileModal.tsx": {
-    "mtime": 1795460391.6540105,
-    "seen": 1795460762.8030155,
-    "ast_hash": "5d9af1a6b8681360802a29154f1208d1",
+    "mtime": 1795868645.8317947,
+    "seen": 1795869237.9696217,
+    "ast_hash": "078b889abea8a78f62bd2886834baac6",
     "semantic_hash": ""
   },
   "src/app/components/Hero/Hero.tsx": {
@@ -1686,10 +1686,10 @@
     "semantic_hash": "d0d709bf74616c2af86aca5d563005ce"
   },
   "src/app/components/ProjectForm/steps/Step2Business.tsx": {
-    "mtime": 1793550945.8709183,
-    "seen": 1793862052.6850302,
-    "ast_hash": "577b96a544f9e4e17c29af62b2b275f7",
-    "semantic_hash": "577b96a544f9e4e17c29af62b2b275f7"
+    "mtime": 1795868621.33482,
+    "seen": 1795869237.9696217,
+    "ast_hash": "9e5e372f5d663d02cd7d52596ef6e599",
+    "semantic_hash": ""
   },
   "src/app/components/ProjectForm/steps/Step3Details.tsx": {
     "mtime": 1793550990.2931993,
@@ -1872,9 +1872,9 @@
     "semantic_hash": "a4245b06e08edd654dd4aec4c32875ad"
   },
   "src/app/contact/components/InquiryComposer.tsx": {
-    "mtime": 1795450078.3968492,
-    "seen": 1795450945.3170931,
-    "ast_hash": "def1fe57353d325579dca78667b0aac0",
+    "mtime": 1795868635.471526,
+    "seen": 1795869237.9696217,
+    "ast_hash": "34e872f97ec23114425d13bed6198912",
     "semantic_hash": ""
   },
   "src/app/contact/components/StudioCards.tsx": {
@@ -3648,9 +3648,9 @@
     "semantic_hash": ""
   },
   "docs/context/context.md": {
-    "mtime": 1795853655.4189844,
-    "seen": 1795854125.9385216,
-    "ast_hash": "04a1d634e983ef69cec798d175a50e14",
+    "mtime": 1795868693.10342,
+    "seen": 1795869237.972138,
+    "ast_hash": "491fdbd2ce396a67391077199741702a",
     "semantic_hash": ""
   },
   "docs/dedicated_works_scroll_experience/PRD.md": {
@@ -6798,9 +6798,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/ingestion/components/InquiryActions.tsx": {
-    "mtime": 1795460424.4257715,
-    "seen": 1795460762.7536433,
-    "ast_hash": "e0270ee1afe1fa47479e7df8a9cfb27d",
+    "mtime": 1795868614.391115,
+    "seen": 1795869237.9696217,
+    "ast_hash": "094b1d9511635b8df1ddd6c697f667d9",
     "semantic_hash": ""
   },
   "src/app/admin/(workspace)/ingestion/inquiryView.ts": {
@@ -7317,6 +7317,30 @@
     "mtime": 1795595360.3283923,
     "seen": 1795858589.1296523,
     "ast_hash": "10148f0c5a411bb009a13f04f242fd09",
+    "semantic_hash": ""
+  },
+  "src/app/components/ui/CountryPhoneInput.tsx": {
+    "mtime": 1795868552.5213268,
+    "seen": 1795869237.9696217,
+    "ast_hash": "102745f9173768a20cd3ece362620df3",
+    "semantic_hash": ""
+  },
+  "src/app/lib/phone-countries.ts": {
+    "mtime": 1795868525.248435,
+    "seen": 1795869237.9696217,
+    "ast_hash": "bb202cb275e243924fab35d98169e333",
+    "semantic_hash": ""
+  },
+  "tests/unit/country-phone-input.test.ts": {
+    "mtime": 1795868674.3258803,
+    "seen": 1795869237.9696217,
+    "ast_hash": "75d94f1aedd0747f006ea8a876ca0afb",
+    "semantic_hash": ""
+  },
+  "docs/context/2026-11-28_17-55-00.md": {
+    "mtime": 1795868690.86202,
+    "seen": 1795869237.972138,
+    "ast_hash": "60b7235ca6c8b4353ac6d3f26add1313",
     "semantic_hash": ""
   },
   "package-lock.json": {

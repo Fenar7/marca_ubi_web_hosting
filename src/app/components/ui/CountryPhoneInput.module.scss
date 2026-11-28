@@ -1,0 +1,239 @@
+/**
+ * @file CountryPhoneInput.module.scss
+ * @description Unified country dial-code selector and national phone input styles supporting
+ *              Marca Ubi CRM Editorial Light modals/workspaces, public light forms, dark glass
+ *              brochure modals, and minimal underline career applications.
+ * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
+ */
+
+.phoneShell {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border-default, #e2e5ea);
+  background: var(--admin-card-bg, #ffffff);
+  color: var(--admin-text-primary, #1f242f);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--admin-border-strong, #1f242f);
+    box-shadow: 0 0 0 1px var(--admin-border-strong, #1f242f);
+  }
+
+  &.hasError {
+    border-color: var(--admin-status-rose-text, #991b1b);
+    background: var(--admin-status-rose-bg, #fef2f2);
+
+    &:focus-within {
+      border-color: var(--admin-status-rose-text, #991b1b);
+      box-shadow: 0 0 0 1px var(--admin-status-rose-text, #991b1b);
+    }
+  }
+
+  &.isDisabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+  }
+}
+
+.prefixWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 0.65rem 0 0.75rem;
+  border-right: 1px solid var(--admin-border-default, #e2e5ea);
+  background: #f8f8f6;
+  color: inherit;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: #f0f0ec;
+  }
+
+  &:has(.prefixSelect:focus-visible) {
+    outline: 2px solid var(--admin-focus-ring, #9c001e);
+    outline-offset: -2px;
+  }
+}
+
+.prefixDisplay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.prefixIso {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.prefixDial {
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.prefixChevron {
+  flex-shrink: 0;
+  color: var(--admin-text-secondary, #525965);
+}
+
+.prefixSelect {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  cursor: pointer;
+  appearance: none;
+  background: #ffffff;
+  color: #111111;
+  font-size: 0.875rem;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.numberInput {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0.55rem 0.85rem !important;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+
+  &::placeholder {
+    color: var(--admin-text-muted, #8a92a0);
+  }
+}
+
+.variant_publicLight {
+  min-height: 48px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #ffffff;
+  color: #0a0a0a;
+
+  &:focus-within {
+    border-color: #111111;
+    box-shadow: 0 0 0 1px #111111;
+  }
+
+  .prefixWrap {
+    min-height: 48px;
+    background: #f5f5f3;
+    border-right-color: rgba(0, 0, 0, 0.12);
+
+    &:hover {
+      background: #ecece8;
+    }
+  }
+
+  .prefixIso,
+  .prefixChevron {
+    color: #555555;
+  }
+
+  .numberInput {
+    min-height: 48px !important;
+    font-size: 0.95rem;
+  }
+}
+
+.variant_publicDark {
+  min-height: 3.4rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+
+  &:focus-within {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 97, 0, 0.75);
+    box-shadow:
+      0 0 0 0.125rem rgba(255, 97, 0, 0.16),
+      0 0 1.2rem rgba(255, 97, 0, 0.12);
+  }
+
+  &.hasError {
+    background: rgba(255, 179, 155, 0.08);
+    border-color: rgba(255, 179, 155, 0.72);
+  }
+
+  .prefixWrap {
+    min-height: 3.4rem;
+    background: rgba(255, 255, 255, 0.06);
+    border-right-color: rgba(255, 255, 255, 0.12);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .prefixIso,
+  .prefixChevron {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .numberInput {
+    min-height: 3.4rem !important;
+    font-size: 0.99rem;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+  }
+}
+
+.variant_underline {
+  min-height: 44px;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.22);
+  background: transparent;
+  color: #111111;
+
+  &:focus-within {
+    border-bottom-color: #ea002a;
+    box-shadow: none;
+  }
+
+  .prefixWrap {
+    background: transparent;
+    border-right-color: rgba(0, 0, 0, 0.12);
+    padding-left: 0;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+  }
+
+  .numberInput {
+    padding-left: 0.75rem !important;
+    padding-right: 0 !important;
+  }
+}

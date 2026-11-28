@@ -28,6 +28,7 @@ import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import type { PreferredChannel, ServiceCategory, LeadPriority } from '@/types/crm';
 import { useModalAnimation } from './useModalAnimation';
 import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
+import { CountryPhoneInput } from '@/app/components/ui/CountryPhoneInput';
 import styles from './NewLeadModal.module.scss';
 
 export interface NewLeadModalProps {
@@ -455,7 +456,19 @@ function NewLeadModalInner({
                 className={`${styles.input} ${formErrors.email ? styles.inputError : ''}`}
                 placeholder="tariq@apexholdings.ae"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  const nextEmail = e.target.value;
+                  setEmail(nextEmail);
+                  setFormErrors((prev) => {
+                    if (!prev.email && !prev.phone) return prev;
+                    const next = { ...prev };
+                    delete next.email;
+                    if (nextEmail.trim().length > 0) {
+                      delete next.phone;
+                    }
+                    return next;
+                  });
+                }}
                 disabled={isPending}
               />
               {formErrors.email && (
@@ -467,17 +480,28 @@ function NewLeadModalInner({
               <label className={styles.label} htmlFor="modal-lead-phone">
                 Telephone / WhatsApp
               </label>
-              <input
+              <CountryPhoneInput
                 id="modal-lead-phone"
-                type="tel"
-                className={`${styles.input} ${formErrors.phone ? styles.inputError : ''}`}
-                placeholder="+971 50 123 4567"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(nextPhone) => {
+                  setPhone(nextPhone);
+                  setFormErrors((prev) => {
+                    if (!prev.phone) return prev;
+                    const next = { ...prev };
+                    delete next.phone;
+                    return next;
+                  });
+                }}
+                defaultCountry="AE"
+                variant="admin"
+                hasError={Boolean(formErrors.phone)}
+                ariaDescribedBy={formErrors.phone ? 'modal-lead-phone-error' : undefined}
                 disabled={isPending}
               />
               {formErrors.phone && (
-                <p className={styles.fieldError}>{formErrors.phone}</p>
+                <p id="modal-lead-phone-error" className={styles.fieldError}>
+                  {formErrors.phone}
+                </p>
               )}
             </div>
           </div>

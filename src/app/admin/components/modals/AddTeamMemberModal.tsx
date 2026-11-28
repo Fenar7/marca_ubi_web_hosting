@@ -19,6 +19,7 @@ import { generateHighEntropyPassword, isDrawerDirty } from '@/app/lib/team-utils
 import type { ProvisionedCredentialsPayload } from '@/app/admin/(workspace)/team/components/CredentialRevealModal';
 import { useModalAnimation } from './useModalAnimation';
 import { PERMISSION_ENCLAVES, getInitialAllowedTabs } from '@/app/lib/team-permissions-config';
+import { CountryPhoneInput } from '@/app/components/ui/CountryPhoneInput';
 import styles from './AddTeamMemberModal.module.scss';
 
 export interface AddTeamMemberModalProps {
@@ -427,14 +428,12 @@ export function AddTeamMemberModal({
             <label htmlFor="team-member-phone" className={styles.label}>
               Phone Number (Optional)
             </label>
-            <input
+            <CountryPhoneInput
               id="team-member-phone"
-              name="phone"
-              type="tel"
-              className={styles.input}
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+971 50 000 0000"
+              onChange={setPhone}
+              defaultCountry="AE"
+              variant="admin"
               disabled={isPending}
             />
           </div>
