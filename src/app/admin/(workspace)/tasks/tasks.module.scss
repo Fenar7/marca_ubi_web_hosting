@@ -1,30 +1,30 @@
 /**
  * @file tasks.module.scss
- * @description Editorial luxury stylesheet for the Commercial Desk Follow-up Queue.
- *              Adheres strictly to Marca Ubi design tokens:
- *              - Eliminates legacy 3px inset colored stripes (antislop-ui R-31).
- *              - Dignified outline action buttons replacing flat-red accent spam (antislop-ui R-01, R-29).
- *              - Balanced 4-queue grid telemetry strip (repeat(4, minmax(0, 1fr))).
- *              - WCAG AA Priority 2 compliant 44px minimum touch targets for telephony controls.
+ * @description Light SaaS editorial stylesheet for the Follow-ups workspace (/admin/tasks).
+ *              Enforces Marca Ubi tokens (#ffffff, #f5f5f3, #111111, #8c8c86 control borders),
+ *              WCAG AA >=4.5:1 text contrast, >=3:1 interactive boundary contrast,
+ *              >=44px touch targets, and clean responsive reflow without colored edge stripes.
  * @module admin/tasks/styles
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
 .container {
-  --queue-border: var(--admin-border-default, #dedede);
-  --queue-ink: var(--admin-text-primary, #111111);
-  --queue-muted: var(--admin-text-secondary, #555555);
-  --queue-subtle: #777777;
+  --queue-border: #e5e5e1;
+  --queue-control-border: #8c8c86;
+  --queue-ink: #111111;
+  --queue-muted: #454542;
+  --queue-subtle: #575752;
   --queue-bg-subtle: #f5f5f3;
-  --queue-urgent-text: #90001e;
-  --queue-urgent-bg: #fff0f2;
-  --queue-urgent-border: rgba(144, 0, 30, 0.18);
+  --queue-focus: #9c001e;
+  --queue-urgent-text: #9f1239;
+  --queue-urgent-bg: #fff1f2;
+  --queue-urgent-border: #fecdd3;
 
   display: flex;
   width: 100%;
   min-width: 0;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
   color: var(--queue-ink);
 }
 
@@ -34,15 +34,12 @@
   min-width: 0;
 }
 
-/* =========================================================================
-   Executive Header
-   ========================================================================= */
 .header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 20px;
+  gap: 20px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--queue-border);
 }
 
@@ -50,31 +47,19 @@
   min-width: 0;
 }
 
-.eyebrow,
-.sectionEyebrow {
-  margin: 0 0 6px;
-  color: var(--queue-ink);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  line-height: 1.4;
-  text-transform: uppercase;
-  opacity: 0.85;
-}
-
 .pageTitle {
   margin: 0;
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-size: clamp(28px, 2.8vw, 40px);
-  font-weight: 300;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
+  font-family: var(--font-circular), var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-size: clamp(28px, 2.6vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
   color: var(--queue-ink);
 }
 
 .pageSubtitle {
-  max-width: 65ch;
-  margin: 8px 0 0;
+  max-width: 62ch;
+  margin: 6px 0 0;
   color: var(--queue-muted);
   font-size: 14px;
   line-height: 1.5;
@@ -88,15 +73,15 @@
   align-items: center;
   justify-content: center;
   padding: 0 18px;
-  border: 1px solid var(--queue-border);
-  border-radius: 6px;
+  border: 1px solid var(--queue-control-border);
+  border-radius: 8px;
   background: #ffffff;
   color: var(--queue-ink);
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.16s ease;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
 }
 
 .leadsLink:hover,
@@ -112,55 +97,28 @@
 .queueTab:focus-visible,
 .paginationControls a:focus-visible,
 .leadOpenButton:focus-visible,
-.openButton:focus-visible,
 .completeButton:focus-visible,
-.telephonyAction:focus-visible {
-  outline: 2px solid var(--queue-ink);
-  outline-offset: 3px;
+.rescheduleButton:focus-visible,
+.dealLink:focus-visible,
+.telephonyAction:focus-visible,
+.quickPresetChip:focus-visible,
+.outcomeCancelBtn:focus-visible,
+.outcomeConfirmBtn:focus-visible {
+  outline: 2px solid var(--queue-focus);
+  outline-offset: 2px;
 }
 
-/* =========================================================================
-   Balanced 4-Queue Workload Telemetry & Switcher
-   ========================================================================= */
 .queueOverview {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  background: transparent;
-  border: none;
-  border-top: 1px solid rgba(17, 17, 17, 0.08);
-  border-bottom: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: 0;
-  padding: 24px 0;
+  gap: 12px;
 }
 
-.queueOverviewHeading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.queueOverviewHeading h2 {
-  margin: 0;
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-
-.queueOverviewHeading > span,
-.timezoneLabel {
-  color: var(--queue-muted);
-  font-size: 12px;
-}
-
-/* 4-Queue Balanced Grid: Desktop strictly repeat(4, minmax(0, 1fr)) */
+/* 4-Queue Switcher Cards */
 .queueTabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -168,121 +126,203 @@
 
 .queueTab {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   justify-content: space-between;
-  min-height: 84px;
-  padding: 16px 18px;
-  border: 1px solid rgba(17, 17, 17, 0.07);
-  border-radius: 8px;
+  gap: 12px;
+  min-height: 108px;
+  padding: 18px;
+  border: 1px solid #e5e5e1;
+  border-radius: 12px;
   background: #ffffff;
   color: var(--queue-muted);
   text-decoration: none;
-  transition: all 0.16s ease;
-}
-
-.queueTabTitle {
-  font-family: var(--font-graphik), -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--queue-muted);
-}
-
-.queueTab strong {
-  margin-top: 8px;
-  color: var(--queue-ink);
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-size: clamp(26px, 2.2vw, 34px);
-  font-weight: 300;
-  font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
-  letter-spacing: -0.04em;
-  line-height: 1;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
 }
 
 .queueTab:hover {
-  background: #fafaf9;
-  border-color: rgba(17, 17, 17, 0.18);
-  color: var(--queue-ink);
+  transform: translateY(-1px);
+  border-color: #c7c7c0;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.05);
 }
 
-.queueTabActive {
-  background: #f5f5f3;
-  border-color: rgba(17, 17, 17, 0.32);
-  box-shadow: none;
-}
-
-.queueTabActive .queueTabTitle {
-  color: var(--queue-ink);
-}
-
-/* Executive Pipeline Exposure & Cadence Strip */
-.kpiStrip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(17, 17, 17, 0.06);
-}
-
-.kpiCard {
+.queueTabBody {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 4px;
 }
 
-.kpiLabel {
+.queueTabLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.queueTabTitle {
   font-family: var(--font-graphik), -apple-system, sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #64748b;
-}
-
-.kpiValue {
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-size: 20px;
-  font-weight: 300;
-  font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
-  letter-spacing: -0.035em;
-  color: var(--queue-ink);
-}
-
-.kpiHint {
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--queue-muted);
 }
 
+.queueViewingChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.queueTabCount {
+  margin-top: 2px;
+  color: var(--queue-ink);
+  font-family: var(--font-circular), var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.queueTabHint {
+  margin-top: 2px;
+  color: var(--queue-subtle);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.queueTabIcon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.queueTabIcon[data-queue-icon="overdue"] {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.queueTabIcon[data-queue-icon="today"] {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.queueTabIcon[data-queue-icon="upcoming"] {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.queueTabIcon[data-queue-icon="unassigned"] {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.queueTabActive[data-queue="overdue"] {
+  background: #fff8f9;
+  border: 1.5px solid #be123c;
+}
+
+.queueTabActive[data-queue="overdue"] .queueTabTitle {
+  color: #9f1239;
+}
+
+.queueTabActive[data-queue="overdue"] .queueViewingChip {
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+.queueTabActive[data-queue="today"] {
+  background: #fffdf5;
+  border: 1.5px solid #b45309;
+}
+
+.queueTabActive[data-queue="today"] .queueTabTitle {
+  color: #92400e;
+}
+
+.queueTabActive[data-queue="today"] .queueViewingChip {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.queueTabActive[data-queue="upcoming"] {
+  background: #f8faff;
+  border: 1.5px solid #3730a3;
+}
+
+.queueTabActive[data-queue="upcoming"] .queueTabTitle {
+  color: #3730a3;
+}
+
+.queueTabActive[data-queue="upcoming"] .queueViewingChip {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.queueTabActive[data-queue="unassigned"] {
+  background: #f5fcf8;
+  border: 1.5px solid #047857;
+}
+
+.queueTabActive[data-queue="unassigned"] .queueTabTitle {
+  color: #065f46;
+}
+
+.queueTabActive[data-queue="unassigned"] .queueViewingChip {
+  background: #d1fae5;
+  color: #065f46;
+}
+
 .countNotice {
-  margin: 4px 0 0;
-  color: #704300;
+  margin: 0;
+  color: #92400e;
   font-size: 12px;
 }
 
-/* =========================================================================
-   Task Workstation Section
-   ========================================================================= */
+/* Task Table Container */
 .workSection {
   display: flex;
   flex-direction: column;
   gap: 0;
   background: #ffffff;
   border: 1px solid var(--queue-border);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .workSectionHeader {
   display: flex;
-  min-height: 64px;
+  min-height: 68px;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
   padding: 16px 20px;
   border-bottom: 1px solid var(--queue-border);
+}
+
+.workSectionTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.workSectionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .workSectionHeader h2 {
@@ -290,25 +330,83 @@
   font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.02em;
+  color: var(--queue-ink);
+}
+
+.workCountPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f5f5f3;
+  border: 1px solid #e5e5e1;
+  color: var(--queue-muted);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.workSectionDesc {
+  margin: 0;
+  color: var(--queue-subtle);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.workSectionMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exposurePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #9f1239;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timezoneLabel {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: #f5f5f3;
+  color: var(--queue-muted);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .tableHead,
 .taskItem {
   display: grid;
-  grid-template-columns: minmax(280px, 2.3fr) minmax(110px, 0.9fr) minmax(150px, 1.1fr) minmax(140px, 1fr) minmax(220px, 1.4fr);
+  grid-template-columns: minmax(250px, 2.15fr) minmax(120px, 0.95fr) minmax(150px, 1.1fr) minmax(120px, 0.9fr) minmax(276px, 1.65fr);
   align-items: center;
-  column-gap: 20px;
+  column-gap: 16px;
 }
 
 .tableHead {
-  min-height: 38px;
+  min-height: 40px;
   padding: 0 20px;
-  background: #f7f7f6;
+  background: #fafaf9;
   border-bottom: 1px solid var(--queue-border);
   color: var(--queue-subtle);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -318,10 +416,9 @@
   list-style: none;
 }
 
-/* Task Item Row: Strictly NO 3px inset red stripes */
 .taskItem {
-  min-height: 118px;
-  padding: 18px 20px;
+  min-height: 112px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--queue-border);
   background: #ffffff;
   transition: background-color 0.14s ease;
@@ -336,8 +433,8 @@
 }
 
 .taskItemDone {
-  background: #f9f9f8;
-  opacity: 0.75;
+  background: #f9faf9;
+  opacity: 0.78;
 }
 
 .clientCell,
@@ -348,7 +445,6 @@
   min-width: 0;
 }
 
-/* Client Entity Coordinates */
 .clientHeading {
   display: flex;
   align-items: center;
@@ -362,12 +458,12 @@
   background: transparent;
   color: var(--queue-ink);
   cursor: pointer;
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
+  font-family: var(--font-circular), var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
   text-align: left;
   text-decoration: none;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 
 .leadOpenButton:hover {
@@ -379,7 +475,7 @@
   display: block;
   margin-top: 3px;
   color: var(--queue-muted);
-  font-size: 12px;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 
@@ -387,60 +483,57 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 7px;
+  margin-top: 6px;
   font-size: 12px;
-  color: var(--queue-muted);
+  color: var(--queue-subtle);
   font-variant-numeric: tabular-nums;
 }
 
 .scheduleIcon {
-  font-size: 12px;
+  flex: 0 0 auto;
 }
 
-/* Priority & Urgency Chips */
 .priorityChip {
   display: inline-flex;
   min-height: 22px;
   align-items: center;
-  padding: 0 7px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .priorityHigh {
-  background: #fff0f2;
-  color: #90001e;
+  background: #fff1f2;
+  color: #9f1239;
 }
 
 .priorityMedium {
-  background: #fff5e4;
-  color: #704300;
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .priorityLow {
-  background: #f0f0ee;
-  color: #444444;
+  background: #f3f4f6;
+  color: #374151;
 }
 
-/* High-Legibility Typographic Urgency Micro-Badge */
 .urgencyBadge {
   display: inline-flex;
   min-height: 22px;
   align-items: center;
   padding: 0 8px;
   border: 1px solid var(--queue-urgent-border);
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--queue-urgent-bg);
   color: var(--queue-urgent-text);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 600;
   white-space: nowrap;
 }
 
-/* 44px Accessible Telephony Dock */
+/* 44px Touch-Target Contact Actions */
 .telephonyDock {
   display: flex;
   align-items: center;
@@ -457,46 +550,58 @@
   justify-content: center;
   gap: 6px;
   padding: 0 12px;
-  border: 1px solid var(--queue-border);
-  border-radius: 6px;
+  border: 1px solid var(--queue-control-border);
+  border-radius: 8px;
   background: #ffffff;
   color: var(--queue-ink);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .telephonyAction:hover {
   border-color: var(--queue-ink);
   background: var(--queue-bg-subtle);
-  color: var(--queue-ink);
 }
 
 .cellLabel {
   display: none;
 }
 
-/* Stage Pill */
+/* Semantic Stage Pill */
 .stagePill {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 26px;
   padding: 0 10px;
-  border: 1px solid var(--queue-border);
-  border-radius: 4px;
-  background: #fbfbfa;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: #374151;
   font-size: 12px;
-  font-weight: 500;
-  color: var(--queue-ink);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-/* Account Owner Cell */
+.stagePill[data-stage-tone="progress"] {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #3730a3;
+}
+
+.stagePill[data-stage-tone="positive"] {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+/* Owner Cell */
 .ownerValue {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 
@@ -508,100 +613,255 @@
   place-items: center;
   border: 1px solid var(--queue-border);
   border-radius: 50%;
-  background: #ffffff;
+  background: #f5f5f3;
   color: var(--queue-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .ownerNameText {
   color: var(--queue-ink);
+  font-weight: 500;
 }
 
-/* Valuation Cell */
+.inlineAssignSelect {
+  width: 100%;
+  max-width: 180px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--queue-control-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--queue-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Deal Value Cell */
 .monetaryValuation {
-  font-family: var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
+  font-family: var(--font-circular), var(--font-helvetica-neue), "Helvetica Neue", -apple-system, sans-serif;
   font-size: 15px;
-  font-weight: 300;
+  font-weight: 500;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
-  letter-spacing: -0.03em;
-  color: var(--queue-ink);
+  letter-spacing: -0.02em;
+  color: #111111;
 }
 
-/* Actions Cell: Dignified Marca Ubi Outline Controls */
+/* Single-Row Action Cluster */
 .actionsCell {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
-.openButton {
+.completeButton {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   padding: 0 14px;
-  border: 1px solid var(--queue-border);
-  border-radius: 6px;
+  border: 1px solid #111111;
+  border-radius: 8px;
+  background: #111111;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.completeButton:hover:not(:disabled) {
+  background: #2b2b29;
+  border-color: #2b2b29;
+}
+
+.completeButton:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.completeButtonDone {
+  border-color: #047857;
+  background: #047857;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.rescheduleButton {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--queue-control-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--queue-ink);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--queue-ink);
+    background: var(--queue-bg-subtle);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+
+.dealLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid var(--queue-control-border);
+  border-radius: 8px;
   background: #ffffff;
   color: var(--queue-ink);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.16s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.openButton:hover {
+.dealLink:hover {
   border-color: var(--queue-ink);
   background: var(--queue-bg-subtle);
 }
 
-.completeButton {
-  min-height: 44px;
-  padding: 0 16px;
-  border: 1px solid var(--queue-ink);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--queue-ink);
-  cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: all 0.16s ease;
-}
-
-.completeButton:hover:not(:disabled) {
-  background: var(--queue-ink);
-  color: #ffffff;
-}
-
-.completeButton:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-
-.completeButtonDone {
-  border-color: #15803d;
-  background: #f0fdf4;
-  color: #15803d;
-}
-
 .actionError {
-  flex-basis: 100%;
-  margin: 4px 0 0;
-  color: #9a001e;
-  font-size: 11px;
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  color: #9f1239;
+  font-size: 12px;
+  font-weight: 500;
   text-align: right;
 }
 
-/* =========================================================================
-   Empty & Error States
-   ========================================================================= */
+.tableActionsColHeader {
+  text-align: right;
+}
+
+/* Inline Completion Form */
+.outcomePanel {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fafaf9;
+  border: 1px solid var(--queue-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.outcomeFieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.outcomeInput,
+.outcomeSelect,
+.outcomeDateInput {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--queue-control-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 13px;
+}
+
+.quickPresetChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--queue-control-border);
+  background: #ffffff;
+  color: #111111;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: #111111;
+    background: #f5f5f3;
+  }
+}
+
+.outcomeInput {
+  flex: 2 1 220px;
+}
+
+.outcomeSelect {
+  flex: 1 1 180px;
+}
+
+.outcomeDateInput {
+  flex: 1 1 190px;
+}
+
+.outcomeActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.outcomeCancelBtn {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--queue-control-border);
+  background: #ffffff;
+  color: var(--queue-ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.outcomeConfirmBtn {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #047857;
+  background: #047857;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #065f46;
+  }
+}
+
+/* Empty & Error States */
 .emptyState,
 .errorState {
   display: flex;
@@ -629,21 +889,18 @@
 }
 
 .errorState {
-  border: 1px solid #e5b3ba;
-  border-radius: 8px;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
   background: #fffbfb;
 }
 
 .errorState code {
   display: inline-block;
   margin-top: 10px;
-  color: #444444;
-  font: 11px var(--font-admin-mono, monospace);
+  color: var(--queue-muted);
+  font: 12px var(--font-admin-mono, monospace);
 }
 
-/* =========================================================================
-   Pagination
-   ========================================================================= */
 .pagination {
   display: flex;
   align-items: center;
@@ -669,14 +926,14 @@
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  padding: 0 12px;
-  border: 1px solid var(--queue-border);
-  border-radius: 6px;
+  padding: 0 14px;
+  border: 1px solid var(--queue-control-border);
+  border-radius: 8px;
   background: #ffffff;
   color: var(--queue-ink);
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .paginationControls a:hover {
@@ -685,7 +942,7 @@
 }
 
 .paginationControls [aria-disabled='true'] {
-  color: #999999;
+  color: #575752;
   padding: 0 12px;
 }
 
@@ -694,35 +951,99 @@
   font-weight: 500;
 }
 
-/* =========================================================================
-   Zero-CLS Shimmer Loading Skeletons
-   ========================================================================= */
-.loadingTab,
-.loadingRow,
-.loadingKpi {
+/* Loading Skeletons matching 4 Icon Cards + Table */
+.loadingHeaderAction,
+.loadingLineShort,
+.loadingLineNum,
+.loadingLineHint,
+.loadingLineMedium,
+.loadingIconBox,
+.loadingTableHead,
+.loadingRow {
   background: linear-gradient(90deg, #f0f0ee 25%, #f7f7f6 50%, #f0f0ee 75%);
   background-size: 200% 100%;
   animation: loading-shimmer 1.3s ease-in-out infinite;
 }
 
-.loadingTab {
-  min-height: 84px;
-  border: 1px solid var(--queue-border);
-  border-radius: 6px;
+.loadingHeaderAction {
+  width: 132px;
+  height: 44px;
+  border-radius: 8px;
 }
 
-.loadingKpi {
-  min-height: 48px;
+.loadingTab {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 108px;
+  padding: 18px;
+  border: 1px solid var(--queue-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.loadingTabBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 70%;
+}
+
+.loadingLineShort {
+  width: 84px;
+  height: 14px;
   border-radius: 4px;
 }
 
+.loadingLineNum {
+  width: 56px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.loadingLineHint {
+  width: 128px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.loadingLineMedium {
+  width: 160px;
+  height: 18px;
+  border-radius: 6px;
+}
+
+.loadingIconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.loadingWorkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 68px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--queue-border);
+}
+
+.loadingTableHead {
+  height: 40px;
+  border-bottom: 1px solid var(--queue-border);
+}
+
 .loadingRows {
-  border-top: 1px solid var(--queue-border);
+  border-top: 0;
 }
 
 .loadingRow {
-  min-height: 118px;
+  min-height: 112px;
   border-bottom: 1px solid var(--queue-border);
+}
+
+.loadingRow:last-child {
+  border-bottom: 0;
 }
 
 @keyframes loading-shimmer {
@@ -731,31 +1052,35 @@
   }
 }
 
-/* =========================================================================
-   Responsive Breakpoints
-   ========================================================================= */
+@media (max-width: 1220px) {
+  .tableHead,
+  .taskItem {
+    grid-template-columns: minmax(220px, 1.9fr) minmax(110px, 0.9fr) minmax(130px, 1fr) minmax(110px, 0.85fr) minmax(250px, 1.6fr);
+    column-gap: 12px;
+  }
+}
+
 @media (max-width: 1140px) {
   .tableHead {
-    grid-template-columns: minmax(220px, 2fr) minmax(100px, 0.9fr) minmax(130px, 1fr) minmax(160px, 1.2fr);
+    grid-template-columns: minmax(220px, 2fr) minmax(100px, 0.9fr) minmax(130px, 1fr) minmax(220px, 1.4fr);
   }
   .tableHead > span:nth-child(4) {
     display: none;
   }
   .taskItem {
-    grid-template-columns: minmax(220px, 2fr) minmax(100px, 0.9fr) minmax(130px, 1fr) minmax(160px, 1.2fr);
+    grid-template-columns: minmax(220px, 2fr) minmax(100px, 0.9fr) minmax(130px, 1fr) minmax(220px, 1.4fr);
   }
   .valueCell {
     display: none;
+  }
+  .actionsCell {
+    flex-wrap: wrap;
   }
 }
 
 @media (max-width: 900px) {
   .queueTabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .kpiStrip {
-    grid-template-columns: 1fr;
-    gap: 12px;
   }
 }
 
@@ -789,13 +1114,18 @@
     color: var(--queue-muted);
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
   .actionsCell {
     justify-content: flex-start;
+    flex-wrap: wrap;
     padding-top: 12px;
     border-top: 1px solid var(--queue-border);
+  }
+  .actionError {
+    text-align: left;
+    margin-top: 0;
   }
   .emptyState,
   .errorState {
@@ -817,7 +1147,8 @@
   .header {
     flex-direction: column;
   }
-  .leadsLink {
+  .leadsLink,
+  .loadingHeaderAction {
     width: 100%;
   }
   .queueTabs {
@@ -833,13 +1164,24 @@
 @media (prefers-reduced-motion: reduce) {
   .queueTab,
   .telephonyAction,
-  .openButton,
-  .completeButton {
+  .completeButton,
+  .rescheduleButton,
+  .dealLink,
+  .leadsLink,
+  .paginationControls a {
     transition: none;
   }
-  .loadingTab,
-  .loadingRow,
-  .loadingKpi {
+  .queueTab:hover {
+    transform: none;
+  }
+  .loadingHeaderAction,
+  .loadingLineShort,
+  .loadingLineNum,
+  .loadingLineHint,
+  .loadingLineMedium,
+  .loadingIconBox,
+  .loadingTableHead,
+  .loadingRow {
     animation: none;
   }
 }

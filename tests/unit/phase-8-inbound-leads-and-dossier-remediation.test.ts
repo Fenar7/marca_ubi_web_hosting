@@ -52,12 +52,12 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(scss.includes('z-index: 1;'), 'Grid container must enforce z-index: 1');
     });
 
-    it('verifies LeadsDataGrid sets Col 9 to 190px ensuring collision-free action buttons', () => {
+    it('verifies LeadsDataGrid sets Col 9 to 140px ensuring collision-free action buttons', () => {
       const scss = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/LeadsDataGrid.module.scss'),
         'utf8'
       );
-      assert.ok(scss.includes('190px;'), 'Col 9 must have 190px track width to avoid button spillage');
+      assert.ok(scss.includes('140px;'), 'Col 9 must have 140px track width to avoid button spillage');
     });
 
     it('verifies AdminHeader maintains z-index: 100 on page scroll', () => {
@@ -90,14 +90,14 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(!scss.includes('box-shadow: 0 2px 8px'), 'Must not use drop shadows (Rule R-05)');
     });
 
-    it('verifies LeadsDataGrid renders accessible View button on all leads', () => {
+    it('verifies LeadsDataGrid renders accessible Dossier & Full Page controls on all leads', () => {
       const grid = fs.readFileSync(
         path.resolve(process.cwd(), 'src/app/admin/components/LeadsTable/LeadsDataGrid.tsx'),
         'utf8'
       );
-      assert.ok(grid.includes('rowInspectBtn'), 'Must render inspect button');
-      assert.ok(grid.includes('Open Client Dossier & Touchpoint Notes'), 'Must provide descriptive title');
-      assert.ok(grid.includes('Inspect dossier for ${lead.company || lead.name}'), 'Must provide contextual aria-label');
+      assert.ok(grid.includes('drawerInspectBtn'), 'Must render dossier inspect button');
+      assert.ok(grid.includes('directPageLink'), 'Must render dedicated full-page link');
+      assert.ok(grid.includes('Open dossier for ${lead.name}'), 'Must provide contextual aria-label');
     });
   });
 
@@ -341,15 +341,17 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(!code.includes('SECTION_MAP'));
     });
 
-    it('verifies LeadsWorkspaceClient hydrates drawer from both canonical id and legacy leadId', () => {
-      const clientPath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/LeadsWorkspaceClient.tsx');
-      const code = fs.readFileSync(clientPath, 'utf8');
+    it('verifies Leads page redirects both canonical id and legacy leadId to the dedicated lead command page', () => {
+      const leadsPagePath = path.resolve(process.cwd(), 'src/app/admin/(workspace)/leads/page.tsx');
+      const code = fs.readFileSync(leadsPagePath, 'utf8');
       assert.ok(
-        /searchParams\.get\(["']id["']\)\s*\|\|\s*searchParams\.get\(["']leadId["']\)/.test(code),
-        'LeadsWorkspaceClient must hydrate active drawer lead ID from id or leadId'
+        code.includes('resolvedSearchParams?.leadId') && code.includes('resolvedSearchParams?.id'),
+        'Leads page must support both id and leadId deep links'
       );
-      assert.ok(code.includes("url.searchParams.delete('id')"), 'handleCloseDrawer must delete id from searchParams');
-      assert.ok(code.includes("url.searchParams.delete('leadId')"), 'handleCloseDrawer must delete leadId from searchParams');
+      assert.ok(
+        code.includes('redirect(`/admin/leads/'),
+        'Leads page must redirect deep links directly to the dedicated lead command page'
+      );
     });
 
     it('verifies AdminWorkspaceShell LeadUrlSync harmonizes both id and leadId parameters', () => {
@@ -403,14 +405,20 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(code.includes('import "./globals.scss";'), 'layout.tsx must import globals.scss');
     });
 
-    it('verifies canonical root not-found.tsx exists and provides dark luxury 404 boundary', () => {
+    it('verifies canonical root not-found.tsx exists and provides resilient Editorial Light 404 boundary', () => {
       const notFoundPath = path.resolve(process.cwd(), 'src/app/not-found.tsx');
+      const notFoundScssPath = path.resolve(process.cwd(), 'src/app/not-found.module.scss');
       assert.ok(fs.existsSync(notFoundPath), 'src/app/not-found.tsx must exist');
+      assert.ok(fs.existsSync(notFoundScssPath), 'src/app/not-found.module.scss must exist');
       const code = fs.readFileSync(notFoundPath, 'utf8');
+      const scss = fs.readFileSync(notFoundScssPath, 'utf8');
       assert.ok(code.includes('RootNotFound'), 'Root not-found must export RootNotFound');
-      assert.ok(code.includes('404 • Resource Not Found'), 'Must render high-contrast 404 message');
-      assert.ok(code.includes('href="/"'), 'Must link to Studio Home');
-      assert.ok(code.includes('href="/admin"'), 'Must link to Workspace');
+      assert.ok(code.includes('404: Page not found'), 'Must render plain human 404 status label');
+      assert.ok(code.includes("display: 'flex'") && code.includes("justifyContent: 'center'"), 'Must keep inline flexbox centering fallback');
+      assert.ok(code.includes('#f5f5f3') && scss.includes('#ea002a') && scss.includes('#9c001e'), 'Must enforce Marca Ubi Editorial Light tokens');
+      assert.ok(!code.includes('#ff6100') && !code.includes('#111318') && !code.includes('Studio Home'), 'Must purge legacy dark-orange slop');
+      assert.ok(code.includes('href="/"') && code.includes('Go to homepage'), 'Must link to homepage');
+      assert.ok(code.includes('href="/admin"') && code.includes('Open CRM'), 'Must link to CRM');
     });
   });
 
@@ -430,12 +438,11 @@ describe('Phase 8: Inbound Leads Triage, Stacking Contexts & Dossier Data Remedi
       assert.ok(drawerZ > backdropZ, 'Drawer must render above its backdrop');
     });
 
-    it('verifies AdminWorkspaceShell monitors pathname changes to reset drawers and clear scroll locks', () => {
+    it('verifies AdminWorkspaceShell remounts state container via key={pathname} on route transitions', () => {
       const shellPath = path.resolve(process.cwd(), 'src/app/admin/components/layout/AdminWorkspaceShell.tsx');
       const code = fs.readFileSync(shellPath, 'utf8');
       assert.ok(code.includes('usePathname'), 'AdminWorkspaceShell must consume usePathname');
-      assert.ok(code.includes('setIsDrawerOpen(false);'), 'Must reset drawer state on navigation');
-      assert.match(code, /document\.body\.style\.overflow = ["']["'];/, 'Must reset document overflow on navigation');
+      assert.ok(code.includes('key={pathname}'), 'Must reset shell state on pathname changes');
     });
 
     it('verifies src/middleware.ts checks hasExplicitAuthClaims to prevent false-positive role lockouts', () => {

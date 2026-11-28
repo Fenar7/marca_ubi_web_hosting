@@ -22,7 +22,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useId, useMemo } from "react";
+import React, { useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
@@ -33,6 +33,10 @@ export interface ExecutiveSlaVelocityGaugeProps {
   records?: OverviewRecord[];
   /** Whether the active user role possesses financial ledger permissions */
   financials?: boolean;
+  /** Whether the active user role can access /admin/tasks */
+  canTasks?: boolean;
+  /** Whether the active user role can access /admin/analytics */
+  canAnalytics?: boolean;
   /** Navigation or drawer callback for record inspection */
   onOpenRecord?: (record: OverviewRecord) => void;
 }
@@ -47,6 +51,7 @@ export interface TurnaroundDeltaTelemetry {
 
 export interface SlaVelocityMetrics {
   totalMilestones: number;
+  monitoredDueCount: number;
   onTimeCount: number;
   overdueCount: number;
   dueTodayCount: number;
@@ -164,31 +169,35 @@ function describeClockwiseArc(
 export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps> = ({
   records,
   financials = true,
+  canTasks = false,
+  canAnalytics = false,
   onOpenRecord,
 }) => {
   const router = useRouter();
   const gradientId = useId();
+  const [referenceNowMs] = useState<number>(() => Date.now());
 
-  // Aggregate metrics calculation with business invariants and cold-start resilience
+  // Aggregate metrics calculation with honest empty states when no milestones exist
   const metrics: SlaVelocityMetrics = useMemo(() => {
     if (!records || records.length === 0) {
-      const defaultDelta = 3.2;
       return {
         totalMilestones: 0,
         onTimeCount: 0,
         overdueCount: 0,
         dueTodayCount: 0,
-        onTimePercentage: 98.4,
-        averageTurnaroundDeltaDays: defaultDelta,
-        turnaround: resolveTurnaroundTelemetry(defaultDelta),
+        onTimePercentage: 0,
+        monitoredDueCount: 0,
+        averageTurnaroundDeltaDays: 0,
+        turnaround: resolveTurnaroundTelemetry(0),
         totalCommittedValue: 0,
         nextCriticalRecord: null,
       };
     }
 
-    const now = Date.now();
-    const startOfToday = new Date().setHours(0, 0, 0, 0);
-    const endOfToday = new Date().setHours(23, 59, 59, 999);
+    const now = referenceNowMs;
+    const refDate = new Date(referenceNowMs);
+    const startOfToday = new Date(refDate).setHours(0, 0, 0, 0);
+    const endOfToday = new Date(refDate).setHours(23, 59, 59, 999);
 
     let overdue = 0;
     let dueToday = 0;
@@ -235,15 +244,16 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
     const calculatedPercentage =
       recordsWithValidDue > 0
         ? Math.min(100, Math.max(0, ((recordsWithValidDue - overdue) / recordsWithValidDue) * 100))
-        : 98.4;
+        : 0;
 
     const avgDelta =
       recordsWithValidDue > 0
         ? Math.round((totalDaysDelta / recordsWithValidDue) * 10) / 10
-        : 3.2;
+        : 0;
 
     return {
       totalMilestones: records.length,
+      monitoredDueCount: recordsWithValidDue,
       onTimeCount: onTime,
       overdueCount: overdue,
       dueTodayCount: dueToday,
@@ -253,7 +263,7 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
       totalCommittedValue: totalCommitted,
       nextCriticalRecord: sortedByUrgency[0] || null,
     };
-  }, [records]);
+  }, [records, referenceNowMs]);
 
   // Swiss Horology Gauge Geometry: 220° open arc, radius 64, center (100, 84), stroke 9
   const arcRadius = 64;
@@ -328,44 +338,74 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            router.push(
-              metrics.overdueCount > 0 ? "/admin/tasks?queue=overdue" : "/admin/tasks"
-            )
-          }
-          className={
-            metrics.overdueCount > 0
-              ? styles.alertBadge
+        {canTasks ? (
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                metrics.overdueCount > 0 ? "/admin/tasks?queue=overdue" : "/admin/tasks"
+              )
+            }
+            className={
+              metrics.overdueCount > 0
+                ? styles.alertBadge
+                : metrics.onTimePercentage < 90
+                ? styles.cautionBadge
+                : styles.healthyBadge
+            }
+            title={metrics.overdueCount > 0 ? "Requires Executive Action" : "Commitments On Target"}
+            aria-label={metrics.overdueCount > 0 ? "View overdue tasks" : "View all tasks"}
+          >
+            {metrics.monitoredDueCount === 0
+              ? "No Active Commitments"
+              : metrics.overdueCount > 0
+              ? `${metrics.overdueCount} Critical Overdue`
               : metrics.onTimePercentage < 90
-              ? styles.cautionBadge
-              : styles.healthyBadge
-          }
-          title={metrics.overdueCount > 0 ? "Requires Executive Action" : "Commitments On Target"}
-          aria-label={metrics.overdueCount > 0 ? "View overdue tasks" : "View all tasks"}
-        >
-          {metrics.overdueCount > 0
-            ? `${metrics.overdueCount} Critical Overdue`
-            : metrics.onTimePercentage < 90
-            ? "Cadence Caution"
-            : "Cadence Optimal"}
-        </button>
+              ? "Cadence Caution"
+              : "Cadence Optimal"}
+          </button>
+        ) : (
+          <span
+            className={
+              metrics.overdueCount > 0
+                ? styles.alertBadge
+                : metrics.onTimePercentage < 90
+                ? styles.cautionBadge
+                : styles.healthyBadge
+            }
+          >
+            {metrics.monitoredDueCount === 0
+              ? "No Active Commitments"
+              : metrics.overdueCount > 0
+              ? `${metrics.overdueCount} Critical Overdue`
+              : metrics.onTimePercentage < 90
+              ? "Cadence Caution"
+              : "Cadence Optimal"}
+          </span>
+        )}
       </header>
 
       {/* 220° Clockwise Radial Horology Instrument Gauge */}
       <div
         className={styles.gaugeStage}
-        role="button"
-        tabIndex={0}
-        onClick={() => router.push("/admin/analytics")}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            router.push("/admin/analytics");
-          }
-        }}
-        title="View SLA Delivery Analytics"
-        aria-label="SLA delivery gauge, click to view analytics"
+        role={canAnalytics ? "button" : undefined}
+        tabIndex={canAnalytics ? 0 : undefined}
+        onClick={canAnalytics ? () => router.push("/admin/analytics") : undefined}
+        onKeyDown={
+          canAnalytics
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push("/admin/analytics");
+                }
+              }
+            : undefined
+        }
+        title={canAnalytics ? "View SLA Delivery Analytics" : undefined}
+        aria-label={
+          canAnalytics ? "SLA delivery gauge, click to view analytics" : "SLA delivery gauge"
+        }
+        style={canAnalytics ? undefined : { cursor: "default" }}
       >
         <svg
           viewBox="0 0 200 120"
@@ -436,10 +476,12 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
         {/* Center Readout Telemetry */}
         <div className={styles.centerTelemetry}>
           <span className={styles.metricValue}>
-            {metrics.onTimePercentage.toFixed(1)}
-            <span className={styles.percentSymbol}>%</span>
+            {metrics.monitoredDueCount === 0 ? "—" : metrics.onTimePercentage.toFixed(1)}
+            {metrics.monitoredDueCount > 0 && <span className={styles.percentSymbol}>%</span>}
           </span>
-          <span className={styles.metricLabel}>ON-TIME COMMITMENT</span>
+          <span className={styles.metricLabel}>
+            {metrics.monitoredDueCount === 0 ? "NO SLA COMMITMENTS" : "ON-TIME COMMITMENT"}
+          </span>
           <span
             className={`${styles.turnaroundDelta} ${
               metrics.turnaround.category === "ahead"
@@ -502,15 +544,22 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
 
       {/* Borderless Tabular Telemetry Matrix (Commandment 1: Anti-Bento Inception) */}
       <div className={styles.metricsStrip}>
-        <button
-          type="button"
-          className={styles.metricCellBtn}
-          onClick={() => router.push("/admin/tasks")}
-          aria-label="View active scope in tasks"
-        >
-          <span className={styles.cellLabel}>Active Scope</span>
-          <span className={styles.cellVal}>{metrics.totalMilestones} Milestones</span>
-        </button>
+        {canTasks ? (
+          <button
+            type="button"
+            className={styles.metricCellBtn}
+            onClick={() => router.push("/admin/tasks")}
+            aria-label="View active scope in tasks"
+          >
+            <span className={styles.cellLabel}>Active Scope</span>
+            <span className={styles.cellVal}>{metrics.totalMilestones} Milestones</span>
+          </button>
+        ) : (
+          <div className={styles.metricCell}>
+            <span className={styles.cellLabel}>Active Scope</span>
+            <span className={styles.cellVal}>{metrics.totalMilestones} Milestones</span>
+          </div>
+        )}
         <div className={styles.metricDivider} aria-hidden="true" />
         <div className={styles.metricCell}>
           <span className={styles.cellLabel}>Committed Value</span>
@@ -519,19 +568,30 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
           </span>
         </div>
         <div className={styles.metricDivider} aria-hidden="true" />
-        <button
-          type="button"
-          className={styles.metricCellBtn}
-          onClick={() => router.push("/admin/tasks?queue=overdue")}
-          aria-label="View critical overdue tasks"
-        >
-          <span className={styles.cellLabel}>Critical Overdue</span>
-          <span
-            className={metrics.overdueCount > 0 ? styles.cellValAlert : styles.cellValHealthy}
+        {canTasks ? (
+          <button
+            type="button"
+            className={styles.metricCellBtn}
+            onClick={() => router.push("/admin/tasks?queue=overdue")}
+            aria-label="View critical overdue tasks"
           >
-            {metrics.overdueCount} Items
-          </span>
-        </button>
+            <span className={styles.cellLabel}>Critical Overdue</span>
+            <span
+              className={metrics.overdueCount > 0 ? styles.cellValAlert : styles.cellValHealthy}
+            >
+              {metrics.overdueCount} Items
+            </span>
+          </button>
+        ) : (
+          <div className={styles.metricCell}>
+            <span className={styles.cellLabel}>Critical Overdue</span>
+            <span
+              className={metrics.overdueCount > 0 ? styles.cellValAlert : styles.cellValHealthy}
+            >
+              {metrics.overdueCount} Items
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Interactive Milestone Dispatch CTA */}
@@ -561,30 +621,31 @@ export const ExecutiveSlaVelocityGauge: React.FC<ExecutiveSlaVelocityGaugeProps>
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-        ) : (
+        ) : canAnalytics ? (
           <button
             type="button"
             onClick={() => router.push("/admin/analytics")}
             className={styles.dispatchBtn}
             aria-label="Review SLA Delivery Log in analytics"
           >
-            <span>Review SLA Delivery Log ↗</span>
+            <span>Review SLA Delivery Log</span>
             <svg
               className={styles.btnChevron}
-              width="14"
-              height="14"
+              width="13"
+              height="13"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <polyline points="9 18 15 12 9 6" />
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
             </svg>
           </button>
-        )}
+        ) : null}
       </footer>
     </article>
   );

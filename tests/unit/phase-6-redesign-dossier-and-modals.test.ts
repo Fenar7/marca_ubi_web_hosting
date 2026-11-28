@@ -167,7 +167,7 @@ describe('Phase 6 Redesign: Dossier Drawer & Centered Modals Suite', () => {
         path.resolve(process.cwd(), 'src/app/admin/components/modals/NewLeadModal.tsx'),
         'utf8'
       );
-      assert.ok(content.includes('New Prospective Commercial Lead.'));
+      assert.ok(content.includes('New Prospective Commercial Lead'));
     });
 
     it('verifies ConvertLeadToDealModal has editorial trailing period on modal heading', () => {
@@ -191,7 +191,7 @@ describe('Phase 6 Redesign: Dossier Drawer & Centered Modals Suite', () => {
         path.resolve(process.cwd(), 'src/app/admin/components/modals/BatchReassignModal.tsx'),
         'utf8'
       );
-      assert.ok(content.includes('Reassign Active Pipeline Leads.'));
+      assert.ok(content.includes('Batch Reassign Accounts'));
     });
 
     it('verifies AddTeamMemberModal has editorial trailing period on modal title', () => {

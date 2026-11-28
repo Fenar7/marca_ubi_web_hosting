@@ -28,6 +28,8 @@ export interface LeadMobileCardProps {
   onStatusChange?: (leadId: string, newStatus: InlineStatusOption) => void;
   /** Callback fired upon inline priority modification */
   onPriorityChange?: (leadId: string, newPriority: LeadPriority) => void;
+  /** Financial visibility permission flag */
+  canViewFinancials?: boolean;
   /** Optional user role for role-based authorization */
   userRole?: string;
   /** Custom class name */
@@ -43,6 +45,7 @@ export function LeadMobileCard({
   availableStatuses,
   onStatusChange,
   onPriorityChange,
+  canViewFinancials = true,
   userRole,
   className,
 }: LeadMobileCardProps): React.ReactElement {
@@ -112,7 +115,7 @@ export function LeadMobileCard({
             aria-label={`Copy Lead ID ${lead.lead_id}`}
           >
             {copied ? (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <span className={styles.copiedTokenBadge}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
@@ -137,7 +140,9 @@ export function LeadMobileCard({
           />
         </div>
 
-        <span className={styles.dealValue}>{formatCurrency(lead.expected_value)}</span>
+        <span className={styles.dealValue}>
+          {canViewFinancials ? formatCurrency(lead.expected_value) : 'Restricted'}
+        </span>
       </div>
 
       {/* 2. Client & Organization Narrative */}

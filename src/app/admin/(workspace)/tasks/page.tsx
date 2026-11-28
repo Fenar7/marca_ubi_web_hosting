@@ -1,9 +1,9 @@
 /**
  * @file page.tsx
- * @description Executive Follow-up Queue & Workload Telemetry Cockpit for Marca Ubi Enterprise CRM.
- *              Eliminates sequential request waterfalls by executing all queue counts, overdue exposure,
- *              lead payloads, and directory mappings concurrently via Promise.all and React 19 Suspense streaming.
- *              Enforces editorial design tokens with a balanced 4-queue grid and zero flat-red button spam.
+ * @description Follow-ups workspace page for Marca Ubi Enterprise CRM.
+ *              Eliminates sequential request waterfalls by executing queue counts, overdue exposure,
+ *              lead payloads, SLA threshold, and directory mappings concurrently via Promise.all
+ *              and React 19 Suspense streaming.
  * @module admin/tasks/page
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -16,13 +16,14 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { ROLE_DEFAULT_TABS, type CrmUserRole, type LeadPriority } from '@/types/crm';
 import { getUtcDayWindow, parseFollowUpPage, parseFollowUpQueue, type FollowUpQueue } from '@/app/admin/lib/followUpQueue';
-import { getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
+import { dashboardFeature, dashboardTab, foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
+import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { TaskCard, type TaskLeadItem } from './components/TaskCard';
 import styles from './tasks.module.scss';
 
 export const metadata: Metadata = {
-  title: 'Follow-up Queue | Marca Ubi Enterprise CRM',
+  title: 'Follow-ups | Marca Ubi Enterprise CRM',
   robots: { index: false, follow: false },
 };
 
@@ -33,12 +34,75 @@ const SYNTHETIC_EXCLUSION = 'brief_payload->synthetic_benchmark.is.null,brief_pa
 type QueueKey = FollowUpQueue;
 type SearchParams = Promise<{ page?: string; queue?: string }>;
 
-const QUEUES: Record<QueueKey, { label: string; description: string }> = {
-  overdue: { label: 'Critical Overdue', description: 'Scheduled before today (UTC)' },
-  today: { label: 'Due Today', description: 'Scheduled today (UTC)' },
-  upcoming: { label: 'Upcoming Horizon', description: 'Scheduled after today (UTC)' },
-  unassigned: { label: 'Unassigned Inbound', description: 'Active leads without an owner or scheduled touchpoint' },
+const QUEUES: Record<QueueKey, { label: string; hint: string; description: string }> = {
+  overdue: {
+    label: 'Overdue',
+    hint: 'Needs immediate follow-up',
+    description: 'Scheduled before today',
+  },
+  today: {
+    label: 'Due Today',
+    hint: 'Scheduled for today',
+    description: 'Scheduled for today',
+  },
+  upcoming: {
+    label: 'Upcoming',
+    hint: 'Scheduled ahead',
+    description: 'Scheduled after today',
+  },
+  unassigned: {
+    label: 'Unassigned',
+    hint: 'Needs an owner',
+    description: 'Active leads without an owner',
+  },
 };
+
+/** Renders a domain-specific 18px inline SVG badge icon for each queue card without icon-library bloat. */
+function QueueCardIcon({ queue }: { queue: QueueKey }): React.ReactElement {
+  if (queue === 'overdue') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v4l2.5 1.5" />
+        <path d="M5 3 2 6" />
+        <path d="m22 6-3-3" />
+      </svg>
+    );
+  }
+  if (queue === 'today') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2" />
+        <path d="M12 20v2" />
+        <path d="m4.93 4.93 1.41 1.41" />
+        <path d="m17.66 17.66 1.41 1.41" />
+        <path d="M2 12h2" />
+        <path d="M20 12h2" />
+        <path d="m6.34 17.66-1.41 1.41" />
+        <path d="m19.07 4.93-1.41 1.41" />
+      </svg>
+    );
+  }
+  if (queue === 'upcoming') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect width="18" height="18" x="3" y="4" rx="2" />
+        <path d="M16 2v4" />
+        <path d="M8 2v4" />
+        <path d="M3 10h18" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" x2="19" y1="8" y2="14" />
+      <line x1="22" x2="16" y1="11" y2="11" />
+    </svg>
+  );
+}
 
 interface QueueCount {
   count: number | null;
@@ -82,25 +146,39 @@ async function countQueue(
   }
 }
 
-/** Calculates total at-risk pipeline monetary valuation across all overdue follow-ups. */
+/** Calculates total at-risk pipeline monetary valuation across all overdue follow-ups via pagination. */
 async function fetchOverdueExposure(
   supabase: Awaited<ReturnType<typeof createClient>>,
   start: string,
-  today: string
-): Promise<number> {
+  today: string,
+  canViewFinancials: boolean
+): Promise<number | null> {
+  if (!canViewFinancials) return null;
   try {
-    const { data, error } = await supabase
-      .from('leads')
-      .select('expected_value, funnel_statuses!inner(bucket)')
-      .in('funnel_statuses.bucket', ['open', 'potential'])
-      .or(`and(or(revisit_date.is.null,revisit_date.lte.${today}),or(${SYNTHETIC_EXCLUSION}))`)
-      .not('next_follow_up', 'is', null)
-      .lt('next_follow_up', start);
-
-    if (error || !data) return 0;
-    return data.reduce((sum, row) => sum + (Number(row.expected_value) || 0), 0);
+    const summary = await foldDashboardPages<{ expected_value?: number | string }, { total: number }>(
+      async (from, to) => {
+        const res = await supabase
+          .from('leads')
+          .select('id, expected_value, funnel_statuses!inner(bucket)')
+          .in('funnel_statuses.bucket', ['open', 'potential'])
+          .or(`and(or(revisit_date.is.null,revisit_date.lte.${today}),or(${SYNTHETIC_EXCLUSION}))`)
+          .not('next_follow_up', 'is', null)
+          .lt('next_follow_up', start)
+          .order('id')
+          .range(from, to);
+        return {
+          data: res.data as unknown as Array<{ expected_value?: number | string }> | null,
+          error: res.error,
+        };
+      },
+      { total: 0 },
+      (acc, row) => {
+        acc.total += Number(row.expected_value) || 0;
+      }
+    );
+    return summary ? summary.total : null;
   } catch {
-    return 0;
+    return null;
   }
 }
 
@@ -111,15 +189,16 @@ async function fetchQueueLeads(
   page: number,
   start: string,
   end: string,
-  today: string
+  today: string,
+  canViewFinancials: boolean
 ) {
+  const selectCols = canViewFinancials
+    ? `id, lead_id, name, company, phone, email, preferred_channel, priority, expected_value, next_follow_up, revisit_date, assigned_to, created_at, funnel_statuses!inner(name, bucket)`
+    : `id, lead_id, name, company, phone, email, preferred_channel, priority, next_follow_up, revisit_date, assigned_to, created_at, funnel_statuses!inner(name, bucket)`;
+
   const baseRows = supabase
     .from('leads')
-    .select(`
-      id, lead_id, name, company, phone, email, preferred_channel, priority,
-      expected_value, next_follow_up, revisit_date, assigned_to, created_at,
-      funnel_statuses!inner(name, bucket)
-    `)
+    .select(selectCols)
     .in('funnel_statuses.bucket', ['open', 'potential'])
     .or(`and(or(revisit_date.is.null,revisit_date.lte.${today}),or(${SYNTHETIC_EXCLUSION}))`);
 
@@ -193,7 +272,7 @@ export default async function AdminTasksPage({
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, status, allowed_tabs')
+    .select('role, status, allowed_tabs, feature_permissions')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -211,9 +290,20 @@ export default async function AdminTasksPage({
     : Boolean(ROLE_DEFAULT_TABS[role]?.tasks));
   if (!hasTasksAccess) redirect('/admin?error=unauthorized_role_access');
 
-  const { start, end, date: today } = getUtcDayWindow(new Date());
+  const canViewFinancials = dashboardFeature(
+    role,
+    profile.feature_permissions,
+    'can_view_financials'
+  );
+  const canAccessDeals = dashboardTab(role, allowedTabs, 'deals');
+  const canAssign = role === 'admin' || role === 'sales_manager';
+  const showUnassignedQueue = role !== 'sales_executive';
 
-  // Waterfall Elimination: Execute all queue counts, exposure metrics, lead rows, and directory lookup in parallel
+  const requestNow = new Date();
+  const referenceNowMs = requestNow.getTime();
+  const { start, end, date: today } = getUtcDayWindow(requestNow);
+
+  // Waterfall Elimination: Execute queue counts, paginated overdue exposure, SLA settings, lead rows, and directory in parallel
   const [
     overdueCount,
     todayCount,
@@ -222,15 +312,24 @@ export default async function AdminTasksPage({
     overdueExposure,
     leadsResult,
     ownerNameById,
+    teamDirectory,
+    slaSettingsResult,
   ] = await Promise.all([
     countQueue(supabase, 'overdue', start, end, today),
     countQueue(supabase, 'today', start, end, today),
     countQueue(supabase, 'upcoming', start, end, today),
-    countQueue(supabase, 'unassigned', start, end, today),
-    fetchOverdueExposure(supabase, start, today),
-    fetchQueueLeads(supabase, queue, page, start, end, today),
+    showUnassignedQueue
+      ? countQueue(supabase, 'unassigned', start, end, today)
+      : Promise.resolve({ count: 0, code: null }),
+    fetchOverdueExposure(supabase, start, today, canViewFinancials),
+    fetchQueueLeads(supabase, queue, page, start, end, today, canViewFinancials),
     getCrmDirectoryMap(supabase),
+    canAssign ? getCrmDirectoryList(supabase, ['admin', 'sales_manager', 'sales_executive']) : Promise.resolve([]),
+    supabase.from('agency_settings').select('lead_response_sla_minutes').limit(1).maybeSingle(),
   ]);
+
+  const teamAssignees = teamDirectory.map((m) => ({ id: m.id, full_name: m.full_name }));
+  const slaMinutes = slaSettingsResult.data?.lead_response_sla_minutes ?? 60;
 
   const queueCounts: QueueCount[] = [overdueCount, todayCount, upcomingCount, unassignedCount];
   const { data: rawLeads, error: leadsError } = leadsResult;
@@ -244,7 +343,22 @@ export default async function AdminTasksPage({
     return <WorkspaceError reference={reference} queue={queue} page={page} message="Follow-ups could not be loaded." />;
   }
 
-  const leads: TaskLeadItem[] = rawLeads.map((lead) => ({
+  const leads: TaskLeadItem[] = (rawLeads as unknown as Array<{
+    id: string;
+    lead_id: string;
+    name: string;
+    company: string | null;
+    phone: string | null;
+    email: string | null;
+    preferred_channel: string | null;
+    priority: string | null;
+    expected_value?: number | string | null;
+    next_follow_up: string | null;
+    revisit_date: string | null;
+    assigned_to: string | null;
+    created_at: string | null;
+    funnel_statuses?: { name?: string; bucket?: string } | null;
+  }>).map((lead) => ({
     id: lead.id,
     lead_id: lead.lead_id,
     name: lead.name,
@@ -253,12 +367,14 @@ export default async function AdminTasksPage({
     email: lead.email,
     preferred_channel: lead.preferred_channel || 'Email',
     priority: (lead.priority as LeadPriority) || 'Medium',
-    expected_value: Number(lead.expected_value) || 0,
+    expected_value: canViewFinancials ? Number(lead.expected_value) || 0 : 0,
     next_follow_up: lead.next_follow_up,
     revisit_date: lead.revisit_date,
     assigned_to: lead.assigned_to,
+    created_at: lead.created_at,
     assignee_name: (lead.assigned_to && ownerNameById.get(lead.assigned_to)) || 'Unassigned',
-    status_name: (lead.funnel_statuses as { name?: string } | null)?.name || 'Active',
+    status_name: lead.funnel_statuses?.name || 'New Lead',
+    status_bucket: lead.funnel_statuses?.bucket || 'open',
   }));
 
   const queueIndices: Record<QueueKey, number> = {
@@ -276,73 +392,55 @@ export default async function AdminTasksPage({
     unassigned: unassignedCount.count,
   };
 
-  const totalActiveVolume =
-    (overdueCount.count ?? 0) +
-    (todayCount.count ?? 0) +
-    (upcomingCount.count ?? 0) +
-    (unassignedCount.count ?? 0);
+  const visibleQueues: QueueKey[] = showUnassignedQueue
+    ? (['overdue', 'today', 'upcoming', 'unassigned'] as QueueKey[])
+    : (['overdue', 'today', 'upcoming'] as QueueKey[]);
 
   return (
     <main className={styles.container}>
-      {/* Executive Cockpit Masthead */}
       <header className={styles.header}>
         <div className={styles.headingBlock}>
-          <p className={styles.eyebrow}>Commercial Desk / Client relationships</p>
-          <h1 className={styles.pageTitle}>Follow-up queue</h1>
+          <h1 className={styles.pageTitle}>Follow-ups</h1>
           <p className={styles.pageSubtitle}>
-            Work the next scheduled client conversation with precision, then advance pipeline velocity.
+            Stay on top of overdue, today&apos;s, and upcoming client calls.
           </p>
         </div>
         <Link className={styles.leadsLink} href="/admin/leads">
-          Open leads directory
+          View all leads
         </Link>
       </header>
 
-      {/* Balanced 4-Queue Workload Telemetry & Switcher */}
-      <section className={styles.queueOverview} aria-label="Follow-up counts and workload telemetry">
-        <div className={styles.queueOverviewHeading}>
-          <h2>Workload Telemetry</h2>
-          <span>All counts follow your CRM access and are calculated across active pipeline records.</span>
-        </div>
-
+      <section className={styles.queueOverview} aria-label="Follow-up queues">
         <nav className={styles.queueTabs} aria-label="Follow-up timing">
-          {(Object.keys(QUEUES) as QueueKey[]).map((key) => {
+          {visibleQueues.map((key) => {
             const count = groupCounts[key];
             const isSelected = queue === key;
             return (
               <Link
                 key={key}
                 href={pageHref(key, 1)}
+                data-queue={key}
+                data-active={isSelected ? 'true' : 'false'}
                 className={`${styles.queueTab} ${isSelected ? styles.queueTabActive : ''}`}
                 aria-current={isSelected ? 'page' : undefined}
               >
-                <span className={styles.queueTabTitle}>{QUEUES[key].label}</span>
-                <strong>{count === null ? '—' : count.toLocaleString('en-IN')}</strong>
+                <div className={styles.queueTabBody}>
+                  <div className={styles.queueTabLabelRow}>
+                    <span className={styles.queueTabTitle}>{QUEUES[key].label}</span>
+                    {isSelected && <span className={styles.queueViewingChip}>Viewing</span>}
+                  </div>
+                  <strong className={styles.queueTabCount}>
+                    {count === null ? '--' : count.toLocaleString('en-IN')}
+                  </strong>
+                  <span className={styles.queueTabHint}>{QUEUES[key].hint}</span>
+                </div>
+                <span className={styles.queueTabIcon} data-queue-icon={key} aria-hidden="true">
+                  <QueueCardIcon queue={key} />
+                </span>
               </Link>
             );
           })}
         </nav>
-
-        {/* Executive Pipeline KPI Strip */}
-        <div className={styles.kpiStrip} aria-label="Pipeline metrics summary">
-          <div className={styles.kpiCard}>
-            <span className={styles.kpiLabel}>Total Queue Volume</span>
-            <span className={styles.kpiValue}>{totalActiveVolume.toLocaleString('en-IN')} accounts</span>
-            <span className={styles.kpiHint}>Across all active pipeline stages</span>
-          </div>
-
-          <div className={styles.kpiCard}>
-            <span className={styles.kpiLabel}>At-Risk Overdue Exposure</span>
-            <span className={styles.kpiValue}>{formatCrmCurrency(overdueExposure)}</span>
-            <span className={styles.kpiHint}>Valuation tied to overdue touchpoints</span>
-          </div>
-
-          <div className={styles.kpiCard}>
-            <span className={styles.kpiLabel}>Turnaround Standard</span>
-            <span className={styles.kpiValue}>Sub-24h Target SLA</span>
-            <span className={styles.kpiHint}>Institutional cadence benchmark</span>
-          </div>
-        </div>
 
         {countError && (
           <p className={styles.countNotice} role="status">
@@ -351,15 +449,32 @@ export default async function AdminTasksPage({
         )}
       </section>
 
-      {/* React 19 Streaming Suspense Boundary for Workstation Rows */}
       <Suspense fallback={<div className={styles.loadingRows} aria-hidden="true">{[1, 2, 3, 4].map((i) => <div key={i} className={styles.loadingRow} />)}</div>}>
         <section className={styles.workSection} aria-labelledby="work-heading">
           <div className={styles.workSectionHeader}>
-            <div>
-              <p className={styles.sectionEyebrow}>{QUEUES[queue].description}</p>
-              <h2 id="work-heading">{QUEUES[queue].label}</h2>
+            <div className={styles.workSectionTitleBlock}>
+              <div className={styles.workSectionTitleRow}>
+                <h2 id="work-heading">{QUEUES[queue].label}</h2>
+                <span className={styles.workCountPill}>
+                  {totalCount === null
+                    ? 'Count unavailable'
+                    : `${totalCount.toLocaleString('en-IN')} ${totalCount === 1 ? 'lead' : 'leads'}`}
+                </span>
+              </div>
+              <p className={styles.workSectionDesc}>{QUEUES[queue].description}</p>
             </div>
-            <span className={styles.timezoneLabel}>Times shown in UTC</span>
+            <div className={styles.workSectionMeta}>
+              {canViewFinancials && overdueExposure !== null && (
+                <span className={styles.exposurePill}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+                    <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+                  </svg>
+                  <span>{formatCrmCurrency(overdueExposure)} overdue value</span>
+                </span>
+              )}
+              <span className={styles.timezoneLabel}>Times in UTC</span>
+            </div>
           </div>
 
           {leads.length === 0 ? (
@@ -367,9 +482,11 @@ export default async function AdminTasksPage({
               <div>
                 <h3>{totalCount === 0 ? `No ${QUEUES[queue].label.toLowerCase()} follow-ups` : 'No records on this page'}</h3>
                 <p>
-                  {totalCount === 0
-                    ? 'There are no scheduled client touchpoints in this time range.'
-                    : 'Return to the first page or try another queue.'}
+                  {queue === 'unassigned' && role === 'sales_executive'
+                    ? 'Unassigned leads are managed by Administrators and Sales Managers.'
+                    : totalCount === 0
+                      ? 'There are no scheduled client calls in this queue.'
+                      : 'Return to the first page or switch to another queue.'}
                 </p>
               </div>
               {page > 1 && <Link href={pageHref(queue, 1)}>Return to first page</Link>}
@@ -377,11 +494,11 @@ export default async function AdminTasksPage({
           ) : (
             <>
               <div className={styles.tableHead} aria-hidden="true">
-                <span>Client & Coordinates</span>
+                <span>Lead & Contact</span>
                 <span>Stage</span>
-                <span>Account Executive</span>
-                <span>Expected Scope</span>
-                <span style={{ textAlign: 'right' }}>Actions</span>
+                <span>Owner</span>
+                <span>Deal Value</span>
+                <span className={styles.tableActionsColHeader}>Actions</span>
               </div>
               <ol className={styles.taskList} aria-label={`${QUEUES[queue].label} client follow-ups`}>
                 {leads.map((lead) => (
@@ -390,6 +507,12 @@ export default async function AdminTasksPage({
                     lead={lead}
                     isUrgent={queue === 'overdue'}
                     allowCompletion={role !== 'viewer'}
+                    canViewFinancials={canViewFinancials}
+                    canAccessDeals={canAccessDeals}
+                    canAssign={canAssign}
+                    teamAssignees={teamAssignees}
+                    referenceNowMs={referenceNowMs}
+                    slaMinutes={slaMinutes}
                   />
                 ))}
               </ol>
@@ -418,8 +541,7 @@ function WorkspaceError({
     <main className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headingBlock}>
-          <p className={styles.eyebrow}>Commercial Desk / Client relationships</p>
-          <h1 className={styles.pageTitle}>Follow-up queue</h1>
+          <h1 className={styles.pageTitle}>Follow-ups</h1>
         </div>
       </header>
       <section className={styles.errorState} role="alert">

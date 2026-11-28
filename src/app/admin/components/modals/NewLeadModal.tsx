@@ -12,7 +12,8 @@
  */
 
 import React, { useState, useEffect, useTransition, useCallback, useRef } from 'react';
-import { createManualLead, getActiveTeamAssignees } from '@/app/actions/leads';
+import { createManualLead, getActiveLeadSourcesAction, getActiveTeamAssignees } from '@/app/actions/leads';
+import type { LeadSourceOption } from '@/app/lib/lead-schemas';
 import {
   createManualLeadSchema,
   SERVICE_CATEGORIES,
@@ -23,9 +24,11 @@ import {
 } from '@/app/lib/lead-schemas';
 import { formatDealValuation } from '@/app/lib/team-utils';
 import type { CurrentUserSession } from '@/app/admin/components/layout/UserProfileDropdown';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import type { PreferredChannel, ServiceCategory, LeadPriority } from '@/types/crm';
 import { useModalAnimation } from './useModalAnimation';
 import { formatBudgetTierLabel } from '@/app/admin/lib/currency';
+import { CountryPhoneInput } from '@/app/components/ui/CountryPhoneInput';
 import styles from './NewLeadModal.module.scss';
 
 export interface NewLeadModalProps {
@@ -44,16 +47,47 @@ export function NewLeadModal({
     exitDurationMs: 180,
   });
 
+  if (!shouldRender) {
+    return null;
+  }
+
+  return (
+    <NewLeadModalInner
+      key={isOpen ? 'open' : 'closing'}
+      isOpen={isOpen}
+      isClosing={isClosing}
+      handleAnimationEnd={handleAnimationEnd}
+      onClose={onClose}
+      currentUser={currentUser}
+    />
+  );
+}
+
+interface NewLeadModalInnerProps extends NewLeadModalProps {
+  isClosing: boolean;
+  handleAnimationEnd: (e: React.AnimationEvent<HTMLDivElement>) => void;
+}
+
+function NewLeadModalInner({
+  isOpen,
+  isClosing,
+  handleAnimationEnd,
+  onClose,
+  currentUser,
+}: NewLeadModalInnerProps): React.ReactElement {
   const [isPending, startTransition] = useTransition();
   const nameInputRef = useRef<HTMLInputElement>(null);
   const modalDialogRef = useRef<HTMLDivElement>(null);
   const promptKeepBtnRef = useRef<HTMLButtonElement>(null);
   const promptDiscardBtnRef = useRef<HTMLButtonElement>(null);
+  const promptFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Form Field State
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [leadSourceId, setLeadSourceId] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [preferredChannel, setPreferredChannel] = useState<PreferredChannel>('Phone');
@@ -64,8 +98,9 @@ export function NewLeadModal({
   const [assignedTo, setAssignedTo] = useState<string>(currentUser.id);
   const [notes, setNotes] = useState('');
 
-  // Assignee options loaded from database
+  // Assignee & source options loaded from database
   const [assigneeOptions, setAssigneeOptions] = useState<AssigneeOption[]>([]);
+  const [sourceOptions, setSourceOptions] = useState<LeadSourceOption[]>([]);
 
   // Validation & Error State
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -74,54 +109,49 @@ export function NewLeadModal({
   // Unsaved changes modal state
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
 
-  // Fetch active team assignees when opening modal with error fallback
+  // Fetch active team assignees & lead sources concurrently when opening modal
   useEffect(() => {
-    if (isOpen) {
-      getActiveTeamAssignees()
-        .then((options) => {
-          setAssigneeOptions(options);
-        })
-        .catch((err) => {
-          console.error('[ASSIGN_FETCH_ERROR] Failed to load assignees:', err);
-          setAssigneeOptions([
-            { id: currentUser.id, fullName: currentUser.name || 'Current User', role: currentUser.role, email: currentUser.email || '' },
-          ]);
-        });
-    }
-  }, [isOpen, currentUser.id, currentUser.name, currentUser.role]);
+    if (!isOpen) return;
+    let active = true;
+    Promise.all([getActiveTeamAssignees(), getActiveLeadSourcesAction()])
+      .then(([options, sources]) => {
+        if (!active) return;
+        setAssigneeOptions(options);
+        setSourceOptions(sources);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error('[ASSIGN_FETCH_ERROR] Failed to load form options:', err);
+        setAssigneeOptions([
+          {
+            id: currentUser.id,
+            fullName: currentUser.name || 'Current User',
+            role: currentUser.role,
+            email: currentUser.email || '',
+          },
+        ]);
+      });
 
-  // Reset form upon opening
-  useEffect(() => {
-    if (isOpen) {
-      setName('');
-      setCompany('');
-      setCompanyWebsite('');
-      setEmail('');
-      setPhone('');
-      setPreferredChannel('Phone');
-      setServiceCategory('Web & Digital');
-      setBudgetBracket('₹5L - ₹15L');
-      setExpectedValue(500000);
-      setPriority('Medium');
-      setAssignedTo(currentUser.id);
-      setNotes('');
-      setFormErrors({});
-      setGeneralError(null);
-      setShowDiscardPrompt(false);
+    const timer = setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 100);
 
-      // Autofocus client name input
-      const timer = setTimeout(() => {
-        nameInputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, currentUser.id]);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      if (promptFocusTimerRef.current) {
+        clearTimeout(promptFocusTimerRef.current);
+      }
+    };
+  }, [isOpen, currentUser.id, currentUser.name, currentUser.role, currentUser.email]);
 
   // Check if form contains modified data
   const isDirty = Boolean(
     name.trim().length > 0 ||
     company.trim().length > 0 ||
     companyWebsite.trim().length > 0 ||
+    industry.trim().length > 0 ||
+    leadSourceId.trim().length > 0 ||
     email.trim().length > 0 ||
     phone.trim().length > 0 ||
     notes.trim().length > 0 ||
@@ -136,7 +166,10 @@ export function NewLeadModal({
   const requestClose = useCallback(() => {
     if (isDirty) {
       setShowDiscardPrompt(true);
-      setTimeout(() => {
+      if (promptFocusTimerRef.current) {
+        clearTimeout(promptFocusTimerRef.current);
+      }
+      promptFocusTimerRef.current = setTimeout(() => {
         promptKeepBtnRef.current?.focus();
       }, 50);
     } else {
@@ -190,10 +223,6 @@ export function NewLeadModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, showDiscardPrompt, requestClose]);
 
-  if (!shouldRender) {
-    return null;
-  }
-
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormErrors({});
@@ -203,6 +232,8 @@ export function NewLeadModal({
       name,
       company: company || undefined,
       companyWebsite: companyWebsite || undefined,
+      industry: industry || undefined,
+      leadSourceId: leadSourceId || undefined,
       email: email || undefined,
       phone: phone || undefined,
       preferredChannel,
@@ -259,6 +290,11 @@ export function NewLeadModal({
   };
 
   const isExecutive = currentUser.role === 'sales_executive';
+  const canViewFinancials = dashboardFeature(
+    currentUser.role,
+    currentUser.feature_permissions,
+    'can_view_financials'
+  );
 
   return (
     <div
@@ -280,7 +316,7 @@ export function NewLeadModal({
           <div className={styles.headerMeta}>
             <span className={styles.eyebrow}>Commercial Intake</span>
             <h2 id="new-lead-modal-title" className={styles.modalTitle}>
-              New Prospective Commercial Lead.
+              New Prospective Commercial Lead
             </h2>
           </div>
           <button
@@ -376,6 +412,21 @@ export function NewLeadModal({
             </div>
 
             <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-lead-industry">
+                Industry / Sector
+              </label>
+              <input
+                id="modal-lead-industry"
+                type="text"
+                className={styles.input}
+                placeholder="e.g. FinTech, Real Estate, Luxury Retail"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                disabled={isPending}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
               <label className={styles.label} htmlFor="modal-lead-website">
                 Entity Website
               </label>
@@ -405,7 +456,19 @@ export function NewLeadModal({
                 className={`${styles.input} ${formErrors.email ? styles.inputError : ''}`}
                 placeholder="tariq@apexholdings.ae"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  const nextEmail = e.target.value;
+                  setEmail(nextEmail);
+                  setFormErrors((prev) => {
+                    if (!prev.email && !prev.phone) return prev;
+                    const next = { ...prev };
+                    delete next.email;
+                    if (nextEmail.trim().length > 0) {
+                      delete next.phone;
+                    }
+                    return next;
+                  });
+                }}
                 disabled={isPending}
               />
               {formErrors.email && (
@@ -417,17 +480,28 @@ export function NewLeadModal({
               <label className={styles.label} htmlFor="modal-lead-phone">
                 Telephone / WhatsApp
               </label>
-              <input
+              <CountryPhoneInput
                 id="modal-lead-phone"
-                type="tel"
-                className={`${styles.input} ${formErrors.phone ? styles.inputError : ''}`}
-                placeholder="+971 50 123 4567"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(nextPhone) => {
+                  setPhone(nextPhone);
+                  setFormErrors((prev) => {
+                    if (!prev.phone) return prev;
+                    const next = { ...prev };
+                    delete next.phone;
+                    return next;
+                  });
+                }}
+                defaultCountry="AE"
+                variant="admin"
+                hasError={Boolean(formErrors.phone)}
+                ariaDescribedBy={formErrors.phone ? 'modal-lead-phone-error' : undefined}
                 disabled={isPending}
               />
               {formErrors.phone && (
-                <p className={styles.fieldError}>{formErrors.phone}</p>
+                <p id="modal-lead-phone-error" className={styles.fieldError}>
+                  {formErrors.phone}
+                </p>
               )}
             </div>
           </div>
@@ -478,52 +552,54 @@ export function NewLeadModal({
             </div>
           </div>
 
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="modal-lead-budget">
-                Budget Bracket
-              </label>
-              <select
-                id="modal-lead-budget"
-                className={styles.select}
-                value={budgetBracket}
-                onChange={(e) => setBudgetBracket(e.target.value)}
-                disabled={isPending}
-              >
-                {BUDGET_TIERS.map((tier) => (
-                  <option key={tier} value={tier}>
-                    {formatBudgetTierLabel(tier)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="modal-lead-expected-value">
-                <span>Valuation (₹ INR)</span>
-              </label>
-              <div className={styles.inputWithBadge}>
-                <input
-                  id="modal-lead-expected-value"
-                  type="number"
-                  min="0"
-                  step="50000"
-                  className={`${styles.input} ${formErrors.expectedValue ? styles.inputError : ''}`}
-                  value={expectedValue}
-                  onChange={(e) =>
-                    setExpectedValue(e.target.value === '' ? '' : Number(e.target.value))
-                  }
+          {canViewFinancials && (
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="modal-lead-budget">
+                  Budget Bracket
+                </label>
+                <select
+                  id="modal-lead-budget"
+                  className={styles.select}
+                  value={budgetBracket}
+                  onChange={(e) => setBudgetBracket(e.target.value)}
                   disabled={isPending}
-                />
-                <span className={styles.valuationBadge}>
-                  {formatDealValuation(Number(expectedValue) || 0)}
-                </span>
+                >
+                  {BUDGET_TIERS.map((tier) => (
+                    <option key={tier} value={tier}>
+                      {formatBudgetTierLabel(tier)}
+                    </option>
+                  ))}
+                </select>
               </div>
-              {formErrors.expectedValue && (
-                <p className={styles.fieldError}>{formErrors.expectedValue}</p>
-              )}
+
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="modal-lead-expected-value">
+                  <span>Valuation (₹ INR)</span>
+                </label>
+                <div className={styles.inputWithBadge}>
+                  <input
+                    id="modal-lead-expected-value"
+                    type="number"
+                    min="0"
+                    step="50000"
+                    className={`${styles.input} ${formErrors.expectedValue ? styles.inputError : ''}`}
+                    value={expectedValue}
+                    onChange={(e) =>
+                      setExpectedValue(e.target.value === '' ? '' : Number(e.target.value))
+                    }
+                    disabled={isPending}
+                  />
+                  <span className={styles.valuationBadge}>
+                    {formatDealValuation(Number(expectedValue) || 0)}
+                  </span>
+                </div>
+                {formErrors.expectedValue && (
+                  <p className={styles.fieldError}>{formErrors.expectedValue}</p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
@@ -577,6 +653,26 @@ export function NewLeadModal({
                 </select>
               )}
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="modal-lead-source">
+              Acquisition Source
+            </label>
+            <select
+              id="modal-lead-source"
+              className={styles.select}
+              value={leadSourceId}
+              onChange={(e) => setLeadSourceId(e.target.value)}
+              disabled={isPending}
+            >
+              <option value="">Default Source (Auto-Attributed)</option>
+              {sourceOptions.map((src) => (
+                <option key={src.id} value={src.id}>
+                  {src.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Section 3: Notes & Engagement Brief */}

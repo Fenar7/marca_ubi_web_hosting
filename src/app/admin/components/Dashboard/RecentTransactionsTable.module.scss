@@ -45,8 +45,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 14px;
   border-radius: 8px;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.09);
@@ -145,9 +145,9 @@
 }
 
 .iconBlue {
-  background: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #dbeafe;
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
 }
 
 .iconRose {
@@ -199,7 +199,7 @@
 }
 
 .positivePrefix {
-  color: #059669;
+  color: #047857;
   margin-right: 2px;
 }
 
@@ -212,7 +212,7 @@
   border-radius: 9999px;
   background: #ecfdf5;
   border: 1px solid #a7f3d0;
-  color: #059669;
+  color: #047857;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
@@ -236,7 +236,7 @@
   border-radius: 6px;
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: #64748b;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -296,8 +296,11 @@
 .popoverItem {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   width: 100%;
-  padding: 7px 10px;
+  min-height: 44px;
+  padding: 8px 10px;
   border-radius: 5px;
   background: transparent;
   border: none;
@@ -315,6 +318,14 @@
   }
 }
 
+.emptyTableState {
+  padding: 28px 16px;
+  text-align: center;
+  font-family: var(--font-graphik), sans-serif;
+  font-size: 0.82rem;
+  color: #525965;
+}
+
 .tableFooter {
   margin-top: 14px;
   padding-top: 12px;
@@ -327,14 +338,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   background: transparent;
   border: none;
-  color: #64748b;
+  color: #475569;
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.76rem;
   font-weight: 500;
   cursor: pointer;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
   transition: all 0.15s ease;
 

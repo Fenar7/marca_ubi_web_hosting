@@ -31,11 +31,11 @@
   color: var(--admin-text-muted, #696965);
 }
 
-.targetDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #059669;
+.targetRule {
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+  background-color: #047857;
 }
 
 .monthlyQuotaTag {
@@ -135,12 +135,11 @@
   margin-bottom: 14px;
 }
 
-.urgentPulseDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+.urgentRule {
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
   background-color: var(--admin-accent-brand, #ea002a);
-  box-shadow: 0 0 6px rgba(234, 0, 42, 0.6);
 }
 
 .queueHeading {
@@ -213,7 +212,7 @@
 }
 
 .intervalToday {
-  color: #d97706;
+  color: #b45309;
 }
 
 .urgentCardMiddle {
@@ -234,6 +233,9 @@
 }
 
 .dealOwner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.72rem;
   color: var(--admin-text-secondary, #454542);
 }
@@ -252,8 +254,8 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 28px;
-  padding: 0 8px;
+  min-height: 44px;
+  padding: 0 10px;
   background: var(--admin-canvas-bg, #f5f5f3);
   border: 1px solid var(--admin-border-subtle, #e7e7e4);
   border-radius: 6px;
@@ -263,11 +265,6 @@
   color: var(--admin-text-primary, #111111);
   cursor: pointer;
   transition: all 120ms ease;
-
-  @media (pointer: coarse), (max-width: 768px) {
-    min-height: 44px;
-    padding: 0 12px;
-  }
 
   &:hover {
     background: #ebebeb;
@@ -329,8 +326,8 @@
 }
 
 .pageBtn {
-  min-height: 28px;
-  min-width: 28px;
+  min-height: 44px;
+  min-width: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -339,11 +336,6 @@
   border-radius: 6px;
   font-size: 0.75rem;
   cursor: pointer;
-
-  @media (pointer: coarse), (max-width: 768px) {
-    min-height: 44px;
-    min-width: 44px;
-  }
 
   &:disabled {
     opacity: 0.4;

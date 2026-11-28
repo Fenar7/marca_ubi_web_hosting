@@ -7,14 +7,6 @@
  */
 
 import { z } from 'zod';
-import type {
-  CrmUserRole,
-  PreferredChannel,
-  ServiceCategory,
-  LeadPriority,
-  AssigneeOption,
-  LeadActionResult,
-} from '@/types/crm';
 
 /**
  * Service category enum list matching database check constraint `chk_leads_service_category`.
@@ -79,6 +71,12 @@ export const createManualLeadSchema = z
       .string()
       .trim()
       .max(255, { message: 'Website URL must not exceed 255 characters' })
+      .optional()
+      .or(z.literal('')),
+    industry: z
+      .string()
+      .trim()
+      .max(100, { message: 'Industry must not exceed 100 characters' })
       .optional()
       .or(z.literal('')),
     email: z
@@ -158,6 +156,12 @@ export const createManualLeadSchema = z
 export type CreateManualLeadInput = z.infer<typeof createManualLeadSchema>;
 
 export type { AssigneeOption, LeadActionResult } from '@/types/crm';
+
+export interface LeadSourceOption {
+  id: string;
+  name: string;
+  color_code: string | null;
+}
 
 /**
  * Omnichannel touchpoint activity types supported by the fast logger.

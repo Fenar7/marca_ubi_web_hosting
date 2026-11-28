@@ -2,9 +2,9 @@
 
 /**
  * @file AdminMobileDrawer.tsx
- * @description Focus-managed mobile navigation drawer for the Commercial Desk.
- * @architecture Provides full touch-optimized agency navigation, dynamic tab-level RBAC gating,
- *               focus containment, and live task badge synchronization matching AdminSidebar.
+ * @description Focus-managed mobile navigation drawer for the CRM workspace.
+ *              Provides touch-optimized navigation, tab-level RBAC gating,
+ *              focus containment, and live task badge synchronization matching AdminSidebar.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -113,7 +113,7 @@ export function AdminMobileDrawer({
       <aside
         ref={drawerRef}
         className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}
-        aria-label="Commercial Desk navigation"
+        aria-label="CRM navigation"
         aria-hidden={!isOpen}
         aria-modal={isOpen ? true : undefined}
         role="dialog"
@@ -128,7 +128,7 @@ export function AdminMobileDrawer({
               height={34}
               className={styles.brandLogo}
             />
-            <span className={styles.systemTag}>COMMERCIAL DESK</span>
+            <span className={styles.systemTag}>CRM WORKSPACE</span>
           </Link>
           <button
             ref={closeRef}

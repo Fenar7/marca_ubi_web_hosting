@@ -2,9 +2,9 @@
 
 /**
  * @file CommercialDealsTable.tsx
- * @description Master Commercial Deals & Opportunities Ledger for Marca Ubi Commercial Desk.
- *              Inspired by Amirul Islam's table archetype: features client initials avatars,
- *              Raycast monospace token badges, tabular currency values, and direct dossier navigation.
+ * @description Recent Deals & Opportunities Table for Marca Ubi CRM.
+ *              Displays client initials avatars, stage badges, tabular currency values,
+ *              and direct deal/lead navigation.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -70,8 +70,7 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
       <header className={styles.tableHeader}>
         <div className={styles.headerTitleBlock}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.dot} aria-hidden="true" />
-            <p className={styles.eyebrow}>Active Pipeline Ledger</p>
+            <p className={styles.eyebrow}>Active Pipeline</p>
           </div>
           <h2 className={styles.title} id="recent-opportunities-title">
             Recent Opportunities
@@ -149,7 +148,7 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                       </div>
                       <Link
                         className={styles.dealLink}
-                        href={`/admin/leads?id=${encodeURIComponent(deal.id)}`}
+                        href={`/admin/deals/${encodeURIComponent(deal.id)}`}
                       >
                         <strong className={styles.dealTitle}>
                           {deal.company || deal.name}
@@ -193,10 +192,10 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
                   {/* Action Link */}
                   <td className={styles.tdActions}>
                     <Link
-                      href={`/admin/leads?id=${encodeURIComponent(deal.id)}`}
+                      href={`/admin/leads/${deal.id}`}
                       className={styles.actionBtn}
-                      title={`Open dossier for ${deal.name}`}
-                      aria-label={`Open dossier for ${deal.name}`}
+                      title={`View deal for ${deal.name}`}
+                      aria-label={`View deal for ${deal.name}`}
                     >
                       <svg
                         width="13"
@@ -227,7 +226,10 @@ export const CommercialDealsTable: React.FC<CommercialDealsTableProps> = ({
         </span>
         <Link href="/admin/deals" className={styles.openDealsLink}>
           <span>Open all deals</span>
-          <span aria-hidden="true">→</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
         </Link>
       </footer>
     </section>

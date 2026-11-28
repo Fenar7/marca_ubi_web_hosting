@@ -150,14 +150,12 @@ export const FollowUpScheduler: React.FC<FollowUpSchedulerProps> = ({
 
       if (onSuccess && result.data?.nextFollowUp) {
         onSuccess(result.data.nextFollowUp);
-      }
-
-      if (onScheduled && result.data?.nextFollowUp) {
+      } else if (onScheduled && result.data?.nextFollowUp) {
         onScheduled(result.data.nextFollowUp);
       }
 
-      // Dispatch crm-toast event
-      if (typeof window !== 'undefined') {
+      // When a parent supplies onSuccess, that callback handles user-facing toast feedback
+      if (!onSuccess && typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('crm-toast', {
             detail: {

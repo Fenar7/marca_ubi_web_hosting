@@ -12,6 +12,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
+import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import type {
   LeadActionResult,
   LeadActivityType,
@@ -82,10 +84,10 @@ export async function logLeadActivityAction(
       };
     }
 
-    if (profile.status === 'suspended') {
+    if (profile.status !== 'active') {
       return {
         success: false,
-        error: 'Forbidden: Account has been suspended by an enterprise administrator.',
+        error: 'Forbidden: Account is inactive or suspended by an enterprise administrator.',
       };
     }
 
@@ -169,9 +171,11 @@ export async function logLeadActivityAction(
       console.warn(`[WARN] Failed to update lead updated_at timestamp: ${updateError.message}`);
     }
 
-    // 7. Revalidate leads workspace cache
+    // 7. Revalidate CRM workspace caches
+    revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/admin/leads/${leadId}`);
     revalidatePath(`/admin/deals/${leadId}`);
 
@@ -242,7 +246,7 @@ export async function getLeadActivitiesAction(
     // Verify caller profile & status defense
     const { data: callerProfile, error: callerProfileError } = await supabase
       .from('profiles')
-      .select('id, status')
+      .select('id, role, status, feature_permissions')
       .eq('id', user.id)
       .single();
 
@@ -253,33 +257,37 @@ export async function getLeadActivitiesAction(
       };
     }
 
-    if (callerProfile.status === 'suspended') {
+    if (callerProfile.status !== 'active') {
       return {
         success: false,
-        error: 'Forbidden: Account has been suspended by an enterprise administrator.',
+        error: 'Forbidden: Account is inactive or has been suspended by an enterprise administrator.',
       };
     }
 
-    // Fetch activities joined with profiles
-    const { data: rawActivities, error: activitiesError } = await supabase
-      .from('lead_activities')
-      .select(`
-        id,
-        lead_id,
-        actor_id,
-        activity_type,
-        description,
-        metadata,
-        created_at,
-        profiles:profiles!lead_activities_actor_id_fkey (
+    const callerRole = (callerProfile.role as CrmUserRole) || 'viewer';
+    const canViewFinancials = dashboardFeature(
+      callerRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
+
+    // Fetch chronological activities and resolve actor metadata via crm_team_directory
+    const [{ data: rawActivities, error: activitiesError }, directoryRoster] = await Promise.all([
+      supabase
+        .from('lead_activities')
+        .select(`
           id,
-          full_name,
-          role,
-          avatar_url
-        )
-      `)
-      .eq('lead_id', leadId)
-      .order('created_at', { ascending: false });
+          lead_id,
+          actor_id,
+          activity_type,
+          description,
+          metadata,
+          created_at
+        `)
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false }),
+      getCrmDirectoryList(supabase),
+    ]);
 
     if (activitiesError) {
       return {
@@ -288,30 +296,79 @@ export async function getLeadActivitiesAction(
       };
     }
 
+    const rosterById = new Map(directoryRoster.map((member) => [member.id, member]));
+    const missingActorIds = Array.from(
+      new Set((rawActivities || []).map((a) => a.actor_id).filter(Boolean) as string[])
+    ).filter((id) => !rosterById.has(id));
+    const fallbackNamesById =
+      missingActorIds.length > 0
+        ? await getCrmDirectoryMap(supabase, missingActorIds)
+        : new Map<string, string>();
+
+    const NORMALIZED_FINANCIAL_KEYS = new Set([
+      'expectedvalue',
+      'finalrevenue',
+      'budget',
+      'budgetamount',
+      'budgetbracket',
+      'estimatedbudget',
+      'contractvalue',
+    ]);
+
+    const isFinancialKey = (key: string): boolean =>
+      NORMALIZED_FINANCIAL_KEYS.has(key.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+    const redactMonetaryText = (text: string): string =>
+      text
+        .replace(/(?:₹|INR|\$)\s?[\d,]+(?:\.\d+)?(?:\s?[kKlLmMbB])?/g, '[Restricted]')
+        .replace(/(\bexpected valuation of\b|\bcontract value of\b|\bbudget(?: bracket)? of\b)[^.\n]+/gi, '$1 [Restricted]');
+
+    const redactUnknownValue = (val: unknown): unknown => {
+      if (val === null || val === undefined) return val;
+      if (typeof val === 'string') return redactMonetaryText(val);
+      if (typeof val !== 'object') return val;
+      if (Array.isArray(val)) return val.map((item) => redactUnknownValue(item));
+      const nested: Record<string, unknown> = {};
+      for (const [ck, cv] of Object.entries(val as Record<string, unknown>)) {
+        nested[ck] = isFinancialKey(ck) ? '[Restricted]' : redactUnknownValue(cv);
+      }
+      return nested;
+    };
+
+    const redactActivityMetadata = (raw: unknown): Record<string, unknown> => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+        if (isFinancialKey(k)) continue;
+        out[k] = redactUnknownValue(v);
+      }
+      return out;
+    };
+
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
-      const actProfile = act.profiles as {
-        id?: string;
-        full_name?: string;
-        role?: CrmUserRole;
-        avatar_url?: string | null;
-      } | null;
+      const actorMeta = act.actor_id ? rosterById.get(act.actor_id) : undefined;
+      const fallbackName = act.actor_id ? fallbackNamesById.get(act.actor_id) : undefined;
+      const resolvedName = actorMeta?.full_name || fallbackName || 'System Staff';
+      const resolvedRole = (actorMeta?.role as CrmUserRole) || 'viewer';
 
       return {
         id: act.id,
         lead_id: act.lead_id,
         actor_id: act.actor_id,
-        actor_name: actProfile?.full_name || 'System Staff',
-        actor_role: actProfile?.role || 'viewer',
+        actor_name: resolvedName,
+        actor_role: resolvedRole,
         activity_type: act.activity_type as LeadActivityType,
-        description: act.description,
-        metadata: (act.metadata as Record<string, unknown>) || {},
+        description: canViewFinancials ? act.description : redactMonetaryText(act.description),
+        metadata: canViewFinancials
+          ? (act.metadata as Record<string, unknown>) || {}
+          : redactActivityMetadata(act.metadata),
         created_at: act.created_at,
-        actor: actProfile
+        actor: act.actor_id
           ? {
-              id: actProfile.id || act.actor_id || '',
-              full_name: actProfile.full_name || 'System Staff',
-              role: (actProfile.role as CrmUserRole) || 'viewer',
-              avatar_url: actProfile.avatar_url || null,
+              id: act.actor_id,
+              full_name: resolvedName,
+              role: resolvedRole,
+              avatar_url: actorMeta?.avatar_url || null,
               email: null,
             }
           : null,

@@ -17,6 +17,7 @@ interface DealsKanbanBoardProps {
   userRole?: string;
   movingDealId: string | null;
   canViewFinancials?: boolean;
+  laneTotals?: Record<string, { count: number; value: number | null; valuedCount?: number }>;
   onMove: (deal: HydratedDealItem, stage: FunnelStatusItem) => void;
 }
 
@@ -27,6 +28,7 @@ export function DealsKanbanBoard({
   userRole,
   movingDealId,
   canViewFinancials = true,
+  laneTotals,
   onMove,
 }: DealsKanbanBoardProps) {
   const id = useId();
@@ -136,7 +138,7 @@ export function DealsKanbanBoard({
   return (
     <section className={styles.board} aria-label="Deals board">
       <div className={styles.navigator}>
-        <p>Stage totals reflect this result page.</p>
+        <p>{laneTotals ? 'Lane headers reflect the full matching pipeline.' : 'Stage totals reflect this result page.'}</p>
         <div className={styles.laneNavigation}>
           <button
             type="button"
@@ -156,7 +158,7 @@ export function DealsKanbanBoard({
             >
               {lanes.map((lane) => (
                 <option key={lane.key} value={lane.key}>
-                  {lane.name} ({lane.cards.length})
+                  {lane.name} ({laneTotals?.[lane.key]?.count ?? lane.cards.length})
                 </option>
               ))}
             </select>
@@ -185,6 +187,7 @@ export function DealsKanbanBoard({
             className={styles.lane}
             data-active={active === lane.key}
             data-drop={dropStage === lane.key}
+            data-bucket={lane.stage?.bucket ?? "open"}
             aria-labelledby={`${id}-${lane.key}-title`}
             onDragOver={(event) => {
               if (dropCandidate(lane.stage)) {
@@ -213,18 +216,34 @@ export function DealsKanbanBoard({
               <div>
                 <DealIcon name="stage" />
                 <h2 id={`${id}-${lane.key}-title`}>{lane.name}</h2>
-                <span className={styles.count}>{lane.cards.length}</span>
+                <span className={styles.count}>
+                  {laneTotals?.[lane.key]?.count ?? lane.cards.length}
+                </span>
               </div>
               {canViewFinancials && (
                 <p>
-                  {lane.cards.some((deal) => deal.expected_value === null)
-                    ? "Value unavailable"
-                    : formatCrmCurrency(
-                        lane.cards.reduce(
-                          (sum, deal) => sum + (deal.expected_value ?? 0),
+                  {laneTotals?.[lane.key]
+                    ? laneTotals[lane.key].value === null
+                      ? "Value unavailable"
+                      : laneTotals[lane.key].valuedCount !== undefined &&
+                          laneTotals[lane.key].valuedCount! < laneTotals[lane.key].count
+                        ? `${formatCrmCurrency(laneTotals[lane.key].value!)} · ${laneTotals[lane.key].valuedCount} valued`
+                        : formatCrmCurrency(laneTotals[lane.key].value!)
+                    : (() => {
+                        const valuedDeals = lane.cards.filter(
+                          (deal) => deal.expected_value !== null,
+                        );
+                        if (lane.cards.length > 0 && valuedDeals.length === 0) {
+                          return "Value unavailable";
+                        }
+                        const sum = valuedDeals.reduce(
+                          (acc, deal) => acc + (deal.expected_value ?? 0),
                           0,
-                        ),
-                      )}
+                        );
+                        return valuedDeals.length < lane.cards.length
+                          ? `${formatCrmCurrency(sum)} · ${valuedDeals.length} valued`
+                          : formatCrmCurrency(sum);
+                      })()}
                 </p>
               )}
             </header>

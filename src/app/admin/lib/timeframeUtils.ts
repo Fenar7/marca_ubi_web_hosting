@@ -24,7 +24,9 @@ export interface DynamicRevenueSplinePoint {
   fullPeriod: string;
   cashVal: number;
   cashFormatted: string;
+  cashCount?: number;
   intakeVal?: number;
+  intakeCount?: number;
 }
 
 export interface IntakeEvent {
@@ -74,8 +76,8 @@ export function resolveTimeframeBounds(inputSlug?: string | null, referenceDate:
     case '90d': {
       const days = slug === '7d' ? 7 : slug === '30d' ? 30 : 90;
       currentStart = new Date(currentEnd.getTime() - days * 86400000);
-      priorEnd = new Date(currentStart);
-      priorStart = new Date(priorEnd.getTime() - days * 86400000);
+      priorEnd = new Date(currentStart.getTime() - 1);
+      priorStart = new Date(currentStart.getTime() - days * 86400000);
       intervalType = slug === '7d' ? 'daily' : slug === '30d' ? 'weekly' : 'monthly';
       break;
     }
@@ -117,13 +119,16 @@ export function aggregateTimeframeRevenue(
   if (!Number.isFinite(start) || !Number.isFinite(end) || span <= 0) return [];
   const intervals = getRevenueIntervals(slug, bounds.currentStart, bounds.currentEnd);
   const totals = intervals.map(() => 0);
+  const cashCounts = intervals.map(() => 0);
   const intakeTotals = intervals.map(() => 0);
+  const intakeCounts = intervals.map(() => 0);
 
   for (const event of events) {
     const timestamp = Date.parse(event.convertedAt);
     if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end || !Number.isFinite(event.amount)) continue;
     const index = Math.min(intervals.length - 1, Math.floor(((timestamp - start) / span) * intervals.length));
     totals[index] += event.amount;
+    cashCounts[index] += 1;
   }
 
   if (intakeEvents && intakeEvents.length > 0) {
@@ -132,6 +137,7 @@ export function aggregateTimeframeRevenue(
       if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end || !Number.isFinite(event.amount)) continue;
       const index = Math.min(intervals.length - 1, Math.floor(((timestamp - start) / span) * intervals.length));
       intakeTotals[index] += event.amount;
+      intakeCounts[index] += 1;
     }
   }
 
@@ -144,7 +150,9 @@ export function aggregateTimeframeRevenue(
       fullPeriod: interval.fullLabel,
       cashVal: amount,
       cashFormatted: currency.format(amount),
+      cashCount: cashCounts[index],
       intakeVal: intakeAmount,
+      intakeCount: intakeCounts[index],
     };
   });
 }
@@ -154,10 +162,17 @@ function getRevenueIntervals(slug: TimeframeSlug, start: Date, end: Date): { lab
   const startMs = start.getTime();
   const span = end.getTime() - startMs;
   const format = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const isRollingWindow = slug === '7d' || slug === '30d' || slug === '90d';
   return Array.from({ length: count }, (_, index) => {
     const intervalStart = new Date(startMs + (span * index) / count);
     const intervalEnd = new Date(startMs + (span * (index + 1)) / count);
-    return { label: format.format(intervalStart), fullLabel: format.format(intervalStart) + ' – ' + format.format(intervalEnd) };
+    const startLabel = format.format(intervalStart);
+    const endLabel = format.format(intervalEnd);
+    const label =
+      isRollingWindow && index === count - 1 && startLabel !== endLabel
+        ? `${startLabel} – ${endLabel}`
+        : startLabel;
+    return { label, fullLabel: `${startLabel} – ${endLabel}` };
   });
 }
 
@@ -203,128 +218,40 @@ export interface SpendingTimeframeData {
   categories: SpendingCategoryData[];
 }
 
-/** Harmonic cadence multipliers ensuring mathematical continuity for all card timeframes */
+/**
+ * Returns zeroed baseline points for a card cadence when no database events exist,
+ * ensuring zero synthetic valuation multipliers or fabricated revenue figures.
+ */
 export function computeSplinePointsForCadence(
-  cadence: CardTimeframe,
-  baseTotal: number,
-  referenceYear = 2026
+  _cadence: CardTimeframe,
+  baseTotal: number
 ): { points: SplineDataPoint[]; totalValue: number; growthPercentage: number } {
-  const safeTotal = baseTotal > 0 ? baseTotal : 6540000;
-
-  switch (cadence) {
-    case 'this_week': {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const weights = [0.10, 0.14, 0.22, 0.24, 0.18, 0.08, 0.04];
-      const scaledTotal = Math.round(safeTotal * 0.25);
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 2.8,
-        points: days.map((d, i) => ({
-          month: d,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${d}, Nov ${17 + i}`,
-        })),
-      };
-    }
-    case 'this_quarter': {
-      const months = ['Oct', 'Nov', 'Dec'];
-      const weights = [0.28, 0.38, 0.34];
-      const scaledTotal = Math.round(safeTotal * 2.4);
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 4.2,
-        points: months.map((m, i) => ({
-          month: m,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${m} ${referenceYear}`,
-        })),
-      };
-    }
-    case 'this_year': {
-      const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const weights = [0.05, 0.06, 0.08, 0.09, 0.11, 0.08, 0.07, 0.09, 0.10, 0.12, 0.10, 0.05];
-      const scaledTotal = Math.round(safeTotal * 8.5);
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 12.4,
-        points: allMonths.map((m, i) => ({
-          month: m,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${m} ${referenceYear}`,
-        })),
-      };
-    }
-    case 'this_month':
-    default: {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-      const weights = [0.08, 0.14, 0.11, 0.18, 0.22, 0.14];
-      const scaledTotal = safeTotal;
-      return {
-        totalValue: scaledTotal,
-        growthPercentage: 1.5,
-        points: months.map((m, i) => ({
-          month: m,
-          year: referenceYear,
-          value: Math.round(scaledTotal * weights[i]),
-          fullPeriod: `${m} ${referenceYear}`,
-        })),
-      };
-    }
-  }
+  const safeTotal = baseTotal > 0 ? baseTotal : 0;
+  return {
+    totalValue: safeTotal,
+    growthPercentage: 0,
+    points: [],
+  };
 }
 
-/** Computes spending categorical allocations restoring the vibrant multi-tone blue palette */
+/** Computes spending categorical allocations using real pipeline totals without synthetic multipliers */
 export function computeSpendingBreakdownForCadence(
-  cadence: CardTimeframe,
+  _cadence: CardTimeframe,
   baseTotal: number,
-  baseDeals = 39
+  baseDeals = 0
 ): SpendingTimeframeData {
-  const safeTotal = baseTotal > 0 ? baseTotal : 6540000;
-  const safeDeals = baseDeals > 0 ? baseDeals : 39;
-
-  let multiplier = 1;
-  let dealCount = safeDeals;
-
-  if (cadence === 'this_week') {
-    multiplier = 0.25;
-    dealCount = Math.max(4, Math.round(safeDeals * 0.22));
-  } else if (cadence === 'this_quarter') {
-    multiplier = 2.4;
-    dealCount = Math.round(safeDeals * 2.2);
-  } else if (cadence === 'this_year') {
-    multiplier = 8.5;
-    dealCount = Math.round(safeDeals * 6.5);
-  }
-
-  const scaledTotal = Math.round(safeTotal * multiplier);
-  const webVal = Math.round(scaledTotal * 0.44);
-  const advisoryVal = Math.round(scaledTotal * 0.31);
-  const othersVal = Math.max(0, scaledTotal - webVal - advisoryVal);
+  const safeTotal = baseTotal > 0 ? Math.round(baseTotal) : 0;
+  const safeDeals = baseDeals > 0 ? Math.round(baseDeals) : 0;
 
   return {
-    totalValue: scaledTotal,
-    dealCount,
+    totalValue: safeTotal,
+    dealCount: safeDeals,
     categories: [
       {
-        name: 'Web & Digital',
-        value: webVal,
-        color: '#2563eb',
-        gradient: 'linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)',
-      },
-      {
-        name: 'Full-Suite Advisory',
-        value: advisoryVal,
-        color: '#60a5fa',
-        gradient: 'linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)',
-      },
-      {
-        name: 'Others',
-        value: othersVal,
-        color: '#cbd5e1',
-        gradient: 'linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)',
+        name: 'No Allocation Recorded',
+        value: safeTotal,
+        color: '#f97316',
+        gradient: 'linear-gradient(90deg, #ea580c 0%, #fb923c 100%)',
       },
     ],
   };

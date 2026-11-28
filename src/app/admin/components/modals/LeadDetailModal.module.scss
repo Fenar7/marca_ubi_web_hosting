@@ -2,7 +2,7 @@
  * @file LeadDetailModal.module.scss
  * @description Accordion PE Advisory & Sypher Minimalist Light Canvas styling tokens for the
  *              Centered Client 360 Lead Dossier Modal.
- * @tokens #ffffff, #f7f8fa, #1f242f, #525965, #eefb87, hairline #e2e5ea, tabular-nums
+ * @tokens #ffffff, #f7f8fa, #1f242f, #525965, #ea002a, hairline #e2e5ea, tabular-nums
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -266,8 +266,8 @@
   }
 
   &.stageMenuItemActive {
-    background: #eefb87;
-    color: #1f242f;
+    background: #fff0f2;
+    color: #9c001e;
     font-weight: 600;
   }
 }
@@ -587,9 +587,9 @@
 }
 
 .saveNotesBtn {
-  background: #eefb87;
-  color: #1f242f;
-  border: 1px solid #1f242f;
+  background: #ea002a;
+  color: #ffffff;
+  border: 1px solid #ea002a;
   font-family: var(--font-admin-btn, inherit);
   font-size: 0.76rem;
   font-weight: 700;
@@ -602,7 +602,7 @@
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #e6f570;
+    background: #c40023;
     transform: translateY(-1px);
   }
 
@@ -746,9 +746,9 @@
   }
 
   &.radioLabelActive {
-    background: #eefb87;
-    border-color: #1f242f;
-    color: #1f242f;
+    background: #fff0f2;
+    border-color: #ea002a;
+    color: #9c001e;
     font-weight: 600;
   }
 }
@@ -770,9 +770,9 @@
 
 .logTouchpointBtn {
   align-self: flex-start;
-  background: #eefb87;
-  color: #1f242f;
-  border: 1px solid #1f242f;
+  background: #ea002a;
+  color: #ffffff;
+  border: 1px solid #ea002a;
   font-family: var(--font-admin-btn, inherit);
   font-size: 0.82rem;
   font-weight: 700;
@@ -785,7 +785,7 @@
   transition: background-color 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #e6f570;
+    background: #c40023;
   }
 
   &:disabled {

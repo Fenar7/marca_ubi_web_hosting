@@ -17,6 +17,7 @@ import {
   type CrmUserRole,
   ROLE_DEFAULT_TABS,
 } from '@/types/crm';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import {
   getCrmDirectoryList,
   getCrmDirectoryMap,
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 interface AdminWorksPageProps {
-  searchParams: Promise<{ sample?: string | string[] }>;
+  searchParams: Promise<{ sample?: string | string[]; workId?: string | string[] }>;
 }
 
 /** Sample mode is authenticated, development-only and read-only. Real projects keep their existing access checks. */
@@ -52,7 +53,7 @@ export default async function AdminWorksPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, status, allowed_tabs')
+    .select('role, status, allowed_tabs, feature_permissions')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -80,9 +81,13 @@ export default async function AdminWorksPage({
       : Boolean(ROLE_DEFAULT_TABS[role]?.deals));
   const sampleAvailable =
     process.env.NODE_ENV === 'development' && role === 'admin';
+  const resolvedWorksParams = await searchParams;
   const samplePreference = sampleAvailable
-    ? (await searchParams).sample
+    ? resolvedWorksParams.sample
     : undefined;
+  const rawWorkId = typeof resolvedWorksParams.workId === 'string' ? resolvedWorksParams.workId.trim() : undefined;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const initialWorkId = rawWorkId && uuidRegex.test(rawWorkId) ? rawWorkId : undefined;
   const renderHeader = (showPreviewLink: boolean) => (
     <header className={styles.header}>
       <div>
@@ -115,34 +120,39 @@ export default async function AdminWorksPage({
   }
   if (samplePreference === '1') return renderSamplePortfolio();
 
-  // Query active client works with decoupled directory resolution
+  const canViewFinancials = dashboardFeature(
+    role,
+    profile.feature_permissions,
+    'can_view_financials',
+  );
+
+  // Query active client works with decoupled directory resolution (conditional financial column)
+  const worksSelect = [
+    'id',
+    'project_code',
+    'lead_id',
+    'client_name',
+    'company',
+    'service_scope',
+    ...(canViewFinancials ? ['contract_value'] : []),
+    'delivery_stage',
+    'health_status',
+    'creative_lead_id',
+    'tech_lead_id',
+    'milestones',
+    'target_delivery_date',
+    'kickoff_date',
+    'created_at',
+    'updated_at',
+  ].join(',\n      ');
+
   const {
     data: rawWorks,
     error: queryError,
     count,
   } = await supabase
     .from('client_works')
-    .select(
-      `
-      id,
-      project_code,
-      lead_id,
-      client_name,
-      company,
-      service_scope,
-      contract_value,
-      delivery_stage,
-      health_status,
-      creative_lead_id,
-      tech_lead_id,
-      milestones,
-      target_delivery_date,
-      kickoff_date,
-      created_at,
-      updated_at
-    `,
-      { count: 'exact' },
-    )
+    .select(worksSelect, { count: 'exact' })
     .order('created_at', { ascending: false });
 
   const error =
@@ -207,7 +217,7 @@ export default async function AdminWorksPage({
           typeof item.service_scope === 'string' && item.service_scope.trim()
             ? item.service_scope
             : 'Not recorded',
-        contract_value: Number(item.contract_value) || 0,
+        contract_value: canViewFinancials ? Number(item.contract_value) || 0 : 0,
         delivery_stage:
           (item.delivery_stage as ClientWorkItem['delivery_stage']) ||
           'kickoff',
@@ -256,9 +266,11 @@ export default async function AdminWorksPage({
       <WorksWorkspaceClient
         key="live"
         initialWorks={clientWorks}
+        initialWorkId={initialWorkId}
         userRole={role}
         userId={user.id}
         canOpenDeals={canOpenDeals}
+        canViewFinancials={canViewFinancials}
         profiles={teamProfiles}
         directoryAvailable={directoryAvailable}
       />

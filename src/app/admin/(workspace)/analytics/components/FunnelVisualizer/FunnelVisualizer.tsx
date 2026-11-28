@@ -2,6 +2,9 @@ import React from 'react';
 import Link from 'next/link';
 import styles from './FunnelVisualizer.module.scss';
 
+/**
+ * Stage progression metrics returned by `get_funnel_conversion_dropoff`.
+ */
 export interface FunnelStageItem {
   stageId: string;
   stageName: string;
@@ -17,11 +20,18 @@ export interface FunnelStageItem {
   overallConversionRate: number;
 }
 
+/**
+ * Props for the stage conversion funnel breakdown.
+ */
 export interface FunnelVisualizerProps {
   stages: FunnelStageItem[];
   totalIntake: number;
 }
 
+/**
+ * Resolves semantic bar and swatch color by stage bucket while preserving
+ * non-white custom stage colors for open pipeline steps.
+ */
 function resolveStageBarColor(stage: FunnelStageItem): string {
   if (stage.bucket === 'converted') return '#059669';
   if (stage.bucket === 'potential') return '#d97706';
@@ -29,6 +39,10 @@ function resolveStageBarColor(stage: FunnelStageItem): string {
   return stage.colorCode && stage.colorCode !== '#ffffff' ? stage.colorCode : '#4338ca';
 }
 
+/**
+ * Renders the stage-by-stage conversion funnel with proportional progress bars,
+ * 10px rounded-square stage swatches, and direct drill-down links to `/admin/leads`.
+ */
 export const FunnelVisualizer: React.FC<FunnelVisualizerProps> = ({ stages, totalIntake }) => {
   const maxStageVolume = Math.max(
     1,
@@ -41,14 +55,14 @@ export const FunnelVisualizer: React.FC<FunnelVisualizerProps> = ({ stages, tota
       <div className={styles.sectionHeader}>
         <div>
           <h2 id="funnel-heading" className={styles.sectionTitle}>
-            Commercial Conversion Funnel
+            Stage Conversion Funnel
           </h2>
           <p className={styles.sectionSubtitle}>
-            Stage-by-stage progression across active opportunities and closed contracts.
+            How deals progress from initial lead to closed won.
           </p>
         </div>
         <div className={styles.intakeReadout}>
-          Intake Baseline: <strong>{totalIntake.toLocaleString('en-IN')}</strong> records
+          Total leads: <strong>{totalIntake.toLocaleString('en-IN')}</strong>
         </div>
       </div>
 
@@ -79,9 +93,13 @@ export const FunnelVisualizer: React.FC<FunnelVisualizerProps> = ({ stages, tota
                 href={`/admin/leads?stage=${encodeURIComponent(stage.stageId)}`}
                 className={`${styles.stageRow} ${isWon ? styles.wonStageRow : ''}`}
                 role="listitem"
-                style={{ borderLeftColor: barColor }}
               >
                 <div className={styles.stageNameCell}>
+                  <span
+                    className={styles.stageSwatch}
+                    style={{ backgroundColor: barColor }}
+                    aria-hidden="true"
+                  />
                   <span className={styles.stageName}>{stage.stageName}</span>
                   {isWon && <span className={styles.wonTag}>Won</span>}
                 </div>

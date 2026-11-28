@@ -19,7 +19,7 @@ export interface UpcomingSlaItem {
   id: string;
   title: string;
   dateStr: string;
-  amount: number;
+  amount: number | null;
   status: string;
   badgeType: "scheduled" | "today" | "overdue";
   monogram: string;
@@ -29,72 +29,42 @@ export interface UpcomingSlaItem {
 export interface UpcomingSlaCardProps {
   records?: OverviewRecord[];
   financials?: boolean;
+  canCreate?: boolean;
+  canTasks?: boolean;
   onOpenRecord?: (record: OverviewRecord) => void;
 }
-
-const DEFAULT_ITEMS: UpcomingSlaItem[] = [
-  {
-    id: "sla-1",
-    title: "Nexus Enterprise Advisory",
-    dateStr: "June 28, 2026",
-    amount: 2500000,
-    status: "Due Today",
-    badgeType: "today",
-    monogram: "N",
-    colorType: "red",
-  },
-  {
-    id: "sla-2",
-    title: "Aura Health Global",
-    dateStr: "June 30, 2025",
-    amount: 1850000,
-    status: "Scheduled",
-    badgeType: "scheduled",
-    monogram: "A",
-    colorType: "green",
-  },
-  {
-    id: "sla-3",
-    title: "Vertex AI Systems",
-    dateStr: "July 4, 2025",
-    amount: 1200000,
-    status: "Scheduled",
-    badgeType: "scheduled",
-    monogram: "V",
-    colorType: "coral",
-  },
-  {
-    id: "sla-4",
-    title: "Apex Strategic Systems",
-    dateStr: "July 15, 2025",
-    amount: 1650000,
-    status: "Scheduled",
-    badgeType: "scheduled",
-    monogram: "S",
-    colorType: "blue",
-  },
-];
 
 export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
   records,
   financials = true,
+  canCreate = false,
+  canTasks = false,
   onOpenRecord,
 }) => {
   const router = useRouter();
-  const displayItems: UpcomingSlaItem[] = React.useMemo(() => {
+  const [referenceNowMs] = React.useState<number>(() => Date.now());
+
+  const { displayItems, scheduledTotalCount, slaPercentage } = React.useMemo(() => {
     if (!records || records.length === 0) {
-      return DEFAULT_ITEMS;
+      return { displayItems: [], scheduledTotalCount: 0, slaPercentage: null as number | null };
     }
 
-    const colors: ("red" | "green" | "coral" | "blue")[] = ["red", "green", "coral", "blue"];
-    const now = Date.now();
+    const withDue = records
+      .filter((r) => Boolean(r.due) && r.stageBucket !== "converted" && r.stageBucket !== "lost")
+      .sort((a, b) => Date.parse(a.due!) - Date.parse(b.due!));
 
-    return records.slice(0, 4).map((rec, idx) => {
-      const d = rec.due ? new Date(rec.due) : new Date(rec.createdAt);
+    const colors: ("red" | "green" | "coral" | "blue")[] = ["red", "green", "coral", "blue"];
+    let onTimeCount = 0;
+
+    const items = withDue.map((rec, idx) => {
+      const d = new Date(rec.due!);
       const dueTime = d.getTime();
-      const isOverdue = Number.isFinite(dueTime) && dueTime < now;
-      const isToday = Number.isFinite(dueTime) && !isOverdue && dueTime - now < 86400000;
-      const daysDiff = Math.abs(Math.round((now - dueTime) / 86400000));
+      const isOverdue = Number.isFinite(dueTime) && dueTime < referenceNowMs;
+      const isToday =
+        Number.isFinite(dueTime) && !isOverdue && dueTime - referenceNowMs < 86400000;
+      const daysDiff = Math.abs(Math.round((referenceNowMs - dueTime) / 86400000));
+
+      if (!isOverdue) onTimeCount++;
 
       const badgeType: "scheduled" | "today" | "overdue" = isOverdue
         ? "overdue"
@@ -109,23 +79,31 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
         : "Scheduled";
 
       const dateFormatted = d.toLocaleDateString("en-US", {
-        month: "long",
+        month: "short",
         day: "numeric",
         year: "numeric",
+        timeZone: "UTC",
       });
 
       return {
         id: rec.id,
-        title: rec.name || "Enterprise Engagement",
+        title: rec.company || rec.name || "Client Engagement",
         dateStr: dateFormatted,
-        amount: rec.expectedValue ?? 1500000,
+        amount: typeof rec.expectedValue === "number" ? rec.expectedValue : null,
         status: statusStr,
         badgeType,
-        monogram: (rec.name ? rec.name.charAt(0) : "N").toUpperCase(),
+        monogram: (rec.name ? rec.name.charAt(0) : "M").toUpperCase(),
         colorType: colors[idx % colors.length],
       };
     });
-  }, [records]);
+
+    const pct = withDue.length > 0 ? Math.round((onTimeCount / withDue.length) * 100) : null;
+    return {
+      displayItems: items.slice(0, 4),
+      scheduledTotalCount: withDue.length,
+      slaPercentage: pct,
+    };
+  }, [records, referenceNowMs]);
 
   return (
     <article
@@ -136,26 +114,33 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
         <div className={styles.titleCluster}>
           <h2 className={styles.title}>Upcoming Milestones & SLA</h2>
           <p className={styles.subtitle}>
-            {displayItems.length} Active Commitments • 98% On-Time SLA
+            {scheduledTotalCount} Scheduled Commitment{scheduledTotalCount === 1 ? "" : "s"}
+            {slaPercentage !== null ? ` · ${slaPercentage}% On-Time SLA` : ""}
           </p>
         </div>
 
-        <button
-          type="button"
-          className={styles.addButton}
-          onClick={() => {
-            if (typeof window !== "undefined") {
-              window.dispatchEvent(new CustomEvent("open-new-lead-modal"));
-            }
-          }}
-          aria-label="Add new milestone or SLA commitment"
-        >
-          +
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            className={styles.addButton}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("open-new-lead-modal"));
+              }
+            }}
+            aria-label="Add new milestone or SLA commitment"
+          >
+            +
+          </button>
+        )}
       </header>
 
       <div className={styles.itemsList}>
-        {displayItems.map((item) => {
+        {displayItems.length === 0 ? (
+          <div className={styles.emptyItemsState} role="status">
+            No upcoming follow-ups or SLA commitments scheduled.
+          </div>
+        ) : displayItems.map((item) => {
           const avatarClass =
             item.colorType === "green"
               ? styles.avatarGreen
@@ -204,14 +189,18 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
                   </div>
                 </div>
 
-                <span className={styles.chevronIcon} aria-hidden="true">
-                  &gt;
-                </span>
+                <svg className={styles.chevronIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </div>
 
               <div className={styles.itemBottomRow}>
                 <span className={styles.amount}>
-                  {financials ? formatCrmCurrency(item.amount) : "Confidential"}
+                  {!financials
+                    ? "Confidential"
+                    : item.amount !== null
+                    ? formatCrmCurrency(item.amount)
+                    : "Unset"}
                 </span>
 
                 <span className={`${styles.urgencyBadge} ${badgeClass}`}>
@@ -223,14 +212,19 @@ export const UpcomingSlaCard: React.FC<UpcomingSlaCardProps> = ({
         })}
       </div>
 
-      <button
-        type="button"
-        className={styles.viewAllButton}
-        onClick={() => router.push("/admin/tasks?queue=upcoming")}
-      >
-        <span>View All Milestone Commitments</span>
-        <span className={styles.btnArrow} aria-hidden="true">↗</span>
-      </button>
+      {canTasks && (
+        <button
+          type="button"
+          className={styles.viewAllButton}
+          onClick={() => router.push("/admin/tasks?queue=upcoming")}
+        >
+          <span>View All Milestone Commitments</span>
+          <svg className={styles.btnArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+            <line x1="7" y1="17" x2="17" y2="7" />
+            <polyline points="7 7 17 7 17 17" />
+          </svg>
+        </button>
+      )}
     </article>
   );
 };

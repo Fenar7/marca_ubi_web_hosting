@@ -16,8 +16,6 @@ import type { LeadActionResult, LeadPriority, FunnelBucket } from '@/types/crm';
 import {
   inlineStatusSchema,
   inlinePrioritySchema,
-  type InlineStatusInput,
-  type InlinePriorityInput,
   type InlineMutationResultPayload,
 } from '@/app/lib/lead-inline-schemas';
 
@@ -98,11 +96,13 @@ export async function updateLeadStatusInlineAction(
       };
     }
 
-    // Enforce post-conversion record locking: non-admins cannot mutate converted deals
-    if (existingLead.converted_at && profile.role !== 'admin') {
+    // Enforce post-conversion record locking: converted deals require explicit Unlock & Revert workflow
+    const existingBucket =
+      (existingLead.funnel_statuses as { bucket?: string } | null)?.bucket ?? null;
+    if (existingLead.converted_at || existingBucket === 'converted') {
       return {
         success: false,
-        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
+        error: 'Forbidden: Converted deals are locked. Use "Unlock & Revert" if stage rollback is required.',
       };
     }
 
@@ -157,13 +157,19 @@ export async function updateLeadStatusInlineAction(
     }
 
     // 5. Execute atomic lead record status mutation
+    // Clear On-Hold revisit_date when moving into an active funnel stage.
     const nowIso = new Date().toISOString();
+    const updatePayload: Record<string, unknown> = {
+      status_id: targetStatus.id,
+      updated_at: nowIso,
+    };
+    if (targetStatus.name !== 'On Hold') {
+      updatePayload.revisit_date = null;
+    }
+
     const { error: updateError } = await supabase
       .from('leads')
-      .update({
-        status_id: targetStatus.id,
-        updated_at: nowIso,
-      })
+      .update(updatePayload)
       .eq('id', leadId);
 
     if (updateError) {
@@ -196,8 +202,10 @@ export async function updateLeadStatusInlineAction(
       console.warn('[AUDIT_LEDGER] Activity log advisory:', activityError.message);
     }
 
+    revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/admin/leads/${leadId}`);
     revalidatePath(`/admin/deals/${leadId}`);
 
@@ -284,7 +292,7 @@ export async function updateLeadPriorityInlineAction(
     // 3. Inspect target lead and verify role isolation
     const { data: existingLead, error: leadFetchError } = await supabase
       .from('leads')
-      .select('id, lead_id, assigned_to, priority, converted_at')
+      .select('id, lead_id, assigned_to, priority, converted_at, funnel_statuses(bucket)')
       .eq('id', leadId)
       .maybeSingle();
 
@@ -295,11 +303,13 @@ export async function updateLeadPriorityInlineAction(
       };
     }
 
-    // Enforce post-conversion record locking: non-admins cannot mutate converted deals
-    if (existingLead.converted_at && profile.role !== 'admin') {
+    // Enforce post-conversion record locking: converted deals require explicit Unlock & Revert workflow
+    const existingBucket =
+      (existingLead.funnel_statuses as { bucket?: string } | null)?.bucket ?? null;
+    if (existingLead.converted_at || existingBucket === 'converted') {
       return {
         success: false,
-        error: 'Forbidden: Converted deals are locked from non-admin modifications.',
+        error: 'Forbidden: Converted deals are locked. Use "Unlock & Revert" if stage rollback is required.',
       };
     }
 
@@ -365,8 +375,10 @@ export async function updateLeadPriorityInlineAction(
       console.warn('[AUDIT_LEDGER] Activity log advisory:', activityError.message);
     }
 
+    revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/admin/leads/${leadId}`);
     revalidatePath(`/admin/deals/${leadId}`);
 

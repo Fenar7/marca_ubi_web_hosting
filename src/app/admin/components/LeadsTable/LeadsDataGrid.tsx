@@ -12,6 +12,7 @@
 
 import React, { useRef, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { HydratedLeadItem } from '@/app/admin/(workspace)/leads/LeadsWorkspaceClient';
 import { InlineStatusSelect, type InlineStatusOption } from './InlineStatusSelect';
@@ -19,6 +20,7 @@ import { InlinePrioritySelect } from './InlinePrioritySelect';
 import { LeadMobileCard } from './LeadMobileCard';
 import { OverdueBadge } from '@/app/admin/components/Badges';
 import type { LeadPriority } from '@/types/crm';
+import { updateLeadAssignee } from '@/app/actions/leads';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import styles from './LeadsDataGrid.module.scss';
 
@@ -39,6 +41,12 @@ export interface LeadsDataGridProps {
   onPriorityChange?: (leadId: string, newPriority: LeadPriority) => void;
   /** Optional focused row index for keyboard traversal (J/K) */
   focusedRowIndex?: number;
+  /** Active personnel options for inline representative assignment */
+  availableAssignees?: Array<{ id: string; label: string }>;
+  /** Callback fired after successful inline representative assignment */
+  onAssigneeChange?: (leadId: string, newAssigneeId: string, newAssigneeName: string) => void;
+  /** Financial visibility permission flag */
+  canViewFinancials?: boolean;
   /** Optional user role for role-based authorization */
   userRole?: string;
   /** Optional custom class name */
@@ -77,13 +85,55 @@ export function LeadsDataGrid({
   onStatusChange,
   onPriorityChange,
   focusedRowIndex = -1,
+  availableAssignees = [],
+  onAssigneeChange,
+  canViewFinancials = true,
   userRole,
   className,
 }: LeadsDataGridProps): React.ReactElement {
   const parentRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>('lead_id');
+  const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortAscending, setSortAscending] = useState<boolean>(true);
+  const [assigningLeadId, setAssigningLeadId] = useState<string | null>(null);
+
+  const canAssignInline =
+    (userRole === 'admin' || userRole === 'sales_manager') && availableAssignees.length > 0;
+
+  const handleInlineAssigneeChange = async (leadId: string, newAssigneeId: string) => {
+    if (!newAssigneeId || !canAssignInline) return;
+    setAssigningLeadId(leadId);
+    const matched = availableAssignees.find((a) => a.id === newAssigneeId);
+    try {
+      const res = await updateLeadAssignee(leadId, newAssigneeId);
+      if (res.success) {
+        onAssigneeChange?.(leadId, newAssigneeId, matched?.label || 'Representative');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('crm-toast', {
+              detail: { type: 'success', message: `Assigned lead to ${matched?.label || 'representative'}.` },
+            })
+          );
+        }
+      } else if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('crm-toast', {
+            detail: { type: 'error', message: res.error || 'Failed to assign lead.' },
+          })
+        );
+      }
+    } catch {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('crm-toast', {
+            detail: { type: 'error', message: 'Network error assigning lead.' },
+          })
+        );
+      }
+    } finally {
+      setAssigningLeadId(null);
+    }
+  };
 
   const isAllSelected = leads.length > 0 && selectedLeadIds.size === leads.length;
   const isPartiallySelected = selectedLeadIds.size > 0 && !isAllSelected;
@@ -98,6 +148,7 @@ export function LeadsDataGrid({
   };
 
   const sortedLeads = useMemo(() => {
+    if (!sortField) return leads;
     const cloned = [...leads];
     cloned.sort((a, b) => {
       const aVal = a[sortField];
@@ -143,17 +194,9 @@ export function LeadsDataGrid({
     overscan: 6,
   });
 
+  const router = useRouter();
   const handleRowClick = (leadId: string): void => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('open-lead-drawer', {
-          detail: { leadId, id: leadId },
-        })
-      );
-      const url = new URL(window.location.href);
-      url.searchParams.set('id', leadId);
-      window.history.replaceState({}, '', url.pathname + url.search);
-    }
+    router.push(`/admin/leads/${leadId}`);
   };
 
   const handleCopyLeadId = (leadIdStr: string, e: React.MouseEvent): void => {
@@ -479,23 +522,43 @@ export function LeadsDataGrid({
                 {/* Col 5: Expected Value Numerals */}
                 <div role="cell">
                   <span className={styles.dealValue}>
-                    {formatCurrency(lead.expected_value)}
+                    {canViewFinancials ? formatCurrency(lead.expected_value) : 'Restricted'}
                   </span>
                 </div>
 
-                {/* Col 6: Assigned Representative Badge */}
-                <div role="cell">
-                  <div
-                    className={styles.repBadge}
-                    title={lead.assigned_to_name || 'Unassigned'}
-                  >
-                    {lead.assigned_to && (
-                      <div className={styles.repAvatar} aria-hidden="true">
-                        {repInitials}
-                      </div>
-                    )}
-                    <span>{lead.assigned_to_name || 'Unassigned'}</span>
-                  </div>
+                {/* Col 6: Inline Representative Assignment or Read-only Badge */}
+                <div role="cell" onClick={(e) => e.stopPropagation()}>
+                  {canAssignInline ? (
+                    <select
+                      aria-label={`Assign representative for ${lead.name}`}
+                      value={lead.assigned_to || ''}
+                      disabled={assigningLeadId === lead.id}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleInlineAssigneeChange(lead.id, e.target.value);
+                      }}
+                      className={styles.inlineRepSelect}
+                    >
+                      <option value="" disabled>Unassigned</option>
+                      {availableAssignees.map((rep) => (
+                        <option key={rep.id} value={rep.id}>
+                          {rep.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div
+                      className={styles.repBadge}
+                      title={lead.assigned_to_name || 'Unassigned'}
+                    >
+                      {lead.assigned_to && (
+                        <div className={styles.repAvatar} aria-hidden="true">
+                          {repInitials}
+                        </div>
+                      )}
+                      <span>{lead.assigned_to_name || 'Unassigned'}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Col 7: Inline Priority Selector */}
@@ -513,6 +576,7 @@ export function LeadsDataGrid({
                   role="cell"
                   className={styles.slaCol}
                   onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
                 >
                   <button
                     type="button"
@@ -569,7 +633,7 @@ export function LeadsDataGrid({
                     aria-label={`Open dossier for ${lead.name}`}
                   >
                     <span>Dossier</span>
-                    <span aria-hidden="true">→</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
                   </button>
 
                   {/* Direct Link to dedicated page */}
@@ -579,7 +643,10 @@ export function LeadsDataGrid({
                     title="Open full page"
                     aria-label={`Open dedicated page for ${lead.name}`}
                   >
-                    ↗
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                      <line x1="7" y1="17" x2="17" y2="7" />
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
                   </Link>
                 </div>
               </div>
@@ -597,6 +664,7 @@ export function LeadsDataGrid({
             availableStatuses={availableStatuses}
             onStatusChange={onStatusChange}
             onPriorityChange={onPriorityChange}
+            canViewFinancials={canViewFinancials}
             userRole={userRole}
           />
         ))}

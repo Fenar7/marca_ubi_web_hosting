@@ -8,7 +8,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { getLeadDetails } from '@/app/actions/leads';
 import type { LeadActivityWithActor } from '@/types/crm';
@@ -45,6 +45,7 @@ export interface LeadDossierData {
   revisit_date: string | null;
   notes: string | null;
   brief_payload: Record<string, unknown> | null;
+  inquiry_count?: number;
   created_at: string;
   converted_at: string | null;
   updated_at: string;
@@ -55,8 +56,11 @@ export interface ClientDossierDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   initialLead?: LeadDossierData | null;
+  canViewFinancials?: boolean;
   onLeadUpdated?: () => void;
 }
+
+const emptySubscribe = (): (() => void) => () => {};
 
 function sanitizeDealNotes(notes: string | null | undefined): string | null {
   if (!notes) return null;
@@ -72,58 +76,98 @@ export function ClientDossierDrawer({
   isOpen,
   onClose,
   initialLead,
+  canViewFinancials = true,
   onLeadUpdated,
 }: ClientDossierDrawerProps): React.ReactElement | null {
-  const [mounted, setMounted] = useState<boolean>(false);
-  const [lead, setLead] = useState<LeadDossierData | null>(initialLead || null);
-  const [activities, setActivities] = useState<LeadActivityWithActor[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+  const [leadRecord, setLeadRecord] = useState<{
+    leadId: string | null;
+    data: LeadDossierData | null;
+  }>(() => ({
+    leadId,
+    data: initialLead || null,
+  }));
+  const lead = leadRecord.leadId === leadId ? leadRecord.data : (initialLead || null);
+  const setLead = useCallback(
+    (
+      updater:
+        | LeadDossierData
+        | null
+        | ((prev: LeadDossierData | null) => LeadDossierData | null)
+    ) => {
+      setLeadRecord((prev) => {
+        const current = prev.leadId === leadId ? prev.data : (initialLead || null);
+        const next = typeof updater === 'function' ? updater(current) : updater;
+        return { leadId, data: next };
+      });
+    },
+    [leadId, initialLead]
+  );
+
+  const [activitiesRecord, setActivitiesRecord] = useState<{
+    leadId: string | null;
+    items: LeadActivityWithActor[];
+  }>(() => ({ leadId, items: [] }));
+  const activities = activitiesRecord.leadId === leadId ? activitiesRecord.items : [];
+  const setActivities = useCallback(
+    (
+      updater:
+        | LeadActivityWithActor[]
+        | ((prev: LeadActivityWithActor[]) => LeadActivityWithActor[])
+    ) => {
+      setActivitiesRecord((prev) => {
+        const current = prev.leadId === leadId ? prev.items : [];
+        const next = typeof updater === 'function' ? updater(current) : updater;
+        return { leadId, items: next };
+      });
+    },
+    [leadId]
+  );
+
+  const [settledLeadKey, setSettledLeadKey] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [prevIsOpen, setPrevIsOpen] = useState<boolean>(isOpen);
   const [isClosing, setIsClosing] = useState<boolean>(false);
-  const [shouldRender, setShouldRender] = useState<boolean>(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    setIsClosing(!isOpen);
+  }
+  const shouldRender = isOpen || isClosing;
+  const isLoading = isRefreshing || (Boolean(isOpen && leadId) && !lead && settledLeadKey !== leadId);
+
   const [copiedId, setCopiedId] = useState<boolean>(false);
   const [isSchedulerOpen, setIsSchedulerOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const drawerRef = useRef<HTMLDivElement>(null);
-  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Animation lifecycle and body scroll lock
+  // Body scroll lock & exit animation cleanup timer without synchronous effect setState
   useEffect(() => {
     if (isOpen) {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-      }
-      setShouldRender(true);
-      setIsClosing(false);
-
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`;
       }
-    } else if (shouldRender && !isClosing) {
-      setIsClosing(true);
-      closeTimerRef.current = setTimeout(() => {
-        setShouldRender(false);
-        setIsClosing(false);
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-      }, 300);
+      return undefined;
     }
-  }, [isOpen, shouldRender, isClosing]);
+
+    const restoreTimer = setTimeout(() => {
+      setIsClosing(false);
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }, 300);
+    return () => clearTimeout(restoreTimer);
+  }, [isOpen]);
 
   // Ensure body scroll lock is restored if component unmounts unexpectedly while open
   useEffect(() => {
     return () => {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-      }
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     };
@@ -131,9 +175,11 @@ export function ClientDossierDrawer({
 
   // Load complete lead dossier from Server Action with cancellation guard
   const loadDossier = useCallback(
-    async (id: string, getIsCurrent?: () => boolean) => {
-      setIsLoading(true);
-      setFetchError(null);
+    async (id: string, getIsCurrent?: () => boolean, manualRefresh = false) => {
+      if (manualRefresh) {
+        setIsRefreshing(true);
+        setFetchError(null);
+      }
       try {
         const response = await getLeadDetails(id);
         if (getIsCurrent && !getIsCurrent()) return;
@@ -175,8 +221,9 @@ export function ClientDossierDrawer({
         };
 
         if (getIsCurrent && !getIsCurrent()) return;
-        setLead(normalized);
-        setActivities(response.data.activities || []);
+        setFetchError(null);
+        setLeadRecord({ leadId: id, data: normalized });
+        setActivitiesRecord({ leadId: id, items: response.data.activities || [] });
       } catch (err) {
         if (getIsCurrent && !getIsCurrent()) return;
         setFetchError(
@@ -184,7 +231,8 @@ export function ClientDossierDrawer({
         );
       } finally {
         if (!getIsCurrent || getIsCurrent()) {
-          setIsLoading(false);
+          setSettledLeadKey(id);
+          setIsRefreshing(false);
         }
       }
     },
@@ -199,14 +247,13 @@ export function ClientDossierDrawer({
         onLeadUpdated();
       }
     },
-    [onLeadUpdated]
+    [onLeadUpdated, setActivities, setLead]
   );
 
   useEffect(() => {
     let isCurrent = true;
     if (isOpen && leadId) {
-      setLead(null);
-      loadDossier(leadId, () => isCurrent);
+      void loadDossier(leadId, () => isCurrent);
     }
     return () => {
       isCurrent = false;
@@ -437,7 +484,7 @@ export function ClientDossierDrawer({
             {leadId && (
               <button
                 type="button"
-                onClick={() => loadDossier(leadId)}
+                onClick={() => loadDossier(leadId, undefined, true)}
                 className={`${styles.actionButton} ${styles.callBtn}`}
                 style={{ marginTop: '0.5rem' }}
               >
@@ -556,11 +603,12 @@ export function ClientDossierDrawer({
         <EditLeadModal
           isOpen={isEditModalOpen}
           lead={lead}
+          canViewFinancials={canViewFinancials}
           onClose={() => setIsEditModalOpen(false)}
           onSuccess={(updated: Partial<LeadDossierData>) => {
             setLead((prev) => (prev ? { ...prev, ...updated } : null));
             if (leadId) {
-              loadDossier(leadId);
+              loadDossier(leadId, undefined, true);
             }
             onLeadUpdated?.();
           }}

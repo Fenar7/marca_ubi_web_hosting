@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { formatCrmCurrency } from "@/app/admin/lib/currency";
 import type { OverviewRecord } from "./OverviewWorkspace";
 import styles from "./CadenceUrgencyRail.module.scss";
@@ -36,6 +37,8 @@ export function CadenceUrgencyRail({
   onEmailAction,
   onSnoozeAction,
 }: CadenceUrgencyRailProps): React.ReactElement {
+  const router = useRouter();
+  const [referenceNowMs] = useState<number>(() => Date.now());
   // Revenue Realization Target Math (Guarding against fabricated defaults)
   const isConvertedAvailable = convertedValue !== null;
   const realizedRevenue = convertedValue ?? 0;
@@ -62,19 +65,19 @@ export function CadenceUrgencyRail({
           reason = "Discovery Intake Call";
         }
 
-        let overdueInterval = "• 2d overdue";
+        let overdueInterval = "Scheduled";
         let isOverdue = false;
         if (rec.due) {
           const dueTime = new Date(rec.due).getTime();
           if (Number.isFinite(dueTime)) {
-            const diffDays = Math.floor((dueTime - Date.now()) / (1000 * 60 * 60 * 24));
+            const diffDays = Math.floor((dueTime - referenceNowMs) / (1000 * 60 * 60 * 24));
             if (diffDays < 0) {
-              overdueInterval = `• ${Math.abs(diffDays)}d overdue`;
+              overdueInterval = `${Math.abs(diffDays)}d overdue`;
               isOverdue = true;
             } else if (diffDays === 0) {
-              overdueInterval = "• Due today";
+              overdueInterval = "Due today";
             } else {
-              overdueInterval = `• Due in ${diffDays}d`;
+              overdueInterval = `Due in ${diffDays}d`;
             }
           }
         }
@@ -90,7 +93,7 @@ export function CadenceUrgencyRail({
         };
       })
       .slice(0, 37); // Up to 37 items supported
-  }, [records]);
+  }, [records, referenceNowMs]);
 
   // Pagination for Urgent Queue (5 items per page)
   const itemsPerPage = 5;
@@ -109,8 +112,16 @@ export function CadenceUrgencyRail({
     setActiveSnoozeId(null);
     if (onSnoozeAction) {
       onSnoozeAction({ id, name, days });
-    } else {
-      window.alert(`Snoozed follow-up for "${name}" by +${days} day(s).`);
+    } else if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('crm-toast', {
+          detail: {
+            type: 'info',
+            title: 'Follow-up Snoozed',
+            description: `Snoozed follow-up for "${name}" by +${days} day(s).`,
+          },
+        })
+      );
     }
   };
 
@@ -126,7 +137,7 @@ export function CadenceUrgencyRail({
       >
         <div className={styles.widgetHeader}>
           <div className={styles.eyebrow}>
-            <span className={styles.targetDot} aria-hidden="true" />
+            <span className={styles.targetRule} aria-hidden="true" />
             <span>REVENUE REALIZATION</span>
           </div>
           <span className={styles.monthlyQuotaTag}>Monthly Quota</span>
@@ -187,7 +198,7 @@ export function CadenceUrgencyRail({
         <div className={styles.queueHeader}>
           <div>
             <div className={styles.eyebrow}>
-              <span className={styles.urgentPulseDot} aria-hidden="true" />
+              <span className={styles.urgentRule} aria-hidden="true" />
               <h3 id="urgent-queue-heading" className={styles.queueHeading}>
                 Urgent Follow-ups
               </h3>
@@ -240,7 +251,13 @@ export function CadenceUrgencyRail({
 
                 <div className={styles.urgentCardMiddle}>
                   <span className={styles.interactionReason}>{item.reason}</span>
-                  <span className={styles.dealOwner}>👤 {item.owner}</span>
+                  <span className={styles.dealOwner}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    <span>{item.owner}</span>
+                  </span>
                 </div>
 
                 {/* 1-Click Action Buttons */}
@@ -252,16 +269,7 @@ export function CadenceUrgencyRail({
                       if (onCallAction) {
                         onCallAction({ id: item.id, name: item.name });
                       } else {
-                        window.dispatchEvent(
-                          new CustomEvent("open-lead-drawer", {
-                            detail: {
-                              leadId: item.leadId || item.id,
-                              id: item.id,
-                              tab: "activity",
-                              intent: "call",
-                            },
-                          })
-                        );
+                        router.push(`/admin/leads/${item.leadId || item.id}`);
                       }
                     }}
                     aria-label={`Call ${item.name}`}
@@ -288,16 +296,7 @@ export function CadenceUrgencyRail({
                       if (onEmailAction) {
                         onEmailAction({ id: item.id, name: item.name });
                       } else {
-                        window.dispatchEvent(
-                          new CustomEvent("open-lead-drawer", {
-                            detail: {
-                              leadId: item.leadId || item.id,
-                              id: item.id,
-                              tab: "activity",
-                              intent: "email",
-                            },
-                          })
-                        );
+                        router.push(`/admin/leads/${item.leadId || item.id}`);
                       }
                     }}
                     aria-label={`Email ${item.name}`}
@@ -389,7 +388,9 @@ export function CadenceUrgencyRail({
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               aria-label="Previous page"
             >
-              ←
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
             </button>
             <span className={styles.pageLabel}>
               Page {currentPage} of {totalPages}
@@ -401,7 +402,9 @@ export function CadenceUrgencyRail({
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               aria-label="Next page"
             >
-              →
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </button>
           </div>
         )}

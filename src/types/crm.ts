@@ -645,6 +645,13 @@ export interface LeadDetailPayload {
   availableAssignees: AssigneeOption[];
   funnelStatuses?: FunnelStatus[];
   teamAssignees?: AssigneeOption[];
+  linkedWork?: {
+    id: string;
+    project_code: string;
+    delivery_stage: ClientWorkDeliveryStage;
+    health_status: ClientWorkHealthStatus;
+  } | null;
+  canViewFinancials?: boolean;
 }
 
 /**

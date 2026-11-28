@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useEffect, useRef, useTransition, useCallback } from 'react';
+import Link from 'next/link';
 import { transitionToConvertedAction } from '@/app/actions/stageTransitionActions';
 import type { GuardedTransitionResultPayload } from '@/app/lib/stage-transition-schemas';
 import { useModalAnimation } from './useModalAnimation';
@@ -58,36 +59,73 @@ export function ConvertedCelebrationModal({
     exitDurationMs: 160,
   });
 
+  if (!shouldRender) return null;
+
+  return (
+    <ConvertedCelebrationModalInner
+      key={`${leadId}-${isOpen ? 'open' : 'closing'}`}
+      isOpen={isOpen}
+      isClosing={isClosing}
+      handleAnimationEnd={handleAnimationEnd}
+      onClose={onClose}
+      leadId={leadId}
+      dealIdCode={dealIdCode}
+      dealName={dealName}
+      currentExpectedValue={currentExpectedValue}
+      onSuccess={onSuccess}
+    />
+  );
+}
+
+interface ConvertedCelebrationInnerProps extends ConvertedCelebrationModalProps {
+  isClosing: boolean;
+  handleAnimationEnd: (e: React.AnimationEvent<HTMLDivElement>) => void;
+}
+
+function ConvertedCelebrationModalInner({
+  isOpen,
+  isClosing,
+  handleAnimationEnd,
+  onClose,
+  leadId,
+  dealIdCode,
+  dealName,
+  currentExpectedValue = 500000,
+  onSuccess,
+}: ConvertedCelebrationInnerProps): React.ReactElement {
   const [isPending, startTransition] = useTransition();
-  const [finalRevenue, setFinalRevenue] = useState<number | ''>(currentExpectedValue || 500000);
+  const [finalRevenue, setFinalRevenue] = useState<number | ''>(
+    currentExpectedValue > 0 ? currentExpectedValue : 500000
+  );
   const [signedContractDate, setSignedContractDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
+    () => new Date().toISOString().split('T')[0]
   );
   const [paymentTerms, setPaymentTerms] = useState<string>('50% upfront, 50% upon milestone completion');
   const [notes, setNotes] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isConvertedSuccess, setIsConvertedSuccess] = useState<boolean>(false);
   const [isCelebrationActive, setIsCelebrationActive] = useState<boolean>(false);
+  const [spawnedProjectCode, setSpawnedProjectCode] = useState<string | null>(null);
+  const [spawnedWorkId, setSpawnedWorkId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const revenueInputRef = useRef<HTMLInputElement>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reset form upon opening
   useEffect(() => {
-    if (isOpen) {
-      setFinalRevenue(currentExpectedValue > 0 ? currentExpectedValue : 500000);
-      setSignedContractDate(new Date().toISOString().split('T')[0]);
-      setPaymentTerms('50% upfront, 50% upon milestone completion');
-      setNotes('');
-      setErrorMessage(null);
-      setIsCelebrationActive(false);
-
-      setTimeout(() => {
-        revenueInputRef.current?.focus();
-      }, 50);
-    }
-  }, [isOpen, currentExpectedValue]);
+    if (!isOpen) return;
+    const focusTimer = setTimeout(() => {
+      revenueInputRef.current?.focus();
+    }, 50);
+    return () => {
+      clearTimeout(focusTimer);
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, [isOpen]);
 
   // Trap focus & Escape dismissal
   useEffect(() => {
@@ -133,7 +171,7 @@ export function ConvertedCelebrationModal({
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const colors = ['#eefb87', '#10b981', '#fbbf24', '#ffffff', '#38bdf8'];
+    const colors = ['#ea002a', '#10b981', '#f97316', '#4f46e5', '#d97706'];
     const particles: Particle[] = [];
     const count = 75;
 
@@ -230,6 +268,9 @@ export function ConvertedCelebrationModal({
             return;
           }
 
+          setIsConvertedSuccess(true);
+          setSpawnedProjectCode(result.data.projectCode || null);
+          setSpawnedWorkId(result.data.workId || null);
           // Trigger celebratory confetti animation
           triggerConfetti();
 
@@ -238,7 +279,9 @@ export function ConvertedCelebrationModal({
               new CustomEvent('crm-toast', {
                 detail: {
                   type: 'success',
-                  message: `Celebration: Deal Won for ${formatCurrency(numRevenue)}! Record locked.`,
+                  message: result.data.projectCode
+                    ? `Deal Won for ${formatCurrency(numRevenue)}! Spawned Project ${result.data.projectCode}.`
+                    : `Deal Won for ${formatCurrency(numRevenue)}! Record locked.`,
                 },
               })
             );
@@ -259,10 +302,13 @@ export function ConvertedCelebrationModal({
 
           onSuccess?.(result.data);
 
-          // Allow the user to see the confetti burst before closing modal
-          setTimeout(() => {
+          if (closeTimerRef.current) {
+            clearTimeout(closeTimerRef.current);
+          }
+          // Keep celebration overlay briefly so user can jump directly to Client Works if desired
+          closeTimerRef.current = setTimeout(() => {
             onClose();
-          }, 850);
+          }, 3200);
         } catch (err) {
           setErrorMessage(
             err instanceof Error ? err.message : 'An unexpected exception occurred during conversion.'
@@ -272,8 +318,6 @@ export function ConvertedCelebrationModal({
     },
     [leadId, finalRevenue, signedContractDate, paymentTerms, notes, triggerConfetti, onSuccess, onClose]
   );
-
-  if (!shouldRender) return null;
 
   const numericRev = typeof finalRevenue === 'number' ? finalRevenue : parseFloat(finalRevenue) || 0;
 
@@ -310,11 +354,11 @@ export function ConvertedCelebrationModal({
               </span>
             </div>
             <h2 id="converted-modal-title" className={styles.modalTitle}>
-              Convert Deal to Won Client.
+              Convert Deal to Won Client
             </h2>
             {dealName && (
               <p className={styles.modalSubtitle}>
-                Finalizing agency engagement agreement for <strong style={{ color: 'var(--admin-text-primary, #1f242f)' }}>{dealName}</strong>.
+                Finalizing agency engagement agreement for <strong>{dealName}</strong>.
               </p>
             )}
           </div>
@@ -324,7 +368,7 @@ export function ConvertedCelebrationModal({
             onClick={onClose}
             className={styles.closeButton}
             aria-label="Close dialog"
-            disabled={isPending || isCelebrationActive}
+            disabled={isPending}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -376,7 +420,7 @@ export function ConvertedCelebrationModal({
                   className={`${styles.textInput} ${styles.hasPrefix} ${
                     numericRev <= 0 ? styles.hasError : ''
                   }`}
-                  disabled={isPending || isCelebrationActive}
+                  disabled={isPending || isConvertedSuccess}
                   required
                 />
               </div>
@@ -395,7 +439,7 @@ export function ConvertedCelebrationModal({
                 value={signedContractDate}
                 onChange={(e) => setSignedContractDate(e.target.value)}
                 className={styles.textInput}
-                disabled={isPending || isCelebrationActive}
+                disabled={isPending || isConvertedSuccess}
                 required
               />
             </div>
@@ -411,7 +455,7 @@ export function ConvertedCelebrationModal({
                 onChange={(e) => setPaymentTerms(e.target.value)}
                 placeholder="e.g. 50% upfront retainer, 50% upon deployment"
                 className={styles.textInput}
-                disabled={isPending || isCelebrationActive}
+                disabled={isPending || isConvertedSuccess}
                 required
               />
               <span className={styles.fieldHint}>
@@ -430,9 +474,28 @@ export function ConvertedCelebrationModal({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Include commercial stipulations, kickoff milestones, or executive handover instructions..."
                 className={styles.textareaInput}
-                disabled={isPending || isCelebrationActive}
+                disabled={isPending || isConvertedSuccess}
               />
             </div>
+
+            {isConvertedSuccess && (
+              <div className={styles.infoBanner} role="status">
+                <span>
+                  <strong>Client Work Provisioned{spawnedProjectCode ? ` (${spawnedProjectCode})` : ''}:</strong>{' '}
+                  Project board initialized cleanly.{' '}
+                  <Link
+                    href={spawnedWorkId ? `/admin/works?workId=${encodeURIComponent(spawnedWorkId)}` : '/admin/works'}
+                    className={styles.celebrationWorksLink}
+                  >
+                    <span>View Project in Client Works</span>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </Link>
+                </span>
+              </div>
+            )}
 
             {errorMessage && (
               <div className={styles.fieldError} role="alert">
@@ -442,22 +505,34 @@ export function ConvertedCelebrationModal({
           </div>
 
           <footer className={styles.modalFooter}>
-            <button
-              type="button"
-              onClick={onClose}
-              className={styles.cancelBtn}
-              disabled={isPending || isCelebrationActive}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={`${styles.submitBtn} ${styles.success}`}
-              disabled={isPending || isCelebrationActive || numericRev <= 0}
-            >
-              {isPending && <div className={styles.spinner} />}
-              <span>{isPending ? 'Converting Deal...' : 'Confirm Conversion & Lock'}</span>
-            </button>
+            {isConvertedSuccess ? (
+              <button
+                type="button"
+                onClick={onClose}
+                className={`${styles.submitBtn} ${styles.success}`}
+              >
+                <span>Done</span>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={styles.cancelBtn}
+                  disabled={isPending}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={`${styles.submitBtn} ${styles.success}`}
+                  disabled={isPending || numericRev <= 0}
+                >
+                  {isPending && <div className={styles.spinner} />}
+                  <span>{isPending ? 'Converting Deal...' : 'Confirm Conversion & Lock'}</span>
+                </button>
+              </>
+            )}
           </footer>
         </form>
       </div>

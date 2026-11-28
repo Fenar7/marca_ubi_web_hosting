@@ -4,6 +4,7 @@ import React, { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { submitContactInquiry } from "@/app/actions/contactActions";
 import type { ContactTrack, ContactActionResult } from "@/app/lib/validations/contact";
+import { CountryPhoneInput } from "@/app/components/ui/CountryPhoneInput";
 import styles from "../Contact.module.scss";
 
 const TRACKS: { id: ContactTrack; label: string }[] = [
@@ -27,6 +28,7 @@ const TRACKS: { id: ContactTrack; label: string }[] = [
  */
 export default function InquiryComposer() {
   const [selectedTrack, setSelectedTrack] = useState<ContactTrack>("new-business");
+  const [phone, setPhone] = useState<string>("");
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<ContactActionResult | null>(null);
   const submission = useRef<{ key: string; snapshot: string } | null>(null);
@@ -59,6 +61,7 @@ export default function InquiryComposer() {
         setResult(response);
         if (response.success) {
           submission.current = null;
+          setPhone("");
           form.reset();
         }
       } catch {
@@ -191,12 +194,14 @@ export default function InquiryComposer() {
                 <label htmlFor="contact-phone" className={styles.fieldLabel}>
                   Phone Number
                 </label>
-                <input
+                <CountryPhoneInput
                   id="contact-phone"
                   name="phone"
-                  type="tel"
-                  placeholder="e.g. +91 98400 12345 or +1 415 555 0199"
-                  className={styles.textInput}
+                  value={phone}
+                  onChange={setPhone}
+                  defaultCountry="AE"
+                  variant="publicLight"
+                  disabled={isPending}
                 />
               </div>
 

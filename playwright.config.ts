@@ -70,6 +70,15 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run dev -- --hostname 127.0.0.1 --port ${testPort}`,
+    // Isolate E2E builds from the active localhost:3003 `.next/dev` directory.
+    env: {
+      ...Object.fromEntries(
+        Object.entries(process.env).filter(
+          (entry): entry is [string, string] => typeof entry[1] === 'string'
+        )
+      ),
+      NEXT_DIST_DIR: '.next-e2e',
+    },
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120 * 1000,

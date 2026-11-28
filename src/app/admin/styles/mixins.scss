@@ -9,9 +9,9 @@
  */
 
 /**
- * Primary Signature Accordion Pill Button
- * Aesthetic: Electric lemon fill (#eefb87) with high-contrast slate outline (#1f242f).
- * Invariant: 44px minimum touch target (WCAG 2.5.5 / Rule R-03), 13.92:1 AAA text contrast.
+ * Primary Signature CTA Pill Button
+ * Aesthetic: Marca Ubi crimson pill (#ea002a) with crisp pure-white label contrast.
+ * Invariant: 44px minimum touch target (WCAG 2.5.5 / Rule R-03).
  */
 @mixin accordionPillPrimary {
   display: inline-flex;
@@ -21,10 +21,10 @@
   height: 44px;
   min-height: 44px;
   padding: 0 1.5rem;
-  background-color: var(--admin-accent-lemon);
-  border: 1px solid var(--admin-border-strong);
+  background-color: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
   border-radius: var(--admin-radius-pill);
-  color: var(--admin-accent-lemon-ink);
+  color: var(--admin-btn-primary-text, #ffffff);
   font-family: var(--font-admin-btn);
   font-size: 0.75rem;
   font-weight: 600;
@@ -36,8 +36,9 @@
   transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 
   &:hover {
-    background-color: var(--admin-accent-lemon-hover);
-    box-shadow: 0 2px 8px rgba(31, 36, 47, 0.1);
+    background-color: var(--admin-btn-primary-hover, #c40023);
+    border-color: var(--admin-btn-primary-hover, #c40023);
+    box-shadow: 0 2px 8px rgba(196, 0, 35, 0.22);
   }
 
   &:active {

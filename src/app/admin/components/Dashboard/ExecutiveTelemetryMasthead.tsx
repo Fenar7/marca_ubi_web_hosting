@@ -2,10 +2,9 @@
 
 /**
  * @file ExecutiveTelemetryMasthead.tsx
- * @description Executive Overview Masthead and 4-Pod Telemetry Grid for the Commercial Desk.
- *              Synthesized 1:1 from the Conyest, Fundora, and Finlo Flash luxury archetypes.
- *              Integrates Executive Virtual VIP Card, pure-white floating scorecards,
- *              timeframe scope dropdown, and CSV export.
+ * @description Executive Overview Masthead and 4-Card KPI Grid for the Marca Ubi CRM.
+ *              Integrates the Visible Pipeline summary card, white floating scorecards,
+ *              timeframe scope dropdown, and CSV export trigger.
  * @module admin/components/Dashboard/ExecutiveTelemetryMasthead
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -28,6 +27,7 @@ export interface ExecutiveTelemetryMastheadProps {
   cadenceLabel: string;
   pipelineValue: number | null;
   pipelineCount: number | null;
+  pipelineReady?: boolean;
   weightedPotential: number | null;
   convertedValue: number | null;
   convertedCount: number | null;
@@ -36,6 +36,8 @@ export interface ExecutiveTelemetryMastheadProps {
   averageCycleDays: number | null;
   financials: boolean;
   canExport: boolean;
+  canAnalytics?: boolean;
+  recordRoute?: string | null;
   cohort?: { eligible: number; won: number } | null;
   onExportSummary?: () => void;
 }
@@ -47,6 +49,7 @@ export function ExecutiveTelemetryMasthead({
   cadenceLabel,
   pipelineValue,
   pipelineCount,
+  pipelineReady = true,
   weightedPotential,
   convertedValue,
   convertedCount,
@@ -55,6 +58,8 @@ export function ExecutiveTelemetryMasthead({
   averageCycleDays,
   financials,
   canExport,
+  canAnalytics = true,
+  recordRoute = "/admin/deals",
   cohort,
   onExportSummary,
 }: ExecutiveTelemetryMastheadProps): React.ReactElement {
@@ -64,6 +69,7 @@ export function ExecutiveTelemetryMasthead({
 
   const [isTimeframeOpen, setIsTimeframeOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -74,11 +80,19 @@ export function ExecutiveTelemetryMasthead({
         setIsTimeframeOpen(false);
       }
     }
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsTimeframeOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
     if (isTimeframeOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [isTimeframeOpen]);
 
@@ -95,8 +109,8 @@ export function ExecutiveTelemetryMasthead({
     revenueDelta !== null
       ? revenueDelta === 0
         ? "0.0% (flat)"
-        : `${revenueDelta > 0 ? "↗ +" : "↘ "}${revenueDelta}%`
-      : "0.0% (flat)";
+        : `${revenueDelta > 0 ? "+" : ""}${revenueDelta}%`
+      : "No baseline";
 
   const trendClass =
     resolveTrendSemanticType(revenueDeltaStr) === "positive"
@@ -114,17 +128,26 @@ export function ExecutiveTelemetryMasthead({
       <div className={styles.topControlRow}>
         <div className={styles.identityGroup}>
           <h1 className={styles.deskTitle}>
-            Welcome back, {displayGreetingName} 👋
+            Welcome back, {displayGreetingName}
           </h1>
           <p className={styles.deskSubtitle}>
-            Commercial operations, live pipeline, and cash velocity.
+            Open pipeline, closed revenue, and sales cycle summary.
           </p>
         </div>
 
         <div className={styles.controlsCluster}>
           {/* Timeframe Scope Dropdown */}
-          <div className={styles.dropdownRelative} ref={dropdownRef}>
+          <div
+            className={styles.dropdownRelative}
+            ref={dropdownRef}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setIsTimeframeOpen(false);
+              }
+            }}
+          >
             <button
+              ref={triggerRef}
               type="button"
               className={styles.timeframeButton}
               onClick={() => setIsTimeframeOpen((prev) => !prev)}
@@ -179,7 +202,18 @@ export function ExecutiveTelemetryMasthead({
                   >
                     <span>{option.label}</span>
                     {timeframe === slug && (
-                      <span className={styles.activeCheck}>✓</span>
+                      <svg
+                        className={styles.activeCheck}
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        aria-hidden="true"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     )}
                   </button>
                 ))}
@@ -223,29 +257,46 @@ export function ExecutiveTelemetryMasthead({
           userName={displayGreetingName.toUpperCase()}
           balance={pipelineValue}
           dealCount={pipelineCount}
-          winRate={84}
+          pipelineReady={pipelineReady}
           periodLabel={periodLabel}
           cohort={cohort}
           financials={financials}
+          recordRoute={recordRoute}
         />
 
         {/* Card 2: Converted Contract Value */}
         <article
           className={`${styles.scorecard} ${styles.cardClosedRevenue}`}
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/admin/deals?bucket=converted")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              router.push("/admin/deals?bucket=converted");
-            }
-          }}
-          aria-label={`Closed Revenue ${financials && convertedValue !== null ? formatCrmCurrency(convertedValue) : "Confidential"}. Click to inspect won contracts.`}
+          role={recordRoute ? "button" : undefined}
+          tabIndex={recordRoute ? 0 : undefined}
+          onClick={
+            recordRoute
+              ? () => router.push(`${recordRoute}?bucket=converted`)
+              : undefined
+          }
+          onKeyDown={
+            recordRoute
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`${recordRoute}?bucket=converted`);
+                  }
+                }
+              : undefined
+          }
+          aria-label={
+            recordRoute
+              ? `Closed Revenue ${financials && convertedValue !== null ? formatCrmCurrency(convertedValue) : "Confidential"}. Click to inspect won contracts.`
+              : undefined
+          }
         >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>CLOSED REVENUE</span>
-              <span className={styles.cardArrow} aria-hidden="true">↗</span>
+              <svg className={styles.cardArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
             </div>
             <span className={`${styles.trendPill} ${trendClass}`}>
               {revenueDeltaStr}
@@ -282,25 +333,41 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 3: Weighted Pipeline Potential */}
         <article
           className={`${styles.scorecard} ${styles.cardWeightedValue}`}
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/admin/deals?bucket=potential")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              router.push("/admin/deals?bucket=potential");
-            }
-          }}
-          aria-label={`Weighted Value ${financials && weightedPotential !== null ? formatCrmCurrency(weightedPotential) : "Confidential"}. Click to inspect weighted pipeline.`}
+          role={recordRoute ? "button" : undefined}
+          tabIndex={recordRoute ? 0 : undefined}
+          onClick={
+            recordRoute
+              ? () => router.push(`${recordRoute}?bucket=potential`)
+              : undefined
+          }
+          onKeyDown={
+            recordRoute
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`${recordRoute}?bucket=potential`);
+                  }
+                }
+              : undefined
+          }
+          aria-label={
+            recordRoute
+              ? `Weighted Value ${financials && weightedPotential !== null ? formatCrmCurrency(weightedPotential) : "Confidential"}. Click to inspect weighted pipeline.`
+              : undefined
+          }
         >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>WEIGHTED VALUE</span>
-              <span className={styles.cardArrow} aria-hidden="true">↗</span>
+              <svg className={styles.cardArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
             </div>
             <span className={styles.ratioPill}>
               {pipelineValue && weightedPotential && pipelineValue > 0
                 ? `${((weightedPotential / pipelineValue) * 100).toFixed(1)}%`
-                : "36.0%"}
+                : "0.0%"}
             </span>
           </div>
           <div className={styles.primaryMetric}>
@@ -320,20 +387,32 @@ export function ExecutiveTelemetryMasthead({
         {/* Card 4: Commercial Velocity */}
         <article
           className={`${styles.scorecard} ${styles.cardSalesCycle}`}
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/admin/analytics")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              router.push("/admin/analytics");
-            }
-          }}
-          aria-label="Average Sales Cycle. Click to inspect velocity analytics."
+          role={canAnalytics ? "button" : undefined}
+          tabIndex={canAnalytics ? 0 : undefined}
+          onClick={canAnalytics ? () => router.push("/admin/analytics") : undefined}
+          onKeyDown={
+            canAnalytics
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push("/admin/analytics");
+                  }
+                }
+              : undefined
+          }
+          aria-label={
+            canAnalytics
+              ? "Average Sales Cycle. Click to inspect velocity analytics."
+              : undefined
+          }
         >
           <div className={styles.cardHeader}>
             <div className={styles.kickerGroup}>
               <span className={styles.cardKicker}>AVG. SALES CYCLE</span>
-              <span className={styles.cardArrow} aria-hidden="true">↗</span>
+              <svg className={styles.cardArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
             </div>
             <span className={styles.targetPill}>Target &lt; 21d</span>
           </div>
@@ -344,7 +423,7 @@ export function ExecutiveTelemetryMasthead({
                 <span className={styles.metricUnit}>Days</span>
               </>
             ) : (
-              "14 Days"
+              "— Days"
             )}
           </div>
           <div className={styles.cardFooter}>

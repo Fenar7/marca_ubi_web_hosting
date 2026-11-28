@@ -21,12 +21,14 @@ import type { LeadDossierData } from '@/app/admin/components/DossierDrawer/Clien
 import { formatBudgetTierLabel, formatCrmCurrency } from '@/app/admin/lib/currency';
 import type { PreferredChannel, ServiceCategory, LeadPriority } from '@/types/crm';
 import { useModalAnimation } from './useModalAnimation';
+import { CountryPhoneInput } from '@/app/components/ui/CountryPhoneInput';
 import styles from './EditLeadModal.module.scss';
 
 export interface EditLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
   lead: LeadDossierData | null;
+  canViewFinancials?: boolean;
   onSuccess?: (updated: Partial<LeadDossierData>) => void;
 }
 
@@ -38,6 +40,7 @@ export function EditLeadModal({
   isOpen,
   onClose,
   lead,
+  canViewFinancials = true,
   onSuccess,
 }: EditLeadModalProps): React.ReactElement | null {
   const { shouldRender, isClosing, handleAnimationEnd } = useModalAnimation({
@@ -45,52 +48,68 @@ export function EditLeadModal({
     exitDurationMs: 180,
   });
 
+  if (!shouldRender || !lead) return null;
+
+  return (
+    <EditLeadModalInner
+      key={lead.id}
+      isOpen={isOpen}
+      isClosing={isClosing}
+      handleAnimationEnd={handleAnimationEnd}
+      onClose={onClose}
+      lead={lead}
+      canViewFinancials={canViewFinancials}
+      onSuccess={onSuccess}
+    />
+  );
+}
+
+interface EditLeadModalInnerProps {
+  isOpen: boolean;
+  isClosing: boolean;
+  handleAnimationEnd: (e: React.AnimationEvent) => void;
+  onClose: () => void;
+  lead: LeadDossierData;
+  canViewFinancials: boolean;
+  onSuccess?: (updated: Partial<LeadDossierData>) => void;
+}
+
+function EditLeadModalInner({
+  isOpen,
+  isClosing,
+  handleAnimationEnd,
+  onClose,
+  lead,
+  canViewFinancials,
+  onSuccess,
+}: EditLeadModalInnerProps): React.ReactElement {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [company, setCompany] = useState('');
-  const [companyWebsite, setCompanyWebsite] = useState('');
-  const [industry, setIndustry] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [preferredChannel, setPreferredChannel] = useState<PreferredChannel>('Phone');
-  const [serviceCategory, setServiceCategory] = useState<ServiceCategory>('Web & Digital');
-  const [budgetBracket, setBudgetBracket] = useState<string>('₹5L - ₹15L');
-  const [expectedValue, setExpectedValue] = useState<number>(0);
-  const [priority, setPriority] = useState<LeadPriority>('Medium');
-  const [notes, setNotes] = useState('');
-
-  // Prefill fields from active lead
-  useEffect(() => {
-    if (lead) {
-      setName(lead.name || '');
-      setCompany(lead.company || '');
-      setCompanyWebsite(lead.company_website || '');
-      setIndustry(lead.industry || '');
-      setEmail(lead.email || '');
-      setPhone(lead.phone || '');
-      setPreferredChannel(
-        PREFERRED_CHANNELS.includes(lead.preferred_channel as PreferredChannel)
-          ? (lead.preferred_channel as PreferredChannel)
-          : 'Phone'
-      );
-      setServiceCategory(
-        SERVICE_CATEGORIES.includes(lead.service_category as ServiceCategory)
-          ? (lead.service_category as ServiceCategory)
-          : 'Web & Digital'
-      );
-      setBudgetBracket(lead.budget_bracket || '₹5L - ₹15L');
-      setExpectedValue(Number(lead.expected_value) || 0);
-      setPriority(
-        lead.priority === 'High' || lead.priority === 'Medium' || lead.priority === 'Low'
-          ? (lead.priority as LeadPriority)
-          : 'Medium'
-      );
-      setNotes(lead.notes || '');
-      setErrorMessage(null);
-    }
-  }, [lead, isOpen]);
+  const [name, setName] = useState(lead.name || '');
+  const [company, setCompany] = useState(lead.company || '');
+  const [companyWebsite, setCompanyWebsite] = useState(lead.company_website || '');
+  const [industry, setIndustry] = useState(lead.industry || '');
+  const [email, setEmail] = useState(lead.email || '');
+  const [phone, setPhone] = useState(lead.phone || '');
+  const [preferredChannel, setPreferredChannel] = useState<PreferredChannel>(
+    PREFERRED_CHANNELS.includes(lead.preferred_channel as PreferredChannel)
+      ? (lead.preferred_channel as PreferredChannel)
+      : 'Phone'
+  );
+  const [serviceCategory, setServiceCategory] = useState<ServiceCategory>(
+    SERVICE_CATEGORIES.includes(lead.service_category as ServiceCategory)
+      ? (lead.service_category as ServiceCategory)
+      : 'Web & Digital'
+  );
+  const [budgetBracket, setBudgetBracket] = useState<string>(lead.budget_bracket || '₹5L - ₹15L');
+  const [expectedValue, setExpectedValue] = useState<number>(Number(lead.expected_value) || 0);
+  const [priority, setPriority] = useState<LeadPriority>(
+    lead.priority === 'High' || lead.priority === 'Medium' || lead.priority === 'Low'
+      ? (lead.priority as LeadPriority)
+      : 'Medium'
+  );
+  const [notes, setNotes] = useState(lead.notes || '');
 
   // Keyboard accessibility: Escape key dismissal (WCAG 2.1 AA)
   useEffect(() => {
@@ -143,7 +162,6 @@ export function EditLeadModal({
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lead) return;
 
     setErrorMessage(null);
 
@@ -158,8 +176,12 @@ export function EditLeadModal({
         phone: phone.trim() || null,
         preferredChannel,
         serviceCategory,
-        budgetBracket: budgetBracket.trim() || null,
-        expectedValue,
+        ...(canViewFinancials
+          ? {
+              budgetBracket: budgetBracket.trim() || null,
+              expectedValue,
+            }
+          : {}),
         priority,
         notes: notes.trim() || null,
       });
@@ -190,8 +212,12 @@ export function EditLeadModal({
           phone: phone.trim() || null,
           preferred_channel: preferredChannel,
           service_category: serviceCategory,
-          budget_bracket: budgetBracket.trim() || null,
-          expected_value: expectedValue,
+          ...(canViewFinancials
+            ? {
+                budget_bracket: budgetBracket.trim() || null,
+                expected_value: expectedValue,
+              }
+            : {}),
           priority,
           notes: notes.trim() || null,
         });
@@ -200,8 +226,6 @@ export function EditLeadModal({
       onClose();
     });
   };
-
-  if (!shouldRender || !lead) return null;
 
   return (
     <div
@@ -281,13 +305,13 @@ export function EditLeadModal({
               <label className={styles.fieldLabel} htmlFor="edit-phone">
                 Direct Phone
               </label>
-              <input
+              <CountryPhoneInput
                 id="edit-phone"
-                type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={styles.inputField}
-                placeholder="+971 50 123 4567"
+                onChange={setPhone}
+                defaultCountry="AE"
+                variant="admin"
+                disabled={isPending}
               />
             </div>
 
@@ -393,41 +417,45 @@ export function EditLeadModal({
               </select>
             </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel} htmlFor="edit-valuation">
-                Expected Valuation (₹)
-              </label>
-              <input
-                id="edit-valuation"
-                type="number"
-                min="0"
-                step="10000"
-                value={expectedValue}
-                onChange={(e) => setExpectedValue(Number(e.target.value) || 0)}
-                className={styles.inputField}
-              />
-              <span className={styles.valuationPreview}>
-                Formatted: {formatCurrencyLive(expectedValue)}
-              </span>
-            </div>
+            {canViewFinancials && (
+              <>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="edit-valuation">
+                    Expected Valuation (₹)
+                  </label>
+                  <input
+                    id="edit-valuation"
+                    type="number"
+                    min="0"
+                    step="10000"
+                    value={expectedValue}
+                    onChange={(e) => setExpectedValue(Number(e.target.value) || 0)}
+                    className={styles.inputField}
+                  />
+                  <span className={styles.valuationPreview}>
+                    Formatted: {formatCurrencyLive(expectedValue)}
+                  </span>
+                </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel} htmlFor="edit-budget">
-                Budget Tier Bracket
-              </label>
-              <select
-                id="edit-budget"
-                value={budgetBracket}
-                onChange={(e) => setBudgetBracket(e.target.value)}
-                className={styles.selectField}
-              >
-                {BUDGET_TIERS.map((tier) => (
-                  <option key={tier} value={tier}>
-                    {formatBudgetTierLabel(tier)}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="edit-budget">
+                    Budget Tier Bracket
+                  </label>
+                  <select
+                    id="edit-budget"
+                    value={budgetBracket}
+                    onChange={(e) => setBudgetBracket(e.target.value)}
+                    className={styles.selectField}
+                  >
+                    {BUDGET_TIERS.map((tier) => (
+                      <option key={tier} value={tier}>
+                        {formatBudgetTierLabel(tier)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
 
             <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
               <label className={styles.fieldLabel} htmlFor="edit-notes">

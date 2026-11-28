@@ -252,7 +252,7 @@
   transition: all 140ms ease;
 
   &::placeholder {
-    color: var(--admin-text-muted, #8a92a0);
+    color: var(--admin-text-muted, #525965);
   }
 
   &:focus {
@@ -522,4 +522,14 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.celebrationWorksLink {
+  font-weight: 700;
+  color: #065f46;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 4px;
 }

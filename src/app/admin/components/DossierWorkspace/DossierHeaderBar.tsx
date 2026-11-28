@@ -3,12 +3,11 @@
 /**
  * @file DossierHeaderBar.tsx
  * @description Master navigation and primary action header bar for the Client 360° Workspace.
- *              Conforms to Accordion Executive Advisory × Sypher Minimalist Light SaaS Architecture:
  *              - Back navigation targeting /admin/leads or /admin/deals based on operational context.
  *              - Raycast monospace copy token chip alongside clean ghost back button.
- *              - Editorial entity heading with mandatory trailing period (e.g. 'Morar Group 8500.').
- *              - Status selector pill with semantic radar dot and elevated dropdown menu.
- *              - Accordion Lemon Yellow primary action button meeting WCAG 44px minimum tap targets.
+ *              - Editorial entity heading without trailing punctuation.
+ *              - Status selector pill with vertical indicator rule and elevated dropdown menu.
+ *              - Marca Ubi Crimson primary action button meeting WCAG 44px minimum tap targets.
  * @module components/DossierWorkspace/DossierHeaderBar
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -39,8 +38,12 @@ export interface DossierHeaderBarProps {
   onOpenEditScope: () => void;
   /** Callback opening the Follow-Up Touchpoint Scheduler */
   onOpenScheduler: () => void;
-  /** Optional callback opening the Convert to Deal dialog */
+  /** Optional callback opening the Convert to Deal dialog (admin/manager on inbound open leads) */
   onOpenConvertToDeal?: () => void;
+  /** Optional callback initiating guarded Won / Converted transition */
+  onMarkWon?: () => void;
+  /** True when caller role is read-only (viewer) */
+  isReadOnly?: boolean;
   /** Mutation lock preventing redundant clicks during server actions */
   isPending?: boolean;
 }
@@ -57,6 +60,8 @@ export function DossierHeaderBar({
   onOpenEditScope,
   onOpenScheduler,
   onOpenConvertToDeal,
+  onMarkWon,
+  isReadOnly = false,
   isPending = false,
 }: DossierHeaderBarProps): React.ReactElement {
   const [isCopied, setIsCopied] = useState<boolean>(false);
@@ -155,18 +160,22 @@ export function DossierHeaderBar({
             <button
               type="button"
               className={styles.statusPillTrigger}
-              onClick={() => setIsStatusDropdownOpen((prev) => !prev)}
+              onClick={() => {
+                if (!isReadOnly) setIsStatusDropdownOpen((prev) => !prev);
+              }}
               aria-haspopup="listbox"
               aria-expanded={isStatusDropdownOpen}
-              disabled={isPending}
+              disabled={isPending || isReadOnly}
             >
               <span className={styles.statusPillLabel}>{currentStatus.name}</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 12, height: 12, marginLeft: 2 }}>
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              {!isReadOnly && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 12, height: 12, marginLeft: 2 }}>
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              )}
             </button>
 
-            {isStatusDropdownOpen && (
+            {isStatusDropdownOpen && !isReadOnly && (
               <div className={styles.statusDropdownMenu} role="listbox" aria-label="Pipeline stage options">
                 {funnelStatuses.map((st) => {
                   const isActive = st.id === currentStatus.id;
@@ -186,17 +195,18 @@ export function DossierHeaderBar({
                     >
                       <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span
+                          aria-hidden="true"
                           style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: '50%',
-                            backgroundColor: st.color_code || 'var(--admin-text-muted, #6b7280)',
+                            width: 3,
+                            height: 12,
+                            borderRadius: 2,
+                            backgroundColor: st.color_code || 'var(--admin-text-muted, #666663)',
                             display: 'inline-block',
                           }}
                         />
                         <span>{st.name}</span>
                       </span>
-                      <span style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--admin-text-muted, #6b7280)' }}>
+                      <span style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--admin-text-muted, #666663)' }}>
                         {st.bucket}
                       </span>
                     </button>
@@ -208,52 +218,69 @@ export function DossierHeaderBar({
         </div>
 
         {/* Primary Action Button Suite */}
-        <div className={styles.headerActionsRail}>
-          {!isConverted && onOpenConvertToDeal && (
+        {!isReadOnly && (
+          <div className={styles.headerActionsRail}>
+            {!isConverted && onOpenConvertToDeal && (
+              <button
+                type="button"
+                onClick={onOpenConvertToDeal}
+                className={styles.btnConvertDeal}
+                disabled={isPending}
+                aria-label="Convert this inquiry into an active pipeline deal"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 15, height: 15 }}>
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>Convert to Deal</span>
+              </button>
+            )}
+
+            {!isConverted && onMarkWon && (
+              <button
+                type="button"
+                onClick={onMarkWon}
+                className={styles.btnConvertDeal}
+                disabled={isPending}
+                aria-label="Finalize commercial terms and convert deal to Won"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 15, height: 15 }}>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Mark Won</span>
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={onOpenConvertToDeal}
-              className={styles.btnConvertDeal}
+              onClick={onOpenEditScope}
+              className={styles.btnSecondaryAction}
               disabled={isPending}
-              aria-label="Convert this inquiry into an active pipeline deal"
+              aria-label="Edit commercial deal parameters and contact coordinates"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 15, height: 15 }}>
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
-              <span>Convert to Deal</span>
+              <span>Edit Scope</span>
             </button>
-          )}
 
-          <button
-            type="button"
-            onClick={onOpenEditScope}
-            className={styles.btnSecondaryAction}
-            disabled={isPending}
-            aria-label="Edit commercial deal parameters and contact coordinates"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-            <span>Edit Scope</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenScheduler}
-            className={styles.btnSecondaryAction}
-            disabled={isPending}
-            aria-label="Schedule client follow-up touchpoint"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            <span>Schedule Touchpoint</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={onOpenScheduler}
+              className={styles.btnSecondaryAction}
+              disabled={isPending}
+              aria-label="Schedule client follow-up touchpoint"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span>Schedule Touchpoint</span>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

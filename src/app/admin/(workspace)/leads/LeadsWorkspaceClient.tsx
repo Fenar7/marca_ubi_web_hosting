@@ -10,7 +10,7 @@
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
-import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { FunnelBucket } from '@/types/crm';
 import {
@@ -25,7 +25,6 @@ import {
   type InlineStatusOption,
 } from '@/app/admin/components/LeadsTable';
 import { QuickMetricsRibbon } from './components/QuickMetricsRibbon/QuickMetricsRibbon';
-import { ClientDossierDrawer } from '@/app/admin/components/DossierDrawer';
 import { StageTransitionModal } from '@/app/admin/components/modals/StageTransitionModal';
 import {
   BatchReassignModal,
@@ -80,6 +79,8 @@ export interface LeadsWorkspaceClientProps {
     overdueCount: number;
     totalPipelineValue: number;
   };
+  globalBucketCounts?: BucketCounts;
+  canViewFinancials?: boolean;
 }
 
 const VALID_BUCKETS: BucketTabId[] = ['all', 'open', 'potential', 'converted', 'lost', 'overdue'];
@@ -106,8 +107,10 @@ function LeadsWorkspaceContent({
   availableSources: initialSources,
   availableAssignees: initialAssignees,
   availableStatuses: initialStatuses,
-  userRole,
+  userRole = 'viewer',
   telemetryMetrics,
+  globalBucketCounts,
+  canViewFinancials = true,
 }: LeadsWorkspaceClientProps): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -121,38 +124,32 @@ function LeadsWorkspaceContent({
     return () => window.removeEventListener('lead-created', handleLeadCreated);
   }, [router]);
 
-  // Local state initialized with server-hydrated leads for optimistic in-memory reconciliation
+  // Local state synchronized cleanly when server-hydrated leads change via router.refresh()
+  const [prevInitialLeads, setPrevInitialLeads] = useState<HydratedLeadItem[]>(initialLeads);
   const [leads, setLeads] = useState<HydratedLeadItem[]>(initialLeads);
-
-  useEffect(() => {
+  if (initialLeads !== prevInitialLeads) {
+    setPrevInitialLeads(initialLeads);
     setLeads(initialLeads);
-  }, [initialLeads]);
+  }
 
-  // Read initial filter values from URL search parameters
+  // Derive active filter values directly from URL search parameters
+  const currentQueryKey = searchParams.toString();
   const bucketParam = searchParams.get('bucket');
-  const searchParam = searchParams.get('search') || searchParams.get('q') || '';
-  const sourceParam = searchParams.get('source');
-  const assigneeParam = searchParams.get('assigned_to');
-  const priorityParam = searchParams.get('priority');
-  const stageParam = searchParams.get('stage');
-
-  // Deep-link query param resolution: supports both canonical ?id=<uuid> and legacy ?leadId=<uuid>
-  const leadIdParam = searchParams.get('id') || searchParams.get('leadId');
-
-  const initialBucket: BucketTabId = VALID_BUCKETS.includes(bucketParam as BucketTabId)
+  const selectedBucket: BucketTabId = VALID_BUCKETS.includes(bucketParam as BucketTabId)
     ? (bucketParam as BucketTabId)
     : 'all';
+  const urlSearchParam = searchParams.get('search') || searchParams.get('q') || '';
+  const [searchDraft, setSearchDraft] = useState<{ queryKey: string; value: string } | null>(null);
+  const searchQuery =
+    searchDraft && searchDraft.queryKey === currentQueryKey ? searchDraft.value : urlSearchParam;
+  const selectedSourceId = searchParams.get('source_id') || searchParams.get('source') || null;
+  const selectedAssigneeId =
+    searchParams.get('assigned_to') || searchParams.get('assignee_id') || null;
+  const selectedPriority = searchParams.get('priority') || null;
+  const selectedStageId = searchParams.get('stage') || null;
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [selectedBucket, setSelectedBucket] = useState<BucketTabId>(initialBucket);
-  const [searchQuery, setSearchQuery] = useState<string>(searchParam);
-  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(sourceParam);
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(assigneeParam);
-  const [selectedPriority, setSelectedPriority] = useState<string | null>(priorityParam);
-  const [selectedStageId, setSelectedStageId] = useState<string | null>(stageParam);
 
-  // Client 360 Slide-over Drawer State: hydrated from URL search parameter upon deep-link navigation
-  const [activeDrawerLeadId, setActiveDrawerLeadId] = useState<string | null>(leadIdParam);
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(Boolean(leadIdParam));
 
   // Multi-select batch operations state
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
@@ -198,59 +195,7 @@ function LeadsWorkspaceContent({
     lead: null,
   });
 
-  // Shallow URL Synchronizer for Client 360 drawer: preserves ?id=<uuid> for bookmarking & persistence
-  const handleOpenDrawer = useCallback((id: string) => {
-    setActiveDrawerLeadId(id);
-    setIsDrawerOpen(true);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('id') !== id && url.searchParams.get('leadId') !== id) {
-        url.searchParams.set('id', id);
-        url.searchParams.delete('leadId');
-        window.history.replaceState({}, '', url.pathname + url.search);
-      }
-    }
-  }, []);
 
-  const handleCloseDrawer = useCallback(() => {
-    setIsDrawerOpen(false);
-    setActiveDrawerLeadId(null);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      let changed = false;
-      if (url.searchParams.has('leadId')) {
-        url.searchParams.delete('leadId');
-        changed = true;
-      }
-      if (url.searchParams.has('id')) {
-        url.searchParams.delete('id');
-        changed = true;
-      }
-      if (url.searchParams.has('action')) {
-        url.searchParams.delete('action');
-        changed = true;
-      }
-      if (changed) {
-        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleOpenDrawerEvent = (e: Event): void => {
-      const customEvt = e as CustomEvent<{ leadId?: string; id?: string } | string>;
-      const id =
-        typeof customEvt.detail === 'string'
-          ? customEvt.detail
-          : customEvt.detail?.id || customEvt.detail?.leadId;
-      if (id) {
-        handleOpenDrawer(id);
-      }
-    };
-
-    window.addEventListener('open-lead-drawer', handleOpenDrawerEvent);
-    return () => window.removeEventListener('open-lead-drawer', handleOpenDrawerEvent);
-  }, [handleOpenDrawer]);
 
   /**
    * Shallow URL Synchronizer: writes active filter state into window.history in < 16ms
@@ -332,29 +277,13 @@ function LeadsWorkspaceContent({
     ]
   );
 
-  // Sync state if URL changes externally
   useEffect(() => {
-    const rawBucket = searchParams.get('bucket');
-    if (VALID_BUCKETS.includes(rawBucket as BucketTabId)) {
-      setSelectedBucket(rawBucket as BucketTabId);
-    } else {
-      setSelectedBucket('all');
-    }
-
-    setSearchQuery(searchParams.get('search') || searchParams.get('q') || '');
-    setSelectedSourceId(searchParams.get('source_id') || searchParams.get('source') || null);
-    setSelectedAssigneeId(
-      searchParams.get('assigned_to') || searchParams.get('assignee_id') || null
-    );
-    setSelectedPriority(searchParams.get('priority') || null);
-    setSelectedStageId(searchParams.get('stage') || null);
-
-    const currentParamId = searchParams.get('id') || searchParams.get('leadId');
-    if (currentParamId && currentParamId !== activeDrawerLeadId) {
-      setActiveDrawerLeadId(currentParamId);
-      setIsDrawerOpen(true);
-    }
-  }, [searchParams, activeDrawerLeadId]);
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, []);
 
   // Available sources list
   const availableSources = useMemo<FilterDropdownOption[]>(() => {
@@ -649,12 +578,13 @@ function LeadsWorkspaceContent({
     }
     setSelectedLeadIds(new Set());
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('popstate'));
+      router.refresh();
     }
   };
 
-  // Real-time record counts per bucket
+  // Use exact server-computed workspace bucket counts whenever available
   const counts = useMemo<BucketCounts>(() => {
+    if (globalBucketCounts) return globalBucketCounts;
     return {
       all: leads.length,
       open: leads.filter((l) => l.bucket === 'open').length,
@@ -663,7 +593,7 @@ function LeadsWorkspaceContent({
       lost: leads.filter((l) => l.bucket === 'lost').length,
       overdue: leads.filter(isLeadOverdue).length,
     };
-  }, [leads]);
+  }, [globalBucketCounts, leads]);
 
   // Quick Telemetry KPIs for the header ribbon
   const quickTelemetry = useMemo(() => {
@@ -764,10 +694,10 @@ function LeadsWorkspaceContent({
       );
       setSelectedLeadIds(new Set());
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('popstate'));
+        router.refresh();
       }
     },
-    [resolvedStatuses, selectedLeadIds]
+    [resolvedStatuses, selectedLeadIds, router]
   );
 
   // Batch CSV Export Callback
@@ -789,8 +719,16 @@ function LeadsWorkspaceContent({
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      } else {
-        alert(result.error || 'Failed to export selected leads.');
+      } else if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('crm-toast', {
+            detail: {
+              type: 'error',
+              title: 'Export Failed',
+              description: result.error || 'Failed to export selected leads.',
+            },
+          })
+        );
       }
     } catch (err: unknown) {
       console.error('[leads-workspace] CSV export error:', err);
@@ -835,7 +773,7 @@ function LeadsWorkspaceContent({
       } else if (e.key === 'Enter') {
         if (focusedRowIndex >= 0 && focusedRowIndex < filteredLeads.length) {
           e.preventDefault();
-          handleOpenDrawer(filteredLeads[focusedRowIndex].id);
+          router.push(`/admin/leads/${filteredLeads[focusedRowIndex].id}`);
         }
       } else if (e.key === 'Escape') {
         if (selectedLeadIds.size > 0) {
@@ -851,49 +789,49 @@ function LeadsWorkspaceContent({
     filteredLeads,
     focusedRowIndex,
     handleToggleSelect,
-    handleOpenDrawer,
+    router,
     selectedLeadIds.size,
     handleClearSelection,
   ]);
 
-  // Action handlers updating local state and URL parameters
+  // Action handlers updating URL query parameters directly
   const handleBucketChange = (bucket: BucketTabId): void => {
-    setSelectedBucket(bucket);
     updateUrlParams({ bucket });
   };
 
   const handleSearchChange = (query: string): void => {
-    setSearchQuery(query);
-    updateUrlParams({ search: query });
+    setSearchDraft({ queryKey: currentQueryKey, value: query });
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    searchDebounceRef.current = setTimeout(() => {
+      searchDebounceRef.current = null;
+      updateUrlParams({ search: query });
+    }, 300);
   };
 
   const handleSourceChange = (sourceId: string | null): void => {
-    setSelectedSourceId(sourceId);
     updateUrlParams({ source: sourceId });
   };
 
   const handleAssigneeChange = (assigneeId: string | null): void => {
-    setSelectedAssigneeId(assigneeId);
     updateUrlParams({ assigned_to: assigneeId });
   };
 
   const handlePriorityChange = (priority: string | null): void => {
-    setSelectedPriority(priority);
     updateUrlParams({ priority });
   };
 
   const handleStageClear = (): void => {
-    setSelectedStageId(null);
     updateUrlParams({ stage: null });
   };
 
   const handleClearAll = (): void => {
-    setSelectedBucket('all');
-    setSearchQuery('');
-    setSelectedSourceId(null);
-    setSelectedAssigneeId(null);
-    setSelectedPriority(null);
-    setSelectedStageId(null);
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    setSearchDraft({ queryKey: currentQueryKey, value: '' });
     updateUrlParams({
       bucket: 'all',
       search: '',
@@ -996,6 +934,7 @@ function LeadsWorkspaceContent({
         activeTriageCount={quickTelemetry.activeTriageCount}
         overdueCount={quickTelemetry.overdueCount}
         totalPipelineValue={quickTelemetry.totalPipelineValue}
+        canViewFinancials={canViewFinancials}
       />
 
       <div className={styles.inboxControls}>
@@ -1072,6 +1011,18 @@ function LeadsWorkspaceContent({
           focusedRowIndex={focusedRowIndex}
           onStatusChange={handleInlineStatusChange}
           onPriorityChange={handleInlinePriorityChange}
+          availableAssignees={availableAssignees}
+          canViewFinancials={canViewFinancials}
+          onAssigneeChange={(leadId, newAssigneeId, newAssigneeName) => {
+            setLeads((prev) =>
+              prev.map((l) =>
+                l.id === leadId
+                  ? { ...l, assigned_to: newAssigneeId, assigned_to_name: newAssigneeName }
+                  : l
+              )
+            );
+            router.refresh();
+          }}
           userRole={userRole}
         />
       </div>
@@ -1097,17 +1048,7 @@ function LeadsWorkspaceContent({
         onSuccess={handleBatchStageSuccess}
       />
 
-      {/* Slide-over Client 360 Degree Dossier Drawer */}
-      <ClientDossierDrawer
-        leadId={activeDrawerLeadId}
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        onLeadUpdated={() => {
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('popstate'));
-          }
-        }}
-      />
+
 
       {/* Guarded Pipeline Stage Transition Modal (Negotiation, Lost, Converted, On Hold) */}
       {stageModalState.isOpen && stageModalState.leadId && stageModalState.targetStatus && (
@@ -1177,7 +1118,7 @@ function LeadsWorkspaceContent({
           onSuccess={() => {
             setConvertModalState({ isOpen: false, lead: null });
             if (typeof window !== 'undefined') {
-              window.dispatchEvent(new Event('popstate'));
+              router.refresh();
             }
           }}
         />

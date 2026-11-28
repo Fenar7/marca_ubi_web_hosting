@@ -140,4 +140,6 @@ export interface GuardedTransitionResultPayload {
   lostReason?: string | null;
   revisitDate?: string | null;
   nextFollowUp?: string | null;
+  workId?: string | null;
+  projectCode?: string | null;
 }

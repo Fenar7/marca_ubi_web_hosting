@@ -4,7 +4,7 @@
  *              for Client 360° Sliding Drawer Shell & Organization Dossier.
  *              Enforces pure white card surfaces, hairline specular borders (#e2e5ea),
  *              high-contrast primary ink (#1f242f), secondary slate (#525965),
- *              and signature Accordion Lemon Yellow pill action controls.
+ *              and signature Marca Ubi Crimson pill action controls.
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
 
@@ -15,11 +15,12 @@ $surface-hover: var(--admin-surface-hover, #f4f6f9);
 $border-specular: var(--admin-border-default, #e2e5ea);
 $border-subtle: var(--admin-border-subtle, #f0f2f5);
 $border-strong: var(--admin-border-strong, #1f242f);
-$accent-lemon: var(--admin-accent-lemon, #eefb87);
-$accent-lemon-hover: var(--admin-accent-lemon-hover, #e4f375);
+$btn-primary-bg: var(--admin-btn-primary-bg, #ea002a);
+$btn-primary-hover: var(--admin-btn-primary-hover, #c40023);
+$btn-primary-ink: var(--admin-btn-primary-text, #ffffff);
 $text-primary: var(--admin-text-primary, #1f242f);
 $text-secondary: var(--admin-text-secondary, #525965);
-$text-muted: var(--admin-text-muted, #8a92a0);
+$text-muted: var(--admin-text-muted, #525965);
 $font-mono: var(--font-admin-code, 'SF Mono', 'Fira Code', Menlo, Consolas, Monaco, monospace);
 $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -137,9 +138,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .statusDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
   flex-shrink: 0;
 }
 
@@ -158,9 +159,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   justify-content: center;
   gap: 0.45rem;
   border-radius: 9999px;
-  border: 1px solid $border-strong;
-  background: $accent-lemon;
-  color: $text-primary;
+  border: 1px solid $btn-primary-hover;
+  background: $btn-primary-bg;
+  color: $btn-primary-ink;
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.8rem;
   font-weight: 600;
@@ -171,7 +172,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   transition: all 0.15s ease;
 
   &:hover {
-    background: $accent-lemon-hover;
+    background: $btn-primary-hover;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
   }
@@ -870,9 +871,9 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &.activePreset {
-    background: $accent-lemon;
-    border-color: $border-strong;
-    color: $text-primary;
+    background: $btn-primary-bg;
+    border-color: $btn-primary-hover;
+    color: $btn-primary-ink;
     font-weight: 600;
   }
 }
@@ -937,16 +938,16 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
 .submitTouchpointBtn {
   position: relative;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 1.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  background: $accent-lemon;
-  border: 1px solid $border-strong;
+  background: $btn-primary-bg;
+  border: 1px solid $btn-primary-hover;
   border-radius: 9999px;
-  color: $text-primary;
+  color: $btn-primary-ink;
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
   font-size: 0.76rem;
   font-weight: 700;
@@ -970,7 +971,7 @@ $ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &:hover:not(.disabled) {
-    background: $accent-lemon-hover;
+    background: $btn-primary-hover;
     transform: translateY(-1px);
   }
 

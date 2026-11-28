@@ -22,52 +22,22 @@ export interface TransactionItem {
   monogram: string;
   theme: "blue" | "rose" | "purple";
   date: string;
-  amount: number;
+  amount: number | null;
   status: string;
+  isConverted: boolean;
 }
 
 export interface RecentTransactionsTableProps {
   records?: OverviewRecord[];
   financials?: boolean;
+  recordRoute?: string | null;
   onOpenRecord?: (record: OverviewRecord) => void;
 }
-
-const DEFAULT_TRANSACTIONS: TransactionItem[] = [
-  {
-    id: "tx-1",
-    title: "Mobile App Platform",
-    category: "Web & Digital",
-    monogram: "M",
-    theme: "blue",
-    date: "Wed 10:29 AM",
-    amount: 2550000,
-    status: "Success",
-  },
-  {
-    id: "tx-2",
-    title: "Strategic Architecture",
-    category: "Full-Suite Advisory",
-    monogram: "S",
-    theme: "rose",
-    date: "Wed 10:29 AM",
-    amount: 1850000,
-    status: "Success",
-  },
-  {
-    id: "tx-3",
-    title: "Brand Identity System",
-    category: "UI/UX & Branding",
-    monogram: "B",
-    theme: "purple",
-    date: "Tue 03:45 PM",
-    amount: 1200000,
-    status: "Success",
-  },
-];
 
 export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = ({
   records,
   financials = true,
+  recordRoute = null,
   onOpenRecord,
 }) => {
   const router = useRouter();
@@ -85,28 +55,32 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
     };
   }, [openMenuId]);
 
-  // If actual records are supplied, map top 3 converted/potential records
   const displayItems: TransactionItem[] = React.useMemo(() => {
     if (!records || records.length === 0) {
-      return DEFAULT_TRANSACTIONS;
+      return [];
     }
 
-    return records.slice(0, 3).map((rec, idx) => {
+    return records.slice(0, 4).map((rec, idx) => {
       const themes: ("blue" | "rose" | "purple")[] = ["blue", "rose", "purple"];
       const d = new Date(rec.createdAt);
       const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const dayStr = days[d.getDay()] || "Wed";
-      const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const dayStr = days[d.getUTCDay()] || "Wed";
+      const timeStr = d.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC",
+      });
 
       return {
         id: rec.id,
-        title: rec.name || "Client Advisory",
+        title: rec.company || rec.name || "Client Advisory",
         category: rec.serviceCategory || "Commercial Engagement",
         monogram: (rec.name ? rec.name.charAt(0) : "M").toUpperCase(),
         theme: themes[idx % themes.length],
-        date: `${dayStr} ${timeStr}`,
-        amount: rec.expectedValue ?? 1500000,
-        status: "Success",
+        date: `${dayStr} ${timeStr} UTC`,
+        amount: typeof rec.expectedValue === "number" ? rec.expectedValue : null,
+        status: rec.stage || "Active",
+        isConverted: rec.stageBucket === "converted",
       };
     });
   }, [records]);
@@ -119,17 +93,30 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
       <header className={styles.tableHeader}>
         <h2 className={styles.title}>Recent Transaction</h2>
 
-        <button
-          type="button"
-          className={styles.filterButton}
-          onClick={() => router.push("/admin/deals?bucket=converted")}
-          aria-label="Filter recent transactions"
-        >
-          <span>Filter</span>
-          <span className={styles.filterIcon} aria-hidden="true">
-            ☷
-          </span>
+        {recordRoute && (
+          <button
+            type="button"
+            className={styles.filterButton}
+            onClick={() => router.push(`${recordRoute}?bucket=converted`)}
+            aria-label="Filter recent transactions"
+          >
+            <span>Filter</span>
+            <svg
+              className={styles.filterIcon}
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
         </button>
+        )}
       </header>
 
       <div className={styles.tableWrapper}>
@@ -141,12 +128,22 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
               <th scope="col">Total Amount</th>
               <th scope="col">Status</th>
               <th scope="col" aria-label="Actions">
-                ···
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="5" cy="12" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="19" cy="12" r="2" />
+                </svg>
               </th>
             </tr>
           </thead>
           <tbody>
-            {displayItems.map((item, index) => {
+            {displayItems.length === 0 ? (
+              <tr>
+                <td colSpan={5} className={styles.emptyTableState}>
+                  No recent pipeline deals or conversions recorded in this window.
+                </td>
+              </tr>
+            ) : displayItems.map((item) => {
               const themeClass =
                 item.theme === "rose"
                   ? styles.iconRose
@@ -180,13 +177,18 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
                   <td className={styles.dateCell}>{item.date}</td>
 
                   <td className={styles.amountCell}>
-                    <span className={styles.positivePrefix}>+</span>
-                    {financials ? formatCrmCurrency(item.amount) : "Confidential"}
+                    {!financials ? (
+                      "Confidential"
+                    ) : item.amount !== null ? (
+                      formatCrmCurrency(item.amount)
+                    ) : (
+                      "—"
+                    )}
                   </td>
 
                   <td>
                     <span className={styles.statusPill}>
-                      <span aria-hidden="true">✔</span> {item.status}
+                      {item.status}
                     </span>
                   </td>
 
@@ -202,7 +204,11 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
                           setOpenMenuId((prev) => (prev === item.id ? null : item.id));
                         }}
                       >
-                        ···
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <circle cx="5" cy="12" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="19" cy="12" r="2" />
+                        </svg>
                       </button>
                       {openMenuId === item.id && (
                         <div
@@ -221,16 +227,27 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
                           >
                             Inspect Dossier
                           </button>
-                          <button
-                            type="button"
-                            className={styles.popoverItem}
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              router.push(`/admin/deals/${item.id}`);
-                            }}
-                          >
-                            Open Full Page ↗
-                          </button>
+                          {(() => {
+                            const fullHref =
+                              matchedRecord?.href ??
+                              (recordRoute ? `${recordRoute}/${item.id}` : null);
+                            return fullHref ? (
+                              <button
+                                type="button"
+                                className={styles.popoverItem}
+                                onClick={() => {
+                                  setOpenMenuId(null);
+                                  router.push(fullHref);
+                                }}
+                              >
+                                <span>Open Full Page</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                                  <line x1="7" y1="17" x2="17" y2="7" />
+                                  <polyline points="7 7 17 7 17 17" />
+                                </svg>
+                              </button>
+                            ) : null;
+                          })()}
                         </div>
                       )}
                     </div>
@@ -242,16 +259,21 @@ export const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = (
         </table>
       </div>
 
-      <footer className={styles.tableFooter}>
-        <button
-          type="button"
-          className={styles.viewAllTransactionsBtn}
-          onClick={() => router.push("/admin/deals")}
-        >
-          <span>View All Pipeline Transactions &amp; Ledger</span>
-          <span className={styles.btnArrow} aria-hidden="true">↗</span>
-        </button>
-      </footer>
+      {recordRoute && (
+        <footer className={styles.tableFooter}>
+          <button
+            type="button"
+            className={styles.viewAllTransactionsBtn}
+            onClick={() => router.push(recordRoute)}
+          >
+            <span>View All Pipeline Transactions &amp; Ledger</span>
+            <svg className={styles.btnArrow} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </button>
+        </footer>
+      )}
     </article>
   );
 };

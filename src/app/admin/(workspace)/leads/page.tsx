@@ -14,6 +14,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/server';
 import { ROLE_DEFAULT_TABS, type CrmUserRole, type FunnelBucket } from '@/types/crm';
+import { dashboardAmount, foldDashboardPages } from '@/app/admin/lib/dashboardContracts';
 import { buildCommercialSearchFilter } from '@/app/admin/lib/commercialSearch';
 import { LeadsTableSkeleton, type InlineStatusOption } from '@/app/admin/components/LeadsTable';
 import { ResultPagination } from '@/app/admin/components/LeadsTable/ResultPagination';
@@ -30,6 +31,36 @@ export const metadata: Metadata = {
   },
 };
 
+interface FilterableLeadQuery<TResult = unknown> {
+  eq(column: string, value: string): FilterableLeadQuery<TResult>;
+  ilike(column: string, pattern: string): FilterableLeadQuery<TResult>;
+  in(column: string, values: readonly string[]): FilterableLeadQuery<TResult>;
+  not(column: string, operator: string, value: null): FilterableLeadQuery<TResult>;
+  lt(column: string, value: string): FilterableLeadQuery<TResult>;
+  or(filters: string): FilterableLeadQuery<TResult>;
+  order(
+    column: string,
+    opts?: { ascending?: boolean; nullsFirst?: boolean }
+  ): FilterableLeadQuery<TResult>;
+  range(from: number, to: number): PromiseLike<TResult>;
+}
+
+interface LeadQueryResponse {
+  data: unknown[] | null;
+  error: { code?: string; message: string } | null;
+  count: number | null;
+}
+
+const SORTABLE_LEAD_COLUMNS: Record<string, string> = {
+  lead_id: 'lead_id',
+  name: 'name',
+  service_category: 'service_category',
+  expected_value: 'expected_value',
+  priority: 'priority',
+  next_follow_up: 'next_follow_up',
+  created_at: 'created_at',
+};
+
 interface AdminLeadsPageProps {
   searchParams?: Promise<{
     id?: string;
@@ -42,6 +73,9 @@ interface AdminLeadsPageProps {
     search?: string;
     q?: string;
     action?: string;
+    sort?: string;
+    dir?: string;
+    error?: string;
     page?: string;
   }>;
 }
@@ -58,6 +92,9 @@ export default async function AdminLeadsPage(
   const pageSize = 100;
   if (resolvedSearchParams?.leadId) {
     redirect(`/admin/leads/${resolvedSearchParams.leadId}`);
+  }
+  if (resolvedSearchParams?.id) {
+    redirect(`/admin/leads/${encodeURIComponent(resolvedSearchParams.id)}`);
   }
   const supabase = await createClient();
 
@@ -97,23 +134,143 @@ export default async function AdminLeadsPage(
     || Boolean(priority && !['high', 'medium', 'low'].includes(priority.toLowerCase()))
     || Boolean(bucket && !['all', 'open', 'potential', 'converted', 'lost', 'overdue'].includes(bucket));
 
-  let leadsQuery = supabase.from('leads').select(`
-        id, lead_id, name, company, phone, email,
-        preferred_channel, service_category, expected_value, priority, status_id,
-        assigned_to, lead_source_id, next_follow_up,
-        revisit_date, created_at,
-        funnel_statuses!inner(id, name, bucket, color_code, sort_order)
-      `, { count: 'exact' });
-  if (!invalidFilter) {
-    if (stage) leadsQuery = leadsQuery.eq('status_id', stage);
-    if (assignedTo) leadsQuery = leadsQuery.eq('assigned_to', assignedTo);
-    if (source) leadsQuery = leadsQuery.eq('lead_source_id', source);
-    if (priority) leadsQuery = leadsQuery.ilike('priority', priority);
-    if (bucket && !['all', 'overdue'].includes(bucket)) leadsQuery = leadsQuery.eq('funnel_statuses.bucket', bucket);
-    if (search.filter) leadsQuery = leadsQuery.or(search.filter);
+  const nowIso = new Date().toISOString();
+  const requestNowMs = Date.parse(nowIso);
+  const todayDate = nowIso.slice(0, 10);
+  const { dashboardFeature } = await import('@/app/admin/lib/dashboardContracts');
+  const canViewFinancials = dashboardFeature(role, profile.feature_permissions, 'can_view_financials');
+  const requestedSort = resolvedSearchParams?.sort;
+  const resolvedSortColumn =
+    requestedSort &&
+    SORTABLE_LEAD_COLUMNS[requestedSort] &&
+    (canViewFinancials || requestedSort !== 'expected_value')
+      ? SORTABLE_LEAD_COLUMNS[requestedSort]
+      : 'created_at';
+  const sortAscending = resolvedSearchParams?.dir === 'asc';
+  const hasErrorBanner = Boolean(resolvedSearchParams?.error);
+
+  const syntheticExclusion = 'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true';
+
+  function applyBaseLeadFilters<TResult>(
+    q: FilterableLeadQuery<TResult>,
+    includeBucket = true
+  ): FilterableLeadQuery<TResult> {
+    let query = q;
+    if (!invalidFilter) {
+      if (stage) query = query.eq('status_id', stage);
+      if (assignedTo) query = query.eq('assigned_to', assignedTo);
+      if (source) query = query.eq('lead_source_id', source);
+      if (priority) query = query.ilike('priority', priority);
+
+      const orGroups: string[] = [`or(${syntheticExclusion})`];
+      if (search.filter) {
+        orGroups.push(`or(${search.filter})`);
+      }
+
+      if (includeBucket && bucket && bucket !== 'all') {
+        if (bucket === 'overdue') {
+          query = query
+            .in('funnel_statuses.bucket', ['open', 'potential'])
+            .not('next_follow_up', 'is', null)
+            .lt('next_follow_up', nowIso);
+          orGroups.push(`or(revisit_date.is.null,revisit_date.lte.${todayDate})`);
+        } else {
+          query = query.eq('funnel_statuses.bucket', bucket);
+        }
+      }
+
+      if (orGroups.length === 1) {
+        query = query.or(syntheticExclusion);
+      } else {
+        query = query.or(`and(${orGroups.join(',')})`);
+      }
+    }
+    return query;
   }
 
-  const [sourcesRes, profilesRes, statusesRes, leadsRes] = await Promise.all([
+  const leadColumns = canViewFinancials
+    ? `id, lead_id, name, company, phone, email, preferred_channel, service_category, expected_value, priority, status_id, assigned_to, lead_source_id, next_follow_up, revisit_date, created_at, funnel_statuses!inner(id, name, bucket, color_code, sort_order)`
+    : `id, lead_id, name, company, phone, email, preferred_channel, service_category, priority, status_id, assigned_to, lead_source_id, next_follow_up, revisit_date, created_at, funnel_statuses!inner(id, name, bucket, color_code, sort_order)`;
+
+  const leadsQuery = applyBaseLeadFilters<LeadQueryResponse>(
+    supabase.from('leads').select(leadColumns, { count: 'exact' }) as unknown as FilterableLeadQuery<LeadQueryResponse>,
+    true
+  );
+
+  const countBucketHead = async (targetBucket: 'all' | 'open' | 'potential' | 'converted' | 'lost' | 'overdue'): Promise<number | null> => {
+    if (invalidFilter || hasErrorBanner) return null;
+    if (targetBucket === 'overdue') {
+      const orGroups = [
+        `or(${syntheticExclusion})`,
+        ...(search.filter ? [`or(${search.filter})`] : []),
+        `or(revisit_date.is.null,revisit_date.lte.${todayDate})`,
+      ];
+      let oq = supabase
+        .from('leads')
+        .select('id, funnel_statuses!inner(bucket)', { count: 'exact', head: true })
+        .in('funnel_statuses.bucket', ['open', 'potential'])
+        .not('next_follow_up', 'is', null)
+        .lt('next_follow_up', nowIso);
+      if (stage) oq = oq.eq('status_id', stage);
+      if (assignedTo) oq = oq.eq('assigned_to', assignedTo);
+      if (source) oq = oq.eq('lead_source_id', source);
+      if (priority) oq = oq.ilike('priority', priority);
+      oq = oq.or(`and(${orGroups.join(',')})`);
+      const res = await oq;
+      return res.error ? null : res.count;
+    }
+
+    let q = applyBaseLeadFilters<{ count: number | null; error: { code?: string; message: string } | null }>(
+      supabase.from('leads').select('id, funnel_statuses!inner(bucket)', { count: 'exact', head: true }) as unknown as FilterableLeadQuery<{ count: number | null; error: { code?: string; message: string } | null }>,
+      false
+    );
+    if (targetBucket !== 'all') {
+      q = q.eq('funnel_statuses.bucket', targetBucket);
+    }
+    const res = await (q as unknown as PromiseLike<{ count: number | null; error: { code?: string; message: string } | null }>);
+    return res.error ? null : res.count;
+  };
+
+  const pipelineFoldPromise =
+    invalidFilter || hasErrorBanner || !canViewFinancials
+      ? Promise.resolve(null)
+      : foldDashboardPages<{ expected_value?: number | string }, { total: number }>(
+          async (from, to) => {
+            const q = applyBaseLeadFilters<LeadQueryResponse>(
+              supabase
+                .from('leads')
+                .select('id, expected_value, funnel_statuses!inner(bucket)')
+                .in('funnel_statuses.bucket', ['open', 'potential']) as unknown as FilterableLeadQuery<LeadQueryResponse>,
+              false
+            )
+              .order('id')
+              .range(from, to);
+            const res = await q;
+            return {
+              data: res.data as unknown as Array<{ expected_value?: number | string }> | null,
+              error: res.error,
+            };
+          },
+          { total: 0 },
+          (acc, row) => {
+            const amt = dashboardAmount(row.expected_value);
+            if (amt !== null) acc.total += amt;
+          }
+        );
+
+  const [
+    sourcesRes,
+    profilesRes,
+    statusesRes,
+    leadsRes,
+    allBucketCount,
+    openBucketCount,
+    potentialBucketCount,
+    convertedBucketCount,
+    lostBucketCount,
+    overdueBucketCount,
+    pipelineValueFold,
+  ] = await Promise.all([
     supabase
       .from('lead_sources')
       .select('id, name, color_code')
@@ -128,9 +285,16 @@ export default async function AdminLeadsPage(
       .eq('is_active', true)
       .order('sort_order', { ascending: true }),
     leadsQuery
-      .order('created_at', { ascending: false })
+      .order(resolvedSortColumn, { ascending: sortAscending, nullsFirst: false })
       .order('id', { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1),
+    countBucketHead('all'),
+    countBucketHead('open'),
+    countBucketHead('potential'),
+    countBucketHead('converted'),
+    countBucketHead('lost'),
+    countBucketHead('overdue'),
+    pipelineFoldPromise,
   ]);
 
   if (leadsRes.error) console.error('[leads-workspace] Failed to load leads:', { code: leadsRes.error.code, message: leadsRes.error.message });
@@ -169,11 +333,7 @@ export default async function AdminLeadsPage(
     };
   });
 
-  const permissions = profile?.feature_permissions as Record<string, unknown> | null;
-  const canViewFinancials =
-    role === 'admin' ||
-    role === 'sales_manager' ||
-    permissions?.can_view_financials === true;
+
 
   const availableStatuses: InlineStatusOption[] = (statusesRes.data || []).map((s) => ({
     id: s.id,
@@ -187,7 +347,26 @@ export default async function AdminLeadsPage(
   const sourceById = new Map((sourcesRes.data || []).map((source) => [source.id, source]));
 
   // Hydrate client model with relational properties
-  const leads: HydratedLeadItem[] = (leadsRes.data || []).map((l) => {
+  const rawLeadRows = (leadsRes.data || []) as unknown as Array<{
+    id: string;
+    lead_id: string;
+    name: string;
+    company: string | null;
+    phone: string | null;
+    email: string | null;
+    preferred_channel: string | null;
+    service_category: string | null;
+    expected_value?: number | string | null;
+    priority: string | null;
+    status_id: string;
+    assigned_to: string | null;
+    lead_source_id: string;
+    next_follow_up: string | null;
+    revisit_date: string | null;
+    created_at: string;
+    funnel_statuses?: unknown;
+  }>;
+  const leads: HydratedLeadItem[] = rawLeadRows.map((l) => {
     const statusData = l.funnel_statuses as {
       id?: string;
       name?: string;
@@ -232,21 +411,38 @@ export default async function AdminLeadsPage(
   const unavailableDetails = [sourcesRes.error && 'Sources', missingOwnerDetails && 'Owner names'].filter(Boolean);
   const lookupNotice = unavailableDetails.length ? `${unavailableDetails.join(' and ')} unavailable.` : undefined;
 
-  const totalInquiries = leadsRes.count || leads.length;
-  const activeTriageCount = leads.filter(
-    (l) => l.bucket === 'open' || l.bucket === 'potential'
-  ).length;
-  const overdueCount = leads.filter((l) => {
-    return (
-      l.next_follow_up &&
-      new Date(l.next_follow_up).getTime() < Date.now() &&
-      l.bucket !== 'converted' &&
-      l.bucket !== 'lost'
-    );
-  }).length;
-  const totalPipelineValue = leads
-    .filter((l) => l.bucket === 'open' || l.bucket === 'potential')
-    .reduce((sum, l) => sum + (l.expected_value || 0), 0);
+  const totalInquiries = allBucketCount ?? leadsRes.count ?? leads.length;
+  const activeTriageCount =
+    openBucketCount !== null && potentialBucketCount !== null
+      ? openBucketCount + potentialBucketCount
+      : leads.filter((l) => l.bucket === 'open' || l.bucket === 'potential').length;
+  const overdueCount =
+    overdueBucketCount ??
+    leads.filter(
+      (l) =>
+        l.next_follow_up &&
+        new Date(l.next_follow_up).getTime() < requestNowMs &&
+        l.bucket !== 'converted' &&
+        l.bucket !== 'lost'
+    ).length;
+  const totalPipelineValue = canViewFinancials
+    ? pipelineValueFold?.total ??
+      leads
+        .filter((l) => l.bucket === 'open' || l.bucket === 'potential')
+        .reduce((sum, l) => sum + (l.expected_value || 0), 0)
+    : 0;
+
+  const globalBucketCounts =
+    allBucketCount !== null
+      ? {
+          all: allBucketCount,
+          open: openBucketCount ?? 0,
+          potential: potentialBucketCount ?? 0,
+          converted: convertedBucketCount ?? 0,
+          lost: lostBucketCount ?? 0,
+          overdue: overdueBucketCount ?? 0,
+        }
+      : undefined;
 
   const telemetryMetrics = {
     totalInquiries,
@@ -280,13 +476,15 @@ export default async function AdminLeadsPage(
               availableStatuses={availableStatuses}
               userRole={role}
               telemetryMetrics={telemetryMetrics}
+              globalBucketCounts={globalBucketCounts}
+              canViewFinancials={canViewFinancials}
               lookupNotice={lookupNotice}
               pagination={!search.error && <ResultPagination
                 page={page}
                 pageSize={pageSize}
                 loadedCount={leads.length}
                 totalCount={leadsRes.count}
-                scopeDescription="Bucket counts and overdue filtering apply to this page."
+                scopeDescription="Metrics and bucket counts reflect the full matching workspace."
               />}
             />
           </>

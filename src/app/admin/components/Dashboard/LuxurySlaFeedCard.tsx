@@ -2,9 +2,8 @@
 
 /**
  * @file LuxurySlaFeedCard.tsx
- * @description Master Upcoming SLA Milestones & Client Touchpoints Feed modeled 1:1 after
- *              the "Upcoming Payments / Scheduled Invoices" widget in Fundora.
- *              Displays priority deals with live countdowns, urgency badges, and dossier hooks.
+ * @description Upcoming SLA Milestones & Client Follow-ups Feed.
+ *              Displays priority deals with countdowns, urgency badges, and deal navigation hooks.
  * @module admin/components/Dashboard/LuxurySlaFeedCard
  * @author Fenar7 <86710532+Fenar7@users.noreply.github.com>
  */
@@ -106,7 +105,7 @@ export const LuxurySlaFeedCard: React.FC<LuxurySlaFeedCardProps> = ({
                       type="button"
                       className={styles.dealNameLink}
                       onClick={() => onOpenDossier?.(record)}
-                      title={`Open dossier for ${record.name}`}
+                      title={`View deal for ${record.name}`}
                     >
                       {record.name}
                     </button>
@@ -146,7 +145,7 @@ export const LuxurySlaFeedCard: React.FC<LuxurySlaFeedCardProps> = ({
       {/* Footer Quick Action */}
       <footer className={styles.cardFooter}>
         <span className={styles.footerHint}>
-          Automated SLA alert engine active across active deals
+          Follow-up reminders reflect active deal due dates
         </span>
       </footer>
     </article>

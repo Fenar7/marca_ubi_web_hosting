@@ -19,18 +19,19 @@
  */
 
 import React, { useState, useEffect, useTransition, useCallback, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type {
   LeadWithRelations,
   LeadActivityWithActor,
   FunnelStatus,
   CrmUserRole,
   FunnelBucket,
-  LeadPriority,
   LeadActivityType,
+  LeadDetailPayload,
 } from '@/types/crm';
 import type { LeadDossierData } from '../DossierDrawer/ClientDossierDrawer';
 import {
-  formatDossierCurrency,
   sanitizeTelUri,
   createWhatsAppUri,
   getDossierInitials,
@@ -63,6 +64,10 @@ export interface LeadDossierWorkspaceClientProps {
   userRole: CrmUserRole;
   /** Active workspace operational mode */
   workspaceMode: 'leads' | 'deals';
+  /** Auto-spawned post-conversion Client Work project summary when converted */
+  linkedWork?: LeadDetailPayload['linkedWork'];
+  /** Whether caller holds permission to inspect commercial valuations */
+  canViewFinancials?: boolean;
 }
 
 /**
@@ -120,6 +125,7 @@ function normalizeToDossier(
     revisit_date: raw.revisit_date,
     notes: raw.notes,
     brief_payload: raw.brief_payload || null,
+    inquiry_count: raw.inquiry_count || 1,
     created_at: raw.created_at,
     converted_at: raw.converted_at,
     updated_at: raw.updated_at,
@@ -141,6 +147,13 @@ function renderTimelineGlyph(type: LeadActivityType): React.ReactElement {
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+        </svg>
+      );
+    case 'email_sent':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
         </svg>
       );
     case 'meeting_notes':
@@ -223,12 +236,34 @@ export function LeadDossierWorkspaceClient({
   teamAssignees,
   userRole,
   workspaceMode,
+  linkedWork = null,
+  canViewFinancials = true,
 }: LeadDossierWorkspaceClientProps): React.ReactElement {
-  // 1. Normalized State Model
+  const router = useRouter();
+  // 1. Normalized State Model synced cleanly when server props refresh
+  const [prevInitialLeadInput, setPrevInitialLeadInput] = useState(initialLeadInput);
   const [currentLead, setCurrentLead] = useState<LeadDossierData>(() =>
     normalizeToDossier(initialLeadInput, funnelStatuses, teamAssignees)
   );
+  if (initialLeadInput !== prevInitialLeadInput) {
+    setPrevInitialLeadInput(initialLeadInput);
+    setCurrentLead(normalizeToDossier(initialLeadInput, funnelStatuses, teamAssignees));
+  }
+
+  const [prevLinkedWork, setPrevLinkedWork] = useState<LeadDetailPayload['linkedWork']>(linkedWork);
+  const [currentLinkedWork, setCurrentLinkedWork] = useState<LeadDetailPayload['linkedWork']>(linkedWork);
+  if (linkedWork !== prevLinkedWork) {
+    setPrevLinkedWork(linkedWork);
+    setCurrentLinkedWork(linkedWork);
+  }
+
+  const [prevInitialActivities, setPrevInitialActivities] = useState<LeadActivityWithActor[]>(initialActivities);
   const [activities, setActivities] = useState<LeadActivityWithActor[]>(initialActivities);
+  if (initialActivities !== prevInitialActivities) {
+    setPrevInitialActivities(initialActivities);
+    setActivities(initialActivities);
+  }
+
   const [isPending, startTransition] = useTransition();
   const [statusErrorMessage, setStatusErrorMessage] = useState<string | null>(null);
 
@@ -382,7 +417,8 @@ export function LeadDossierWorkspaceClient({
 
   const handleActivityLogged = useCallback((newActivity: LeadActivityWithActor) => {
     setActivities((prev) => [newActivity, ...prev]);
-  }, []);
+    router.refresh();
+  }, [router]);
 
   const handleStatusSelect = useCallback(
     (targetStatusId: string) => {
@@ -391,9 +427,14 @@ export function LeadDossierWorkspaceClient({
 
       setStatusErrorMessage(null);
 
-      // Guarded transition check: converted or lost or complex transitions require dialog disclosures
+      // Guarded transition check: converted transitions require financial permission and final contract confirmation
       if (target.bucket === 'converted') {
-        setIsConvertToDealOpen(true);
+        if (!canViewFinancials) {
+          setStatusErrorMessage('Financial permission is required to finalize contract valuation and convert deals.');
+          return;
+        }
+        setGuardedTargetStatus(target);
+        setIsGuardedTransitionOpen(true);
         return;
       }
 
@@ -402,6 +443,10 @@ export function LeadDossierWorkspaceClient({
         target.name.toLowerCase().includes('negotiat') ||
         target.name.toLowerCase().includes('hold')
       ) {
+        if (!canViewFinancials && target.name.toLowerCase().includes('negotiat')) {
+          setStatusErrorMessage('Financial permission is required to set Negotiation valuation.');
+          return;
+        }
         setGuardedTargetStatus(target);
         setIsGuardedTransitionOpen(true);
         return;
@@ -446,6 +491,8 @@ export function LeadDossierWorkspaceClient({
             setCurrentLead(previousLead);
             setActivities((prev) => prev.filter((a) => a.id !== syntheticActivity.id));
             setStatusErrorMessage(result.error || 'Failed to update deal stage. Reverted to previous status.');
+          } else {
+            router.refresh();
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);
@@ -455,12 +502,13 @@ export function LeadDossierWorkspaceClient({
         }
       });
     },
-    [funnelStatuses, currentLead, userRole]
+    [funnelStatuses, currentLead, userRole, canViewFinancials, router]
   );
 
   const handleEditScopeSuccess = useCallback((updated: Partial<LeadDossierData>) => {
     setCurrentLead((prev) => ({ ...prev, ...updated }));
     setIsEditScopeOpen(false);
+    router.refresh();
 
     const auditLog: LeadActivityWithActor = {
       id: `edit-${Date.now()}`,
@@ -474,11 +522,12 @@ export function LeadDossierWorkspaceClient({
       actor_role: userRole,
     };
     setActivities((prev) => [auditLog, ...prev]);
-  }, [currentLead.id, userRole]);
+  }, [currentLead.id, userRole, router]);
 
   const handleScheduleSuccess = useCallback((newFollowUpIso: string) => {
     setCurrentLead((prev) => ({ ...prev, next_follow_up: newFollowUpIso }));
     setIsSchedulerOpen(false);
+    router.refresh();
 
     const scheduleLog: LeadActivityWithActor = {
       id: `schedule-${Date.now()}`,
@@ -492,67 +541,115 @@ export function LeadDossierWorkspaceClient({
       actor_role: userRole,
     };
     setActivities((prev) => [scheduleLog, ...prev]);
-  }, [currentLead.id, userRole]);
+  }, [currentLead.id, userRole, router]);
 
   const handleConvertToDealSuccess = useCallback(() => {
-    const convertedStatus = funnelStatuses.find((s) => s.bucket === 'converted');
+    const qualifiedStatus =
+      funnelStatuses.find((s) => s.bucket === 'potential') ||
+      funnelStatuses.find((s) => s.id === currentLead.status_id);
     setCurrentLead((prev) => ({
       ...prev,
-      bucket: 'converted',
-      converted_at: new Date().toISOString(),
-      status_id: convertedStatus?.id || prev.status_id,
-      status_name: convertedStatus?.name || 'Deal Converted',
-      status_color: convertedStatus?.color_code || 'var(--admin-status-emerald-dot, #10b981)',
+      bucket: qualifiedStatus?.bucket || 'potential',
+      status_id: qualifiedStatus?.id || prev.status_id,
+      status_name: qualifiedStatus?.name || prev.status_name,
+      status_color: qualifiedStatus?.color_code || prev.status_color,
     }));
     setIsConvertToDealOpen(false);
-  }, [funnelStatuses]);
+    router.refresh();
+  }, [funnelStatuses, currentLead.status_id, router]);
 
   const handleGuardedTransitionSuccess = useCallback(
-    (payload: { statusId: string; statusName: string; bucket: FunnelBucket }) => {
+    (payload: {
+      statusId: string;
+      statusName: string;
+      bucket: FunnelBucket;
+      convertedAt?: string | null;
+      expectedValue?: number;
+      workId?: string | null;
+      projectCode?: string | null;
+    }) => {
       setCurrentLead((prev) => ({
         ...prev,
         status_id: payload.statusId,
         status_name: payload.statusName,
         bucket: payload.bucket,
+        converted_at: payload.convertedAt !== undefined ? payload.convertedAt : prev.converted_at,
+        expected_value:
+          typeof payload.expectedValue === 'number' ? payload.expectedValue : prev.expected_value,
       }));
-      setIsGuardedTransitionOpen(false);
-      setGuardedTargetStatus(null);
+      if (payload.workId && payload.projectCode) {
+        setCurrentLinkedWork({
+          id: payload.workId,
+          project_code: payload.projectCode,
+          delivery_stage: 'kickoff',
+          health_status: 'on_track',
+        });
+      }
+      // Keep ConvertedCelebrationModal mounted so confetti and Client Works CTA remain visible until dismissed
+      if (payload.bucket !== 'converted') {
+        setIsGuardedTransitionOpen(false);
+        setGuardedTargetStatus(null);
+      }
+      router.refresh();
     },
-    []
+    [router]
   );
 
   const handleAssigneeChange = useCallback(
     (newAssigneeId: string) => {
       if (userRole !== 'admin' && userRole !== 'sales_manager') return;
+      if (!newAssigneeId) return;
 
       const previousAssignee = currentLead.assigned_to;
+      const previousAssigneeName = currentLead.assigned_to_name;
       const targetAssignee = teamAssignees.find((a) => a.id === newAssigneeId);
 
+      setStatusErrorMessage(null);
       setCurrentLead((prev) => ({
         ...prev,
-        assigned_to: newAssigneeId || null,
-        assigned_to_name: targetAssignee?.full_name || 'Unassigned',
+        assigned_to: newAssigneeId,
+        assigned_to_name: targetAssignee?.full_name || previousAssigneeName,
       }));
 
       startTransition(async () => {
         try {
-          const res = await updateLeadAssignee(currentLead.id, newAssigneeId || undefined);
+          const res = await updateLeadAssignee(currentLead.id, newAssigneeId);
           if (!res.success) {
             setCurrentLead((prev) => ({
               ...prev,
               assigned_to: previousAssignee,
+              assigned_to_name: previousAssigneeName,
             }));
-            setStatusErrorMessage(res.error || 'Failed to reassign deal.');
+            const errMsg = res.error || 'Failed to reassign deal.';
+            setStatusErrorMessage(errMsg);
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('crm-toast', { detail: { type: 'error', message: errMsg } }));
+            }
+          } else {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(
+                new CustomEvent('crm-toast', {
+                  detail: {
+                    type: 'success',
+                    message: `Assigned to ${targetAssignee?.full_name || 'team representative'}.`,
+                  },
+                })
+              );
+            }
+            router.refresh();
           }
-        } catch {
+        } catch (err: unknown) {
           setCurrentLead((prev) => ({
             ...prev,
             assigned_to: previousAssignee,
+            assigned_to_name: previousAssigneeName,
           }));
+          const errMsg = err instanceof Error ? err.message : 'Network error updating assignee.';
+          setStatusErrorMessage(errMsg);
         }
       });
     },
-    [currentLead.id, currentLead.assigned_to, userRole, teamAssignees]
+    [currentLead.id, currentLead.assigned_to, currentLead.assigned_to_name, userRole, teamAssignees, router]
   );
 
   return (
@@ -566,16 +663,70 @@ export function LeadDossierWorkspaceClient({
         funnelStatuses={funnelStatuses}
         workspaceMode={workspaceMode}
         isConverted={isConverted}
+        isReadOnly={userRole === 'viewer'}
         onStatusSelect={handleStatusSelect}
         onOpenEditScope={() => setIsEditScopeOpen(true)}
         onOpenScheduler={() => setIsSchedulerOpen(true)}
-        onOpenConvertToDeal={!isConverted ? () => setIsConvertToDealOpen(true) : undefined}
+        onOpenConvertToDeal={
+          !isConverted &&
+          workspaceMode === 'leads' &&
+          currentLead.bucket === 'open' &&
+          (userRole === 'admin' || userRole === 'sales_manager')
+            ? () => setIsConvertToDealOpen(true)
+            : undefined
+        }
+        onMarkWon={
+          !isConverted &&
+          userRole !== 'viewer' &&
+          canViewFinancials &&
+          currentLead.bucket !== 'open' &&
+          currentLead.bucket !== 'lost'
+            ? () => {
+                const wonStatus = funnelStatuses.find((st) => st.bucket === 'converted');
+                if (wonStatus) {
+                  setGuardedTargetStatus(wonStatus);
+                  setIsGuardedTransitionOpen(true);
+                }
+              }
+            : undefined
+        }
         isPending={isPending}
       />
 
+      {/* Post-Conversion Client Works Delivery Banner */}
+      {isConverted && (
+        <div className={styles.linkedWorkBanner} role="region" aria-label="Converted Delivery Project">
+          <div className={styles.linkedWorkMeta}>
+            <span className={styles.linkedWorkCode}>
+              {currentLinkedWork?.project_code || 'PROJECT SPAWNED'}
+            </span>
+            <span className={styles.linkedWorkSummary}>
+              Deal converted to Won client work
+              {currentLinkedWork
+                ? ` · Stage: ${currentLinkedWork.delivery_stage.replace(/_/g, ' ').toUpperCase()} · Health: ${currentLinkedWork.health_status.replace(/_/g, ' ').toUpperCase()}`
+                : ' · Delivery board active'}
+            </span>
+          </div>
+          <Link
+            href={
+              currentLinkedWork?.id
+                ? `/admin/works?workId=${encodeURIComponent(currentLinkedWork.id)}`
+                : '/admin/works'
+            }
+            className={styles.linkedWorkCta}
+          >
+            <span>View Project in Client Works</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </Link>
+        </div>
+      )}
+
       {/* Global Status Mutation Error Feedback */}
       {statusErrorMessage && (
-        <div className={styles.composerErrorBanner} style={{ marginBottom: 16 }}>
+        <div className={`${styles.composerErrorBanner} ${styles.statusErrorSpacing}`}>
           {statusErrorMessage}
         </div>
       )}
@@ -587,7 +738,8 @@ export function LeadDossierWorkspaceClient({
         priority={currentLead.priority}
         statusBucket={currentLead.bucket}
         statusName={currentLead.status_name}
-        inquiryCount={1}
+        inquiryCount={currentLead.inquiry_count || 1}
+        canViewFinancials={canViewFinancials}
       />
 
       {/* 3. 7:5 Asymmetric Operational Grid */}
@@ -605,7 +757,7 @@ export function LeadDossierWorkspaceClient({
                 </svg>
                 <span>Organization & Client Intelligence</span>
               </h2>
-              <span className={styles.badgePill}>{currentLead.industry || 'Commercial / Luxury'}</span>
+              <span className={styles.badgePill}>{currentLead.industry || 'Sector Unspecified'}</span>
             </div>
 
             <div className={styles.keyValueGrid}>
@@ -682,13 +834,12 @@ export function LeadDossierWorkspaceClient({
                 </div>
               </div>
 
-              <div className={styles.keyValuePair} style={{ gridColumn: '1 / -1' }}>
+              <div className={`${styles.keyValuePair} ${styles.fullGridSpan}`}>
                 <span className={styles.fieldLabel}>Direct Email</span>
                 {currentLead.email ? (
                   <a
                     href={`mailto:${currentLead.email}`}
-                    className={styles.coordinateDeepLink}
-                    style={{ width: 'fit-content' }}
+                    className={`${styles.coordinateDeepLink} ${styles.fitContentLink}`}
                     title={`Dispatch email to ${currentLead.email}`}
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -723,13 +874,15 @@ export function LeadDossierWorkspaceClient({
                 </svg>
                 <span>Executive Deal Notes</span>
               </h2>
-              <button
-                type="button"
-                onClick={() => setIsEditScopeOpen(true)}
-                className={styles.btnRescheduleMini}
-              >
-                Edit Notes
-              </button>
+              {userRole !== 'viewer' && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditScopeOpen(true)}
+                  className={styles.btnRescheduleMini}
+                >
+                  Edit Notes
+                </button>
+              )}
             </div>
 
             {currentLead.notes ? (
@@ -827,13 +980,17 @@ export function LeadDossierWorkspaceClient({
                             Boolean(metadata.outcome) ||
                             Boolean(metadata.meeting_type) ||
                             Boolean(metadata.message_category) ||
+                            Boolean(metadata.subject) ||
                             item.deltaPills.length > 0) && (
-                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                            <div className={styles.timelineMetaPillsRow}>
                               {item.deltaPills.map((pill, pillIdx) => (
                                 <span key={`delta-${pillIdx}`} className={styles.badgePill}>
                                   {pill}
                                 </span>
                               ))}
+                              {typeof metadata.subject === 'string' && metadata.subject.trim() && (
+                                <span className={styles.badgePill}>Subject: {metadata.subject}</span>
+                              )}
                               {typeof metadata.duration_seconds === 'number' && (
                                 <span className={styles.badgePill}>
                                   Duration: {formatCallDuration(metadata.duration_seconds)}
@@ -908,7 +1065,7 @@ export function LeadDossierWorkspaceClient({
                                 <div className={styles.systemDeltaNarrative}>
                                   <div>{ev.narrative}</div>
                                   {ev.deltaPills.length > 0 && (
-                                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 3 }}>
+                                    <div className={styles.systemDeltaPillsRow}>
                                       {ev.deltaPills.map((pill, pIdx) => (
                                         <span key={pIdx} className={styles.deltaFieldPill}>
                                           {pill}
@@ -939,11 +1096,12 @@ export function LeadDossierWorkspaceClient({
           <RapidTouchpointComposer
             leadId={currentLead.id}
             onActivityLogged={handleActivityLogged}
+            readOnly={userRole === 'viewer'}
           />
 
           {/* Component 2: Commercial Assignment & Deal Routing */}
           <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader} style={{ marginBottom: 14 }}>
+            <div className={`${styles.sectionHeader} ${styles.sectionHeaderCompact}`}>
               <h2 className={styles.sectionTitle}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -956,15 +1114,18 @@ export function LeadDossierWorkspaceClient({
 
             <div className={styles.metaCardList}>
               <div className={styles.metaCardRow}>
-                <span className={styles.fieldLabel}>Designated Lead Owner</span>
+                <label htmlFor="dossier-owner-select" className={styles.fieldLabel}>
+                  Designated Lead Owner
+                </label>
                 {userRole === 'admin' || userRole === 'sales_manager' ? (
                   <select
+                    id="dossier-owner-select"
+                    aria-label="Designated Lead Owner"
                     value={currentLead.assigned_to || ''}
                     onChange={(e) => handleAssigneeChange(e.target.value)}
-                    className={styles.composerSelect}
-                    style={{ width: 'auto', minWidth: 160 }}
+                    className={`${styles.composerSelect} ${styles.ownerSelectCompact}`}
                   >
-                    <option value="">Unassigned</option>
+                    <option value="" disabled>Unassigned</option>
                     {teamAssignees.map((member) => (
                       <option key={member.id} value={member.id}>
                         {member.full_name}
@@ -1003,7 +1164,7 @@ export function LeadDossierWorkspaceClient({
 
           {/* Component 3: Next Precision Follow-Up Schedule Card */}
           <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader} style={{ marginBottom: 12 }}>
+            <div className={`${styles.sectionHeader} ${styles.sectionHeaderTight}`}>
               <h2 className={styles.sectionTitle}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <circle cx="12" cy="12" r="10" />
@@ -1028,25 +1189,28 @@ export function LeadDossierWorkspaceClient({
                     Due {formatRelativeTime(currentLead.next_follow_up)}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsSchedulerOpen(true)}
-                  className={styles.btnRescheduleMini}
-                >
-                  Reschedule
-                </button>
+                {userRole !== 'viewer' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSchedulerOpen(true)}
+                    className={styles.btnRescheduleMini}
+                  >
+                    Reschedule
+                  </button>
+                )}
               </div>
             ) : (
-              <div className={styles.briefEmptyBanner} style={{ padding: 16 }}>
-                <p style={{ margin: '0 0 10px 0' }}>No future follow-up commitment scheduled.</p>
-                <button
-                  type="button"
-                  onClick={() => setIsSchedulerOpen(true)}
-                  className={styles.btnSecondaryAction}
-                  style={{ width: '100%' }}
-                >
-                  Schedule Touchpoint Now
-                </button>
+              <div className={`${styles.briefEmptyBanner} ${styles.followUpEmptyCard}`}>
+                <p className={styles.followUpEmptyCopy}>No future follow-up commitment scheduled.</p>
+                {userRole !== 'viewer' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSchedulerOpen(true)}
+                    className={`${styles.btnSecondaryAction} ${styles.fullWidthBtn}`}
+                  >
+                    Schedule Touchpoint Now
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1054,8 +1218,9 @@ export function LeadDossierWorkspaceClient({
       </div>
 
       {/* 4. Sticky Bottom Action Dock (Mobile < 768px, 44px tap targets) */}
+      {userRole !== 'viewer' && (
       <nav className={styles.mobileActionDock} aria-label="Mobile deal actions">
-        {!isConverted && (
+        {!isConverted && currentLead.bucket === 'open' && (userRole === 'admin' || userRole === 'sales_manager') && (
           <button
             type="button"
             onClick={() => setIsConvertToDealOpen(true)}
@@ -1065,6 +1230,24 @@ export function LeadDossierWorkspaceClient({
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
             <span>Convert</span>
+          </button>
+        )}
+        {!isConverted && canViewFinancials && currentLead.bucket !== 'open' && currentLead.bucket !== 'lost' && (
+          <button
+            type="button"
+            onClick={() => {
+              const wonStatus = funnelStatuses.find((st) => st.bucket === 'converted');
+              if (wonStatus) {
+                setGuardedTargetStatus(wonStatus);
+                setIsGuardedTransitionOpen(true);
+              }
+            }}
+            className={`${styles.mobileDockBtn} ${styles.mobilePrimary}`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ width: 14, height: 14 }}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Mark Won</span>
           </button>
         )}
 
@@ -1094,6 +1277,7 @@ export function LeadDossierWorkspaceClient({
           <span>Schedule</span>
         </button>
       </nav>
+      )}
 
       {/* 5. Modals Suite */}
       {isEditScopeOpen && (
@@ -1101,6 +1285,7 @@ export function LeadDossierWorkspaceClient({
           isOpen={isEditScopeOpen}
           onClose={() => setIsEditScopeOpen(false)}
           lead={currentLead}
+          canViewFinancials={canViewFinancials}
           onSuccess={handleEditScopeSuccess}
         />
       )}
@@ -1156,12 +1341,16 @@ export function LeadDossierWorkspaceClient({
           }}
           dealIdCode={currentLead.lead_id}
           dealName={currentLead.company || currentLead.name}
-          currentExpectedValue={currentLead.expected_value}
+          currentExpectedValue={canViewFinancials ? currentLead.expected_value : undefined}
           onSuccess={(res) =>
             handleGuardedTransitionSuccess({
               statusId: res.newStatusId,
               statusName: guardedTargetStatus.name,
               bucket: guardedTargetStatus.bucket,
+              convertedAt: res.convertedAt ?? null,
+              expectedValue: res.expectedValue,
+              workId: res.workId ?? null,
+              projectCode: res.projectCode ?? null,
             })
           }
         />

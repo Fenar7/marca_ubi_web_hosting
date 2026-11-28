@@ -227,8 +227,12 @@ export async function scheduleFollowUpAction(
       });
     }
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -350,6 +354,7 @@ export async function transitionToOnHoldAction(
       metadata: {
         previous_status_id: existingLead.status_id,
         new_status: 'On Hold',
+        new_status_name: 'On Hold',
         revisit_date: revisitDate,
         parking_reason: sanitizedReason,
         parking_notes: sanitizedNotes,
@@ -357,8 +362,12 @@ export async function transitionToOnHoldAction(
       },
     });
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -415,8 +424,11 @@ export async function reactivateExpiredOnHoldLeadsAction(): Promise<
       };
     }
 
-    revalidatePath('/admin/leads');
     revalidatePath('/admin');
+    revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/analytics');
 
     return {
       success: true,

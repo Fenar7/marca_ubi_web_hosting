@@ -18,32 +18,50 @@ import {
   type CardTimeframe,
   CARD_TIMEFRAME_OPTIONS,
   type SpendingCategoryData,
-  computeSpendingBreakdownForCadence,
+  type TimeframeSlug,
 } from "@/app/admin/lib/timeframeUtils";
 import styles from "./SpendingOverviewBarCard.module.scss";
+
+function toCardTimeframe(slug?: TimeframeSlug): CardTimeframe | undefined {
+  switch (slug) {
+    case "7d":
+      return "this_week";
+    case "30d":
+      return "this_month";
+    case "quarter":
+      return "this_quarter";
+    case "year":
+      return "this_year";
+    default:
+      return undefined;
+  }
+}
 
 export interface SpendingOverviewBarCardProps {
   totalValue?: number | null;
   dealCount?: number | null;
-  timeframeLabel?: string;
+  timeframe?: TimeframeSlug;
   categories?: { name: string; value: number; count: number }[];
   financials?: boolean;
+  recordRoute?: string | null;
   onTimeframeChange?: (timeframe: CardTimeframe) => void;
 }
 
 export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = ({
-  totalValue = 6540000,
-  dealCount = 39,
+  totalValue = null,
+  dealCount = 0,
+  timeframe,
   categories,
   financials = true,
+  recordRoute = "/admin/deals",
   onTimeframeChange,
 }) => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Decoupled interactive timeframe state
-  const [selectedTimeframe, setSelectedTimeframe] = useState<CardTimeframe>("this_month");
+  const [localTimeframe, setLocalTimeframe] = useState<CardTimeframe>("this_month");
+  const selectedTimeframe = toCardTimeframe(timeframe) ?? localTimeframe;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Click outside and keyboard event handlers
@@ -72,7 +90,7 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
   }, [isDropdownOpen]);
 
   const handleSelectTimeframe = (slug: CardTimeframe) => {
-    setSelectedTimeframe(slug);
+    setLocalTimeframe(slug);
     setIsDropdownOpen(false);
     triggerRef.current?.focus();
     if (onTimeframeChange) {
@@ -80,52 +98,66 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
     }
   };
 
-  // Dynamically compute spending allocations for the selected cadence
+  // Dynamically compute real pipeline category allocations using the multi-color Marca Ubi palette
   const { activeTotal, activeDeals, resolvedList } = useMemo(() => {
-    const rawTotal = typeof totalValue === "number" ? totalValue : 6540000;
-    const rawDeals = typeof dealCount === "number" ? dealCount : 39;
-    const computed = computeSpendingBreakdownForCadence(selectedTimeframe, rawTotal, rawDeals);
+    const rawTotal = typeof totalValue === "number" ? totalValue : 0;
+    const rawDeals = typeof dealCount === "number" ? dealCount : 0;
 
-    // If custom non-empty categories were provided by props for default view, preserve their names
-    if (categories && categories.length > 0 && selectedTimeframe === "this_month") {
-      const BLUE_PALETTE = [
+    if (categories && categories.length > 0) {
+      const MULTI_PALETTE = [
         {
-          color: "#2563eb",
-          gradient: "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
+          color: "#f97316",
+          gradient: "linear-gradient(90deg, #ea580c 0%, #fb923c 100%)",
         },
         {
-          color: "#60a5fa",
-          gradient: "linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%)",
+          color: "#ea002a",
+          gradient: "linear-gradient(90deg, #c40023 0%, #ff4d6d 100%)",
+        },
+        {
+          color: "#4f46e5",
+          gradient: "linear-gradient(90deg, #4338ca 0%, #818cf8 100%)",
+        },
+        {
+          color: "#10b981",
+          gradient: "linear-gradient(90deg, #059669 0%, #34d399 100%)",
         },
       ];
-      const topItems: SpendingCategoryData[] = categories.slice(0, 2).map((cat, idx) => ({
+      const topItems: SpendingCategoryData[] = categories.slice(0, 4).map((cat, idx) => ({
         name: cat.name,
-        value: cat.value,
-        color: BLUE_PALETTE[idx]?.color ?? "#2563eb",
+        value: financials ? cat.value : cat.count,
+        color: MULTI_PALETTE[idx]?.color ?? "#4f46e5",
         gradient:
-          BLUE_PALETTE[idx]?.gradient ??
-          "linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%)",
+          MULTI_PALETTE[idx]?.gradient ??
+          "linear-gradient(90deg, #4338ca 0%, #818cf8 100%)",
       }));
-      const othersSum = categories.slice(2).reduce((sum, c) => sum + c.value, 0);
-      const othersItem: SpendingCategoryData = {
-        name: "Others",
-        value: othersSum > 0 ? othersSum : Math.max(0, rawTotal - topItems.reduce((s, i) => s + i.value, 0)),
-        color: "#cbd5e1",
-        gradient: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)",
-      };
+      const remainderSum = categories
+        .slice(4)
+        .reduce((sum, c) => sum + (financials ? c.value : c.count), 0);
+      const list =
+        remainderSum > 0
+          ? [
+              ...topItems,
+              {
+                name: "Others",
+                value: remainderSum,
+                color: "#cbd5e1",
+                gradient: "linear-gradient(90deg, #cbd5e1 0%, #e2e8f0 100%)",
+              },
+            ]
+          : topItems;
       return {
         activeTotal: rawTotal,
         activeDeals: rawDeals,
-        resolvedList: [...topItems, othersItem],
+        resolvedList: list,
       };
     }
 
     return {
-      activeTotal: computed.totalValue,
-      activeDeals: computed.dealCount,
-      resolvedList: computed.categories,
+      activeTotal: rawTotal,
+      activeDeals: rawDeals,
+      resolvedList: [],
     };
-  }, [selectedTimeframe, totalValue, dealCount, categories]);
+  }, [totalValue, dealCount, categories, financials]);
 
   const displayTotal =
     financials && activeTotal !== null ? formatCrmCurrency(activeTotal) : "Confidential";
@@ -150,7 +182,11 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
             title="Categorical allocation and volume distribution across active advisory accounts"
             aria-label="Information regarding practice allocation"
           >
-            ⓘ
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
           </span>
         </div>
 
@@ -206,7 +242,9 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
                       <span className={styles.optionSubtext}>{opt.subLabel}</span>
                     </div>
                     {selectedTimeframe === opt.slug && (
-                      <span className={styles.activeCheck} aria-hidden="true">✓</span>
+                      <svg className={styles.activeCheck} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     )}
                   </button>
                 </li>
@@ -219,82 +257,121 @@ export const SpendingOverviewBarCard: React.FC<SpendingOverviewBarCardProps> = (
       {/* Hero Metric & Dynamic Deal Count Badge */}
       <div className={styles.heroRow}>
         <span className={styles.heroValuation}>{displayTotal}</span>
-        <button
-          type="button"
-          className={styles.trendPill}
-          onClick={() => router.push("/admin/deals")}
-          aria-label={`${activeDeals} active deals, inspect in deals ledger`}
-        >
-          <span>{activeDeals} Active Deals</span>
-          <span className={styles.trendArrow} aria-hidden="true">↗</span>
-        </button>
+        {recordRoute !== null ? (
+          <button
+            type="button"
+            className={styles.trendPill}
+            onClick={() => router.push(recordRoute ?? "/admin/deals")}
+            aria-label={`${activeDeals} active deals, inspect in deals ledger`}
+          >
+            <span>{activeDeals} Active Deals</span>
+            <svg className={styles.trendArrow} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </button>
+        ) : (
+          <span className={styles.trendPill}>{activeDeals} Active Deals</span>
+        )}
       </div>
 
       {/* Breakdown Section: Horizontal Legend + Continuous Capsule Bar */}
       <div className={styles.breakdownSection}>
         <h3 className={styles.breakdownTitle}>Practice Breakdown</h3>
 
+        {resolvedList.length === 0 ? (
+          <p className={styles.emptyNotice}>No active deals allocated across practices.</p>
+        ) : (
+        <>
         {/* Horizontal Legend */}
         <div className={styles.legendRow}>
-          {resolvedList.map((item) => (
-            <button
-              key={item.name}
-              type="button"
-              className={styles.legendItem}
-              onClick={() => router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`)}
-              aria-label={`View deals for ${item.name}`}
-            >
-              <div className={styles.legendHeader}>
-                <span
-                  className={styles.legendDot}
-                  style={{ backgroundColor: item.color }}
-                  aria-hidden="true"
-                />
-                <span className={styles.legendLabel}>{item.name}</span>
+          {resolvedList.map((item) => {
+            const targetHref =
+              recordRoute === null
+                ? null
+                : item.name === "Others"
+                  ? recordRoute
+                  : `${recordRoute}?service_category=${encodeURIComponent(item.name)}`;
+            const legendBody = (
+              <>
+                <div className={styles.legendHeader}>
+                  <span
+                    className={styles.legendDot}
+                    style={{ backgroundColor: item.color }}
+                    aria-hidden="true"
+                  />
+                  <span className={styles.legendLabel}>{item.name}</span>
+                </div>
+                <span className={styles.legendAmount}>
+                  {financials ? formatCrmCurrency(item.value) : "Confidential"}
+                </span>
+              </>
+            );
+            return targetHref ? (
+              <button
+                key={item.name}
+                type="button"
+                className={styles.legendItem}
+                onClick={() => router.push(targetHref)}
+                aria-label={`View deals for ${item.name}`}
+              >
+                {legendBody}
+              </button>
+            ) : (
+              <div key={item.name} className={styles.legendItem}>
+                {legendBody}
               </div>
-              <span className={styles.legendAmount}>
-                {financials ? formatCrmCurrency(item.value) : "Confidential"}
-              </span>
-            </button>
-          ))}
+            );
+          })}
         </div>
 
-        {/* 38px Continuous Rounded Gradient Pill Bar (Marca Ubi Editorial Palette) */}
+        {/* 44px Continuous Rounded Gradient Pill Bar (Marca Ubi Editorial Palette) */}
         <div
           className={styles.gradientPillTrack}
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={100}
+          role="group"
           aria-label="Spending breakdown proportions"
         >
           {resolvedList.map((item) => {
             const pct = Math.max(8, (item.value / totalSum) * 100);
+            const targetHref =
+              recordRoute === null
+                ? null
+                : item.name === "Others"
+                  ? recordRoute
+                  : `${recordRoute}?service_category=${encodeURIComponent(item.name)}`;
             return (
               <div
                 key={item.name}
                 className={styles.gradientSegment}
-                role="button"
-                tabIndex={0}
-                onClick={() => router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    router.push(`/admin/deals?search=${encodeURIComponent(item.name)}`);
-                  }
-                }}
-                aria-label={`Filter deals by ${item.name}`}
+                role={targetHref ? "button" : undefined}
+                tabIndex={targetHref ? 0 : undefined}
+                onClick={targetHref ? () => router.push(targetHref) : undefined}
+                onKeyDown={
+                  targetHref
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          router.push(targetHref);
+                        }
+                      }
+                    : undefined
+                }
+                aria-label={targetHref ? `Filter deals by ${item.name}` : `${item.name} allocation`}
                 style={{
                   width: `${pct}%`,
                   background: item.gradient,
+                  cursor: targetHref ? "pointer" : "default",
                 }}
               >
                 <div className={styles.segmentTooltip}>
-                  {item.name}: {financials ? formatCrmCurrency(item.value) : "Confidential"} ({Math.round((item.value / totalSum) * 100)}%) ↗
+                  {item.name}: {financials ? formatCrmCurrency(item.value) : "Confidential"} ({Math.round((item.value / totalSum) * 100)}%)
                 </div>
               </div>
             );
           })}
         </div>
+        </>
+        )}
       </div>
     </article>
   );

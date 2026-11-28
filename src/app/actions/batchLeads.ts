@@ -10,13 +10,14 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
+import { getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
 import {
   batchUpdateLeadStatusSchema,
   batchReassignLeadsSchema,
   exportLeadsCsvSchema,
 } from '@/app/lib/lead-schemas';
-import { dashboardCsvCell } from '@/app/admin/lib/dashboardContracts';
-import type { LeadActionResult } from '@/types/crm';
+import { dashboardCsvCell, dashboardFeature } from '@/app/admin/lib/dashboardContracts';
+import type { CrmUserRole, LeadActionResult } from '@/types/crm';
 
 /**
  * Batch updates funnel stage for up to 100 candidate leads.
@@ -71,6 +72,8 @@ export async function batchUpdateLeadStatusAction(
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/admin/works');
     revalidatePath('/admin/analytics');
 
     return {
@@ -138,6 +141,8 @@ export async function batchReassignLeadsAction(
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
     revalidatePath('/admin/team');
 
     return {
@@ -182,16 +187,22 @@ export async function exportLeadsCsvAction(
       return { success: false, error: 'Unauthorized: Active user session required.' };
     }
 
-    // Role & Feature check
+    // Role, Status & Feature check
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, feature_permissions')
+      .select('role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
-    const role = profile?.role || 'viewer';
-    const permissions = profile?.feature_permissions as Record<string, unknown> | null;
-    const canExport = role === 'admin' || permissions?.can_export_data === true;
+    if (!profile || profile.status !== 'active') {
+      return {
+        success: false,
+        error: 'Forbidden: Active CRM account required for CSV export.',
+      };
+    }
+
+    const role = (profile.role || 'viewer') as CrmUserRole;
+    const canExport = dashboardFeature(role, profile.feature_permissions, 'can_export_data');
 
     if (!canExport) {
       return {
@@ -200,42 +211,61 @@ export async function exportLeadsCsvAction(
       };
     }
 
-    const canViewFinancials =
-      role === 'admin' ||
-      role === 'sales_manager' ||
-      permissions?.can_view_financials === true;
+    const canViewFinancials = dashboardFeature(
+      role,
+      profile.feature_permissions,
+      'can_view_financials'
+    );
+
+    const statusSelect =
+      parsed.data.bucket && parsed.data.bucket !== 'all'
+        ? 'funnel_statuses!inner(name, bucket)'
+        : 'funnel_statuses(name, bucket)';
+
+    const baseColumns = [
+      'id',
+      'lead_id',
+      'name',
+      'company',
+      'phone',
+      'email',
+      'preferred_channel',
+      'service_category',
+      ...(canViewFinancials ? ['expected_value'] : []),
+      'priority',
+      'next_follow_up',
+      'created_at',
+      'converted_at',
+      'assigned_to',
+      statusSelect,
+      'lead_sources(name)',
+    ].join(',\n        ');
+
+    const syntheticExclusion =
+      'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true';
+    const { buildCommercialSearchFilter } = await import('@/app/admin/lib/commercialSearch');
+    const searchResult = buildCommercialSearchFilter(parsed.data.search ?? undefined);
 
     let query = supabase
       .from('leads')
-      .select(`
-        id,
-        lead_id,
-        name,
-        company,
-        phone,
-        email,
-        preferred_channel,
-        service_category,
-        expected_value,
-        priority,
-        next_follow_up,
-        created_at,
-        converted_at,
-        funnel_statuses(name, bucket),
-        lead_sources(name),
-        profiles!leads_assigned_to_fkey(full_name)
-      `)
-      .or(
-        'brief_payload->synthetic_benchmark.is.null,brief_payload->>synthetic_benchmark.neq.true'
-      )
+      .select(baseColumns)
       .order('created_at', { ascending: false })
       .limit(5000);
+
+    if (searchResult.filter) {
+      query = query.or(`and(or(${syntheticExclusion}),or(${searchResult.filter}))`);
+    } else {
+      query = query.or(syntheticExclusion);
+    }
 
     if (parsed.data.leadIds && parsed.data.leadIds.length > 0) {
       query = query.in('id', parsed.data.leadIds);
     }
     if (parsed.data.stage) {
       query = query.eq('status_id', parsed.data.stage);
+    }
+    if (parsed.data.bucket && parsed.data.bucket !== 'all') {
+      query = query.eq('funnel_statuses.bucket', parsed.data.bucket);
     }
     if (parsed.data.assignedTo) {
       query = query.eq('assigned_to', parsed.data.assignedTo);
@@ -247,14 +277,35 @@ export async function exportLeadsCsvAction(
       query = query.ilike('priority', parsed.data.priority);
     }
 
-    const { data: rows, error: queryError } = await query;
+    const { data: rawRows, error: queryError } = await query;
 
-    if (queryError || !rows) {
+    if (queryError || !rawRows) {
       return {
         success: false,
         error: `Failed to query records for export: ${queryError?.message || 'Unknown error'}`,
       };
     }
+
+    type ExportLeadRow = {
+      id: string;
+      lead_id: string | null;
+      name: string | null;
+      company: string | null;
+      phone: string | null;
+      email: string | null;
+      preferred_channel: string | null;
+      service_category: string | null;
+      expected_value?: number | string | null;
+      priority: string | null;
+      next_follow_up: string | null;
+      created_at: string | null;
+      converted_at: string | null;
+      assigned_to: string | null;
+      funnel_statuses: { name?: string; bucket?: string } | null;
+      lead_sources: { name?: string } | null;
+    };
+
+    const rows = rawRows as unknown as ExportLeadRow[];
 
     const headers = [
       'Lead ID',
@@ -275,12 +326,17 @@ export async function exportLeadsCsvAction(
       'Converted Date',
     ];
 
+    const assigneeIds = Array.from(
+      new Set(rows.map((r) => r.assigned_to).filter(Boolean) as string[])
+    );
+    const ownerNameById = await getCrmDirectoryMap(supabase, assigneeIds);
+
     const lines: string[] = [headers.map((h) => dashboardCsvCell(h)).join(',')];
 
     for (const row of rows) {
-      const statusData = row.funnel_statuses as { name?: string; bucket?: string } | null;
-      const sourceData = row.lead_sources as { name?: string } | null;
-      const ownerData = row.profiles as { full_name?: string } | null;
+      const statusData = row.funnel_statuses;
+      const sourceData = row.lead_sources;
+      const ownerName = row.assigned_to ? ownerNameById.get(row.assigned_to) : null;
 
       const cells = [
         dashboardCsvCell(row.lead_id || ''),
@@ -292,12 +348,12 @@ export async function exportLeadsCsvAction(
         dashboardCsvCell(row.service_category || ''),
         dashboardCsvCell(statusData?.name || ''),
         dashboardCsvCell(statusData?.bucket || ''),
-        dashboardCsvCell(ownerData?.full_name || 'Unassigned'),
+        dashboardCsvCell(ownerName || 'Unassigned'),
         dashboardCsvCell(sourceData?.name || 'Direct / Organic'),
         dashboardCsvCell(row.priority || ''),
         dashboardCsvCell(
           canViewFinancials
-            ? row.expected_value !== null
+            ? row.expected_value !== null && row.expected_value !== undefined
               ? Number(row.expected_value).toFixed(2)
               : '0.00'
             : '[RESTRICTED]'

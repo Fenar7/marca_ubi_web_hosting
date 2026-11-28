@@ -14,7 +14,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
-import { getCrmDirectoryList } from '@/app/admin/lib/crmDirectory';
+import { getCrmDirectoryList, getCrmDirectoryMap } from '@/app/admin/lib/crmDirectory';
+import { dashboardFeature } from '@/app/admin/lib/dashboardContracts';
 import { normalizeEmail, normalizePhone, sanitizeHtml } from '@/app/lib/normalization';
 import {
   createManualLeadSchema,
@@ -25,6 +26,8 @@ import {
   type UpdateLeadDetailsInput,
 } from '@/app/lib/lead-schemas';
 import type {
+  ClientWorkDeliveryStage,
+  ClientWorkHealthStatus,
   CrmUserRole,
   AssigneeOption,
   LeadActionResult,
@@ -76,7 +79,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -94,12 +97,18 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
       };
     }
 
-    if (callerProfile.role === 'viewer') {
+    if (!['admin', 'sales_manager', 'sales_executive'].includes(callerProfile.role || '')) {
       return {
         success: false,
-        error: 'Privilege Violation: Read-only personnel cannot create client records.',
+        error: 'Privilege Violation: Caller role is not permitted to create client records.',
       };
     }
+
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
 
     const validationResult = createManualLeadSchema.safeParse(input);
     if (!validationResult.success) {
@@ -119,8 +128,10 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
     const sanitizedName = sanitizeHtml(data.name) ?? data.name;
     const sanitizedCompany = sanitizeHtml(data.company);
     const sanitizedWebsite = sanitizeHtml(data.companyWebsite);
+    const sanitizedIndustry = sanitizeHtml(data.industry);
     const sanitizedNotes = sanitizeHtml(data.notes);
-    const sanitizedBudget = sanitizeHtml(data.budgetBracket);
+    const sanitizedBudget = canViewFinancials ? sanitizeHtml(data.budgetBracket) : null;
+    const initialExpectedValue = canViewFinancials ? data.expectedValue : 0;
 
     let targetAssigneeId: string | null = null;
     if (callerProfile.role === 'sales_executive') {
@@ -130,6 +141,25 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
         data.assignedTo && data.assignedTo.trim().length > 0
           ? data.assignedTo
           : user.id;
+
+      if (targetAssigneeId !== user.id) {
+        const { data: assigneeProfile } = await supabase
+          .from('profiles')
+          .select('id, role, status')
+          .eq('id', targetAssigneeId)
+          .maybeSingle();
+
+        if (
+          !assigneeProfile ||
+          assigneeProfile.status !== 'active' ||
+          !['admin', 'sales_manager', 'sales_executive'].includes(assigneeProfile.role || '')
+        ) {
+          return {
+            success: false,
+            error: 'Invalid assignee: Target representative must be an active commercial team member.',
+          };
+        }
+      }
     }
 
     const defaultSourceId =
@@ -144,6 +174,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
         name: sanitizedName,
         company: sanitizedCompany,
         company_website: sanitizedWebsite,
+        industry: sanitizedIndustry,
         email: normalizedEmail,
         phone: normalizedPhone,
         preferred_channel: data.preferredChannel,
@@ -154,7 +185,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
         priority: data.priority,
         status_id: DEFAULT_NEW_FUNNEL_STATUS_ID,
         assigned_to: targetAssigneeId,
-        expected_value: data.expectedValue,
+        expected_value: initialExpectedValue,
         notes: sanitizedNotes,
         brief_payload: {
           created_via: 'manual_workspace_drawer',
@@ -190,6 +221,7 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/analytics');
 
@@ -208,11 +240,31 @@ export async function createManualLead(input: unknown): Promise<LeadActionResult
 }
 
 /**
- * Queries active commercial personnel to populate representative selectors.
- * Gated to active authenticated staff.
- *
- * @returns {Promise<AssigneeOption[]>} List of active commercial personnel.
+ * Returns active acquisition sources for manual lead creation and attribution selectors.
  */
+export async function getActiveLeadSourcesAction(): Promise<Array<{ id: string; name: string; color_code: string | null }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) return [];
+
+  const { data, error } = await supabase
+    .from('lead_sources')
+    .select('id, name, color_code')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+
+  if (error || !data) return [];
+  return data.map((s) => ({
+    id: s.id,
+    name: s.name,
+    color_code: s.color_code ?? null,
+  }));
+}
+
 export async function getActiveTeamAssignees(): Promise<AssigneeOption[]> {
   const supabase = await createClient();
   const {
@@ -268,7 +320,7 @@ export async function getLeadDetails(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -286,41 +338,81 @@ export async function getLeadDetails(
       };
     }
 
-    const { data: leadRecord, error: leadError } = await supabase
+    const callerRole = (callerProfile.role as CrmUserRole) || 'viewer';
+    const canViewFinancials = dashboardFeature(
+      callerRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
+
+    const leadSelectColumns = [
+      'id',
+      'lead_id',
+      'name',
+      'company',
+      'company_website',
+      'industry',
+      'phone',
+      'email',
+      'preferred_channel',
+      'lead_source_id',
+      'source_detail',
+      'service_category',
+      ...(canViewFinancials ? ['budget_bracket', 'expected_value'] : []),
+      'priority',
+      'status_id',
+      'assigned_to',
+      'next_follow_up',
+      'lost_reason',
+      'revisit_date',
+      'notes',
+      'brief_payload',
+      'inquiry_count',
+      'created_at',
+      'converted_at',
+      'updated_at',
+      'funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at)',
+      'lead_sources(id, name, color_code, is_active, created_at)',
+    ].join(',\n        ');
+
+    const { data: rawLeadRecord, error: leadError } = await supabase
       .from('leads')
-      .select(`
-        id,
-        lead_id,
-        name,
-        company,
-        company_website,
-        industry,
-        phone,
-        email,
-        preferred_channel,
-        lead_source_id,
-        source_detail,
-        service_category,
-        budget_bracket,
-        priority,
-        status_id,
-        assigned_to,
-        expected_value,
-        next_follow_up,
-        lost_reason,
-        revisit_date,
-        notes,
-        brief_payload,
-        inquiry_count,
-        created_at,
-        converted_at,
-        updated_at,
-        funnel_statuses(id, name, bucket, color_code, sort_order, is_active, created_at),
-        lead_sources(id, name, color_code, is_active, created_at),
-        profiles:profiles!leads_assigned_to_fkey(id, full_name, role, avatar_url)
-      `)
+      .select(leadSelectColumns)
       .eq('id', leadId)
       .maybeSingle();
+
+    interface LeadQueryRow {
+      id: string;
+      lead_id: string;
+      name: string;
+      company: string | null;
+      company_website: string | null;
+      industry: string | null;
+      phone: string | null;
+      email: string | null;
+      preferred_channel: string | null;
+      lead_source_id: string | null;
+      source_detail: string | null;
+      service_category: string | null;
+      budget_bracket?: string | null;
+      expected_value?: number | string | null;
+      priority: string | null;
+      status_id: string;
+      assigned_to: string | null;
+      next_follow_up: string | null;
+      lost_reason: string | null;
+      revisit_date: string | null;
+      notes: string | null;
+      brief_payload: Record<string, unknown> | null;
+      inquiry_count: number | null;
+      created_at: string;
+      converted_at: string | null;
+      updated_at: string;
+      funnel_statuses: FunnelStatus | null;
+      lead_sources: LeadSource | null;
+    }
+
+    const leadRecord = rawLeadRecord as unknown as LeadQueryRow | null;
 
     if (leadError || !leadRecord) {
       return {
@@ -329,15 +421,15 @@ export async function getLeadDetails(
       };
     }
 
-    if (callerProfile.role === 'sales_executive' && leadRecord.assigned_to !== user.id) {
+    if (callerRole === 'sales_executive' && leadRecord.assigned_to !== user.id) {
       return {
         success: false,
         error: 'Privilege Violation: Sales executives may only access deals assigned to their portfolio.',
       };
     }
 
-    // These reads share the authorized lead but do not depend on each other.
-    const [activitiesResult, statusesResult, staffResult] = await Promise.all([
+    // Parallelize dossier enrichments via security-barrier crm_team_directory so all roles see actor names.
+    const [activitiesResult, statusesResult, directoryRoster, linkedWorkResult] = await Promise.all([
       supabase
         .from('lead_activities')
         .select(`
@@ -347,8 +439,7 @@ export async function getLeadDetails(
           activity_type,
           description,
           metadata,
-          created_at,
-          profiles:profiles!lead_activities_actor_id_fkey(id, full_name, role, avatar_url)
+          created_at
         `)
         .eq('lead_id', leadId)
         .order('created_at', { ascending: false }),
@@ -359,54 +450,124 @@ export async function getLeadDetails(
         .eq('is_active', true)
         .order('sort_order', { ascending: true }),
 
+      getCrmDirectoryList(supabase),
+
       supabase
-        .from('profiles')
-        .select('id, full_name, email, role')
-        .eq('status', 'active')
-        .in('role', ['admin', 'sales_manager', 'sales_executive'])
-        .order('full_name', { ascending: true }),
+        .from('client_works')
+        .select('id, project_code, delivery_stage, health_status')
+        .eq('lead_id', leadId)
+        .maybeSingle(),
     ]);
     const { data: rawActivities } = activitiesResult;
     const { data: rawStatuses } = statusesResult;
-    const { data: rawStaff } = staffResult;
     for (const [source, result] of [
       ['activities', activitiesResult],
       ['stages', statusesResult],
-      ['staff', staffResult],
     ] as const) {
       if (result.error) console.error('[lead-details] Lookup failed', { source, code: result.error.code });
     }
 
+    const rosterById = new Map(directoryRoster.map((member) => [member.id, member]));
+    const missingIds = Array.from(
+      new Set([
+        ...(leadRecord.assigned_to ? [leadRecord.assigned_to] : []),
+        ...((rawActivities || []).map((act) => act.actor_id).filter(Boolean) as string[]),
+      ])
+    ).filter((id) => !rosterById.has(id));
+
+    const extraNamesById =
+      missingIds.length > 0 ? await getCrmDirectoryMap(supabase, missingIds) : new Map<string, string>();
+
+    const NORMALIZED_FINANCIAL_KEYS = new Set([
+      'expectedvalue',
+      'finalrevenue',
+      'budget',
+      'budgetamount',
+      'budgetbracket',
+      'estimatedbudget',
+      'contractvalue',
+    ]);
+
+    const isFinancialKey = (key: string): boolean =>
+      NORMALIZED_FINANCIAL_KEYS.has(key.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+    const sanitizeMonetaryCopy = (text: string): string => {
+      if (canViewFinancials) return text;
+      return text
+        .replace(/(?:₹|INR|\$)\s?[\d,]+(?:\.\d+)?(?:\s?[kKlLmMbB])?/g, '[Restricted]')
+        .replace(/(\bexpected valuation of\b|\bcontract value of\b|\bbudget(?: bracket)? of\b)[^.\n]+/gi, '$1 [Restricted]');
+    };
+
+    const sanitizeUnknownValue = (val: unknown, maskSensitive = false): unknown => {
+      if (val === null || val === undefined) return val;
+      if (typeof val === 'string') return sanitizeMonetaryCopy(val);
+      if (typeof val !== 'object') return maskSensitive ? '[Restricted]' : val;
+      if (Array.isArray(val)) return val.map((item) => sanitizeUnknownValue(item, maskSensitive));
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+        if (isFinancialKey(k)) {
+          out[k] = '[Restricted]';
+        } else {
+          out[k] = sanitizeUnknownValue(v, maskSensitive);
+        }
+      }
+      return out;
+    };
+
+    const sanitizeBriefPayload = (raw: Record<string, unknown> | null): Record<string, unknown> => {
+      if (!raw || typeof raw !== 'object') return {};
+      if (canViewFinancials) return raw;
+      const sanitized: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(raw)) {
+        if (isFinancialKey(k)) continue;
+        sanitized[k] = sanitizeUnknownValue(v);
+      }
+      return sanitized;
+    };
+
+    const sanitizeActivityMeta = (raw: unknown): Record<string, unknown> => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      if (canViewFinancials) return raw as Record<string, unknown>;
+      const sanitized: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+        if (isFinancialKey(k)) continue;
+        sanitized[k] = sanitizeUnknownValue(v);
+      }
+      return sanitized;
+    };
+
     const activities: LeadActivityWithActor[] = (rawActivities || []).map((act) => {
-      const actProfile = act.profiles as {
-        id?: string;
-        full_name?: string;
-        role?: CrmUserRole;
-        avatar_url?: string | null;
-        email?: string | null;
-      } | null;
+      const actorMeta = act.actor_id ? rosterById.get(act.actor_id) : undefined;
+      const fallbackName = act.actor_id ? extraNamesById.get(act.actor_id) : undefined;
+      const resolvedName = actorMeta?.full_name || fallbackName || 'System Staff';
+      const resolvedRole = (actorMeta?.role as CrmUserRole) || 'viewer';
 
       return {
         id: act.id,
         lead_id: act.lead_id,
         actor_id: act.actor_id,
-        actor_name: actProfile?.full_name || 'System Staff',
-        actor_role: actProfile?.role || 'viewer',
+        actor_name: resolvedName,
+        actor_role: resolvedRole,
         activity_type: act.activity_type as LeadActivityType,
-        description: act.description,
-        metadata: (act.metadata as Record<string, unknown>) || {},
+        description: sanitizeMonetaryCopy(act.description),
+        metadata: sanitizeActivityMeta(act.metadata),
         created_at: act.created_at,
-        actor: actProfile
+        actor: act.actor_id
           ? {
-              id: actProfile.id || act.actor_id || '',
-              full_name: actProfile.full_name || 'System Staff',
-              role: (actProfile.role as CrmUserRole) || 'viewer',
-              avatar_url: actProfile.avatar_url || null,
-              email: actProfile.email || null,
+              id: act.actor_id,
+              full_name: resolvedName,
+              role: resolvedRole,
+              avatar_url: actorMeta?.avatar_url || null,
+              email: null,
             }
           : null,
       };
     });
+
+    const assigneeMeta = leadRecord.assigned_to ? rosterById.get(leadRecord.assigned_to) : undefined;
+    const assigneeFallbackName = leadRecord.assigned_to
+      ? extraNamesById.get(leadRecord.assigned_to)
+      : undefined;
 
     const lead: LeadWithRelations = {
       id: leadRecord.id,
@@ -418,44 +579,63 @@ export async function getLeadDetails(
       phone: leadRecord.phone,
       email: leadRecord.email,
       preferred_channel: (leadRecord.preferred_channel as PreferredChannel) || 'Phone',
-      lead_source_id: leadRecord.lead_source_id,
+      lead_source_id: leadRecord.lead_source_id || '',
       source_detail: leadRecord.source_detail,
       service_category: (leadRecord.service_category as ServiceCategory) || 'Web & Digital',
-      budget_bracket: leadRecord.budget_bracket,
+      budget_bracket: canViewFinancials ? (leadRecord.budget_bracket ?? null) : null,
       priority: (leadRecord.priority as LeadPriority) || 'Medium',
       status_id: leadRecord.status_id,
       assigned_to: leadRecord.assigned_to,
-      expected_value: Number(leadRecord.expected_value) || 0,
+      expected_value: canViewFinancials ? Number(leadRecord.expected_value) || 0 : 0,
       next_follow_up: leadRecord.next_follow_up,
       lost_reason: leadRecord.lost_reason,
       revisit_date: leadRecord.revisit_date,
       notes: leadRecord.notes,
-      brief_payload: (leadRecord.brief_payload as Record<string, unknown>) || {},
+      brief_payload: sanitizeBriefPayload(leadRecord.brief_payload),
       inquiry_count: Number(leadRecord.inquiry_count) || 1,
       created_at: leadRecord.created_at,
       converted_at: leadRecord.converted_at,
       updated_at: leadRecord.updated_at,
-      status: (leadRecord.funnel_statuses as unknown as FunnelStatus) || undefined,
-      lead_source: (leadRecord.lead_sources as unknown as LeadSource) || undefined,
-      assignee: (leadRecord.profiles as unknown as Profile) || null,
+      status: leadRecord.funnel_statuses || undefined,
+      lead_source: leadRecord.lead_sources || undefined,
+      assignee:
+        leadRecord.assigned_to && (assigneeMeta || assigneeFallbackName)
+          ? ({
+              id: leadRecord.assigned_to,
+              full_name: assigneeMeta?.full_name || assigneeFallbackName || 'Team Member',
+              role: (assigneeMeta?.role as CrmUserRole) || 'sales_executive',
+              avatar_url: assigneeMeta?.avatar_url || null,
+            } as unknown as Profile)
+          : null,
     };
 
     const availableStatuses: FunnelStatus[] = (rawStatuses || []).map((s) => ({
       id: s.id,
       name: s.name,
       bucket: s.bucket,
-      color_code: s.color_code || '#ffffff',
+      color_code: s.color_code || '#475569',
       sort_order: s.sort_order || 0,
       is_active: s.is_active,
       created_at: s.created_at,
     }));
 
-    const availableAssignees: AssigneeOption[] = (rawStaff || []).map((p) => ({
-      id: p.id,
-      fullName: p.full_name,
-      email: p.email,
-      role: p.role as CrmUserRole,
-    }));
+    const availableAssignees: AssigneeOption[] = directoryRoster
+      .filter((p) => ['admin', 'sales_manager', 'sales_executive'].includes(p.role || ''))
+      .map((p) => ({
+        id: p.id,
+        fullName: p.full_name,
+        email: '',
+        role: (p.role as CrmUserRole) || 'sales_executive',
+      }));
+
+    const linkedWork = linkedWorkResult.data
+      ? {
+          id: linkedWorkResult.data.id,
+          project_code: linkedWorkResult.data.project_code,
+          delivery_stage: linkedWorkResult.data.delivery_stage as ClientWorkDeliveryStage,
+          health_status: linkedWorkResult.data.health_status as ClientWorkHealthStatus,
+        }
+      : null;
 
     const payload: LeadDetailPayload = {
       lead,
@@ -464,6 +644,8 @@ export async function getLeadDetails(
       availableAssignees,
       funnelStatuses: availableStatuses,
       teamAssignees: availableAssignees,
+      linkedWork,
+      canViewFinancials,
     };
 
     return {
@@ -643,8 +825,11 @@ export async function updateLeadAssignee(
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/team');
+    revalidatePath(`/admin/leads/${data.leadId}`);
+    revalidatePath(`/admin/deals/${data.leadId}`);
 
     return {
       success: true,
@@ -715,7 +900,7 @@ export async function updateLeadDealParameters(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -737,6 +922,19 @@ export async function updateLeadDealParameters(
       return {
         success: false,
         error: 'Privilege Violation: Read-only personnel cannot modify deal parameters.',
+      };
+    }
+
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
+
+    if (data.expectedValue !== undefined && !canViewFinancials) {
+      return {
+        success: false,
+        error: 'Privilege Violation: Financial view permission is required to modify deal valuation.',
       };
     }
 
@@ -807,8 +1005,11 @@ export async function updateLeadDealParameters(
 
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/analytics');
+    revalidatePath(`/admin/leads/${data.leadId}`);
+    revalidatePath(`/admin/deals/${data.leadId}`);
 
     return {
       success: true,
@@ -882,6 +1083,9 @@ export async function clearLeadFollowUp(
     revalidatePath('/admin');
     revalidatePath('/admin/tasks');
     revalidatePath('/admin/leads');
+    revalidatePath('/admin/deals');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return { success: true, id: leadId };
   } catch (err: unknown) {
@@ -934,7 +1138,7 @@ export async function convertInboundLeadToDealAction(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -960,10 +1164,16 @@ export async function convertInboundLeadToDealAction(
       };
     }
 
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
+
     // Verify existing lead
     const { data: lead, error: leadError } = await supabase
       .from('leads')
-      .select('id, lead_id, name, company, status_id, assigned_to, funnel_statuses(id, name, bucket)')
+      .select('id, lead_id, name, company, status_id, assigned_to, converted_at, expected_value, funnel_statuses(id, name, bucket)')
       .eq('id', leadId)
       .maybeSingle();
 
@@ -971,6 +1181,14 @@ export async function convertInboundLeadToDealAction(
       return {
         success: false,
         error: 'Inbound inquiry not found or inaccessible under security boundaries.',
+      };
+    }
+
+    const currentBucket = (lead.funnel_statuses as { bucket?: string } | null)?.bucket || '';
+    if (lead.converted_at || currentBucket === 'converted') {
+      return {
+        success: false,
+        error: 'Invalid transition: Converted deals cannot be downgraded back to pipeline deals via inbound conversion.',
       };
     }
 
@@ -1019,20 +1237,37 @@ export async function convertInboundLeadToDealAction(
       targetStatusName = statusObj.name;
     }
 
-    // Determine assignee
+    // Determine and validate assignee
     let finalAssignee = lead.assigned_to;
     if (assignedTo && isValidUuid(assignedTo)) {
+      const { data: assigneeProfile } = await supabase
+        .from('profiles')
+        .select('id, role, status')
+        .eq('id', assignedTo)
+        .maybeSingle();
+
+      if (
+        !assigneeProfile ||
+        assigneeProfile.status !== 'active' ||
+        !['admin', 'sales_manager', 'sales_executive'].includes(assigneeProfile.role || '')
+      ) {
+        return {
+          success: false,
+          error: 'Invalid assignee: Target representative must hold an active commercial role.',
+        };
+      }
       finalAssignee = assignedTo;
     }
 
     const cleanNotes = notes ? sanitizeHtml(notes) ?? notes : null;
+    const effectiveValuation = canViewFinancials ? expectedValue : Number(lead.expected_value) || 0;
 
     // Execute atomic update with row verification
     const { data: updatedRows, error: updateError } = await supabase
       .from('leads')
       .update({
         status_id: resolvedStatusId,
-        expected_value: expectedValue,
+        expected_value: effectiveValuation,
         priority,
         assigned_to: finalAssignee,
         updated_at: new Date().toISOString(),
@@ -1050,7 +1285,9 @@ export async function convertInboundLeadToDealAction(
     }
 
     // Log conversion activity
-    const activityDesc = `Inbound lead converted to active deal (${targetStatusName}) with expected valuation ₹${expectedValue.toLocaleString('en-IN')} by ${callerProfile.full_name}.${cleanNotes ? ` Notes: ${cleanNotes}` : ''}`;
+    const activityDesc = canViewFinancials
+      ? `Inbound lead converted to active deal (${targetStatusName}) with expected valuation ₹${effectiveValuation.toLocaleString('en-IN')} by ${callerProfile.full_name}.${cleanNotes ? ` Notes: ${cleanNotes}` : ''}`
+      : `Inbound lead converted to active deal (${targetStatusName}) by ${callerProfile.full_name}.${cleanNotes ? ` Notes: ${cleanNotes}` : ''}`;
 
     await supabase.from('lead_activities').insert({
       lead_id: leadId,
@@ -1061,7 +1298,7 @@ export async function convertInboundLeadToDealAction(
         converted_to_deal: true,
         previous_status_id: lead.status_id,
         new_status_id: resolvedStatusId,
-        expected_value: expectedValue,
+        ...(canViewFinancials ? { expected_value: effectiveValuation } : {}),
         priority,
         assigned_to: finalAssignee,
       },
@@ -1070,6 +1307,9 @@ export async function convertInboundLeadToDealAction(
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${leadId}`);
+    revalidatePath(`/admin/deals/${leadId}`);
 
     return {
       success: true,
@@ -1118,7 +1358,7 @@ export async function updateLeadDetailsAction(
 
     const { data: callerProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, status')
+      .select('id, full_name, email, role, status, feature_permissions')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -1142,6 +1382,12 @@ export async function updateLeadDetailsAction(
         error: 'Privilege Violation: Read-only personnel cannot modify lead parameters.',
       };
     }
+
+    const canViewFinancials = dashboardFeature(
+      callerProfile.role as CrmUserRole,
+      callerProfile.feature_permissions,
+      'can_view_financials'
+    );
 
     const { data: currentLead, error: leadError } = await supabase
       .from('leads')
@@ -1214,11 +1460,13 @@ export async function updateLeadDetailsAction(
     if (data.serviceCategory !== undefined) {
       updatePayload.service_category = data.serviceCategory;
     }
-    if (data.budgetBracket !== undefined) {
-      updatePayload.budget_bracket = data.budgetBracket && data.budgetBracket.trim().length > 0 ? sanitizeHtml(data.budgetBracket.trim()) : null;
-    }
-    if (data.expectedValue !== undefined) {
-      updatePayload.expected_value = data.expectedValue;
+    if (canViewFinancials) {
+      if (data.budgetBracket !== undefined) {
+        updatePayload.budget_bracket = data.budgetBracket && data.budgetBracket.trim().length > 0 ? sanitizeHtml(data.budgetBracket.trim()) : null;
+      }
+      if (data.expectedValue !== undefined) {
+        updatePayload.expected_value = data.expectedValue;
+      }
     }
     if (data.priority !== undefined) {
       updatePayload.priority = data.priority;
@@ -1258,6 +1506,9 @@ export async function updateLeadDetailsAction(
     revalidatePath('/admin');
     revalidatePath('/admin/leads');
     revalidatePath('/admin/deals');
+    revalidatePath('/admin/tasks');
+    revalidatePath(`/admin/leads/${data.leadId}`);
+    revalidatePath(`/admin/deals/${data.leadId}`);
 
     return {
       success: true,

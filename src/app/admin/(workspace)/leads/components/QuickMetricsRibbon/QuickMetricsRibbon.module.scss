@@ -1,12 +1,12 @@
 .ribbonContainer {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
   margin-bottom: 4px;
 
   @media (max-width: 1080px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @media (max-width: 600px) {
@@ -21,44 +21,87 @@
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  gap: 8px;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
 
   &:hover {
-    box-shadow: 0 4px 14px rgba(17, 17, 17, 0.05);
+    border-color: #8c8c86;
+    box-shadow: 0 4px 14px rgba(17, 17, 17, 0.04);
   }
 }
 
 .overdueActivePod {
   background-color: #fff9fa;
-  border-color: #f5b7c0;
+  border-color: #e11d48;
+}
+
+.kpiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .kpiLabel {
   font-family: var(--font-graphik), sans-serif;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--admin-text-muted, #696965);
+  letter-spacing: 0.01em;
+  color: var(--admin-text-secondary, #454542);
+}
+
+.iconBadge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconIndigo {
+  background-color: #eef2ff;
+  color: #3730a3;
+}
+
+.iconAmber {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
+.iconRose {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
+.iconEmerald {
+  background-color: #ecfdf5;
+  color: #047857;
 }
 
 .kpiValue {
-  font-family: var(--font-helvetica-neue), sans-serif;
+  font-family: var(--font-circular), var(--font-helvetica-neue), sans-serif;
   font-size: 1.75rem;
-  font-weight: 300;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  letter-spacing: -0.025em;
   color: var(--admin-text-primary, #111111);
-  line-height: 1.1;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums lining-nums;
 }
 
 .overdueText {
-  color: var(--admin-brand-primary, #ea002a) !important;
+  color: #be123c;
 }
 
 .kpiSub {
   font-family: var(--font-graphik), sans-serif;
   font-size: 0.75rem;
-  color: var(--admin-text-secondary, #454542);
+  color: #575753;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpiPod {
+    transition: none;
+  }
 }

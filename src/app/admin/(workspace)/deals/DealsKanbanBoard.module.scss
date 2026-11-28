@@ -35,7 +35,7 @@
   }
   button,
   select {
-    min-height: 40px;
+    min-height: 44px;
     border: 1px solid #b4b4ad;
     border-radius: 8px;
     background: #fff;
@@ -45,7 +45,8 @@
   button {
     display: grid;
     place-items: center;
-    width: 40px;
+    width: 44px;
+    min-width: 44px;
     cursor: pointer;
     &:disabled {
       cursor: default;
@@ -162,5 +163,22 @@
   .board * {
     scroll-behavior: auto;
     transition: none !important;
+  }
+}
+
+/* Multi-Color Kanban Bucket Header Accents */
+.lane {
+  border-top: 3px solid #d8d8d4;
+  &[data-bucket="open"] {
+    border-top-color: #4f46e5;
+  }
+  &[data-bucket="potential"] {
+    border-top-color: #f97316;
+  }
+  &[data-bucket="converted"] {
+    border-top-color: #047857;
+  }
+  &[data-bucket="lost"] {
+    border-top-color: #ea002a;
   }
 }

@@ -99,8 +99,8 @@
 .saveBtn {
   min-height: 44px;
   padding: 0 1.5rem;
-  background: var(--admin-accent-lemon, #ea002a);
-  border: 1px solid var(--admin-border-strong, #1f242f);
+  background: var(--admin-btn-primary-bg, #ea002a);
+  border: 1px solid var(--admin-btn-primary-bg, #ea002a);
   border-radius: 6px;
   color: var(--admin-btn-primary-text, #ffffff);
   font-family: var(--font-admin-btn, 'MessinaSansBook', sans-serif);
@@ -109,11 +109,12 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(31, 36, 47, 0.08);
+  box-shadow: 0 2px 6px rgba(17, 17, 17, 0.08);
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: var(--admin-accent-lemon-hover, #e4f375);
+    background: var(--admin-btn-primary-hover, #c40023);
+    border-color: var(--admin-btn-primary-hover, #c40023);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(31, 36, 47, 0.12);
   }
@@ -346,7 +347,7 @@
   svg {
     position: absolute;
     left: 0.85rem;
-    color: var(--admin-text-muted, #8a92a0);
+    color: var(--admin-text-muted, #525965);
     pointer-events: none;
   }
 
@@ -367,7 +368,7 @@
   transition: all 0.15s ease;
 
   &::placeholder {
-    color: var(--admin-text-muted, #8a92a0);
+    color: var(--admin-text-muted, #525965);
   }
 
   &:focus {

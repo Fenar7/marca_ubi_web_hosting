@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useEffect, useRef, useId, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { OverdueBadge } from '@/app/admin/components/Badges';
 import { formatCrmCurrency } from '@/app/admin/lib/currency';
 import { batchReassignOverdueLeadsAction } from '@/app/actions/workloadActions';
@@ -51,30 +52,49 @@ export function BatchReassignModal({
   onClose,
   onSuccess,
 }: BatchReassignModalProps): React.ReactElement | null {
-  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <BatchReassignModalInner
+      key={preselectedSourceRepId || 'all'}
+      isOpen={isOpen}
+      overdueLeads={overdueLeads}
+      availableReps={availableReps}
+      preselectedSourceRepId={preselectedSourceRepId}
+      onClose={onClose}
+      onSuccess={onSuccess}
+    />
+  );
+}
+
+function BatchReassignModalInner({
+  isOpen,
+  overdueLeads,
+  availableReps,
+  preselectedSourceRepId,
+  onClose,
+  onSuccess,
+}: BatchReassignModalProps): React.ReactElement {
+  const router = useRouter();
+  const candidateLeads = preselectedSourceRepId
+    ? overdueLeads.filter((l) => l.currentAssigneeId === preselectedSourceRepId)
+    : overdueLeads;
+
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>(() =>
+    candidateLeads.map((l) => l.id)
+  );
   const [destinationUserId, setDestinationUserId] = useState<string>('');
-  const [reassignReason, setReassignReason] = useState<string>('Portfolio rebalancing due to overdue touchpoints');
+  const [reassignReason, setReassignReason] = useState<string>(
+    'Portfolio rebalancing across commercial pipeline'
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const repSelectId = useId();
   const reasonInputId = useId();
-
-  // Filter leads by preselected source rep if provided
-  const candidateLeads = preselectedSourceRepId
-    ? overdueLeads.filter((l) => l.currentAssigneeId === preselectedSourceRepId)
-    : overdueLeads;
-
-  // Initialize selected leads to all candidate leads by default
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedLeadIds(candidateLeads.map((l) => l.id));
-      setDestinationUserId('');
-      setReassignReason('Portfolio rebalancing due to overdue touchpoints');
-      setErrorMessage(null);
-    }
-  }, [isOpen, candidateLeads.length, preselectedSourceRepId]);
 
   // Body scroll lock on mount
   useEffect(() => {
@@ -139,10 +159,6 @@ export function BatchReassignModal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) {
-    return null;
-  }
-
   const handleToggleLead = (id: string): void => {
     setSelectedLeadIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -192,14 +208,14 @@ export function BatchReassignModal({
             new CustomEvent('crm-toast', {
               detail: {
                 title: 'Deals Reassigned',
-                message: `Successfully transferred ${count} overdue account(s) to ${destName}.`,
+                message: `Successfully transferred ${count} deal(s) to ${destName}.`,
                 type: 'success',
               },
             })
           );
-          window.dispatchEvent(new Event('popstate'));
         }
 
+        router.refresh();
         onSuccess?.(count, destName, selectedLeadIds, destinationUserId);
         onClose();
       } catch (err: unknown) {
@@ -232,10 +248,10 @@ export function BatchReassignModal({
           <div className={styles.headerTitleGroup}>
             <span className={styles.eyebrow}>Workload Rebalancing</span>
             <h2 id="batch-reassign-modal-title" className={styles.modalTitle}>
-              Reassign Active Pipeline Leads.
+              Batch Reassign Accounts
             </h2>
             <p className={styles.modalSubtitle}>
-              Transfer stalled prospect accounts to active representatives to prevent deal stagnation.
+              Transfer selected accounts to an active team representative with full audit logging.
             </p>
           </div>
           <button

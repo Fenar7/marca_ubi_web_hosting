@@ -12,7 +12,7 @@ export function buildCommercialSearchFilter(value: string | undefined): Commerci
   }
   const quotedPattern = `"%${search.replace(/"/g, '\\"')}%"`;
   return {
-    filter: `name.ilike.${quotedPattern},company.ilike.${quotedPattern},lead_id.ilike.${quotedPattern}`,
+    filter: `name.ilike.${quotedPattern},company.ilike.${quotedPattern},lead_id.ilike.${quotedPattern},email.ilike.${quotedPattern},phone.ilike.${quotedPattern}`,
     error: null,
   };
 }
